@@ -1,0 +1,7 @@
+{
+    "name": "com.rabbitstewdio.rogueentity",
+    "displayName": "RogueEntity (Unity Port)",
+    "version": "1.0.0",
+    "unity": "2018.1",
+    "description": "A Rogue-like helper library."
+}
