@@ -1,10 +1,10 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-<!--
+
   <PropertyGroup>
     <BaseOutputPath>$(MSBuildThisFileDirectory)/output/$(MSBuildProjectName)/bin</BaseOutputPath>
     <BaseIntermediateOutputPath>$(MSBuildThisFileDirectory)/output/$(MSBuildProjectName)/obj</BaseIntermediateOutputPath>
   </PropertyGroup>
--->	
+
   <PropertyGroup>
     <LangVersion>latest</LangVersion>
     <NoWarn>1701;1702;1591</NoWarn>
