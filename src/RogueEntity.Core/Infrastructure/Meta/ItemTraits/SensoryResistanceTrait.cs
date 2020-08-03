@@ -16,7 +16,7 @@ namespace RogueEntity.Core.Infrastructure.Meta.ItemTraits
             this.sensoryResistance = new SensoryResistance(blocksLight, blocksSound, blocksHeat, blocksSmell);
         }
 
-        protected override SensoryResistance GetData(TContext context)
+        protected override SensoryResistance GetData(TContext context, TItemId k)
         {
             return sensoryResistance;
         }

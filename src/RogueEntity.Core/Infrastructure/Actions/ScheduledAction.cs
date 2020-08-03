@@ -1,13 +1,19 @@
 ﻿using System;
+using System.Runtime.Serialization;
 using EnttSharp.Entities;
+using MessagePack;
 
 namespace RogueEntity.Core.Infrastructure.Actions
 {
     /// <summary>
     ///  Represents the next scheduled action the character should perform.
     /// </summary>
-    public struct ScheduledAction<TContext, TActorId> where TActorId : IEntityKey
+    [MessagePackObject]
+    [DataContract]
+    [Serializable]
+    public readonly struct ScheduledAction<TContext, TActorId> where TActorId : IEntityKey
     {
+        [SerializationConstructor]
         public ScheduledAction(IAction<TContext, TActorId> nextAction, 
                                ActionResult lastActionResult)
         {
@@ -15,7 +21,11 @@ namespace RogueEntity.Core.Infrastructure.Actions
             LastActionResult = lastActionResult;
         }
 
+        [DataMember(Order = 0)]
+        [Key(0)]
         public IAction<TContext, TActorId> NextAction { get; }
+        [DataMember(Order = 1)]
+        [Key(1)]
         public ActionResult LastActionResult { get; }
 
         public ScheduledAction<TContext, TActorId> WithPreviousResult(ActionResult r)

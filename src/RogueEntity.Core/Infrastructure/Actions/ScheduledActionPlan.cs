@@ -1,15 +1,37 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Runtime.Serialization;
 using EnttSharp.Entities;
 
 namespace RogueEntity.Core.Infrastructure.Actions
 {
-    public class ScheduledActionPlan<TContext, TActorId> where TActorId : IEntityKey
+    [DataContract]
+    [Serializable]
+    public class ScheduledActionPlan<TContext, TActorId>: IReadOnlyCollection<ScheduledAction<TContext, TActorId>> where TActorId : IEntityKey
     {
         readonly Queue<ScheduledAction<TContext, TActorId>> additionalActions;
-
+        
         public ScheduledActionPlan()
         {
             additionalActions = new Queue<ScheduledAction<TContext, TActorId>>();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        IEnumerator<ScheduledAction<TContext, TActorId>> IEnumerable<ScheduledAction<TContext, TActorId>>.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        public int Count => additionalActions.Count;
+
+        public Queue<ScheduledAction<TContext, TActorId>>.Enumerator GetEnumerator()
+        {
+            return additionalActions.GetEnumerator();
         }
 
         public void DiscardAll()

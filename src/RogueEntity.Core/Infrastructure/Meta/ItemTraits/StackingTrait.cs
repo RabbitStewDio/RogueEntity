@@ -59,5 +59,11 @@ namespace RogueEntity.Core.Infrastructure.Meta.ItemTraits
             changedK = k.WithData(t.Count);
             return true;
         }
+
+        public bool TryRemove(IEntityViewControl<TItemId> entityRegistry, TContext context, TItemId k, out TItemId changedItem)
+        {
+            changedItem = k;
+            return false;
+        }
     }
 }

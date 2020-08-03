@@ -23,6 +23,8 @@ namespace RogueEntity.Core.Infrastructure.Positioning
         public double Z { get; }
         public byte LayerId { get; }
 
+        public bool Invalid => LayerId == 0;
+
         public Position(double x, double y, double z, byte layer)
         {
             X = x;
@@ -58,6 +60,10 @@ namespace RogueEntity.Core.Infrastructure.Positioning
             }
         }
 
+        public int GridX => (int)(X + 0.5f);
+        public int GridY => (int)(Y + 0.5f);
+        public int GridZ => (int)(Z + 0.5f);
+
         public static bool operator ==(Position left, Position right)
         {
             return left.Equals(right);
@@ -66,6 +72,21 @@ namespace RogueEntity.Core.Infrastructure.Positioning
         public static bool operator !=(Position left, Position right)
         {
             return !left.Equals(right);
+        }
+
+        public Position Apply<TPosition>(TPosition p) where TPosition : IPosition
+        {
+            return new Position(p.X, p.Y, p.Z, this.LayerId);
+        }
+
+        public Position From(int x, int y) 
+        {
+            return new Position(x, y, this.Z, this.LayerId);
+        }
+
+        public static Position From<TPosition>(TPosition p) where TPosition: IPosition
+        {
+            return new Position(p.X, p.Y, p.Z, p.LayerId);
         }
     }
 }

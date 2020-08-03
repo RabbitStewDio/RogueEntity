@@ -1,5 +1,6 @@
 ﻿using System;
 using EnttSharp.Entities;
+using RogueEntity.Core.Infrastructure.Meta;
 using RogueEntity.Core.Infrastructure.Meta.Items;
 using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.Maps;
@@ -8,16 +9,19 @@ using Serilog;
 namespace RogueEntity.Core.Infrastructure.Positioning.Grid
 {
     public class BulkItemGridPositionTrait<TGameContext, TItemId> : IBulkItemTrait<TGameContext, TItemId>,
-                                                                IItemComponentTrait<TGameContext, TItemId, EntityGridPosition>,
-                                                                IItemComponentTrait<TGameContext, TItemId, MapLayerPreference>
-        where TGameContext : IGridMapContext<TGameContext, TItemId>, IItemContext<TGameContext, TItemId>
+                                                                    IItemComponentTrait<TGameContext, TItemId, EntityGridPosition>,
+                                                                    IItemComponentTrait<TGameContext, TItemId, MapLayerPreference>
+        where TGameContext : IGridMapContext<TGameContext, TItemId>
         where TItemId : IBulkDataStorageKey<TItemId>
     {
+        readonly IItemResolver<TGameContext, TItemId> itemResolver;
         readonly ILogger logger = SLog.ForContext<BulkItemGridPositionTrait<TGameContext, TItemId>>();
         readonly MapLayerPreference layerPreference;
 
-        public BulkItemGridPositionTrait(MapLayer layer, params MapLayer[] layers)
+        public BulkItemGridPositionTrait(IItemResolver<TGameContext, TItemId> itemResolver, 
+                                         MapLayer layer, params MapLayer[] layers)
         {
+            this.itemResolver = itemResolver;
             Id = "ReferenceItem.Generic.Positional";
             Priority = 100;
 
@@ -33,7 +37,7 @@ namespace RogueEntity.Core.Infrastructure.Positioning.Grid
             return true;
         }
 
-        public bool TryUpdate(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, 
+        public bool TryUpdate(IEntityViewControl<TItemId> v, TGameContext context, TItemId k,
                               in MapLayerPreference t, out TItemId changedK)
         {
             changedK = k;
@@ -46,7 +50,18 @@ namespace RogueEntity.Core.Infrastructure.Positioning.Grid
             return false;
         }
 
-        public bool TryUpdate(IEntityViewControl<TItemId> v, TGameContext context, TItemId targetItem, 
+        bool IItemComponentTrait<TGameContext, TItemId, EntityGridPosition>.TryRemove(IEntityViewControl<TItemId> entityRegistry, TGameContext context, TItemId k, out TItemId changedItem)
+        {
+            return TryUpdate(entityRegistry, context, k, EntityGridPosition.Invalid, out changedItem);
+        }
+
+        bool IItemComponentTrait<TGameContext, TItemId, MapLayerPreference>.TryRemove(IEntityViewControl<TItemId> entityRegistry, TGameContext context, TItemId k, out TItemId changedItem)
+        {
+            changedItem = k;
+            return false;
+        }
+
+        public bool TryUpdate(IEntityViewControl<TItemId> v, TGameContext context, TItemId targetItem,
                               in EntityGridPosition p, out TItemId changedK)
         {
             if (targetItem.IsReference)
@@ -65,7 +80,7 @@ namespace RogueEntity.Core.Infrastructure.Positioning.Grid
 
             if (!layerPreference.IsAcceptable(p, out var layerId))
             {
-                WarnNotAcceptableLayer(context, targetItem, p);
+                WarnNotAcceptableLayer(targetItem, p);
                 changedK = targetItem;
                 return false;
             }
@@ -87,17 +102,17 @@ namespace RogueEntity.Core.Infrastructure.Positioning.Grid
                 return true;
             }
 
-            if (!itemAtPos.IsSameBulkDataType(targetItem))
+            if (!itemResolver.IsSameBulkDataType(itemAtPos, targetItem))
             {
                 // cannot merge items of different type.
                 changedK = targetItem;
                 return false;
             }
 
-            var stackSizeOnMap = context.QueryStackSize(itemAtPos);
-            var stackSizeNew = context.QueryStackSize(targetItem);
+            var stackSizeOnMap = itemResolver.QueryStackSize(itemAtPos, context);
+            var stackSizeNew = itemResolver.QueryStackSize(targetItem, context);
             if (stackSizeOnMap.Merge(stackSizeNew, out var merged) &&
-                context.ItemResolver.TryUpdateData(itemAtPos, context, in merged, out var changedRef))
+                itemResolver.TryUpdateData(itemAtPos, context, in merged, out var changedRef))
             {
                 map[p.GridX, p.GridY] = changedRef;
                 changedK = changedRef;
@@ -109,9 +124,9 @@ namespace RogueEntity.Core.Infrastructure.Positioning.Grid
             return false;
         }
 
-        void WarnNotAcceptableLayer(TGameContext context, TItemId targetItem, EntityGridPosition p)
+        void WarnNotAcceptableLayer(TItemId targetItem, EntityGridPosition p)
         {
-            if (context.ItemResolver.TryResolve(targetItem, out var itemDef))
+            if (itemResolver.TryResolve(targetItem, out var itemDef))
             {
                 logger.Warning("Invalid layer {Layer} for item {ItemId}", p.LayerId, itemDef.Id);
             }

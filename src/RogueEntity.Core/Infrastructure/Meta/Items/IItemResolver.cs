@@ -1,9 +1,12 @@
-﻿using EnttSharp.Entities;
+﻿using System;
+using EnttSharp.Entities;
 
 namespace RogueEntity.Core.Infrastructure.Meta.Items
 {
     public interface IItemResolver<TContext, TItemId> where TItemId: IEntityKey
     {
+        IItemRegistry ItemRegistry { get; }
+
         bool TryResolve(in TItemId itemRef, out IItemDeclaration item);
 
         TItemId Instantiate(TContext context, IItemDeclaration item);
@@ -16,6 +19,8 @@ namespace RogueEntity.Core.Infrastructure.Meta.Items
                                   TContext context,
                                   in TData data,
                                   out TItemId changedItem);
+
+        bool TryRemoveData<TData>(TItemId itemRef, TContext context, out TItemId changedItem);
 
         void DiscardUnusedItem(in TItemId item);
         void Apply(TItemId reference, TContext context);

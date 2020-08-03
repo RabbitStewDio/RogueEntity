@@ -1,17 +1,28 @@
 ﻿using System;
+using System.Runtime.Serialization;
+using MessagePack;
 
 namespace RogueEntity.Core.Utils.Maps
 {
+    [Serializable]
+    [DataContract]
+    [MessagePackObject]
+    [MessagePackFormatter(typeof(MapLayerMessagePackFormatter))]
     public readonly struct MapLayer : IEquatable<MapLayer>
     {
+        public static MapLayer Indeterminate => new MapLayer(0, "Indeterminate");
+
+        [SerializationConstructor]
         public MapLayer(byte layerId, string name)
         {
             this.LayerId = layerId;
             this.Name = name ?? throw new ArgumentNullException(nameof(name));
         }
 
+        [Key(1)]
         public string Name { get; }
 
+        [Key(0)]
         public byte LayerId { get; }
 
         public override string ToString()

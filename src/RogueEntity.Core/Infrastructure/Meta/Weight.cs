@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Runtime.Serialization;
+using EnTTSharp.Annotations;
+using MessagePack;
 
 namespace RogueEntity.Core.Infrastructure.Meta
 {
@@ -6,7 +9,10 @@ namespace RogueEntity.Core.Infrastructure.Meta
     ///  Actors and items have weight. For container types (like actors or chests etc)
     ///  the weight is the weight of the base item and the sum of its contents.
     /// </summary>
-    public struct Weight : IComparable<Weight>, IComparable, IEquatable<Weight>
+    [EntityComponent(EntityConstructor.NonConstructable)]
+    [MessagePackObject]
+    [DataContract]
+    public readonly struct Weight : IComparable<Weight>, IComparable, IEquatable<Weight>
     {
         const long UnlimitedWeight = 1L << 40;
 
@@ -19,6 +25,8 @@ namespace RogueEntity.Core.Infrastructure.Meta
         //
         // This results in a maximum weight of 9,007,199,254,740 kg for any particular item.
         // I hope that is a large enough margin of error here.
+        [DataMember(Name = nameof(WeightInGrams), Order = 0)]
+        [Key(0)]
         public readonly long WeightInGrams;
 
         public Weight(long weightInGrams)

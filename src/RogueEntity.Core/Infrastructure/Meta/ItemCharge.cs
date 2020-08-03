@@ -1,12 +1,23 @@
 ﻿using System;
+using System.Runtime.Serialization;
+using EnTTSharp.Annotations;
+using MessagePack;
 
 namespace RogueEntity.Core.Infrastructure.Meta
 {
+    [EntityComponent(EntityConstructor.NonConstructable)]
+    [MessagePackObject]
+    [DataContract]
     public readonly struct ItemCharge : IEquatable<ItemCharge>, IComparable<ItemCharge>, IComparable
     {
+        [DataMember(Order = 0)]
+        [Key(0)]
         public readonly ushort Count;
+        [DataMember(Order = 1)]
+        [Key(1)]
         public readonly ushort MaximumCharge;
 
+        [SerializationConstructor]
         public ItemCharge(ushort charge, ushort maxCharge)
         {
             this.MaximumCharge = maxCharge;

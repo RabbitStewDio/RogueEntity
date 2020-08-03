@@ -1,12 +1,23 @@
 ﻿using System;
+using System.Runtime.Serialization;
+using EnTTSharp.Annotations;
+using MessagePack;
 
 namespace RogueEntity.Core.Infrastructure.Positioning.Continuous
 {
+    [EntityComponent]
+    [DataContract]
+    [Serializable]
+    [MessagePackObject]
     public readonly struct ContinuousMapPosition: IPosition, IEquatable<ContinuousMapPosition>
     {
         const ulong MaxCoordinate = 0xFFFF_FFFF_FFFF;
         const float MaxCoordinateMeter = MaxCoordinate / 1000f;
+        [DataMember(Order = 0)]
+        [Key(0)]
         readonly ulong dataA;
+        [DataMember(Order = 1)]
+        [Key(1)]
         readonly ulong dataB;
 
         public double X => XUnit / 1000f;
@@ -20,6 +31,13 @@ namespace RogueEntity.Core.Infrastructure.Positioning.Continuous
                           ((dataB & 0xFF00_0000_0000_0000) >> 36);
 
         public byte LayerId => (byte)((dataB & 0x00FF_0000_0000_0000) >> 48);
+
+        [SerializationConstructor]
+        ContinuousMapPosition(ulong dataA, ulong dataB)
+        {
+            this.dataA = dataA;
+            this.dataB = dataB;
+        }
 
         public ContinuousMapPosition(ulong x, ulong y, ulong z, byte l)
         {
@@ -39,6 +57,10 @@ namespace RogueEntity.Core.Infrastructure.Positioning.Continuous
             this(FloatToMillimeter(p.X), FloatToMillimeter(p.Y), FloatToMillimeter(p.Z), p.LayerId)
         {
         }
+
+        public int GridX => (int)(X + 0.5f);
+        public int GridY => (int)(Y + 0.5f);
+        public int GridZ => (int)(Z + 0.5f);
 
         static ulong FloatToMillimeter(double value)
         {

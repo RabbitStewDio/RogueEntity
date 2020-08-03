@@ -12,13 +12,16 @@ namespace RogueEntity.Core.Infrastructure.Positioning.Grid
                                                                          IItemComponentTrait<TGameContext, TItemId, EntityGridPositionChangedMarker>,
                                                                          IItemComponentTrait<TGameContext, TItemId, MapLayerPreference>
         where TItemId : IBulkDataStorageKey<TItemId>
-        where TGameContext : IGridMapContext<TGameContext, TItemId>, IItemContext<TGameContext, TItemId>
+        where TGameContext : IGridMapContext<TGameContext, TItemId>
     {
+        readonly IItemResolver<TGameContext, TItemId> itemResolver;
         readonly MapLayerPreference layerPreference;
         readonly ILogger logger = SLog.ForContext<ReferenceItemGridPositionTrait<TGameContext, TItemId>>();
 
-        public ReferenceItemGridPositionTrait(MapLayer layer, params MapLayer[] layers)
+        public ReferenceItemGridPositionTrait(IItemResolver<TGameContext, TItemId> itemResolver, 
+                                              MapLayer layer, params MapLayer[] layers)
         {
+            this.itemResolver = itemResolver;
             Id = "ReferenceItem.Generic.Position.Grid";
             Priority = 100;
 
@@ -117,7 +120,7 @@ namespace RogueEntity.Core.Infrastructure.Positioning.Grid
 
             if (!layerPreference.IsAcceptable(desiredPosition, out var layerId))
             {
-                WarnNotAcceptableLayer(context, k, desiredPosition);
+                WarnNotAcceptableLayer(k, desiredPosition);
                 return false;
             }
 
@@ -157,9 +160,26 @@ namespace RogueEntity.Core.Infrastructure.Positioning.Grid
             return true;
         }
 
-        void WarnNotAcceptableLayer(TGameContext context, TItemId targetItem, EntityGridPosition p)
+        bool IItemComponentTrait<TGameContext, TItemId, EntityGridPosition>.TryRemove(IEntityViewControl<TItemId> entityRegistry, TGameContext context, TItemId k, out TItemId changedItem)
         {
-            if (context.ItemResolver.TryResolve(targetItem, out var itemDef))
+            return TryUpdate(entityRegistry, context, k, EntityGridPosition.Invalid, out changedItem);
+        }
+
+        bool IItemComponentTrait<TGameContext, TItemId, EntityGridPositionChangedMarker>.TryRemove(IEntityViewControl<TItemId> entityRegistry, TGameContext context, TItemId k, out TItemId changedItem)
+        {
+            changedItem = k;
+            return false;
+        }
+
+        bool IItemComponentTrait<TGameContext, TItemId, MapLayerPreference>.TryRemove(IEntityViewControl<TItemId> entityRegistry, TGameContext context, TItemId k, out TItemId changedItem)
+        {
+            changedItem = k;
+            return false;
+        }
+
+        void WarnNotAcceptableLayer(TItemId targetItem, EntityGridPosition p)
+        {
+            if (itemResolver.TryResolve(targetItem, out var itemDef))
             {
                 logger.Warning("Invalid layer {Layer} for item {ItemId}", p.LayerId, itemDef.Id);
             }

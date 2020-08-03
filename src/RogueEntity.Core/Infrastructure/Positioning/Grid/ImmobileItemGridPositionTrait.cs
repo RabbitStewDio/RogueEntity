@@ -55,6 +55,18 @@ namespace RogueEntity.Core.Infrastructure.Positioning.Grid
             return false;
         }
 
+        bool IItemComponentTrait<TGameContext, TItemId, EntityGridPosition>.TryRemove(IEntityViewControl<TItemId> entityRegistry, TGameContext context, TItemId k, out TItemId changedItem)
+        {
+            changedItem = k;
+            return false;
+        }
+
+        bool IItemComponentTrait<TGameContext, TItemId, MapLayerPreference>.TryRemove(IEntityViewControl<TItemId> entityRegistry, TGameContext context, TItemId k, out TItemId changedItem)
+        {
+            changedItem = k;
+            return false;
+        }
+
         public TItemId Initialize(TGameContext context, IItemDeclaration item, TItemId reference)
         {
             return reference;

@@ -1,12 +1,23 @@
 ﻿using System;
+using System.Runtime.Serialization;
 using System.Text;
+using MessagePack;
 
 namespace RogueEntity.Core.Utils.Maps
 {
+    [Serializable]
+    [DataContract]
+    [MessagePackObject]
     public class PackedBoolMap : IMapData<bool>
     {
+        [DataMember(Order = 0)]
+        [Key(0)]
         public int Width { get; }
+        [DataMember(Order = 1)]
+        [Key(1)]
         public int Height { get; }
+        [DataMember(Order = 2)]
+        [Key(2)]
         readonly uint[] data;
 
         public PackedBoolMap(int width, int height)

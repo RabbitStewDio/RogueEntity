@@ -1,17 +1,29 @@
 ﻿using System;
+using System.Runtime.Serialization;
+using EnTTSharp.Annotations;
+using MessagePack;
 
-namespace RogueEntity.Core.Infrastructure.Meta.Items
+namespace RogueEntity.Core.Infrastructure.Meta
 {
+    [EntityComponent(EntityConstructor.NonConstructable)]
+    [MessagePackObject]
+    [DataContract]
     public readonly struct StackCount : IEquatable<StackCount>
     {
+        public static readonly StackCount One = new StackCount(1, 1);
+
         StackCount(ushort count, ushort maximumStackSize)
         {
             this.Count = count;
             this.MaximumStackSize = maximumStackSize;
         }
 
+        [DataMember(Order = 0)]
+        [Key(0)]
         public ushort Count { get; }
 
+        [DataMember(Order = 1)]
+        [Key(1)]
         public ushort MaximumStackSize { get; }
 
         public StackCount Take(int count, out StackCount remaining, out int notApplied)

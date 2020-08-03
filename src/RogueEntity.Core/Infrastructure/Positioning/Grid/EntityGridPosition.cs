@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Runtime.Serialization;
+using EnTTSharp.Annotations;
+using MessagePack;
 using RogueEntity.Core.Utils.Maps;
 
 namespace RogueEntity.Core.Infrastructure.Positioning.Grid
@@ -8,6 +11,10 @@ namespace RogueEntity.Core.Infrastructure.Positioning.Grid
     ///   unsigned members and a maximum extent of x=2^24, y=2^24, z=2^12 (aka x=16M, y=16M, z=4k) meters
     ///   and 7 layers for each coordinate point.
     /// </summary>
+    [EntityComponent]
+    [DataContract]
+    [Serializable]
+    [MessagePackObject]
     public readonly struct EntityGridPosition : IEquatable<EntityGridPosition>, IPosition
     {
         const int MaxXYValue = (1 << 24) - 1;
@@ -21,7 +28,15 @@ namespace RogueEntity.Core.Infrastructure.Positioning.Grid
         const ulong VMask = 0x8000_0000_0000_0000L;
         const ulong PMask = 0x0FFF_FFFF_FFFF_FFFFL;
 
+        [DataMember]
+        [Key(0)]
         readonly ulong position;
+
+        [SerializationConstructor]
+        EntityGridPosition(ulong position)
+        {
+            this.position = position;
+        }
 
         EntityGridPosition(byte layer, uint x, uint y, uint z)
         {

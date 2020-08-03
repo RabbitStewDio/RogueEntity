@@ -5,20 +5,23 @@ using Serilog;
 
 namespace RogueEntity.Core.Infrastructure.GameLoops
 {
+    /// <summary>
+    ///   This class represents an component system registration. It also contains supporting
+    ///   functionality to measure execution times.
+    /// </summary>
+    /// <typeparam name="TGameContext"></typeparam>
     public class ActionSystemEntry<TGameContext>
     {
         static readonly ILogger Logger = SLog.ForContext<ActionSystemEntry<TGameContext>>();
 
         readonly Action<TGameContext> action;
         readonly Stopwatch performanceCounter;
-        readonly string name;
-        readonly int priority;
 
         public ActionSystemEntry(Action<TGameContext> action, string name, int priority)
         {
             this.action = action;
-            this.name = name;
-            this.priority = priority;
+            this.Name = name;
+            this.Priority = priority;
             this.performanceCounter = new Stopwatch();
         }
 
@@ -41,21 +44,15 @@ namespace RogueEntity.Core.Infrastructure.GameLoops
             }
         }
 
-        public string Name
-        {
-            get { return name; }
-        }
+        public string Name { get; }
 
-        public int Priority
-        {
-            get { return priority; }
-        }
+        public int Priority { get; }
 
         public double TotalTimeElapsed => performanceCounter.Elapsed.TotalMilliseconds;
 
         public override string ToString()
         {
-            return $"[{priority} - {name}]";
+            return $"[{Priority} - {Name}] - {TotalTimeElapsed}";
         }
     }
 }

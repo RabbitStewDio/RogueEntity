@@ -1,14 +1,27 @@
-﻿using EnTTSharp.Annotations;
+﻿using System;
+using System.Runtime.Serialization;
+using EnTTSharp.Annotations;
+using MessagePack;
 
 namespace RogueEntity.Core.Infrastructure.Actions
 {
     [EntityComponent(EntityConstructor.NonConstructable)]
+    [Serializable]
+    [DataContract]
+    [MessagePackObject]
     public readonly struct MovementPointRecoveryTime
     {
+        [DataMember(Order = 0)]
+        [Key(0)]
         public readonly int MovementPointsRecovery;
+        [DataMember(Order = 1)]
+        [Key(1)]
         public readonly int MovementPointsRecoveryFrequency;
+        [DataMember(Order = 2)]
+        [Key(2)]
         readonly int lastRecoveryTurn;
 
+        [SerializationConstructor]
         internal MovementPointRecoveryTime(int movementPointsRecovery,
                                            int movementPointsRecoveryFrequency,
                                            int lastRecoveryTurn)

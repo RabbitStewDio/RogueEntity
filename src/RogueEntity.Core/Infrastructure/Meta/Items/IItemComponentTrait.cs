@@ -7,5 +7,6 @@ namespace RogueEntity.Core.Infrastructure.Meta.Items
     {
         bool TryQuery(IEntityViewControl<TItemId> v, TContext context, TItemId k, out TComponent t);
         bool TryUpdate(IEntityViewControl<TItemId> v, TContext context, TItemId k, in TComponent t, out TItemId changedK);
+        bool TryRemove(IEntityViewControl<TItemId> entityRegistry, TContext context, TItemId k, out TItemId changedItem);
     }
 }

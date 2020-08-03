@@ -2,7 +2,7 @@
 {
     public static class ItemExtensions
     {
-        public static bool TryQueryDataTrait<TData>(this IItemDeclaration item, out TData data)
+        public static bool TryQueryInformationTrait<TData>(this IItemDeclaration item, out TData data)
         {
             if (item.TryQuery(out IItemComponentInformationTrait<TData> trait))
             {

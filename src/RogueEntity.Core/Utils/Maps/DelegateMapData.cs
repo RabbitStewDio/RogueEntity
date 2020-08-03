@@ -2,6 +2,12 @@ using System;
 
 namespace RogueEntity.Core.Utils.Maps
 {
+    /// <summary>
+    ///   Delegates map data access to a separate function or data set.
+    ///   Objects of this type should never be serialized, as function
+    ///   references do not travel well in serialized data streams.
+    /// </summary>
+    /// <typeparam name="TData"></typeparam>
     public class DelegateMapData<TData>: IReadOnlyMapData<TData>
     {
         readonly Func<int, int, TData> query;

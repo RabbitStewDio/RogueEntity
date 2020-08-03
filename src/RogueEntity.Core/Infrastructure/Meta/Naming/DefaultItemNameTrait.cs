@@ -11,7 +11,7 @@ namespace RogueEntity.Core.Infrastructure.Meta.Naming
             this.BaseValue = displayName;
         }
 
-        protected override IDisplayName GetData(TGameContext context)
+        protected override IDisplayName GetData(TGameContext context, TItemId k)
         {
             return BaseValue;
         }

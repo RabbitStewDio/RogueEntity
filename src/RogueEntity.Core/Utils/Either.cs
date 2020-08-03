@@ -1,13 +1,43 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
+using MessagePack;
 
 namespace RogueEntity.Core.Utils
 {
+    /// <summary>
+    ///   Avoid using Either as a serialized member. It is horrible to use properly during serialization.
+    ///   To make it efficient, we would need to explicitly register surrogate providers/message-pack formatters
+    ///   for each generic parameter combination. This is rather error prone and mad.
+    /// </summary>
+    /// <typeparam name="TA"></typeparam>
+    /// <typeparam name="TB"></typeparam>
+    [Serializable]
+    [DataContract]
+    [MessagePackObject]
     public readonly struct Either<TA, TB> : IEquatable<Either<TA, TB>>
     {
+        [DataMember(Order = 0)]
+        [Key(0)]
         readonly int state;
+
+        [Key(1)]
+        [DataMember(Order = 1)]
         public readonly TA Left;
+
+        [Key(2)]
+        [DataMember(Order = 2)]
         public readonly TB Right;
+
+        [SerializationConstructor]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members",
+                                                         Justification = "Used implicitly by the serializer")]
+        Either(int state, TA left, TB right)
+        {
+            this.state = state;
+            Left = left;
+            Right = right;
+        }
 
         public Either(in TA a)
         {
@@ -53,10 +83,12 @@ namespace RogueEntity.Core.Utils
             {
                 return $"{a}";
             }
+
             if (TryGet(out TB b))
             {
                 return $"{b}";
             }
+
             return $"<!>";
         }
 
@@ -94,7 +126,7 @@ namespace RogueEntity.Core.Utils
 
     public static class Either
     {
-        public static Either<TA,TB> Of<TA,TB>(in TA a) => new Either<TA, TB>(in a);
-        public static Either<TA,TB> Of<TA,TB>(in TB b) => new Either<TA, TB>(in b);
+        public static Either<TA, TB> Of<TA, TB>(in TA a) => new Either<TA, TB>(in a);
+        public static Either<TA, TB> Of<TA, TB>(in TB b) => new Either<TA, TB>(in b);
     }
 }

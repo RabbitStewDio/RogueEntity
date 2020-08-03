@@ -1,10 +1,17 @@
 ﻿using System;
+using System.Runtime.Serialization;
+using MessagePack;
 
 namespace RogueEntity.Core.Utils.Maps
 {
+    [Serializable]
+    [DataContract]
+    [MessagePackObject]
     public class DenseMapData<T> : IMapData<T>
     {
-        readonly T[,] cells;
+        [DataMember(Order=2)]
+        [Key(2)]
+        readonly T[] cells;
 
         public DenseMapData(int width, int height)
         {
@@ -13,16 +20,20 @@ namespace RogueEntity.Core.Utils.Maps
 
             Width = width;
             Height = height;
-            cells = new T[width, height];
+            cells = new T[width * height];
         }
 
+        [Key(0)]
+        [DataMember(Order = 0)]
         public int Width { get; }
+        [Key(1)]
+        [DataMember(Order = 1)]
         public int Height { get; }
 
         public T this[int x, int y]
         {
-            get { return cells[x, y]; }
-            set { cells[x, y] = value; }
+            get { return cells[x + y * Width]; }
+            set { cells[x + y * Width] = value; }
         }
 
         public void Clear()

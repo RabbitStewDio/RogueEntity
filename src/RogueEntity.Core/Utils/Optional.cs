@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 
 namespace RogueEntity.Core.Utils
 {
@@ -36,8 +37,10 @@ namespace RogueEntity.Core.Utils
         }
     }
 
+    [DataContract]
     public readonly struct Optional<T> : IEquatable<Optional<T>>
     {
+        [DataMember(Order=1)]
         readonly T value;
 
         internal Optional(bool hasValue, T value)
@@ -52,6 +55,7 @@ namespace RogueEntity.Core.Utils
             return HasValue;
         }
 
+        [DataMember(Order = 0)]
         public bool HasValue { get; }
 
         public override string ToString()

@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Runtime.Serialization;
+using EnTTSharp.Annotations;
+using MessagePack;
 
 namespace RogueEntity.Core.Infrastructure.Actions
 {
@@ -7,12 +10,17 @@ namespace RogueEntity.Core.Infrastructure.Actions
     ///   perform any action. All actions can be performed for as long
     ///   as the character has a positive AP balance. 
     /// </summary>
+    [EntityComponent]
+    [DataContract]
+    [MessagePackObject]
     public readonly struct MovementPoints : IComparable<MovementPoints>, IComparable, IEquatable<MovementPoints>
     {
         public static readonly MovementPoints Zero = new MovementPoints();
-
+        [DataMember(Order=0)]
+        [Key(0)]
         readonly int balance;
 
+        [SerializationConstructor]
         MovementPoints(int balance)
         {
             this.balance = balance;

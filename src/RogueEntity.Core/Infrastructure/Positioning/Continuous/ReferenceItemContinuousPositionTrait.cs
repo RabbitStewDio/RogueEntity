@@ -12,13 +12,16 @@ namespace RogueEntity.Core.Infrastructure.Positioning.Continuous
                                                                                IItemComponentTrait<TGameContext, TItemId, ContinuousMapPositionChangedMarker>,
                                                                                IItemComponentTrait<TGameContext, TItemId, MapLayerPreference>
         where TItemId : IBulkDataStorageKey<TItemId>
-        where TGameContext : IContinuousMapContext<TGameContext, TItemId>, IItemContext<TGameContext, TItemId>
+        where TGameContext : IContinuousMapContext<TGameContext, TItemId>
     {
+        readonly IItemResolver<TGameContext, TItemId> itemResolver;
         readonly MapLayerPreference layerPreference;
         readonly ILogger logger = SLog.ForContext<ReferenceItemContinuousPositionTrait<TGameContext, TItemId>>();
 
-        public ReferenceItemContinuousPositionTrait(MapLayer layer, params MapLayer[] layers)
+        public ReferenceItemContinuousPositionTrait(IItemResolver<TGameContext, TItemId> itemResolver, 
+                                                    MapLayer layer, params MapLayer[] layers)
         {
+            this.itemResolver = itemResolver;
             Id = "ReferenceItem.Generic.Position.Continuous";
             Priority = 100;
 
@@ -77,6 +80,23 @@ namespace RogueEntity.Core.Infrastructure.Positioning.Continuous
             return false;
         }
 
+        bool IItemComponentTrait<TGameContext, TItemId, ContinuousMapPosition>.TryRemove(IEntityViewControl<TItemId> entityRegistry, TGameContext context, TItemId k, out TItemId changedItem)
+        {
+            changedItem = k;
+            return false;
+        }
+
+        bool IItemComponentTrait<TGameContext, TItemId, ContinuousMapPositionChangedMarker>.TryRemove(IEntityViewControl<TItemId> entityRegistry, TGameContext context, TItemId k, out TItemId changedItem)
+        {
+            changedItem = k;
+            return false;
+        }
+
+        bool IItemComponentTrait<TGameContext, TItemId, MapLayerPreference>.TryRemove(IEntityViewControl<TItemId> entityRegistry, TGameContext context, TItemId k, out TItemId changedItem)
+        {
+            return TryUpdate(entityRegistry, context, k, ContinuousMapPosition.Invalid, out changedItem);
+        }
+
         public bool TryUpdate(IEntityViewControl<TItemId> v, TGameContext context, TItemId k,
                               in ContinuousMapPosition desiredPosition, out TItemId changedK)
         {
@@ -120,7 +140,7 @@ namespace RogueEntity.Core.Infrastructure.Positioning.Continuous
 
             if (!layerPreference.IsAcceptable(desiredPosition, out var layerId))
             {
-                WarnNotAcceptableLayer(context, k, desiredPosition);
+                WarnNotAcceptableLayer(k, desiredPosition);
                 return false;
             }
 
@@ -163,9 +183,9 @@ namespace RogueEntity.Core.Infrastructure.Positioning.Continuous
             return true;
         }
 
-        void WarnNotAcceptableLayer(TGameContext context, TItemId targetItem, ContinuousMapPosition p)
+        void WarnNotAcceptableLayer(TItemId targetItem, ContinuousMapPosition p)
         {
-            if (context.ItemResolver.TryResolve(targetItem, out var itemDef))
+            if (itemResolver.TryResolve(targetItem, out var itemDef))
             {
                 logger.Warning("Invalid layer {Layer} for item {ItemId}", p.LayerId, itemDef.Id);
             }

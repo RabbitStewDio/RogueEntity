@@ -1,0 +1,21 @@
+﻿using EnttSharp.Entities;
+using RogueEntity.Core.Infrastructure.Meta.Items;
+
+namespace RogueEntity.Core.Infrastructure.Actions.Traits
+{
+    public class ActionPointsTrait<TGameContext, TActorId> : SimpleReferenceItemComponentTraitBase<TGameContext, TActorId, ActionPoints>
+        where TActorId : IEntityKey
+    {
+        readonly int initialValue;
+
+        public ActionPointsTrait(int initialValue = 0) : base("Core.Actor.ActionPoints", 100)
+        {
+            this.initialValue = initialValue;
+        }
+
+        protected override ActionPoints CreateInitialValue(TGameContext c, TActorId actor)
+        {
+            return ActionPoints.From(initialValue);
+        }
+    }
+}

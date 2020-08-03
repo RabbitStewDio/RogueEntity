@@ -16,6 +16,8 @@ namespace RogueEntity.Core.Infrastructure.Meta.Items
             this.entityRegistry = entityRegistry;
         }
 
+        public IItemRegistry ItemRegistry => registry;
+
         TItemId InstantiateReferenceItem(TContext context, IReferenceItemDeclaration<TContext, TItemId> itemDeclaration)
         {
             var entity = entityRegistry.Create();
@@ -104,6 +106,17 @@ namespace RogueEntity.Core.Infrastructure.Meta.Items
             if (TryQueryTrait<IItemComponentTrait<TContext, TItemId, TData>>(itemRef, out var trait))
             {
                 return trait.TryUpdate(entityRegistry, context, itemRef, in data, out changedItem);
+            }
+
+            changedItem = itemRef;
+            return false;
+        }
+
+        public bool TryRemoveData<TData>(TItemId itemRef, TContext context, out TItemId changedItem)
+        {
+            if (TryQueryTrait<IItemComponentTrait<TContext, TItemId, TData>>(itemRef, out var trait))
+            {
+                return trait.TryRemove(entityRegistry, context, itemRef, out changedItem);
             }
 
             changedItem = itemRef;

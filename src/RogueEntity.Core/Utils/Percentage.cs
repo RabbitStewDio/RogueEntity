@@ -1,14 +1,22 @@
 ﻿using System;
+using System.Runtime.Serialization;
+using MessagePack;
 
 namespace RogueEntity.Core.Utils
 {
+    [Serializable]
+    [DataContract]
+    [MessagePackObject]
     public readonly struct Percentage : IEquatable<Percentage>, IComparable<Percentage>, IComparable
     {
         public static readonly Percentage Empty = new Percentage(0f);
         public static readonly Percentage Full = new Percentage(1f);
 
+        [DataMember(Order=0)]
+        [Key(0)]
         readonly byte data;
 
+        [SerializationConstructor]
         Percentage(byte data)
         {
             if (data > 200)

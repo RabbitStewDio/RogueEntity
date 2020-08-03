@@ -12,7 +12,7 @@ namespace RogueEntity.Core.Infrastructure.Meta.ItemTraits
             this.temperature = temperature;
         }
 
-        protected override Temperature GetData(TContext context)
+        protected override Temperature GetData(TContext context, TItemId k)
         {
             return temperature;
         }

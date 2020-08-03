@@ -1,5 +1,4 @@
-﻿using RogueEntity.Core.Infrastructure.Meta.Items;
-using RogueEntity.Core.Utils;
+﻿using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.Maps;
 
 namespace RogueEntity.Core.Infrastructure.Positioning.Continuous

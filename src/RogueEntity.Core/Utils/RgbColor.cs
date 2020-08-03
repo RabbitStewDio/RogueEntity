@@ -1,13 +1,25 @@
 ﻿using System;
+using System.Runtime.Serialization;
+using MessagePack;
 
 namespace RogueEntity.Core.Utils
 {
-    public struct RgbColor : IEquatable<RgbColor>
+    [Serializable]
+    [DataContract]
+    [MessagePackObject]
+    public readonly struct RgbColor : IEquatable<RgbColor>
     {
+        [DataMember(Order = 0)]
+        [Key(0)]
         public readonly int Red;
+        [DataMember(Order = 1)]
+        [Key(1)]
         public readonly int Green;
+        [DataMember(Order = 2)]
+        [Key(2)]
         public readonly int Blue;
 
+        [SerializationConstructor]
         public RgbColor(int red, int green, int blue)
         {
             Red = red;

@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Runtime.Serialization;
+using EnTTSharp.Annotations;
+using MessagePack;
 
 namespace RogueEntity.Core.Infrastructure.Meta
 {
@@ -6,10 +9,16 @@ namespace RogueEntity.Core.Infrastructure.Meta
     ///  Temperature is given in 10ths of degrees kelvin. Nothing can be colder than 0K,
     ///  and temperature is limited to 6500K (still hotter than the surface of the sun at 5800k).
     /// </summary>
+    [EntityComponent(EntityConstructor.NonConstructable)]
+    [MessagePackObject]
+    [DataContract]
     public readonly struct Temperature : IComparable<Temperature>, IComparable, IEquatable<Temperature>
     {
+        [DataMember(Order = 0)]
+        [Key(0)]
         readonly ushort data;
 
+        [SerializationConstructor]
         Temperature(ushort data)
         {
             this.data = data;

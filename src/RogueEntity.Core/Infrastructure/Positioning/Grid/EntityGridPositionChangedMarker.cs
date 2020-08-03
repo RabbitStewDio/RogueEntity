@@ -1,12 +1,22 @@
 ﻿using System;
+using System.Runtime.Serialization;
+using EnTTSharp.Annotations;
 using EnttSharp.Entities;
+using MessagePack;
 
 namespace RogueEntity.Core.Infrastructure.Positioning.Grid
 {
+    [EntityComponent]
+    [DataContract]
+    [Serializable]
+    [MessagePackObject]
     public readonly struct EntityGridPositionChangedMarker
     {
+        [DataMember]
+        [Key(0)]
         public readonly EntityGridPosition PreviousPosition;
 
+        [SerializationConstructor]
         EntityGridPositionChangedMarker(EntityGridPosition previousPosition)
         {
             this.PreviousPosition = previousPosition;
