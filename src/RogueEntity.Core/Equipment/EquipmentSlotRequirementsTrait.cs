@@ -1,9 +1,10 @@
-﻿using RogueEntity.Core.Infrastructure.Meta.Items;
+﻿using EnTTSharp.Entities;
+using RogueEntity.Core.Meta.Items;
 
 namespace RogueEntity.Core.Equipment
 {
     public class EquipmentSlotRequirementsTrait<TGameContext, TItemId> : StatelessItemComponentTraitBase<TGameContext, TItemId, EquipmentSlotRequirements> 
-        where TItemId : IBulkDataStorageKey<TItemId>
+        where TItemId : IEntityKey
     {
         readonly EquipmentSlotRequirements r;
 

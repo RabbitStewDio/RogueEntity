@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using RogueEntity.Core.Infrastructure.GameLoops;
+using RogueEntity.Core.Infrastructure.Time;
 
 namespace RogueEntity.Core.Movement.Pathing
 {

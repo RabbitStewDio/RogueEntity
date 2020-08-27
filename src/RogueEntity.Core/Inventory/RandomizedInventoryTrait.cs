@@ -1,14 +1,14 @@
 ﻿using System.Collections.Generic;
-using EnttSharp.Entities;
-using RogueEntity.Core.Infrastructure;
-using RogueEntity.Core.Infrastructure.Meta.ItemBuilder;
-using RogueEntity.Core.Infrastructure.Meta.Items;
+using EnTTSharp.Entities;
+using RogueEntity.Core.Infrastructure.Randomness;
+using RogueEntity.Core.Meta.ItemBuilder;
+using RogueEntity.Core.Meta.Items;
 
 namespace RogueEntity.Core.Inventory
 {
     public class RandomizedInventoryTrait<TGameContext, TOwnerId, TItemId> : IReferenceItemTrait<TGameContext, TOwnerId>
         where TGameContext : IRandomContext
-        where TOwnerId : IEntityKey
+        where TOwnerId : IEntityKey, IRandomSeedSource
         where TItemId : IBulkDataStorageKey<TItemId>
     {
         readonly IItemResolver<TGameContext, TOwnerId> ownerResolver;

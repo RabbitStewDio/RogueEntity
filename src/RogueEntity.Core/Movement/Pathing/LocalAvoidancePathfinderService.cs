@@ -1,9 +1,12 @@
 ﻿using System.Collections.Generic;
-using EnttSharp.Entities;
+using EnTTSharp.Entities;
 using GoRogue;
 using GoRogue.Pathing;
+using RogueEntity.Core.Infrastructure;
 using RogueEntity.Core.Infrastructure.GameLoops;
-using RogueEntity.Core.Infrastructure.Positioning.Grid;
+using RogueEntity.Core.Infrastructure.Time;
+using RogueEntity.Core.Positioning.Grid;
+using RogueEntity.Core.Positioning.MapLayers;
 using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.Maps;
 using Serilog;

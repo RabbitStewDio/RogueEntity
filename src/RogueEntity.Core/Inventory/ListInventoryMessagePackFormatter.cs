@@ -1,8 +1,8 @@
 ﻿using System;
-using EnttSharp.Entities;
+using EnTTSharp.Entities;
 using MessagePack;
 using MessagePack.Formatters;
-using RogueEntity.Core.Infrastructure.Meta.Items;
+using RogueEntity.Core.Meta.Items;
 
 namespace RogueEntity.Core.Inventory
 {

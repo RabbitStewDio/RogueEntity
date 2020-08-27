@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
-using RogueEntity.Core.Infrastructure.Positioning.Grid;
+using RogueEntity.Core.Positioning.Grid;
+using RogueEntity.Core.Positioning.MapLayers;
 using RogueEntity.Core.Sensing.Maps;
 using RogueEntity.Core.Utils.MapChunks;
 using RogueEntity.Core.Utils.Maps;

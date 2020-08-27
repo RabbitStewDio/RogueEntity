@@ -1,6 +1,5 @@
-﻿using EnttSharp.Entities;
-using RogueEntity.Core.Infrastructure.Actions;
-using RogueEntity.Core.Infrastructure.Meta.Items;
+﻿using EnTTSharp.Entities;
+using RogueEntity.Core.Meta.Items;
 
 namespace RogueEntity.Core.Infrastructure.Commands
 {

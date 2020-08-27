@@ -1,6 +1,6 @@
 ﻿using System;
-using EnttSharp.Entities;
-using RogueEntity.Core.Infrastructure.Meta.Items;
+using EnTTSharp.Entities;
+using RogueEntity.Core.Meta.Items;
 
 namespace RogueEntity.Core.Infrastructure.Commands
 {
@@ -8,7 +8,7 @@ namespace RogueEntity.Core.Infrastructure.Commands
         where TActorId : IEntityKey
         where TCommand: ICommand
     {
-        public void Invoke(IEntityViewControl<TActorId> v, TGameContext context, TActorId entity, ICommand command)
+        public bool Invoke(IEntityViewControl<TActorId> v, TGameContext context, TActorId entity, ICommand command)
         {
             if (!(command is TCommand m))
             {
@@ -20,7 +20,7 @@ namespace RogueEntity.Core.Infrastructure.Commands
                 throw new InvalidOperationException("Not an actor entity.");
             }
 
-            Invoke(context, entity, entityInfo, m);
+            return Invoke(context, entity, entityInfo, m);
         }
 
         public bool CanHandle(ICommand commandId)
@@ -28,7 +28,7 @@ namespace RogueEntity.Core.Infrastructure.Commands
             return commandId is TCommand;
         }
 
-        protected abstract void Invoke(TGameContext context, 
+        protected abstract bool Invoke(TGameContext context, 
                                        TActorId actorKey,
                                        IReferenceItemDeclaration<TGameContext, TActorId> actorData, 
                                        TCommand command);

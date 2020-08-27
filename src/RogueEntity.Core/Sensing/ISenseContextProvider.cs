@@ -1,4 +1,4 @@
-﻿using RogueEntity.Core.Infrastructure.Positioning.Grid;
+﻿using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Sensing.Maps;
 using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.Maps;

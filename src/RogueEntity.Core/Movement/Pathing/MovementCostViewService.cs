@@ -1,5 +1,5 @@
-﻿using EnttSharp.Entities;
-using RogueEntity.Core.Infrastructure.Meta.Items;
+﻿using EnTTSharp.Entities;
+using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Movement.ItemCosts;
 using RogueEntity.Core.Sensing;
 using RogueEntity.Core.Utils.Maps;

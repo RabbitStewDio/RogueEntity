@@ -1,17 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
-using EnttSharp.Entities;
+using EnTTSharp.Entities;
 using RogueEntity.Core.Infrastructure.Commands;
 using RogueEntity.Core.Infrastructure.GameLoops;
-using RogueEntity.Core.Infrastructure.Meta.Items;
+using RogueEntity.Core.Meta.Items;
 
 namespace RogueEntity.Core.Infrastructure.Modules
 {
     public class ModuleEntityContext<TGameContext, TEntityId> : IModuleEntityContext<TGameContext, TEntityId> where TEntityId : IEntityKey
     {
-        public delegate void SystemRegistrationDelegate(IGameLoopSystemRegistration<TGameContext> context,
+        public delegate void SystemRegistrationDelegate(IGameLoopSystemRegistration<TGameContext> context, 
                                                         EntityRegistry<TEntityId> registry,
-                                                        ICommandProcessorRegistration<TGameContext, TEntityId> processor);
+                                                        ICommandHandlerRegistration<TGameContext, TEntityId> handler);
 
         readonly Dictionary<ItemDeclarationId, IBulkItemDeclaration<TGameContext, TEntityId>> declaredBulkItems;
         readonly Dictionary<ItemDeclarationId, IReferenceItemDeclaration<TGameContext, TEntityId>> declaredReferenceItems;
@@ -55,7 +55,7 @@ namespace RogueEntity.Core.Infrastructure.Modules
             return item.Id;
         }
 
-        public void Register(string id, int priority,
+        public void Register(EntitySystemId id, int priority,
                              Action<EntityRegistry<TEntityId>> entityRegistration, 
                              SystemRegistrationDelegate systemRegistration = null)
         {
@@ -69,7 +69,7 @@ namespace RogueEntity.Core.Infrastructure.Modules
             });
         }
 
-        public void Register(string id, int priority, SystemRegistrationDelegate systemRegistration)
+        public void Register(EntitySystemId id, int priority, SystemRegistrationDelegate systemRegistration)
         {
             systemFactories.Add(new EntitySystemFactory
             {
@@ -85,16 +85,15 @@ namespace RogueEntity.Core.Infrastructure.Modules
         class EntitySystemFactory: IEntitySystemFactory<TGameContext, TEntityId>
         {
             public string DeclaringModule { get; set; }
-            public string Id { get; set; }
+            public EntitySystemId Id { get; set; }
             public int Priority { get; set; }
 
             public Action<EntityRegistry<TEntityId>> EntityRegistration { get; set; }
 
             public SystemRegistrationDelegate SystemRegistration { get; set; }
 
-            public void Register(IGameLoopSystemRegistration<TGameContext> context,
-                                 EntityRegistry<TEntityId> entityRegistry,
-                                 ICommandProcessorRegistration<TGameContext, TEntityId> commandRegistration)
+            public void Register(IGameLoopSystemRegistration<TGameContext> context, EntityRegistry<TEntityId> entityRegistry,
+                                 ICommandHandlerRegistration<TGameContext, TEntityId> commandRegistration)
             {
                 EntityRegistration?.Invoke(entityRegistry);
                 SystemRegistration?.Invoke(context, entityRegistry, commandRegistration);

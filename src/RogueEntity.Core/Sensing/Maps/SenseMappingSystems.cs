@@ -1,18 +1,21 @@
-﻿using EnttSharp.Entities;
-using RogueEntity.Core.Infrastructure;
-using RogueEntity.Core.Infrastructure.Positioning.Continuous;
-using RogueEntity.Core.Infrastructure.Positioning.Grid;
+﻿using EnTTSharp.Entities;
+using RogueEntity.Core.Positioning.Continuous;
+using RogueEntity.Core.Positioning.Grid;
+using RogueEntity.Core.Sensing.CacheControl;
 
 namespace RogueEntity.Core.Sensing.Maps
 {
+    /// <summary>
+    ///   Marks cache entries as dirty when an item or entity has moved on the map.
+    /// </summary>
     public static class SenseMappingSystems
     {
-        public static void ApplyMovementChangeTracker<TGameContext, TItemId>(IEntityViewControl<TItemId> v,
-                                                                    TGameContext context,
-                                                                    TItemId k,
-                                                                    in EntityGridPositionChangedMarker oldPosition)
+        public static void ApplyGridMovementChangeTracker<TItemId, TGameContext>(IEntityViewControl<TItemId> v,
+                                                                                 TGameContext context,
+                                                                                 TItemId k,
+                                                                                 in EntityGridPositionChangedMarker oldPosition)
             where TItemId : IEntityKey
-            where TGameContext: IMapCacheControlProvider
+            where TGameContext : IMapCacheControlProvider
         {
             if (oldPosition.PreviousPosition != EntityGridPosition.Invalid)
             {
@@ -25,10 +28,10 @@ namespace RogueEntity.Core.Sensing.Maps
             }
         }
 
-        public static void ApplyMovementChangeTracker<TGameContext, TItemId>(IEntityViewControl<TItemId> v,
-                                                                             TGameContext context,
-                                                                             TItemId k,
-                                                                             in ContinuousMapPositionChangedMarker c) 
+        public static void ApplyContinuousMovementChangeTracker<TItemId, TGameContext>(IEntityViewControl<TItemId> v,
+                                                                                       TGameContext context,
+                                                                                       TItemId k,
+                                                                                       in ContinuousMapPositionChangedMarker c)
             where TItemId : IEntityKey
             where TGameContext : IMapCacheControlProvider
         {

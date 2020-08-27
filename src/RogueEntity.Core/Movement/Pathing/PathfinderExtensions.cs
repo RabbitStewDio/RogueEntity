@@ -1,7 +1,7 @@
 ﻿using GoRogue;
 using GoRogue.Pathing;
-using RogueEntity.Core.Infrastructure.Positioning.Grid;
-using RogueEntity.Core.Utils.Maps;
+using RogueEntity.Core.Positioning;
+using RogueEntity.Core.Positioning.Grid;
 
 namespace RogueEntity.Core.Movement.Pathing
 {
@@ -20,6 +20,13 @@ namespace RogueEntity.Core.Movement.Pathing
             }
 
             return new Path<EntityGridPosition>(p, 0);
+        }
+
+        public static float Calculate<TPosition>(this DistanceCalculation calc,
+                                                 in TPosition posA,
+                                                 in TPosition posB) where TPosition: IPosition
+        {
+            return calc.Calculate(posA.GridX, posA.GridY, posA.GridZ, posB.GridX, posB.GridY, posB.GridZ);
         }
     }
 }

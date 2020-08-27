@@ -1,5 +1,5 @@
 ﻿using System;
-using EnttSharp.Entities;
+using EnTTSharp.Entities;
 using MessagePack;
 using MessagePack.Formatters;
 

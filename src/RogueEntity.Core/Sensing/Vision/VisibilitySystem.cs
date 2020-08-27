@@ -1,22 +1,33 @@
 using System;
-using EnttSharp.Entities;
+using EnTTSharp.Entities;
 using GoRogue.MapViews;
-using RogueEntity.Core.Infrastructure.Positioning;
-using RogueEntity.Core.Infrastructure.Positioning.Grid;
+using RogueEntity.Core.Positioning;
+using RogueEntity.Core.Positioning.Continuous;
+using RogueEntity.Core.Positioning.Grid;
 
 namespace RogueEntity.Core.Sensing.Vision
 {
-    public static class VisibilitySystem<TGameContext, TActorId> 
+    /// <summary>
+    ///    Computes an actors local vision. Vision calculation is similar to having a
+    ///    private lamp that that shines on every object around the actor. The result
+    ///    of this calculation is a visibility mask, that marks every potentially visible
+    ///    field. This can then be combined with light information to derive the actually
+    ///    visible items. (Even though you may potentially see an item in perfect light,
+    ///    if there is darkness you still won't see anything.)
+    /// </summary>
+    /// <typeparam name="TGameContext"></typeparam>
+    /// <typeparam name="TActorId"></typeparam>
+    public static class VisibilitySystem<TGameContext, TActorId>
         where TActorId : IEntityKey
-        where TGameContext: IMapBoundsContext, ISenseContextProvider
+        where TGameContext : IMapBoundsContext, ISenseContextProvider
     {
-        public static void DoUpdateLocalSenseMap(IEntityViewControl<TActorId> v,
-                                                 TGameContext context,
-                                                 TActorId key,
-                                                 in EntityGridPosition pos,
-                                                 in VisibilityDetector<TGameContext, TActorId> d)
+        public static void DoUpdateLocalSenseMapGrid(IEntityViewControl<TActorId> v,
+                                                     TGameContext context,
+                                                     TActorId key,
+                                                     in EntityGridPosition pos,
+                                                     in VisibilityDetector<TGameContext, TActorId> d)
         {
-            if (pos == EntityGridPosition.Invalid)
+            if (pos.IsInvalid)
             {
                 d.VisionField.Enabled = false;
             }
@@ -27,8 +38,8 @@ namespace RogueEntity.Core.Sensing.Vision
                 d.VisionField.UpdateStrength(d.SenseRadius, d.SenseStrength);
             }
 
-            if (d.VisionField.Dirty || 
-                context.SenseContext.IsDirty(pos, (int)Math.Ceiling(d.VisionField.Radius))) 
+            if (d.VisionField.Dirty ||
+                context.SenseContext.IsDirty(pos, (int)Math.Ceiling(d.VisionField.Radius)))
             {
                 d.VisionField.MarkDirty();
 
@@ -36,6 +47,16 @@ namespace RogueEntity.Core.Sensing.Vision
                 d.VisionField.Calculate(resistor);
                 resistor.ProcessSenseStrengthModifier(d.VisionField, d.SenseStrengthHandler);
             }
+        }
+
+        public static void DoUpdateLocalSenseMapContinuous(IEntityViewControl<TActorId> v,
+                                                           TGameContext context,
+                                                           TActorId key,
+                                                           in ContinuousMapPosition pos,
+                                                           in VisibilityDetector<TGameContext, TActorId> d)
+        {
+            var gridPos = EntityGridPosition.From(pos);
+            DoUpdateLocalSenseMapGrid(v, context, key, in gridPos, in d);
         }
 
         readonly struct SmartSenseResistor : IMapView<float>

@@ -1,4 +1,5 @@
-﻿using RogueEntity.Core.Infrastructure.Meta.Items;
+﻿using EnTTSharp.Entities;
+using RogueEntity.Core.Meta.Items;
 
 namespace RogueEntity.Core.Sensing.Vision
 {
@@ -31,6 +32,10 @@ namespace RogueEntity.Core.Sensing.Vision
             return new VisibilityDetector<TGameContext, TActorId>(Radius, SenseStrength,
                                                                   VisibilityFunctions.VisionBlock, 
                                                                   VisibilityFunctions.SenseAll);
+        }
+
+        public override void Apply(IEntityViewControl<TActorId> v, TGameContext context, TActorId k, IItemDeclaration item)
+        {
         }
     }
 }

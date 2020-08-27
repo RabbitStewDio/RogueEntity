@@ -1,8 +1,8 @@
-﻿using EnttSharp.Entities;
+﻿using EnTTSharp.Entities;
 using GoRogue;
 using GoRogue.SenseMapping;
-using RogueEntity.Core.Infrastructure.Positioning.Continuous;
-using RogueEntity.Core.Infrastructure.Positioning.Grid;
+using RogueEntity.Core.Positioning.Continuous;
+using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Sensing.Vision;
 using RogueEntity.Core.Utils;
 

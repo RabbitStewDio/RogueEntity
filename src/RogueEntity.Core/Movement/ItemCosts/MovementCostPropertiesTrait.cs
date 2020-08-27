@@ -1,4 +1,5 @@
-﻿using RogueEntity.Core.Infrastructure.Meta.Items;
+﻿using EnTTSharp.Entities;
+using RogueEntity.Core.Meta.Items;
 
 namespace RogueEntity.Core.Movement.ItemCosts
 {
@@ -15,6 +16,10 @@ namespace RogueEntity.Core.Movement.ItemCosts
         protected override MovementCostProperties CreateInitialValue(TGameContext c, TItemId reference)
         {
             return InitialValue;
+        }
+
+        public override void Apply(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, IItemDeclaration item)
+        {
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using RogueEntity.Core.Infrastructure.Time;
 
 namespace RogueEntity.Core.Infrastructure.GameLoops
 {

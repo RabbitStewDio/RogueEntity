@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using GoRogue;
+using RogueEntity.Core.Infrastructure;
 using RogueEntity.Core.Infrastructure.GameLoops;
+using RogueEntity.Core.Infrastructure.Time;
 using RogueEntity.Core.Movement.ItemCosts;
 using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.Maps;

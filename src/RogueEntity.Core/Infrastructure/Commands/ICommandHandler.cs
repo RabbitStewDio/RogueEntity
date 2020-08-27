@@ -1,4 +1,4 @@
-﻿using EnttSharp.Entities;
+﻿using EnTTSharp.Entities;
 
 namespace RogueEntity.Core.Infrastructure.Commands
 {
@@ -9,7 +9,7 @@ namespace RogueEntity.Core.Infrastructure.Commands
     /// </summary>
     public interface ICommandHandler<in TGameContext, TActorId> where TActorId : IEntityKey
     {
-        void Invoke(IEntityViewControl<TActorId> v,
+        bool Invoke(IEntityViewControl<TActorId> v,
                     TGameContext context,
                     TActorId entity,
                     ICommand command);

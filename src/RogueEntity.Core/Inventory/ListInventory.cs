@@ -1,46 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
-using EnttSharp.Entities;
-using EnTTSharp.Serialization.Xml;
-using RogueEntity.Core.Infrastructure.Meta;
-using RogueEntity.Core.Infrastructure.Meta.Items;
-using RogueEntity.Core.Infrastructure.Positioning;
+using EnTTSharp.Entities;
+using RogueEntity.Core.Meta.Items;
+using RogueEntity.Core.Meta.ItemTraits;
+using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Utils;
 using Serilog;
 
 namespace RogueEntity.Core.Inventory
 {
-    public class ListInventorySurrogateProvider<TGameContext, TOwnerId, TItemId> :
-        SerializationSurrogateProviderBase<ListInventory<TGameContext, TOwnerId, TItemId>, ListInventoryData<TOwnerId, TItemId>>
-        where TItemId : IBulkDataStorageKey<TItemId>
-        where TOwnerId : IEntityKey
-    {
-        readonly IItemResolver<TGameContext, TOwnerId> ownerResolver;
-        readonly IItemResolver<TGameContext, TItemId> itemResolver;
-
-        public ListInventorySurrogateProvider(IItemResolver<TGameContext, TOwnerId> ownerResolver,
-                                              IItemResolver<TGameContext, TItemId> itemResolver)
-        {
-            this.ownerResolver = ownerResolver ?? throw new ArgumentNullException(nameof(ownerResolver));
-            this.itemResolver = itemResolver ?? throw new ArgumentNullException(nameof(itemResolver));
-        }
-
-        public override ListInventory<TGameContext, TOwnerId, TItemId> GetDeserializedObject(ListInventoryData<TOwnerId, TItemId> surrogate)
-        {
-            return new ListInventory<TGameContext, TOwnerId, TItemId>(ownerResolver, itemResolver, surrogate);
-        }
-
-        public override ListInventoryData<TOwnerId, TItemId> GetObjectToSerialize(ListInventory<TGameContext, TOwnerId, TItemId> obj)
-        {
-            return obj.Data;
-        }
-    }
-
     /// <summary>
     ///   Represents the inventory contents of an entity. This inventory is represented as a list of
     ///   items (as opposed to a slotted/grid based inventory). 
     /// </summary>
     /// <typeparam name="TGameContext"></typeparam>
+    /// <typeparam name="TOwnerId"></typeparam>
+    /// <typeparam name="TItemId"></typeparam>
     public class ListInventory<TGameContext, TOwnerId, TItemId> : IInventory<TGameContext, TItemId>
         where TItemId : IBulkDataStorageKey<TItemId>
         where TOwnerId : IEntityKey
@@ -137,10 +112,18 @@ namespace RogueEntity.Core.Inventory
                     return false;
                 }
 
-                if (itemResolver.TryRemoveData<Position>(r, context, out var key) &&
-                    itemResolver.TryUpdateData(key, context, new ContainedInInventoryMarker<TOwnerId, TItemId>(Data.OwnerData), out key))
+                if (itemResolver.TryQueryData(r, context, out Position currentPosition) &&
+                    !currentPosition.IsInvalid)
                 {
-                    Data = Data.InsertAt(Data.Items.Count, itemWeight, key);
+                    // This item should not be on a map right now.
+                    // This item is misconfigured. 
+                    Logger.Warning("ItemReference {ItemReference} is still positioned on the map. Aborting AddItem operation to prevent item duplication.", r);
+                    return false;
+                }
+
+                if (itemResolver.TryUpdateData(r, context, new ContainedInInventoryMarker<TOwnerId, TItemId>(Data.OwnerData), out _))
+                {
+                    Data = Data.InsertAt(Data.Items.Count, itemWeight, r);
                     return true;
                 }
 

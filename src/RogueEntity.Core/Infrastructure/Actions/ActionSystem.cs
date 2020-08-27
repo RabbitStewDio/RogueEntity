@@ -1,4 +1,5 @@
-﻿using EnttSharp.Entities;
+﻿using EnTTSharp.Entities;
+using RogueEntity.Core.Infrastructure.Commands;
 using RogueEntity.Core.Utils;
 using Serilog;
 

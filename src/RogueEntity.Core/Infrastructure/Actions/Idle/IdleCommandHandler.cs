@@ -1,6 +1,6 @@
-﻿using EnttSharp.Entities;
+﻿using EnTTSharp.Entities;
 using RogueEntity.Core.Infrastructure.Commands;
-using RogueEntity.Core.Infrastructure.Meta.Items;
+using RogueEntity.Core.Meta.Items;
 
 namespace RogueEntity.Core.Infrastructure.Actions.Idle
 {
@@ -10,10 +10,11 @@ namespace RogueEntity.Core.Infrastructure.Actions.Idle
     {
         public string ActionId => IdleCommand.ActionId;
 
-        protected override void Invoke(TGameContext context, TActorId actorKey, 
+        protected override bool Invoke(TGameContext context, TActorId actorKey, 
                                        IReferenceItemDeclaration<TGameContext, TActorId> actorData, IdleCommand command)
         {
             context.RunNext(actorKey, new IdleAction<TGameContext, TActorId>(command.Turns));
+            return true;
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using RogueEntity.Core.Infrastructure.Meta.Items;
+﻿using EnTTSharp.Entities;
+using RogueEntity.Core.Meta.Items;
 
 namespace RogueEntity.Core.Infrastructure.Actions.Traits
 {
@@ -15,6 +16,10 @@ namespace RogueEntity.Core.Infrastructure.Actions.Traits
         protected override MovementPointRecoveryTime CreateInitialValue(TGameContext c, TActorId actor)
         {
             return new MovementPointRecoveryTime(recoveryDefinition.Magnitude, recoveryDefinition.Frequency, 0);
+        }
+
+        public override void Apply(IEntityViewControl<TActorId> v, TGameContext context, TActorId k, IItemDeclaration item)
+        {
         }
     }
 }

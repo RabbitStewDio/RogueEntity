@@ -1,0 +1,171 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<NsDepCopConfig IsEnabled="true" CodeIssueKind="Warning" ChildCanDependOnParentImplicitly="true" InheritanceDepth="1">
+    
+    <!-- Any namespace can reference the System namespace and its sub-namespaces. -->
+    <Allowed From="*" To="System.*" />
+    
+    <!-- Any namespace can reference the global namespace. -->
+    <Allowed From="*" To="." />
+
+    <!-- Code generated from XAML files can reference any namespace. -->
+    <Allowed From="XamlGeneratedNamespace" To="*" />
+
+    <!-- References to external libraries are allowed -->
+    <Allowed From="*" To="MessagePack.*"/>
+    <Allowed From="*" To="MessagePack"/>
+    <Allowed From="*" To="EnTTSharp"/>
+    <Allowed From="*" To="EnTTSharp.*"/>
+    <Allowed From="*" To="Serilog"/>
+    <Allowed From="*" To="Serilog.*"/>
+
+    <Allowed From="*" To="RogueEntity.Core.Utils"/>
+
+    <Allowed From="RogueEntity.Core.Effects.Uses" To="GoRogue.DiceNotation"/>
+    <Allowed From="RogueEntity.Core.Effects.Uses" To="RogueEntity.Core.Meta.ItemTraits"/>
+    <Allowed From="RogueEntity.Core.Effects.Uses" To="RogueEntity.Core.Meta.Items"/>
+    <Allowed From="RogueEntity.Core.Effects.Uses" To="RogueEntity.Core.Meta.Naming"/>
+    <Allowed From="RogueEntity.Core.Effects.Uses" To="RogueEntity.Core.Meta.UseEffects"/>
+    <Allowed From="RogueEntity.Core.Effects.Uses" To="RogueEntity.Core.Infrastructure.Modules"/>
+    <Allowed From="RogueEntity.Core.Effects.Uses" To="RogueEntity.Core.Infrastructure.Randomness"/>
+
+    <Allowed From="RogueEntity.Core.Equipment" To="RogueEntity.Core.Infrastructure.Modules"/>
+    <Allowed From="RogueEntity.Core.Equipment" To="RogueEntity.Core.Meta.ItemTraits"/>
+    <Allowed From="RogueEntity.Core.Equipment" To="RogueEntity.Core.Meta.Items"/>
+    <Allowed From="RogueEntity.Core.Equipment" To="RogueEntity.Core.Positioning"/>
+
+    <Allowed From="RogueEntity.Core.Inventory" To="RogueEntity.Core.Infrastructure.Modules"/>
+    <Allowed From="RogueEntity.Core.Inventory" To="RogueEntity.Core.Meta.ItemTraits"/>
+    <Allowed From="RogueEntity.Core.Inventory" To="RogueEntity.Core.Meta.Items"/>
+    <Allowed From="RogueEntity.Core.Inventory" To="RogueEntity.Core.Meta.ItemBuilder"/>
+    <Allowed From="RogueEntity.Core.Inventory" To="RogueEntity.Core.Positioning"/>
+    <Allowed From="RogueEntity.Core.Inventory" To="RogueEntity.Core.Infrastructure.Randomness"/>
+
+    <!-- Allows item declarations in modules. -->
+    <Allowed From="RogueEntity.Core.Infrastructure.Modules" To="RogueEntity.Core.Meta.Items"/>
+    <Allowed From="RogueEntity.Core.Infrastructure.Modules" To="RogueEntity.Core.Infrastructure.Commands"/>
+    <Allowed From="RogueEntity.Core.Infrastructure.Modules" To="RogueEntity.Core.Infrastructure.GameLoops"/>
+
+    <Allowed From="RogueEntity.Core.Infrastructure.Actions" To="RogueEntity.Core.Infrastructure.Commands"/>
+    <Allowed From="RogueEntity.Core.Infrastructure.Actions" To="RogueEntity.Core.Infrastructure.Time"/>
+    <Allowed From="RogueEntity.Core.Infrastructure.Actions" To="RogueEntity.Core.Meta.Items"/>
+
+    <Allowed From="RogueEntity.Core.Infrastructure.Actions.Idle" To="RogueEntity.Core.Infrastructure.Commands"/>
+    <Allowed From="RogueEntity.Core.Infrastructure.Actions.Idle" To="RogueEntity.Core.Meta.Items"/>
+    
+    <Allowed From="RogueEntity.Core.Infrastructure.Actions.Traits" To="RogueEntity.Core.Meta.Items"/>
+
+    <Allowed From="RogueEntity.Core.Infrastructure.Commands" To="RogueEntity.Core.Meta.Items"/>
+    <Allowed From="RogueEntity.Core.Infrastructure.GameLoops" To="RogueEntity.Core.Infrastructure.Time"/>
+
+
+    <Allowed From="RogueEntity.Core.Meta" To="RogueEntity.Core.Meta.Base"/>
+    <Allowed From="RogueEntity.Core.Meta" To="RogueEntity.Core.Meta.Items"/>
+    <Allowed From="RogueEntity.Core.Meta" To="RogueEntity.Core.Meta.ItemTraits"/>
+    <Allowed From="RogueEntity.Core.Meta" To="RogueEntity.Core.Infrastructure.Modules"/>
+    <Allowed From="RogueEntity.Core.Meta" To="RogueEntity.Core.Infrastructure.GameLoops"/>
+    <Allowed From="RogueEntity.Core.Meta" To="RogueEntity.Core.Infrastructure.Commands"/>
+
+    <Allowed From="RogueEntity.Core.Meta.ItemBuilder" To="RogueEntity.Core.Meta.ItemTraits"/>
+    <Allowed From="RogueEntity.Core.Meta.ItemBuilder" To="RogueEntity.Core.Meta.Items"/>
+
+    <Allowed From="RogueEntity.Core.Meta.Items" To="RogueEntity.Core.Meta.Base"/>
+    
+    <Allowed From="RogueEntity.Core.Meta.ItemTraits" To="RogueEntity.Core.Meta.Items"/>
+    
+    <Allowed From="RogueEntity.Core.Meta.Naming" To="RogueEntity.Core.Meta.Items"/>
+
+    <Allowed From="RogueEntity.Core.Meta.UseEffects" To="RogueEntity.Core.Meta.Items"/>
+
+    <Allowed From="RogueEntity.Core.Movement" To="GoRogue"/>
+    <Allowed From="RogueEntity.Core.Movement" To="RogueEntity.Core.Utils.Maps"/>
+    <Allowed From="RogueEntity.Core.Movement" To="RogueEntity.Core.Movement.Pathing"/>
+    <Allowed From="RogueEntity.Core.Movement" To="RogueEntity.Core.Movement.Maps"/>
+    <Allowed From="RogueEntity.Core.Movement" To="RogueEntity.Core.Movement.ItemCosts"/>
+    <Allowed From="RogueEntity.Core.Movement" To="RogueEntity.Core.Infrastructure.Modules"/>
+    <Allowed From="RogueEntity.Core.Movement" To="RogueEntity.Core.Infrastructure.GameLoops"/>
+    <Allowed From="RogueEntity.Core.Movement" To="RogueEntity.Core.Infrastructure.Commands"/>
+
+    <Allowed From="RogueEntity.Core.Movement.Maps" To="RogueEntity.Core.Movement.ItemCosts"/>
+    <Allowed From="RogueEntity.Core.Movement.Maps" To="RogueEntity.Core.Utils.Maps"/>
+    <Allowed From="RogueEntity.Core.Movement.Maps" To="RogueEntity.Core.Utils.MapChunks"/>
+    <Allowed From="RogueEntity.Core.Movement.Maps" To="GoRogue"/>
+
+    <Allowed From="RogueEntity.Core.Movement.ItemCosts" To="RogueEntity.Core.Meta.Items"/>
+    <Allowed From="RogueEntity.Core.Movement.ItemCosts" To="RogueEntity.Core.Positioning"/>
+    <Allowed From="RogueEntity.Core.Movement.ItemCosts" To="RogueEntity.Core.Positioning.MapLayers"/>
+    <Allowed From="RogueEntity.Core.Movement.ItemCosts" To="RogueEntity.Core.Positioning.Grid"/>
+    <Allowed From="RogueEntity.Core.Movement.ItemCosts" To="RogueEntity.Core.Utils.MapChunks"/>
+    <Allowed From="RogueEntity.Core.Movement.ItemCosts" To="RogueEntity.Core.Utils.Maps"/>
+    
+    <Allowed From="RogueEntity.Core.Movement.Pathing" To="GoRogue"/>
+    <Allowed From="RogueEntity.Core.Movement.Pathing" To="GoRogue.Pathing"/>
+    <Allowed From="RogueEntity.Core.Movement.Pathing" To="RogueEntity.Core.Movement.ItemCosts"/>
+    <Allowed From="RogueEntity.Core.Movement.Pathing" To="RogueEntity.Core.Movement.Maps"/>
+    <Allowed From="RogueEntity.Core.Movement.Pathing" To="RogueEntity.Core.Utils.Maps"/>
+    <Allowed From="RogueEntity.Core.Movement.Pathing" To="RogueEntity.Core.Positioning"/>
+    <Allowed From="RogueEntity.Core.Movement.Pathing" To="RogueEntity.Core.Positioning.MapLayers"/>
+    <Allowed From="RogueEntity.Core.Movement.Pathing" To="RogueEntity.Core.Infrastructure.Time"/>
+    <Allowed From="RogueEntity.Core.Movement.Pathing" To="RogueEntity.Core.Meta.Items"/>
+    <Allowed From="RogueEntity.Core.Movement.Pathing" To="RogueEntity.Core.Sensing"/>
+    <!--  Rethink that dependency -->
+    <Allowed From="RogueEntity.Core.Movement.Pathing" To="RogueEntity.Core.Positioning.Grid"/>
+
+    <Allowed From="RogueEntity.Core.Positioning" To="RogueEntity.Core.Infrastructure.Modules"/>
+    <Allowed From="RogueEntity.Core.Positioning" To="RogueEntity.Core.Infrastructure.GameLoops"/>
+    <Allowed From="RogueEntity.Core.Positioning" To="RogueEntity.Core.Infrastructure.Commands"/>
+    <Allowed From="RogueEntity.Core.Positioning" To="RogueEntity.Core.Positioning.Continuous"/>
+    <Allowed From="RogueEntity.Core.Positioning" To="RogueEntity.Core.Positioning.Grid"/>
+    
+    <Allowed From="RogueEntity.Core.Positioning.Continuous" To="RogueEntity.Core.Positioning"/>
+    <Allowed From="RogueEntity.Core.Positioning.Continuous" To="RogueEntity.Core.Positioning.MapLayers"/>
+    <Allowed From="RogueEntity.Core.Positioning.Continuous" To="RogueEntity.Core.Meta.Items"/>
+
+    <Allowed From="RogueEntity.Core.Positioning.Grid" To="RogueEntity.Core.Positioning"/>
+    <Allowed From="RogueEntity.Core.Positioning.Grid" To="RogueEntity.Core.Positioning.MapLayers"/>
+    <Allowed From="RogueEntity.Core.Positioning.Grid" To="RogueEntity.Core.Meta.Items"/>
+    <Allowed From="RogueEntity.Core.Positioning.Grid" To="RogueEntity.Core.Meta.ItemTraits"/>
+    <Allowed From="RogueEntity.Core.Positioning.Grid" To="RogueEntity.Core.Utils.Maps"/>
+    
+    <Allowed From="RogueEntity.Core.Sensing" To="GoRogue"/>
+    <Allowed From="RogueEntity.Core.Sensing" To="GoRogue.SenseMapping"/>
+    <Allowed From="RogueEntity.Core.Sensing" To="RogueEntity.Core.Infrastructure.Modules"/>
+    <Allowed From="RogueEntity.Core.Sensing" To="RogueEntity.Core.Infrastructure.Commands"/>
+    <Allowed From="RogueEntity.Core.Sensing" To="RogueEntity.Core.Infrastructure.GameLoops"/>
+    <Allowed From="RogueEntity.Core.Sensing" To="RogueEntity.Core.Meta.Items"/>
+    <Allowed From="RogueEntity.Core.Sensing" To="RogueEntity.Core.Positioning"/>
+    <Allowed From="RogueEntity.Core.Sensing" To="RogueEntity.Core.Positioning.Continuous"/>
+    <Allowed From="RogueEntity.Core.Sensing" To="RogueEntity.Core.Positioning.Grid"/>
+    <Allowed From="RogueEntity.Core.Sensing" To="RogueEntity.Core.Sensing.CacheControl"/>
+    <Allowed From="RogueEntity.Core.Sensing" To="RogueEntity.Core.Sensing.Maps"/>
+    <Allowed From="RogueEntity.Core.Sensing" To="RogueEntity.Core.Sensing.Vision"/>
+    <Allowed From="RogueEntity.Core.Sensing" To="RogueEntity.Core.Utils.Maps"/>
+
+    <Allowed From="RogueEntity.Core.Sensing.CacheControl" To="RogueEntity.Core.Positioning.Continuous"/>
+    <Allowed From="RogueEntity.Core.Sensing.CacheControl" To="RogueEntity.Core.Positioning.Grid"/>
+
+    <Allowed From="RogueEntity.Core.Sensing.Maps" To="GoRogue"/>
+    <Allowed From="RogueEntity.Core.Sensing.Maps" To="RogueEntity.Core.Utils.MapChunks"/>
+    <Allowed From="RogueEntity.Core.Sensing.Maps" To="RogueEntity.Core.Utils.Maps"/>
+    <Allowed From="RogueEntity.Core.Sensing.Maps" To="RogueEntity.Core.Meta.Items"/>
+    <Allowed From="RogueEntity.Core.Sensing.Maps" To="RogueEntity.Core.Meta.ItemTraits"/>
+    <Allowed From="RogueEntity.Core.Sensing.Maps" To="RogueEntity.Core.Positioning.MapLayers"/>
+    <Allowed From="RogueEntity.Core.Sensing.Maps" To="RogueEntity.Core.Positioning.Continuous"/>
+    <Allowed From="RogueEntity.Core.Sensing.Maps" To="RogueEntity.Core.Positioning.Grid"/>
+    <Allowed From="RogueEntity.Core.Sensing.Maps" To="RogueEntity.Core.Sensing.CacheControl"/>
+
+    <Allowed From="RogueEntity.Core.Sensing.Vision" To="GoRogue"/>
+    <Allowed From="RogueEntity.Core.Sensing.Vision" To="GoRogue.SenseMapping"/>
+    <Allowed From="RogueEntity.Core.Sensing.Vision" To="GoRogue.MapViews"/>
+    <Allowed From="RogueEntity.Core.Sensing.Vision" To="RogueEntity.Core.Meta.Items"/>
+    <Allowed From="RogueEntity.Core.Sensing.Vision" To="RogueEntity.Core.Meta.ItemTraits"/>
+    <Allowed From="RogueEntity.Core.Sensing.Vision" To="RogueEntity.Core.Positioning"/>
+    <Allowed From="RogueEntity.Core.Sensing.Vision" To="RogueEntity.Core.Positioning.Grid"/>
+    <Allowed From="RogueEntity.Core.Sensing.Vision" To="RogueEntity.Core.Positioning.Continuous"/>
+    <Allowed From="RogueEntity.Core.Sensing.Vision" To="RogueEntity.Core.Sensing.Maps"/>
+    <Allowed From="RogueEntity.Core.Sensing.Vision" To="RogueEntity.Core.Utils.Maps"/>
+
+    <Allowed From="RogueEntity.Core.Utils.Maps" To="GoRogue"/>
+    
+    <Allowed From="RogueEntity.Core.Utils.MapChunks" To="GoRogue"/>
+
+</NsDepCopConfig>

@@ -1,13 +1,13 @@
-﻿using EnttSharp.Entities;
-using RogueEntity.Core.Infrastructure.Meta.Items;
-using RogueEntity.Core.Infrastructure.Positioning;
+﻿using EnTTSharp.Entities;
+using RogueEntity.Core.Meta.Items;
+using RogueEntity.Core.Positioning;
 
 namespace RogueEntity.Core.Movement.ItemCosts
 {
     public class FlyingMovementTrait<TGameContext, TActorId> : StatelessItemComponentTraitBase<TGameContext, TActorId, FlyingMovementData>,
                                                                IItemComponentTrait<TGameContext, TActorId, IMovementTrait<TGameContext, TActorId>>,
                                                                IMovementTrait<TGameContext, TActorId>
-        where TActorId : IBulkDataStorageKey<TActorId>
+        where TActorId : IEntityKey
         where TGameContext : IItemContext<TGameContext, TActorId>, IMapMovementPropertiesContext
     {
         public int Cost { get; }
@@ -38,7 +38,7 @@ namespace RogueEntity.Core.Movement.ItemCosts
 
         public bool CanEnterCell(TActorId k, TGameContext context, Position position, out MovementCost movementCost)
         {
-            if (position.Invalid ||
+            if (position.IsInvalid ||
                 !context.ItemResolver.TryQueryData(k, context, out FlyingMovementData baseCost))
             {
                 movementCost = MovementCost.Blocked;

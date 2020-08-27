@@ -1,4 +1,4 @@
-﻿using EnttSharp.Entities;
+﻿using EnTTSharp.Entities;
 
 namespace RogueEntity.Core.Movement.Pathing
 {

@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
-using EnttSharp.Entities;
-using RogueEntity.Core.Infrastructure.Meta.Items;
-using RogueEntity.Core.Infrastructure.Positioning;
+using EnTTSharp.Entities;
+using RogueEntity.Core.Meta.Items;
+using RogueEntity.Core.Positioning;
 
 namespace RogueEntity.Core.Movement.ItemCosts
 {

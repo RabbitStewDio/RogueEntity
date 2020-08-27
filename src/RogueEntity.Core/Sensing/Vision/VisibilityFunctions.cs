@@ -1,5 +1,5 @@
 using GoRogue;
-using RogueEntity.Core.Infrastructure.Positioning;
+using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Utils;
 
 namespace RogueEntity.Core.Sensing.Vision

@@ -1,6 +1,7 @@
-﻿using System.Collections.Generic;
-using EnttSharp.Entities;
-using RogueEntity.Core.Infrastructure.Meta.Items;
+﻿using System;
+using System.Collections.Generic;
+using EnTTSharp.Entities;
+using RogueEntity.Core.Meta.Items;
 
 namespace RogueEntity.Core.Infrastructure.Modules
 {
@@ -29,5 +30,12 @@ namespace RogueEntity.Core.Infrastructure.Modules
 
         ItemDeclarationId Declare(IBulkItemDeclaration<TGameContext, TEntityId> item);
         ItemDeclarationId Declare(IReferenceItemDeclaration<TGameContext, TEntityId> item);
+
+        void Register(EntitySystemId id, int priority,
+                      Action<EntityRegistry<TEntityId>> entityRegistration,
+                      ModuleEntityContext<TGameContext, TEntityId>.SystemRegistrationDelegate systemRegistration = null);
+
+        void Register(EntitySystemId id, int priority,
+                      ModuleEntityContext<TGameContext, TEntityId>.SystemRegistrationDelegate systemRegistration = null);
     }
 }

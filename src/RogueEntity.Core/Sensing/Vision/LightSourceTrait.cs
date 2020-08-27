@@ -1,7 +1,7 @@
-using EnttSharp.Entities;
+using EnTTSharp.Entities;
 using GoRogue;
 using GoRogue.SenseMapping;
-using RogueEntity.Core.Infrastructure.Meta.Items;
+using RogueEntity.Core.Meta.Items;
 
 namespace RogueEntity.Core.Sensing.Vision
 {

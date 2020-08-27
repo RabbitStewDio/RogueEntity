@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.Serialization;
 using EnTTSharp.Annotations;
 using MessagePack;
-using RogueEntity.Core.Infrastructure.Meta;
+using RogueEntity.Core.Meta.ItemTraits;
 using RogueEntity.Core.Utils;
 
 namespace RogueEntity.Core.Inventory

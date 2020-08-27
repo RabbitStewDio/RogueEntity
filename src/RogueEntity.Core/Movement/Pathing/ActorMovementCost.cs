@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
-using EnttSharp.Entities;
+using EnTTSharp.Entities;
 using GoRogue;
 using GoRogue.Pathing;
-using RogueEntity.Core.Infrastructure.Meta.Items;
+using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Movement.ItemCosts;
 using RogueEntity.Core.Movement.Maps;
 using RogueEntity.Core.Utils.Maps;

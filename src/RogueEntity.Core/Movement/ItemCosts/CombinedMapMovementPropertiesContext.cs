@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using RogueEntity.Core.Infrastructure.Positioning;
+using RogueEntity.Core.Positioning;
 
 namespace RogueEntity.Core.Movement.ItemCosts
 {
