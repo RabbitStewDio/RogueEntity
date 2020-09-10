@@ -49,7 +49,7 @@ namespace RogueEntity.Core.Meta
 
             // All entities carry a reference to their trait declaration with them. This allows
             // systems to lookup traits and to perform actions on them.
-            registry.RegisterNonConstructable<IReferenceItemDeclaration<TGameContext, TItemId>>();
+            registry.RegisterNonConstructable<ItemDeclarationHolder<TGameContext, TItemId>>();
         }
 
         protected void RegisterSharedItemTraits<TItemId>(EntityRegistry<TItemId> registry) where TItemId : IEntityKey

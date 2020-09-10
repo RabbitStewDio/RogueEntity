@@ -13,7 +13,7 @@ namespace RogueEntity.Core.Infrastructure.Randomness
 
         public int AsRandomSeed()
         {
-            return entity.Key << 8 | entity.Age;
+            return entity.GetHashCode();
         }
     }
 }

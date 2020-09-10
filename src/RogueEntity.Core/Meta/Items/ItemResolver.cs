@@ -2,13 +2,13 @@
 
 namespace RogueEntity.Core.Meta.Items
 {
-    public class ItemResolver<TContext, TItemId> : IItemResolver<TContext, TItemId>
+    public class ItemResolver<TGameContext, TItemId> : IItemResolver<TGameContext, TItemId>
         where TItemId : IBulkDataStorageKey<TItemId>
     {
-        readonly ItemRegistry<TContext, TItemId> registry;
+        readonly ItemRegistry<TGameContext, TItemId> registry;
         readonly EnTTSharp.Entities.EntityRegistry<TItemId> entityRegistry;
 
-        public ItemResolver(ItemRegistry<TContext, TItemId> registry, EnTTSharp.Entities.EntityRegistry<TItemId> entityRegistry)
+        public ItemResolver(ItemRegistry<TGameContext, TItemId> registry, EnTTSharp.Entities.EntityRegistry<TItemId> entityRegistry)
         {
             this.registry = registry;
             this.entityRegistry = entityRegistry;
@@ -16,40 +16,45 @@ namespace RogueEntity.Core.Meta.Items
 
         public IItemRegistry ItemRegistry => registry;
 
-        TItemId InstantiateReferenceItem(TContext context, IReferenceItemDeclaration<TContext, TItemId> itemDeclaration)
+        public TItemId Instantiate(TGameContext context, IItemDeclaration item)
+        {
+            if (item is IBulkItemDeclaration<TGameContext, TItemId> bulkItem)
+            {
+                return InstantiateBulkItem(context, bulkItem);
+            }
+
+            return InstantiateReferenceItem(context, (IReferenceItemDeclaration<TGameContext, TItemId>)item);
+        }
+
+        TItemId InstantiateReferenceItem(TGameContext context, IReferenceItemDeclaration<TGameContext, TItemId> itemDeclaration)
         {
             var entity = entityRegistry.Create();
-            entityRegistry.AssignComponent(entity, in itemDeclaration);
+            entityRegistry.AssignComponent(entity, new ItemDeclarationHolder<TGameContext, TItemId>(itemDeclaration));
             itemDeclaration.Initialize(entityRegistry, context, entity);
             return entity;
         }
 
-        public TItemId Instantiate(TContext context, IItemDeclaration item)
+        TItemId InstantiateBulkItem(TGameContext context,
+                                    IBulkItemDeclaration<TGameContext, TItemId> item)
         {
-            if (item is IBulkItemDeclaration<TContext, TItemId> bulkItem)
-            {
-                return InstantiateBulkItem(bulkItem);
-            }
-
-            return InstantiateReferenceItem(context, (IReferenceItemDeclaration<TContext, TItemId>)item);
-        }
-
-        TItemId InstantiateBulkItem(IBulkItemDeclaration<TContext, TItemId> item)
-        {
-            return registry.GenerateBulkItemId(item);
+            var id = registry.GenerateBulkItemId(item);
+            return item.Initialize(context, id);
         }
 
         public bool TryResolve(in TItemId itemRef, out IItemDeclaration item)
         {
-            if (entityRegistry.IsValid(itemRef))
+            if (itemRef.IsReference)
             {
-                if (entityRegistry.GetComponent(itemRef, out IReferenceItemDeclaration<TContext, TItemId> ri))
+                if (entityRegistry.IsValid(itemRef))
                 {
-                    item = ri;
-                    return true;
+                    if (entityRegistry.GetComponent(itemRef, out ItemDeclarationHolder<TGameContext, TItemId> ri))
+                    {
+                        item = ri.ItemDeclaration;
+                        return true;
+                    }
+
                 }
 
-                // not yet.
                 item = default;
                 return false;
             }
@@ -85,9 +90,9 @@ namespace RogueEntity.Core.Meta.Items
             return false;
         }
 
-        public bool TryQueryData<TData>(TItemId itemRef, TContext context, out TData data)
+        public bool TryQueryData<TData>(TItemId itemRef, TGameContext context, out TData data)
         {
-            if (TryQueryTrait<IItemComponentTrait<TContext, TItemId, TData>>(itemRef, out var trait))
+            if (TryQueryTrait<IItemComponentTrait<TGameContext, TItemId, TData>>(itemRef, out var trait))
             {
                 return trait.TryQuery(entityRegistry, context, itemRef, out data);
             }
@@ -97,11 +102,11 @@ namespace RogueEntity.Core.Meta.Items
         }
 
         public bool TryUpdateData<TData>(TItemId itemRef,
-                                         TContext context,
+                                         TGameContext context,
                                          in TData data,
                                          out TItemId changedItem)
         {
-            if (TryQueryTrait<IItemComponentTrait<TContext, TItemId, TData>>(itemRef, out var trait))
+            if (TryQueryTrait<IItemComponentTrait<TGameContext, TItemId, TData>>(itemRef, out var trait))
             {
                 return trait.TryUpdate(entityRegistry, context, itemRef, in data, out changedItem);
             }
@@ -110,9 +115,9 @@ namespace RogueEntity.Core.Meta.Items
             return false;
         }
 
-        public bool TryRemoveData<TData>(TItemId itemRef, TContext context, out TItemId changedItem)
+        public bool TryRemoveData<TData>(TItemId itemRef, TGameContext context, out TItemId changedItem)
         {
-            if (TryQueryTrait<IItemComponentTrait<TContext, TItemId, TData>>(itemRef, out var trait))
+            if (TryQueryTrait<IItemComponentTrait<TGameContext, TItemId, TData>>(itemRef, out var trait))
             {
                 return trait.TryRemove(entityRegistry, context, itemRef, out changedItem);
             }
@@ -123,6 +128,11 @@ namespace RogueEntity.Core.Meta.Items
 
         public void DiscardUnusedItem(in TItemId item)
         {
+            if (!item.IsReference)
+            {
+                return;
+            }
+
             if (entityRegistry.IsValid(item))
             {
                 entityRegistry.AssignOrReplace<DestroyedMarker>(item);
@@ -146,13 +156,18 @@ namespace RogueEntity.Core.Meta.Items
             return item;
         }
 
-        public void Apply(TItemId reference, TContext context)
+        public void Apply(TItemId item, TGameContext context)
         {
-            if (entityRegistry.IsValid(reference))
+            if (!item.IsReference)
             {
-                if (entityRegistry.GetComponent(reference, out IReferenceItemDeclaration<TContext, TItemId> ri))
+                return;
+            }
+
+            if (entityRegistry.IsValid(item))
+            {
+                if (entityRegistry.GetComponent(item, out ItemDeclarationHolder<TGameContext, TItemId> ri))
                 {
-                    ri.Apply(entityRegistry, context, reference);
+                    ri.ItemDeclaration.Apply(entityRegistry, context, item);
                 }
             }
         }

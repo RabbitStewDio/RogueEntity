@@ -1,4 +1,4 @@
-﻿using EnTTSharp.Annotations;
+﻿using EnTTSharp.Entities.Attributes;
 using RogueEntity.Core.Movement.ItemCosts;
 using RogueEntity.Core.Utils.Maps;
 

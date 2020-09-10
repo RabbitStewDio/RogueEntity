@@ -10,19 +10,22 @@ namespace RogueEntity.Core.Meta.Items
         readonly ILogger logger = SLog.ForContext<ItemRegistry<TContext, TItemId>>();
 
         readonly Func<IBulkItemDeclaration<TContext, TItemId>, int, TItemId> bulkItemIdFactory;
-        readonly Dictionary<ItemDeclarationId, int> bulkItems;
+        readonly Dictionary<ItemDeclarationId, (int, IBulkItemDeclaration<TContext, TItemId>)> bulkItems;
         readonly Dictionary<int, IBulkItemDeclaration<TContext, TItemId>> bulkItemReverseIndex;
         readonly Dictionary<ItemDeclarationId, IItemDeclaration> itemsById;
+        readonly Dictionary<ItemDeclarationId, IReferenceItemDeclaration<TContext, TItemId>> referenceItemsById;
         readonly List<IItemDeclaration> items;
         int bulkItemIdSequence;
 
         public ItemRegistry(Func<IBulkItemDeclaration<TContext, TItemId>, int, TItemId> bulkItemIdFactory)
         {
             this.bulkItemIdFactory = bulkItemIdFactory;
-            bulkItems = new Dictionary<ItemDeclarationId, int>();
+            bulkItems = new Dictionary<ItemDeclarationId, (int, IBulkItemDeclaration<TContext, TItemId>)>();
             bulkItemReverseIndex = new Dictionary<int, IBulkItemDeclaration<TContext, TItemId>>();
+            referenceItemsById = new Dictionary<ItemDeclarationId, IReferenceItemDeclaration<TContext, TItemId>>();
             itemsById = new Dictionary<ItemDeclarationId, IItemDeclaration>();
             items = new List<IItemDeclaration>();
+            bulkItemIdSequence = 1;
         }
 
         public TItemId GenerateBulkItemId(IBulkItemDeclaration<TContext,TItemId> item)
@@ -31,7 +34,7 @@ namespace RogueEntity.Core.Meta.Items
             {
                 return bulkItemIdFactory(item, id);
             }
-            throw new ArgumentException();
+            throw new ArgumentException($"The given item declaration {item.Id} has not been registered here.");
         }
 
         public ReadOnlyListWrapper<IItemDeclaration> Items
@@ -54,14 +57,17 @@ namespace RogueEntity.Core.Meta.Items
             {
                 logger.Information("Redeclaration of existing item {ItemId}", itemDeclaration.Id);
                 itemsById[itemDeclaration.Id] = itemDeclaration;
+                referenceItemsById[itemDeclaration.Id] = itemDeclaration;
             }
             else
             {
                 itemsById.Add(itemDeclaration.Id, itemDeclaration);
+                referenceItemsById.Add(itemDeclaration.Id, itemDeclaration);
             }
 
-            if (bulkItems.TryGetValue(itemDeclaration.Id, out var internalId))
+            if (bulkItems.TryGetValue(itemDeclaration.Id, out var reg))
             {
+                var (internalId, _) = reg;
                 bulkItems.Remove(itemDeclaration.Id);
                 bulkItemReverseIndex.Remove(internalId);
             }
@@ -81,16 +87,19 @@ namespace RogueEntity.Core.Meta.Items
                 itemsById.Add(item.Id, item);
             }
 
-            if (bulkItems.TryGetValue(item.Id, out var internalId))
+            referenceItemsById.Remove(item.Id);
+
+            if (bulkItems.TryGetValue(item.Id, out var reg))
             {
-                bulkItems[item.Id] = internalId;
-                bulkItemReverseIndex[internalId] = item;
+                var (iid, _) = reg;
+                bulkItems[item.Id] = (iid, item);
+                bulkItemReverseIndex[iid] = item;
             }
             else
             {
-                internalId = (ushort)bulkItemIdSequence;
+                var internalId = (ushort)bulkItemIdSequence;
                 bulkItemIdSequence += 1;
-                bulkItems.Add(item.Id, internalId);
+                bulkItems.Add(item.Id, (internalId, item));
                 bulkItemReverseIndex.Add(internalId, item);
             }
 
@@ -109,7 +118,14 @@ namespace RogueEntity.Core.Meta.Items
 
         public bool TryGetBulkItemId(IBulkItemDeclaration<TContext, TItemId> item, out int id)
         {
-            return bulkItems.TryGetValue(item.Id, out id);
+            if (bulkItems.TryGetValue(item.Id, out var reg))
+            {
+                id = reg.Item1;
+                return true;
+            }
+
+            id = default;
+            return false;
         }
 
         public bool TryResolveBulkItem(TItemId bulkIndex, out IBulkItemDeclaration<TContext, TItemId> item)
@@ -124,15 +140,19 @@ namespace RogueEntity.Core.Meta.Items
 
         public bool TryGetBulkItemById(ItemDeclarationId id, out IBulkItemDeclaration<TContext, TItemId> item)
         {
-            if (itemsById.TryGetValue(id, out var i) &&
-                i is IBulkItemDeclaration<TContext, TItemId> bi)
+            if (bulkItems.TryGetValue(id, out var reg))
             {
-                item = bi;
+                item = reg.Item2;
                 return true;
             }
 
             item = default;
             return false;
+        }
+
+        public bool TryGetReferenceItemById(ItemDeclarationId id, out IReferenceItemDeclaration<TContext, TItemId> item)
+        {
+            return referenceItemsById.TryGetValue(id, out item);
         }
     }
 }

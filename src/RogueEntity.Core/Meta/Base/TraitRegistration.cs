@@ -41,6 +41,11 @@ namespace RogueEntity.Core.Meta.Base
         {
             if (FindById(trait.Id, out var existing))
             {
+                if (existing.Priority <= trait.Priority)
+                {
+                    return;
+                }
+
                 traits.Remove(existing);
             }
             traits.Add(trait);

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using RogueEntity.Core.Utils;
+using RogueEntity.Generator.MapFragments;
 using ValionRL.Core.MapFragments;
 
 namespace ValionRL.Core.Generator

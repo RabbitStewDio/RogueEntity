@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
-using EnTTSharp.Annotations;
+using EnTTSharp.Entities.Attributes;
 using MessagePack;
 
 namespace RogueEntity.Core.Infrastructure.Commands

@@ -3,16 +3,15 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Text;
+using RogueEntity.Core.Utils;
+using RogueEntity.Core.Utils.Maps;
 using Serilog;
-using ValionRL.Core.Infrastructure;
-using ValionRL.Core.Infrastructure.Common;
-using ValionRL.Core.Infrastructure.Maps;
+using ValionRL.Core.MapFragments;
 using YamlDotNet.Core;
 using YamlDotNet.Core.Events;
 using YamlDotNet.Serialization;
-using YamlDotNet.Serialization.NodeDeserializers;
 
-namespace ValionRL.Core.MapFragments
+namespace RogueEntity.Generator.MapFragments
 {
     public static class MapFragmentParser
     {
@@ -203,7 +202,7 @@ namespace ValionRL.Core.MapFragments
 
         static bool ParseMapData(string data, MapFragmentParseInfo info, out IReadOnlyMapData<MapFragmentTagDeclaration> map)
         {
-            var mapWritable = new DenseMapDataBase<MapFragmentTagDeclaration>(info.Size.Width, info.Size.Height);
+            var mapWritable = new DenseMapData<MapFragmentTagDeclaration>(info.Size.Width, info.Size.Height);
             int y = 0;
             foreach (var line in data.GetLines(true))
             {

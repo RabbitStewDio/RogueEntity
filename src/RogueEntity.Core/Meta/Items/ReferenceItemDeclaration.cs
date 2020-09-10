@@ -10,6 +10,10 @@ namespace RogueEntity.Core.Meta.Items
     {
         readonly TraitRegistration<IReferenceItemTrait<TContext, TItemId>> traits;
 
+        public ReferenceItemDeclaration(ItemDeclarationId id): this(id, id.Id) 
+        {
+        }
+
         public ReferenceItemDeclaration(ItemDeclarationId id, string tag): base(id, tag) 
         {
             traits = new TraitRegistration<IReferenceItemTrait<TContext, TItemId>>(TraitComparer.Default);

@@ -25,7 +25,7 @@ namespace RogueEntity.Core.Meta.ItemTraits
             return true;
         }
 
-        protected override bool ValidateData(IEntityViewControl<TItemId> entityViewControl, TGameContext context, in TItemId itemReference,
+        protected override bool ValidateData(IEntityViewControl<TItemId> v, TGameContext context, in TItemId itemReference,
                                              in ItemCharge data)
         {
             return data.Count < initialCharge.MaximumCharge;
@@ -33,9 +33,26 @@ namespace RogueEntity.Core.Meta.ItemTraits
 
         protected override bool TryUpdateBulkData(TItemId k, in ItemCharge data, out TItemId changedK)
         {
-            var durability = initialCharge.WithCount(data.Count);
-            changedK = k.WithData(durability.Count);
-            return true;
+            if (data.Count < initialCharge.MaximumCharge)
+            {
+                var durability = initialCharge.WithCount(data.Count);
+                changedK = k.WithData(durability.Count);
+                return true;
+            }
+
+            changedK = k;
+            return false;
+        }
+
+        public override bool TryRemove(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, out TItemId changedItem)
+        {
+            if (TryQuery(v, context, k, out var existingData))
+            {
+                return TryUpdate(v, context, k, existingData.WithCount(0), out changedItem);
+            }
+
+            changedItem = k;
+            return false;
         }
 
         public override void Apply(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, IItemDeclaration item)

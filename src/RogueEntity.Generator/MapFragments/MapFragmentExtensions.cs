@@ -1,8 +1,9 @@
 ﻿using System;
-using ValionRL.Core.Infrastructure.Common;
-using ValionRL.Core.Infrastructure.Maps;
+using RogueEntity.Core.Utils;
+using RogueEntity.Core.Utils.Maps;
+using ValionRL.Core.MapFragments;
 
-namespace ValionRL.Core.MapFragments
+namespace RogueEntity.Generator.MapFragments
 {
     public static class MapFragmentExtensions
     {
@@ -17,7 +18,7 @@ namespace ValionRL.Core.MapFragments
         public static MapFragment MirrorVertically(this MapFragment mf)
         {
             var mapData = mf.MapData;
-            var nextMapData = new DenseMapDataBase<MapFragmentTagDeclaration>(mapData.Width, mapData.Height);
+            var nextMapData = new DenseMapData<MapFragmentTagDeclaration>(mapData.Width, mapData.Height);
             for (var y = 0; y < mapData.Height; y += 1)
             {
                 for (var x = 0; x < mapData.Width; x += 1)
@@ -42,7 +43,7 @@ namespace ValionRL.Core.MapFragments
         public static MapFragment MirrorHorizontally(this MapFragment mf)
         {
             var mapData = mf.MapData;
-            var nextMapData = new DenseMapDataBase<MapFragmentTagDeclaration>(mapData.Width, mapData.Height);
+            var nextMapData = new DenseMapData<MapFragmentTagDeclaration>(mapData.Width, mapData.Height);
             for (var y = 0; y < mapData.Height; y += 1)
             {
                 for (var x = 0; x < mapData.Width; x += 1)

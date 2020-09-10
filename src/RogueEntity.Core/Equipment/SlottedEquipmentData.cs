@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
-using EnTTSharp.Annotations;
+using EnTTSharp.Entities;
+using EnTTSharp.Entities.Attributes;
 using MessagePack;
 using RogueEntity.Core.Meta.ItemTraits;
 using RogueEntity.Core.Utils;

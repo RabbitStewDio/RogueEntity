@@ -4,16 +4,16 @@ namespace RogueEntity.Core.Meta.Items
 {
     public readonly struct ItemDeclarationId : IEquatable<ItemDeclarationId>
     {
-        readonly string id;
+        public readonly string Id;
 
         public ItemDeclarationId(string id)
         {
-            this.id = id;
+            this.Id = id;
         }
 
         public bool Equals(ItemDeclarationId other)
         {
-            return id == other.id;
+            return Id == other.Id;
         }
 
         public override bool Equals(object obj)
@@ -23,7 +23,7 @@ namespace RogueEntity.Core.Meta.Items
 
         public override int GetHashCode()
         {
-            return (id != null ? id.GetHashCode() : 0);
+            return (Id != null ? Id.GetHashCode() : 0);
         }
 
         public static bool operator ==(ItemDeclarationId left, ItemDeclarationId right)
@@ -34,6 +34,16 @@ namespace RogueEntity.Core.Meta.Items
         public static bool operator !=(ItemDeclarationId left, ItemDeclarationId right)
         {
             return !left.Equals(right);
+        }
+
+        public static implicit operator ItemDeclarationId(string s)
+        {
+            return new ItemDeclarationId(s);
+        }
+
+        public override string ToString()
+        {
+            return $"ItemDeclarationId('{Id}')";
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿using EnTTSharp.Annotations;
+﻿using EnTTSharp.Entities.Attributes;
 
 namespace RogueEntity.Core.Meta.Base
 {

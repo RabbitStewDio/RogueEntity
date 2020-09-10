@@ -10,6 +10,8 @@ namespace RogueEntity.Core.Meta.Items
     {
         readonly TraitRegistration<IBulkItemTrait<TContext, TItemId>> traitRegistration;
 
+        public BulkItemDeclaration(ItemDeclarationId id) : this(id, id.Id) {}
+
         public BulkItemDeclaration(ItemDeclarationId id, string tag) :
             base(id, tag)
         {

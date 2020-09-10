@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Runtime.Serialization;
-using EnTTSharp.Annotations;
+using EnTTSharp.Entities.Attributes;
 using MessagePack;
 
 namespace RogueEntity.Core.Meta.ItemTraits
@@ -85,6 +85,15 @@ namespace RogueEntity.Core.Meta.ItemTraits
         public static StackCount Of(ushort maxSize)
         {
             return new StackCount(0, maxSize);
+        }
+
+        public static StackCount Of(ushort count, ushort maxSize)
+        {
+            if (count > maxSize)
+            {
+                count = maxSize;
+            }
+            return new StackCount(count, maxSize);
         }
 
         public bool Equals(StackCount other)

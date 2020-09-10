@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Runtime.Serialization;
-using EnTTSharp.Annotations;
+using EnTTSharp.Entities.Attributes;
 using MessagePack;
 
 namespace RogueEntity.Core.Meta.ItemTraits
@@ -24,7 +24,10 @@ namespace RogueEntity.Core.Meta.ItemTraits
             this.Count = Math.Min(charge, MaximumCharge);
         }
 
+        [IgnoreMember]
         public bool Empty => Count == 0;
+
+        [IgnoreMember]
         public bool Unlimited => Count == ushort.MaxValue && MaximumCharge == ushort.MaxValue;
 
         public ItemCharge WithCount(int count)

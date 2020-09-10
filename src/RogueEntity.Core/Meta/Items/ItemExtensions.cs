@@ -20,5 +20,15 @@ namespace RogueEntity.Core.Meta.Items
         {
             return item.TryQuery(out IItemComponentTrait<TGameContext, TItemId, TData> _);
         }
+
+        public static TItemId Instantiate<TGameContext, TItemId>(this IItemResolver<TGameContext, TItemId> resolver, 
+                                                                 TGameContext context,
+                                                                 ItemDeclarationId id) 
+            where TItemId : IEntityKey
+
+        {
+            var item = resolver.ItemRegistry.ReferenceItemById(id);
+            return resolver.Instantiate(context, item);
+        }
     }
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using RogueEntity.Core.Infrastructure.Positioning.Grid;
 using RogueEntity.Core.Utils;
+using RogueEntity.Generator.MapFragments;
 using Serilog;
 using ValionRL.Core.MapFragments;
 

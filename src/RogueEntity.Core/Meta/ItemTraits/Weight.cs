@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Runtime.Serialization;
-using EnTTSharp.Annotations;
+using EnTTSharp.Entities.Attributes;
 using MessagePack;
 
 namespace RogueEntity.Core.Meta.ItemTraits
@@ -34,6 +34,7 @@ namespace RogueEntity.Core.Meta.ItemTraits
             this.WeightInGrams = Math.Max(0, Math.Min(weightInGrams, UnlimitedWeight));
         }
 
+        [IgnoreMember]
         public float AsKilogram => WeightInGrams / 1000f;
 
         public static Weight OfKiloGram(float kg)

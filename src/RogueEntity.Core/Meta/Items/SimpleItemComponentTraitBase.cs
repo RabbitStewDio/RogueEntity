@@ -89,7 +89,7 @@ namespace RogueEntity.Core.Meta.Items
             return TryUpdateBulkData(k, in t, out changedK);
         }
 
-        public bool TryRemove(IEntityViewControl<TItemId> entityRegistry, TGameContext context, TItemId k, out TItemId changedItem)
+        public virtual bool TryRemove(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, out TItemId changedItem)
         {
             if (!k.IsReference)
             {
@@ -97,12 +97,12 @@ namespace RogueEntity.Core.Meta.Items
                 return false;
             }
 
-            entityRegistry.RemoveComponent<TData>(k);
+            v.RemoveComponent<TData>(k);
             changedItem = k;
             return true;
         }
 
-        protected virtual bool ValidateData(IEntityViewControl<TItemId> entityViewControl, TGameContext context,
+        protected virtual bool ValidateData(IEntityViewControl<TItemId> v, TGameContext context,
                                             in TItemId itemReference, in TData data)
         {
             return true;

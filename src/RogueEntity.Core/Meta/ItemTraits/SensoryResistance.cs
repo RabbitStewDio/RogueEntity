@@ -1,5 +1,5 @@
 ﻿using System.Runtime.Serialization;
-using EnTTSharp.Annotations;
+using EnTTSharp.Entities.Attributes;
 using MessagePack;
 using RogueEntity.Core.Utils;
 

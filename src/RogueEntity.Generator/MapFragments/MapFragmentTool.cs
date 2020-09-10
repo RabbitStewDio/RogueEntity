@@ -1,10 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
+using EnTTSharp.Entities;
+using GoRogue.Util;
 using RogueEntity.Core.Infrastructure.Meta.Base;
 using RogueEntity.Core.Infrastructure.Meta.Items;
 using RogueEntity.Core.Infrastructure.Positioning.Grid;
+using RogueEntity.Core.Infrastructure.Randomness;
+using RogueEntity.Core.Meta.Base;
+using RogueEntity.Core.Meta.Items;
+using RogueEntity.Core.Movement.ItemCosts;
+using RogueEntity.Core.Positioning.Grid;
+using RogueEntity.Core.Positioning.MapLayers;
 using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.Maps;
+using RogueEntity.Generator.MapFragments;
 using Serilog;
 
 namespace ValionRL.Core.MapFragments
@@ -13,22 +22,31 @@ namespace ValionRL.Core.MapFragments
     {
         static readonly ILogger logger = SLog.ForContext(typeof(MapFragmentTool));
 
-        public static void CopyItemsToMap<TGameContext>(this TGameContext context, MapFragment f, EntityGridPosition position)
-            where TGameContext : IMapContext, IGameContext<TGameContext>, IGameContext
+        public static void CopyItemsToMap<TGameContext, TItemId>(this TGameContext context, 
+                                                                 MapFragment f, 
+                                                                 EntityGridPosition position,
+                                                                 MapLayer layerToCopy)
+            where TGameContext : IItemContext<TGameContext, TItemId>, IRandomContext, IGridMapContext<TGameContext, TItemId>
+            where TItemId : IEntityKey
         {
             if (position == EntityGridPosition.Invalid)
             {
                 throw new ArgumentException();
             }
 
-            var items = context.ItemRegistry.Items;
-            var itemsByPrefix = new List<IItem<TGameContext>>();
+            var items = context.ItemResolver.ItemRegistry.Items;
+            var itemsByPrefix = new List<IItemDeclaration>();
 
             var width = f.MapData.Width;
-            var randomGenerator = context.RandomGenerator(default, position.GetHashCode());
-            var groundData = context.Map.GroundData;
-            var itemData = context.Map.ItemData;
+            var randomGenerator = context.RandomGenerator(new ConstantRandomSeedSource(129),
+                                                          position.GetHashCode());
 
+            if (!context.TryGetGridDataFor(layerToCopy, out var itemMapContext))
+            {
+                return;
+            }
+            
+            
             foreach (var c in AreaRange.Of(width, f.MapData.Height))
             {
                 var entry = f.MapData[c.X, c.Y];
@@ -37,9 +55,9 @@ namespace ValionRL.Core.MapFragments
                     continue;
                 }
 
-                var targetX = position.X + c.X;
-                var targetY = position.Y + c.Y;
-                if (!IsValidMapPosition(context.Map, targetX, targetY))
+                var targetX = position.GridX + c.X;
+                var targetY = position.GridY + c.Y;
+                if (!IsValidMapPosition(itemMapContext, targetX, targetY))
                 {
                     continue;
                 }
@@ -64,11 +82,13 @@ namespace ValionRL.Core.MapFragments
             }
         }
 
-        static void PopulateItem<TGameContext>(TGameContext context, 
-                                               IGenerator randomGenerator,
+        static void PopulateItem<TGameContext>(TGameContext context,
+                                               Func<double> randomGenerator,
                                                IMapData<ItemReference> groundData,
                                                MapLayer layer,
-                                               int targetX, int targetY, int z,
+                                               int targetX,
+                                               int targetY,
+                                               int z,
                                                IItem<TGameContext> item)
             where TGameContext : IMapContext, IGameContext<TGameContext>, IGameContext
         {
@@ -144,9 +164,9 @@ namespace ValionRL.Core.MapFragments
             }
         }
 
-        static bool IsValidMapPosition(IGameMapView map, int targetX, int targetY)
+        static bool IsValidMapPosition<TGameContext, TItemId>(IGridMapDataContext<TGameContext, TItemId> map, int targetX, int targetY)
         {
-            if (targetX < 0 || targetX < 0)
+            if (targetX < 0 || targetY < 0)
             {
                 return false;
             }
@@ -165,8 +185,8 @@ namespace ValionRL.Core.MapFragments
         }
 
         static bool PopulateMatchingItem<TEntity>(ReadOnlyListWrapper<TEntity> itemDatabase,
-                                                    MapFragmentTagDeclaration tag,
-                                                    List<TEntity> itemResult)
+                                                  MapFragmentTagDeclaration tag,
+                                                  List<TEntity> itemResult)
             where TEntity : IWorldEntity
         {
             itemResult.Clear();
@@ -188,6 +208,7 @@ namespace ValionRL.Core.MapFragments
             {
                 logger.Warning("Unable to resolve any item for prefix '{Pattern}'", tag.ItemTag);
             }
+
             return itemResult.Count > 0;
         }
 
@@ -215,6 +236,7 @@ namespace ValionRL.Core.MapFragments
             {
                 logger.Warning("Unable to resolve any item for prefix '{Pattern}'", tag.GroundTag);
             }
+
             return itemResult.Count > 0;
         }
 
@@ -242,6 +264,7 @@ namespace ValionRL.Core.MapFragments
             {
                 logger.Warning("Unable to resolve any actor for prefix '{Pattern}'", tag.ActorTag);
             }
+
             return itemResult.Count > 0;
         }
     }

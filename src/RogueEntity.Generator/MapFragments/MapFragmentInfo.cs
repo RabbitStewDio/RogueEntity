@@ -1,7 +1,6 @@
-﻿using ValionRL.Core.Infrastructure;
-using ValionRL.Core.Infrastructure.Common;
+﻿using RogueEntity.Core.Utils;
 
-namespace ValionRL.Core.MapFragments
+namespace RogueEntity.Generator.MapFragments
 {
     public readonly struct MapFragmentInfo
     {

@@ -1,7 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using RogueEntity.Core.Utils;
+using RogueEntity.Generator.MapFragments;
 using Serilog;
-using ValionRL.Core.Infrastructure;
 
 namespace ValionRL.Core.MapFragments
 {

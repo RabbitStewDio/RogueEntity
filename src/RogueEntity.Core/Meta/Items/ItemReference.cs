@@ -1,5 +1,12 @@
 ﻿using System;
+using System.Runtime.Serialization;
 using EnTTSharp.Entities;
+using EnTTSharp.Entities.Attributes;
+using EnTTSharp.Serialization;
+using EnTTSharp.Serialization.Binary.AutoRegistration;
+using EnTTSharp.Serialization.Xml.AutoRegistration;
+using MessagePack;
+using MessagePack.Formatters;
 
 namespace RogueEntity.Core.Meta.Items
 {
@@ -28,6 +35,9 @@ namespace RogueEntity.Core.Meta.Items
     /// 
     /// </pre>
     /// </summary>
+    [EntityKey]
+    [EntityXmlSerialization]
+    [EntityBinarySerialization]
     public readonly struct ItemReference : IEquatable<ItemReference>, IBulkDataStorageKey<ItemReference>
     {
         public static int MaxAge => 7;
@@ -45,7 +55,7 @@ namespace RogueEntity.Core.Meta.Items
             get
             {
                 var raw = data & 0x8000_0000;
-                return raw == 0;
+                return raw == 0x8000_0000;
             }
         }
 
@@ -95,7 +105,7 @@ namespace RogueEntity.Core.Meta.Items
                     return 0;
                 }
 
-                return (int) ((data & 0xFFFF_0000) >> 16);
+                return (int) ((data & 0x7FFF_0000) >> 16);
             }
         }
 
@@ -103,19 +113,19 @@ namespace RogueEntity.Core.Meta.Items
         {
             if (IsReference)
             {
-                throw new InvalidOperationException();
+                throw new InvalidOperationException("Reference items cannot carry inline data.");
             }
 
             if (newData < 0 || newData > ushort.MaxValue)
             {
-                throw new InvalidOperationException();
+                throw new ArgumentOutOfRangeException(nameof(newData), newData, "The given data is not a valid ushort value.");
             }
-            return FromBulkItem((ushort) ItemId, (ushort) newData);
+            return FromBulkItem((short) ItemId, (ushort) newData);
         }
 
-        public static ItemReference FromReferencedItem(int age, int key)
+        public static ItemReference FromReferencedItem(byte age, int key)
         {
-            if (age < 0 || age > MaxAge) throw new ArgumentException();
+            if (age > MaxAge) throw new ArgumentException();
             if (key < 0 || key > 0x0FFF_FFFF) throw new ArgumentException();
 
             var rawData = 0x8000_0000;
@@ -124,10 +134,12 @@ namespace RogueEntity.Core.Meta.Items
             return new ItemReference(rawData);
         }
 
-        public static ItemReference FromBulkItem(ushort itemId, ushort data)
+        public static ItemReference FromBulkItem(short itemId, ushort data)
         {
-            if (itemId > short.MaxValue)
-                throw new ArgumentException();
+            if (itemId < 1)
+            {
+                throw new ArgumentOutOfRangeException(nameof(itemId), "should not be zero");
+            }
 
             var rawData = 0u;
             rawData |= (uint) (itemId << 16);
@@ -172,6 +184,29 @@ namespace RogueEntity.Core.Meta.Items
                 return $"Item[Ref]{ItemId & 0x7FFF:X8}";
             }
             return $"Item[Bulk]{ItemId:X4}[{Data:X4}]";
+        }
+
+        public static ItemReference BulkItemFactoryMethod<TGameContext>(IBulkItemDeclaration<TGameContext, ItemReference> itemDeclaration,
+                                                                        int declarationIndex)
+        {
+            if (declarationIndex < 1 || declarationIndex > short.MaxValue)
+            {
+                throw new ArgumentOutOfRangeException(nameof(declarationIndex), declarationIndex, "should be between 0 and 65,535");
+            }
+
+            return FromBulkItem((short) declarationIndex, 0);
+        }
+
+        [EntityBinaryFormatter]
+        public static IMessagePackFormatter BinaryFormatter(EntityKeyMapper<ItemReference> mapper)
+        {
+            return new ItemReferenceMessagePackFormatter(mapper);
+        }
+
+        [EntityXmlSurrogateProvider]
+        public static ISerializationSurrogateProvider XmlFormatter(EntityKeyMapper<ItemReference> mapper)
+        {
+            return new ItemReferenceSurrogateProvider(mapper);
         }
     }
 }

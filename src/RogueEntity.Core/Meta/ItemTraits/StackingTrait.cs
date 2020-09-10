@@ -15,7 +15,7 @@ namespace RogueEntity.Core.Meta.ItemTraits
         {
         }
 
-        public StackingTrait(ushort stackSize, ushort initialCount)
+        public StackingTrait(ushort initialCount, ushort stackSize)
         {
             Id = "ItemTrait.Bulk.Generic.Stacking";
             Priority = 100;

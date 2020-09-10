@@ -1,5 +1,6 @@
 ﻿using System;
 using RogueEntity.Core.Infrastructure.Positioning.Grid;
+using RogueEntity.Generator.MapFragments;
 using ValionRL.Core.MapFragments;
 
 namespace ValionRL.Core.Generator
