@@ -2,6 +2,7 @@
 using RogueEntity.Core.Infrastructure.Commands;
 using RogueEntity.Core.Infrastructure.GameLoops;
 using RogueEntity.Core.Infrastructure.Modules;
+using RogueEntity.Core.Meta;
 using RogueEntity.Core.Positioning.Continuous;
 using RogueEntity.Core.Positioning.Grid;
 
@@ -9,22 +10,27 @@ namespace RogueEntity.Core.Positioning
 {
     public static class PositionModule
     {
+        public const string ModuleId = "Core.Position";
+
         public static readonly EntitySystemId RegisterGridPositions = "Core.Entities.GridPosition";
         public static readonly EntitySystemId RegisterContinuousPositions = "Core.Entities.ContinuousPosition";
         public static readonly EntitySystemId RegisterClearContinuousPositionChangeTracker = "Core.Entities.ContinuousPosition.ClearChangeTracker";
         public static readonly EntitySystemId RegisterClearGridPositionChangeTracker = "Core.Entities.GridPosition.ClearChangeTracker";
     }
 
-    public abstract class PositionModule<TGameContext> : ModuleBase<TGameContext>
+    public class PositionModule<TGameContext> : ModuleBase<TGameContext>
     {
-        protected PositionModule()
+        public PositionModule()
         {
             Id = "Core.Inventory";
             Author = "RogueEntity.Core";
             Name = "RogueEntity Core Module - Positioning";
             Description = "Provides support for positioning items in a grid or continuous coordinate system";
+
+            DeclareDependencies(ModuleDependency.OfFrameworkEntity(CoreModule.ModuleId));
         }
 
+        [ModuleEntityInitializer]
         protected void RegisterAll<TActorId>(TGameContext context, IModuleInitializer<TGameContext> initializer)
             where TActorId : IEntityKey
         {

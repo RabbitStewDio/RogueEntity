@@ -60,9 +60,7 @@ namespace RogueEntity.Core.Utils
 
         public static Percentage operator +(Percentage left, Percentage right)
         {
-            float leftFl = left;
-            float value = leftFl + right;
-            return new Percentage(value);
+            return new Percentage((byte)(left.data + right.data).Clamp(0, 200));
         }
 
         public static bool operator ==(Percentage left, Percentage right)

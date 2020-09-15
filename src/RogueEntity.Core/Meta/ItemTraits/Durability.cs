@@ -23,6 +23,12 @@ namespace RogueEntity.Core.Meta.ItemTraits
         public readonly ushort MaxHitPoints;
 
         [SerializationConstructor]
+        public Durability(ushort hitPoints, ushort maxHitPoints)
+        {
+            HitPoints = hitPoints.Clamp(0, maxHitPoints);
+            MaxHitPoints = maxHitPoints;
+        }
+
         public Durability(int hitPoints, ushort maxHitPoints)
         {
             HitPoints = (ushort) hitPoints.Clamp(0, maxHitPoints);

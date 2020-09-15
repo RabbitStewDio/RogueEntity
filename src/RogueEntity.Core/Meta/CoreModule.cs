@@ -10,21 +10,24 @@ namespace RogueEntity.Core.Meta
 {
     public static class CoreModule
     {
+        public const string ModuleId = "Core.MetaModule";
+
         public static readonly EntitySystemId CoreTraitsId = "Core.CoreEntities";
         public static readonly EntitySystemId ItemTraitsId = "Core.ItemEntities";
         public static readonly EntitySystemId DestroyItemsId = "Core.Entity.DestroyMarked";
     }
 
-    public abstract class CoreModule<TGameContext> : ModuleBase<TGameContext>
+    public class CoreModule<TGameContext> : ModuleBase<TGameContext>
     {
-        protected CoreModule()
+        public CoreModule()
         {
-            Id = "Core.MetaModule";
+            Id = CoreModule.ModuleId;
             Author = "RogueEntity.Core";
             Name = "RogueEntity Core Module - Metaverse";
             Description = "Provides common item traits and system behaviours";
         }
 
+        [ModuleEntityInitializer]
         protected void RegisterAll<TItemId>(TGameContext context, IModuleInitializer<TGameContext> initializer) where TItemId : IEntityKey
         {
             var entityContext = initializer.DeclareEntityContext<TItemId>();
@@ -34,7 +37,8 @@ namespace RogueEntity.Core.Meta
             entityContext.Register(CoreModule.DestroyItemsId, int.MaxValue, RegisterCoreSystems);
         }
 
-        void RegisterCoreSystems<TItemId>(IGameLoopSystemRegistration<TGameContext> context, 
+
+        protected void RegisterCoreSystems<TItemId>(IGameLoopSystemRegistration<TGameContext> context, 
                                           EntityRegistry<TItemId> registry, 
                                           ICommandHandlerRegistration<TGameContext, TItemId> handler) where TItemId : IEntityKey
         {

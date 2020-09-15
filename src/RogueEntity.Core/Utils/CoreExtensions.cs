@@ -28,6 +28,11 @@ namespace RogueEntity.Core.Utils
             return Math.Max(min, Math.Min(max, value));
         }
 
+        public static ushort Clamp(this ushort value, ushort min, ushort max)
+        {
+            return Math.Max(min, Math.Min(max, value));
+        }
+
         public static TEnum[] GetValues<TEnum>() where TEnum : struct, IComparable, IConvertible, IFormattable
         {
             return (TEnum[]) Enum.GetValues(typeof(TEnum));

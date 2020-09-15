@@ -110,6 +110,8 @@
     <!--  Rethink that dependency -->
     <Allowed From="RogueEntity.Core.Movement.Pathing" To="RogueEntity.Core.Positioning.Grid"/>
 
+    <Allowed From="RogueEntity.Core.Positioning" To="RogueEntity.Core.Meta"/>
+
     <Allowed From="RogueEntity.Core.Positioning" To="RogueEntity.Core.Infrastructure.Modules"/>
     <Allowed From="RogueEntity.Core.Positioning" To="RogueEntity.Core.Infrastructure.GameLoops"/>
     <Allowed From="RogueEntity.Core.Positioning" To="RogueEntity.Core.Infrastructure.Commands"/>

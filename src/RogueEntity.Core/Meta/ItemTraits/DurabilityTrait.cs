@@ -14,7 +14,7 @@ namespace RogueEntity.Core.Meta.ItemTraits
         {
         }
 
-        public DurabilityTrait(ushort maxDurability, ushort initialCount)
+        public DurabilityTrait(ushort initialCount, ushort maxDurability)
         {
             Id = "ItemTrait.Generic.Durability";
             Priority = 100;
@@ -42,8 +42,7 @@ namespace RogueEntity.Core.Meta.ItemTraits
         {
             if (k.IsReference)
             {
-                t = baseValue;
-                return true;
+                return v.GetComponent(k, out t);
             }
 
             t = baseValue.WithHitPoints(k.Data);
@@ -55,8 +54,9 @@ namespace RogueEntity.Core.Meta.ItemTraits
         {
             if (k.IsReference)
             {
+                v.WriteBack(k, in t);
                 changedK = k;
-                return false;
+                return true;
             }
 
             changedK = k.WithData(t.HitPoints);

@@ -6,13 +6,13 @@ namespace RogueEntity.Core.Meta.StatusEffects
 {
     public readonly struct StatusFlagSet : IEquatable<StatusFlagSet>, IEnumerable<StatusFlag>
     {
-        readonly long statusEffects;
+        internal readonly long StatusEffects;
         readonly StatusFlagRegistry owner;
 
         public StatusFlagSet(StatusFlagRegistry owner, long statusEffects)
         {
             this.owner = owner;
-            this.statusEffects = statusEffects;
+            this.StatusEffects = statusEffects;
         }
 
         public StatusFlagSet Apply(StatusFlag e, bool v)
@@ -32,7 +32,7 @@ namespace RogueEntity.Core.Meta.StatusEffects
                 throw new ArgumentException();
             }
 
-            var statusEffects =  s.statusEffects | 1L << e.LinearIndex;
+            var statusEffects =  s.StatusEffects | 1L << e.LinearIndex;
             return new StatusFlagSet(s.owner, statusEffects);
         }
 
@@ -43,23 +43,23 @@ namespace RogueEntity.Core.Meta.StatusEffects
                 throw new ArgumentException();
             }
 
-            var statusEffects = s.statusEffects & (~(1L << e.LinearIndex));
+            var statusEffects = s.StatusEffects & (~(1L << e.LinearIndex));
             return new StatusFlagSet(s.owner, statusEffects);
         }
 
         public bool ContainsAll(StatusFlagQuery q)
         {
-            return (statusEffects & q.Mask) == q.Mask;
+            return (StatusEffects & q.Mask) == q.Mask;
         }
 
         public bool ContainsAny(StatusFlagQuery q)
         {
-            return (statusEffects & q.Mask) != 0;
+            return (StatusEffects & q.Mask) != 0;
         }
 
         public bool ContainsNone(StatusFlagQuery q)
         {
-            return (statusEffects & q.Mask) == 0;
+            return (StatusEffects & q.Mask) == 0;
         }
 
         public bool Contains(StatusFlag e)
@@ -70,12 +70,12 @@ namespace RogueEntity.Core.Meta.StatusEffects
             }
             
             var mask = 1L << e.LinearIndex;
-            return (statusEffects & mask) == mask;
+            return (StatusEffects & mask) == mask;
         }
 
         public bool Equals(StatusFlagSet other)
         {
-            return statusEffects == other.statusEffects && Equals(owner, other.owner);
+            return StatusEffects == other.StatusEffects && Equals(owner, other.owner);
         }
 
         public override bool Equals(object obj)
@@ -87,7 +87,7 @@ namespace RogueEntity.Core.Meta.StatusEffects
         {
             unchecked
             {
-                return (statusEffects.GetHashCode() * 397) ^ (owner != null ? owner.GetHashCode() : 0);
+                return (StatusEffects.GetHashCode() * 397) ^ (owner != null ? owner.GetHashCode() : 0);
             }
         }
 
@@ -146,7 +146,7 @@ namespace RogueEntity.Core.Meta.StatusEffects
 
         public Enumerator GetEnumerator()
         {
-            return new Enumerator(this.statusEffects, this.owner);
+            return new Enumerator(this.StatusEffects, this.owner);
         }
 
         IEnumerator IEnumerable.GetEnumerator()

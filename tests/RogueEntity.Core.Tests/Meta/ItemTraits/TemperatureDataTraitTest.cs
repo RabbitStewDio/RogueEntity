@@ -1,8 +1,9 @@
 ﻿using EnTTSharp.Entities;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Meta.ItemTraits;
+using RogueEntity.Core.Tests.Meta.Items;
 
-namespace RogueEntity.Core.Tests.Meta.Items
+namespace RogueEntity.Core.Tests.Meta.ItemTraits
 {
     public class TemperatureDataTraitTest : ItemComponentTraitTestBase<BasicItemContext, ItemReference, Temperature, TemperatureTrait<BasicItemContext, ItemReference>>
     {

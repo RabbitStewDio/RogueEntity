@@ -12,8 +12,12 @@ namespace RogueEntity.Core.Infrastructure.Modules
         string Author { get; }
         string Description { get; }
 
-        IEnumerable<string> ModuleDependencies { get; }
-        void Initialize(TGameContext context, 
+        IEnumerable<ModuleDependency> ModuleDependencies { get; }
+
+        void InitializeContent(TGameContext context,
+                               IModuleInitializer<TGameContext> initializer);
+
+        void Initialize(Type entityKey, TGameContext context, 
                         IModuleInitializer<TGameContext> initializer);
     }
 
@@ -31,11 +35,13 @@ namespace RogueEntity.Core.Infrastructure.Modules
         ItemDeclarationId Declare(IBulkItemDeclaration<TGameContext, TEntityId> item);
         ItemDeclarationId Declare(IReferenceItemDeclaration<TGameContext, TEntityId> item);
 
-        void Register(EntitySystemId id, int priority,
+        void Register(EntitySystemId id,
+                      int priority,
                       Action<EntityRegistry<TEntityId>> entityRegistration,
                       ModuleEntityContext<TGameContext, TEntityId>.SystemRegistrationDelegate systemRegistration = null);
 
-        void Register(EntitySystemId id, int priority,
+        void Register(EntitySystemId id,
+                      int priority,
                       ModuleEntityContext<TGameContext, TEntityId>.SystemRegistrationDelegate systemRegistration = null);
     }
 }

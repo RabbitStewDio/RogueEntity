@@ -105,7 +105,7 @@ namespace RogueEntity.Core.Tests.Meta.Items
             var testData = ProduceTestData(ProduceItemRelations(item));
             if (testData.UpdateAllowed)
             {
-                Context.ItemResolver.TryUpdateData(item, Context, testData.ChangedValue, out item).Should().BeTrue();
+                Context.ItemResolver.TryUpdateData(item, Context, testData.ChangedValue, out item).Should().BeTrue($"because {item} has been successfully updated.");
                 Context.ItemResolver.TryQueryData(item, Context, out TData data).Should().BeTrue();
                 data.Should().Be(testData.ChangedValue);
             }

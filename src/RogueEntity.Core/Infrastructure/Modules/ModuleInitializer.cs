@@ -14,7 +14,6 @@ namespace RogueEntity.Core.Infrastructure.Modules
             moduleInitializers = new Dictionary<Type, object>();
         }
 
-
         public IModuleEntityContext<TGameContext, TEntityId> DeclareEntityContext<TEntityId>() where TEntityId : IEntityKey
         {
             if (moduleInitializers.TryGetValue(typeof(TEntityId), out var raw))
