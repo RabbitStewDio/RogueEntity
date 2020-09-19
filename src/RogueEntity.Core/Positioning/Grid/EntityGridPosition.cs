@@ -7,7 +7,7 @@ using RogueEntity.Core.Positioning.MapLayers;
 namespace RogueEntity.Core.Positioning.Grid
 {
     /// <summary>
-    ///   A densly packed 4D tile coordinate. The coordinate encodes a 3D coordinate with
+    ///   A densely packed 4D tile coordinate. The coordinate encodes a 3D coordinate with
     ///   unsigned members and a maximum extent of x=2^24, y=2^24, z=2^12 (aka x=16M, y=16M, z=4k) meters
     ///   and 7 layers for each coordinate point.
     /// </summary>
@@ -90,6 +90,8 @@ namespace RogueEntity.Core.Positioning.Grid
             return new EntityGridPosition(layer, (uint) x, (uint)y, (uint)z);
         }
 
+        [IgnoreMember]
+        [IgnoreDataMember]
         public bool IsInvalid => LayerId == 0;
 
         public static EntityGridPosition Invalid => default;
@@ -138,6 +140,8 @@ namespace RogueEntity.Core.Positioning.Grid
             return $"({LayerId}: {GridX}, {GridY}, {GridZ})";
         }
 
+        [IgnoreMember]
+        [IgnoreDataMember]
         public byte LayerId
         {
             get
@@ -151,10 +155,20 @@ namespace RogueEntity.Core.Positioning.Grid
             }
         }
 
+        [IgnoreMember]
+        [IgnoreDataMember]
         public double X => GridX;
+        
+        [IgnoreMember]
+        [IgnoreDataMember]
         public double Y => GridY;
+
+        [IgnoreMember]
+        [IgnoreDataMember]
         public double Z => GridZ;
 
+        [IgnoreMember]
+        [IgnoreDataMember]
         public int GridX
         {
             get
@@ -168,6 +182,8 @@ namespace RogueEntity.Core.Positioning.Grid
             }
         }
 
+        [IgnoreMember]
+        [IgnoreDataMember]
         public int GridY
         {
             get
@@ -181,6 +197,8 @@ namespace RogueEntity.Core.Positioning.Grid
             }
         }
 
+        [IgnoreMember]
+        [IgnoreDataMember]
         public int GridZ
         {
             get

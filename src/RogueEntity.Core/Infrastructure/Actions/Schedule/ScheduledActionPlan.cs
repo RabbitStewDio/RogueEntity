@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Runtime.Serialization;
 using EnTTSharp.Entities;
 
-namespace RogueEntity.Core.Infrastructure.Actions
+namespace RogueEntity.Core.Infrastructure.Actions.Schedule
 {
     [DataContract]
     [Serializable]

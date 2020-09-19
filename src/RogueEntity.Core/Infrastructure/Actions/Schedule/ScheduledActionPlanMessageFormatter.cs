@@ -2,7 +2,7 @@
 using MessagePack;
 using MessagePack.Formatters;
 
-namespace RogueEntity.Core.Infrastructure.Actions
+namespace RogueEntity.Core.Infrastructure.Actions.Schedule
 {
     public class ScheduledActionPlanMessageFormatter<TContext, TActorId>: IMessagePackFormatter<ScheduledActionPlan<TContext, TActorId>> 
         where TActorId : IEntityKey

@@ -1,5 +1,4 @@
-﻿using GoRogue;
-using GoRogue.Pathing;
+﻿using GoRogue.Pathing;
 using RogueEntity.Core.Positioning.Grid;
 
 namespace RogueEntity.Core.Movement.Pathing

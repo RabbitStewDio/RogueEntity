@@ -1,13 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using RogueEntity.Core.Infrastructure.Time;
 
 namespace RogueEntity.Core.Infrastructure.GameLoops
 {
     public class GameTimeProcessor
     {
-        static readonly List<FixedTimeStep> EmptyList = new List<FixedTimeStep>();
-
         public TimeSpan TimeStepDuration { get; set; }
 
         public GameTimeProcessor(float timeStepDuration = 1 / 60f)

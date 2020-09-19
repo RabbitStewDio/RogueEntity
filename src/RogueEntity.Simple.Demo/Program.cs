@@ -1,6 +1,4 @@
-﻿using System;
-using SadConsole;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 using Console = SadConsole.Console;
 
 namespace RogueEntity.Simple.Demo

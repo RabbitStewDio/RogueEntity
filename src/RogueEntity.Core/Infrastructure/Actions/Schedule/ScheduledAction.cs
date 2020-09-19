@@ -3,7 +3,7 @@ using System.Runtime.Serialization;
 using EnTTSharp.Entities;
 using MessagePack;
 
-namespace RogueEntity.Core.Infrastructure.Actions
+namespace RogueEntity.Core.Infrastructure.Actions.Schedule
 {
     /// <summary>
     ///  Represents the next scheduled action the character should perform.

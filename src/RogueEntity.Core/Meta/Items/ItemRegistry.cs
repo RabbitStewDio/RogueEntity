@@ -1,23 +1,26 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using RogueEntity.Core.Utils;
 using Serilog;
 
 namespace RogueEntity.Core.Meta.Items
 {
-    public class ItemRegistry<TContext, TItemId> : IItemRegistry where TItemId : IBulkDataStorageKey<TItemId>
+    public class ItemRegistry<TContext, TItemId> : IItemRegistry, 
+                                                   IBulkItemIdMapping 
+        where TItemId : IBulkDataStorageKey<TItemId>
     {
         readonly ILogger logger = SLog.ForContext<ItemRegistry<TContext, TItemId>>();
 
-        readonly Func<IBulkItemDeclaration<TContext, TItemId>, int, TItemId> bulkItemIdFactory;
-        readonly Dictionary<ItemDeclarationId, (int, IBulkItemDeclaration<TContext, TItemId>)> bulkItems;
+        readonly Func<int, TItemId> bulkItemIdFactory;
+        readonly Dictionary<ItemDeclarationId, (int index, IBulkItemDeclaration<TContext, TItemId> itemDeclaration)> bulkItems;
         readonly Dictionary<int, IBulkItemDeclaration<TContext, TItemId>> bulkItemReverseIndex;
         readonly Dictionary<ItemDeclarationId, IItemDeclaration> itemsById;
         readonly Dictionary<ItemDeclarationId, IReferenceItemDeclaration<TContext, TItemId>> referenceItemsById;
         readonly List<IItemDeclaration> items;
         int bulkItemIdSequence;
 
-        public ItemRegistry(Func<IBulkItemDeclaration<TContext, TItemId>, int, TItemId> bulkItemIdFactory)
+        public ItemRegistry(Func<int, TItemId> bulkItemIdFactory)
         {
             this.bulkItemIdFactory = bulkItemIdFactory;
             bulkItems = new Dictionary<ItemDeclarationId, (int, IBulkItemDeclaration<TContext, TItemId>)>();
@@ -32,7 +35,7 @@ namespace RogueEntity.Core.Meta.Items
         {
             if (TryGetBulkItemId(item, out var id))
             {
-                return bulkItemIdFactory(item, id);
+                return bulkItemIdFactory(id);
             }
             throw new ArgumentException($"The given item declaration {item.Id} has not been registered here.");
         }
@@ -120,7 +123,7 @@ namespace RogueEntity.Core.Meta.Items
         {
             if (bulkItems.TryGetValue(item.Id, out var reg))
             {
-                id = reg.Item1;
+                id = reg.index;
                 return true;
             }
 
@@ -142,7 +145,7 @@ namespace RogueEntity.Core.Meta.Items
         {
             if (bulkItems.TryGetValue(id, out var reg))
             {
-                item = reg.Item2;
+                item = reg.itemDeclaration;
                 return true;
             }
 
@@ -153,6 +156,30 @@ namespace RogueEntity.Core.Meta.Items
         public bool TryGetReferenceItemById(ItemDeclarationId id, out IReferenceItemDeclaration<TContext, TItemId> item)
         {
             return referenceItemsById.TryGetValue(id, out item);
+        }
+
+        public IBulkItemIdMapping BulkItemMapping => this;
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        public IEnumerator<int> GetEnumerator()
+        {
+            return bulkItemReverseIndex.Keys.GetEnumerator();
+        }
+
+        public bool TryResolveBulkItem(int id, out ItemDeclarationId itemName)
+        {
+            if (bulkItemReverseIndex.TryGetValue(id, out var val))
+            {
+                itemName = val.Id;
+                return true;
+            }
+
+            itemName = default;
+            return false;
         }
     }
 }

@@ -2,7 +2,7 @@
 using RogueEntity.Core.Meta.Items;
 using Serilog;
 
-namespace RogueEntity.Core.Infrastructure.Actions
+namespace RogueEntity.Core.Infrastructure.Actions.Schedule
 {
     public static class SchedulerExtensions
     {

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using RogueEntity.Core.Utils;
 
@@ -7,6 +8,7 @@ namespace RogueEntity.Core.Infrastructure.Modules
 {
     public abstract class ModuleBase<TGameContext> : IModule<TGameContext>
     {
+        [SuppressMessage("ReSharper", "UnusedTypeParameter")]
         protected delegate void EntityInitializer<TEntityKey>(TGameContext context, IModuleInitializer<TGameContext> initializer);
 
         readonly List<ModuleDependency> moduleDependencies;

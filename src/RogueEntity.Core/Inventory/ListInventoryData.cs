@@ -76,18 +76,18 @@ namespace RogueEntity.Core.Inventory
         {
             var changedItems = new List<TItemId>(this.items);
             changedItems.Insert(index, item);
-            var totalWeight = TotalWeight + weight;
+            var newTotalWeight = TotalWeight + weight;
             var availableWeight = AvailableCarryWeight - weight;
-            return new ListInventoryData<TOwnerId, TItemId>(ownerData, totalWeight, availableWeight, changedItems);
+            return new ListInventoryData<TOwnerId, TItemId>(ownerData, newTotalWeight, availableWeight, changedItems);
         }
 
         public ListInventoryData<TOwnerId, TItemId> Update(int index, Weight weight, TItemId itemId)
         {
             var changedItems = new List<TItemId>(this.items);
             changedItems[index] = itemId;
-            var totalWeight = TotalWeight + weight;
+            var updatedWeight = TotalWeight + weight;
             var availableWeight = AvailableCarryWeight - weight;
-            return new ListInventoryData<TOwnerId, TItemId>(ownerData, totalWeight, availableWeight, changedItems);
+            return new ListInventoryData<TOwnerId, TItemId>(ownerData, updatedWeight, availableWeight, changedItems);
         }
 
         public ListInventoryData<TOwnerId, TItemId> RemoveAt(int itemPosition, Weight weight) 
@@ -95,18 +95,18 @@ namespace RogueEntity.Core.Inventory
             var changedItems = new List<TItemId>(this.items);
             changedItems.RemoveAt(itemPosition);
 
-            var totalWeight = TotalWeight - weight;
+            var updatedWeight = TotalWeight - weight;
             var availableWeight = AvailableCarryWeight + weight;
-            return new ListInventoryData<TOwnerId, TItemId>(ownerData, totalWeight, availableWeight, changedItems);
+            return new ListInventoryData<TOwnerId, TItemId>(ownerData, updatedWeight, availableWeight, changedItems);
         }
 
         public ListInventoryData<TOwnerId, TItemId> RemovePartialStackAt(int itemPosition, Weight weight, TItemId itemId) 
         {
             var changedItems = new List<TItemId>(this.items);
             changedItems[itemPosition] = itemId;
-            var totalWeight = TotalWeight - weight;
+            var updatedWeight = TotalWeight - weight;
             var availableWeight = AvailableCarryWeight + weight;
-            return new ListInventoryData<TOwnerId, TItemId>(ownerData, totalWeight, availableWeight, changedItems);
+            return new ListInventoryData<TOwnerId, TItemId>(ownerData, updatedWeight, availableWeight, changedItems);
         }
     }
 }

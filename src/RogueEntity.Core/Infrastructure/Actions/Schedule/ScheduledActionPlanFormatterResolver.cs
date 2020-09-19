@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using MessagePack;
 using MessagePack.Formatters;
 
-namespace RogueEntity.Core.Infrastructure.Actions
+namespace RogueEntity.Core.Infrastructure.Actions.Schedule
 {
     public class ScheduledActionPlanFormatterResolver : IFormatterResolver
     {

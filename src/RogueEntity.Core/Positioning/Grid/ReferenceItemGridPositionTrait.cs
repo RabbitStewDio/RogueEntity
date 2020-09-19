@@ -3,7 +3,6 @@ using EnTTSharp.Entities;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Positioning.MapLayers;
 using RogueEntity.Core.Utils;
-using RogueEntity.Core.Utils.Maps;
 using Serilog;
 
 namespace RogueEntity.Core.Positioning.Grid
@@ -134,7 +133,7 @@ namespace RogueEntity.Core.Positioning.Grid
                 previousMap[previousPosition.GridX, previousPosition.GridY] = default;
                 v.RemoveComponent<EntityGridPosition>(k);
                 previousMapContext.MarkDirty(previousPosition);
-                logger.Verbose("Desired position is invalid, removed item {Item} from map", k);
+                logger.Verbose("Desired position is EntityGridPosition.Invalid, therefore removed item {Item} from map", k);
                 return true;
             }
 
@@ -147,12 +146,19 @@ namespace RogueEntity.Core.Positioning.Grid
             if (!context.TryGetGridDataFor(layerId, out var mapDataContext) ||
                 !mapDataContext.TryGetMap(desiredPosition.GridZ, out var targetMap))
             {
-                logger.Warning("Invalid layer {Layer} for unresolvabled map data for item {ItemId}", layerId, k);
+                logger.Warning("Invalid layer {Layer} for unresolvable map data for item {ItemId}", layerId, k);
                 changedK = k;
                 return false;
             }
 
-            if (!targetMap[desiredPosition.GridX, desiredPosition.GridY].IsEmpty)
+            var gridX = desiredPosition.GridX;
+            var gridY = desiredPosition.GridY;
+            if (gridX < 0 || gridY < 0 || gridX >= targetMap.Width || gridY >= targetMap.Height)
+            {
+                logger.Verbose("Desired position is out of range for map size of {Size} with {Pos}", (gridX, gridY), desiredPosition);
+                return false;
+            }
+            if (!targetMap[gridX, gridY].IsEmpty)
             {
                 // target position is not empty. We would overwrite 
                 // an existing actor.
@@ -173,7 +179,7 @@ namespace RogueEntity.Core.Positioning.Grid
                 previousItemMap.MarkDirty(previousPosition);
             }
 
-            targetMap[desiredPosition.GridX, desiredPosition.GridY] = k;
+            targetMap[gridX, gridY] = k;
             v.AssignOrReplace(k, in desiredPosition);
             mapDataContext.MarkDirty(desiredPosition);
             logger.Verbose("Placed item {Item} at {Pos}", k, desiredPosition);
@@ -192,8 +198,7 @@ namespace RogueEntity.Core.Positioning.Grid
 
         bool IItemComponentTrait<TGameContext, TItemId, EntityGridPositionChangedMarker>.TryRemove(IEntityViewControl<TItemId> entityRegistry, TGameContext context, TItemId k, out TItemId changedItem)
         {
-            changedItem = k;
-            return false;
+            return TryUpdate(entityRegistry, context, k, EntityGridPosition.Invalid, out changedItem);
         }
 
         bool IItemComponentTrait<TGameContext, TItemId, MapLayerPreference>.TryRemove(IEntityViewControl<TItemId> entityRegistry, TGameContext context, TItemId k, out TItemId changedItem)

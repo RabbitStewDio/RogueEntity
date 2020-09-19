@@ -46,7 +46,7 @@ namespace RogueEntity.Core.Tests.Meta.Items
             activeItems.Clear();
             Context = CreateContext();
 
-            EntityRegistry.RegisterNonConstructable<ItemDeclarationHolder<BasicItemContext, ItemReference>>();
+            EntityRegistry.RegisterNonConstructable<ItemDeclarationHolder<TGameContext, ItemReference>>();
 
             SubjectTrait = CreateTrait();
 
@@ -75,6 +75,7 @@ namespace RogueEntity.Core.Tests.Meta.Items
 
         protected abstract EntityRegistry<TItemId> EntityRegistry { get; }
         protected abstract ItemRegistry<TGameContext, TItemId> ItemRegistry { get; }
+        protected abstract IBulkDataStorageMetaData<TItemId> ItemIdMetaData { get; }
 
         protected abstract TGameContext CreateContext();
         protected abstract TItemTrait CreateTrait();
@@ -112,8 +113,15 @@ namespace RogueEntity.Core.Tests.Meta.Items
 
             Context.ItemResolver.Apply(item, Context);
 
-            Context.ItemResolver.TryQueryData(item, Context, out TData data2).Should().BeTrue();
-            data2.Should().Be(testData.ApplyValue, "because apply should not reset existing data.");
+            if (testData.TryGetApplyValue(out var applyValue))
+            {
+                Context.ItemResolver.TryQueryData(item, Context, out TData data2).Should().BeTrue();
+                data2.Should().Be(applyValue, "because apply should not reset existing data.");
+            }
+            else
+            {
+                Context.ItemResolver.TryQueryData(item, Context, out TData _).Should().BeFalse();
+            }
         }
 
         protected virtual void Validate_Initialize(ItemDeclarationId itemId)
@@ -121,8 +129,15 @@ namespace RogueEntity.Core.Tests.Meta.Items
             var item = Context.ItemResolver.Instantiate(Context, itemId);
             var testData = ProduceTestData(ProduceItemRelations(item));
 
-            Context.ItemResolver.TryQueryData(item, Context, out TData data).Should().BeTrue();
-            data.Should().Be(testData.DefaultValue);
+            if (testData.TryGetInitialValue(out var initialData))
+            {
+                Context.ItemResolver.TryQueryData(item, Context, out TData data).Should().BeTrue();
+                data.Should().Be(initialData);
+            }
+            else
+            {
+                Context.ItemResolver.TryQueryData(item, Context, out TData _).Should().BeFalse();
+            }
         }
 
         [Test]
@@ -303,10 +318,12 @@ namespace RogueEntity.Core.Tests.Meta.Items
             {
                 Assert.Fail("Unable to register item declaration type.");
             }
+
             if (!scn.TryRegisterComponent<TData>(out var registration))
             {
                 Assert.Fail("Unable to register component type.");
             }
+
             if (!scn.TryRegisterKey<TItemId>(out var keyRegistration))
             {
                 Assert.Fail("Unable to register key type");
@@ -343,6 +360,7 @@ namespace RogueEntity.Core.Tests.Meta.Items
             {
                 Assert.Fail("Unable to register item declaration type.");
             }
+
             if (!scn.TryRegisterComponent<TData>(out var registration))
             {
                 Assert.Fail("Unable to register component type.");
@@ -377,8 +395,9 @@ namespace RogueEntity.Core.Tests.Meta.Items
                                                           EntityKeyMapper<TItemId> mapper,
                                                           params EntityComponentRegistration[] components)
         {
+            var bulkIdSerializationMapper = new BulkItemIdSerializationMapper<TItemId>(ItemIdMetaData.BulkDataFactory, ItemRegistry, ItemRegistry);
             resolvers.Register(new ItemDeclarationHolderSurrogateProvider<TGameContext, TItemId>(Context));
-
+            resolvers.Register(new BulkKeySurrogateProvider<TItemId>(ItemIdMetaData, mapper, bulkIdSerializationMapper.TryMap));
             foreach (var c in components)
             {
                 if (c == null)
@@ -421,6 +440,7 @@ namespace RogueEntity.Core.Tests.Meta.Items
             {
                 Assert.Fail("Unable to register item declaration type.");
             }
+
             if (!scn.TryRegisterComponent<TData>(out var registration))
             {
                 Assert.Fail("Unable to register component type.");
@@ -439,7 +459,7 @@ namespace RogueEntity.Core.Tests.Meta.Items
             {
                 var stream = new MemoryStream();
 
-                var msgPackOptions = MessagePackSerializerOptions.Standard.WithResolver(CreateWriteResolver(null, registration, keyRegistration));
+                var msgPackOptions = MessagePackSerializerOptions.Standard.WithResolver(CreateMessageResolver(WriteMapper, registration, keyRegistration));
                 var writer = new BinaryArchiveWriter<TItemId>(reg, stream, msgPackOptions);
 
                 sn.WriteAll(writer);
@@ -447,7 +467,8 @@ namespace RogueEntity.Core.Tests.Meta.Items
             }
         }
 
-
+        TItemId WriteMapper(EntityKeyData d) => ItemIdMetaData.EntityKeyFactory(d.Age, d.Key);
+        
         TItemId DeserializeFromBinary(byte[] data, TItemId originalId)
         {
             var scn = new EntityRegistrationScanner().With(new BinaryEntityRegistrationHandler<TItemId>());
@@ -455,6 +476,7 @@ namespace RogueEntity.Core.Tests.Meta.Items
             {
                 Assert.Fail("Unable to register item declaration type.");
             }
+
             if (!scn.TryRegisterComponent<TData>(out var registration))
             {
                 Assert.Fail("Unable to register component type.");
@@ -472,7 +494,7 @@ namespace RogueEntity.Core.Tests.Meta.Items
 
             using (var ld = EntityRegistry.CreateLoader())
             {
-                var msgPackOptions = MessagePackSerializerOptions.Standard.WithResolver(CreateWriteResolver(ld.Map, registration, keyRegistration));
+                var msgPackOptions = MessagePackSerializerOptions.Standard.WithResolver(CreateMessageResolver(ld.Map, registration, keyRegistration));
                 var reader = new BinaryBulkArchiveReader<TItemId>(readerBackend, msgPackOptions);
 
                 var stream = new MemoryStream(data);
@@ -487,14 +509,17 @@ namespace RogueEntity.Core.Tests.Meta.Items
             }
         }
 
-        IFormatterResolver CreateWriteResolver(EntityKeyMapper<TItemId> mapper,
-                                               params EntityComponentRegistration[] components)
+        IFormatterResolver CreateMessageResolver(EntityKeyMapper<TItemId> mapper,
+                                                 params EntityComponentRegistration[] components)
         {
+            var bulkIdSerializationMapper = new BulkItemIdSerializationMapper<TItemId>(ItemIdMetaData.BulkDataFactory, ItemRegistry, ItemRegistry);
+
             var resolvers = new List<IFormatterResolver>();
             var formatters = new List<IMessagePackFormatter>
             {
-                new EntityKeyDataFormatter(), 
-                new ItemDeclarationHolderMessagePackFormatter<TGameContext, TItemId>(Context)
+                new EntityKeyDataFormatter(),
+                new ItemDeclarationHolderMessagePackFormatter<TGameContext, TItemId>(Context),
+                new BulkKeyMessagePackFormatter<TItemId>(ItemIdMetaData, mapper, bulkIdSerializationMapper.TryMap)
             };
 
             foreach (var c in components)
@@ -544,7 +569,7 @@ namespace RogueEntity.Core.Tests.Meta.Items
                 }
             }
 
-            resolvers.Add(StandardResolver.Instance);
+            resolvers.Add(StandardResolverAllowPrivate.Instance);
             return CompositeResolver.Create(formatters, resolvers);
         }
     }

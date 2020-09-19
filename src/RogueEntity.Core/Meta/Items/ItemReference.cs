@@ -5,7 +5,6 @@ using EnTTSharp.Entities.Attributes;
 using EnTTSharp.Serialization;
 using EnTTSharp.Serialization.Binary.AutoRegistration;
 using EnTTSharp.Serialization.Xml.AutoRegistration;
-using MessagePack;
 using MessagePack.Formatters;
 
 namespace RogueEntity.Core.Meta.Items
@@ -40,6 +39,7 @@ namespace RogueEntity.Core.Meta.Items
     [EntityBinarySerialization]
     public readonly struct ItemReference : IEquatable<ItemReference>, IBulkDataStorageKey<ItemReference>
     {
+        public static readonly ItemReference Empty = default;
         public static int MaxAge => 7;
         readonly uint data;
 
@@ -186,8 +186,7 @@ namespace RogueEntity.Core.Meta.Items
             return $"Item[Bulk]{ItemId:X4}[{Data:X4}]";
         }
 
-        public static ItemReference BulkItemFactoryMethod<TGameContext>(IBulkItemDeclaration<TGameContext, ItemReference> itemDeclaration,
-                                                                        int declarationIndex)
+        public static ItemReference BulkItemFactoryMethod(int declarationIndex)
         {
             if (declarationIndex < 1 || declarationIndex > short.MaxValue)
             {
@@ -195,18 +194,6 @@ namespace RogueEntity.Core.Meta.Items
             }
 
             return FromBulkItem((short) declarationIndex, 0);
-        }
-
-        [EntityBinaryFormatter]
-        public static IMessagePackFormatter BinaryFormatter(EntityKeyMapper<ItemReference> mapper)
-        {
-            return new ItemReferenceMessagePackFormatter(mapper);
-        }
-
-        [EntityXmlSurrogateProvider]
-        public static ISerializationSurrogateProvider XmlFormatter(EntityKeyMapper<ItemReference> mapper)
-        {
-            return new ItemReferenceSurrogateProvider(mapper);
         }
     }
 }

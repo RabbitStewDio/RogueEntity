@@ -8,9 +8,6 @@ namespace RogueEntity.Core.Meta.Items
         ///   This method is called right after an character has been spawned. Use this for
         ///   your first time set up.
         /// </summary>
-        /// <param name="reference"></param>
-        /// <param name="entityRegistry"></param>
-        /// <param name="entity"></param>
         void Initialize(IEntityViewControl<TItemId> v, TContext context, TItemId k, IItemDeclaration item);
 
         /// <summary>

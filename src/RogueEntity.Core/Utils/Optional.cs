@@ -49,9 +49,9 @@ namespace RogueEntity.Core.Utils
             this.value = value;
         }
 
-        public bool TryGetValue(out T value)
+        public bool TryGetValue(out T v)
         {
-            value = this.value;
+            v = this.value;
             return HasValue;
         }
 

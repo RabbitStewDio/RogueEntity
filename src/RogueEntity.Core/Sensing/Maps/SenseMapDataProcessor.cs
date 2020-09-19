@@ -4,7 +4,6 @@ using RogueEntity.Core.Meta.ItemTraits;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Positioning.MapLayers;
 using RogueEntity.Core.Utils.MapChunks;
-using RogueEntity.Core.Utils.Maps;
 
 namespace RogueEntity.Core.Sensing.Maps
 {

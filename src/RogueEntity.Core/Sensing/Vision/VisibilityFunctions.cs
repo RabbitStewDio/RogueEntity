@@ -21,11 +21,6 @@ namespace RogueEntity.Core.Sensing.Vision
         ///   Smell, hearing and other senses are not affected by the environment
         ///   but are affected by distance. 
         /// </summary>
-        /// <param name="actor"></param>
-        /// <param name="context"></param>
-        /// <param name="radius"></param>
-        /// <param name="pos"></param>
-        /// <returns></returns>
         public static Percentage SenseAll<TGameContext, TActorId>(TActorId actor,
                                                                   TGameContext context,
                                                                   in Position actorOrigin,
@@ -58,11 +53,6 @@ namespace RogueEntity.Core.Sensing.Vision
         ///   Vision is not affected by distance (at least for the ranges we deal
         ///   with) and as such the radius does not come into play.
         /// </summary>
-        /// <param name="r"></param>
-        /// <param name="context"></param>
-        /// <param name="radius"></param>
-        /// <param name="pos"></param>
-        /// <returns></returns>
         public static Percentage VisionSense<TGameContext, TActorId>(TActorId r, TGameContext context,
                                                                      in Position actorOrigin,
                                                                      in Position pos)

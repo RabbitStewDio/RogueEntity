@@ -1,11 +1,18 @@
 ﻿using System;
+using System.Runtime.Serialization;
+using MessagePack;
 
 namespace RogueEntity.Core.Meta.Items
 {
+    [MessagePackObject]
+    [DataContract]
     public readonly struct ItemDeclarationId : IEquatable<ItemDeclarationId>
     {
+        [DataMember(Order = 0)]
+        [Key(0)]
         public readonly string Id;
 
+        [SerializationConstructor]
         public ItemDeclarationId(string id)
         {
             this.Id = id;

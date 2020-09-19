@@ -7,5 +7,7 @@ namespace RogueEntity.Core.Meta.Items
         bool TryGetItemById(ItemDeclarationId id, out IItemDeclaration item);
         IItemDeclaration ReferenceItemById(ItemDeclarationId id);
         ReadOnlyListWrapper<IItemDeclaration> Items { get; }
+        
+        IBulkItemIdMapping BulkItemMapping { get; }
     }
 }
