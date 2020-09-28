@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq.Expressions;
 
 namespace RogueEntity.Core.Utils
@@ -94,6 +95,56 @@ namespace RogueEntity.Core.Utils
                 );
                 return lambdaExpression.Compile();
             }
+        }
+
+        public static bool EqualsList<TItem>(ReadOnlyListWrapper<TItem> a, ReadOnlyListWrapper<TItem> b)
+        {
+            if (a.Count != b.Count) return false;
+            
+            for (var i = 0; i < a.Count; i++)
+            {
+                if (!EqualityComparer<TItem>.Default.Equals(a[i], b[i]))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+        
+        public static bool EqualsList<TItem>(IReadOnlyList<TItem> a, IReadOnlyList<TItem> b)
+        {
+            if (ReferenceEquals(a, b)) return true;
+            if (a == null || b == null) return false;
+            if (a.Count != b.Count) return false;
+            
+            for (var i = 0; i < a.Count; i++)
+            {
+                if (!EqualityComparer<TItem>.Default.Equals(a[i], b[i]))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+        
+        public static bool EqualsDictionary<TKey, TItem>(Dictionary<TKey, TItem> a, Dictionary<TKey, TItem> b)
+        {
+            if (ReferenceEquals(a, b)) return true;
+            if (a == null || b == null) return false;
+            if (a.Count != b.Count) return false;
+            
+            foreach (var entry in a)
+            {
+                if (!b.TryGetValue(entry.Key, out var otherValue) ||
+                    !EqualityComparer<TItem>.Default.Equals(entry.Value, otherValue))
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
     }
 }

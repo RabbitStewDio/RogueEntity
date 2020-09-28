@@ -1,23 +1,28 @@
-﻿using EnTTSharp.Entities;
+using EnTTSharp.Entities;
 using RogueEntity.Core.Meta.Items;
 
 namespace RogueEntity.Core.Meta.ItemTraits
 {
-    public class ItemWeightTrait<TGameContext, TItemId> : StatelessItemComponentTraitBase<TGameContext, TItemId, WeightView>
+    /// <summary>
+    ///    Defines the base weight of an item. This trait provides a static value under the assumption
+    ///    that items do not change their inherent weight. Chests and other container items can still
+    ///    gain weight if needed. 
+    /// </summary>
+    /// <typeparam name="TGameContext"></typeparam>
+    /// <typeparam name="TItemId"></typeparam>
+    public class WeightTrait<TGameContext, TItemId> : StatelessItemComponentTraitBase<TGameContext, TItemId, Weight>
         where TItemId : IEntityKey
     {
-        readonly IItemResolver<TGameContext, TItemId> itemResolver;
+        readonly Weight baseWeight;
 
-        public ItemWeightTrait(IItemResolver<TGameContext, TItemId> itemResolver) : base("Core.Actor.WeightView", 50000)
+        public WeightTrait(Weight baseWeight) : base("Core.Common.BaseWeight", 100)
         {
-            this.itemResolver = itemResolver;
+            this.baseWeight = baseWeight;
         }
 
-        protected override WeightView GetData(TGameContext context, TItemId k)
+        protected override Weight GetData(TGameContext context, TItemId k)
         {
-            var stackCount = itemResolver.QueryStackSize(k, context);
-            var itemWeight = itemResolver.QueryBaseWeight(k, context);
-            return new WeightView(itemWeight, Weight.Empty, Weight.Empty, itemWeight * stackCount.Count);
+            return baseWeight;
         }
     }
 }

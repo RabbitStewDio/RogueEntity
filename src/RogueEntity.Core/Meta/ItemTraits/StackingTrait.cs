@@ -56,7 +56,14 @@ namespace RogueEntity.Core.Meta.ItemTraits
                 return false;
             }
 
-            changedK = k.WithData(t.Count);
+            if (t.Count == 0)
+            {
+                changedK = default;
+            }
+            else
+            {
+                changedK = k.WithData(t.Count);
+            }
             return true;
         }
 

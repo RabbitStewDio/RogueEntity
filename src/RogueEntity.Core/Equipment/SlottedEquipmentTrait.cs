@@ -1,19 +1,30 @@
 ﻿using System.Collections.Generic;
 using EnTTSharp.Entities;
 using RogueEntity.Core.Meta.Items;
+using RogueEntity.Core.Meta.ItemTraits;
 using RogueEntity.Core.Utils;
 
 namespace RogueEntity.Core.Equipment
 {
     public class SlottedEquipmentTrait<TGameContext, TActorId, TItemId> : IReferenceItemTrait<TGameContext, TActorId>,
-                                                                          IItemComponentTrait<TGameContext, TActorId, SlottedEquipment<TGameContext, TItemId>>
+                                                                          IItemComponentTrait<TGameContext, TActorId, ISlottedEquipment<TGameContext, TItemId>>,
+                                                                          IItemComponentInformationTrait<TGameContext, TActorId, MaximumCarryWeight>
         where TItemId : IBulkDataStorageKey<TItemId>
-        where TActorId : IEntityKey
+        where TActorId : IBulkDataStorageKey<TActorId>
+        where TGameContext: IItemContext<TGameContext, TActorId>
     {
+        readonly Weight maximumCarryWeight;
         readonly ReadOnlyListWrapper<EquipmentSlot> availableSlots;
         readonly IItemResolver<TGameContext, TItemId> itemResolver;
 
         public SlottedEquipmentTrait(IItemResolver<TGameContext, TItemId> itemResolver,
+                                     Weight maximumCarryWeight,
+                                     params EquipmentSlot[] availableSlots) : this(itemResolver, maximumCarryWeight, (IEnumerable<EquipmentSlot>)availableSlots)
+        {
+        }
+        
+        public SlottedEquipmentTrait(IItemResolver<TGameContext, TItemId> itemResolver,
+                                     Weight maximumCarryWeight,
                                      IEnumerable<EquipmentSlot> availableSlots)
         {
             this.itemResolver = itemResolver;
@@ -28,6 +39,7 @@ namespace RogueEntity.Core.Equipment
 
             equipmentSlots.Sort(EquipmentSlot.OrderComparer.Compare);
             this.availableSlots = equipmentSlots;
+            this.maximumCarryWeight = maximumCarryWeight;
         }
 
         public string Id => "Core.Actor.Equipment";
@@ -36,18 +48,32 @@ namespace RogueEntity.Core.Equipment
 
         public void Initialize(IEntityViewControl<TActorId> v, TGameContext context, TActorId k, IItemDeclaration item)
         {
-            v.AssignOrReplace(k, new SlottedEquipmentData<TItemId>());
+            v.AssignOrReplace(k, SlottedEquipmentData<TItemId>.Create());
         }
 
         public void Apply(IEntityViewControl<TActorId> v, TGameContext context, TActorId k, IItemDeclaration item)
         {
         }
 
-        public bool TryQuery(IEntityViewControl<TActorId> v, TGameContext context, TActorId k, out SlottedEquipment<TGameContext, TItemId> t)
+        public bool TryQuery(IEntityViewControl<TActorId> v, TGameContext context, TActorId k, out MaximumCarryWeight t)
+        {
+            t = new MaximumCarryWeight(maximumCarryWeight);
+            return true;
+        }
+
+        public bool TryQuery(IEntityViewControl<TActorId> v, TGameContext context, TActorId k, out ISlottedEquipment<TGameContext, TItemId> t)
         {
             if (v.GetComponent(k, out SlottedEquipmentData<TItemId> data))
             {
-                t = new SlottedEquipment<TGameContext, TItemId>(itemResolver, availableSlots, data);
+                if (context.ItemResolver.TryQueryData(k, context, out MaximumCarryWeight weight))
+                {
+                    t = new SlottedEquipment<TGameContext, TActorId, TItemId>(itemResolver, availableSlots, data, weight.CarryWeight).RefreshWeight(context);
+                }
+                else
+                {
+                    t = new SlottedEquipment<TGameContext, TActorId, TItemId>(itemResolver, availableSlots, data, maximumCarryWeight).RefreshWeight(context);
+                }
+                
                 return true;
             }
 
@@ -55,12 +81,18 @@ namespace RogueEntity.Core.Equipment
             return false;
         }
 
-        public bool TryUpdate(IEntityViewControl<TActorId> v, TGameContext context, TActorId k, in SlottedEquipment<TGameContext, TItemId> t, out TActorId changedK)
+        public bool TryUpdate(IEntityViewControl<TActorId> v, TGameContext context, TActorId k, in ISlottedEquipment<TGameContext, TItemId> t, out TActorId changedK)
         {
-            ref var data = ref t.Data;
-            v.AssignOrReplace(k, in data);
+            if (t is SlottedEquipment<TGameContext, TActorId, TItemId> st)
+            {
+                ref var data = ref st.Data;
+                v.AssignOrReplace(k, in data);
+                changedK = k;
+                return true;
+            }
+
             changedK = k;
-            return true;
+            return false;
         }
 
         public bool TryRemove(IEntityViewControl<TActorId> entityRegistry, TGameContext context, TActorId k, out TActorId changedItem)

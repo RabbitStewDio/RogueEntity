@@ -5,13 +5,13 @@ namespace RogueEntity.Core.Meta.Items
     [DataContract]
     public readonly struct BulkKeyData
     {
-        [DataMember(Name = "IsReference", EmitDefaultValue = false)]
+        [DataMember(Name = "IsReference")]
         public readonly bool IsReference;
         [DataMember(Name = "ItemId")]
         public readonly int ItemId;
-        [DataMember(Name = "Age", EmitDefaultValue = false)]
+        [DataMember(Name = "Age")]
         public readonly byte Age;
-        [DataMember(Name = "Data", EmitDefaultValue = false)]
+        [DataMember(Name = "Data")]
         public readonly int Data;
 
         public BulkKeyData(bool isReference, int itemId, byte age, int data)

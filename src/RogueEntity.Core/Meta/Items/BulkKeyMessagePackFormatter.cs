@@ -53,8 +53,9 @@ namespace RogueEntity.Core.Meta.Items
             {
                 return result;
             }
-            
-            throw new MessagePackSerializationException("Unable to map ItemReference to local bulk item id");
+
+            Console.WriteLine($"{typeof(TItemId)} - {tmp}");
+            throw new MessagePackSerializationException($"Unable to map ItemReference {tmp} to local bulk item id");
         }
     }
 }

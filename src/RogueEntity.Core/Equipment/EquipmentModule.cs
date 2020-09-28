@@ -1,5 +1,6 @@
 ﻿using EnTTSharp.Entities;
 using RogueEntity.Core.Infrastructure.Modules;
+using RogueEntity.Core.Meta.Items;
 
 namespace RogueEntity.Core.Equipment
 {
@@ -15,7 +16,7 @@ namespace RogueEntity.Core.Equipment
 
         protected void RegisterAll<TActorId, TItemId>(TGameContext context, IModuleInitializer<TGameContext> initializer)
             where TActorId : IEntityKey
-            where TItemId : IEntityKey
+            where TItemId : IBulkDataStorageKey<TItemId>
         {
             var entityContext = initializer.DeclareEntityContext<TActorId>();
             entityContext.Register("Core.Entities.Equipment", -19000, RegisterEntities<TActorId, TItemId>);
@@ -23,7 +24,7 @@ namespace RogueEntity.Core.Equipment
 
         void RegisterEntities<TActorId, TItemId>(EntityRegistry<TActorId> registry) 
             where TActorId : IEntityKey
-            where TItemId : IEntityKey
+            where TItemId : IBulkDataStorageKey<TItemId>
         {
             registry.RegisterNonConstructable<EquippedItem<TItemId>>();
             registry.RegisterNonConstructable<SlottedEquipmentData<TItemId>>();

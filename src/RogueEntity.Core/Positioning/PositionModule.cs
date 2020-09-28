@@ -12,6 +12,7 @@ namespace RogueEntity.Core.Positioning
     {
         public const string ModuleId = "Core.Position";
 
+        public static readonly EntitySystemId RegisterCommonPositions = "Core.Entities.Position";
         public static readonly EntitySystemId RegisterGridPositions = "Core.Entities.GridPosition";
         public static readonly EntitySystemId RegisterContinuousPositions = "Core.Entities.ContinuousPosition";
         public static readonly EntitySystemId RegisterClearContinuousPositionChangeTracker = "Core.Entities.ContinuousPosition.ClearChangeTracker";
@@ -35,11 +36,18 @@ namespace RogueEntity.Core.Positioning
             where TActorId : IEntityKey
         {
             var entityContext = initializer.DeclareEntityContext<TActorId>();
+            entityContext.Register(PositionModule.RegisterCommonPositions, 0, RegisterCommonEntities);
             entityContext.Register(PositionModule.RegisterGridPositions, 0, RegisterGridEntities);
             entityContext.Register(PositionModule.RegisterContinuousPositions, 0, RegisterGridEntities);
 
             entityContext.Register(PositionModule.RegisterClearGridPositionChangeTracker, 10, RegisterGridEntities);
             entityContext.Register(PositionModule.RegisterClearContinuousPositionChangeTracker, 10, RegisterGridEntities);
+        }
+
+        protected void RegisterCommonEntities<TActorId>(EntityRegistry<TActorId> registry)
+            where TActorId : IEntityKey
+        {
+            registry.RegisterNonConstructable<ImmobilityMarker>();
         }
 
         protected void RegisterGridEntities<TActorId>(EntityRegistry<TActorId> registry)

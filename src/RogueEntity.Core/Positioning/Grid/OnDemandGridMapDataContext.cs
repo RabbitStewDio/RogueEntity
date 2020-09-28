@@ -28,9 +28,9 @@ namespace RogueEntity.Core.Positioning.Grid
             return true;
         }
 
-        public void MarkDirty(in EntityGridPosition position)
+        public virtual void MarkDirty<TPosition>(in TPosition position)
+            where TPosition : IPosition
         {
-            // not needed here.
         }
     }
 }

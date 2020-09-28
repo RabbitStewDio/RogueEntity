@@ -14,7 +14,7 @@ namespace RogueEntity.Core.Tests.Meta.Items
         public void SetUp()
         {
             context = new BasicItemContext();
-            context.EntityRegistry.RegisterNonConstructable<ItemDeclarationHolder<BasicItemContext, ItemReference>>();
+            context.ItemEntities.RegisterNonConstructable<ItemDeclarationHolder<BasicItemContext, ItemReference>>();
         }
 
         [Test]
@@ -49,7 +49,6 @@ namespace RogueEntity.Core.Tests.Meta.Items
             itemId.IsReference.Should().BeTrue();
             itemId.BulkItemId.Should().Be(0);
             itemId.Data.Should().Be(0);
-            itemId.ItemId.Should().NotBe(0);
             itemId.Age.Should().Be(1);
             itemId.Key.Should().Be(0);
         }

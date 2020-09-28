@@ -9,7 +9,7 @@ namespace RogueEntity.Core.Tests.Meta.ItemTraits
     public class SensoryResistanceTraitTest : ItemComponentTraitTestBase<BasicItemContext, ItemReference, SensoryResistance, SensoryResistanceTrait<BasicItemContext, ItemReference>>
     {
         protected override IBulkDataStorageMetaData<ItemReference> ItemIdMetaData => new ItemReferenceMetaData();
-        protected override EntityRegistry<ItemReference> EntityRegistry => Context.EntityRegistry;
+        protected override EntityRegistry<ItemReference> EntityRegistry => Context.ItemEntities;
         protected override ItemRegistry<BasicItemContext, ItemReference> ItemRegistry => Context.ItemRegistry;
 
         public SensoryResistanceTraitTest()

@@ -10,13 +10,10 @@ namespace RogueEntity.Core.Inventory
         where TItemId : IBulkDataStorageKey<TItemId>
         where TOwnerId : IEntityKey
     {
-        readonly IItemResolver<TGameContext, TOwnerId> ownerResolver;
         readonly IItemResolver<TGameContext, TItemId> itemResolver;
 
-        public ListInventoryMessagePackFormatter(IItemResolver<TGameContext, TOwnerId> ownerResolver, 
-                                                 IItemResolver<TGameContext, TItemId> itemResolver)
+        public ListInventoryMessagePackFormatter(IItemResolver<TGameContext, TItemId> itemResolver)
         {
-            this.ownerResolver = ownerResolver ?? throw new ArgumentNullException(nameof(ownerResolver));
             this.itemResolver = itemResolver ?? throw new ArgumentNullException(nameof(itemResolver));
         }
 
@@ -28,7 +25,7 @@ namespace RogueEntity.Core.Inventory
         public ListInventory<TGameContext, TOwnerId, TItemId> Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
         {
             var data = MessagePackSerializer.Deserialize<ListInventoryData<TOwnerId, TItemId>>(ref reader, options);
-            return new ListInventory<TGameContext, TOwnerId, TItemId>(ownerResolver, itemResolver, data);
+            return new ListInventory<TGameContext, TOwnerId, TItemId>(itemResolver, data);
         }
     }
 }

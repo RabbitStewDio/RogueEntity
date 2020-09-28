@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Runtime.Serialization;
 using EnTTSharp.Entities;
 using EnTTSharp.Entities.Attributes;
-using EnTTSharp.Serialization;
 using EnTTSharp.Serialization.Binary.AutoRegistration;
 using EnTTSharp.Serialization.Xml.AutoRegistration;
-using MessagePack.Formatters;
 
 namespace RogueEntity.Core.Meta.Items
 {
@@ -13,26 +10,12 @@ namespace RogueEntity.Core.Meta.Items
     /// Describes an item at a given map or inventory position.
     ///
     /// Type is stored at the highest 1 bit of the 32-bit vector.
-    /// If type indicates a reference type, the remaining 31 bits
+    /// If type is 0 it indicates a reference type, the remaining 31 bits
     /// are used as item-id. 
     ///
-    /// If type indicates either a stacked or simple stateful item
-    /// the following layout is used:
-    /// <pre>
-    /// - State    16
-    ///   - type Simple:  item dependent: Durability, flags etc.
-    ///   - type Stacked: stack count
-    /// 
-    /// - Item ID        14
-    ///   - type  
-    /// - Type            2 
-    ///   1     referenced, not stacking        - a chest, or anything with complex state, stored in a EntityRegistry.
-    ///   00     Simple Stateful, not stacking   - a sword
-    ///   01     stateless, stacking             - Gold coins
-    ///   
-    /// allows 8k different item types 
-    /// 
-    /// </pre>
+    /// If type is 1 it indicates simple stateful item where the lower
+    /// 16 bits are used as general data storage and the remaining upper
+    /// 7 bits are used as item id. 
     /// </summary>
     [EntityKey]
     [EntityXmlSerialization]
@@ -68,32 +51,18 @@ namespace RogueEntity.Core.Meta.Items
                     return 0;
                 }
 
-                return (ushort) (data & 0xFFFF);
+                return (ushort)(data & 0xFFFF);
             }
         }
 
         public byte Age
         {
-            get { return (byte) ((data & 0x7000_0000) >> 28); }
+            get { return (byte)((data & 0x7000_0000) >> 28); }
         }
 
         public int Key
         {
-            get { return (int) (data & 0xFFF_FFFF); }
-        }
-
-        public uint ItemId
-        {
-            get
-            {
-                if (IsReference)
-                {
-                    return data;
-                }
-
-                var stack = (data >> 16) & 0x7FFF;
-                return stack;
-            }
+            get { return (int)(data & 0xFFF_FFFF); }
         }
 
         public int BulkItemId
@@ -105,7 +74,7 @@ namespace RogueEntity.Core.Meta.Items
                     return 0;
                 }
 
-                return (int) ((data & 0x7FFF_0000) >> 16);
+                return (int)((data & 0x7FFF_0000) >> 16);
             }
         }
 
@@ -120,7 +89,8 @@ namespace RogueEntity.Core.Meta.Items
             {
                 throw new ArgumentOutOfRangeException(nameof(newData), newData, "The given data is not a valid ushort value.");
             }
-            return FromBulkItem((short) ItemId, (ushort) newData);
+
+            return FromBulkItem((short)BulkItemId, (ushort)newData);
         }
 
         public static ItemReference FromReferencedItem(byte age, int key)
@@ -142,7 +112,7 @@ namespace RogueEntity.Core.Meta.Items
             }
 
             var rawData = 0u;
-            rawData |= (uint) (itemId << 16);
+            rawData |= (uint)(itemId << 16);
             rawData |= data;
             return new ItemReference(rawData);
         }
@@ -164,7 +134,7 @@ namespace RogueEntity.Core.Meta.Items
 
         public override int GetHashCode()
         {
-            return (int) data;
+            return (int)data;
         }
 
         public static bool operator ==(ItemReference left, ItemReference right)
@@ -181,9 +151,10 @@ namespace RogueEntity.Core.Meta.Items
         {
             if (IsReference)
             {
-                return $"Item[Ref]{ItemId & 0x7FFF:X8}";
+                return $"Item[Ref]{Age:X2}[{Key:X8}]";
             }
-            return $"Item[Bulk]{ItemId:X4}[{Data:X4}]";
+
+            return $"Item[Bulk]{BulkItemId:X4}[{Data:X4}]";
         }
 
         public static ItemReference BulkItemFactoryMethod(int declarationIndex)
@@ -193,7 +164,7 @@ namespace RogueEntity.Core.Meta.Items
                 throw new ArgumentOutOfRangeException(nameof(declarationIndex), declarationIndex, "should be between 0 and 65,535");
             }
 
-            return FromBulkItem((short) declarationIndex, 0);
+            return FromBulkItem((short)declarationIndex, 0);
         }
     }
 }

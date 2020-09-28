@@ -32,7 +32,8 @@ namespace RogueEntity.Core.Equipment
 
         public bool Equals(EquippedItem<TItemId> other)
         {
-            return ItemEquality.Equals(Reference, other.Reference) && Equals(PrimarySlot, other.PrimarySlot);
+            return ItemEquality.Equals(Reference, other.Reference) && 
+                   Equals(PrimarySlot, other.PrimarySlot);
         }
 
         public override bool Equals(object obj)

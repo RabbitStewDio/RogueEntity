@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using EnTTSharp.Entities;
 using RogueEntity.Core.Meta.Items;
 
@@ -28,6 +29,11 @@ namespace RogueEntity.Core.Meta.ItemTraits
                                                                        TItemId item, TGameContext context)
             where TItemId : IEntityKey
         {
+            if (EqualityComparer<TItemId>.Default.Equals(item, default))
+            {
+                return StackCount.Of(0);
+            }
+            
             if (resolver.TryQueryData(item, context, out StackCount p))
             {
                 return p;

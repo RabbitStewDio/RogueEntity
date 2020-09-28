@@ -10,8 +10,9 @@ namespace RogueEntity.Core.Positioning.Grid
     public class ReferenceItemGridPositionTrait<TGameContext, TItemId> : IReferenceItemTrait<TGameContext, TItemId>,
                                                                          IItemComponentTrait<TGameContext, TItemId, Position>,
                                                                          IItemComponentTrait<TGameContext, TItemId, EntityGridPosition>,
-                                                                         IItemComponentTrait<TGameContext, TItemId, EntityGridPositionChangedMarker>,
-                                                                         IItemComponentTrait<TGameContext, TItemId, MapLayerPreference>
+                                                                         IItemComponentInformationTrait<TGameContext, TItemId, EntityGridPositionChangedMarker>,
+                                                                         IItemComponentInformationTrait<TGameContext, TItemId, MapLayerPreference>,
+                                                                         IItemComponentInformationTrait<TGameContext, TItemId, MapContainerEntityMarker>
         where TItemId : IBulkDataStorageKey<TItemId>
         where TGameContext : IGridMapContext<TGameContext, TItemId>
     {
@@ -65,6 +66,18 @@ namespace RogueEntity.Core.Positioning.Grid
             return false;
         }
 
+        public bool TryQuery(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, out MapContainerEntityMarker t)
+        {
+            if (v.IsValid(k) && v.GetComponent(k, out EntityGridPosition _))
+            {
+                t = new MapContainerEntityMarker();
+                return true;
+            }
+
+            t = default;
+            return false;
+        }
+
         public bool TryQuery(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, out EntityGridPositionChangedMarker t)
         {
             if (v.IsValid(k) && v.GetComponent(k, out t))
@@ -80,18 +93,6 @@ namespace RogueEntity.Core.Positioning.Grid
         {
             t = layerPreference;
             return true;
-        }
-
-        public bool TryUpdate(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, in EntityGridPositionChangedMarker t, out TItemId changedK)
-        {
-            changedK = k;
-            return false;
-        }
-
-        public bool TryUpdate(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, in MapLayerPreference t, out TItemId changedK)
-        {
-            changedK = k;
-            return false;
         }
 
         public bool TryUpdate(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, in Position t, out TItemId changedK)
@@ -194,17 +195,6 @@ namespace RogueEntity.Core.Positioning.Grid
         public bool TryRemove(IEntityViewControl<TItemId> entityRegistry, TGameContext context, TItemId k, out TItemId changedItem)
         {
             return TryUpdate(entityRegistry, context, k, EntityGridPosition.Invalid, out changedItem);
-        }
-
-        bool IItemComponentTrait<TGameContext, TItemId, EntityGridPositionChangedMarker>.TryRemove(IEntityViewControl<TItemId> entityRegistry, TGameContext context, TItemId k, out TItemId changedItem)
-        {
-            return TryUpdate(entityRegistry, context, k, EntityGridPosition.Invalid, out changedItem);
-        }
-
-        bool IItemComponentTrait<TGameContext, TItemId, MapLayerPreference>.TryRemove(IEntityViewControl<TItemId> entityRegistry, TGameContext context, TItemId k, out TItemId changedItem)
-        {
-            changedItem = k;
-            return false;
         }
 
         void WarnNotAcceptableLayer(TItemId targetItem, EntityGridPosition p)

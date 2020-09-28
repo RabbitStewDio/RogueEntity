@@ -29,13 +29,14 @@ namespace RogueEntity.Core.Sensing
             var entityContext = initializer.DeclareEntityContext<TItemId>();
             entityContext.Register("Core.Entities.LightSources", -19_000, RegisterLightSourceEntities);
             entityContext.Register("Core.Entities.ActorVision", -19_000, RegisterActorVisionEntities);
-            entityContext.Register("Core.System.SenseMap.UpdateCacheStatus", 50_000, RegisterClearSenseCacheSystems);
-            entityContext.Register("Core.System.SenseMap.Vision", 59_000, RegisterVisibilitySystem);
+            entityContext.Register("Core.System.SenseMap.UpdateCacheStatus", 50_000, RegisterClearSenseCacheSystems<TItemId>);
+            entityContext.Register("Core.System.SenseMap.Vision", 59_000, RegisterVisibilitySystem<TItemId>);
         }
 
         void RegisterClearSenseCacheSystems<TItemId>(IGameLoopSystemRegistration<TGameContext> context,
                                                      EntityRegistry<TItemId> registry,
-                                                     ICommandHandlerRegistration<TGameContext, TItemId> handler) where TItemId : IEntityKey
+                                                     ICommandHandlerRegistration<TGameContext, TItemId> handler) 
+            where TItemId : IEntityKey
         {
             var entitySystemBuilder = registry.BuildSystem().WithContext<TGameContext>();
             context.AddFixedStepHandlers(entitySystemBuilder.CreateSystem<EntityGridPositionChangedMarker>(SenseMappingSystems.ApplyGridMovementChangeTracker));
@@ -44,7 +45,8 @@ namespace RogueEntity.Core.Sensing
 
         void RegisterVisibilitySystem<TItemId>(IGameLoopSystemRegistration<TGameContext> context,
                                                EntityRegistry<TItemId> registry,
-                                               ICommandHandlerRegistration<TGameContext, TItemId> handler) where TItemId : IEntityKey
+                                               ICommandHandlerRegistration<TGameContext, TItemId> handler) 
+            where TItemId : IEntityKey
         {
             var entitySystemBuilder = registry.BuildSystem().WithContext<TGameContext>();
             context.AddFixedStepHandlers(entitySystemBuilder.CreateSystem<EntityGridPosition, VisibilityDetector<TGameContext, TItemId>>(VisibilitySystem<TGameContext, TItemId>.DoUpdateLocalSenseMapGrid));

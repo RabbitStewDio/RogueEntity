@@ -1,4 +1,7 @@
-﻿using EnTTSharp.Entities;
+﻿using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using EnTTSharp.Entities;
+using RogueEntity.Core.Meta.Base;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Meta.ItemTraits;
 
@@ -6,22 +9,21 @@ namespace RogueEntity.Core.Inventory
 {
     public class ListInventoryTrait<TGameContext, TOwnerId, TItemId> : IReferenceItemTrait<TGameContext, TOwnerId>,
                                                                        IItemComponentTrait<TGameContext, TOwnerId, IInventory<TGameContext, TItemId>>,
-                                                                       IItemComponentTrait<TGameContext, TOwnerId, IInventoryView<TItemId>>
+                                                                       IItemComponentTrait<TGameContext, TOwnerId, IContainerView<TItemId>>,
+                                                                       IItemComponentInformationTrait<TGameContext, TOwnerId, InventoryWeight>
         where TItemId : IBulkDataStorageKey<TItemId>
         where TOwnerId : IBulkDataStorageKey<TOwnerId>
     {
-        readonly IItemResolver<TGameContext, TOwnerId> ownerResolver;
+        static readonly EqualityComparer<TOwnerId> Comparer = EqualityComparer<TOwnerId>.Default;
         readonly IItemResolver<TGameContext, TItemId> itemResolver;
         readonly Weight defaultCarryWeight;
 
         public string Id => "Core.Inventory.ListInventory";
         public int Priority => 100;
 
-        protected ListInventoryTrait(IItemResolver<TGameContext, TOwnerId> ownerResolver,
-                                     IItemResolver<TGameContext, TItemId> itemResolver,
-                                     Weight defaultCarryWeight = default)
+        public ListInventoryTrait(IItemResolver<TGameContext, TItemId> itemResolver,
+                                  Weight defaultCarryWeight = default)
         {
-            this.ownerResolver = ownerResolver;
             this.itemResolver = itemResolver;
             this.defaultCarryWeight = defaultCarryWeight;
         }
@@ -40,7 +42,7 @@ namespace RogueEntity.Core.Inventory
         {
         }
 
-        protected bool TryQueryData(IEntityViewControl<TOwnerId> v, TGameContext context, TOwnerId k, out ListInventoryData<TOwnerId, TItemId> t)
+        protected bool TryQueryData(IEntityViewControl<TOwnerId> v, TOwnerId k, out ListInventoryData<TOwnerId, TItemId> t)
         {
             if (!k.IsReference)
             {
@@ -58,10 +60,13 @@ namespace RogueEntity.Core.Inventory
             return true;
         }
 
-        protected virtual bool ValidateData(IEntityViewControl<TOwnerId> entityViewControl, TGameContext context,
-                                            in TOwnerId itemReference, in ListInventoryData<TOwnerId, TItemId> data)
+        [SuppressMessage("ReSharper", "UnusedParameter.Global")]
+        protected virtual bool ValidateData(IEntityViewControl<TOwnerId> entityViewControl,
+                                            TGameContext context,
+                                            in TOwnerId itemReference,
+                                            in ListInventoryData<TOwnerId, TItemId> data)
         {
-            return true;
+            return Comparer.Equals(data.OwnerData, itemReference);
         }
 
         protected bool TryUpdateData(IEntityViewControl<TOwnerId> v, TGameContext context, TOwnerId k, in ListInventoryData<TOwnerId, TItemId> t, out TOwnerId changedK)
@@ -85,22 +90,27 @@ namespace RogueEntity.Core.Inventory
 
         public bool TryRemove(IEntityViewControl<TOwnerId> v, TGameContext context, TOwnerId k, out TOwnerId changedK)
         {
-            if (v.IsValid(k))
-            {
-                v.RemoveComponent<ListInventoryData<TOwnerId, TItemId>>(k);
-                changedK = k;
-                return true;
-            }
-
             changedK = k;
             return false;
         }
 
-        public bool TryQuery(IEntityViewControl<TOwnerId> v, TGameContext context, TOwnerId k, out IInventoryView<TItemId> t)
+        public bool TryQuery(IEntityViewControl<TOwnerId> v, TGameContext context, TOwnerId k, out InventoryWeight t)
         {
-            if (TryQueryData(v, context, k, out ListInventoryData<TOwnerId, TItemId> data))
+            if (TryQueryData(v, k, out ListInventoryData<TOwnerId, TItemId> inventory))
             {
-                t = new ListInventory<TGameContext, TOwnerId, TItemId>(ownerResolver, itemResolver, data);
+                t= new InventoryWeight(inventory.TotalWeight);
+                return true;
+            }
+
+            t = default;
+            return false;
+        }
+
+        public bool TryQuery(IEntityViewControl<TOwnerId> v, TGameContext context, TOwnerId k, out IContainerView<TItemId> t)
+        {
+            if (TryQueryData(v, k, out ListInventoryData<TOwnerId, TItemId> data))
+            {
+                t = new ListInventory<TGameContext, TOwnerId, TItemId>(itemResolver, data);
                 return true;
             }
 
@@ -110,9 +120,9 @@ namespace RogueEntity.Core.Inventory
 
         public bool TryQuery(IEntityViewControl<TOwnerId> v, TGameContext context, TOwnerId k, out IInventory<TGameContext, TItemId> t)
         {
-            if (TryQueryData(v, context, k, out ListInventoryData<TOwnerId, TItemId> data))
+            if (TryQueryData(v, k, out ListInventoryData<TOwnerId, TItemId> data))
             {
-                t = new ListInventory<TGameContext, TOwnerId, TItemId>(ownerResolver, itemResolver, data);
+                t = new ListInventory<TGameContext, TOwnerId, TItemId>(itemResolver, data);
                 return true;
             }
 
@@ -120,7 +130,7 @@ namespace RogueEntity.Core.Inventory
             return false;
         }
 
-        public bool TryUpdate(IEntityViewControl<TOwnerId> v, TGameContext context, TOwnerId k, in IInventoryView<TItemId> t, out TOwnerId changedK)
+        public bool TryUpdate(IEntityViewControl<TOwnerId> v, TGameContext context, TOwnerId k, in IContainerView<TItemId> t, out TOwnerId changedK)
         {
             changedK = k;
             return false;

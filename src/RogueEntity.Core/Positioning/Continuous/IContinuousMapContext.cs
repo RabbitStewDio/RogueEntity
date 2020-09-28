@@ -8,11 +8,4 @@ namespace RogueEntity.Core.Positioning.Continuous
         ReadOnlyListWrapper<MapLayer> ContinuousLayers();
         bool TryGetContinuousDataFor(MapLayer layer, out IContinuousMapDataContext<TGameContext, TItemId> data);
     }
-
-    public interface IContinuousMapDataContext<TGameContext, TItemId>
-    {
-        bool TryGetItemAt(ContinuousMapPosition position, out TItemId itemAtPosition);
-        bool TryUpdateItemPosition(TItemId itemId, in ContinuousMapPosition desiredPosition);
-        void MarkDirty(in ContinuousMapPosition position);
-    }
 }

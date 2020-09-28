@@ -8,13 +8,13 @@ namespace RogueEntity.Core.Tests.Meta.Items
         public BasicItemContext()
         {
 
-            EntityRegistry = new EntityRegistry<ItemReference>(ItemReference.MaxAge, ItemReference.FromReferencedItem);
+            ItemEntities = new EntityRegistry<ItemReference>(ItemReference.MaxAge, ItemReference.FromReferencedItem);
             ItemRegistry = new ItemRegistry<BasicItemContext, ItemReference>(ItemReference.BulkItemFactoryMethod);
-            ItemResolver = new ItemResolver<BasicItemContext, ItemReference>(ItemRegistry, EntityRegistry);
+            ItemResolver = new ItemResolver<BasicItemContext, ItemReference>(ItemRegistry, ItemEntities);
         }
 
         public ItemRegistry<BasicItemContext, ItemReference> ItemRegistry { get; }
-        public EntityRegistry<ItemReference> EntityRegistry { get; }
+        public EntityRegistry<ItemReference> ItemEntities { get; }
         public IItemResolver<BasicItemContext, ItemReference> ItemResolver { get; }
     }
 }

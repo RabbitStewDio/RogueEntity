@@ -92,7 +92,7 @@ namespace RogueEntity.Core.Meta.Items
 
         public bool TryQueryData<TData>(TItemId itemRef, TGameContext context, out TData data)
         {
-            if (TryQueryTrait<IItemComponentTrait<TGameContext, TItemId, TData>>(itemRef, out var trait))
+            if (TryQueryTrait<IItemComponentInformationTrait<TGameContext, TItemId, TData>>(itemRef, out var trait))
             {
                 return trait.TryQuery(entityRegistry, context, itemRef, out data);
             }
@@ -150,6 +150,22 @@ namespace RogueEntity.Core.Meta.Items
             if (entityRegistry.IsValid(item))
             {
                 entityRegistry.AssignOrReplace<DestroyedMarker>(item);
+                return default;
+            }
+
+            return item;
+        }
+
+        public TItemId DestroyNext(in TItemId item)
+        {
+            if (!item.IsReference)
+            {
+                return default;
+            }
+
+            if (entityRegistry.IsValid(item))
+            {
+                entityRegistry.AssignOrReplace<CascadingDestroyedMarker>(item);
                 return default;
             }
 

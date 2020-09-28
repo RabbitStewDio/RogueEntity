@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.Serialization;
 using EnTTSharp.Entities.Attributes;
 using MessagePack;
+using RogueEntity.Core.Meta.Base;
 using RogueEntity.Core.Meta.ItemTraits;
 using RogueEntity.Core.Utils;
 
@@ -17,7 +18,7 @@ namespace RogueEntity.Core.Inventory
     [DataContract]
     [Serializable]
     [MessagePackObject]
-    public readonly struct ListInventoryData<TOwnerId, TItemId>
+    public readonly struct ListInventoryData<TOwnerId, TItemId> : IEquatable<ListInventoryData<TOwnerId, TItemId>>, IContainerView<TItemId>
     {
         [DataMember(Name = nameof(OwnerData), Order = 0)]
         [Key(0)]
@@ -52,21 +53,29 @@ namespace RogueEntity.Core.Inventory
             this.items = new List<TItemId>(items ?? throw new ArgumentNullException(nameof(items)));
         }
 
+        [IgnoreMember]
+        [IgnoreDataMember]
         public Weight AvailableCarryWeight
         {
             get { return availableCarryWeight; }
         }
 
+        [IgnoreMember]
+        [IgnoreDataMember]
         public Weight TotalWeight
         {
             get { return totalWeight; }
         }
 
+        [IgnoreMember]
+        [IgnoreDataMember]
         public TOwnerId OwnerData
         {
             get { return ownerData; }
         }
 
+        [IgnoreMember]
+        [IgnoreDataMember]
         public ReadOnlyListWrapper<TItemId> Items
         {
             get { return items; }
@@ -107,6 +116,40 @@ namespace RogueEntity.Core.Inventory
             var updatedWeight = TotalWeight - weight;
             var availableWeight = AvailableCarryWeight + weight;
             return new ListInventoryData<TOwnerId, TItemId>(ownerData, updatedWeight, availableWeight, changedItems);
+        }
+
+        public bool Equals(ListInventoryData<TOwnerId, TItemId> other)
+        {
+            return EqualityComparer<TOwnerId>.Default.Equals(ownerData, other.ownerData) && 
+                   totalWeight.Equals(other.totalWeight) && 
+                   availableCarryWeight.Equals(other.availableCarryWeight) && 
+                   CoreExtensions.EqualsList(items, other.items);
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is ListInventoryData<TOwnerId, TItemId> other && Equals(other);
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                var hashCode = EqualityComparer<TOwnerId>.Default.GetHashCode(ownerData);
+                hashCode = (hashCode * 397) ^ totalWeight.GetHashCode();
+                hashCode = (hashCode * 397) ^ availableCarryWeight.GetHashCode();
+                return hashCode;
+            }
+        }
+
+        public static bool operator ==(ListInventoryData<TOwnerId, TItemId> left, ListInventoryData<TOwnerId, TItemId> right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(ListInventoryData<TOwnerId, TItemId> left, ListInventoryData<TOwnerId, TItemId> right)
+        {
+            return !left.Equals(right);
         }
     }
 }

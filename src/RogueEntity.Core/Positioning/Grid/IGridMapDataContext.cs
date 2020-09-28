@@ -8,6 +8,6 @@ namespace RogueEntity.Core.Positioning.Grid
         int Height { get; }
         
         bool TryGetMap(int z, out IMapData<TItemId> data);
-        void MarkDirty(in EntityGridPosition position);
+        void MarkDirty<TPosition>(in TPosition position) where TPosition: IPosition;
     }
 }

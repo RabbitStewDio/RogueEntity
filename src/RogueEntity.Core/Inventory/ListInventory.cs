@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using EnTTSharp.Entities;
+using RogueEntity.Core.Meta.Base;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Meta.ItemTraits;
 using RogueEntity.Core.Positioning;
@@ -16,20 +17,17 @@ namespace RogueEntity.Core.Inventory
     /// <typeparam name="TGameContext"></typeparam>
     /// <typeparam name="TOwnerId"></typeparam>
     /// <typeparam name="TItemId"></typeparam>
-    public class ListInventory<TGameContext, TOwnerId, TItemId> : IInventory<TGameContext, TItemId>
+    public class ListInventory<TGameContext, TOwnerId, TItemId> : IInventory<TGameContext, TItemId>, IEquatable<ListInventory<TGameContext, TOwnerId, TItemId>>
         where TItemId : IBulkDataStorageKey<TItemId>
         where TOwnerId : IEntityKey
     {
         static readonly ILogger Logger = SLog.ForContext<ListInventory<TGameContext, TOwnerId, TItemId>>();
 
         readonly IItemResolver<TGameContext, TItemId> itemResolver;
-        readonly IItemResolver<TGameContext, TOwnerId> ownerResolver;
 
-        public ListInventory(IItemResolver<TGameContext, TOwnerId> ownerResolver,
-                             IItemResolver<TGameContext, TItemId> itemResolver,
+        public ListInventory(IItemResolver<TGameContext, TItemId> itemResolver,
                              ListInventoryData<TOwnerId, TItemId> data)
         {
-            this.ownerResolver = ownerResolver;
             this.itemResolver = itemResolver;
             this.Data = data;
         }
@@ -66,13 +64,12 @@ namespace RogueEntity.Core.Inventory
             var insertSlot = Math.Max(0, Math.Min(slot, Data.Items.Count));
             if (r.IsReference)
             {
-                if (itemResolver.TryQueryData(r, context, out ContainedInInventoryMarker<TOwnerId, TItemId> owner) &&
-                    !owner.IsUnowned())
+                if (itemResolver.TryQueryData(r, context, out IContainerEntityMarker _))
                 {
                     throw new ArgumentException("Do not attempt to use TryReAddItem for general purpose inventory operations");
                 }
 
-                if (itemResolver.TryUpdateData(r, context, new ContainedInInventoryMarker<TOwnerId, TItemId>(Data.OwnerData), out var key))
+                if (itemResolver.TryUpdateData(r, context, new ContainerEntityMarker<TOwnerId>(Data.OwnerData), out _))
                 {
                     Data = Data.InsertAt(insertSlot, itemWeight, r);
                     return true;
@@ -99,7 +96,7 @@ namespace RogueEntity.Core.Inventory
                 var itemWeight = itemResolver.QueryWeight(r, context).TotalWeight;
                 if (!ignoreWeight)
                 {
-                    if ((TotalWeight + itemWeight) > AvailableCarryWeight)
+                    if (itemWeight > AvailableCarryWeight)
                     {
                         Logger.Debug("Unable to add Item {ItemReference} as the combined weight of {TotalWeight} and {ItemWeight} exceeds the allowed capacity {AvailableCarryWeight}",
                                      r, TotalWeight, itemWeight, AvailableCarryWeight);
@@ -121,7 +118,7 @@ namespace RogueEntity.Core.Inventory
                     return false;
                 }
 
-                if (itemResolver.TryUpdateData(r, context, new ContainedInInventoryMarker<TOwnerId, TItemId>(Data.OwnerData), out _))
+                if (itemResolver.TryUpdateData(r, context, new ContainerEntityMarker<TOwnerId>(Data.OwnerData), out _))
                 {
                     Data = Data.InsertAt(Data.Items.Count, itemWeight, r);
                     return true;
@@ -232,7 +229,7 @@ namespace RogueEntity.Core.Inventory
             int itemsLeftToPickUp;
             if (!ignoreWeight && itemWeight.WeightInGrams > 0)
             {
-                var maxItemsFit = (AvailableCarryWeight - TotalWeight) / itemWeight;
+                var maxItemsFit = AvailableCarryWeight / itemWeight;
                 if (maxItemsFit <= 0)
                 {
                     Logger.Debug(
@@ -262,6 +259,11 @@ namespace RogueEntity.Core.Inventory
         /// <returns></returns>
         public bool TryRemoveItemStack(TGameContext context, TItemId itemByType, int itemPosition)
         {
+            if (itemPosition < 0 || itemPosition >= Data.Items.Count)
+            {
+                return false;
+            }
+
             var itemRef = Data.Items[itemPosition];
             if (!itemResolver.IsSameBulkDataType(itemByType, itemRef))
             {
@@ -270,7 +272,7 @@ namespace RogueEntity.Core.Inventory
 
             if (itemRef.IsReference)
             {
-                if (!itemResolver.TryRemoveData<ContainedInInventoryMarker<TOwnerId, TItemId>>(itemRef, context, out _))
+                if (!itemResolver.TryRemoveData<ContainerEntityMarker<TOwnerId>>(itemRef, context, out _))
                 {
                     Logger.Warning("ItemReference {ItemReference} could not be unmarked as owned by this inventory.", itemRef);
                     return false;
@@ -285,8 +287,8 @@ namespace RogueEntity.Core.Inventory
 
         /// <summary>
         ///   Attempts to remove a number of items that matches the item type. If the item is stackable,
-        ///   it will attempt to remove as many items as specified via count from the stack. For reference
-        ///    items only the first item is removed.
+        ///   it will attempt to remove a single item. To remove more than one item of a given type
+        ///   use <see cref="TryRemoveItemsInBulk"/>.
         /// </summary>
         /// <param name="context"></param>
         /// <param name="itemByType"></param>
@@ -305,7 +307,7 @@ namespace RogueEntity.Core.Inventory
 
                 if (itemRef.IsReference)
                 {
-                    if (itemResolver.TryRemoveData<ContainedInInventoryMarker<TOwnerId, TItemId>>(itemRef, context, out _))
+                    if (itemResolver.TryRemoveData<ContainerEntityMarker<TOwnerId>>(itemRef, context, out _))
                     {
                         var itemWeight = itemResolver.QueryWeight(itemRef, context);
                         Data = Data.RemoveAt(i, itemWeight.TotalWeight);
@@ -353,10 +355,10 @@ namespace RogueEntity.Core.Inventory
         /// <param name="count"></param>
         /// <param name="removedItems"></param>
         /// <returns></returns>
-        public List<TItemId> RemoveBulkItems(TGameContext context,
-                                             ItemDeclarationId itemByType,
-                                             int count,
-                                             List<TItemId> removedItems = null)
+        public List<TItemId> TryRemoveItemsInBulk(TGameContext context,
+                                                  ItemDeclarationId itemByType,
+                                                  int count,
+                                                  List<TItemId> removedItems = null)
         {
             if (removedItems == null)
             {
@@ -379,7 +381,7 @@ namespace RogueEntity.Core.Inventory
 
                 if (itemRef.IsReference)
                 {
-                    if (itemResolver.TryRemoveData<ContainedInInventoryMarker<TOwnerId, TItemId>>(itemRef, context, out var key))
+                    if (itemResolver.TryRemoveData<ContainerEntityMarker<TOwnerId>>(itemRef, context, out _))
                     {
                         var itemWeight = itemResolver.QueryWeight(itemRef, context);
                         Data = Data.RemoveAt(i, itemWeight.TotalWeight);
@@ -420,9 +422,8 @@ namespace RogueEntity.Core.Inventory
                     continue;
                 }
 
-                var stackCount = itemResolver.QueryStackSize(takenItem, context);
                 var takenBaseWeight = itemResolver.QueryWeight(takenItem, context);
-                var removedWeight = (takenBaseWeight.TotalWeight * stackCount.Count);
+                var removedWeight = (takenBaseWeight.TotalWeight);
 
                 if (remainingItem.IsEmpty)
                 {
@@ -433,6 +434,7 @@ namespace RogueEntity.Core.Inventory
                     Data = Data.RemovePartialStackAt(i, removedWeight, remainingItem);
                 }
 
+                removedItems.Add(takenItem);
                 count = stillToBeTaken;
             }
 
@@ -445,35 +447,15 @@ namespace RogueEntity.Core.Inventory
         {
             if (item.IsReference)
             {
-                if (!itemResolver.TryQueryData(item, context, out ContainedInInventoryMarker<TOwnerId, TItemId> owner))
+                if (!itemResolver.TryQueryData(item, context, out IContainerEntityMarker _))
                 {
                     // no one has a claim on this item.
                     removedItem = item;
                     return true;
                 }
 
-                if (!TryQueryInventory(context, owner, out var ownerInventory))
-                {
-                    // is not contained in an actor or item inventory.
-                    removedItem = item;
-                    return true;
-                }
-
-                if (!itemResolver.TryResolve(item, out var itemDef))
-                {
-                    // should not happen. 
-                    Logger.Error("ItemReference {ItemReference} cannot be resolved into an item definition.", item);
-                    removedItem = default;
-                    return false;
-                }
-
-                if (!ownerInventory.TryRemoveItem(context, itemDef.Id, out removedItem))
-                {
-                    Logger.Warning("ItemReference {ItemReference} was marked as owned by inventory, but owner inventory did not release the item.", item);
-                    return false;
-                }
-
-                return true;
+                removedItem = default;
+                return false;
             }
 
             // Bulk items are never claimed.
@@ -481,23 +463,54 @@ namespace RogueEntity.Core.Inventory
             return true;
         }
 
-
-        bool TryQueryInventory(TGameContext context,
-                               ContainedInInventoryMarker<TOwnerId, TItemId> m,
-                               out IInventory<TGameContext, TItemId> inventory)
+        public bool Equals(ListInventory<TGameContext, TOwnerId, TItemId> other)
         {
-            if (m.Owner.TryGetValue(out TOwnerId a))
+            if (ReferenceEquals(null, other))
             {
-                return ownerResolver.TryQueryData(a, context, out inventory);
+                return false;
             }
 
-            if (m.Container.TryGetValue(out TItemId i))
+            if (ReferenceEquals(this, other))
             {
-                return itemResolver.TryQueryData(i, context, out inventory);
+                return true;
             }
 
-            inventory = default;
-            return false;
+            return Data.Equals(other.Data);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj))
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, obj))
+            {
+                return true;
+            }
+
+            if (obj.GetType() != this.GetType())
+            {
+                return false;
+            }
+
+            return Equals((ListInventory<TGameContext, TOwnerId, TItemId>)obj);
+        }
+
+        public override int GetHashCode()
+        {
+            return Data.GetHashCode();
+        }
+
+        public static bool operator ==(ListInventory<TGameContext, TOwnerId, TItemId> left, ListInventory<TGameContext, TOwnerId, TItemId> right)
+        {
+            return Equals(left, right);
+        }
+
+        public static bool operator !=(ListInventory<TGameContext, TOwnerId, TItemId> left, ListInventory<TGameContext, TOwnerId, TItemId> right)
+        {
+            return !Equals(left, right);
         }
     }
 }

@@ -37,5 +37,6 @@ namespace RogueEntity.Core.Meta.Items
         void DiscardUnusedItem(in TItemId item);
         void Apply(TItemId reference, TGameContext context);
         TItemId Destroy(in TItemId item);
+        TItemId DestroyNext(in TItemId item);
     }
 }

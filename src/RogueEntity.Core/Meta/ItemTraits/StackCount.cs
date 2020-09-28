@@ -26,23 +26,39 @@ namespace RogueEntity.Core.Meta.ItemTraits
         [Key(1)]
         public ushort MaximumStackSize { get; }
 
-        public StackCount Take(int count, out StackCount remaining, out int notApplied)
+        /// <summary>
+        ///   Removes the given number of elements from the item stack. The given stack
+        ///   will be split between a stack of items taken (returned as return value)
+        ///   and the stack of items remaining in place. If more items are requested
+        ///   than available in the stack, itemsLeftToBeRemoved will contain that number
+        ///   of items that should be taken from other stacks elsewhere.
+        ///
+        ///   The out parameter remainingItemsInPlace holds the stack of items left.
+        ///   This stack can be empty (zero count) if all items have been removed.
+        ///   In  that case you should perform some clean-up to remove the item reference.
+        /// </summary>
+        /// <param name="itemsToBeRemoved"></param>
+        /// <param name="remainingItemsInPlace"></param>
+        /// <param name="itemsLeftToBeRemoved"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
+        public StackCount Take(int itemsToBeRemoved, out StackCount remainingItemsInPlace, out int itemsLeftToBeRemoved)
         {
-            if (count < 0)
+            if (itemsToBeRemoved < 0)
             {
                 throw new ArgumentOutOfRangeException();
             }
 
-            if (count > Count)
+            if (itemsToBeRemoved > Count)
             {
-                notApplied = count - Count;
-                remaining = new StackCount(0, MaximumStackSize);
+                itemsLeftToBeRemoved = itemsToBeRemoved - Count;
+                remainingItemsInPlace = new StackCount(0, MaximumStackSize);
                 return new StackCount(Count, MaximumStackSize);
             }
 
-            notApplied = 0;
-            remaining = new StackCount((ushort)(Count - count), MaximumStackSize);
-            return new StackCount((ushort) count, MaximumStackSize);
+            itemsLeftToBeRemoved = 0;
+            remainingItemsInPlace = new StackCount((ushort)(Count - itemsToBeRemoved), MaximumStackSize);
+            return new StackCount((ushort) itemsToBeRemoved, MaximumStackSize);
         }
 
         public StackCount WithCount(int count)
@@ -70,11 +86,11 @@ namespace RogueEntity.Core.Meta.ItemTraits
             return new StackCount((ushort) Math.Min(total, MaximumStackSize), MaximumStackSize);
         }
 
-        public bool Merge(in StackCount stackSizeNew, out StackCount result)
+        public bool Merge(in StackCount additionalStack, out StackCount result)
         {
-            if (Count + stackSizeNew.Count <= MaximumStackSize)
+            if (Count + additionalStack.Count <= MaximumStackSize)
             {
-                result = new StackCount((ushort) (Count + stackSizeNew.Count), MaximumStackSize);
+                result = new StackCount((ushort) (Count + additionalStack.Count), MaximumStackSize);
                 return true;
             }
 

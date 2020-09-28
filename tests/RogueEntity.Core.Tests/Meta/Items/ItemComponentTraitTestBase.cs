@@ -15,6 +15,7 @@ using MessagePack;
 using MessagePack.Formatters;
 using MessagePack.Resolvers;
 using NUnit.Framework;
+using RogueEntity.Core.Infrastructure.Serialization;
 using RogueEntity.Core.Meta.Items;
 
 namespace RogueEntity.Core.Tests.Meta.Items
@@ -46,19 +47,19 @@ namespace RogueEntity.Core.Tests.Meta.Items
             activeItems.Clear();
             Context = CreateContext();
 
-            EntityRegistry.RegisterNonConstructable<ItemDeclarationHolder<TGameContext, ItemReference>>();
+            EntityRegistry.RegisterNonConstructable<ItemDeclarationHolder<TGameContext, TItemId>>();
 
             SubjectTrait = CreateTrait();
 
             if (SubjectTrait is IBulkItemTrait<TGameContext, TItemId> bulkTrait)
             {
-                ItemRegistry.Register(new BulkItemDeclaration<TGameContext, TItemId>(BulkItemId).WithTrait(bulkTrait));
+                ItemRegistry.Register(CreateBulkItemDeclaration(bulkTrait));
                 activeItems.Add(BulkItemId);
             }
 
             if (SubjectTrait is IReferenceItemTrait<TGameContext, TItemId> refTrait)
             {
-                ItemRegistry.Register(new ReferenceItemDeclaration<TGameContext, TItemId>(ReferenceItemId).WithTrait(refTrait));
+                ItemRegistry.Register(CreateReferenceItemDeclaration(refTrait));
                 activeItems.Add(ReferenceItemId);
             }
 
@@ -71,6 +72,16 @@ namespace RogueEntity.Core.Tests.Meta.Items
             {
                 EntityRegistry.RegisterNonConstructable<TData>();
             }
+        }
+
+        protected virtual BulkItemDeclaration<TGameContext, TItemId> CreateBulkItemDeclaration(IBulkItemTrait<TGameContext, TItemId> bulkTrait)
+        {
+            return new BulkItemDeclaration<TGameContext, TItemId>(BulkItemId).WithTrait(bulkTrait);
+        }
+
+        protected virtual ReferenceItemDeclaration<TGameContext, TItemId> CreateReferenceItemDeclaration(IReferenceItemTrait<TGameContext, TItemId> refTrait)
+        {
+            return new ReferenceItemDeclaration<TGameContext, TItemId>(ReferenceItemId).WithTrait(refTrait);
         }
 
         protected abstract EntityRegistry<TItemId> EntityRegistry { get; }
@@ -319,10 +330,7 @@ namespace RogueEntity.Core.Tests.Meta.Items
                 Assert.Fail("Unable to register item declaration type.");
             }
 
-            if (!scn.TryRegisterComponent<TData>(out var registration))
-            {
-                Assert.Fail("Unable to register component type.");
-            }
+            var registration = PerformEntityComponentRegistration(scn);
 
             if (!scn.TryRegisterKey<TItemId>(out var keyRegistration))
             {
@@ -356,20 +364,10 @@ namespace RogueEntity.Core.Tests.Meta.Items
             var surr = new ObjectSurrogateResolver();
             var scn = new EntityRegistrationScanner().With(new XmlEntityRegistrationHandler<TItemId>(surr))
                                                      .With(new XmlDataContractRegistrationHandler<TItemId>(surr));
-            if (!scn.TryRegisterComponent<ItemDeclarationHolder<TGameContext, TItemId>>(out var itemDeclarationRegistration))
-            {
-                Assert.Fail("Unable to register item declaration type.");
-            }
 
-            if (!scn.TryRegisterComponent<TData>(out var registration))
-            {
-                Assert.Fail("Unable to register component type.");
-            }
+            PerformBaseEntityComponentRegistration(scn, out var itemDeclarationRegistration, out var keyRegistration);
 
-            if (!scn.TryRegisterKey<TItemId>(out var keyRegistration))
-            {
-                Assert.Fail("Unable to register key type");
-            }
+            var registration = PerformEntityComponentRegistration(scn);
 
 
             var reg = new XmlReadHandlerRegistry().Register(registration)
@@ -391,65 +389,46 @@ namespace RogueEntity.Core.Tests.Meta.Items
             }
         }
 
-        ObjectSurrogateResolver PopulateSurrogateResolver(ObjectSurrogateResolver resolvers,
+        static void PerformBaseEntityComponentRegistration(EntityRegistrationScanner scn,
+                                                           out EntityComponentRegistration itemDeclarationRegistration,
+                                                           out EntityComponentRegistration keyRegistration)
+        {
+            if (!scn.TryRegisterComponent<ItemDeclarationHolder<TGameContext, TItemId>>(out itemDeclarationRegistration))
+            {
+                Assert.Fail("Unable to register item declaration type.");
+            }
+
+            if (!scn.TryRegisterKey<TItemId>(out keyRegistration))
+            {
+                Assert.Fail("Unable to register key type");
+            }
+        }
+
+        void PopulateSurrogateResolver(ObjectSurrogateResolver surr, 
                                                           EntityKeyMapper<TItemId> mapper,
                                                           params EntityComponentRegistration[] components)
         {
+            var xmlContext = new XmlSerializationContext();
+            
             var bulkIdSerializationMapper = new BulkItemIdSerializationMapper<TItemId>(ItemIdMetaData.BulkDataFactory, ItemRegistry, ItemRegistry);
-            resolvers.Register(new ItemDeclarationHolderSurrogateProvider<TGameContext, TItemId>(Context));
-            resolvers.Register(new BulkKeySurrogateProvider<TItemId>(ItemIdMetaData, mapper, bulkIdSerializationMapper.TryMap));
+            xmlContext.Register(new ItemDeclarationHolderSurrogateProvider<TGameContext, TItemId>(Context));
+            xmlContext.Register(new BulkKeySurrogateProvider<TItemId>(ItemIdMetaData, mapper, bulkIdSerializationMapper.TryMap));
             foreach (var c in components)
             {
-                if (c == null)
-                {
-                    continue;
-                }
-
-                if (c.TryGet(out XmlWriteHandlerRegistration w))
-                {
-                    if (w.TryGetResolverFactory<TItemId>(out var factory))
-                    {
-                        var resolver = factory(mapper);
-                        if (resolver != null)
-                        {
-                            resolvers.Register(w.TargetType, resolver);
-                        }
-                    }
-                }
-                else if (c.TryGet(out XmlReadHandlerRegistration r))
-                {
-                    if (r.TryGetResolverFactory<TItemId>(out var factory))
-                    {
-                        var resolver = factory(mapper);
-                        if (resolver != null)
-                        {
-                            resolvers.Register(r.TargetType, resolver);
-                        }
-                    }
-                }
+                xmlContext.AddComponentRegistration(c);
             }
 
-            return resolvers;
+            CustomizeXmlSerializationContext(mapper, xmlContext);
+            
+            xmlContext.Populate(surr, mapper);
         }
 
 
         byte[] SerializeToBinary()
         {
             var scn = new EntityRegistrationScanner().With(new BinaryEntityRegistrationHandler<TItemId>());
-            if (!scn.TryRegisterComponent<ItemDeclarationHolder<TGameContext, TItemId>>(out var itemDeclarationRegistration))
-            {
-                Assert.Fail("Unable to register item declaration type.");
-            }
-
-            if (!scn.TryRegisterComponent<TData>(out var registration))
-            {
-                Assert.Fail("Unable to register component type.");
-            }
-
-            if (!scn.TryRegisterKey<TItemId>(out var keyRegistration))
-            {
-                Assert.Fail("Unable to register key type " + typeof(TItemId));
-            }
+            PerformBaseEntityComponentRegistration(scn, out var itemDeclarationRegistration, out var keyRegistration);
+            var registration = PerformEntityComponentRegistration(scn);
 
             var reg = new BinaryWriteHandlerRegistry().Register(registration)
                                                       .Register(itemDeclarationRegistration);
@@ -467,25 +446,23 @@ namespace RogueEntity.Core.Tests.Meta.Items
             }
         }
 
-        TItemId WriteMapper(EntityKeyData d) => ItemIdMetaData.EntityKeyFactory(d.Age, d.Key);
-        
-        TItemId DeserializeFromBinary(byte[] data, TItemId originalId)
+        protected virtual EntityComponentRegistration PerformEntityComponentRegistration(EntityRegistrationScanner scn)
         {
-            var scn = new EntityRegistrationScanner().With(new BinaryEntityRegistrationHandler<TItemId>());
-            if (!scn.TryRegisterComponent<ItemDeclarationHolder<TGameContext, TItemId>>(out var itemDeclarationRegistration))
-            {
-                Assert.Fail("Unable to register item declaration type.");
-            }
-
             if (!scn.TryRegisterComponent<TData>(out var registration))
             {
                 Assert.Fail("Unable to register component type.");
             }
 
-            if (!scn.TryRegisterKey<TItemId>(out var keyRegistration))
-            {
-                Assert.Fail("Unable to register key type");
-            }
+            return registration;
+        }
+
+        TItemId WriteMapper(EntityKeyData d) => ItemIdMetaData.EntityKeyFactory(d.Age, d.Key);
+        
+        TItemId DeserializeFromBinary(byte[] data, TItemId originalId)
+        {
+            var scn = new EntityRegistrationScanner().With(new BinaryEntityRegistrationHandler<TItemId>());
+            PerformBaseEntityComponentRegistration(scn, out var itemDeclarationRegistration, out var keyRegistration);
+            var registration = PerformEntityComponentRegistration(scn);
 
             var reg = new BinaryReadHandlerRegistry().Register(registration)
                                                      .Register(itemDeclarationRegistration);
@@ -512,65 +489,30 @@ namespace RogueEntity.Core.Tests.Meta.Items
         IFormatterResolver CreateMessageResolver(EntityKeyMapper<TItemId> mapper,
                                                  params EntityComponentRegistration[] components)
         {
+            var bs = new BinarySerializationContext();
+            
             var bulkIdSerializationMapper = new BulkItemIdSerializationMapper<TItemId>(ItemIdMetaData.BulkDataFactory, ItemRegistry, ItemRegistry);
-
-            var resolvers = new List<IFormatterResolver>();
-            var formatters = new List<IMessagePackFormatter>
-            {
-                new EntityKeyDataFormatter(),
-                new ItemDeclarationHolderMessagePackFormatter<TGameContext, TItemId>(Context),
-                new BulkKeyMessagePackFormatter<TItemId>(ItemIdMetaData, mapper, bulkIdSerializationMapper.TryMap)
-            };
-
+            bs.Register(new EntityKeyDataFormatter());
+            bs.Register(new ItemDeclarationHolderMessagePackFormatter<TGameContext, TItemId>(Context));
+            bs.Register(new BulkKeyMessagePackFormatter<TItemId>(ItemIdMetaData, mapper, bulkIdSerializationMapper.TryMap));
+            
             foreach (var c in components)
             {
-                if (c == null)
-                {
-                    continue;
-                }
-
-                if (c.TryGet(out BinaryWriteHandlerRegistration w))
-                {
-                    if (w.TryGetResolverFactory<TItemId>(out var factory))
-                    {
-                        var resolver = factory(mapper);
-                        if (resolver != null)
-                        {
-                            resolvers.Add(resolver);
-                        }
-                    }
-                    else if (w.TryGetMessagePackFormatterFactory<TItemId>(out var messageFormatter))
-                    {
-                        var fmt = messageFormatter(mapper);
-                        if (fmt != null)
-                        {
-                            formatters.Add(fmt);
-                        }
-                    }
-                }
-                else if (c.TryGet(out BinaryReadHandlerRegistration r))
-                {
-                    if (r.TryGetResolverFactory<TItemId>(out var factory))
-                    {
-                        var resolver = factory(mapper);
-                        if (resolver != null)
-                        {
-                            resolvers.Add(resolver);
-                        }
-                    }
-                    else if (r.TryGetMessagePackFormatterFactory<TItemId>(out var messageFormatter))
-                    {
-                        var fmt = messageFormatter(mapper);
-                        if (fmt != null)
-                        {
-                            formatters.Add(fmt);
-                        }
-                    }
-                }
+                bs.AddComponentRegistration(c);
             }
 
-            resolvers.Add(StandardResolverAllowPrivate.Instance);
-            return CompositeResolver.Create(formatters, resolvers);
+            CustomizeBinarySerializationContext(mapper, bs);
+            return bs.CreateResolver(mapper);
+        }
+
+        protected virtual void CustomizeXmlSerializationContext(EntityKeyMapper<TItemId> mapper, XmlSerializationContext bs)
+        {
+            
+        }
+        
+        protected virtual void CustomizeBinarySerializationContext(EntityKeyMapper<TItemId> mapper, BinarySerializationContext bs)
+        {
+            
         }
     }
 }

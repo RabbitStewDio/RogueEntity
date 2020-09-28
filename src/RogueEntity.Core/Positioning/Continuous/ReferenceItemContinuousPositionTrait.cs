@@ -10,8 +10,9 @@ namespace RogueEntity.Core.Positioning.Continuous
     public class ReferenceItemContinuousPositionTrait<TGameContext, TItemId> : IReferenceItemTrait<TGameContext, TItemId>,
                                                                                IItemComponentTrait<TGameContext, TItemId, Position>,
                                                                                IItemComponentTrait<TGameContext, TItemId, ContinuousMapPosition>,
-                                                                               IItemComponentTrait<TGameContext, TItemId, ContinuousMapPositionChangedMarker>,
-                                                                               IItemComponentTrait<TGameContext, TItemId, MapLayerPreference>
+                                                                               IItemComponentInformationTrait<TGameContext, TItemId, ContinuousMapPositionChangedMarker>,
+                                                                               IItemComponentInformationTrait<TGameContext, TItemId, MapLayerPreference>,
+                                                                               IItemComponentInformationTrait<TGameContext, TItemId, MapContainerEntityMarker>
         where TItemId : IBulkDataStorageKey<TItemId>
         where TGameContext : IContinuousMapContext<TGameContext, TItemId>
     {
@@ -82,27 +83,15 @@ namespace RogueEntity.Core.Positioning.Continuous
             return true;
         }
 
-        public bool TryUpdate(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, in ContinuousMapPositionChangedMarker t, out TItemId changedK)
+        public bool TryQuery(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, out MapContainerEntityMarker t)
         {
-            changedK = k;
-            return false;
-        }
+            if (v.IsValid(k) && v.GetComponent(k, out ContinuousMapPosition _))
+            {
+                t = new MapContainerEntityMarker();
+                return true;
+            }
 
-        public bool TryUpdate(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, in MapLayerPreference t, out TItemId changedK)
-        {
-            changedK = k;
-            return false;
-        }
-
-        bool IItemComponentTrait<TGameContext, TItemId, MapLayerPreference>.TryRemove(IEntityViewControl<TItemId> entityRegistry, TGameContext context, TItemId k, out TItemId changedItem)
-        {
-            changedItem = k;
-            return false;
-        }
-
-        bool IItemComponentTrait<TGameContext, TItemId, ContinuousMapPositionChangedMarker>.TryRemove(IEntityViewControl<TItemId> entityRegistry, TGameContext context, TItemId k, out TItemId changedItem)
-        {
-            changedItem = k;
+            t = default;
             return false;
         }
 
