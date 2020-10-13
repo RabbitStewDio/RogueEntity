@@ -1,4 +1,5 @@
-﻿using RogueEntity.Core.Meta.Base;
+﻿using EnTTSharp.Entities;
+using RogueEntity.Core.Meta.Base;
 
 namespace RogueEntity.Core.Meta.Items
 {
@@ -6,9 +7,9 @@ namespace RogueEntity.Core.Meta.Items
         where TItemId : IBulkDataStorageKey<TItemId>
     {
         readonly ItemRegistry<TGameContext, TItemId> registry;
-        readonly EnTTSharp.Entities.EntityRegistry<TItemId> entityRegistry;
+        readonly EntityRegistry<TItemId> entityRegistry;
 
-        public ItemResolver(ItemRegistry<TGameContext, TItemId> registry, EnTTSharp.Entities.EntityRegistry<TItemId> entityRegistry)
+        public ItemResolver(ItemRegistry<TGameContext, TItemId> registry, EntityRegistry<TItemId> entityRegistry)
         {
             this.registry = registry;
             this.entityRegistry = entityRegistry;

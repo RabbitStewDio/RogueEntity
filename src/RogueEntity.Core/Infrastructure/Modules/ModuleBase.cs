@@ -1,25 +1,36 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
+using System.Linq;
 using RogueEntity.Core.Utils;
 
 namespace RogueEntity.Core.Infrastructure.Modules
 {
-    public abstract class ModuleBase<TGameContext> : IModule<TGameContext>
+    public static class ModuleRelationNames
     {
-        [SuppressMessage("ReSharper", "UnusedTypeParameter")]
-        protected delegate void EntityInitializer<TEntityKey>(TGameContext context, IModuleInitializer<TGameContext> initializer);
-
+        public const string ImpliedRoleRelationId = "Relation.System.Implies";
+    }
+    
+    public abstract class ModuleBase
+    {
         readonly List<ModuleDependency> moduleDependencies;
-        readonly Dictionary<Type, Action<TGameContext, IModuleInitializer<TGameContext>>> typedEntityInitializers;
+        readonly Dictionary<Type, DeclaredEntityRoleRecord> declaredRoles;
+        readonly Dictionary<Type, DeclaredEntityRelationRecord> declaredRelations;
+        
+        readonly List<EntityRelation> requiredRelations;
+        readonly List<EntityRole> requiredRoles;
 
         protected ModuleBase()
         {
             moduleDependencies = new List<ModuleDependency>();
-            typedEntityInitializers = new Dictionary<Type, Action<TGameContext, IModuleInitializer<TGameContext>>>();
+
+            declaredRoles = new Dictionary<Type, DeclaredEntityRoleRecord>();
+            declaredRelations = new Dictionary<Type, DeclaredEntityRelationRecord>();
+
+            requiredRelations = new List<EntityRelation>();
+            requiredRoles = new List<EntityRole>();
         }
 
+        public bool IsFrameworkModule { get; protected set; }
         public string Id { get; protected set; }
         public string Name { get; protected set; }
         public string Author { get; protected set; }
@@ -30,59 +41,138 @@ namespace RogueEntity.Core.Infrastructure.Modules
             get { return moduleDependencies; }
         }
 
+        public ReadOnlyListWrapper<EntityRelation> RequiredRelations => requiredRelations;
+        public ReadOnlyListWrapper<EntityRole> RequiredRoles => requiredRoles;
+
+        public IEnumerable<Type> DeclaredEntityTypes => declaredRoles.Keys.Concat(declaredRelations.Keys).Distinct();
+
+        public bool TryGetEntityRecord(Type subject, out DeclaredEntityRoleRecord r)
+        {
+            return declaredRoles.TryGetValue(subject, out r);
+        }
+        
+        public bool TryGetRelationRecord(Type subject, out DeclaredEntityRelationRecord r)
+        {
+            return declaredRelations.TryGetValue(subject, out r);
+        }
+        
+        protected DeclareDependencyBuilder DeclareEntity<TEntityId>(EntityRole r)
+        {
+            if (declaredRoles.TryGetValue(typeof(TEntityId), out var rr))
+            {
+                rr = rr.With(r);
+            }
+            else
+            {
+                rr = new DeclaredEntityRoleRecord(typeof(TEntityId), r);
+                declaredRoles[rr.EntityType] = rr;
+            }
+
+            return new DeclareDependencyBuilder(this, r);
+        }
+
+        protected DeclareDependencyBuilder DeclareRelation<TSubject, TObject>(EntityRelation r)
+        {
+            if (!declaredRelations.TryGetValue(typeof(TSubject), out var record))
+            {
+                record = new DeclaredEntityRelationRecord(typeof(TSubject));
+            }
+
+            record.Declare(typeof(TObject), r);
+
+            declaredRelations[typeof(TSubject)] = record;
+            return new DeclareDependencyBuilder(this, r.Subject);
+        }
+       
+        protected RequireDependencyBuilder RequireRole(EntityRole r)
+        {
+            if (!requiredRoles.Contains(r))
+            {
+                requiredRoles.Add(r);
+            }
+
+            return new RequireDependencyBuilder(this, r);
+        }
+
+        protected RequireDependencyBuilder RequireRelation(EntityRelation r)
+        {
+            if (!requiredRelations.Contains(r))
+            {
+                requiredRelations.Add(r);
+            }
+
+            return new RequireDependencyBuilder(this, r.Subject);
+        }
+
+        protected void DeclareDependency(ModuleDependency dependencies)
+        {
+            if (!moduleDependencies.Contains(dependencies))
+            {
+                moduleDependencies.Add(dependencies);
+            }
+        }
+
         protected void DeclareDependencies(params ModuleDependency[] dependencies)
         {
             moduleDependencies.AddRange(dependencies);
         }
 
-        protected void RegisterTypedInitializer<TEntityKey>(EntityInitializer<TEntityKey> initializer)
+        public readonly struct RequireDependencyBuilder
         {
-            typedEntityInitializers[typeof(TEntityKey)] = (c, i) => initializer(c,i);
-        }
+            readonly ModuleBase module;
+            readonly EntityRole role;
 
-        /// <summary>
-        ///   Provides a global, non-entity dependent initializer method. This is always called before
-        ///   any typed initializer.
-        /// </summary>
-        /// <param name="context"></param>
-        /// <param name="initializer"></param>
-        public virtual void InitializeContent(TGameContext context, IModuleInitializer<TGameContext> initializer)
-        {
-        }
-
-        public virtual void Initialize(Type entityKey, TGameContext context, IModuleInitializer<TGameContext> initializer)
-        {
-            if (typedEntityInitializers.TryGetValue(entityKey, out var del))
+            public RequireDependencyBuilder(ModuleBase module, EntityRole role)
             {
-                del(context, initializer);
-                return;
+                this.module = module;
+                this.role = role;
             }
 
-            foreach (var m in GetType().GetMethods(BindingFlags.Instance | BindingFlags.NonPublic))
+            public RequireDependencyBuilder WithImpliedRole(EntityRole r)
             {
-                var attr = m.GetCustomAttribute<ModuleEntityInitializerAttribute>();
-                if (attr == null)
-                {
-                    continue;
-                }
-
-                if (m.IsSameAction(entityKey, typeof(TGameContext), typeof(IModuleInitializer<TGameContext>)))
-                {
-                    m.Invoke(this, new object[] {entityKey, context, initializer});
-                    continue;
-                }
-                
-                if (m.IsGenericMethod && m.IsSameAction(typeof(TGameContext), typeof(IModuleInitializer<TGameContext>)))
-                {
-                    var genArgs = m.GetGenericArguments();
-                    if (genArgs.Length == 1)
-                    {
-                        m.MakeGenericMethod(entityKey).Invoke(this, new object[] {context, initializer});
-                    }
-                }
-
+                this.module.RequireRelation(new EntityRelation(ModuleRelationNames.ImpliedRoleRelationId, role, r, true));
+                return this;
             }
 
+            public RequireDependencyBuilder WithDependencyOn(string moduleId)
+            {
+                module.DeclareDependency(ModuleDependency.Of(moduleId));
+                return this;
+            }
+        }
+
+        public readonly struct DeclareDependencyBuilder
+        {
+            readonly ModuleBase module;
+            readonly EntityRole role;
+
+            public DeclareDependencyBuilder(ModuleBase module, EntityRole role)
+            {
+                this.module = module;
+                this.role = role;
+            }
+
+            public DeclareDependencyBuilder WithImpliedRole(EntityRole r)
+            {
+                // dont register dependency roles so that we can check the module setup later.
+                this.module.RequireRelation(new EntityRelation(ModuleRelationNames.ImpliedRoleRelationId, role, r));
+                return this;
+            }
+
+            public DeclareDependencyBuilder WithImpliedRole(EntityRole r, ModuleDependency moduleId)
+            {
+                // dont register dependency roles so that we can check the module setup later.
+                this.module.RequireRelation(new EntityRelation(ModuleRelationNames.ImpliedRoleRelationId, role, r));
+                this.module.DeclareDependency(moduleId);
+
+                return this;
+            }
+
+            public DeclareDependencyBuilder WithDependencyOn(string moduleId)
+            {
+                module.DeclareDependency(ModuleDependency.Of(moduleId));
+                return this;
+            }
         }
     }
 }

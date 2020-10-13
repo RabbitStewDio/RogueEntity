@@ -1,12 +1,31 @@
-﻿using Microsoft.Xna.Framework;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Xna.Framework;
+using RogueEntity.Simple.BoxPusher;
+using Serilog;
 using Console = SadConsole.Console;
 
 namespace RogueEntity.Simple.Demo
 {
     class Program
     {
+        static void SetUpLogging()
+        {
+            var configuration = new ConfigurationBuilder()
+                                .AddJsonFile("appsettings.json", true)
+                                .Build();
+
+            var logger = new LoggerConfiguration()
+                         .ReadFrom.Configuration(configuration)
+                         .CreateLogger();
+            Log.Logger = logger;
+        }
+        
         static void Main()
         {
+            SetUpLogging();
+            
+            BoxPusherGame.BoxMain();
+            
             // Setup the engine and create the main window.
             SadConsole.Game.Create(80, 25);
 

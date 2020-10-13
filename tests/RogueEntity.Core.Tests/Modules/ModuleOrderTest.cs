@@ -41,7 +41,7 @@ namespace RogueEntity.Core.Tests.Modules
         }
     }
 
-    public class ModuleFixture : ModuleBase<ModuleContext>
+    public class ModuleFixture : ModuleBase
     {
         public ModuleFixture(string id, params ModuleDependency[] deps)
         {
@@ -50,12 +50,6 @@ namespace RogueEntity.Core.Tests.Modules
         }
 
 
-        public override void InitializeContent(ModuleContext context, IModuleInitializer<ModuleContext> initializer)
-        {
-            context.RegisterContent(Id);
-        }
-
-        [ModuleEntityInitializer]
         protected void InitializeEntity<TEntity>(ModuleContext context, IModuleInitializer<ModuleContext> initializer) where TEntity: IEntityKey
         {
             context.RegisterEntity(Id, typeof(TEntity));
@@ -69,8 +63,7 @@ namespace RogueEntity.Core.Tests.Modules
         {
             var ms = new ModuleSystem<ModuleContext>();
             ms.AddModule(new ModuleFixture("Base"));
-            ms.AddModule(new ModuleFixture("Mid", ModuleDependency.OfFrameworkEntity("Base")));
-            ms.AddModule(new ModuleFixture("Content", ModuleDependency.OfEntity<ItemReference>("Mid")));
+            ms.AddModule(new ModuleFixture("Mid", ModuleDependency.Of("Base")));
 
             var context = new ModuleContext();
             ms.Initialize(context, new ModuleInitializer<ModuleContext>());
@@ -87,11 +80,8 @@ namespace RogueEntity.Core.Tests.Modules
         {
             var ms = new ModuleSystem<ModuleContext>();
             ms.AddModule(new ModuleFixture("Base"));
-            ms.AddModule(new ModuleFixture("Mid-A", ModuleDependency.OfFrameworkEntity("Base")));
-            ms.AddModule(new ModuleFixture("Mid-B", ModuleDependency.OfFrameworkEntity("Base")));
-            ms.AddModule(new ModuleFixture("Content", 
-                                           ModuleDependency.OfEntity<ItemReference>("Mid-A"), 
-                                           ModuleDependency.OfEntity<EntityKey>("Mid-B")));
+            ms.AddModule(new ModuleFixture("Mid-A", ModuleDependency.Of("Base")));
+            ms.AddModule(new ModuleFixture("Mid-B", ModuleDependency.Of("Base")));
 
             var context = new ModuleContext();
             ms.Initialize(context, new ModuleInitializer<ModuleContext>());
@@ -112,10 +102,10 @@ namespace RogueEntity.Core.Tests.Modules
         {
             var ms = new ModuleSystem<ModuleContext>();
             ms.AddModule(new ModuleFixture("Base"));
-            ms.AddModule(new ModuleFixture("Mid-A", ModuleDependency.OfFrameworkEntity("Base")));
+            ms.AddModule(new ModuleFixture("Mid-A", ModuleDependency.Of("Base")));
             ms.AddModule(new ModuleFixture("Content", 
-                                           ModuleDependency.OfEntity<ItemReference>("Mid-A"), 
-                                           ModuleDependency.OfEntity<EntityKey>("Mid-B")));
+                                           ModuleDependency.Of("Mid-A"), 
+                                           ModuleDependency.Of("Mid-B")));
 
             var context = new ModuleContext();
             ms.Invoking(m => m.Initialize(context, new ModuleInitializer<ModuleContext>())).Should().ThrowExactly<ModuleInitializationException>();
@@ -125,11 +115,11 @@ namespace RogueEntity.Core.Tests.Modules
         public void TestCircularDependencies()
         {
             var ms = new ModuleSystem<ModuleContext>();
-            ms.AddModule(new ModuleFixture("Base", ModuleDependency.OfContent("Content")));
-            ms.AddModule(new ModuleFixture("Mid-A", ModuleDependency.OfFrameworkEntity("Base")));
+            ms.AddModule(new ModuleFixture("Base", ModuleDependency.Of("Content")));
+            ms.AddModule(new ModuleFixture("Mid-A", ModuleDependency.Of("Base")));
             ms.AddModule(new ModuleFixture("Content", 
-                                           ModuleDependency.OfEntity<ItemReference>("Mid-A"), 
-                                           ModuleDependency.OfEntity<EntityKey>("Mid-B")));
+                                           ModuleDependency.Of("Mid-A"), 
+                                           ModuleDependency.Of("Mid-B")));
 
             var context = new ModuleContext();
             ms.Invoking(m => m.Initialize(context, new ModuleInitializer<ModuleContext>())).Should().ThrowExactly<ModuleInitializationException>();

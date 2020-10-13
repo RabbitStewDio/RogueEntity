@@ -42,7 +42,7 @@ namespace RogueEntity.Core.Positioning.Grid
             }
 
             if (!mapData.IsValid(origin) ||
-                !mapData.TryGetMap(origin.GridZ, out var map))
+                !mapData.TryGetMap(origin.GridZ, out var map, MapAccess.ForWriting))
             {
                 logger.Verbose("Requested grid position for map layer {p.LayerId} is out of range", origin.LayerId, origin);
                 placementPos = default;
@@ -106,7 +106,7 @@ namespace RogueEntity.Core.Positioning.Grid
             }
 
             if (!mapData.IsValid(origin) ||
-                !mapData.TryGetMap(origin.GridZ, out var map))
+                !mapData.TryGetMap(origin.GridZ, out var map, MapAccess.ForWriting))
             {
                 logger.Verbose("Requested grid position for map layer {p.LayerId} is out of range", origin.LayerId, origin);
                 placementPos = default;
@@ -155,7 +155,7 @@ namespace RogueEntity.Core.Positioning.Grid
             }
 
             if (!mapData.IsValid(placementPos) ||
-                !mapData.TryGetMap(placementPos.GridZ, out var map))
+                !mapData.TryGetMap(placementPos.GridZ, out var map, MapAccess.ForWriting))
             {
                 logger.Verbose("Requested grid position for map layer {p.LayerId} is out of range", placementPos.LayerId, placementPos);
                 return false;
@@ -206,7 +206,7 @@ namespace RogueEntity.Core.Positioning.Grid
             }
 
             if (!mapData.IsValid(placementPos) ||
-                !mapData.TryGetMap(placementPos.GridZ, out var map))
+                !mapData.TryGetMap(placementPos.GridZ, out var map, MapAccess.ForWriting))
             {
                 logger.Verbose("Requested grid position for map layer {p.LayerId} is out of range", placementPos.LayerId, placementPos);
                 return false;
@@ -251,7 +251,7 @@ namespace RogueEntity.Core.Positioning.Grid
             }
 
             if (!mapData.IsValid(p) ||
-                !mapData.TryGetMap(p.GridZ, out var map))
+                !mapData.TryGetMap(p.GridZ, out var map, MapAccess.ForWriting))
             {
                 logger.Verbose("Requested grid position for map layer {p.LayerId} is out of range", p.LayerId, p);
                 return false;

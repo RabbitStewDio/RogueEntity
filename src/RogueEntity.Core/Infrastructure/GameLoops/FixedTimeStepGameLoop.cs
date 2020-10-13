@@ -13,7 +13,10 @@ namespace RogueEntity.Core.Infrastructure.GameLoops
     ///    active.
     /// </summary>
     /// <typeparam name="TGameContext"></typeparam>
-    public class FixedTimeStepGameLoop<TGameContext> : ITimeSource, IGameLoop<TGameContext>, ISystemGameLoop<TGameContext>
+    public class FixedTimeStepGameLoop<TGameContext> : ITimeSource, 
+                                                       IGameLoop<TGameContext>, 
+                                                       ISystemGameLoop<TGameContext>,
+                                                       IDisposable
     {
         readonly ILogger logger = SLog.ForContext<FixedTimeStepGameLoop<TGameContext>>();
 
@@ -54,6 +57,8 @@ namespace RogueEntity.Core.Infrastructure.GameLoops
 
         public List<ActionSystemEntry<TGameContext>> VariableStepHandlers { get; }
 
+        public List<ActionSystemEntry<TGameContext>> DisposeStepHandlers { get; }
+
         /// <summary>
         ///   Late step handlers are system level function that run both after an fixed-update step
         ///   and after a variable update step. They should be used sparingly to clean up disposed
@@ -81,6 +86,15 @@ namespace RogueEntity.Core.Infrastructure.GameLoops
             }
         }
 
+        public void Dispose()
+        {
+            var context = ContextProvider(TimeState.FrameDeltaTime, TimeState.FixedGameTimeElapsed);
+            for (var i = DisposeStepHandlers.Count - 1; i >= 0; i--)
+            {
+                var handler = DisposeStepHandlers[i];
+                handler.PerformAction(context);
+            }
+        }
 
         public void Update(TimeSpan absoluteTime)
         {

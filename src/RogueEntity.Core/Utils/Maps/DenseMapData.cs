@@ -32,8 +32,20 @@ namespace RogueEntity.Core.Utils.Maps
 
         public T this[int x, int y]
         {
-            get { return cells[x + y * Width]; }
-            set { cells[x + y * Width] = value; }
+            get
+            {
+                var linearIndex = x + y * Width;
+                if (linearIndex < 0 || linearIndex >= cells.Length)
+                {
+                    return default;
+                }
+                
+                return cells[linearIndex];
+            }
+            set
+            {
+                cells[x + y * Width] = value;
+            }
         }
 
         public void Clear()

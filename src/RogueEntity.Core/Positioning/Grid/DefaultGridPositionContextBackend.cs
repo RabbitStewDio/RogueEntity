@@ -20,7 +20,7 @@ namespace RogueEntity.Core.Positioning.Grid
         {
             if (mapLayerData.ContainsKey(layer))
             {
-                throw new ArgumentException();
+                throw new ArgumentException($"Layer {layer} has already been declared.");
             }
 
             mapLayers.Add(layer);

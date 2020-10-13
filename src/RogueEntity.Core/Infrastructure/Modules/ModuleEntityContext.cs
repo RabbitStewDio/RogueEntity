@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using EnTTSharp.Entities;
 using RogueEntity.Core.Infrastructure.Commands;
 using RogueEntity.Core.Infrastructure.GameLoops;
@@ -7,12 +6,25 @@ using RogueEntity.Core.Meta.Items;
 
 namespace RogueEntity.Core.Infrastructure.Modules
 {
-    public class ModuleEntityContext<TGameContext, TEntityId> : IModuleEntityContext<TGameContext, TEntityId> where TEntityId : IEntityKey
+    public static class ModuleEntityContext
     {
-        public delegate void SystemRegistrationDelegate(IGameLoopSystemRegistration<TGameContext> context, 
-                                                        EntityRegistry<TEntityId> registry,
-                                                        ICommandHandlerRegistration<TGameContext, TEntityId> handler);
+        public delegate void EntityRegistrationDelegate<TEntityId>(IServiceResolver resolver,
+                                                                   EntityRegistry<TEntityId> registry)
+            where TEntityId : IEntityKey;
 
+        public delegate void EntitySystemRegistrationDelegate<TGameContext, TEntityId>(IServiceResolver resolver,
+                                                                                       IGameLoopSystemRegistration<TGameContext> context,
+                                                                                       EntityRegistry<TEntityId> registry,
+                                                                                       ICommandHandlerRegistration<TGameContext, TEntityId> handler)
+            where TEntityId : IEntityKey;
+
+        public delegate void GlobalSystemRegistrationDelegate<TGameContext>(IServiceResolver resolver,
+                                                                            IGameLoopSystemRegistration<TGameContext> context);
+    }
+
+    public class ModuleEntityContext<TGameContext, TEntityId> : IModuleEntityContext<TGameContext, TEntityId>
+        where TEntityId : IEntityKey
+    {
         readonly Dictionary<ItemDeclarationId, IBulkItemDeclaration<TGameContext, TEntityId>> declaredBulkItems;
         readonly Dictionary<ItemDeclarationId, IReferenceItemDeclaration<TGameContext, TEntityId>> declaredReferenceItems;
         readonly List<IEntitySystemFactory<TGameContext, TEntityId>> systemFactories;
@@ -55,9 +67,9 @@ namespace RogueEntity.Core.Infrastructure.Modules
             return item.Id;
         }
 
-        public void Register(EntitySystemId id, int priority,
-                             Action<EntityRegistry<TEntityId>> entityRegistration, 
-                             SystemRegistrationDelegate systemRegistration = null)
+        public void Register(EntitySystemId id,
+                             int priority,
+                             ModuleEntityContext.EntityRegistrationDelegate<TEntityId> entityRegistration)
         {
             systemFactories.Add(new EntitySystemFactory
             {
@@ -65,11 +77,13 @@ namespace RogueEntity.Core.Infrastructure.Modules
                 Id = id,
                 Priority = priority,
                 EntityRegistration = entityRegistration,
-                SystemRegistration = systemRegistration
+                EntitySystemRegistration = default
             });
         }
 
-        public void Register(EntitySystemId id, int priority, SystemRegistrationDelegate systemRegistration)
+        public void Register(EntitySystemId id,
+                             int priority,
+                             ModuleEntityContext.EntitySystemRegistrationDelegate<TGameContext, TEntityId> entitySystemRegistration)
         {
             systemFactories.Add(new EntitySystemFactory
             {
@@ -77,26 +91,27 @@ namespace RogueEntity.Core.Infrastructure.Modules
                 Id = id,
                 Priority = priority,
                 EntityRegistration = null,
-                SystemRegistration = systemRegistration
+                EntitySystemRegistration = entitySystemRegistration
             });
         }
 
-
-        class EntitySystemFactory: IEntitySystemFactory<TGameContext, TEntityId>
+        class EntitySystemFactory : IEntitySystemFactory<TGameContext, TEntityId>
         {
             public string DeclaringModule { get; set; }
             public EntitySystemId Id { get; set; }
             public int Priority { get; set; }
 
-            public Action<EntityRegistry<TEntityId>> EntityRegistration { get; set; }
+            public ModuleEntityContext.EntityRegistrationDelegate<TEntityId> EntityRegistration { get; set; }
 
-            public SystemRegistrationDelegate SystemRegistration { get; set; }
+            public ModuleEntityContext.EntitySystemRegistrationDelegate<TGameContext, TEntityId> EntitySystemRegistration { get; set; }
 
-            public void Register(IGameLoopSystemRegistration<TGameContext> context, EntityRegistry<TEntityId> entityRegistry,
+            public void Register(IServiceResolver serviceResolver,
+                                 IGameLoopSystemRegistration<TGameContext> context,
+                                 EntityRegistry<TEntityId> entityRegistry,
                                  ICommandHandlerRegistration<TGameContext, TEntityId> commandRegistration)
             {
-                EntityRegistration?.Invoke(entityRegistry);
-                SystemRegistration?.Invoke(context, entityRegistry, commandRegistration);
+                EntityRegistration?.Invoke(serviceResolver, entityRegistry);
+                EntitySystemRegistration?.Invoke(serviceResolver, context, entityRegistry, commandRegistration);
             }
         }
     }

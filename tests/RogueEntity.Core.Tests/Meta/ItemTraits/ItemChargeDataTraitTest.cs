@@ -21,7 +21,7 @@ namespace RogueEntity.Core.Tests.Meta.ItemTraits
             return new ItemChargeTrait<BasicItemContext, ItemReference>(1, 100);
         }
 
-        public override IItemComponentTestDataFactory<ItemCharge> ProduceTestData(EntityRelations<ItemReference> relations)
+        protected override IItemComponentTestDataFactory<ItemCharge> ProduceTestData(EntityRelations<ItemReference> relations)
         {
             return new ItemComponentTestDataFactory<ItemCharge>(new ItemCharge(1, 100), 
                                                    new ItemCharge(10, 100), 

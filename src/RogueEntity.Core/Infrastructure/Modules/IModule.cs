@@ -1,29 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using EnTTSharp.Entities;
 using RogueEntity.Core.Meta.Items;
 
 namespace RogueEntity.Core.Infrastructure.Modules
 {
-    public interface IModule<TGameContext>
-    {
-        string Id { get; }
-        string Name { get; }
-        string Author { get; }
-        string Description { get; }
-
-        IEnumerable<ModuleDependency> ModuleDependencies { get; }
-
-        void InitializeContent(TGameContext context,
-                               IModuleInitializer<TGameContext> initializer);
-
-        void Initialize(Type entityKey, TGameContext context, 
-                        IModuleInitializer<TGameContext> initializer);
-    }
-
     public interface IModuleInitializer<TGameContext>
     {
         IModuleEntityContext<TGameContext, TEntityId> DeclareEntityContext<TEntityId>() where TEntityId : IEntityKey;
+        
+        void Register(EntitySystemId id,
+                      int priority,
+                      ModuleEntityContext.GlobalSystemRegistrationDelegate<TGameContext> entityRegistration);
     }
 
     public interface IModuleEntityContext<TGameContext, TEntityId> where TEntityId : IEntityKey
@@ -37,11 +24,10 @@ namespace RogueEntity.Core.Infrastructure.Modules
 
         void Register(EntitySystemId id,
                       int priority,
-                      Action<EntityRegistry<TEntityId>> entityRegistration,
-                      ModuleEntityContext<TGameContext, TEntityId>.SystemRegistrationDelegate systemRegistration = null);
+                      ModuleEntityContext.EntityRegistrationDelegate<TEntityId> entityRegistration);
 
         void Register(EntitySystemId id,
                       int priority,
-                      ModuleEntityContext<TGameContext, TEntityId>.SystemRegistrationDelegate systemRegistration = null);
+                      ModuleEntityContext.EntitySystemRegistrationDelegate<TGameContext, TEntityId> entitySystemRegistration = null);
     }
 }

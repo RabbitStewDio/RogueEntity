@@ -85,7 +85,7 @@ namespace RogueEntity.Core.Positioning.Grid
             }
 
             if (!context.TryGetGridDataFor(layerId, out var mapDataContext) ||
-                !mapDataContext.TryGetMap(p.GridZ, out var map))
+                !mapDataContext.TryGetMap(p.GridZ, out var map, MapAccess.ForWriting))
             {
                 logger.Warning("Invalid layer {Layer} for unresolvabled map data for item {ItemId}", p.LayerId, targetItem);
                 return false;

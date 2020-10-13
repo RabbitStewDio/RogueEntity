@@ -2,7 +2,7 @@
 
 namespace RogueEntity.Core.Movement.ItemCosts
 {
-    public interface IMovementCostDataProcessor<TGameContext> : ICachableChunkProcessor<TGameContext>
+    public interface IMovementCostDataProcessor<TGameContext> : ICachableChunkProcessor<TGameContext>, IByteBlitterDataSource
     {
     }
 }

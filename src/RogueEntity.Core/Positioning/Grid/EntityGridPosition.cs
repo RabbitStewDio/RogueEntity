@@ -19,6 +19,7 @@ namespace RogueEntity.Core.Positioning.Grid
     {
         const int MaxXYValue = (1 << 24) - 1;
         const int MaxZValue = (1 << 12) - 1;
+        
         const int MaxLValue = 7;
 
         const ulong XMask = 0x0000_0000_00FF_FFFFL;

@@ -3,6 +3,7 @@ using EnTTSharp.Entities;
 using GoRogue;
 using GoRogue.Pathing;
 using RogueEntity.Core.Infrastructure.Time;
+using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Positioning.MapLayers;
 using RogueEntity.Core.Utils;
@@ -63,7 +64,7 @@ namespace RogueEntity.Core.Movement.Pathing
             if (!currentPath.TryGetTail(out var end) ||
                 !mapLayerRegistry.TryGetValue(currentPosition.LayerId, out var mapLayer) ||
                 !context.TryGetGridDataFor(mapLayer, out var actorMapData) ||
-                !actorMapData.TryGetMap(currentPosition.GridZ, out var actorData))
+                !actorMapData.TryGetMap(currentPosition.GridZ, out var actorData, MapAccess.ReadOnly))
             {
                 logger.Warning("Avoidance path prerequisites not met");
                 resultPath = default;

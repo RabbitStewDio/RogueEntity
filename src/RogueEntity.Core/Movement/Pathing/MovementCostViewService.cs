@@ -1,7 +1,9 @@
 ﻿using EnTTSharp.Entities;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Movement.ItemCosts;
+using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Sensing;
+using RogueEntity.Core.Sensing.Discovery;
 using RogueEntity.Core.Utils.Maps;
 
 namespace RogueEntity.Core.Movement.Pathing
@@ -22,9 +24,11 @@ namespace RogueEntity.Core.Movement.Pathing
 
             var costMap = ActorMovementCost.Create(actor, context, zLevel);
 
-            if (context.ItemResolver.TryQueryData(actor, context, out DiscoveryMapData discoveryMap))
+            if (context.ItemResolver.TryQueryData(actor, context, out OnDemandDiscoveryMapData discoveryMap) &&
+                context.ItemResolver.TryQueryData(actor, context, out Position pos) &&
+                discoveryMap.TryGetMap(pos.GridZ, out var map))
             {
-                costMap = new RestrictedCostMap(costMap, discoveryMap.Map);
+                costMap = new RestrictedCostMap(costMap, map);
             }
 
             cached = new ActorMovementCostCache(costMap, zLevel);

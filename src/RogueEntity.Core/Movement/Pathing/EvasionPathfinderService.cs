@@ -4,6 +4,7 @@ using EnTTSharp.Entities;
 using GoRogue;
 using GoRogue.Pathing;
 using RogueEntity.Core.Infrastructure.Time;
+using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Positioning.MapLayers;
 
@@ -66,7 +67,7 @@ namespace RogueEntity.Core.Movement.Pathing
         {
             if (!mapLayerRegistry.TryGetValue(actorPosition.LayerId, out var mapLayer) ||
                 !context.TryGetGridDataFor(mapLayer, out var actorMapData) ||
-                !actorMapData.TryGetMap(actorPosition.GridZ, out var actorData))
+                !actorMapData.TryGetMap(actorPosition.GridZ, out var actorData, MapAccess.ReadOnly))
             {
                 resultPath = default;
                 return PathfinderResult.Failed;

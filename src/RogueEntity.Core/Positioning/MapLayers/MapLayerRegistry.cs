@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 
 namespace RogueEntity.Core.Positioning.MapLayers
@@ -27,9 +28,27 @@ namespace RogueEntity.Core.Positioning.MapLayers
             return layersById.Values.GetEnumerator();
         }
 
-        public void Add(MapLayer l)
+        public MapLayer Create(string name)
         {
-            layersById[l.LayerId] = l;
+            byte b = 0;
+            foreach (var f in layersById)
+            {
+                b = Math.Max(b, f.Key);
+            }
+
+            if (b == 255)
+            {
+                throw new ArgumentException("Max layers reached");
+            }
+
+            var mapLayer = new MapLayer((byte) (b + 1), name);
+            Add(mapLayer);
+            return mapLayer;
+        }
+        
+        void Add(MapLayer l)
+        {
+            layersById.Add(l.LayerId, l);
         }
 
         public bool TryGetValue(byte id, out MapLayer l)

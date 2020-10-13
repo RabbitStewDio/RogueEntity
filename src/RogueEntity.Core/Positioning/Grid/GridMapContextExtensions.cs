@@ -7,8 +7,13 @@ namespace RogueEntity.Core.Positioning.Grid
             where TPosition : IPosition
         {
             if (p.IsInvalid) return false;
-            if (p.GridX < 0 || p.GridX >= context.Width) return false;
-            if (p.GridY < 0 || p.GridY >= context.Height) return false;
+            if (!context.TryGetMap(p.GridZ, out var data))
+            {
+                return false;
+            }
+            
+            if (p.GridX < 0 || p.GridX >= data.Width) return false;
+            if (p.GridY < 0 || p.GridY >= data.Height) return false;
             return true;
         }
     }

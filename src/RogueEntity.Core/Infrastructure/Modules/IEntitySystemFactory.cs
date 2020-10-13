@@ -9,7 +9,9 @@ namespace RogueEntity.Core.Infrastructure.Modules
         string DeclaringModule { get; }
         EntitySystemId Id { get; }
         int Priority { get; }
-        void Register(IGameLoopSystemRegistration<TGameContext> game, EntityRegistry<TEntityId> entityRegistry,
+        void Register(IServiceResolver serviceResolver,
+                      IGameLoopSystemRegistration<TGameContext> game, 
+                      EntityRegistry<TEntityId> entityRegistry,
                       ICommandHandlerRegistration<TGameContext, TEntityId> commandRegistration);
     }
 }

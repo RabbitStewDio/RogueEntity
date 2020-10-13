@@ -24,7 +24,7 @@ namespace RogueEntity.Core.Movement.ItemCosts
 
             this.dependencies = new Dictionary<MapLayer, IMovementCostDataProcessor<TGameContext>>();
             data = new byte[width * height * 4];
-            combiner = new CombinedBlitterResultProcessor<TGameContext, IMovementCostDataProcessor<TGameContext>>(width, height, spanSizeX, spanSizeY, data, blitter);
+            combiner = new CombinedBlitterResultProcessor<TGameContext, IMovementCostDataProcessor<TGameContext>>(width, height, 4, spanSizeX, spanSizeY, data, blitter);
 
             Height = height;
             Width = width;

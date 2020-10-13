@@ -9,6 +9,7 @@ namespace RogueEntity.Core.Utils.MapChunks
 
         void Process<TBlitter>(byte[] targetData, int lineWidth,
                                IReadOnlyList<TBlitter> sources,
-                               in Rectangle area) where TBlitter: IByteBlitterDataSource;
+                               in Rectangle area) 
+            where TBlitter: IByteBlitterDataSource;
     }
 }

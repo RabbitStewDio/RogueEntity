@@ -1,25 +1,38 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using GoRogue;
 
 namespace RogueEntity.Core.Utils.MapChunks
 {
     public class CombinedBlitterResultProcessor<TGameContext, TChunkProcessor> : ChunkProcessor<TGameContext> 
-        where TChunkProcessor: ICachableChunkProcessor<TGameContext>
+        where TChunkProcessor: ICachableChunkProcessor<TGameContext>, IByteBlitterDataSource
     {
         readonly byte[] data;
         readonly IAddByteBlitter blitter;
         readonly List<TChunkProcessor> dependencies;
 
-        public CombinedBlitterResultProcessor(int width, int height, int spanSizeX, int spanSizeY,
+        public CombinedBlitterResultProcessor(int width, 
+                                              int height, 
+                                              int wordSize,
+                                              int spanSizeX, 
+                                              int spanSizeY,
                                               byte[] data,
                                               IAddByteBlitter blitter) :
             base(width, height, spanSizeX, spanSizeY)
         {
+            this.WordSize = wordSize;
             this.data = data;
             this.blitter = blitter;
             this.dependencies = new List<TChunkProcessor>();
         }
+        
+        public int WordSize { get; }
 
+        public void Reset()
+        {
+            this.dependencies.Clear();
+        }
+        
         public void Add(TChunkProcessor processor)
         {
             dependencies.Add(processor);

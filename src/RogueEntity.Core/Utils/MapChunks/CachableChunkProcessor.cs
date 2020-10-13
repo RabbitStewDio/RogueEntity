@@ -4,15 +4,15 @@ namespace RogueEntity.Core.Utils.MapChunks
 {
     public abstract class CachableChunkProcessor<TContext> : ChunkProcessor<TContext>, ICachableChunkProcessor<TContext>
     {
-        public readonly byte[] Data;
         public readonly bool[,] DirtyFlags;
 
-        protected CachableChunkProcessor(int width, int height, int spanSizeX, int spanSizeY) : base(width, height, spanSizeX, spanSizeY)
+        protected CachableChunkProcessor(int width, int height, 
+                                         int spanSizeX, int spanSizeY) : base(width, height, spanSizeX, spanSizeY)
         {
-            Data = new byte[width * height * 4];
             var flagsWidth = (int) Math.Ceiling(width / (float) SpanSizeX);
             var flagsHeight = (int) Math.Ceiling(height / (float) SpanSizeY);
             DirtyFlags = new bool[flagsWidth, flagsHeight];
+            DataLineWidth = width;
 
             for (int y = 0; y < flagsHeight; y += 1)
             {
@@ -23,7 +23,7 @@ namespace RogueEntity.Core.Utils.MapChunks
             }
         }
 
-        byte[] IByteBlitterDataSource.Data => Data;
+        public int DataLineWidth { get; }
 
         public override bool CanProcess(int x, int y)
         {

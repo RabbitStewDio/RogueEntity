@@ -126,7 +126,7 @@ namespace RogueEntity.Core.Positioning.Grid
                 // was on map before, now no longer on map.
                 if (!layerPreference.IsAcceptable(previousPosition, out var previousLayerId) ||
                     !context.TryGetGridDataFor(previousLayerId, out var previousMapContext) ||
-                    !previousMapContext.TryGetMap(previousPosition.GridZ, out var previousMap))
+                    !previousMapContext.TryGetMap(previousPosition.GridZ, out var previousMap, MapAccess.ForWriting))
                 {
                     throw new ArgumentException("A previously set position was not accepted as layer target.");
                 }
@@ -145,7 +145,7 @@ namespace RogueEntity.Core.Positioning.Grid
             }
 
             if (!context.TryGetGridDataFor(layerId, out var mapDataContext) ||
-                !mapDataContext.TryGetMap(desiredPosition.GridZ, out var targetMap))
+                !mapDataContext.TryGetMap(desiredPosition.GridZ, out var targetMap, MapAccess.ForWriting))
             {
                 logger.Warning("Invalid layer {Layer} for unresolvable map data for item {ItemId}", layerId, k);
                 changedK = k;
@@ -171,7 +171,7 @@ namespace RogueEntity.Core.Positioning.Grid
             {
                 if (!layerPreference.IsAcceptable(previousPosition, out var previousLayerId) ||
                     !context.TryGetGridDataFor(previousLayerId, out var previousItemMap) ||
-                    !previousItemMap.TryGetMap(previousPosition.GridZ, out var previousMap))
+                    !previousItemMap.TryGetMap(previousPosition.GridZ, out var previousMap, MapAccess.ForWriting))
                 {
                     throw new ArgumentException("A previously set position was not accepted as layer target.");
                 }

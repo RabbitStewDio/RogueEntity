@@ -5,7 +5,7 @@ using RogueEntity.Core.Movement.Pathing;
 
 namespace RogueEntity.Core.Movement
 {
-    public class MovementModule<TGameContext>: ModuleBase<TGameContext>
+    public class MovementModule: ModuleBase
     {
         public MovementModule()
         {
@@ -15,7 +15,7 @@ namespace RogueEntity.Core.Movement
             Description = "Provides base classes and behaviours for movement decisions and pathfinding";
         }
          
-        protected void RegisterAll<TItemId>(TGameContext context, IModuleInitializer<TGameContext> initializer)
+        protected void RegisterAll<TGameContext, TItemId>(TGameContext context, IModuleInitializer<TGameContext> initializer)
             where TItemId : IEntityKey
         {
             var entityContext = initializer.DeclareEntityContext<TItemId>();
@@ -23,12 +23,14 @@ namespace RogueEntity.Core.Movement
             entityContext.Register("Core.Entities.Movement.ItemData", -19_000, RegisterItemEntities);
         }
 
-        void RegisterItemEntities<TItemId>(EntityRegistry<TItemId> entities) where TItemId : IEntityKey
+        void RegisterItemEntities<TItemId>(IServiceResolver serviceResolver,
+                                           EntityRegistry<TItemId> entities) where TItemId : IEntityKey
         {
             entities.RegisterNonConstructable<MovementCostProperties>();
         }
 
-        protected void RegisterActorEntities<TItemId>(EntityRegistry<TItemId> entities) where TItemId : IEntityKey
+        protected void RegisterActorEntities<TItemId>(IServiceResolver serviceResolver,
+                                                      EntityRegistry<TItemId> entities) where TItemId : IEntityKey
         {
             entities.RegisterNonConstructable<ActorMovementCostCache>();
             entities.RegisterNonConstructable<SwimmingMovementData>();

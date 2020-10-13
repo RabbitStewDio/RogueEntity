@@ -18,8 +18,8 @@ namespace RogueEntity.Core.Tests.Inventory
     {
         readonly ItemDeclarationId StackedBulkItem = "inventory.bulk.stacked";
         readonly ItemDeclarationId ReferenceItem = "inventory.reference";
-        
-        public override IItemComponentTestDataFactory<IInventory<InventoryTestContext, ItemReference>> ProduceTestData(EntityRelations<ActorReference> relations)
+
+        protected override IItemComponentTestDataFactory<IInventory<InventoryTestContext, ItemReference>> ProduceTestData(EntityRelations<ActorReference> relations)
         {
             return new ItemComponentTestDataFactory<IInventory<InventoryTestContext, ItemReference>>(
                        CreateInventory(relations.DefaultEntityId, Weight.Empty, Weight.Empty),

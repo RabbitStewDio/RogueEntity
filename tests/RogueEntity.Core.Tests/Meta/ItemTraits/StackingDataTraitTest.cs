@@ -21,7 +21,7 @@ namespace RogueEntity.Core.Tests.Meta.ItemTraits
             return new StackingTrait<BasicItemContext, ItemReference>(1, 100);
         }
 
-        public override IItemComponentTestDataFactory<StackCount> ProduceTestData(EntityRelations<ItemReference> relations)
+        protected override IItemComponentTestDataFactory<StackCount> ProduceTestData(EntityRelations<ItemReference> relations)
         {
             return new ItemComponentTestDataFactory<StackCount>(StackCount.Of(1, 100), 
                                                                 StackCount.Of(20, 100), 

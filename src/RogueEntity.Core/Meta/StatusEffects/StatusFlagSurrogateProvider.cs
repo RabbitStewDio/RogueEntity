@@ -1,10 +1,16 @@
-﻿using EnTTSharp.Serialization.Xml;
+﻿using System;
+using EnTTSharp.Serialization.Xml;
 
 namespace RogueEntity.Core.Meta.StatusEffects
 {
     public class StatusFlagSurrogateProvider : SerializationSurrogateProviderBase<StatusFlag, SurrogateContainer<int>>
     {
         readonly StatusFlagRegistry flagRegistry;
+
+        public StatusFlagSurrogateProvider(StatusFlagRegistry flagRegistry)
+        {
+            this.flagRegistry = flagRegistry ?? throw new ArgumentNullException(nameof(flagRegistry));
+        }
 
         public override StatusFlag GetDeserializedObject(SurrogateContainer<int> surrogate)
         {

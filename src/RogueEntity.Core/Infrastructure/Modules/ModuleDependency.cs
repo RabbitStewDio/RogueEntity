@@ -1,37 +1,49 @@
 ﻿using System;
-using EnTTSharp.Entities;
-using RogueEntity.Core.Utils;
 
 namespace RogueEntity.Core.Infrastructure.Modules
 {
-    public readonly struct ModuleDependency
+    public readonly struct ModuleDependency : IEquatable<ModuleDependency>
     {
-        public readonly bool EntityModule;
         public readonly string ModuleId;
-        public readonly Optional<Type> EntityType;
 
-        ModuleDependency(string moduleId, bool entityModule, Optional<Type> entityType = default)
+        ModuleDependency(string moduleId)
         {
             ModuleId = moduleId;
-            EntityType = entityType;
-            EntityModule = entityModule;
         }
 
-        public static ModuleDependency OfContent(string moduleId)
+        public static ModuleDependency Of(string moduleId)
         {
-            return new ModuleDependency(moduleId, false);
+            if (moduleId == null)
+            {
+                throw new ArgumentNullException(nameof(moduleId));
+            }
+
+            return new ModuleDependency(moduleId);
         }
 
-
-
-        public static ModuleDependency OfFrameworkEntity(string moduleId)
+        public bool Equals(ModuleDependency other)
         {
-            return new ModuleDependency(moduleId, true);
+            return string.Equals(ModuleId, other.ModuleId);
         }
 
-        public static ModuleDependency OfEntity<TEntity>(string moduleId) where TEntity: IEntityKey
+        public override bool Equals(object obj)
         {
-            return new ModuleDependency(moduleId, true, typeof(TEntity));
+            return obj is ModuleDependency other && Equals(other);
+        }
+
+        public override int GetHashCode()
+        {
+            return ModuleId?.GetHashCode() ?? 0;
+        }
+
+        public static bool operator ==(ModuleDependency left, ModuleDependency right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(ModuleDependency left, ModuleDependency right)
+        {
+            return !left.Equals(right);
         }
     }
 

@@ -24,6 +24,8 @@ namespace RogueEntity.Core.Positioning
     /// </summary>
     public readonly struct Position : IEquatable<Position>, IPosition
     {
+        public static Position Invalid = default; 
+        
         public double X { get; }
         public double Y { get; }
         public double Z { get; }

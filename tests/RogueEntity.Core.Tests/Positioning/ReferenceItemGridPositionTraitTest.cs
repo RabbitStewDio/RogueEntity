@@ -23,7 +23,7 @@ namespace RogueEntity.Core.Tests.Positioning
             itemLayer = new MapLayer(1, "ItemLayer");
         }
 
-        public override IItemComponentTestDataFactory<EntityGridPosition> ProduceTestData(EntityRelations<ItemReference> relations)
+        protected override IItemComponentTestDataFactory<EntityGridPosition> ProduceTestData(EntityRelations<ItemReference> relations)
         {
             return new ItemComponentTestDataFactory<EntityGridPosition>(Optional.Empty<EntityGridPosition>(),
                                                                         EntityGridPosition.Of(itemLayer, 10, 10, 10),
@@ -38,7 +38,7 @@ namespace RogueEntity.Core.Tests.Positioning
 
         protected override TestGridPositionContext CreateContext()
         {
-            return new TestGridPositionContext().WithMapLayer(itemLayer, new OnDemandGridMapDataContext<TestGridPositionContext, ItemReference>(100, 100));
+            return new TestGridPositionContext().WithMapLayer(itemLayer, new OnDemandGridMapDataContext<TestGridPositionContext, ItemReference>(itemLayer, 100, 100));
         }
 
         protected override ReferenceItemGridPositionTrait<TestGridPositionContext, ItemReference> CreateTrait()

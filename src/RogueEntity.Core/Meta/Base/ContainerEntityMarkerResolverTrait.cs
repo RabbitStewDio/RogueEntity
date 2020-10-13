@@ -10,8 +10,8 @@ namespace RogueEntity.Core.Meta.Base
     /// </summary>
     /// <typeparam name="TGameContext"></typeparam>
     /// <typeparam name="TItemId"></typeparam>
-    public class ContainerEntityMarkerResolverTrait<TGameContext, TItemId>: IReferenceItemTrait<TGameContext, TItemId>,
-                                                                         IItemComponentInformationTrait<TGameContext, TItemId, IContainerEntityMarker>
+    public class ContainerEntityMarkerResolverTrait<TGameContext, TItemId> : IReferenceItemTrait<TGameContext, TItemId>,
+                                                                             IItemComponentInformationTrait<TGameContext, TItemId, IContainerEntityMarker>
         where TItemId : IEntityKey
     {
         readonly List<IItemComponentInformationTrait<TGameContext, TItemId, IContainerEntityMarker>> traits;
@@ -40,7 +40,7 @@ namespace RogueEntity.Core.Meta.Base
                 {
                     continue;
                 }
-                
+
                 if (trait.TryQuery(v, context, k, out t))
                 {
                     return true;

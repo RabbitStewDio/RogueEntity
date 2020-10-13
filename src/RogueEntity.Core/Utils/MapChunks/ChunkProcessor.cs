@@ -7,7 +7,6 @@ namespace RogueEntity.Core.Utils.MapChunks
     public interface IChunkProcessor<TContext>
     {
         public bool CanProcess(int x, int y);
-
         public int Process(TContext context);
     }
 

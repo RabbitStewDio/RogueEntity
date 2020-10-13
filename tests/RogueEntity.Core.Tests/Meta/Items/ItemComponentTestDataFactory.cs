@@ -1,4 +1,5 @@
-﻿using RogueEntity.Core.Utils;
+﻿using RogueEntity.Core.Meta.Items;
+using RogueEntity.Core.Utils;
 
 namespace RogueEntity.Core.Tests.Meta.Items
 {
@@ -10,6 +11,14 @@ namespace RogueEntity.Core.Tests.Meta.Items
         readonly Optional<TData> invalidValueProvider;
         readonly Optional<TData> removedValueProvider;
         readonly Optional<TData> initialValueProvider;
+
+        public ItemComponentTestDataFactory(TData defaultValue)
+        {
+            initialValueProvider = defaultValue;
+            applyValueProvider = defaultValue;
+            RemoveAllowed = false;
+            UpdateAllowed = false;
+        }
 
         public ItemComponentTestDataFactory(Optional<TData> defaultValue,
                                             TData changedValue,
@@ -23,14 +32,14 @@ namespace RogueEntity.Core.Tests.Meta.Items
             UpdateAllowed = true;
         }
 
-        public ItemComponentTestDataFactory(Optional<TData> defaultValue,
-                                            bool updatedValue,
-                                            TData changedValue,
-                                            Optional<TData> applyValue,
-                                            TData otherChangedValue,
-                                            Optional<TData> invalidValueProvider,
-                                            bool removedResult,
-                                            Optional<TData> removedValueProvider)
+        ItemComponentTestDataFactory(Optional<TData> defaultValue,
+                                     bool updatedValue,
+                                     TData changedValue,
+                                     Optional<TData> applyValue,
+                                     TData otherChangedValue,
+                                     Optional<TData> invalidValueProvider,
+                                     bool removedResult,
+                                     Optional<TData> removedValueProvider)
         {
             initialValueProvider = defaultValue;
             ChangedValue = changedValue;
@@ -44,7 +53,8 @@ namespace RogueEntity.Core.Tests.Meta.Items
 
         public ItemComponentTestDataFactory<TData> WithRemoveProhibited()
         {
-            return new ItemComponentTestDataFactory<TData>(initialValueProvider, UpdateAllowed, ChangedValue, applyValueProvider, OtherChangedValue, invalidValueProvider, false, Optional.Empty<TData>());
+            return new ItemComponentTestDataFactory<TData>(initialValueProvider, UpdateAllowed, ChangedValue, applyValueProvider, OtherChangedValue, invalidValueProvider, false,
+                                                           Optional.Empty<TData>());
         }
 
         public ItemComponentTestDataFactory<TData> WithRemovedResultAsDefault()
@@ -64,17 +74,20 @@ namespace RogueEntity.Core.Tests.Meta.Items
 
         public ItemComponentTestDataFactory<TData> WithoutInvalidResult()
         {
-            return new ItemComponentTestDataFactory<TData>(initialValueProvider, UpdateAllowed, ChangedValue, applyValueProvider, OtherChangedValue, Optional.Empty<TData>(), RemoveAllowed, removedValueProvider);
+            return new ItemComponentTestDataFactory<TData>(initialValueProvider, UpdateAllowed, ChangedValue, applyValueProvider, OtherChangedValue, Optional.Empty<TData>(), RemoveAllowed,
+                                                           removedValueProvider);
         }
 
         public ItemComponentTestDataFactory<TData> WithApplyRestoresDefaultValue()
         {
-            return new ItemComponentTestDataFactory<TData>(initialValueProvider, UpdateAllowed, ChangedValue, initialValueProvider, OtherChangedValue, invalidValueProvider, RemoveAllowed, removedValueProvider);
+            return new ItemComponentTestDataFactory<TData>(initialValueProvider, UpdateAllowed, ChangedValue, initialValueProvider, OtherChangedValue, invalidValueProvider, RemoveAllowed,
+                                                           removedValueProvider);
         }
 
         public ItemComponentTestDataFactory<TData> WithApplyResult(TData applyResult)
         {
-            return new ItemComponentTestDataFactory<TData>(initialValueProvider, UpdateAllowed, ChangedValue, applyResult, OtherChangedValue, invalidValueProvider, RemoveAllowed, removedValueProvider);
+            return new ItemComponentTestDataFactory<TData>(initialValueProvider, UpdateAllowed, ChangedValue, applyResult, OtherChangedValue, invalidValueProvider, RemoveAllowed,
+                                                           removedValueProvider);
         }
 
         public ItemComponentTestDataFactory<TData> WithUpdateProhibited()
@@ -104,6 +117,5 @@ namespace RogueEntity.Core.Tests.Meta.Items
         {
             return applyValueProvider.TryGetValue(out applyValue);
         }
-
     }
 }

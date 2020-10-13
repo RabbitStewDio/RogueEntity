@@ -26,7 +26,7 @@ namespace RogueEntity.Core.Tests.Meta.ItemTraits
             return new TemperatureTrait<BasicItemContext, ItemReference>(Temperature.FromCelsius(30));
         }
 
-        public override IItemComponentTestDataFactory<Temperature> ProduceTestData(EntityRelations<ItemReference> relations)
+        protected override IItemComponentTestDataFactory<Temperature> ProduceTestData(EntityRelations<ItemReference> relations)
         {
             return new ItemComponentTestDataFactory<Temperature>(Temperature.FromCelsius(30),
                                                                  Temperature.FromCelsius(40),

@@ -8,65 +8,94 @@ using RogueEntity.Core.Positioning.Grid;
 
 namespace RogueEntity.Core.Positioning
 {
-    public static class PositionModule
+    [Module]
+    public class PositionModule : ModuleBase
     {
         public const string ModuleId = "Core.Position";
 
-        public static readonly EntitySystemId RegisterCommonPositions = "Core.Entities.Position";
-        public static readonly EntitySystemId RegisterGridPositions = "Core.Entities.GridPosition";
-        public static readonly EntitySystemId RegisterContinuousPositions = "Core.Entities.ContinuousPosition";
-        public static readonly EntitySystemId RegisterClearContinuousPositionChangeTracker = "Core.Entities.ContinuousPosition.ClearChangeTracker";
-        public static readonly EntitySystemId RegisterClearGridPositionChangeTracker = "Core.Entities.GridPosition.ClearChangeTracker";
-    }
+        public static readonly EntitySystemId RegisterCommonPositions = "Entities.Core.Position";
+        public static readonly EntitySystemId RegisterGridPositions = "Entities.Core.Position.Grid";
+        public static readonly EntitySystemId RegisterContinuousPositions = "Entities.Core.Position.Continuous";
 
-    public class PositionModule<TGameContext> : ModuleBase<TGameContext>
-    {
+        public static readonly EntitySystemId RegisterClearContinuousPositionChangeTracker = "Systems.Core.Position.Continuous.ClearChangeTracker";
+        public static readonly EntitySystemId RegisterClearGridPositionChangeTracker = "Systems.Core.Position.Grid.ClearChangeTracker";
+
+        public static readonly EntityRole PositionedRole = new EntityRole("Role.Core.Position.Positionable");
+        public static readonly EntityRole GridPositionedRole = new EntityRole("Role.Core.Position.GridPositioned");
+        public static readonly EntityRole ContinuousPositionedRole = new EntityRole("Role.Core.Position.ContinuousPositioned");
+
         public PositionModule()
         {
-            Id = "Core.Inventory";
+            Id = "Core.Position";
             Author = "RogueEntity.Core";
             Name = "RogueEntity Core Module - Positioning";
             Description = "Provides support for positioning items in a grid or continuous coordinate system";
-
-            DeclareDependencies(ModuleDependency.OfFrameworkEntity(CoreModule.ModuleId));
+            IsFrameworkModule = true;
+            
+            RequireRole(PositionModule.ContinuousPositionedRole).WithImpliedRole(PositionModule.PositionedRole).WithDependencyOn(CoreModule.ModuleId);
+            RequireRole(PositionModule.GridPositionedRole).WithImpliedRole(PositionModule.PositionedRole).WithDependencyOn(CoreModule.ModuleId);
         }
 
-        [ModuleEntityInitializer]
-        protected void RegisterAll<TActorId>(TGameContext context, IModuleInitializer<TGameContext> initializer)
+        [EntityRoleInitializer("Role.Core.Position.Positionable")]
+        protected void InitializeCommon<TGameContext, TActorId>(IServiceResolver serviceResolver, 
+                                                                IModuleInitializer<TGameContext> initializer, 
+                                                                EntityRole role)
             where TActorId : IEntityKey
         {
             var entityContext = initializer.DeclareEntityContext<TActorId>();
             entityContext.Register(PositionModule.RegisterCommonPositions, 0, RegisterCommonEntities);
-            entityContext.Register(PositionModule.RegisterGridPositions, 0, RegisterGridEntities);
-            entityContext.Register(PositionModule.RegisterContinuousPositions, 0, RegisterGridEntities);
-
-            entityContext.Register(PositionModule.RegisterClearGridPositionChangeTracker, 10, RegisterGridEntities);
-            entityContext.Register(PositionModule.RegisterClearContinuousPositionChangeTracker, 10, RegisterGridEntities);
         }
 
-        protected void RegisterCommonEntities<TActorId>(EntityRegistry<TActorId> registry)
+        [EntityRoleInitializer("Role.Core.Position.GridPositioned")]
+        protected void InitializeGridPositioned<TGameContext, TActorId>(IServiceResolver serviceResolver, 
+                                                                        IModuleInitializer<TGameContext> initializer,
+                                                                        EntityRole role)
+            where TActorId : IEntityKey
+        {
+            var entityContext = initializer.DeclareEntityContext<TActorId>();
+            entityContext.Register(PositionModule.RegisterGridPositions, 0, RegisterGridEntities);
+            entityContext.Register(PositionModule.RegisterClearGridPositionChangeTracker, 10, RegisterClearGridPositionChangeTrackers);
+        }
+
+        [EntityRoleInitializer("Role.Core.Position.ContinuousPositioned")]
+        protected void InitializeContinuousPositioned<TGameContext, TActorId>(IServiceResolver serviceResolver, 
+                                                                              IModuleInitializer<TGameContext> initializer,
+                                                                              EntityRole role)
+            where TActorId : IEntityKey
+        {
+            var entityContext = initializer.DeclareEntityContext<TActorId>();
+            entityContext.Register(PositionModule.RegisterContinuousPositions, 0, RegisterContinuousEntities);
+            entityContext.Register(PositionModule.RegisterClearContinuousPositionChangeTracker, 10, RegisterClearContinuousPositionChangeTrackers);
+        }
+
+        void RegisterCommonEntities<TActorId>(IServiceResolver serviceResolver,
+                                              EntityRegistry<TActorId> registry)
             where TActorId : IEntityKey
         {
             registry.RegisterNonConstructable<ImmobilityMarker>();
         }
 
-        protected void RegisterGridEntities<TActorId>(EntityRegistry<TActorId> registry)
+        void RegisterGridEntities<TActorId>(IServiceResolver serviceResolver,
+                                            EntityRegistry<TActorId> registry)
             where TActorId : IEntityKey
         {
             registry.RegisterNonConstructable<EntityGridPosition>();
             registry.RegisterNonConstructable<EntityGridPositionChangedMarker>();
         }
 
-        protected void RegisterContinuousEntities<TActorId>(EntityRegistry<TActorId> registry)
+        void RegisterContinuousEntities<TActorId>(IServiceResolver serviceResolver,
+                                                  EntityRegistry<TActorId> registry)
             where TActorId : IEntityKey
         {
             registry.RegisterNonConstructable<ContinuousMapPosition>();
             registry.RegisterNonConstructable<ContinuousMapPositionChangedMarker>();
         }
 
-        protected void RegisterClearGridPositionChangeTrackers<TActorId>(IGameLoopSystemRegistration<TGameContext> context,
-                                                                         EntityRegistry<TActorId> registry,
-                                                                         ICommandHandlerRegistration<TGameContext, TActorId> processor) where TActorId : IEntityKey
+        void RegisterClearGridPositionChangeTrackers<TGameContext, TActorId>(IServiceResolver serviceResolver,
+                                                                             IGameLoopSystemRegistration<TGameContext> context,
+                                                                             EntityRegistry<TActorId> registry,
+                                                                             ICommandHandlerRegistration<TGameContext, TActorId> processor)
+            where TActorId : IEntityKey
         {
             void ClearGridPositionAction(TGameContext c)
             {
@@ -77,9 +106,11 @@ namespace RogueEntity.Core.Positioning
             EntityGridPositionChangedMarker.InstallChangeHandler(registry);
         }
 
-        protected void RegisterClearContinuousPositionChangeTrackers<TActorId>(IGameLoopSystemRegistration<TGameContext> context,
-                                                                               EntityRegistry<TActorId> registry,
-                                                                               ICommandHandlerRegistration<TGameContext, TActorId> processor) where TActorId : IEntityKey
+        void RegisterClearContinuousPositionChangeTrackers<TGameContext, TActorId>(IServiceResolver serviceResolver,
+                                                                                   IGameLoopSystemRegistration<TGameContext> context,
+                                                                                   EntityRegistry<TActorId> registry,
+                                                                                   ICommandHandlerRegistration<TGameContext, TActorId> processor)
+            where TActorId : IEntityKey
         {
             void ClearContinuousPositionAction(TGameContext c)
             {

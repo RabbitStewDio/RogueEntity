@@ -95,7 +95,7 @@ namespace RogueEntity.Core.Tests.Equipment
             bs.Register(new EquipmentSlotMessagePackFormatter(registry));
         }
 
-        public override IItemComponentTestDataFactory<ISlottedEquipment<EquipmentTestContext, ItemReference>> ProduceTestData(EntityRelations<ActorReference> relations)
+        protected override IItemComponentTestDataFactory<ISlottedEquipment<EquipmentTestContext, ItemReference>> ProduceTestData(EntityRelations<ActorReference> relations)
         {
             var slots = new ReadOnlyListWrapper<EquipmentSlot>(new List<EquipmentSlot>
             {

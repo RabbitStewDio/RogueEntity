@@ -21,7 +21,7 @@ namespace RogueEntity.Core.Tests.Meta.ItemTraits
             return new DurabilityTrait<BasicItemContext, ItemReference>(1, 100);
         }
 
-        public override IItemComponentTestDataFactory<Durability> ProduceTestData(EntityRelations<ItemReference> relations)
+        protected override IItemComponentTestDataFactory<Durability> ProduceTestData(EntityRelations<ItemReference> relations)
         {
             return new ItemComponentTestDataFactory<Durability>(new Durability(1, 100),
                                                                 new Durability(10, 100),

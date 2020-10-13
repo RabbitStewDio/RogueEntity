@@ -8,52 +8,71 @@ namespace RogueEntity.Core.Utils.Maps
     [Serializable]
     [DataContract]
     [MessagePackObject]
-    public class PackedBoolMap : IMapData<bool>
+    public class PackedBoolMap : IMapData<bool>, IEquatable<PackedBoolMap>
     {
-        [DataMember(Order = 0)]
         [Key(0)]
-        public int Width { get; }
-        [DataMember(Order = 1)]
+        [DataMember(Order = 0)]
+        readonly int width;
         [Key(1)]
-        public int Height { get; }
+        [DataMember(Order = 0)]
+        readonly int height;
+
         [DataMember(Order = 2)]
         [Key(2)]
-        readonly uint[] data;
+        readonly byte[] data;
 
         public PackedBoolMap(int width, int height)
         {
-            if (width <= 0) throw new ArgumentOutOfRangeException();
-            if (height <= 0) throw new ArgumentOutOfRangeException();
+            if (width <= 0) throw new ArgumentOutOfRangeException(nameof(width));
+            if (height <= 0) throw new ArgumentOutOfRangeException(nameof(height));
 
-            var size = Align(width * height, 32);
-            data = new uint[size];
-            Width = width;
-            Height = height;
+            var size = Align(width * height, WordSize);
+            data = new byte[size];
+            this.width = width;
+            this.height = height;
         }
 
+        [IgnoreMember]
+        [IgnoreDataMember]
+        public int Width => width;
+
+        [IgnoreMember]
+        [IgnoreDataMember]
+        public int Height => height;
+
+        public const int WordSize = 8;
+
+        public bool Any(int x, int y)
+        {
+            var chunkIndex = Math.DivRem(y * Width + x, WordSize, out var innerIndex);
+            var chunk = data[chunkIndex];
+            return chunk != 0;
+        }
+        
         public bool this[int x, int y]
         {
             get
             {
-                var chunkIndex = Math.DivRem(y * Width + x, 32, out var innerIndex);
+                var chunkIndex = Math.DivRem(y * Width + x, WordSize, out var innerIndex);
                 var chunk = data[chunkIndex];
                 if (chunk == 0) return false;
-                if (chunk == uint.MaxValue) return true;
+                if (chunk == byte.MaxValue) return true;
 
                 var bitMask = 1u << innerIndex;
                 return (chunk & bitMask) == bitMask;
             }
             set
             {
-                var chunkIndex = Math.DivRem(y * Width + x, 32, out var innerIndex);
-                var bitMask = (1u << innerIndex);
+                var chunkIndex = Math.DivRem(y * Width + x, WordSize, out var innerIndex);
+                var bitMask = (byte) (1u << innerIndex);
                 if (value)
                 {
                     data[chunkIndex] |= bitMask;
                 }
                 else
                 {
-                    data[chunkIndex] &= ~bitMask;
+                    var bdata = data[chunkIndex] & ~bitMask;
+                    data[chunkIndex] = (byte) bdata;
                 }
             }
         }
@@ -82,6 +101,62 @@ namespace RogueEntity.Core.Utils.Maps
         public void Clear()
         {
             Array.Clear(data, 0, data.Length);
+        }
+
+        public bool Equals(PackedBoolMap other)
+        {
+            if (ReferenceEquals(null, other))
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
+
+            return CoreExtensions.EqualsList(data, other.data) && Width == other.Width && Height == other.Height;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj))
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, obj))
+            {
+                return true;
+            }
+
+            if (obj.GetType() != this.GetType())
+            {
+                return false;
+            }
+
+            return Equals((PackedBoolMap) obj);
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                var hashCode = (data != null ? data.GetHashCode() : 0);
+                hashCode = (hashCode * 397) ^ Width;
+                hashCode = (hashCode * 397) ^ Height;
+                return hashCode;
+            }
+        }
+
+        public static bool operator ==(PackedBoolMap left, PackedBoolMap right)
+        {
+            return Equals(left, right);
+        }
+
+        public static bool operator !=(PackedBoolMap left, PackedBoolMap right)
+        {
+            return !Equals(left, right);
         }
     }
 }

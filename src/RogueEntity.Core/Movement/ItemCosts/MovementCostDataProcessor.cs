@@ -1,5 +1,6 @@
 ﻿using EnTTSharp.Entities;
 using RogueEntity.Core.Meta.Items;
+using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Positioning.MapLayers;
 using RogueEntity.Core.Utils.MapChunks;
@@ -29,7 +30,14 @@ namespace RogueEntity.Core.Movement.ItemCosts
             this.Layer = layer;
             this.depth = depth;
             this.defaultValue = defaultValue;
+
+            WordSize = 4;
+            Data = new byte[width * height * WordSize];
         }
+
+        public byte[] Data { get; }
+
+        public int WordSize { get; }
 
         public MapLayer Layer { get; }
 
@@ -40,7 +48,7 @@ namespace RogueEntity.Core.Movement.ItemCosts
                 return;
             }
 
-            if (!mapData.TryGetMap(depth, out var groundData))
+            if (!mapData.TryGetMap(depth, out var groundData, MapAccess.ReadOnly))
             {
                 return;
             }

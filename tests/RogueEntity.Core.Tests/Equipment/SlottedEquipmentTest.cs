@@ -1,4 +1,3 @@
-using System;
 using FluentAssertions;
 using NUnit.Framework;
 using RogueEntity.Core.Equipment;
@@ -6,7 +5,6 @@ using RogueEntity.Core.Meta.Base;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Meta.ItemTraits;
 using RogueEntity.Core.Utils;
-using Serilog;
 
 namespace RogueEntity.Core.Tests.Equipment
 {
@@ -93,7 +91,6 @@ namespace RogueEntity.Core.Tests.Equipment
                                           .WithTrait(new WeightTrait<EquipmentTestContext, ItemReference>(Weight.OfKiloGram(97.5f))));
 
             Context.ItemRegistry.Register(new BulkItemDeclaration<EquipmentTestContext, ItemReference>(BulkContentDeclaration)
-                                          .WithTrait(new StackingTrait<EquipmentTestContext, ItemReference>(60))
                                           .WithTrait(new EquipmentSlotRequirementsTrait<EquipmentTestContext, ItemReference>(EquipmentSlotRequirements.Create()
                                                                                                                                  .WithAcceptableSlots(slotLeftHand, slotRightHand)))
                                           .WithTrait(new WeightViewTrait<EquipmentTestContext, ItemReference>(Context.ItemResolver))
@@ -147,12 +144,12 @@ namespace RogueEntity.Core.Tests.Equipment
         public void Validate_Equip_ReferenceItem_Fails_If_ContainedElsewhere()
         {
             var item = Context.ItemResolver.Instantiate(Context, HeavyContentDeclaration);
-            Equipment.TryEquipItem(Context, item, out var modItem, Optional.Empty<EquipmentSlot>(), out var actualSlot).Should().BeTrue();
+            Equipment.TryEquipItem(Context, item, out _, Optional.Empty<EquipmentSlot>(), out _).Should().BeTrue();
 
             // Attempting to add an item that is heavier than the total allowed weight should fail.
             
             var actor2 = Context.ActorResolver.Instantiate(Context, ActorDeclaration);
-            Context.ActorResolver.TryQueryData(actor2, Context, out ISlottedEquipment<EquipmentTestContext, ItemReference> otherActorEquipment).Should().BeTrue();
+            Context.ActorResolver.TryQueryData(actor2, Context, out ISlottedEquipment<EquipmentTestContext, ItemReference> _).Should().BeTrue();
             Equipment.TryEquipItem(Context, item, out var modItemOther, Optional.Empty<EquipmentSlot>(), out var actualSlotOther).Should().BeFalse();
             actualSlotOther.Should().Be(default(EquipmentSlot));
             modItemOther.Should().Be(ItemReference.Empty);
@@ -173,7 +170,7 @@ namespace RogueEntity.Core.Tests.Equipment
         public void Validate_Equip_AlternateSlot()
         {
             var item = Context.ItemResolver.Instantiate(Context, ContentDeclaration);
-            Equipment.TryEquipItem(Context, item, out var modItem, Optional.Empty<EquipmentSlot>(), out var actualSlot).Should().BeTrue();
+            Equipment.TryEquipItem(Context, item, out _, Optional.Empty<EquipmentSlot>(), out var actualSlot).Should().BeTrue();
             actualSlot.Should().Be(slotLeftHand);
 
             // Requesting to be placed on an already occupied spot should fail.
@@ -189,7 +186,7 @@ namespace RogueEntity.Core.Tests.Equipment
         public void Validate_Equip_MutuallyExclusiveBulkItems()
         {
             var item = Context.ItemResolver.Instantiate(Context, BulkCombinedItemDeclaration);
-            Equipment.TryEquipItem(Context, item, out var modItem, Optional.Empty<EquipmentSlot>(), out var actualSlot).Should().BeTrue();
+            Equipment.TryEquipItem(Context, item, out _, Optional.Empty<EquipmentSlot>(), out var actualSlot).Should().BeTrue();
             actualSlot.Should().Be(slotHead);
 
             // Requesting to be placed on an already occupied spot should fail.
@@ -197,14 +194,14 @@ namespace RogueEntity.Core.Tests.Equipment
             Equipment.TryEquipItem(Context, bulkItem, out _, Optional.ValueOf(slotLeftHand), out _).Should().BeFalse();
             
             // Requesting to be placed on an empty slot when the item shares a common required slot (slotHead!) should fail too.
-            Equipment.TryEquipItem(Context, bulkItem, out var modItemBulk, Optional.ValueOf(slotRightHand), out var actualSlotBulk).Should().BeFalse();
+            Equipment.TryEquipItem(Context, bulkItem, out _, Optional.ValueOf(slotRightHand), out _).Should().BeFalse();
         }
 
         [Test]
         public void Validate_Equip_StackingBulkItems_DesiredSlot()
         {
             var item = Context.ItemResolver.Instantiate(Context, BulkCombinedItemDeclaration).WithData(10);
-            Equipment.TryEquipItem(Context, item, out var modItem, Optional.Empty<EquipmentSlot>(), out var actualSlot).Should().BeTrue();
+            Equipment.TryEquipItem(Context, item, out _, Optional.Empty<EquipmentSlot>(), out var actualSlot).Should().BeTrue();
             actualSlot.Should().Be(slotHead);
 
             // Requesting to be placed on an already occupied spot should fail.
@@ -218,7 +215,7 @@ namespace RogueEntity.Core.Tests.Equipment
         public void Validate_Equip_StackingBulkItems_AutoSlot()
         {
             var item = Context.ItemResolver.Instantiate(Context, BulkCombinedItemDeclaration).WithData(10);
-            Equipment.TryEquipItem(Context, item, out var modItem, Optional.Empty<EquipmentSlot>(), out var actualSlot).Should().BeTrue();
+            Equipment.TryEquipItem(Context, item, out _, Optional.Empty<EquipmentSlot>(), out var actualSlot).Should().BeTrue();
             actualSlot.Should().Be(slotHead);
 
             // Requesting to be placed on an already occupied spot should fail.
@@ -229,18 +226,46 @@ namespace RogueEntity.Core.Tests.Equipment
         }
 
         [Test]
-        public void Validate_Equip_Two_Handed()
-        {
-        }
-
-        [Test]
         public void Validate_UnequipItem()
         {
+            var item = Context.ItemResolver.Instantiate(Context, ContentDeclaration);
+            Equipment.TryEquipItem(Context, item, out _, Optional.Empty<EquipmentSlot>(), out var actualSlot).Should().BeTrue();
+            actualSlot.Should().Be(slotLeftHand);
+
+            Equipment.TryUnequipItem(Context, item, out var slot).Should().BeTrue();
+            slot.Should().Be(slotLeftHand);
+            Equipment.QueryItems().Should().BeEmpty();
         }
 
         [Test]
         public void Validate_Unequip_StackingBulkItem()
         {
+            var item = Context.ItemResolver.Instantiate(Context, BulkCombinedItemDeclaration).WithData(10);
+            Equipment.TryEquipItem(Context, item, out _, Optional.Empty<EquipmentSlot>(), out var actualSlot).Should().BeTrue();
+            actualSlot.Should().Be(slotHead);
+
+            Equipment.TryUnequipItem(Context, item, out var slot).Should().BeTrue();
+            slot.Should().Be(slotHead);
+            Equipment.QueryItems().Should().BeEmpty();
+        }
+        
+        [Test]
+        public void Validate_Unequip_MultipleItems()
+        {
+            var item = Context.ItemResolver.Instantiate(Context, BulkContentDeclaration);
+            Equipment.TryEquipItem(Context, item, out _, Optional.Empty<EquipmentSlot>(), out var actualSlot1).Should().BeTrue();
+            Equipment.TryEquipItem(Context, item, out _, Optional.Empty<EquipmentSlot>(), out var actualSlot2).Should().BeTrue();
+            actualSlot1.Should().Be(slotLeftHand);
+            actualSlot2.Should().Be(slotRightHand);
+
+            Equipment.QueryItems().Should().ContainInOrder(new EquippedItem<ItemReference>(item, slotLeftHand), new EquippedItem<ItemReference>(item, slotRightHand));
+            
+            Equipment.TryUnequipItem(Context, item, out var slot).Should().BeTrue();
+            slot.Should().Be(slotLeftHand);
+            Equipment.QueryItems().Should().Contain(new EquippedItem<ItemReference>(item, slotRightHand));
+            Equipment.TryUnequipItem(Context, item, out var slot2).Should().BeTrue();
+            slot2.Should().Be(slotRightHand);
+            Equipment.QueryItems().Should().BeEmpty();
         }
     }
 }

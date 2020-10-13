@@ -47,7 +47,7 @@ namespace RogueEntity.Core.Tests.Equipment
             return new EquipmentSlotRequirementsTrait<BasicItemContext, ItemReference>(EquipmentSlotRequirements.Create().WithRequiredSlots(slotHead).WithAcceptableSlots(slotLeftHand));
         }
 
-        public override IItemComponentTestDataFactory<EquipmentSlotRequirements> ProduceTestData(EntityRelations<ItemReference> relations)
+        protected override IItemComponentTestDataFactory<EquipmentSlotRequirements> ProduceTestData(EntityRelations<ItemReference> relations)
         {
             return new ItemComponentTestDataFactory<EquipmentSlotRequirements>(
                        EquipmentSlotRequirements.Create().WithRequiredSlots(slotHead).WithAcceptableSlots(slotLeftHand),

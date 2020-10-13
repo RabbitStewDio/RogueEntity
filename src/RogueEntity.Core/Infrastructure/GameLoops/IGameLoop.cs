@@ -31,6 +31,7 @@ namespace RogueEntity.Core.Infrastructure.GameLoops
         void AddPreFixedStepHandlers(Action<TGameContext> c);
         void AddFixedStepHandlers(Action<TGameContext> c);
         void AddVariableStepHandlers(Action<TGameContext> c);
+        void AddDisposeStepHandler(Action<TGameContext> c);
     }
 
     public interface IGameLoop<TGameContext>
@@ -39,10 +40,5 @@ namespace RogueEntity.Core.Infrastructure.GameLoops
         void Initialize();
         void Update(TimeSpan absoluteTime);
         ITimeSource TimeSource { get; }
-
-        List<ActionSystemEntry<TGameContext>> InitializationStepHandlers { get; }
-        List<ActionSystemEntry<TGameContext>> PreFixedStepHandlers { get; }
-        List<ActionSystemEntry<TGameContext>> FixedStepHandlers { get; }
-        List<ActionSystemEntry<TGameContext>> VariableStepHandlers { get; }
     }
 }
