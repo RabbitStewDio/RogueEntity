@@ -13,9 +13,9 @@ namespace RogueEntity.Core.Sensing.Discovery
 {
     public class DiscoveryMapSystem
     {
-        readonly Lazy<IBrightnessSource> brightnessSource;
+        readonly Lazy<IBrightnessMap> brightnessSource;
 
-        public DiscoveryMapSystem(Lazy<IBrightnessSource> brightnessSource)
+        public DiscoveryMapSystem(Lazy<IBrightnessMap> brightnessSource)
         {
             this.brightnessSource = brightnessSource ?? throw new ArgumentNullException(nameof(brightnessSource));
         }
@@ -59,7 +59,7 @@ namespace RogueEntity.Core.Sensing.Discovery
                     var gCur = gMin + c;
                     var lCur = lMin + c;
 
-                    if (senseMap[gCur.X, gCur.Y] <= 0)
+                    if (senseMap.QueryBrightness(gCur.X, gCur.Y) <= 0)
                     {
                         continue;
                     }

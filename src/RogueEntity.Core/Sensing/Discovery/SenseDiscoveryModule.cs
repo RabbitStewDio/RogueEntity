@@ -79,7 +79,7 @@ namespace RogueEntity.Core.Sensing.Discovery
                                                                   ICommandHandlerRegistration<TGameContext, TActorId> handler)
             where TActorId : IEntityKey
         {
-            var system = new DiscoveryMapSystem(serviceResolver.ResolveToReference<IBrightnessSource>());
+            var system = new DiscoveryMapSystem(serviceResolver.ResolveToReference<IBrightnessMap>());
 
             var entitySystem = registry.BuildSystem()
                                        .WithContext<TGameContext>()
@@ -95,7 +95,7 @@ namespace RogueEntity.Core.Sensing.Discovery
                                                                         ICommandHandlerRegistration<TGameContext, TActorId> handler)
             where TActorId : IEntityKey
         {
-            var system = new DiscoveryMapSystem(serviceResolver.ResolveToReference<IBrightnessSource>());
+            var system = new DiscoveryMapSystem(serviceResolver.ResolveToReference<IBrightnessMap>());
 
             var entitySystem = registry.BuildSystem()
                                        .WithContext<TGameContext>()

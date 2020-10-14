@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Utils.Maps;
 
@@ -10,16 +9,16 @@ namespace RogueEntity.Core.Sensing.Common
     /// </summary>
     public class SenseSourceData : IReadOnlyView2D<float>
     {
-        readonly SenseDirectionStore[] directions;
-        readonly float[] intensities;
-        readonly int lineWidth;
+        public readonly byte[] Directions;
+        public readonly float[] Intensities;
+        public readonly int LineWidth;
         
         public SenseSourceData(int radius)
         {
             this.Radius = radius;
-            lineWidth = 2 * radius + 1;
-            intensities = new float[lineWidth * lineWidth];
-            directions = new SenseDirectionStore[lineWidth * lineWidth];
+            LineWidth = 2 * radius + 1;
+            Intensities = new float[LineWidth * LineWidth];
+            Directions = new byte[LineWidth * LineWidth];
         }
 
         public int Radius { get; }
@@ -32,8 +31,8 @@ namespace RogueEntity.Core.Sensing.Common
         {
             var dx = x + Radius;
             var dy = y + Radius;
-            if (dx < 0 || dx >= lineWidth ||
-                dy < 0 || dy >= lineWidth)
+            if (dx < 0 || dx >= LineWidth ||
+                dy < 0 || dy >= LineWidth)
             {
                 intensity = default;
                 directionality = default;
@@ -41,9 +40,9 @@ namespace RogueEntity.Core.Sensing.Common
                 return false;
             }
             
-            var linIndex = dx + dy * lineWidth;
-            intensity = intensities[linIndex];
-            var raw = directions[linIndex];
+            var linIndex = dx + dy * LineWidth;
+            intensity = Intensities[linIndex];
+            var raw = new SenseDirectionStore(Directions[linIndex]);
             directionality = raw.Direction;
             flags = raw.Flags;
             return true;
@@ -55,88 +54,67 @@ namespace RogueEntity.Core.Sensing.Common
             {
                 var dx = x + Radius;
                 var dy = y + Radius;
-                if (dx < 0 || dx >= lineWidth)
+                if (dx < 0 || dx >= LineWidth)
                 {
                     return default;
                 }
-                if (dy < 0 || dy >= lineWidth)
+                if (dy < 0 || dy >= LineWidth)
                 {
                     return default;
                 }
             
-                var linIndex = dx + dy * lineWidth;
-                return intensities[linIndex];
+                var linIndex = dx + dy * LineWidth;
+                return Intensities[linIndex];
             }
         }
 
         public void Write(Position2D point,
                           float intensity, 
+                          SenseDirection direction = SenseDirection.None, 
                           SenseDataFlags flags = SenseDataFlags.None)
         {
             var dx = point.X + Radius;
             var dy = point.Y + Radius;
-            if (dx < 0 || dx >= lineWidth)
+            if (dx < 0 || dx >= LineWidth)
             {
                 return;
             }
-            if (dy < 0 || dy >= lineWidth)
+            if (dy < 0 || dy >= LineWidth)
             {
                 return;
             }
             
-            var linIndex = dx + dy * lineWidth;
-            Console.WriteLine($"{dx}, {dy} = {intensity}");
+            var linIndex = dx + dy * LineWidth;
+            Intensities[linIndex] = intensity;
+            Directions[linIndex] = SenseDirectionStore.From(direction, flags).RawData;
+        }
 
-            intensities[linIndex] = intensity;
-            directions[linIndex] = SenseDirectionStore.From(point.X, point.Y).With(flags);
+        public void Write(Position2D point,
+                          Position2D direction,
+                          float intensity, 
+                          SenseDataFlags flags = SenseDataFlags.None)
+        {
+            var dx = point.X + Radius;
+            var dy = point.Y + Radius;
+            if (dx < 0 || dx >= LineWidth)
+            {
+                return;
+            }
+            if (dy < 0 || dy >= LineWidth)
+            {
+                return;
+            }
+            
+            var linIndex = dx + dy * LineWidth;
+
+            Intensities[linIndex] = intensity;
+            Directions[linIndex] = SenseDirectionStore.From(direction.X, direction.Y).With(flags).RawData;
         }
 
         public void Reset()
         {
-            Array.Clear(intensities, 0, intensities.Length);
-        }
-    }
-    /// <summary>
-    ///   Stores the sense source data relative to a origin point. 
-    /// </summary>
-    public class RippleSenseData : IReadOnlyView2D<bool>
-    {
-        public Queue<Position2D> OpenNodes { get; }
-        public List<Position2D> NeighbourBuffer { get; }
-
-        readonly bool[] backend;
-        readonly int lineWidth;
-        
-        public RippleSenseData(int radius)
-        {
-            this.Radius = radius;
-            this.OpenNodes = new Queue<Position2D>(256);
-            this.NeighbourBuffer = new List<Position2D>(8);
-            lineWidth = 2 * radius + 1;
-            backend = new bool[lineWidth * lineWidth];
-        }
-        
-        public int Radius { get; }
-        
-        public bool this[int x, int y]
-        {
-            get
-            {
-                var dx = x + Radius;
-                var dy = y + Radius;
-                return backend[dx + dy * lineWidth];
-            }
-            set
-            {
-                var dx = x + Radius;
-                var dy = y + Radius;
-                backend[dx + dy * lineWidth] = value;
-            }
-        }
-
-        public void Reset()
-        {
-            Array.Clear(backend, 0, backend.Length);
+            Array.Clear(Intensities, 0, Intensities.Length);
+            Array.Clear(Directions, 0, Directions.Length);
         }
     }
 }

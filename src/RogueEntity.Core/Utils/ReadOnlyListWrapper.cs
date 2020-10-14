@@ -7,6 +7,7 @@ namespace RogueEntity.Core.Utils
 {
     public readonly struct ReadOnlyListWrapper<T> : IReadOnlyList<T>, ICollection<T>
     {
+        public static readonly ReadOnlyListWrapper<T> Empty = new List<T>();
         static readonly List<T> EmptyList = new List<T>();
         readonly List<T> list;
 

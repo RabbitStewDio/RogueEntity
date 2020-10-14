@@ -25,16 +25,22 @@ namespace RogueEntity.Core.Sensing.Common
                 [(1, 1)] = SenseDirection.South | SenseDirection.East
             };
         }
-        readonly byte rawData;
+        public readonly byte RawData;
 
         public SenseDirectionStore(byte rawData)
         {
-            this.rawData = rawData;
+            this.RawData = rawData;
         }
 
-        public SenseDirection Direction => (SenseDirection) (rawData & 0xf);
-        public SenseDataFlags Flags => (SenseDataFlags) ((rawData >> 4) & 0xf);
+        public SenseDirection Direction => (SenseDirection) (RawData & 0xf);
+        public SenseDataFlags Flags => (SenseDataFlags) ((RawData >> 4) & 0xf);
 
+        public static SenseDirectionStore From(SenseDirection dir, SenseDataFlags flags)
+        {
+            var raw = (int)dir | ((int)flags << 4) ;
+            return new SenseDirectionStore((byte) raw);
+        }
+        
         public static SenseDirectionStore From(int x, int y)
         {
             if (DirectionMapping.TryGetValue((Math.Sign(x), Math.Sign(y)), out var d))
@@ -47,8 +53,8 @@ namespace RogueEntity.Core.Sensing.Common
 
         public SenseDirectionStore With(SenseDataFlags f)
         {
-            var direction = (rawData & DirectionMask);
-            var flags = (int)f >> 4;
+            var direction = (RawData & DirectionMask);
+            var flags = (int)f << 4;
             return new SenseDirectionStore((byte)(direction | flags));
         }
         

@@ -10,10 +10,12 @@
         new T this[int x, int y] { get; set; }
     }
 
-    public interface IReadOnlyMapData<T>: IReadOnlyView2D<T>
+    public interface IReadOnlyMapData<T>
     {
         int Width { get; }
         int Height { get; }
+        
+        T this[int x, int y] { get; }
     }
 
     public interface IReadOnlyMapData3D<T>

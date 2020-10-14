@@ -15,7 +15,7 @@ namespace RogueEntity.Core.Sensing.Receptors.Light
             this.sense = sense;
         }
 
-        public string Id => "Core.Sense.Vision";
+        public string Id => "Core.Sense.Receptor.Vision";
         public int Priority => 100;
 
         public void Initialize(IEntityViewControl<TActorId> v, TGameContext context, TActorId k, IItemDeclaration item)

@@ -1,11 +1,34 @@
 using System;
 using System.Text;
+using JetBrains.Annotations;
 
 namespace RogueEntity.Core.Utils.Maps
 {
     public static class MapDataExtensions
     {
 
+        public readonly struct MapView<T>: IReadOnlyView2D<T>
+        {
+            readonly IReadOnlyMapData<T> map;
+
+            public MapView([NotNull] IReadOnlyMapData<T> map)
+            {
+                this.map = map ?? throw new ArgumentNullException(nameof(map));
+            }
+
+            public T this[int x, int y]
+            {
+                get
+                {
+                    if (x < 0 || y < 0) return default;
+                    if (x >= map.Width || y >= map.Height) return default;
+                    return map[x, y];
+                }
+            }
+        } 
+
+        public static MapView<T> ToView<T>(this IReadOnlyMapData<T> map) => new MapView<T>(map);
+        
         /// <summary>
         /// Allows stringifying the contents of a map view. Takes characters to
         /// surround the map printout, and each row, the method used to get the string representation

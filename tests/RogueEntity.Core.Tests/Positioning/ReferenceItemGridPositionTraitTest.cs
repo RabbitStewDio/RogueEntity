@@ -2,6 +2,7 @@
 using FluentAssertions;
 using NUnit.Framework;
 using RogueEntity.Core.Meta.Items;
+using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Positioning.MapLayers;
 using RogueEntity.Core.Tests.Meta.Items;
@@ -78,7 +79,7 @@ namespace RogueEntity.Core.Tests.Positioning
             var testData = ProduceTestData(ProduceItemRelations(item));
 
             Context.TryGetGridDataFor(itemLayer, out var mapLayerData).Should().BeTrue();
-            mapLayerData.TryGetMap(10, out var mapData).Should().BeTrue();
+            mapLayerData.TryGetMap(10, out var mapData, MapAccess.ForWriting).Should().BeTrue();
             mapData[testData.ChangedValue.GridX, testData.ChangedValue.GridY] = ItemReference.FromBulkItem(1, 1); // write a dummy item into the map
 
             Context.ItemResolver.TryUpdateData(item, Context, testData.ChangedValue, out item).Should().BeFalse();

@@ -22,7 +22,7 @@ namespace RogueEntity.Core.Sensing.Common.ShadowCast
                                                          SenseSourceData data = null)
             where TResistanceMap : IReadOnlyView2D<float>
         {
-            var radius = (int)Math.Ceiling(sense.Radius);
+            var radius = (int)Math.Ceiling(sensePhysics.SignalRadiusForIntensity(sense.Intensity));
             if (data == null || data.Radius != radius)
             {
                 data = new SenseSourceData(radius);
@@ -32,7 +32,7 @@ namespace RogueEntity.Core.Sensing.Common.ShadowCast
                 data.Reset();
             }
 
-            data.Write(new Position2D(0, 0), sense.Intensity, SenseDataFlags.SelfIlluminating);
+            data.Write(new Position2D(0, 0), sense.Intensity, SenseDirection.None, SenseDataFlags.SelfIlluminating);
             foreach (var d in DiagonalDirectionsOfNeighbors)
             {
                 var delta = d.ToCoordinates();
@@ -59,10 +59,10 @@ namespace RogueEntity.Core.Sensing.Common.ShadowCast
                 return;
             }
 
-            var radius = (int)sense.Radius;
             var intensity = sense.Intensity;
             var dist = sense.DistanceCalculation;
             var maxRadius = sensePhysics.SignalRadiusForIntensity(intensity);
+            var radius = (int)Math.Ceiling(maxRadius);
             
             var blocked = false;
             for (var distance = row; !blocked && distance <= radius; distance++)
@@ -88,12 +88,16 @@ namespace RogueEntity.Core.Sensing.Common.ShadowCast
                         break;
                     }
 
-                    var deltaRadius = dist.Calculate(deltaX, deltaY);
-                    var fullyBlocked = IsFullyBlocked(resistanceMap[globalCurrentX, globalCurrentY]);
-                    if (deltaRadius <= radius)
+                    var distanceFromOrigin = dist.Calculate(deltaX, deltaY);
+                    var resistance = resistanceMap[globalCurrentX, globalCurrentY];
+                    var fullyBlocked = IsFullyBlocked(resistance);
+                    if (distanceFromOrigin <= radius)
                     {
-                        var bright = intensity * sensePhysics.SignalStrengthAtDistance(deltaRadius, maxRadius);
-                        data.Write(new Position2D(currentX, currentY), bright, fullyBlocked ? SenseDataFlags.Obstructed : SenseDataFlags.None);
+                        var strengthAtDistance = sensePhysics.SignalStrengthAtDistance(distanceFromOrigin, maxRadius);
+                        var bright = intensity * strengthAtDistance * (1 - resistance);
+                        data.Write(new Position2D(currentX, currentY), bright,
+                                   SenseDirectionStore.From(currentX, currentY).Direction,
+                                   fullyBlocked ? SenseDataFlags.Obstructed : SenseDataFlags.None);
                     }
 
                     if (blocked) // Previous cell was blocked

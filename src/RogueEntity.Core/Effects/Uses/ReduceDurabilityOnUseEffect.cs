@@ -1,6 +1,4 @@
-﻿using System;
-using EnTTSharp.Entities;
-using GoRogue.DiceNotation;
+﻿using EnTTSharp.Entities;
 using RogueEntity.Core.Infrastructure.Randomness;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Meta.ItemTraits;
@@ -14,11 +12,9 @@ namespace RogueEntity.Core.Effects.Uses
         where TActorId : IEntityKey
         where TGameContext : IItemContext<TGameContext, TItemId>, IRandomContext
     {
-        readonly IDiceExpression durabilityLoss;
 
-        public ReduceDurabilityOnUseEffect(IDiceExpression durabilityLoss)
+        public ReduceDurabilityOnUseEffect()
         {
-            this.durabilityLoss = durabilityLoss ?? throw new ArgumentNullException(nameof(durabilityLoss));
         }
 
         public bool TryActivate(TActorId user, TGameContext context, TItemId itemToBeUsed, out TItemId usedItem)
@@ -26,7 +22,7 @@ namespace RogueEntity.Core.Effects.Uses
             if (context.ItemResolver.TryQueryData(itemToBeUsed, context, out Durability d))
             {
                 var rng = context.RandomGenerator(user.ToRandomSeedSource(), itemToBeUsed.ToRandomSeedSource().AsRandomSeed());
-                var roll = durabilityLoss.Roll(rng);
+                var roll = 1;
                 var damage = d.WithAppliedDamage(roll.ClampToUnsignedShort());
                 if (damage.HitPoints == 0)
                 {

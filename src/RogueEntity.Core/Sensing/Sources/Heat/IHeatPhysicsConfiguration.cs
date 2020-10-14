@@ -1,9 +1,12 @@
 using RogueEntity.Core.Meta.ItemTraits;
+using RogueEntity.Core.Sensing.Common;
 
-namespace RogueEntity.Core.Sensing.Sources
+namespace RogueEntity.Core.Sensing.Sources.Heat
 {
-    public interface IHeatPhysicsContext
+    public interface IHeatPhysicsConfiguration
     {
+        ISensePhysics HeatPhysics { get; }
+
         /// <summary>
         ///   Defines the normal temperature of the world. This is the
         ///   neutral temperature that exists if nothing else is defined.
@@ -13,7 +16,7 @@ namespace RogueEntity.Core.Sensing.Sources
         ///
         ///   This value can change over time. 
         /// </summary>
-        public Temperature EnvironmentalTemperature { get; }
+        public Temperature GetEnvironmentTemperature(int z);
 
     }
 }

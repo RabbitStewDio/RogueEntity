@@ -1,23 +1,26 @@
 using EnTTSharp.Entities;
-using GoRogue;
-using GoRogue.SenseMapping;
 using RogueEntity.Core.Meta.Items;
+using RogueEntity.Core.Positioning;
+using RogueEntity.Core.Sensing.Common;
+using RogueEntity.Core.Sensing.Receptors.Light;
 using RogueEntity.Core.Utils;
 
 namespace RogueEntity.Core.Sensing.Sources.Light
 {
-    public class LightSourceTrait<TGameContext, TItemId> : IItemComponentTrait<TGameContext, TItemId, LightSourceData>,
+    public class LightSourceTrait<TGameContext, TItemId> : IItemComponentTrait<TGameContext, TItemId, LightSourceDefinition>,
                                                            IReferenceItemTrait<TGameContext, TItemId>
-        where TGameContext : IItemContext<TGameContext, TItemId>, ILightPhysicsConfiguration
+        where TGameContext : IItemContext<TGameContext, TItemId>
         where TItemId : IEntityKey
     {
+        readonly ILightPhysicsConfiguration lightPhysics;
         public float Hue { get; }
         public float Saturation { get; }
         public float Intensity { get; }
         public bool Enabled { get; }
 
-        public LightSourceTrait(float hue, float saturation, float intensity, bool enabled)
+        public LightSourceTrait(ILightPhysicsConfiguration lightPhysics, float hue, float saturation, float intensity, bool enabled)
         {
+            this.lightPhysics = lightPhysics;
             Hue = hue.Clamp(0, 1);
             Saturation = saturation;
             Intensity = intensity;
@@ -29,12 +32,10 @@ namespace RogueEntity.Core.Sensing.Sources.Light
         /// </summary>
         /// <param name="intensity"></param>
         /// <param name="enabled"></param>
-        public LightSourceTrait(float intensity, bool enabled = true)
+        public LightSourceTrait(ILightPhysicsConfiguration lightPhysics, 
+                                float intensity, 
+                                bool enabled = true): this(lightPhysics, 0, 0, intensity, enabled)
         {
-            Hue = 0;
-            Saturation = 0;
-            Enabled = enabled;
-            Intensity = intensity;
         }
 
         public string Id => "Core.Common.LightSource"; 
@@ -42,33 +43,31 @@ namespace RogueEntity.Core.Sensing.Sources.Light
 
         public void Apply(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, IItemDeclaration item)
         {
-            if (!v.GetComponent(k, out LightSourceData l))
+            if (!v.GetComponent(k, out LightSourceDefinition l))
             {
                 return;
             }
 
-            if (v.GetComponent(k, out LightSourceState s))
+            if (!v.GetComponent(k, out SenseSourceState<VisionSense> s))
             {
-                var radius = context.LightSignalRadiusForIntensity(l.Intensity);
-                s.SenseSource.Reset(SourceType.RIPPLE, radius, DistanceCalculation.EUCLIDEAN, l.Intensity);
+                s = new SenseSourceState<VisionSense>(Optional.Empty<SenseSourceData>(), SenseSourceDirtyState.UnconditionallyDirty, Position.Invalid);
+                v.AssignComponent(k, in s);
             }
         }
 
         public void Initialize(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, IItemDeclaration item)
         {
-            var radius = context.LightSignalRadiusForIntensity(Intensity);
-            var l = new LightSourceData(Hue, Saturation, Intensity, Enabled);
-            var source = new SmartSenseSource(SourceType.RIPPLE, radius, DistanceCalculation.EUCLIDEAN, l.Intensity);
-            source.Enabled = l.Enabled;
-            source.MarkDirty();
+            var radius = lightPhysics.LightPhysics.SignalRadiusForIntensity(Intensity);
+            var l = new LightSourceDefinition(new SenseSourceDefinition(lightPhysics.LightPhysics.DistanceMeasurement, radius, Intensity), Hue, Saturation, Enabled);
+            var s = new SenseSourceState<VisionSense>(Optional.Empty<SenseSourceData>(), SenseSourceDirtyState.UnconditionallyDirty, Position.Invalid);
 
             v.AssignOrReplace(k, l);
-            v.AssignComponent(k, new LightSourceState(source));
+            v.AssignComponent(k, s);
         }
 
-        public bool TryQuery(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, out LightSourceData t)
+        public bool TryQuery(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, out LightSourceDefinition t)
         {
-            if (v.GetComponent(k, out LightSourceData l))
+            if (v.GetComponent(k, out LightSourceDefinition l))
             {
                 t = l;
                 return true;
@@ -78,32 +77,35 @@ namespace RogueEntity.Core.Sensing.Sources.Light
             return false;
         }
 
-        public bool TryUpdate(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, in LightSourceData t, out TItemId changedK)
+        public bool TryUpdate(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, in LightSourceDefinition t, out TItemId changedK)
         {
-            var radius = context.LightSignalRadiusForIntensity(t.Intensity);
-            
             changedK = k;
-            v.AssignOrReplace(k, t);
-            if (v.GetComponent(k, out LightSourceState s))
+            if (v.GetComponent(k, out LightSourceDefinition existing))
             {
-                s.SenseSource.Reset(SourceType.RIPPLE, radius, DistanceCalculation.EUCLIDEAN, t.Intensity);
+                if (existing == t)
+                {
+                    return true;
+                }
+            }
+            
+            v.AssignComponent(k, t);
+            if (!v.GetComponent(k, out SenseSourceState<VisionSense> s))
+            {
+                s = new SenseSourceState<VisionSense>(Optional.Empty<SenseSourceData>(), SenseSourceDirtyState.UnconditionallyDirty, Position.Invalid);
+                v.AssignComponent(k, in s);
             }
             else
             {
-                var source = new SmartSenseSource(SourceType.RIPPLE, radius, DistanceCalculation.EUCLIDEAN, t.Intensity);
-                source.Enabled = t.Enabled;
-                source.MarkDirty();
-                v.AssignComponent(k, new LightSourceState(source));
+                s = s.WithDirtyState(SenseSourceDirtyState.UnconditionallyDirty);
+                v.AssignComponent(k, in s);
             }
             return true;
         }
 
         public bool TryRemove(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, out TItemId changedItem)
         {
-            v.RemoveComponent<LightSourceData>(k);
-            v.RemoveComponent<LightSourceState>(k);
             changedItem = k;
-            return true;
+            return false;
         }
     }
 }

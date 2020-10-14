@@ -11,7 +11,7 @@ namespace RogueEntity.Core.Sensing.Common
     [DataContract]
     [MessagePackObject]
     [SuppressMessage("ReSharper", "ConvertToAutoProperty")]
-    public readonly struct SenseSourceDefinition
+    public readonly struct SenseSourceDefinition : IEquatable<SenseSourceDefinition>
     {
         [Key(0)]
         [DataMember(Order = 0)]
@@ -109,9 +109,43 @@ namespace RogueEntity.Core.Sensing.Common
         [IgnoreDataMember]
         public float Radius => radius;
 
-        [Obsolete]
-        [IgnoreMember]
-        [IgnoreDataMember]
-        public float Decay => intensity / (radius + 1);
+        public SenseSourceDefinition WithIntensity(float intensity, float radius)
+        {
+            return new SenseSourceDefinition(distanceCalculation, radius, intensity, angle, span);
+        }
+        
+        public bool Equals(SenseSourceDefinition other)
+        {
+            return Equals(distanceCalculation, other.distanceCalculation) && radius.Equals(other.radius) && intensity.Equals(other.intensity) && angle.Equals(other.angle) && span.Equals(other.span) && enabled == other.enabled;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is SenseSourceDefinition other && Equals(other);
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                var hashCode = (distanceCalculation != null ? distanceCalculation.GetHashCode() : 0);
+                hashCode = (hashCode * 397) ^ radius.GetHashCode();
+                hashCode = (hashCode * 397) ^ intensity.GetHashCode();
+                hashCode = (hashCode * 397) ^ angle.GetHashCode();
+                hashCode = (hashCode * 397) ^ span.GetHashCode();
+                hashCode = (hashCode * 397) ^ enabled.GetHashCode();
+                return hashCode;
+            }
+        }
+
+        public static bool operator ==(SenseSourceDefinition left, SenseSourceDefinition right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(SenseSourceDefinition left, SenseSourceDefinition right)
+        {
+            return !left.Equals(right);
+        }
     }
 }

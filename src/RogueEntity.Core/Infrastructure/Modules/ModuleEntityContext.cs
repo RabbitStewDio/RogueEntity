@@ -77,7 +77,8 @@ namespace RogueEntity.Core.Infrastructure.Modules
                 Id = id,
                 Priority = priority,
                 EntityRegistration = entityRegistration,
-                EntitySystemRegistration = default
+                EntitySystemRegistration = default,
+                InsertionOrder = systemFactories.Count
             });
         }
 
@@ -91,7 +92,8 @@ namespace RogueEntity.Core.Infrastructure.Modules
                 Id = id,
                 Priority = priority,
                 EntityRegistration = null,
-                EntitySystemRegistration = entitySystemRegistration
+                EntitySystemRegistration = entitySystemRegistration,
+                InsertionOrder = systemFactories.Count
             });
         }
 
@@ -100,6 +102,7 @@ namespace RogueEntity.Core.Infrastructure.Modules
             public string DeclaringModule { get; set; }
             public EntitySystemId Id { get; set; }
             public int Priority { get; set; }
+            public int InsertionOrder { get; set; }
 
             public ModuleEntityContext.EntityRegistrationDelegate<TEntityId> EntityRegistration { get; set; }
 

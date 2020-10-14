@@ -1,5 +1,6 @@
 using System;
 using GoRogue;
+using JetBrains.Annotations;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Utils.Maps;
 using static RogueEntity.Core.Sensing.Common.ShadowCast.ShadowPropagationAlgorithmHelpers;
@@ -8,6 +9,13 @@ namespace RogueEntity.Core.Sensing.Common.ShadowCast
 {
     public class RestrictedShadowPropagationAlgorithm : ISensePropagationAlgorithm
     {
+        readonly ISensePhysics sensePhysics;
+
+        public RestrictedShadowPropagationAlgorithm([NotNull] ISensePhysics sensePhysics)
+        {
+            this.sensePhysics = sensePhysics ?? throw new ArgumentNullException(nameof(sensePhysics));
+        }
+
         public SenseSourceData Calculate<TResistanceMap>(SenseSourceDefinition sense,
                                                          Position2D position,
                                                          TResistanceMap resistanceMap,
@@ -72,10 +80,11 @@ namespace RogueEntity.Core.Sensing.Common.ShadowCast
 
             float newStart = 0;
 
-            var radius = (int)sense.Radius;
             var intensity = sense.Intensity;
             var dist = sense.DistanceCalculation;
-            var decay = sense.Decay;
+            var maxRadius = sensePhysics.SignalRadiusForIntensity(intensity);
+            var radius = (int)Math.Ceiling(maxRadius);
+            
             var blocked = false;
             for (var distance = row; distance <= radius && !blocked; distance++)
             {
@@ -100,7 +109,8 @@ namespace RogueEntity.Core.Sensing.Common.ShadowCast
                         break;
                     }
 
-                    var fullyBlocked = IsFullyBlocked(resistanceMap[gCurrentX, gCurrentY]); 
+                    var resistance = resistanceMap[gCurrentX, gCurrentY];
+                    var fullyBlocked = IsFullyBlocked(resistance); 
                     if (blocked) // Previous cell was blocked
                     {
                         if (fullyBlocked) // Hit a wall...
@@ -115,12 +125,15 @@ namespace RogueEntity.Core.Sensing.Common.ShadowCast
                     }
                     else
                     {
-                        var deltaRadius = dist.Calculate(deltaX, deltaY);
                         var at2 = Math.Abs(angle - MathHelpers.ScaledAtan2Approx(currentY, currentX));
-                        if (deltaRadius <= radius && (at2 <= span * 0.5 || at2 >= 1.0 - span * 0.5))
+                        var distanceFromOrigin = dist.Calculate(deltaX, deltaY);
+                        if (distanceFromOrigin <= radius && (at2 <= span * 0.5 || at2 >= 1.0 - span * 0.5))
                         {
-                            var bright = intensity - decay * deltaRadius;
-                            light.Write(new Position2D(currentX, currentY), bright, fullyBlocked ? SenseDataFlags.Obstructed : SenseDataFlags.None);
+                            var strengthAtDistance = sensePhysics.SignalStrengthAtDistance(distanceFromOrigin, maxRadius);
+                            var bright = intensity * strengthAtDistance * (1 - resistance);
+                            light.Write(new Position2D(currentX, currentY), bright,
+                                        SenseDirectionStore.From(currentX, currentY).Direction,
+                                        fullyBlocked ? SenseDataFlags.Obstructed : SenseDataFlags.None);
                         }
 
                         if (fullyBlocked && distance < radius) // Wall within FOV

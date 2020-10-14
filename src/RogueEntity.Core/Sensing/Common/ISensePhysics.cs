@@ -1,9 +1,14 @@
+using System;
+using GoRogue;
+using JetBrains.Annotations;
 using RogueEntity.Core.Utils;
 
 namespace RogueEntity.Core.Sensing.Common
 {
     public interface ISensePhysics
     {
+        DistanceCalculation DistanceMeasurement { get; }
+        
         /// <summary>
         ///   Calculates a maximum effective range for a given sense source with
         ///   the given intensity. 
@@ -28,11 +33,17 @@ namespace RogueEntity.Core.Sensing.Common
     /// </summary>
     public class LinearDecaySensePhysics: ISensePhysics
     {
-        public static readonly LinearDecaySensePhysics Instance = new LinearDecaySensePhysics();
-        
+        public static LinearDecaySensePhysics For(DistanceCalculation c) => new LinearDecaySensePhysics(c);
+
+        public LinearDecaySensePhysics([NotNull] DistanceCalculation distanceMeasurement)
+        {
+            DistanceMeasurement = distanceMeasurement ?? throw new ArgumentNullException(nameof(distanceMeasurement));
+        }
+
+        public DistanceCalculation DistanceMeasurement { get; }
         public float SignalRadiusForIntensity(float intensity)
         {
-            return intensity;
+            return Math.Abs(intensity);
         }
 
         public float SignalStrengthAtDistance(float distance, float maxRadius)

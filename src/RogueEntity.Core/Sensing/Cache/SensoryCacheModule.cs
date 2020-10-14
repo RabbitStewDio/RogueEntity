@@ -28,7 +28,7 @@ namespace RogueEntity.Core.Sensing.Cache
             RequireRole(SenseCacheSourceRole);
             
             RequireRole(SensoryResistanceModule.ResistanceDataProviderRole).WithImpliedRole(SenseCacheSourceRole);
-            RequireRole(LightSenseModule.LightSourceRole).WithImpliedRole(SenseCacheSourceRole);
+            RequireRole(LightSourceModule.LightSourceRole).WithImpliedRole(SenseCacheSourceRole);
         }
       
         [ModuleInitializer]

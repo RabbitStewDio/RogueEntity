@@ -3,12 +3,12 @@ using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Meta.ItemTraits;
 using RogueEntity.Core.Utils;
 
-namespace RogueEntity.Core.Sensing.Sources
+namespace RogueEntity.Core.Sensing.Sources.Heat
 {
     public class HeatSourceTrait<TGameContext, TItemId> : IReferenceItemTrait<TGameContext, TItemId>,
                                                           IItemComponentTrait<TGameContext, TItemId, Temperature>
         where TItemId : IEntityKey
-        where TGameContext: IHeatPhysicsContext
+        where TGameContext: IHeatPhysicsConfiguration
     {
         public string Id => "Core.Item.Temperature";
         public int Priority => 100;
@@ -47,8 +47,7 @@ namespace RogueEntity.Core.Sensing.Sources
                 return true;
             }
 
-            t = context.EnvironmentalTemperature;
-            return true;
+            return false;
         }
 
         public bool TryUpdate(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, in Temperature t, out TItemId changedK)
