@@ -22,7 +22,7 @@ namespace RogueEntity.Core.Sensing.Common.FloodFill
                                                          SenseSourceData data = null)
             where TResistanceMap : IReadOnlyView2D<float>
         {
-            var radius = (int)Math.Ceiling(sense.Radius);
+            var radius = (int)Math.Ceiling(sensePhysics.SignalRadiusForIntensity(sense.Intensity));
             if (data == null || data.Radius != radius)
             {
                 data = new SenseSourceData(radius);

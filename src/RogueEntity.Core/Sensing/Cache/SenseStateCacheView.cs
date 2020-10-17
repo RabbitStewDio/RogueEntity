@@ -12,32 +12,29 @@ namespace RogueEntity.Core.Sensing.Cache
     /// </summary>
     public class SenseStateCacheView : ISenseStateCacheView
     {
+        readonly int tileSizeX;
+        readonly int tileSizeY;
         readonly int resolution;
-        readonly Dictionary<int, PackedBoolMap> trackersPerLayer;
+        readonly Dictionary<int, DynamicBoolDataView> trackersPerLayer;
         bool globallyDirty;
 
-        public SenseStateCacheView(int resolution)
+        public SenseStateCacheView(int tileSizeX = 64, int tileSizeY = 64, int resolution = 8)
         {
             if (resolution < 1) throw new ArgumentException(nameof(resolution));
-            
+
+            this.tileSizeX = tileSizeX;
+            this.tileSizeY = tileSizeY;
             this.resolution = resolution;
-            this.trackersPerLayer = new Dictionary<int, PackedBoolMap>();
+            this.trackersPerLayer = new Dictionary<int, DynamicBoolDataView>();
         }
 
-        public void DeclareLayer(int z, int width, int height) 
-        {
-            var sizeX = (int)Math.Ceiling(width / (float)resolution);
-            var sizeY = (int)Math.Ceiling(height / (float)resolution);
-            trackersPerLayer[z] = new PackedBoolMap(sizeX, sizeY);
-        }
-        
         public void MarkClean()
         {
             foreach (var l in trackersPerLayer.Values)
             {
-                l.Clear();
+                l.ClearData();
             }
-            
+
             globallyDirty = false;
         }
 
@@ -45,72 +42,91 @@ namespace RogueEntity.Core.Sensing.Cache
         {
             if (!trackersPerLayer.TryGetValue(p.GridZ, out var data))
             {
+                data = new DynamicBoolDataView(tileSizeX, tileSizeY);
                 return;
             }
 
             var px = p.GridX / resolution;
             var py = p.GridY / resolution;
-            if (px < 0 || px >= data.Width)
-            {
-                return;
-            }
-
-            if (py < 0 || py >= data.Height)
-            {
-                return;
-            }
-                
-            data[px, py] = true;
+            var view = data.GetOrCreateData(px, py);
+            view[px, py] = true;
         }
 
-        public bool IsDirty<TPosition>(TPosition p) where TPosition: IPosition
+        public bool IsDirty<TPosition>(TPosition p)
+            where TPosition : IPosition
         {
             if (globallyDirty)
             {
                 return true;
             }
-            
+
             if (trackersPerLayer.TryGetValue(p.GridZ, out var data))
             {
                 return data[p.GridX / resolution, p.GridY / resolution];
             }
-            
+
             // always err on the safe side.
             return true;
         }
 
-        public bool IsDirty<TPosition>(TPosition center, float radius) where TPosition: IPosition
+        public bool IsDirty(int z, in Rectangle rect)
         {
             if (globallyDirty)
             {
                 return true;
             }
 
-            if (!trackersPerLayer.TryGetValue(center.GridZ, out var map))
+            if (!trackersPerLayer.TryGetValue(z, out var map))
             {
                 return false;
             }
 
-            var radiusInt = (int)Math.Ceiling(radius);
-            var rect = new Rectangle(new Coord(center.GridX, center.GridY), radiusInt, radiusInt);
-
             var minX = Math.Max(0, rect.MinExtentX / resolution);
             var minY = Math.Max(0, rect.MinExtentX / resolution);
-            var maxX = Math.Min((int)Math.Ceiling(rect.MaxExtentX / (float)resolution), map.Width);
-            var maxY = Math.Min((int)Math.Ceiling(rect.MaxExtentY / (float)resolution), map.Height);
-
-            for (var y = minY; y < maxY; y += 1)
+            var maxX = (int)Math.Ceiling(rect.MaxExtentX / (float)resolution);
+            var maxY = (int)Math.Ceiling(rect.MaxExtentY / (float)resolution);
+            var scaledBounds = new Rectangle(minX, minY, maxX - minX, maxY - minY);
+            
+            for (var y = minY; y < maxY; y += tileSizeY)
             {
-                for (var x = minX; x < maxX; x += 1)
+                for (var x = minX; x < maxX; x += tileSizeX)
                 {
-                    if (map.Any(x, y))
+                    if (!map.TryGetData(x, y, out var data))
                     {
-                        return true;
+                        // cannot be dirty
+                        continue;
+                    }
+
+                    if (!data.AnyValueSet())
+                    {
+                        continue;
+                    }
+
+                    var limit = data.Bounds.GetIntersection(in scaledBounds);
+                    foreach (var lpos in limit)
+                    {
+                        if (map[lpos.X, lpos.Y])
+                        {
+                            return true;
+                        }
                     }
                 }
             }
 
             return false;
+        }
+
+        public bool IsDirty<TPosition>(TPosition center, float radius)
+            where TPosition : IPosition
+        {
+            if (globallyDirty)
+            {
+                return true;
+            }
+
+            var radiusInt = (int)Math.Ceiling(radius);
+            var rect = new Rectangle(new Coord(center.GridX, center.GridY), radiusInt, radiusInt);
+            return IsDirty(center.GridZ, in rect);
         }
     }
 }

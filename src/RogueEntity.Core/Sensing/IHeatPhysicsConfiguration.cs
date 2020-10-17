@@ -1,7 +1,7 @@
 using RogueEntity.Core.Meta.ItemTraits;
 using RogueEntity.Core.Sensing.Common;
 
-namespace RogueEntity.Core.Sensing.Sources.Heat
+namespace RogueEntity.Core.Sensing
 {
     public interface IHeatPhysicsConfiguration
     {
@@ -18,5 +18,6 @@ namespace RogueEntity.Core.Sensing.Sources.Heat
         /// </summary>
         public Temperature GetEnvironmentTemperature(int z);
 
+        ISensePropagationAlgorithm CreateHeatPropagationAlgorithm();
     }
 }

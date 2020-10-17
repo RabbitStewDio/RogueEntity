@@ -1,0 +1,218 @@
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using EnTTSharp.Entities;
+using JetBrains.Annotations;
+using RogueEntity.Core.Positioning;
+using RogueEntity.Core.Sensing.Cache;
+using RogueEntity.Core.Sensing.Common;
+using RogueEntity.Core.Sensing.Common.Blitter;
+using RogueEntity.Core.Sensing.Sources;
+using RogueEntity.Core.Utils;
+using Serilog;
+
+namespace RogueEntity.Core.Sensing.Map
+{
+    public class SenseMappingSystemBase<TSense, TSenseSourceDefinition>
+        where TSenseSourceDefinition : ISenseDefinition
+        where TSense : ISense
+    {
+        static readonly ILogger Logger = SLog.ForContext<SenseMappingSystemBase<TSense, TSenseSourceDefinition>>();
+        static readonly Action<SenseDataLevel> ProcessSenseMapInstance = v => v.ProcessSenseSources();
+        const int ZLayerTimeToLive = 50;
+
+        readonly Lazy<ISenseStateCacheProvider> senseCacheProvider;
+        readonly Dictionary<int, SenseDataLevel> activeLightsPerLevel;
+        readonly ISenseDataBlitter blitterFactory;
+        readonly List<int> zLevelBuffer;
+        Optional<ISenseStateCacheView> senseCache;
+        int currentTime;
+
+        public SenseMappingSystemBase([NotNull] Lazy<ISenseStateCacheProvider> senseCacheProvider,
+                                      ISenseDataBlitter blitterFactory = null)
+        {
+            this.senseCacheProvider = senseCacheProvider ?? throw new ArgumentNullException(nameof(senseCacheProvider));
+            this.blitterFactory = blitterFactory ?? new DefaultSenseDataBlitter();
+            this.activeLightsPerLevel = new Dictionary<int, SenseDataLevel>();
+            this.zLevelBuffer = new List<int>();
+        }
+
+        /// <summary>
+        ///   To be called once during initialization.
+        /// </summary>
+        /// <param name="context"></param>
+        /// <typeparam name="TGameContext"></typeparam>
+        public void EnsureSenseCacheAvailable<TGameContext>(TGameContext context)
+        {
+            var provider = senseCacheProvider.Value;
+            if (!provider.TryGetSenseCache<TSense>(out var cache))
+            {
+                senseCache = Optional.ValueOf(cache);
+            }
+            else
+            {
+                Logger.Verbose("This light system will not react to map changes");
+            }
+        }
+
+        /// <summary>
+        ///   Cleanup method used during system shutdown.
+        /// </summary>
+        /// <param name="ctx"></param>
+        /// <typeparam name="TGameContext"></typeparam>
+        public void ShutDown<TGameContext>(TGameContext ctx)
+        {
+            activeLightsPerLevel.Clear();
+        }
+
+        /// <summary>
+        ///  Step 1: Collect all active sense sources.
+        /// </summary>
+        /// <param name="v"></param>
+        /// <param name="context"></param>
+        /// <param name="k"></param>
+        /// <param name="definition"></param>
+        /// <param name="state"></param>
+        /// <param name="pos"></param>
+        /// <typeparam name="TItemId"></typeparam>
+        /// <typeparam name="TGameContext"></typeparam>
+        /// <typeparam name="TPosition"></typeparam>
+        public void CollectLights<TItemId, TGameContext, TPosition>(IEntityViewControl<TItemId> v,
+                                                                    TGameContext context,
+                                                                    TItemId k,
+                                                                    in TSenseSourceDefinition definition,
+                                                                    in SenseSourceState<TSense> state,
+                                                                    in TPosition pos)
+            where TItemId : IEntityKey
+            where TPosition : IPosition
+        {
+            if (!state.LastPosition.IsInvalid)
+            {
+                AddActiveSense(state);
+            }
+        }
+
+        /// <summary>
+        ///   Step 3: Copy all processed senses into the global sense map.
+        /// </summary>
+        /// <param name="v"></param>
+        /// <typeparam name="TItemId"></typeparam>
+        public void ProcessSenseMap<TItemId>(EntityRegistry<TItemId> v)
+            where TItemId : IEntityKey
+        {
+            Parallel.ForEach(activeLightsPerLevel.Values, ProcessSenseMapInstance);
+
+            v.ResetComponent<SenseDirtyFlag<VisionSense>>();
+        }
+        
+        /// <summary>
+        ///  Step 5: Clear the collected sense sources
+        /// </summary>
+        public void EndSenseCalculation<TGameContext>(TGameContext ctx)
+        {
+            zLevelBuffer.Clear();
+            foreach (var l in activeLightsPerLevel)
+            {
+                var level = l.Value;
+                level.ClearCollectedSenses();
+                if ((currentTime - level.LastRecentlyUsedTime) > ZLayerTimeToLive)
+                {
+                    zLevelBuffer.Add(l.Key);
+                }
+            }
+
+            foreach (var z in zLevelBuffer)
+            {
+                activeLightsPerLevel.Remove(z);
+            }
+            
+            zLevelBuffer.Clear();
+        }
+
+        void AddActiveSense(SenseSourceState<TSense> s)
+        {
+            var p = s.LastPosition; 
+            var level = p.GridZ;
+            if (!activeLightsPerLevel.TryGetValue(level, out var lights))
+            {
+                lights = new SenseDataLevel(level, senseCache, blitterFactory);
+                activeLightsPerLevel[level] = lights;
+            }
+
+            lights.MarkUsed(currentTime);
+            lights.Add(p, s);
+        }
+
+        protected bool TryGetSenseData(int z, out ISenseDataView data)
+        {
+            if (activeLightsPerLevel.TryGetValue(z, out var level))
+            {
+                level.MarkUsed(currentTime);
+                data = level.SenseMap;
+                return true;
+            }
+
+            data = default;
+            return false;
+        }
+
+        public class SenseDataLevel
+        {
+            public readonly SenseDataMap SenseMap;
+            readonly SenseDataMapServices senseMapServices;
+            readonly ISenseDataBlitter blitter;
+            readonly List<(Position2D, SenseSourceState<TSense>)> collectedSenses;
+            readonly List<(Position2D, SenseSourceData)> blittableSenses;
+            public int LastRecentlyUsedTime { get; private set; }
+
+            public SenseDataLevel(int z, 
+                                  Optional<ISenseStateCacheView> senseCache, 
+                                  ISenseDataBlitter blitter = null)
+            {
+                this.blitter = blitter ?? new DefaultSenseDataBlitter();
+                this.senseMapServices = new SenseDataMapServices(z, senseCache);
+                this.SenseMap = new SenseDataMap();
+                this.blittableSenses = new List<(Position2D, SenseSourceData)>();
+                this.collectedSenses = new List<(Position2D, SenseSourceState<TSense>)>();
+            }
+
+            public bool ForceDirty { get; set; }
+
+            public void Add(Position p, SenseSourceState<TSense> sense)
+            {
+                collectedSenses.Add((new Position2D(p.GridX, p.GridY), sense));
+            }
+
+            public void ClearCollectedSenses()
+            {
+                collectedSenses.Clear();
+            }
+
+            public void ProcessSenseSources()
+            {
+                blittableSenses.Clear();
+                try
+                {
+                    foreach (var collectedSense in collectedSenses)
+                    {
+                        if (collectedSense.Item2.SenseSource.TryGetValue(out var sd))
+                        {
+                            blittableSenses.Add((collectedSense.Item1, sd));
+                        }
+                    }
+
+                    senseMapServices.ProcessSenseSources(SenseMap, blitter, blittableSenses);
+                }
+                finally
+                {
+                    blittableSenses.Clear();
+                }
+            }
+
+            public void MarkUsed(int currentTime)
+            {
+                LastRecentlyUsedTime = currentTime;
+            }
+        }
+    }
+}

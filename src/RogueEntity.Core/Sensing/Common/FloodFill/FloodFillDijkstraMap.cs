@@ -16,6 +16,7 @@ namespace RogueEntity.Core.Sensing.Common.FloodFill
         ISensePhysics SensePhysics { get; set; }
         ReadOnlyListWrapper<Direction> directions;
         Position2D origin;
+        float radius;
         
         FloodFillDijkstraMap(in Rectangle bounds) : base(in bounds)
         {
@@ -24,13 +25,14 @@ namespace RogueEntity.Core.Sensing.Common.FloodFill
         }
 
         public static FloodFillDijkstraMap Create(in SenseSourceDefinition sense,
-                                                  in Position2D origin,
+                                                  in Position2D origin, 
                                                   [NotNull] ISensePhysics sensePhysics,
                                                   [NotNull] IReadOnlyView2D<float> resistanceMap)
         {
-            Console.WriteLine("Using Origin: " + origin + " Radius: " + sense.Radius);
+            var radius = sensePhysics.SignalRadiusForIntensity(sense.Intensity);
+            Console.WriteLine("Using Origin: " + origin + " Radius: " + radius);
             
-            var radiusInt = (int)Math.Ceiling(sense.Radius);
+            var radiusInt = (int)Math.Ceiling(radius);
             var bounds = new Rectangle(origin.X - radiusInt, origin.Y - radiusInt, 2 * radiusInt + 1, 2 * radiusInt + 1);
             var result = new FloodFillDijkstraMap(in bounds);
             result.Configure(in sense, in origin, sensePhysics, resistanceMap);
@@ -41,15 +43,16 @@ namespace RogueEntity.Core.Sensing.Common.FloodFill
         }
         
         public void Configure(in SenseSourceDefinition sense,
-                              in Position2D origin,
+                              in Position2D origin, 
                               [NotNull] ISensePhysics sensePhysics,
                               [NotNull] IReadOnlyView2D<float> resistanceMap)
         {
+            this.radius = sensePhysics.SignalRadiusForIntensity(sense.Intensity);
             this.origin = origin;
             this.Sense = sense;
             this.SensePhysics = sensePhysics ?? throw new ArgumentNullException(nameof(sensePhysics));
             this.ResistanceMap = resistanceMap ?? throw new ArgumentNullException(nameof(resistanceMap));
-            var radiusInt = (int)Math.Ceiling(sense.Radius);
+            var radiusInt = (int)Math.Ceiling(radius);
             this.Resize(new Rectangle(origin.X - radiusInt, origin.Y - radiusInt, 2 * radiusInt + 1, 2 * radiusInt + 1));
             this.directions = Sense.DistanceCalculation.AsAdjacencyRule().DirectionsOfNeighborsList();
             this.valid = true;
@@ -117,7 +120,7 @@ namespace RogueEntity.Core.Sensing.Common.FloodFill
             }
 
             var distanceForStep = Sense.DistanceCalculation.Calculate(d.ToCoordinates());
-            var signalStrength = SensePhysics.SignalStrengthAtDistance((Sense.Intensity - stepOriginCost) + distanceForStep, Sense.Radius);
+            var signalStrength = SensePhysics.SignalStrengthAtDistance((Sense.Intensity - stepOriginCost) + distanceForStep, radius);
             var totalCost = Sense.Intensity * signalStrength * (1 - resistance);
             cost = stepOriginCost - totalCost;
             return true;

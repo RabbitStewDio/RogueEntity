@@ -2,7 +2,6 @@ using EnTTSharp.Entities;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Sensing.Common;
-using RogueEntity.Core.Sensing.Receptors.Light;
 using RogueEntity.Core.Utils;
 
 namespace RogueEntity.Core.Sensing.Sources.Light
@@ -41,6 +40,16 @@ namespace RogueEntity.Core.Sensing.Sources.Light
         public string Id => "Core.Common.LightSource"; 
         public int Priority => 100;
 
+        public void Initialize(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, IItemDeclaration item)
+        {
+            var radius = lightPhysics.LightPhysics.SignalRadiusForIntensity(Intensity);
+            var l = new LightSourceDefinition(new SenseSourceDefinition(lightPhysics.LightPhysics.DistanceMeasurement, Intensity), Hue, Saturation, Enabled);
+            var s = new SenseSourceState<VisionSense>(Optional.Empty<SenseSourceData>(), SenseSourceDirtyState.UnconditionallyDirty, Position.Invalid);
+
+            v.AssignOrReplace(k, l);
+            v.AssignComponent(k, s);
+        }
+
         public void Apply(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, IItemDeclaration item)
         {
             if (!v.GetComponent(k, out LightSourceDefinition l))
@@ -55,26 +64,9 @@ namespace RogueEntity.Core.Sensing.Sources.Light
             }
         }
 
-        public void Initialize(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, IItemDeclaration item)
-        {
-            var radius = lightPhysics.LightPhysics.SignalRadiusForIntensity(Intensity);
-            var l = new LightSourceDefinition(new SenseSourceDefinition(lightPhysics.LightPhysics.DistanceMeasurement, radius, Intensity), Hue, Saturation, Enabled);
-            var s = new SenseSourceState<VisionSense>(Optional.Empty<SenseSourceData>(), SenseSourceDirtyState.UnconditionallyDirty, Position.Invalid);
-
-            v.AssignOrReplace(k, l);
-            v.AssignComponent(k, s);
-        }
-
         public bool TryQuery(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, out LightSourceDefinition t)
         {
-            if (v.GetComponent(k, out LightSourceDefinition l))
-            {
-                t = l;
-                return true;
-            }
-
-            t = default;
-            return false;
+            return v.GetComponent(k, out t);
         }
 
         public bool TryUpdate(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, in LightSourceDefinition t, out TItemId changedK)

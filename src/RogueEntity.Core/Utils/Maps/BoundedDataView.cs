@@ -8,7 +8,7 @@ namespace RogueEntity.Core.Utils.Maps
     ///   A data view backed up by a dense array, but able to handle 
     /// </summary>
     /// <typeparam name="TData"></typeparam>
-    public class BoundedDataView<TData>
+    public class BoundedDataView<TData>: IReadOnlyView2D<TData>
     {
         Rectangle bounds;
         TData[] data;
@@ -59,6 +59,29 @@ namespace RogueEntity.Core.Utils.Maps
             {
                 var idx = bounds.Width * y;
                 Array.Clear(data, idx, boundsLocal.Width);
+            }
+        }
+
+        public void Fill(in Rectangle bounds, TData v)
+        {
+            var boundsLocal = this.bounds.GetIntersection(bounds);
+            if (boundsLocal.Width == 0 || boundsLocal.Height == 0)
+            {
+                return;
+            }
+
+            var origin = this.bounds.Position;
+            var minY = boundsLocal.Y - origin.Y;
+            var maxY = minY + boundsLocal.Height;
+
+            for (int y = minY; y < maxY; y += 1)
+            {
+                var idx = bounds.Width * y;
+                var idxMax = idx + boundsLocal.Width;
+                for (int x = idx; x < idxMax; x += 1)
+                {
+                    data[x] = v;
+                }
             }
         }
 
@@ -124,6 +147,19 @@ namespace RogueEntity.Core.Utils.Maps
             }
 
             return false;
+        }
+
+        public TData this[int x, int y]
+        {
+            get
+            {
+                if (!TryGet(x, y, out var result))
+                {
+                    throw new ArgumentOutOfRangeException();
+                }
+
+                return result;
+            }
         }
 
         public TData this[in Position2D pos]

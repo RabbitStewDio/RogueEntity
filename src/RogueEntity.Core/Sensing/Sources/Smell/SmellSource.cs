@@ -1,41 +1,36 @@
 using System;
 using System.Runtime.Serialization;
-using EnTTSharp.Entities.Attributes;
 using MessagePack;
+using RogueEntity.Core.Sensing.Sources.Noise;
 
-namespace RogueEntity.Core.Sensing.Sources.Noise
+namespace RogueEntity.Core.Sensing.Sources.Smell
 {
-    [EntityComponent(EntityConstructor.NonConstructable)]
     [DataContract]
     [MessagePackObject]
-    public readonly struct NoiseSoundClip : IEquatable<NoiseSoundClip>
+    public readonly struct SmellSource : IEquatable<SmellSource>
     {
-        [Key(0)]
         [DataMember(Order = 0)]
+        [Key(0)]
         public readonly float Intensity;
-        
-        /// <summary>
-        ///   A tag used to select sounds or other effects in the client.
-        /// </summary>
-        [Key(1)]
         [DataMember(Order = 1)]
+        [Key(1)]
         public readonly string Tag;
 
         [SerializationConstructor]
-        public NoiseSoundClip(float intensity, string tag = default)
+        public SmellSource(float intensity, string tag = null)
         {
             Intensity = intensity;
             Tag = tag;
         }
 
-        public bool Equals(NoiseSoundClip other)
+        public bool Equals(SmellSource other)
         {
             return Intensity.Equals(other.Intensity) && Tag == other.Tag;
         }
 
         public override bool Equals(object obj)
         {
-            return obj is NoiseSoundClip other && Equals(other);
+            return obj is SmellSource other && Equals(other);
         }
 
         public override int GetHashCode()
@@ -46,12 +41,12 @@ namespace RogueEntity.Core.Sensing.Sources.Noise
             }
         }
 
-        public static bool operator ==(NoiseSoundClip left, NoiseSoundClip right)
+        public static bool operator ==(SmellSource left, SmellSource right)
         {
             return left.Equals(right);
         }
 
-        public static bool operator !=(NoiseSoundClip left, NoiseSoundClip right)
+        public static bool operator !=(SmellSource left, SmellSource right)
         {
             return !left.Equals(right);
         }

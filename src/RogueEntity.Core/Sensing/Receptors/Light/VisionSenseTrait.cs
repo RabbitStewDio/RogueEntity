@@ -1,18 +1,31 @@
+using System;
 using EnTTSharp.Entities;
+using GoRogue;
+using JetBrains.Annotations;
 using RogueEntity.Core.Meta.Items;
+using RogueEntity.Core.Positioning;
+using RogueEntity.Core.Sensing.Common;
+using RogueEntity.Core.Sensing.Map.Light;
+using RogueEntity.Core.Utils;
 
 namespace RogueEntity.Core.Sensing.Receptors.Light
 {
     public class VisionSenseTrait<TGameContext, TActorId> : IReferenceItemTrait<TGameContext, TActorId>,
-                                                            IItemComponentTrait<TGameContext, TActorId, VisionSense>,
-                                                            IItemComponentInformationTrait<TGameContext, TActorId, SensoryReceptor<VisionSense>>
+                                                            IItemComponentTrait<TGameContext, TActorId, SensoryReceptorData<VisionSense>>,
+                                                            IItemComponentInformationTrait<TGameContext, TActorId, IBrightnessMap>
         where TActorId : IBulkDataStorageKey<TActorId>
     {
-        readonly VisionSense sense;
+        readonly ILightPhysicsConfiguration physics;
+        readonly SensoryReceptorData<VisionSense> sense;
 
-        public VisionSenseTrait(VisionSense sense)
+        public VisionSenseTrait([NotNull] ILightPhysicsConfiguration physics, float senseIntensity, float radius = 0)
         {
-            this.sense = sense;
+            this.physics = physics ?? throw new ArgumentNullException(nameof(physics));
+            if (radius <= 0)
+            {
+                radius = physics.LightPhysics.SignalRadiusForIntensity(senseIntensity);
+            }
+            this.sense = new SensoryReceptorData<VisionSense>(new SenseSourceDefinition(DistanceCalculation.EUCLIDEAN, senseIntensity), true);
         }
 
         public string Id => "Core.Sense.Receptor.Vision";
@@ -21,43 +34,69 @@ namespace RogueEntity.Core.Sensing.Receptors.Light
         public void Initialize(IEntityViewControl<TActorId> v, TGameContext context, TActorId k, IItemDeclaration item)
         {
             v.AssignComponent(k, sense);
-            v.AssignComponent(k, new SensoryReceptor<VisionSense>(sense));
+            v.AssignComponent(k, new SensoryReceptorState<VisionSense>(Optional.Empty<SenseSourceData>(), SenseSourceDirtyState.UnconditionallyDirty, Position.Invalid));
+            v.AssignComponent(k, new SingleLevelBrightnessMap());
         }
 
         public void Apply(IEntityViewControl<TActorId> v, TGameContext context, TActorId k, IItemDeclaration item)
         {
-        }
-
-        public bool TryQuery(IEntityViewControl<TActorId> v, TGameContext context, TActorId k, out SensoryReceptor<VisionSense> t)
-        {
-            return v.GetComponent(k, out t);
-        }
-
-        public bool TryQuery(IEntityViewControl<TActorId> v, TGameContext context, TActorId k, out VisionSense t)
-        {
-            return v.GetComponent(k, out t);
-        }
-
-        public bool TryUpdate(IEntityViewControl<TActorId> v, TGameContext context, TActorId k, in VisionSense t, out TActorId changedK)
-        {
-            if (v.GetComponent(k, out SensoryReceptor<VisionSense> receptor))
+            if (!v.GetComponent(k, out SensoryReceptorData<VisionSense> _))
             {
-                if (v.GetComponent(k, out VisionSense existing) && existing == t)
+                return;
+            }
+
+            if (!v.GetComponent(k, out SensoryReceptorState<VisionSense> s))
+            {
+                s = new SensoryReceptorState<VisionSense>(Optional.Empty<SenseSourceData>(), SenseSourceDirtyState.UnconditionallyDirty, Position.Invalid);
+                v.AssignComponent(k, in s);
+            }
+
+            if (!v.GetComponent(k, out SingleLevelBrightnessMap m))
+            {
+                m = new SingleLevelBrightnessMap();
+                v.AssignComponent(k, m);
+            }
+        }
+
+        public bool TryQuery(IEntityViewControl<TActorId> v, TGameContext context, TActorId k, out IBrightnessMap t)
+        {
+            if (v.GetComponent(k, out SingleLevelBrightnessMap m))
+            {
+                t = m;
+                return true;
+            }
+
+            t = default;
+            return false;
+        }
+
+        public bool TryQuery(IEntityViewControl<TActorId> v, TGameContext context, TActorId k, out SensoryReceptorData<VisionSense> t)
+        {
+            return v.GetComponent(k, out t);
+        }
+
+        public bool TryUpdate(IEntityViewControl<TActorId> v, TGameContext context, TActorId k, in SensoryReceptorData<VisionSense> t, out TActorId changedK)
+        {
+            changedK = k;
+            if (v.GetComponent(k, out SensoryReceptorData<VisionSense> existing))
+            {
+                if (existing == t)
                 {
-                    changedK = k;
                     return true;
                 }
-                
-                receptor.Configure(t);
-                v.AssignOrReplace(k, in receptor);
+            }
+            
+            v.AssignComponent(k, t);
+            if (!v.GetComponent(k, out SensoryReceptorState<VisionSense> s))
+            {
+                s = new SensoryReceptorState<VisionSense>(Optional.Empty<SenseSourceData>(), SenseSourceDirtyState.UnconditionallyDirty, Position.Invalid);
+                v.AssignComponent(k, in s);
             }
             else
             {
-                receptor = new SensoryReceptor<VisionSense>(t);
-                v.AssignOrReplace(k, in receptor);
+                s = s.WithDirtyState(SenseSourceDirtyState.UnconditionallyDirty);
+                v.AssignComponent(k, in s);
             }
-
-            changedK = k;
             return true;
         }
 

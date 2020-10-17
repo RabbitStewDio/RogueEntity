@@ -3,27 +3,36 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using GoRogue;
 using RogueEntity.Core.Positioning;
+using RogueEntity.Core.Sensing.Cache;
 using RogueEntity.Core.Sensing.Common.Blitter;
+using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.Maps;
 
 namespace RogueEntity.Core.Sensing.Common
 {
     public class SenseDataMapServices
     {
-        readonly List<ProcessData> parameterBuffer;
         static readonly Action<ProcessData> ProcessDataDelegate = ProcessTile;
-        public SenseDataMapServices()
+        
+        readonly int zLevel;
+        readonly List<ProcessData> parameterBuffer;
+        readonly Optional<ISenseStateCacheView> senseCache;
+        
+        
+        public SenseDataMapServices(int zLevel, Optional<ISenseStateCacheView> senseCache)
         {
-            parameterBuffer = new List<ProcessData>();
+            this.zLevel = zLevel;
+            this.senseCache = senseCache;
+            this.parameterBuffer = new List<ProcessData>();
         }
 
         readonly struct ProcessData
         {
-            public readonly List<(Position2D pos, SenseSourceData sense)> senses;
-            public readonly ISenseDataBlitter blitter;
-            public readonly Rectangle bounds;
-            public readonly BoundedDataView<float> tile;
-            public readonly BoundedDataView<byte> dir;
+            public readonly List<(Position2D pos, SenseSourceData sense)> Senses;
+            public readonly ISenseDataBlitter Blitter;
+            public readonly Rectangle Bounds;
+            public readonly BoundedDataView<float> Tile;
+            public readonly BoundedDataView<byte> Dir;
 
             public ProcessData(List<(Position2D, SenseSourceData)> senses,
                                ISenseDataBlitter blitter,
@@ -31,11 +40,11 @@ namespace RogueEntity.Core.Sensing.Common
                                BoundedDataView<float> tile,
                                BoundedDataView<byte> dir)
             {
-                this.senses = senses;
-                this.blitter = blitter;
-                this.bounds = bounds;
-                this.tile = tile;
-                this.dir = dir;
+                this.Senses = senses;
+                this.Blitter = blitter;
+                this.Bounds = bounds;
+                this.Tile = tile;
+                this.Dir = dir;
             }
         }
 
@@ -51,6 +60,11 @@ namespace RogueEntity.Core.Sensing.Common
             for (var tx = affectedBounds.X; tx <= affectedBounds.MaxExtentX; tx += tsX)
             {
                 m.FetchRawData(tx, tx, out var tile, out var dir);
+                if (senseCache.TryGetValue(out var value) && !value.IsDirty(zLevel, tile.Bounds))
+                {
+                    continue;
+                }
+                
                 var bounds = tile.Bounds.GetIntersection(affectedBounds);
                 parameterBuffer.Add(new ProcessData(senses, blitter, bounds, tile, dir));
             }
@@ -58,23 +72,23 @@ namespace RogueEntity.Core.Sensing.Common
 
         static void ProcessTile(ProcessData data)
         {
-            var brightnessData = data.tile;
-            var directionsData = data.dir;
+            var brightnessData = data.Tile;
+            var directionsData = data.Dir;
 
-            brightnessData.Clear(data.bounds);
-            directionsData.Clear(data.bounds);
+            brightnessData.Clear(data.Bounds);
+            directionsData.Clear(data.Bounds);
 
-            foreach (var s in data.senses)
+            foreach (var s in data.Senses)
             {
                 var senseBounds = LightToRectangle(s.pos, s.sense);
-                if (!senseBounds.Intersects(data.bounds))
+                if (!senseBounds.Intersects(data.Bounds))
                 {
                     continue;
                 }
 
                 var sense = s.sense;
                 var pos = s.pos;
-                data.blitter.Blit(data.bounds.GetIntersection(senseBounds), pos, sense, brightnessData, directionsData);
+                data.Blitter.Blit(data.Bounds.GetIntersection(senseBounds), pos, sense, brightnessData, directionsData);
             }
         }
 

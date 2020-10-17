@@ -15,7 +15,7 @@ namespace RogueEntity.Core.Sensing.Common
         /// </summary>
         /// <param name="intensity">The intensity at the source.</param>
         /// <returns>The maximum effective radius for the area affected by the sense source.</returns>
-        public float SignalRadiusForIntensity(float intensity);
+        float SignalRadiusForIntensity(float intensity);
         
         /// <summary>
         ///   Calculates the strength factor of a sense signal given a current distance from the source
@@ -24,7 +24,7 @@ namespace RogueEntity.Core.Sensing.Common
         /// <param name="distance"></param>
         /// <param name="maxRadius"></param>
         /// <returns></returns>
-        public float SignalStrengthAtDistance(float distance, float maxRadius);
+        float SignalStrengthAtDistance(float distance, float maxRadius);
     }
 
     /// <summary>

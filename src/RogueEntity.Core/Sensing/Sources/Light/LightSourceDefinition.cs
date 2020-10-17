@@ -6,12 +6,6 @@ using RogueEntity.Core.Sensing.Common;
 
 namespace RogueEntity.Core.Sensing.Sources.Light
 {
-    public interface ISenseDefinition
-    {
-        bool Enabled { get; }
-        SenseSourceDefinition SenseDefinition { get; }
-    }
-
     [EntityComponent]
     [DataContract]
     [MessagePackObject]
@@ -21,17 +15,18 @@ namespace RogueEntity.Core.Sensing.Sources.Light
         [Key(0)]
         public readonly SenseSourceDefinition SenseDefinition;
 
-        [DataMember(Order = 1)]
-        [Key(1)]
-        public readonly float Hue;
-
         [DataMember(Order = 2)]
         [Key(2)]
-        public readonly float Saturation;
+        public readonly float Hue;
 
         [DataMember(Order = 3)]
         [Key(3)]
+        public readonly float Saturation;
+
+        [DataMember(Order = 4)]
+        [Key(4)]
         public readonly bool Enabled;
+
 
         [SerializationConstructor]
         public LightSourceDefinition(SenseSourceDefinition senseDefinition,
@@ -48,7 +43,7 @@ namespace RogueEntity.Core.Sensing.Sources.Light
         [IgnoreMember]
         [IgnoreDataMember]
         SenseSourceDefinition ISenseDefinition.SenseDefinition => SenseDefinition;
-
+        
         [IgnoreMember]
         [IgnoreDataMember]
         bool ISenseDefinition.Enabled => Enabled;

@@ -25,7 +25,9 @@ namespace RogueEntity.Core.Meta.ItemTraits
         }
 
         public float ToCelsius() => (data * 10f - 273.1f);
+        public float ToKelvin() => (data * 10f);
         public static Temperature FromCelsius(float c) => new Temperature((ushort) ((c + 273.1f) / 10f));
+        public static Temperature FromKelvin(float c) => new Temperature((ushort) ((c) / 10f));
 
         public bool Equals(Temperature other)
         {

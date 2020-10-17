@@ -3,7 +3,6 @@ using System.Runtime.Serialization;
 using EnTTSharp.Entities.Attributes;
 using MessagePack;
 using RogueEntity.Core.Sensing.Common;
-using RogueEntity.Core.Sensing.Sources.Light;
 
 namespace RogueEntity.Core.Sensing.Sources.Heat
 {
@@ -42,7 +41,7 @@ namespace RogueEntity.Core.Sensing.Sources.Heat
 
         public HeatSourceDefinition WithEnabled(bool enabled = true)
         {
-            return new HeatSourceDefinition(SenseDefinition, Enabled);
+            return new HeatSourceDefinition(SenseDefinition, enabled);
         }
 
         public bool Equals(HeatSourceDefinition other)

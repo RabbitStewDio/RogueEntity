@@ -6,16 +6,6 @@ using RogueEntity.Core.Positioning;
 
 namespace RogueEntity.Core.Utils.Maps
 {
-    public class DynamicDataViewEventArgs<T> : EventArgs
-    {
-        readonly BoundedDataView<T> data;
-
-        public DynamicDataViewEventArgs(BoundedDataView<T> data)
-        {
-            this.data = data;
-        }
-    }
-
     public class DynamicDataView<T> : IReadOnlyView2D<T>
     {
         public event EventHandler<DynamicDataViewEventArgs<T>> ViewCreated;
@@ -65,11 +55,11 @@ namespace RogueEntity.Core.Utils.Maps
                 e.Clear();
             }
         }
-        
+
         public void ExpireFrames(long age)
         {
             expired.Clear();
-            
+
             foreach (var entry in index)
             {
                 var e = entry.Value;
@@ -186,7 +176,7 @@ namespace RogueEntity.Core.Utils.Maps
 
             public bool IsUsedForReading => usedForReading != 0;
             public bool IsUsedForWriting => usedForWriting != 0;
-            
+
             public void MarkUsedAge()
             {
                 lock (this)

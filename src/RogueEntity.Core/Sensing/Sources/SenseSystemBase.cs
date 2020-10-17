@@ -1,13 +1,12 @@
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using EnTTSharp.Entities;
 using JetBrains.Annotations;
+using RogueEntity.Core.Infrastructure.Time;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Sensing.Cache;
 using RogueEntity.Core.Sensing.Common;
 using RogueEntity.Core.Sensing.Common.Blitter;
-using RogueEntity.Core.Sensing.Receptors.Light;
 using RogueEntity.Core.Sensing.Resistance.Maps;
 using RogueEntity.Core.Sensing.Sources.Light;
 using RogueEntity.Core.Utils;
@@ -21,25 +20,29 @@ namespace RogueEntity.Core.Sensing.Sources
         where TSense : ISense
     {
         static readonly ILogger Logger = SLog.ForContext<SenseSystemBase<TSense, TSenseSourceDefinition>>();
+        const int ZLayerTimeToLive = 50;
 
+        readonly Dictionary<int, SenseDataLevel> activeLightsPerLevel;
         readonly Lazy<ISensePropertiesSource> senseProperties;
         readonly Lazy<ISenseStateCacheProvider> senseCacheProvider;
-        readonly Dictionary<int, SenseDataLevel> activeLightsPerLevel;
-        readonly ISenseDataBlitter blitterFactory;
         readonly ISensePropagationAlgorithm sensePropagationAlgorithm;
+        readonly ISensePhysics physics;
+        readonly List<int> zLevelBuffer;
         Optional<ISenseStateCacheView> cacheView;
+        int currentTime;
 
         public SenseSystemBase([NotNull] Lazy<ISensePropertiesSource> senseProperties,
                                [NotNull] Lazy<ISenseStateCacheProvider> senseCacheProvider,
                                [NotNull] ISensePropagationAlgorithm sensePropagationAlgorithm,
+                               [NotNull] ISensePhysics physics,
                                ISenseDataBlitter blitterFactory = null)
         {
-            this.sensePropagationAlgorithm = sensePropagationAlgorithm ?? throw new ArgumentNullException(nameof(sensePropagationAlgorithm));
             this.senseProperties = senseProperties ?? throw new ArgumentNullException(nameof(senseProperties));
-            this.senseCacheProvider = senseCacheProvider ?? throw new ArgumentNullException(nameof(senseCacheProvider));
-
-            this.blitterFactory = blitterFactory ?? new DefaultSenseDataBlitter();
+            this.sensePropagationAlgorithm = sensePropagationAlgorithm ?? throw new ArgumentNullException(nameof(sensePropagationAlgorithm));
+            this.physics = physics ?? throw new ArgumentNullException(nameof(physics));
             this.activeLightsPerLevel = new Dictionary<int, SenseDataLevel>();
+            this.zLevelBuffer = new List<int>();
+            this.senseCacheProvider = senseCacheProvider;
         }
 
         /// <summary>
@@ -61,18 +64,26 @@ namespace RogueEntity.Core.Sensing.Sources
         }
 
         /// <summary>
-        ///  Step 0: Clear any previously left-over state
+        ///   To be called during system shutdown.
         /// </summary>
-        public void BeginSenseCalculation<TGameContext>(TGameContext ctx)
+        /// <param name="ctx"></param>
+        /// <typeparam name="TGameContext"></typeparam>
+        public void ShutDown<TGameContext>(TGameContext ctx)
         {
-            foreach (var l in activeLightsPerLevel.Values)
-            {
-                l.ClearCollectedSenses();
-            }
+            activeLightsPerLevel.Clear();
         }
 
         /// <summary>
-        ///  Step 1: Collect all active sense sources.
+        ///  Step 0: Clear any previously left-over state
+        /// </summary>
+        public void BeginSenseCalculation<TGameContext>(TGameContext ctx)
+            where TGameContext: ITimeContext
+        {
+            currentTime = ctx.TimeSource.FixedStepTime;
+        }
+        
+        /// <summary>
+        ///  Step 1: Collect all active sense sources that requires a refresh.
         /// </summary>
         /// <param name="v"></param>
         /// <param name="context"></param>
@@ -83,7 +94,7 @@ namespace RogueEntity.Core.Sensing.Sources
         /// <typeparam name="TItemId"></typeparam>
         /// <typeparam name="TGameContext"></typeparam>
         /// <typeparam name="TPosition"></typeparam>
-        public void CollectLights<TItemId, TGameContext, TPosition>(IEntityViewControl<TItemId> v,
+        public void FindDirtySenseSources<TItemId, TGameContext, TPosition>(IEntityViewControl<TItemId> v,
                                                                     TGameContext context,
                                                                     TItemId k,
                                                                     in TSenseSourceDefinition definition,
@@ -99,32 +110,29 @@ namespace RogueEntity.Core.Sensing.Sources
                 {
                     var nstate = state.WithPosition(position).WithDirtyState(SenseSourceDirtyState.Dirty);
                     v.WriteBack(k, in nstate);
-                    v.WriteBack(k, new SenseDirtyFlag<VisionSense>());
+                    v.WriteBack(k, new SenseDirtyFlag<TSense>());
                 }
                 else if (state.State != SenseSourceDirtyState.Active ||
-                         (cacheView.TryGetValue(out var cache) && cache.IsDirty(pos, definition.SenseDefinition.Radius)))
+                         (cacheView.TryGetValue(out var cache) && cache.IsDirty(pos, physics.SignalRadiusForIntensity(definition.SenseDefinition.Intensity))))
                 {
                     var nstate = state.WithDirtyState(SenseSourceDirtyState.Dirty);
                     v.WriteBack(k, in nstate);
-                    v.WriteBack(k, new SenseDirtyFlag<VisionSense>());
+                    v.WriteBack(k, new SenseDirtyFlag<TSense>());
                 }
-
-                AddActiveLight(pos.GridZ, position, state);
                 return;
             }
 
             if (state.State != SenseSourceDirtyState.Inactive)
             {
                 // Light has been disabled since the last calculation.
-                var nstate = state.WithPosition(Position.Invalid).WithDirtyState(SenseSourceDirtyState.Dirty);
+                var nstate = state.WithDirtyState(SenseSourceDirtyState.Dirty);
                 v.WriteBack(k, in nstate);
-                AddInactiveLight(pos.GridZ);
+                v.WriteBack(k, new SenseDirtyFlag<TSense>());
             }
 
             // lights that are not enabled and have not been enabled in the last
             // turn can be safely ignored.
         }
-
 
         /// <summary>
         ///   Step 2: Compute the local light state. This radiates the light from the light source and
@@ -140,16 +148,15 @@ namespace RogueEntity.Core.Sensing.Sources
         /// <typeparam name="TItemId"></typeparam>
         /// <typeparam name="TGameContext"></typeparam>
         /// <typeparam name="TPosition"></typeparam>
-        public void RefreshLocalSenseState<TItemId, TGameContext, TPosition>(IEntityViewControl<TItemId> v,
+        public void RefreshLocalSenseState<TItemId, TGameContext>(IEntityViewControl<TItemId> v,
                                                                              TGameContext context,
                                                                              TItemId k,
                                                                              in TSenseSourceDefinition definition,
                                                                              in SenseSourceState<TSense> state,
-                                                                             in SenseDirtyFlag<TSense> dirtyMarker,
-                                                                             in TPosition pos)
+                                                                             in SenseDirtyFlag<TSense> dirtyMarker)
             where TItemId : IEntityKey
-            where TPosition : IPosition
         {
+            var pos = state.LastPosition;
             if (TryGetResistanceView(pos.GridZ, out var resistanceView))
             {
                 state.SenseSource.TryGetValue(out var dataIn);
@@ -169,19 +176,6 @@ namespace RogueEntity.Core.Sensing.Sources
             return data;
         }
 
-        /// <summary>
-        ///   Step 3: Copy all processed senses into the global sense map.
-        /// </summary>
-        /// <param name="v"></param>
-        /// <typeparam name="TItemId"></typeparam>
-        public void ProcessSenseMap<TItemId>(EntityRegistry<TItemId> v)
-            where TItemId : IEntityKey
-        {
-            Parallel.ForEach(activeLightsPerLevel.Values, ProcessSenseMapInstance);
-
-            v.ResetComponent<SenseDirtyFlag<VisionSense>>();
-        }
-
 
         /// <summary>
         ///   Step 4: Mark sense source as clean
@@ -197,7 +191,8 @@ namespace RogueEntity.Core.Sensing.Sources
                                                                       TGameContext context,
                                                                       TItemId k,
                                                                       in TSenseSourceDefinition definition,
-                                                                      in SenseSourceState<TSense> state)
+                                                                      in SenseSourceState<TSense> state,
+                                                                      in SenseDirtyFlag<TSense> dirtyFlag)
             where TItemId : IEntityKey
         {
             if (definition.Enabled && state.State != SenseSourceDirtyState.Active)
@@ -209,65 +204,31 @@ namespace RogueEntity.Core.Sensing.Sources
             {
                 v.WriteBack(k, state.WithDirtyState(SenseSourceDirtyState.Inactive));
             }
+            v.RemoveComponent<SenseDirtyFlag<TSense>>(k);
         }
-
+        
         /// <summary>
         ///  Step 5: Clear the collected sense sources
         /// </summary>
         public void EndSenseCalculation<TGameContext>(TGameContext ctx)
         {
-            foreach (var l in activeLightsPerLevel.Values)
+            zLevelBuffer.Clear();
+            foreach (var l in activeLightsPerLevel)
             {
-                l.ClearCollectedSenses();
-            }
-        }
-
-
-        protected bool TryGetSenseData(int z, out ISenseDataView brightnessMap)
-        {
-            if (activeLightsPerLevel.TryGetValue(z, out var data))
-            {
-                brightnessMap = data.SenseMap;
-                return true;
-            }
-
-            brightnessMap = default;
-            return false;
-        }
-
-        protected void AddActiveLight(int level, Position p, SenseSourceState<TSense> s)
-        {
-            if (!activeLightsPerLevel.TryGetValue(level, out var lights))
-            {
-                if (!senseProperties.Value.TryGet(level, out var senseData))
+                var level = l.Value;
+                if ((currentTime - level.LastRecentlyUsedTime) > ZLayerTimeToLive)
                 {
-                    return;
+                    zLevelBuffer.Add(l.Key);
                 }
-
-                lights = new SenseDataLevel(senseData, blitterFactory);
-                activeLightsPerLevel[level] = lights;
             }
 
-            lights.Add(p, s);
-        }
-
-        protected void AddInactiveLight(int level)
-        {
-            if (!activeLightsPerLevel.TryGetValue(level, out var lights))
+            foreach (var z in zLevelBuffer)
             {
-                if (!senseProperties.Value.TryGet(level, out var senseData))
-                {
-                    return;
-                }
-
-                lights = new SenseDataLevel(senseData, blitterFactory);
-                activeLightsPerLevel[level] = lights;
+                activeLightsPerLevel.Remove(z);
             }
-
-            lights.ForceDirty = true;
+            
+            zLevelBuffer.Clear();
         }
-
-        static readonly Action<SenseDataLevel> ProcessSenseMapInstance = v => v.ProcessSenseSources();
 
         class BlockVisionMap : IReadOnlyView2D<float>
         {
@@ -302,64 +263,36 @@ namespace RogueEntity.Core.Sensing.Sources
             if (activeLightsPerLevel.TryGetValue(z, out var level))
             {
                 resistanceView = level.ResistanceView;
+                level.MarkUsed(currentTime);
                 return true;
             }
 
+            if (senseProperties.Value.TryGet(z, out var sensePropertiesForLevel))
+            {
+                level = new SenseDataLevel(sensePropertiesForLevel);
+                level.MarkUsed(currentTime);
+                activeLightsPerLevel[z] = level;
+                resistanceView = level.ResistanceView;
+                return true;
+            }
+            
             resistanceView = default;
             return false;
         }
 
         class SenseDataLevel
         {
-            public readonly SenseDataMap SenseMap;
-            readonly SenseDataMapServices senseMapServices;
-            readonly ISenseDataBlitter blitter;
-            readonly List<(Position2D, SenseSourceState<TSense>)> collectedSenses;
-            readonly List<(Position2D, SenseSourceData)> blittableSenses;
             public readonly IReadOnlyView2D<float> ResistanceView;
+            public int LastRecentlyUsedTime { get; private set; }
 
-            public SenseDataLevel(IReadOnlyMapData<SenseProperties> resistanceMap,
-                                  ISenseDataBlitter blitter = null)
+            public SenseDataLevel(IReadOnlyMapData<SenseProperties> resistanceMap)
             {
-                this.blitter = blitter ?? new DefaultSenseDataBlitter();
                 this.ResistanceView = new BlockVisionMap(resistanceMap);
-                this.senseMapServices = new SenseDataMapServices();
-                this.SenseMap = new SenseDataMap();
-                this.blittableSenses = new List<(Position2D, SenseSourceData)>();
-                this.collectedSenses = new List<(Position2D, SenseSourceState<TSense>)>();
             }
 
-            public bool ForceDirty { get; set; }
-
-            public void Add(Position p, SenseSourceState<TSense> sense)
+            public void MarkUsed(int currentTime)
             {
-                collectedSenses.Add((new Position2D(p.GridX, p.GridY), sense));
-            }
-
-            public void ClearCollectedSenses()
-            {
-                collectedSenses.Clear();
-            }
-
-            public void ProcessSenseSources()
-            {
-                blittableSenses.Clear();
-                try
-                {
-                    foreach (var collectedSense in collectedSenses)
-                    {
-                        if (collectedSense.Item2.SenseSource.TryGetValue(out var sd))
-                        {
-                            blittableSenses.Add((collectedSense.Item1, sd));
-                        }
-                    }
-
-                    senseMapServices.ProcessSenseSources(SenseMap, blitter, blittableSenses);
-                }
-                finally
-                {
-                    blittableSenses.Clear();
-                }
+                LastRecentlyUsedTime = currentTime;
             }
         }
     }

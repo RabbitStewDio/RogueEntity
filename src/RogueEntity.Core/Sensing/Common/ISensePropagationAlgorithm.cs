@@ -7,7 +7,7 @@ namespace RogueEntity.Core.Sensing.Common
     public interface ISensePropagationAlgorithm
     {
         SenseSourceData Calculate<TResistanceMap>(SenseSourceDefinition sense,
-                                                  Position2D position,
+                                                  Position2D position, 
                                                   TResistanceMap resistanceMap,
                                                   SenseSourceData data = null)
             where TResistanceMap : IReadOnlyView2D<float>;

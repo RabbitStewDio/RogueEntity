@@ -16,9 +16,6 @@ namespace RogueEntity.Core.Sensing.Common
         [Key(0)]
         [DataMember(Order = 0)]
         readonly DistanceCalculation distanceCalculation;
-        [Key(1)]
-        [DataMember(Order = 1)]
-        readonly float radius;
         [Key(2)]
         [DataMember(Order = 2)]
         readonly float intensity;
@@ -33,21 +30,18 @@ namespace RogueEntity.Core.Sensing.Common
         readonly bool enabled;
 
         public SenseSourceDefinition(DistanceCalculation distanceCalculation,
-                                     float radius,
-                                     float intensity): this(distanceCalculation, radius, intensity, 0, 360)
+                                     float intensity): this(distanceCalculation, intensity, 0, 360)
         {
         }
 
         [SerializationConstructor]
         public SenseSourceDefinition(DistanceCalculation distanceCalculation,
-                                     float radius,
                                      float intensity,
                                      float angle,
                                      float span)
         {
             this.distanceCalculation = distanceCalculation;
             this.angle = (float)((angle > 360.0 || angle < 0) ? Math.IEEERemainder(angle, 360.0) : angle);
-            this.radius = Math.Max(1, radius);
             this.span = span.Clamp(0, 360);
             this.intensity = intensity;
             this.enabled = true;
@@ -100,23 +94,14 @@ namespace RogueEntity.Core.Sensing.Common
         [IgnoreDataMember]
         public float Span => span;
 
-        /// <summary>
-        /// The maximum radius of the source -- this is the maximum distance the source values will
-        /// emanate, provided the area is completely unobstructed. Changing this will trigger
-        /// resizing (re-allocation) of the underlying arrays.
-        /// </summary>
-        [IgnoreMember]
-        [IgnoreDataMember]
-        public float Radius => radius;
-
-        public SenseSourceDefinition WithIntensity(float intensity, float radius)
+        public SenseSourceDefinition WithIntensity(float intensity)
         {
-            return new SenseSourceDefinition(distanceCalculation, radius, intensity, angle, span);
+            return new SenseSourceDefinition(distanceCalculation, intensity, angle, span);
         }
         
         public bool Equals(SenseSourceDefinition other)
         {
-            return Equals(distanceCalculation, other.distanceCalculation) && radius.Equals(other.radius) && intensity.Equals(other.intensity) && angle.Equals(other.angle) && span.Equals(other.span) && enabled == other.enabled;
+            return Equals(distanceCalculation, other.distanceCalculation) && intensity.Equals(other.intensity) && angle.Equals(other.angle) && span.Equals(other.span) && enabled == other.enabled;
         }
 
         public override bool Equals(object obj)
@@ -129,7 +114,6 @@ namespace RogueEntity.Core.Sensing.Common
             unchecked
             {
                 var hashCode = (distanceCalculation != null ? distanceCalculation.GetHashCode() : 0);
-                hashCode = (hashCode * 397) ^ radius.GetHashCode();
                 hashCode = (hashCode * 397) ^ intensity.GetHashCode();
                 hashCode = (hashCode * 397) ^ angle.GetHashCode();
                 hashCode = (hashCode * 397) ^ span.GetHashCode();

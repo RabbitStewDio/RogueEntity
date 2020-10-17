@@ -3,17 +3,8 @@ using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Sensing.Common;
 using RogueEntity.Core.Utils;
 
-namespace RogueEntity.Core.Sensing.Sources.Light
+namespace RogueEntity.Core.Sensing.Sources
 {
-    public enum SenseSourceDirtyState
-    {
-        UnconditionallyDirty, 
-        Dirty, 
-        Active, 
-        Inactive
-    }
-    
-   
     /// <summary>
     ///   Volatile state that is not transferred over the network or saved to disk.
     /// </summary>
