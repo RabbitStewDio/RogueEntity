@@ -54,7 +54,7 @@ namespace RogueEntity.Core.Meta.ItemTraits
         {
             if (k.IsReference)
             {
-                v.WriteBack(k, in t);
+                v.AssignOrReplace(k, in t);
                 changedK = k;
                 return true;
             }

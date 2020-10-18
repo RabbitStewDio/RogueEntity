@@ -138,6 +138,17 @@ namespace RogueEntity.Core.Positioning
         {
             return $"({X}, {Y})";
         }
+
+        public void Deconstruct(out int x, out int y)
+        {
+            x = X;
+            y = Y;
+        }
+
+        public static implicit operator Position2D((int x, int y) p)
+        {
+            return new Position2D(p.x, p.y);
+        }  
     }
 
     public static class PositionExtensions

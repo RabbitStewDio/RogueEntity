@@ -110,14 +110,14 @@ namespace RogueEntity.Core.Sensing.Sources
                 {
                     var nstate = state.WithPosition(position).WithDirtyState(SenseSourceDirtyState.Dirty);
                     v.WriteBack(k, in nstate);
-                    v.WriteBack(k, new SenseDirtyFlag<TSense>());
+                    v.AssignOrReplace(k, new SenseDirtyFlag<TSense>());
                 }
                 else if (state.State != SenseSourceDirtyState.Active ||
                          (cacheView.TryGetValue(out var cache) && cache.IsDirty(pos, physics.SignalRadiusForIntensity(definition.SenseDefinition.Intensity))))
                 {
                     var nstate = state.WithDirtyState(SenseSourceDirtyState.Dirty);
                     v.WriteBack(k, in nstate);
-                    v.WriteBack(k, new SenseDirtyFlag<TSense>());
+                    v.AssignOrReplace(k, new SenseDirtyFlag<TSense>());
                 }
                 return;
             }
@@ -127,7 +127,7 @@ namespace RogueEntity.Core.Sensing.Sources
                 // Light has been disabled since the last calculation.
                 var nstate = state.WithDirtyState(SenseSourceDirtyState.Dirty);
                 v.WriteBack(k, in nstate);
-                v.WriteBack(k, new SenseDirtyFlag<TSense>());
+                v.AssignOrReplace(k, new SenseDirtyFlag<TSense>());
             }
 
             // lights that are not enabled and have not been enabled in the last
@@ -153,7 +153,8 @@ namespace RogueEntity.Core.Sensing.Sources
                                                                              TItemId k,
                                                                              in TSenseSourceDefinition definition,
                                                                              in SenseSourceState<TSense> state,
-                                                                             in SenseDirtyFlag<TSense> dirtyMarker)
+                                                                             in SenseDirtyFlag<TSense> dirtyMarker,
+                                                                             in ObservedSenseSource<TSense> observed)
             where TItemId : IEntityKey
         {
             var pos = state.LastPosition;

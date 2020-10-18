@@ -1,15 +1,27 @@
+using System.Runtime.Serialization;
+using EnTTSharp.Entities.Attributes;
 using GoRogue;
+using MessagePack;
 using RogueEntity.Core.Sensing.Common;
 using RogueEntity.Core.Sensing.Map.Light;
 using RogueEntity.Core.Utils.Maps;
 
 namespace RogueEntity.Core.Sensing.Receptors.Light
 {
+    [EntityComponent]
+    [MessagePackObject]
+    [DataContract]
     public class SingleLevelBrightnessMap: IBrightnessMap
     {
-        public BoundedDataView<Color> RawData { get; private set; }
-        public SenseDataMap SenseMap { get; }
+        [DataMember(Order = 0)]
+        [Key(0)]
         public int Z { get; set; }
+        [DataMember(Order = 1)]
+        [Key(1)]
+        public SenseDataMap SenseMap { get; }
+        [DataMember(Order = 2)]
+        [Key(2)]
+        public BoundedDataView<Color> RawColorData { get; private set; }
 
         public SingleLevelBrightnessMap()
         {
@@ -17,17 +29,19 @@ namespace RogueEntity.Core.Sensing.Receptors.Light
             SenseMap = new SenseDataMap();
         }
 
-        public SingleLevelBrightnessMap(int z, BoundedDataView<Color> rawData)
+        [SerializationConstructor]
+        public SingleLevelBrightnessMap(int z, SenseDataMap senseMap, BoundedDataView<Color> rawColorData)
         {
-            this.RawData = rawData;
-            this.Z = z;
+            Z = z;
+            SenseMap = senseMap;
+            RawColorData = rawColorData;
         }
 
         public bool TryGetLightColors(int z, out IReadOnlyView2D<Color> colorData)
         {
-            if (RawData != null && z == this.Z)
+            if (RawColorData != null && z == this.Z)
             {
-                colorData = RawData;
+                colorData = RawColorData;
                 return true;
             }
 
@@ -49,14 +63,14 @@ namespace RogueEntity.Core.Sensing.Receptors.Light
 
         public BoundedDataView<Color> CreateColorMap(Rectangle bounds)
         {
-            if (RawData != null)
+            if (RawColorData != null)
             {
-                RawData.Resize(bounds);
-                return RawData;
+                RawColorData.Resize(bounds);
+                return RawColorData;
             }
             
-            RawData = new BoundedDataView<Color>(bounds);
-            return RawData;
+            RawColorData = new BoundedDataView<Color>(bounds);
+            return RawColorData;
         }
     }
 }

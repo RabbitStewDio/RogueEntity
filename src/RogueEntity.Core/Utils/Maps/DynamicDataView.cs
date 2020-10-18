@@ -1,31 +1,43 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 using System.Threading;
 using GoRogue;
+using MessagePack;
 using RogueEntity.Core.Positioning;
 
 namespace RogueEntity.Core.Utils.Maps
 {
+    [DataContract]
+    [MessagePackObject]
     public class DynamicDataView<T> : IReadOnlyView2D<T>
     {
         public event EventHandler<DynamicDataViewEventArgs<T>> ViewCreated;
         public event EventHandler<DynamicDataViewEventArgs<T>> ViewExpired;
 
+        [DataMember(Order = 0)]
+        [Key(0)]
         readonly int tileSizeX;
+        [DataMember(Order = 1)]
+        [Key(1)]
         readonly int tileSizeY;
+        [DataMember(Order = 2)]
+        [Key(2)]
         readonly Dictionary<Position2D, TrackedDataView> index;
+        [DataMember(Order = 3)]
+        [Key(3)]
         readonly List<Position2D> expired;
+        [DataMember(Order = 4)]
+        [Key(4)]
         long currentTime;
 
-        public int TileSizeX
-        {
-            get { return tileSizeX; }
-        }
+        [IgnoreDataMember]
+        [IgnoreMember]
+        public int TileSizeX => tileSizeX;
 
-        public int TileSizeY
-        {
-            get { return tileSizeY; }
-        }
+        [IgnoreDataMember]
+        [IgnoreMember]
+        public int TileSizeY => tileSizeY;
 
         public DynamicDataView(int tileSizeX, int tileSizeY)
         {
@@ -36,6 +48,16 @@ namespace RogueEntity.Core.Utils.Maps
             this.tileSizeY = tileSizeY;
             index = new Dictionary<Position2D, TrackedDataView>();
             expired = new List<Position2D>();
+        }
+
+        [SerializationConstructor]
+        protected DynamicDataView(int tileSizeX, int tileSizeY, Dictionary<Position2D, TrackedDataView> index, List<Position2D> expired, long currentTime)
+        {
+            this.tileSizeX = tileSizeX;
+            this.tileSizeY = tileSizeY;
+            this.index = index;
+            this.expired = expired;
+            this.currentTime = currentTime;
         }
 
         public void PrepareFrame(long time)
@@ -125,6 +147,8 @@ namespace RogueEntity.Core.Utils.Maps
             return false;
         }
 
+        [IgnoreDataMember]
+        [IgnoreMember]
         public T this[int x, int y]
         {
             get
@@ -138,11 +162,18 @@ namespace RogueEntity.Core.Utils.Maps
             }
         }
 
-        class TrackedDataView : BoundedDataView<T>
+        [DataContract]
+        [MessagePackObject]
+        protected class TrackedDataView : BoundedDataView<T>
         {
+            [DataMember(Order = 2)]
+            [Key(2)]
             long currentTime;
-            public long LastUsed { get; private set; }
+            [DataMember(Order = 3)]
+            [Key(3)]
             int usedForReading;
+            [DataMember(Order = 4)]
+            [Key(4)]
             int usedForWriting;
 
             public TrackedDataView(in Rectangle bounds, long time) : base(in bounds)
@@ -153,6 +184,19 @@ namespace RogueEntity.Core.Utils.Maps
                 usedForWriting = 0;
             }
 
+            [SerializationConstructor]
+            public TrackedDataView(Rectangle bounds, T[] data, long currentTime, int usedForReading, int usedForWriting, long lastUsed) : base(bounds, data)
+            {
+                this.currentTime = currentTime;
+                this.usedForReading = usedForReading;
+                this.usedForWriting = usedForWriting;
+                LastUsed = lastUsed;
+            }
+
+            [DataMember(Order = 5)]
+            [Key(5)]
+            public long LastUsed { get; private set; }
+            
             public void MarkUnused(long time)
             {
                 lock (this)
@@ -174,7 +218,12 @@ namespace RogueEntity.Core.Utils.Maps
                 Interlocked.CompareExchange(ref usedForWriting, 1, 0);
             }
 
+            [IgnoreDataMember]
+            [IgnoreMember]
             public bool IsUsedForReading => usedForReading != 0;
+            
+            [IgnoreDataMember]
+            [IgnoreMember]
             public bool IsUsedForWriting => usedForWriting != 0;
 
             public void MarkUsedAge()

@@ -94,6 +94,11 @@ namespace RogueEntity.Core.Infrastructure.Modules
             return new RequireDependencyBuilder(this, r);
         }
 
+        protected RequireDependencyBuilder ForRole(EntityRole r)
+        {
+            return new RequireDependencyBuilder(this, r);
+        }
+
         protected RequireDependencyBuilder RequireRelation(EntityRelation r)
         {
             if (!requiredRelations.Contains(r))

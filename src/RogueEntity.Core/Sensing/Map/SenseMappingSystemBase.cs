@@ -66,7 +66,7 @@ namespace RogueEntity.Core.Sensing.Map
         }
 
         /// <summary>
-        ///  Step 1: Collect all active sense sources.
+        ///  Step 1: Collect all active sense sources. Also marks all lights as observed.
         /// </summary>
         /// <param name="v"></param>
         /// <param name="context"></param>
@@ -76,18 +76,16 @@ namespace RogueEntity.Core.Sensing.Map
         /// <param name="pos"></param>
         /// <typeparam name="TItemId"></typeparam>
         /// <typeparam name="TGameContext"></typeparam>
-        /// <typeparam name="TPosition"></typeparam>
-        public void CollectLights<TItemId, TGameContext, TPosition>(IEntityViewControl<TItemId> v,
-                                                                    TGameContext context,
-                                                                    TItemId k,
-                                                                    in TSenseSourceDefinition definition,
-                                                                    in SenseSourceState<TSense> state,
-                                                                    in TPosition pos)
+        public void CollectSenseSources<TItemId, TGameContext>(IEntityViewControl<TItemId> v,
+                                                         TGameContext context,
+                                                         TItemId k,
+                                                         in TSenseSourceDefinition definition,
+                                                         in SenseSourceState<TSense> state)
             where TItemId : IEntityKey
-            where TPosition : IPosition
         {
             if (!state.LastPosition.IsInvalid)
             {
+                v.AssignOrReplace<ObservedSenseSource<TSense>>(k);
                 AddActiveSense(state);
             }
         }
@@ -104,7 +102,7 @@ namespace RogueEntity.Core.Sensing.Map
 
             v.ResetComponent<SenseDirtyFlag<VisionSense>>();
         }
-        
+
         /// <summary>
         ///  Step 5: Clear the collected sense sources
         /// </summary>
@@ -125,13 +123,13 @@ namespace RogueEntity.Core.Sensing.Map
             {
                 activeLightsPerLevel.Remove(z);
             }
-            
+
             zLevelBuffer.Clear();
         }
 
         void AddActiveSense(SenseSourceState<TSense> s)
         {
-            var p = s.LastPosition; 
+            var p = s.LastPosition;
             var level = p.GridZ;
             if (!activeLightsPerLevel.TryGetValue(level, out var lights))
             {
@@ -165,8 +163,8 @@ namespace RogueEntity.Core.Sensing.Map
             readonly List<(Position2D, SenseSourceData)> blittableSenses;
             public int LastRecentlyUsedTime { get; private set; }
 
-            public SenseDataLevel(int z, 
-                                  Optional<ISenseStateCacheView> senseCache, 
+            public SenseDataLevel(int z,
+                                  Optional<ISenseStateCacheView> senseCache,
                                   ISenseDataBlitter blitter = null)
             {
                 this.blitter = blitter ?? new DefaultSenseDataBlitter();

@@ -1,5 +1,7 @@
 using System;
+using System.Runtime.Serialization;
 using GoRogue;
+using MessagePack;
 using RogueEntity.Core.Positioning;
 
 namespace RogueEntity.Core.Utils.Maps
@@ -8,9 +10,15 @@ namespace RogueEntity.Core.Utils.Maps
     ///   A data view backed up by a dense array, but able to handle 
     /// </summary>
     /// <typeparam name="TData"></typeparam>
+    [DataContract]
+    [MessagePackObject]
     public class BoundedDataView<TData>: IReadOnlyView2D<TData>
     {
+        [DataMember(Order = 0)]
+        [Key(0)]
         Rectangle bounds;
+        [DataMember(Order = 1)]
+        [Key(1)]
         TData[] data;
 
         public BoundedDataView(in Rectangle bounds)
@@ -19,8 +27,24 @@ namespace RogueEntity.Core.Utils.Maps
             this.data = new TData[bounds.Width * bounds.Height];
         }
 
+        [SerializationConstructor]
+        public BoundedDataView(Rectangle bounds, TData[] data)
+        {
+            if (data.Length < bounds.Width * bounds.Height)
+            {
+                throw new ArgumentException();
+            }
+            
+            this.bounds = bounds;
+            this.data = data;
+        }
+
+        [IgnoreDataMember]
+        [IgnoreMember]
         public Rectangle Bounds => bounds;
 
+        [IgnoreDataMember]
+        [IgnoreMember]
         public TData[] Data => data;
 
         public void Resize(in Rectangle newBounds)
@@ -149,6 +173,8 @@ namespace RogueEntity.Core.Utils.Maps
             return false;
         }
 
+        [IgnoreDataMember]
+        [IgnoreMember]
         public TData this[int x, int y]
         {
             get
@@ -160,8 +186,17 @@ namespace RogueEntity.Core.Utils.Maps
 
                 return result;
             }
+            set
+            {
+                if (!TrySet(x, y, in value))
+                {
+                    throw new ArgumentOutOfRangeException();
+                }
+            }
         }
 
+        [IgnoreDataMember]
+        [IgnoreMember]
         public TData this[in Position2D pos]
         {
             get

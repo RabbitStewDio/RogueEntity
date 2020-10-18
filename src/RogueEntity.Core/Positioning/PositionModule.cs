@@ -11,7 +11,7 @@ namespace RogueEntity.Core.Positioning
     [Module]
     public class PositionModule : ModuleBase
     {
-        public const string ModuleId = "Core.Position";
+        public static readonly string ModuleId = "Core.Position";
 
         public static readonly EntitySystemId RegisterCommonPositions = "Entities.Core.Position";
         public static readonly EntitySystemId RegisterGridPositions = "Entities.Core.Position.Grid";

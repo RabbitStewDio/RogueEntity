@@ -47,7 +47,7 @@ namespace RogueEntity.Core.Sensing.Sources.Light
                                 ModuleDependency.Of(SensoryCacheModule.ModuleId),
                                 ModuleDependency.Of(PositionModule.ModuleId));
 
-            RequireRole(LightSourceRole);
+            RequireRole(LightSourceRole).WithImpliedRole(SenseSources.SenseSourceRole).WithImpliedRole(SensoryCacheModule.SenseCacheSourceRole);
         }
 
         [EntityRoleInitializer("Role.Core.Senses.Source.Light")]
@@ -152,7 +152,7 @@ namespace RogueEntity.Core.Sensing.Sources.Light
             var refreshLocalSenseState =
                 registry.BuildSystem()
                         .WithContext<TGameContext>()
-                        .CreateSystem<LightSourceDefinition, SenseSourceState<VisionSense>, SenseDirtyFlag<VisionSense>>(ls.RefreshLocalSenseState);
+                        .CreateSystem<LightSourceDefinition, SenseSourceState<VisionSense>, SenseDirtyFlag<VisionSense>, ObservedSenseSource<VisionSense>>(ls.RefreshLocalSenseState);
             
             context.AddInitializationStepHandler(refreshLocalSenseState);
             context.AddFixedStepHandlers(refreshLocalSenseState);
@@ -199,9 +199,10 @@ namespace RogueEntity.Core.Sensing.Sources.Light
         void RegisterEntities<TItemId>(IServiceResolver serviceResolver, EntityRegistry<TItemId> registry)
             where TItemId : IEntityKey
         {
-            registry.RegisterNonConstructable<SenseDirtyFlag<VisionSense>>();
             registry.RegisterNonConstructable<LightSourceDefinition>();
             registry.RegisterNonConstructable<SenseSourceState<VisionSense>>();
+            registry.RegisterFlag<ObservedSenseSource<VisionSense>>();
+            registry.RegisterFlag<SenseDirtyFlag<VisionSense>>();
         }
     }
 }

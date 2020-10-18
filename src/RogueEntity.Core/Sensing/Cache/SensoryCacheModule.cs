@@ -4,8 +4,6 @@ using RogueEntity.Core.Infrastructure.GameLoops;
 using RogueEntity.Core.Infrastructure.Modules;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Grid;
-using RogueEntity.Core.Sensing.Resistance;
-using RogueEntity.Core.Sensing.Sources.Light;
 
 namespace RogueEntity.Core.Sensing.Cache
 {
@@ -13,7 +11,10 @@ namespace RogueEntity.Core.Sensing.Cache
     public class SensoryCacheModule: ModuleBase
     {
         public static readonly string ModuleId = "Core.Senses.Cache";
-        public static readonly EntityRole SenseCacheSourceRole = new EntityRole("Role.Core.Senses.Cache.Source");
+        public static readonly EntitySystemId SenseCacheLifecycleId = "Systems.Core.Senses.Cache.LifeCycle";
+        public static readonly EntitySystemId SenseCacheResetId = "Systems.Core.Senses.Cache.Reset";
+        
+        public static readonly EntityRole SenseCacheSourceRole = new EntityRole("Role.Core.Senses.Cache.InvalidationSource");
 
         public SensoryCacheModule()
         {
@@ -26,19 +27,16 @@ namespace RogueEntity.Core.Sensing.Cache
             DeclareDependencies(ModuleDependency.Of(PositionModule.ModuleId));
 
             RequireRole(SenseCacheSourceRole);
-            
-            RequireRole(SensoryResistanceModule.ResistanceDataProviderRole).WithImpliedRole(SenseCacheSourceRole);
-            RequireRole(LightSourceModule.LightSourceRole).WithImpliedRole(SenseCacheSourceRole);
         }
       
         [ModuleInitializer]
         protected void InitializeSenseCacheSystem<TGameContext>(IServiceResolver resolver,
                                                                 IModuleInitializer<TGameContext> moduleInitializer)
         {
-            moduleInitializer.Register("cache", 1, RegisterSenseCacheSystem);
+            moduleInitializer.Register(SenseCacheResetId, 1, RegisterSenseCacheSystem);
         }
 
-        [EntityRoleInitializer("Role.Core.Senses.Cache.Source")]
+        [EntityRoleInitializer("Role.Core.Senses.Cache.InvalidationSource")]
         protected void InitializeRole<TGameContext, TItemId>(IServiceResolver serviceResolver,
                                                              IModuleInitializer<TGameContext> initializer,
                                                              EntityRole role)
@@ -46,7 +44,7 @@ namespace RogueEntity.Core.Sensing.Cache
             where TGameContext : IGridMapContext<TGameContext, TItemId>
         {
             var ctx = initializer.DeclareEntityContext<TItemId>();
-            ctx.Register("RegisterEntitiesId", 0, RegisterSenseCacheLifeCycle);
+            ctx.Register(SenseCacheLifecycleId, 0, RegisterSenseCacheLifeCycle);
         }
 
         void RegisterSenseCacheLifeCycle<TGameContext, TItemId>(IServiceResolver resolver, 

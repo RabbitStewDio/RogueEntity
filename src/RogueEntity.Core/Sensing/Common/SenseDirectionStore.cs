@@ -6,6 +6,7 @@ namespace RogueEntity.Core.Sensing.Common
     public readonly struct SenseDirectionStore
     {
         static readonly Dictionary<(int, int), SenseDirection> DirectionMapping;
+        static readonly Dictionary<SenseDirection, (int, int)> ReverseDirectionMapping;
         const byte DirectionMask = 0xF;
         
         static SenseDirectionStore()
@@ -24,6 +25,12 @@ namespace RogueEntity.Core.Sensing.Common
                 [(0, 1)] = SenseDirection.South,
                 [(1, 1)] = SenseDirection.South | SenseDirection.East
             };
+
+            ReverseDirectionMapping = new Dictionary<SenseDirection, (int, int)>(9);
+            foreach (var d in DirectionMapping)
+            {
+                ReverseDirectionMapping[d.Value] = d.Key;
+            }
         }
         public readonly byte RawData;
 
@@ -56,6 +63,21 @@ namespace RogueEntity.Core.Sensing.Common
             var direction = (RawData & DirectionMask);
             var flags = (int)f << 4;
             return new SenseDirectionStore((byte)(direction | flags));
+        }
+
+        public (int x, int y) ToDirectionalMovement()
+        {
+            return ToDirectionalMovement(Direction);
+        }
+        
+        public static (int x, int y) ToDirectionalMovement(SenseDirection d)
+        {
+            if (ReverseDirectionMapping.TryGetValue(d, out var result))
+            {
+                return result;
+            }
+
+            return (0, 0);
         }
         
     }

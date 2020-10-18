@@ -18,7 +18,7 @@ namespace RogueEntity.Core.Sensing.Sources.Noise
     public class NoiseSourceModule : ModuleBase
     {
         public static readonly string ModuleId = "Core.Senses.Source.Noise";
-        public static readonly EntityRole HeatSourceRole = new EntityRole("Role.Core.Senses.Source.Noise");
+        public static readonly EntityRole NoiseSourceRole = new EntityRole("Role.Core.Senses.Source.Noise");
 
         public static readonly EntitySystemId PreparationSystemId = "Systems.Core.Senses.Source.Noise.Prepare";
         public static readonly EntitySystemId CollectionGridSystemId = "Systems.Core.Senses.Source.Noise.Collect.Grid";
@@ -36,7 +36,7 @@ namespace RogueEntity.Core.Sensing.Sources.Noise
                                 ModuleDependency.Of(SensoryCacheModule.ModuleId),
                                 ModuleDependency.Of(PositionModule.ModuleId));
 
-            RequireRole(HeatSourceRole);
+            RequireRole(NoiseSourceRole).WithImpliedRole(SenseSources.SenseSourceRole).WithImpliedRole(SensoryCacheModule.SenseCacheSourceRole);;
         }
 
         [EntityRoleInitializer("Role.Core.Senses.Source.Noise")]
@@ -140,7 +140,7 @@ namespace RogueEntity.Core.Sensing.Sources.Noise
             var refreshLocalSenseState =
                 registry.BuildSystem()
                         .WithContext<TGameContext>()
-                        .CreateSystem<NoiseSourceDefinition, SenseSourceState<NoiseSense>, SenseDirtyFlag<NoiseSense>>(ls.RefreshLocalSenseState);
+                        .CreateSystem<NoiseSourceDefinition, SenseSourceState<NoiseSense>, SenseDirtyFlag<NoiseSense>, ObservedSenseSource<NoiseSense>>(ls.RefreshLocalSenseState);
 
             context.AddInitializationStepHandler(refreshLocalSenseState);
             context.AddFixedStepHandlers(refreshLocalSenseState);
@@ -186,9 +186,10 @@ namespace RogueEntity.Core.Sensing.Sources.Noise
         void RegisterEntities<TItemId>(IServiceResolver serviceResolver, EntityRegistry<TItemId> registry)
             where TItemId : IEntityKey
         {
-            registry.RegisterNonConstructable<SenseDirtyFlag<NoiseSense>>();
             registry.RegisterNonConstructable<NoiseSourceDefinition>();
             registry.RegisterNonConstructable<SenseSourceState<NoiseSense>>();
+            registry.RegisterFlag<ObservedSenseSource<NoiseSense>>();
+            registry.RegisterFlag<SenseDirtyFlag<NoiseSense>>();
         }
     }
 }

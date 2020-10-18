@@ -4,6 +4,7 @@ using RogueEntity.Core.Infrastructure.GameLoops;
 using RogueEntity.Core.Infrastructure.Modules;
 using RogueEntity.Core.Meta;
 using RogueEntity.Core.Positioning;
+using RogueEntity.Core.Sensing.Cache;
 using RogueEntity.Core.Sensing.Resistance.Maps;
 using RogueEntity.Core.Utils.MapChunks;
 
@@ -12,7 +13,7 @@ namespace RogueEntity.Core.Sensing.Resistance
     [Module]
     public class SensoryResistanceModule : ModuleBase
     {
-        public const string ModuleId = "Core.Sense.Resistance";
+        public static readonly string ModuleId = "Core.Sense.Resistance";
 
         public static readonly EntitySystemId RegisterEntitiesId = "Core.Entities.Senses.Resistance";
         public static readonly EntitySystemId RegisterSystem = "Core.Systems.Senses.Resistance.SetUp";
@@ -31,6 +32,7 @@ namespace RogueEntity.Core.Sensing.Resistance
             DeclareDependencies(ModuleDependency.Of(CoreModule.ModuleId));
 
             RequireRole(ResistanceDataProviderRole);
+            RequireRole(ResistanceDataProviderRole).WithImpliedRole(SensoryCacheModule.SenseCacheSourceRole);
         }
 
         [EntityRoleInitializer("Role.Core.Senses.Resistance.ResistanceDataProvider")]
@@ -42,7 +44,7 @@ namespace RogueEntity.Core.Sensing.Resistance
         {
             var ctx = initializer.DeclareEntityContext<TItemId>();
             ctx.Register(RegisterEntitiesId, 0, RegisterEntities);
-            ctx.Register(ExecuteSystem, 5800, RegisterResistanceSystemExecution);
+            ctx.Register(ExecuteSystem, 5400, RegisterResistanceSystemExecution);
             ctx.Register(RegisterSystem, 500, RegisterResistanceSystemLifecycle);
         }
 
@@ -73,14 +75,20 @@ namespace RogueEntity.Core.Sensing.Resistance
 
         static SensePropertiesSystem<TGameContext> GetOrCreateSensePropertiesSystem<TGameContext>(IServiceResolver serviceResolver)
         {
-            if (!serviceResolver.TryResolve(out SensePropertiesSystem<TGameContext> system))
+            if (serviceResolver.TryResolve(out SensePropertiesSystem<TGameContext> system))
             {
-                var blitter = serviceResolver.Resolve<IAddByteBlitter>();
-                system = new SensePropertiesSystem<TGameContext>(blitter);
-                serviceResolver.Store(system);
-                serviceResolver.Store<ISensePropertiesSystem<TGameContext>>(system);
-                serviceResolver.Store<ISensePropertiesSource>(system);
+                return system;
             }
+
+            if (!serviceResolver.TryResolve(out IAddByteBlitter blitter))
+            {
+                blitter = new DefaultAddByteBlitter();
+            }
+            
+            system = new SensePropertiesSystem<TGameContext>(blitter);
+            serviceResolver.Store(system);
+            serviceResolver.Store<ISensePropertiesSystem<TGameContext>>(system);
+            serviceResolver.Store<ISensePropertiesSource>(system);
 
             return system;
         }

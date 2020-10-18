@@ -1,16 +1,33 @@
+using System;
+using System.Runtime.Serialization;
+using JetBrains.Annotations;
+using MessagePack;
 using RogueEntity.Core.Utils.Maps;
 
 namespace RogueEntity.Core.Sensing.Common
 {
+    [DataContract]
+    [MessagePackObject]
     public class SenseDataMap : ISenseDataView
     {
+        [DataMember(Order = 0)]
+        [Key(0)]
         readonly DynamicDataView<float> sensitivityData;
+        [DataMember(Order = 1)]
+        [Key(1)]
         readonly DynamicDataView<byte> directionData;
 
         public SenseDataMap(int tileWidth = 64, int tileHeight = 64)
         {
             sensitivityData = new DynamicDataView<float>(tileWidth, tileHeight);
             directionData = new DynamicDataView<byte>(tileWidth, tileHeight);
+        }
+
+        [SerializationConstructor]
+        public SenseDataMap([NotNull] DynamicDataView<float> sensitivityData, [NotNull] DynamicDataView<byte> directionData)
+        {
+            this.sensitivityData = sensitivityData ?? throw new ArgumentNullException(nameof(sensitivityData));
+            this.directionData = directionData ?? throw new ArgumentNullException(nameof(directionData));
         }
 
         public void Clear()

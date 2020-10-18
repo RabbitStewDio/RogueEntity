@@ -18,7 +18,7 @@ namespace RogueEntity.Core.Sensing.Sources.Smell
     public class SmellSourceModule: ModuleBase
     {
        public static readonly string ModuleId = "Core.Senses.Source.Smell";
-        public static readonly EntityRole HeatSourceRole = new EntityRole("Role.Core.Senses.Source.Smell");
+        public static readonly EntityRole SmellSourceRole = new EntityRole("Role.Core.Senses.Source.Smell");
 
         public static readonly EntitySystemId PreparationSystemId = "Systems.Core.Senses.Source.Smell.Prepare";
         public static readonly EntitySystemId CollectionGridSystemId = "Systems.Core.Senses.Source.Smell.Collect.Grid";
@@ -36,7 +36,7 @@ namespace RogueEntity.Core.Sensing.Sources.Smell
                                 ModuleDependency.Of(SensoryCacheModule.ModuleId),
                                 ModuleDependency.Of(PositionModule.ModuleId));
 
-            RequireRole(HeatSourceRole);
+            RequireRole(SmellSourceRole).WithImpliedRole(SenseSources.SenseSourceRole).WithImpliedRole(SensoryCacheModule.SenseCacheSourceRole);;
         }
 
         [EntityRoleInitializer("Role.Core.Senses.Source.Smell")]
@@ -140,7 +140,7 @@ namespace RogueEntity.Core.Sensing.Sources.Smell
             var refreshLocalSenseState =
                 registry.BuildSystem()
                         .WithContext<TGameContext>()
-                        .CreateSystem<SmellSourceDefinition, SenseSourceState<SmellSense>, SenseDirtyFlag<SmellSense>>(ls.RefreshLocalSenseState);
+                        .CreateSystem<SmellSourceDefinition, SenseSourceState<SmellSense>, SenseDirtyFlag<SmellSense>, ObservedSenseSource<SmellSense>>(ls.RefreshLocalSenseState);
             
             context.AddInitializationStepHandler(refreshLocalSenseState);
             context.AddFixedStepHandlers(refreshLocalSenseState);
@@ -186,9 +186,10 @@ namespace RogueEntity.Core.Sensing.Sources.Smell
         void RegisterEntities<TItemId>(IServiceResolver serviceResolver, EntityRegistry<TItemId> registry)
             where TItemId : IEntityKey
         {
-            registry.RegisterNonConstructable<SenseDirtyFlag<SmellSense>>();
             registry.RegisterNonConstructable<SmellSourceDefinition>();
             registry.RegisterNonConstructable<SenseSourceState<SmellSense>>();
+            registry.RegisterFlag<ObservedSenseSource<SmellSense>>();
+            registry.RegisterFlag<SenseDirtyFlag<SmellSense>>();
         }
     }
 }

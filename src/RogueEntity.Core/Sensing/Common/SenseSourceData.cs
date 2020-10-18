@@ -7,7 +7,7 @@ namespace RogueEntity.Core.Sensing.Common
     /// <summary>
     ///   Stores the sense source data relative to a origin point. 
     /// </summary>
-    public class SenseSourceData : IReadOnlyView2D<float>
+    public sealed class SenseSourceData : IReadOnlyView2D<float>
     {
         public readonly byte[] Directions;
         public readonly float[] Intensities;
@@ -26,8 +26,7 @@ namespace RogueEntity.Core.Sensing.Common
         public bool TryQuery(int x,
                              int y,
                              out float intensity,
-                             out SenseDirection directionality,
-                             out SenseDataFlags flags)
+                             out SenseDirectionStore directionality)
         {
             var dx = x + Radius;
             var dy = y + Radius;
@@ -36,15 +35,12 @@ namespace RogueEntity.Core.Sensing.Common
             {
                 intensity = default;
                 directionality = default;
-                flags = default;
                 return false;
             }
             
             var linIndex = dx + dy * LineWidth;
             intensity = Intensities[linIndex];
-            var raw = new SenseDirectionStore(Directions[linIndex]);
-            directionality = raw.Direction;
-            flags = raw.Flags;
+            directionality = new SenseDirectionStore(Directions[linIndex]);
             return true;
         }
         

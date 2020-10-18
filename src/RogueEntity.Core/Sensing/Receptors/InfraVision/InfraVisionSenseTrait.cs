@@ -1,30 +1,24 @@
-using System;
 using EnTTSharp.Entities;
-using GoRogue;
-using JetBrains.Annotations;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Sensing.Common;
+using RogueEntity.Core.Sensing.Map.HeatMap;
 using RogueEntity.Core.Utils;
 
-namespace RogueEntity.Core.Sensing.Receptors.Heat
+namespace RogueEntity.Core.Sensing.Receptors.InfraVision
 {
-    public class TemperatureSenseTrait<TGameContext, TActorId> : IReferenceItemTrait<TGameContext, TActorId>,
-                                                                 IItemComponentTrait<TGameContext, TActorId, SensoryReceptorData<VisionSense>>
+    public class InfraVisionSenseTrait<TGameContext, TActorId> : IReferenceItemTrait<TGameContext, TActorId>,
+                                                                 IItemComponentTrait<TGameContext, TActorId, SensoryReceptorData<VisionSense>>,
+                                                                 IItemComponentInformationTrait<TGameContext, TActorId, IHeatMap>
         where TActorId : IBulkDataStorageKey<TActorId>
     {
-        readonly ILightPhysicsConfiguration physics;
+        readonly IHeatPhysicsConfiguration physics;
         readonly SensoryReceptorData<VisionSense> sense;
 
-        public TemperatureSenseTrait([NotNull] ILightPhysicsConfiguration physics, float senseIntensity, float radius = 0)
+        public InfraVisionSenseTrait(IHeatPhysicsConfiguration physics, float senseIntensity)
         {
-            this.physics = physics ?? throw new ArgumentNullException(nameof(physics));
-            if (radius <= 0)
-            {
-                radius = physics.LightPhysics.SignalRadiusForIntensity(senseIntensity);
-            }
-
-            this.sense = new SensoryReceptorData<VisionSense>(new SenseSourceDefinition(DistanceCalculation.EUCLIDEAN, senseIntensity), true);
+            this.physics = physics;
+            this.sense = new SensoryReceptorData<VisionSense>(new SenseSourceDefinition(physics.HeatPhysics.DistanceMeasurement, senseIntensity), true);
         }
 
         public string Id => "Core.Sense.Receptor.Vision";
@@ -34,6 +28,7 @@ namespace RogueEntity.Core.Sensing.Receptors.Heat
         {
             v.AssignComponent(k, sense);
             v.AssignComponent(k, new SensoryReceptorState<VisionSense>(Optional.Empty<SenseSourceData>(), SenseSourceDirtyState.UnconditionallyDirty, Position.Invalid));
+            v.AssignComponent(k, new SingleLevelHeatMapData());
         }
 
         public void Apply(IEntityViewControl<TActorId> v, TGameContext context, TActorId k, IItemDeclaration item)
@@ -48,6 +43,18 @@ namespace RogueEntity.Core.Sensing.Receptors.Heat
                 s = new SensoryReceptorState<VisionSense>(Optional.Empty<SenseSourceData>(), SenseSourceDirtyState.UnconditionallyDirty, Position.Invalid);
                 v.AssignComponent(k, in s);
             }
+        }
+
+        public bool TryQuery(IEntityViewControl<TActorId> v, TGameContext context, TActorId k, out IHeatMap t)
+        {
+            if (v.GetComponent(k, out SingleLevelHeatMapData d))
+            {
+                t = new SingleLevelHeatMap(physics, d);
+                return true;
+            }
+
+            t = default;
+            return false;
         }
 
         public bool TryQuery(IEntityViewControl<TActorId> v, TGameContext context, TActorId k, out SensoryReceptorData<VisionSense> t)

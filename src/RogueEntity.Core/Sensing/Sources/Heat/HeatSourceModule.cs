@@ -15,7 +15,7 @@ using RogueEntity.Core.Sensing.Resistance.Maps;
 
 namespace RogueEntity.Core.Sensing.Sources.Heat
 {
-    public class HeatSourceModule: ModuleBase
+    public class HeatSourceModule : ModuleBase
     {
         public static readonly string ModuleId = "Core.Senses.Source.Temperature";
         public static readonly EntityRole HeatSourceRole = new EntityRole("Role.Core.Senses.Source.Temperature");
@@ -36,7 +36,7 @@ namespace RogueEntity.Core.Sensing.Sources.Heat
                                 ModuleDependency.Of(SensoryCacheModule.ModuleId),
                                 ModuleDependency.Of(PositionModule.ModuleId));
 
-            RequireRole(HeatSourceRole);
+            RequireRole(HeatSourceRole).WithImpliedRole(SenseSources.SenseSourceRole).WithImpliedRole(SensoryCacheModule.SenseCacheSourceRole);
         }
 
         [EntityRoleInitializer("Role.Core.Senses.Source.Temperature")]
@@ -76,9 +76,9 @@ namespace RogueEntity.Core.Sensing.Sources.Heat
         }
 
         void RegisterPrepareSystem<TGameContext, TItemId>(IServiceResolver serviceResolver,
-                                                               IGameLoopSystemRegistration<TGameContext> context,
-                                                               EntityRegistry<TItemId> registry,
-                                                               ICommandHandlerRegistration<TGameContext, TItemId> handler)
+                                                          IGameLoopSystemRegistration<TGameContext> context,
+                                                          EntityRegistry<TItemId> registry,
+                                                          ICommandHandlerRegistration<TGameContext, TItemId> handler)
             where TItemId : IEntityKey
             where TGameContext : ITimeContext
         {
@@ -127,9 +127,9 @@ namespace RogueEntity.Core.Sensing.Sources.Heat
         }
 
         void RegisterCalculateSystem<TGameContext, TItemId>(IServiceResolver serviceResolver,
-                                                                 IGameLoopSystemRegistration<TGameContext> context,
-                                                                 EntityRegistry<TItemId> registry,
-                                                                 ICommandHandlerRegistration<TGameContext, TItemId> handler)
+                                                            IGameLoopSystemRegistration<TGameContext> context,
+                                                            EntityRegistry<TItemId> registry,
+                                                            ICommandHandlerRegistration<TGameContext, TItemId> handler)
             where TItemId : IEntityKey
         {
             if (!GetOrCreateLightSystem(serviceResolver, out var ls))
@@ -140,8 +140,8 @@ namespace RogueEntity.Core.Sensing.Sources.Heat
             var refreshLocalSenseState =
                 registry.BuildSystem()
                         .WithContext<TGameContext>()
-                        .CreateSystem<HeatSourceDefinition, SenseSourceState<TemperatureSense>, SenseDirtyFlag<TemperatureSense>>(ls.RefreshLocalSenseState);
-            
+                        .CreateSystem<HeatSourceDefinition, SenseSourceState<TemperatureSense>, SenseDirtyFlag<TemperatureSense>, ObservedSenseSource<TemperatureSense>>(ls.RefreshLocalSenseState);
+
             context.AddInitializationStepHandler(refreshLocalSenseState);
             context.AddFixedStepHandlers(refreshLocalSenseState);
         }
@@ -186,9 +186,10 @@ namespace RogueEntity.Core.Sensing.Sources.Heat
         void RegisterEntities<TItemId>(IServiceResolver serviceResolver, EntityRegistry<TItemId> registry)
             where TItemId : IEntityKey
         {
-            registry.RegisterNonConstructable<SenseDirtyFlag<TemperatureSense>>();
             registry.RegisterNonConstructable<HeatSourceDefinition>();
             registry.RegisterNonConstructable<SenseSourceState<TemperatureSense>>();
+            registry.RegisterFlag<ObservedSenseSource<TemperatureSense>>();
+            registry.RegisterFlag<SenseDirtyFlag<TemperatureSense>>();
         }
     }
 }

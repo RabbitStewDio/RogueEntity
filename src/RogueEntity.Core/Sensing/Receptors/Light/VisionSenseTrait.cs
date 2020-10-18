@@ -1,7 +1,5 @@
-using System;
 using EnTTSharp.Entities;
 using GoRogue;
-using JetBrains.Annotations;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Sensing.Common;
@@ -15,17 +13,11 @@ namespace RogueEntity.Core.Sensing.Receptors.Light
                                                             IItemComponentInformationTrait<TGameContext, TActorId, IBrightnessMap>
         where TActorId : IBulkDataStorageKey<TActorId>
     {
-        readonly ILightPhysicsConfiguration physics;
         readonly SensoryReceptorData<VisionSense> sense;
 
-        public VisionSenseTrait([NotNull] ILightPhysicsConfiguration physics, float senseIntensity, float radius = 0)
+        public VisionSenseTrait(ILightPhysicsConfiguration physics, float senseIntensity)
         {
-            this.physics = physics ?? throw new ArgumentNullException(nameof(physics));
-            if (radius <= 0)
-            {
-                radius = physics.LightPhysics.SignalRadiusForIntensity(senseIntensity);
-            }
-            this.sense = new SensoryReceptorData<VisionSense>(new SenseSourceDefinition(DistanceCalculation.EUCLIDEAN, senseIntensity), true);
+            this.sense = new SensoryReceptorData<VisionSense>(new SenseSourceDefinition(physics.LightPhysics.DistanceMeasurement, senseIntensity), true);
         }
 
         public string Id => "Core.Sense.Receptor.Vision";
