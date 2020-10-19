@@ -15,14 +15,14 @@ namespace RogueEntity.Core.Sensing.Receptors.Light
     {
         [DataMember(Order = 0)]
         [Key(0)]
-        SingleLevelSenseDirectionMapData<VisionSense> backend;
+        SingleLevelSenseDirectionMapData<VisionSense, VisionSense> backend;
         
         [DataMember(Order = 1)]
         [Key(1)]
         public BoundedDataView<Color> RawColorData { get; private set; }
 
         [SerializationConstructor]
-        public SingleLevelBrightnessMap(SingleLevelSenseDirectionMapData<VisionSense> backend, BoundedDataView<Color> rawColorData)
+        public SingleLevelBrightnessMap(SingleLevelSenseDirectionMapData<VisionSense, VisionSense> backend, BoundedDataView<Color> rawColorData)
         {
             this.backend = backend;
             RawColorData = rawColorData;

@@ -3,7 +3,7 @@ using RogueEntity.Core.Meta.Items;
 
 namespace RogueEntity.Core.Sensing.Receptors.Light
 {
-    public class VisionSenseTrait<TGameContext, TActorId> : SenseReceptorTraitBase<TGameContext, TActorId, VisionSense>,
+    public class VisionSenseTrait<TGameContext, TActorId> : SenseReceptorTraitBase<TGameContext, TActorId, VisionSense, VisionSense>,
                                                             IItemComponentInformationTrait<TGameContext, TActorId, IBrightnessMap>
         where TActorId : IEntityKey
     {
@@ -16,7 +16,7 @@ namespace RogueEntity.Core.Sensing.Receptors.Light
 
         public bool TryQuery(IEntityViewControl<TActorId> v, TGameContext context, TActorId k, out IBrightnessMap t)
         {
-            if (v.GetComponent(k, out SingleLevelSenseDirectionMapData<VisionSense> m))
+            if (v.GetComponent(k, out SingleLevelSenseDirectionMapData<VisionSense, VisionSense> m))
             {
                 t = new SingleLevelBrightnessMap(m, null);
                 return true;

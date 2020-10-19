@@ -4,9 +4,9 @@ using RogueEntity.Core.Meta.Items;
 namespace RogueEntity.Core.Sensing.Discovery
 {
     public abstract class DiscoveryMapTrait<TGameContext, TActorId, TDiscoveryMapData> : IReferenceItemTrait<TGameContext, TActorId>,
-                                                                                         IItemComponentInformationTrait<TGameContext, TActorId, IDiscoveryMapData>
+                                                                                         IItemComponentInformationTrait<TGameContext, TActorId, IDiscoveryMap>
         where TActorId : IEntityKey
-        where TDiscoveryMapData: IDiscoveryMapData
+        where TDiscoveryMapData: IDiscoveryMap
     {
         public string Id => "Actor.Generic.DiscoveryMap";
         public int Priority => 100;
@@ -22,7 +22,7 @@ namespace RogueEntity.Core.Sensing.Discovery
         {
         }
 
-        public bool TryQuery(IEntityViewControl<TActorId> v, TGameContext context, TActorId k, out IDiscoveryMapData t)
+        public bool TryQuery(IEntityViewControl<TActorId> v, TGameContext context, TActorId k, out IDiscoveryMap t)
         {
             if (v.GetComponent(k, out TDiscoveryMapData data))
             {

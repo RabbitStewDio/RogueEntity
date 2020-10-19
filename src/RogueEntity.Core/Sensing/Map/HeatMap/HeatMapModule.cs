@@ -77,7 +77,7 @@ namespace RogueEntity.Core.Sensing.Map.HeatMap
             var system =
                 registry.BuildSystem()
                         .WithContext<TGameContext>()
-                        .CreateSystem<HeatSourceDefinition, SenseSourceState<VisionSense>>(hs.CollectSenseSources);
+                        .CreateSystem<HeatSourceDefinition, SenseSourceState<TemperatureSense>>(hs.CollectSenseSources);
             
             context.AddInitializationStepHandler(system);
             context.AddFixedStepHandlers(system);
@@ -107,7 +107,7 @@ namespace RogueEntity.Core.Sensing.Map.HeatMap
                     .WithContext<TGameContext>()
                     .CreateSystem<SensoryReceptorState<VisionSense>,
                         SenseReceptorDirtyFlag<VisionSense>,
-                        SingleLevelSenseDirectionMapData<VisionSense>>(hs.ApplyReceptorFieldOfView);
+                        SingleLevelSenseDirectionMapData<VisionSense, TemperatureSense>>(hs.ApplyReceptorFieldOfView);
             
             context.AddInitializationStepHandler(system);
             context.AddFixedStepHandlers(system);

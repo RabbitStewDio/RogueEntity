@@ -20,7 +20,7 @@ namespace RogueEntity.Core.Sensing.Receptors
         public void CopySenseSourcesToVisionField<TItemId, TGameContext>(IEntityViewControl<TItemId> v,
                                                                          TGameContext context,
                                                                          TItemId k,
-                                                                         in SingleLevelSenseDirectionMapData<TTargetSense> brightnessMap,
+                                                                         in SingleLevelSenseDirectionMapData<TTargetSense, TSourceSense> brightnessMap,
                                                                          in SensoryReceptorState<TTargetSense> state)
             where TItemId : IEntityKey
         {

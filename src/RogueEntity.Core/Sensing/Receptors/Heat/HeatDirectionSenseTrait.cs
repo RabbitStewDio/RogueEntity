@@ -5,7 +5,7 @@ using RogueEntity.Core.Sensing.Receptors.InfraVision;
 
 namespace RogueEntity.Core.Sensing.Receptors.Heat
 {
-    public class HeatDirectionSenseTrait<TGameContext, TActorId> : SenseReceptorTraitBase<TGameContext, TActorId, TemperatureSense>,
+    public class HeatDirectionSenseTrait<TGameContext, TActorId> : SenseReceptorTraitBase<TGameContext, TActorId, TemperatureSense, TemperatureSense>,
                                                                    IItemComponentInformationTrait<TGameContext, TActorId, IHeatMap>
         where TActorId : IBulkDataStorageKey<TActorId>
     {
@@ -22,7 +22,7 @@ namespace RogueEntity.Core.Sensing.Receptors.Heat
 
         public bool TryQuery(IEntityViewControl<TActorId> v, TGameContext context, TActorId k, out IHeatMap t)
         {
-            if (v.GetComponent(k, out SingleLevelSenseDirectionMapData<TemperatureSense> m))
+            if (v.GetComponent(k, out SingleLevelSenseDirectionMapData<TemperatureSense, TemperatureSense> m))
             {
                 t = new SingleLevelHeatDirectionMap(physicsConfiguration, m);
                 return true;

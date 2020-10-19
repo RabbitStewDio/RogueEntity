@@ -9,10 +9,10 @@ namespace RogueEntity.Core.Sensing.Receptors.InfraVision
     public class SingleLevelInfraVisionMap: IHeatMap
     {
         readonly IHeatPhysicsConfiguration heatPhysics;
-        readonly SingleLevelSenseDirectionMapData<VisionSense> backend;
+        readonly SingleLevelSenseDirectionMapData<VisionSense, TemperatureSense> backend;
 
         public SingleLevelInfraVisionMap([NotNull] IHeatPhysicsConfiguration heatPhysics,
-                                  SingleLevelSenseDirectionMapData<VisionSense> backend)
+                                  SingleLevelSenseDirectionMapData<VisionSense, TemperatureSense> backend)
         {
             this.heatPhysics = heatPhysics ?? throw new ArgumentNullException(nameof(heatPhysics));
             this.backend = backend;

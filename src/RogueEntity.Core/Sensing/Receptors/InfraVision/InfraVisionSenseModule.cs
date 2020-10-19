@@ -206,7 +206,7 @@ namespace RogueEntity.Core.Sensing.Receptors.InfraVision
             var omni = new OmnidirectionalSenseReceptorSystem<VisionSense, TemperatureSense>(ls, senseBlitter);
             var system = registry.BuildSystem()
                                  .WithContext<TGameContext>()
-                                 .CreateSystem<SingleLevelSenseDirectionMapData<VisionSense>, SensoryReceptorState<VisionSense>>(omni.CopySenseSourcesToVisionField);
+                                 .CreateSystem<SingleLevelSenseDirectionMapData<VisionSense, TemperatureSense>, SensoryReceptorState<VisionSense>>(omni.CopySenseSourcesToVisionField);
 
 
             context.AddInitializationStepHandler(system);
@@ -252,7 +252,7 @@ namespace RogueEntity.Core.Sensing.Receptors.InfraVision
         {
             registry.RegisterNonConstructable<SensoryReceptorData<VisionSense>>();
             registry.RegisterNonConstructable<SensoryReceptorState<VisionSense>>();
-            registry.RegisterNonConstructable<SingleLevelSenseDirectionMapData<VisionSense>>();
+            registry.RegisterNonConstructable<SingleLevelSenseDirectionMapData<VisionSense, TemperatureSense>>();
             registry.RegisterFlag<SenseReceptorDirtyFlag<VisionSense>>();
         }
     }

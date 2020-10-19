@@ -3,7 +3,7 @@ using RogueEntity.Core.Meta.Items;
 
 namespace RogueEntity.Core.Sensing.Receptors.InfraVision
 {
-    public class InfraVisionSenseTrait<TGameContext, TActorId> : SenseReceptorTraitBase<TGameContext, TActorId, VisionSense>,
+    public class InfraVisionSenseTrait<TGameContext, TActorId> : SenseReceptorTraitBase<TGameContext, TActorId, VisionSense, TemperatureSense>,
                                                                  IItemComponentInformationTrait<TGameContext, TActorId, IHeatMap>
         where TActorId : IEntityKey
     {
@@ -19,7 +19,7 @@ namespace RogueEntity.Core.Sensing.Receptors.InfraVision
 
         public bool TryQuery(IEntityViewControl<TActorId> v, TGameContext context, TActorId k, out IHeatMap t)
         {
-            if (v.GetComponent(k, out SingleLevelSenseDirectionMapData<VisionSense> d))
+            if (v.GetComponent(k, out SingleLevelSenseDirectionMapData<VisionSense, TemperatureSense> d))
             {
                 t = new SingleLevelInfraVisionMap(physics, d);
                 return true;

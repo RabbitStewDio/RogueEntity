@@ -9,7 +9,7 @@ using RogueEntity.Core.Utils.Maps;
 
 namespace RogueEntity.Core.Sensing.Map.Light
 {
-    public class LightMapSystem : SenseMappingSystemBase<VisionSense, LightSourceDefinition>, IBrightnessMap
+    public class LightMapSystem : SenseMappingSystemBase<VisionSense, VisionSense, LightSourceDefinition>, IBrightnessMap
     {
         public LightMapSystem([NotNull] Lazy<ISenseStateCacheProvider> senseCacheProvider,
                               ISenseDataBlitter blitterFactory = null) : base(senseCacheProvider, blitterFactory)

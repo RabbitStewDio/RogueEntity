@@ -205,7 +205,7 @@ namespace RogueEntity.Core.Sensing.Receptors.Light
             var omniSystem = new OmnidirectionalSenseReceptorSystem<VisionSense, VisionSense>(ls, blitter);
             var system = registry.BuildSystem()
                                  .WithContext<TGameContext>()
-                                 .CreateSystem<SingleLevelSenseDirectionMapData<VisionSense>, SensoryReceptorState<VisionSense>>(omniSystem.CopySenseSourcesToVisionField);
+                                 .CreateSystem<SingleLevelSenseDirectionMapData<VisionSense, VisionSense>, SensoryReceptorState<VisionSense>>(omniSystem.CopySenseSourcesToVisionField);
 
 
             context.AddInitializationStepHandler(system);
@@ -251,7 +251,7 @@ namespace RogueEntity.Core.Sensing.Receptors.Light
         {
             registry.RegisterNonConstructable<SensoryReceptorData<VisionSense>>();
             registry.RegisterNonConstructable<SensoryReceptorState<VisionSense>>();
-            registry.RegisterNonConstructable<SingleLevelSenseDirectionMapData<VisionSense>>();
+            registry.RegisterNonConstructable<SingleLevelSenseDirectionMapData<VisionSense, VisionSense>>();
             registry.RegisterFlag<SenseReceptorDirtyFlag<VisionSense>>();
         }
     }

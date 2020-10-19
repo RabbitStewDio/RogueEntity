@@ -106,7 +106,7 @@ namespace RogueEntity.Core.Sensing.Map.Light
                     .WithContext<TGameContext>()
                     .CreateSystem<SensoryReceptorState<VisionSense>,
                         SenseReceptorDirtyFlag<VisionSense>,
-                        SingleLevelSenseDirectionMapData<VisionSense>>(hs.ApplyReceptorFieldOfView);
+                        SingleLevelSenseDirectionMapData<VisionSense, VisionSense>>(hs.ApplyReceptorFieldOfView);
             
             context.AddInitializationStepHandler(system);
             context.AddFixedStepHandlers(system);

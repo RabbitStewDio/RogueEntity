@@ -24,8 +24,8 @@ namespace RogueEntity.Core.Sensing.Discovery
                                                                                  TGameContext context,
                                                                                  TActorId k,
                                                                                  in TPosition pos,
-                                                                                 in OnDemandDiscoveryMapData onDemandDiscoveryData,
-                                                                                 in SensoryReceptor<TSense> vision)
+                                                                                 in OnDemandDiscoveryMap onDemandDiscovery,
+                                                                                 in SensoryReceptorState<TSense> vision)
             where TActorId : IEntityKey
             where TSense : ISense, IEquatable<TSense>
             where TPosition : IPosition
@@ -40,7 +40,7 @@ namespace RogueEntity.Core.Sensing.Discovery
                 return;
             }
             
-            if (!onDemandDiscoveryData.TryGetMap(pos.GridZ, out var target))
+            if (!onDemandDiscovery.TryGetMap(pos.GridZ, out var target))
             {
                 return;
             }
@@ -77,22 +77,22 @@ namespace RogueEntity.Core.Sensing.Discovery
                                                                            TGameContext context,
                                                                            TActorId k,
                                                                            in ContinuousMapPosition pos,
-                                                                           in OnDemandDiscoveryMapData onDemandDiscoveryData,
-                                                                           in SensoryReceptor<VisionSense> vision)
+                                                                           in OnDemandDiscoveryMap onDemandDiscovery,
+                                                                           in SensoryReceptorState<VisionSense> vision)
             where TActorId : IEntityKey
         {
-            ExpandDiscoveredAreaImpl(v, context, k, in pos, in onDemandDiscoveryData, in vision);
+            ExpandDiscoveredAreaImpl(v, context, k, in pos, in onDemandDiscovery, in vision);
         }
 
         public void ExpandDiscoveredAreaGrid<TGameContext, TActorId>(IEntityViewControl<TActorId> v,
                                                                      TGameContext context,
                                                                      TActorId k,
                                                                      in EntityGridPosition pos,
-                                                                     in OnDemandDiscoveryMapData onDemandDiscoveryData,
-                                                                     in SensoryReceptor<VisionSense> vision)
+                                                                     in OnDemandDiscoveryMap onDemandDiscovery,
+                                                                     in SensoryReceptorState<VisionSense> vision)
             where TActorId : IEntityKey
         {
-            ExpandDiscoveredAreaImpl(v, context, k, in pos, in onDemandDiscoveryData, in vision);
+            ExpandDiscoveredAreaImpl(v, context, k, in pos, in onDemandDiscovery, in vision);
         }
     }
 }

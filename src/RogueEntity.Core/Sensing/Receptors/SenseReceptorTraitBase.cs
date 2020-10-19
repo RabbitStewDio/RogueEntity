@@ -6,8 +6,8 @@ using RogueEntity.Core.Sensing.Common;
 
 namespace RogueEntity.Core.Sensing.Receptors
 {
-    public abstract class SenseReceptorTraitBase<TGameContext, TActorId, TSense> : IReferenceItemTrait<TGameContext, TActorId>,
-                                                                                   IItemComponentTrait<TGameContext, TActorId, SensoryReceptorData<TSense>>
+    public abstract class SenseReceptorTraitBase<TGameContext, TActorId, TSense, TSource> : IReferenceItemTrait<TGameContext, TActorId>,
+                                                                                            IItemComponentTrait<TGameContext, TActorId, SensoryReceptorData<TSense>>
         where TActorId : IEntityKey
         where TSense : ISense
     {
@@ -27,7 +27,7 @@ namespace RogueEntity.Core.Sensing.Receptors
         {
             v.AssignComponent(k, new SensoryReceptorData<TSense>(new SenseSourceDefinition(physics.DistanceMeasurement, intensity), true));
             v.AssignComponent(k, SensoryReceptorState.Create<TSense>());
-            v.AssignComponent(k, SingleLevelSenseDirectionMapData.Create<TSense>());
+            v.AssignComponent(k, SingleLevelSenseDirectionMapData.Create<TSense, TSource>());
         }
 
         public void Apply(IEntityViewControl<TActorId> v, TGameContext context, TActorId k, IItemDeclaration item)
@@ -42,9 +42,9 @@ namespace RogueEntity.Core.Sensing.Receptors
                 v.AssignComponent(k, SensoryReceptorState.Create<TSense>());
             }
 
-            if (!v.GetComponent(k, out SingleLevelSenseDirectionMapData<TSense> m))
+            if (!v.GetComponent(k, out SingleLevelSenseDirectionMapData<TSense, TSource> m))
             {
-                v.AssignComponent(k, SingleLevelSenseDirectionMapData.Create<TSense>());
+                v.AssignComponent(k, SingleLevelSenseDirectionMapData.Create<TSense, TSource>());
             }
         }
 

@@ -205,7 +205,7 @@ namespace RogueEntity.Core.Sensing.Receptors.Noise
             var uniSys = new UnidirectionalSenseReceptorSystem<NoiseSense, NoiseSense>(ls, senseBlitter);
             var system = registry.BuildSystem()
                                  .WithContext<TGameContext>()
-                                 .CreateSystem<SingleLevelSenseDirectionMapData<NoiseSense>, SensoryReceptorState<NoiseSense>>(uniSys.CopySenseSourcesToVisionField);
+                                 .CreateSystem<SingleLevelSenseDirectionMapData<NoiseSense, NoiseSense>, SensoryReceptorState<NoiseSense>>(uniSys.CopySenseSourcesToVisionField);
 
 
             context.AddInitializationStepHandler(system);
@@ -251,7 +251,7 @@ namespace RogueEntity.Core.Sensing.Receptors.Noise
         {
             registry.RegisterNonConstructable<SensoryReceptorData<NoiseSense>>();
             registry.RegisterNonConstructable<SensoryReceptorState<NoiseSense>>();
-            registry.RegisterNonConstructable<SingleLevelSenseDirectionMapData<NoiseSense>>();
+            registry.RegisterNonConstructable<SingleLevelSenseDirectionMapData<NoiseSense, NoiseSense>>();
             registry.RegisterFlag<SenseReceptorDirtyFlag<NoiseSense>>();
         }
     }

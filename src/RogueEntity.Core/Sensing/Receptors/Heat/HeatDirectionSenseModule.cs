@@ -205,7 +205,7 @@ namespace RogueEntity.Core.Sensing.Receptors.Heat
             var uniSys = new UnidirectionalSenseReceptorSystem<TemperatureSense, TemperatureSense>(ls, senseBlitter);
             var system = registry.BuildSystem()
                                  .WithContext<TGameContext>()
-                                 .CreateSystem<SingleLevelSenseDirectionMapData<TemperatureSense>, SensoryReceptorState<TemperatureSense>>(uniSys.CopySenseSourcesToVisionField);
+                                 .CreateSystem<SingleLevelSenseDirectionMapData<TemperatureSense, TemperatureSense>, SensoryReceptorState<TemperatureSense>>(uniSys.CopySenseSourcesToVisionField);
 
 
             context.AddInitializationStepHandler(system);
@@ -251,7 +251,7 @@ namespace RogueEntity.Core.Sensing.Receptors.Heat
         {
             registry.RegisterNonConstructable<SensoryReceptorData<TemperatureSense>>();
             registry.RegisterNonConstructable<SensoryReceptorState<TemperatureSense>>();
-            registry.RegisterNonConstructable<SingleLevelSenseDirectionMapData<TemperatureSense>>();
+            registry.RegisterNonConstructable<SingleLevelSenseDirectionMapData<TemperatureSense, TemperatureSense>>();
             registry.RegisterFlag<SenseReceptorDirtyFlag<TemperatureSense>>();
         }
     }

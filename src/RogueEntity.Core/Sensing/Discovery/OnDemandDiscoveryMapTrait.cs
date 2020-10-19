@@ -3,7 +3,7 @@ using RogueEntity.Core.Meta.Items;
 
 namespace RogueEntity.Core.Sensing.Discovery
 {
-    public class OnDemandDiscoveryMapTrait<TGameContext, TActorId> : DiscoveryMapTrait<TGameContext, TActorId, OnDemandDiscoveryMapData>
+    public class OnDemandDiscoveryMapTrait<TGameContext, TActorId> : DiscoveryMapTrait<TGameContext, TActorId, OnDemandDiscoveryMap>
         where TActorId : IEntityKey
     {
         readonly int width;
@@ -15,9 +15,9 @@ namespace RogueEntity.Core.Sensing.Discovery
             this.height = height;
         }
         
-        protected override OnDemandDiscoveryMapData CreateValue(TGameContext context, TActorId k, IItemDeclaration item)
+        protected override OnDemandDiscoveryMap CreateValue(TGameContext context, TActorId k, IItemDeclaration item)
         {
-            return new OnDemandDiscoveryMapData(width, height);
+            return new OnDemandDiscoveryMap(width, height);
         }
     }
 }

@@ -7,6 +7,7 @@ using RogueEntity.Core.Infrastructure.Modules;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Continuous;
 using RogueEntity.Core.Positioning.Grid;
+using RogueEntity.Core.Sensing.Map.Light;
 using RogueEntity.Core.Sensing.Receptors;
 using RogueEntity.Core.Sensing.Receptors.Light;
 using RogueEntity.Core.Sensing.Sources.Light;
@@ -33,14 +34,9 @@ namespace RogueEntity.Core.Sensing.Discovery
             IsFrameworkModule = true;
 
             DeclareDependencies(ModuleDependency.Of(PositionModule.ModuleId),
-                                ModuleDependency.Of(SensoryReceptorModule.ModuleId));
+                                ModuleDependency.Of(VisionSenseModule.ModuleId));
 
             RequireRole(DiscoveryActorRole);
-
-            RequireRole(DiscoveryActorRoleGrid).WithImpliedRole(DiscoveryActorRole)
-                                               .WithImpliedRole(SensoryReceptorModule.SenseReceptorActorRoleGrid);
-            RequireRole(DiscoveryActorRoleContinuous).WithImpliedRole(DiscoveryActorRole)
-                                                     .WithImpliedRole(SensoryReceptorModule.SenseReceptorActorRoleContinuous);
         }
 
         [EntityRoleInitializer("Role.Core.Senses.DiscoveredArea")]
@@ -83,7 +79,7 @@ namespace RogueEntity.Core.Sensing.Discovery
 
             var entitySystem = registry.BuildSystem()
                                        .WithContext<TGameContext>()
-                                       .CreateSystem<EntityGridPosition, OnDemandDiscoveryMapData, SensoryReceptor<VisionSense>>(system.ExpandDiscoveredAreaGrid);
+                                       .CreateSystem<EntityGridPosition, OnDemandDiscoveryMap, SensoryReceptorState<VisionSense>>(system.ExpandDiscoveredAreaGrid);
 
             context.AddFixedStepHandlers(entitySystem);
             context.AddInitializationStepHandler(entitySystem);
@@ -99,7 +95,7 @@ namespace RogueEntity.Core.Sensing.Discovery
 
             var entitySystem = registry.BuildSystem()
                                        .WithContext<TGameContext>()
-                                       .CreateSystem<ContinuousMapPosition, OnDemandDiscoveryMapData, SensoryReceptor<VisionSense>>(system.ExpandDiscoveredAreaContinuous);
+                                       .CreateSystem<ContinuousMapPosition, OnDemandDiscoveryMap, SensoryReceptorState<VisionSense>>(system.ExpandDiscoveredAreaContinuous);
 
             context.AddFixedStepHandlers(entitySystem);
             context.AddInitializationStepHandler(entitySystem);
@@ -109,7 +105,7 @@ namespace RogueEntity.Core.Sensing.Discovery
                                                  EntityRegistry<TActorId> registry)
             where TActorId : IEntityKey
         {
-            registry.RegisterNonConstructable<OnDemandDiscoveryMapData>();
+            registry.RegisterNonConstructable<OnDemandDiscoveryMap>();
         }
     }
 }

@@ -5,10 +5,10 @@ namespace RogueEntity.Core.Sensing.Receptors.Noise
 {
     public class SingleLevelNoiseMap: INoiseDirectionMap
     {
-        readonly SingleLevelSenseDirectionMapData<NoiseSense> backend;
+        readonly SingleLevelSenseDirectionMapData<NoiseSense, NoiseSense> backend;
 
         [SerializationConstructor]
-        public SingleLevelNoiseMap(SingleLevelSenseDirectionMapData<NoiseSense> backend)
+        public SingleLevelNoiseMap(SingleLevelSenseDirectionMapData<NoiseSense, NoiseSense> backend)
         {
             this.backend = backend;
         }

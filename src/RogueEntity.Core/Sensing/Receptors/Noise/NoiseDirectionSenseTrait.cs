@@ -4,7 +4,7 @@ using RogueEntity.Core.Meta.Items;
 
 namespace RogueEntity.Core.Sensing.Receptors.Noise
 {
-    public class NoiseDirectionSenseTrait<TGameContext, TActorId> : SenseReceptorTraitBase<TGameContext, TActorId, NoiseSense>,
+    public class NoiseDirectionSenseTrait<TGameContext, TActorId> : SenseReceptorTraitBase<TGameContext, TActorId, NoiseSense, NoiseSense>,
                                                                     IItemComponentInformationTrait<TGameContext, TActorId, INoiseDirectionMap>
         where TActorId : IBulkDataStorageKey<TActorId>
     {
@@ -18,7 +18,7 @@ namespace RogueEntity.Core.Sensing.Receptors.Noise
 
         public bool TryQuery(IEntityViewControl<TActorId> v, TGameContext context, TActorId k, out INoiseDirectionMap t)
         {
-            if (v.GetComponent(k, out SingleLevelSenseDirectionMapData<NoiseSense> m))
+            if (v.GetComponent(k, out SingleLevelSenseDirectionMapData<NoiseSense, NoiseSense> m))
             {
                 t = new SingleLevelNoiseMap(m);
                 return true;

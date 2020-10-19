@@ -4,9 +4,9 @@ namespace RogueEntity.Core.Sensing.Receptors.Smell
 {
     public class SingleLevelSmellDirectionMap: ISmellDirectionMap
     {
-        readonly SingleLevelSenseDirectionMapData<SmellSense> backend;
+        readonly SingleLevelSenseDirectionMapData<SmellSense, SmellSense> backend;
 
-        public SingleLevelSmellDirectionMap(SingleLevelSenseDirectionMapData<SmellSense> backend)
+        public SingleLevelSmellDirectionMap(SingleLevelSenseDirectionMapData<SmellSense, SmellSense> backend)
         {
             this.backend = backend;
         }

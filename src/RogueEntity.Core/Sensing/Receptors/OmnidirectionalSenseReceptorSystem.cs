@@ -20,7 +20,7 @@ namespace RogueEntity.Core.Sensing.Receptors
         public void CopySenseSourcesToVisionField<TItemId, TGameContext>(IEntityViewControl<TItemId> v,
                                                                          TGameContext context,
                                                                          TItemId k,
-                                                                         in SingleLevelSenseDirectionMapData<TTargetSense> brightnessMap,
+                                                                         in SingleLevelSenseDirectionMapData<TTargetSense, TSourceSense> brightnessMap,
                                                                          in SensoryReceptorState<TTargetSense> state)
             where TItemId : IEntityKey
         {
@@ -28,12 +28,13 @@ namespace RogueEntity.Core.Sensing.Receptors
                 !receptorSystem.TryGetLevel(state.LastPosition.GridZ, out var level) ||
                 !state.SenseSource.TryGetValue(out var perceptionFoV))
             {
+                v.WriteBack(k, brightnessMap.WithDisabledState());
                 return;
             }
 
             var senseMap = brightnessMap.SenseMap;
             level.ProcessOmnidirectional(blitter, senseMap, v.GetComponent(k, out SenseReceptorDirtyFlag<TTargetSense> _));
-            v.WriteBack(k, new SingleLevelSenseDirectionMapData<TemperatureSense>(state.LastPosition.GridZ, senseMap));
+            v.WriteBack(k, brightnessMap.WithLevel(state.LastPosition.GridZ));
             
             SenseReceptors.CopyReceptorFieldOfView(senseMap, state.LastPosition, perceptionFoV, senseMap);
         }

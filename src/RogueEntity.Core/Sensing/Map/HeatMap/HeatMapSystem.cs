@@ -1,16 +1,14 @@
 using System;
-using EnTTSharp.Entities;
 using JetBrains.Annotations;
 using RogueEntity.Core.Meta.ItemTraits;
 using RogueEntity.Core.Sensing.Cache;
 using RogueEntity.Core.Sensing.Common.Blitter;
-using RogueEntity.Core.Sensing.Receptors;
 using RogueEntity.Core.Sensing.Receptors.InfraVision;
 using RogueEntity.Core.Sensing.Sources.Heat;
 
 namespace RogueEntity.Core.Sensing.Map.HeatMap
 {
-    public class HeatMapSystem: SenseMappingSystemBase<VisionSense, HeatSourceDefinition>, IHeatMap
+    public class HeatMapSystem: SenseMappingSystemBase<VisionSense, TemperatureSense, HeatSourceDefinition>, IHeatMap
     {
         readonly IHeatPhysicsConfiguration heatPhysics;
 

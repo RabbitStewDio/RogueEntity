@@ -9,10 +9,10 @@ namespace RogueEntity.Core.Sensing.Receptors.Heat
     public class SingleLevelHeatDirectionMap: IHeatMap
     {
         readonly IHeatPhysicsConfiguration heatPhysics;
-        readonly SingleLevelSenseDirectionMapData<TemperatureSense> backend;
+        readonly SingleLevelSenseDirectionMapData<TemperatureSense, TemperatureSense> backend;
 
         public SingleLevelHeatDirectionMap([NotNull] IHeatPhysicsConfiguration heatPhysics,
-                                           SingleLevelSenseDirectionMapData<TemperatureSense> backend)
+                                           SingleLevelSenseDirectionMapData<TemperatureSense, TemperatureSense> backend)
         {
             this.heatPhysics = heatPhysics ?? throw new ArgumentNullException(nameof(heatPhysics));
             this.backend = backend;

@@ -206,7 +206,7 @@ namespace RogueEntity.Core.Sensing.Receptors.Smell
             var uniSys = new UnidirectionalSenseReceptorSystem<SmellSense, SmellSense>(ls, senseBlitter);
             var system = registry.BuildSystem()
                                  .WithContext<TGameContext>()
-                                 .CreateSystem<SingleLevelSenseDirectionMapData<SmellSense>, SensoryReceptorState<SmellSense>>(uniSys.CopySenseSourcesToVisionField);
+                                 .CreateSystem<SingleLevelSenseDirectionMapData<SmellSense, SmellSense>, SensoryReceptorState<SmellSense>>(uniSys.CopySenseSourcesToVisionField);
 
 
             context.AddInitializationStepHandler(system);
@@ -252,7 +252,7 @@ namespace RogueEntity.Core.Sensing.Receptors.Smell
         {
             registry.RegisterNonConstructable<SensoryReceptorData<SmellSense>>();
             registry.RegisterNonConstructable<SensoryReceptorState<SmellSense>>();
-            registry.RegisterNonConstructable<SingleLevelSenseDirectionMapData<SmellSense>>();
+            registry.RegisterNonConstructable<SingleLevelSenseDirectionMapData<SmellSense, SmellSense>>();
             registry.RegisterFlag<SenseReceptorDirtyFlag<SmellSense>>();
         }
     }
