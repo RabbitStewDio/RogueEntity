@@ -48,9 +48,9 @@ namespace RogueEntity.Core.Sensing.Sources.Smell
         {
             var ctx = initializer.DeclareEntityContext<TItemId>();
             ctx.Register(RegisterEntityId, 0, RegisterEntities);
-            ctx.Register(PreparationSystemId, 5000, RegisterPrepareSystem);
-            ctx.Register(ComputeSystemId, 5800, RegisterCalculateSystem);
-            ctx.Register(FinalizeSystemId, 5900, RegisterCleanUpSystem);
+            ctx.Register(PreparationSystemId, 50000, RegisterPrepareSystem);
+            ctx.Register(ComputeSystemId, 58000, RegisterCalculateSystem);
+            ctx.Register(FinalizeSystemId, 59000, RegisterCleanUpSystem);
         }
 
         [EntityRoleInitializer("Role.Core.Senses.Source.Smell",
@@ -61,7 +61,7 @@ namespace RogueEntity.Core.Sensing.Sources.Smell
             where TItemId : IEntityKey
         {
             var ctx = initializer.DeclareEntityContext<TItemId>();
-            ctx.Register(CollectionGridSystemId, 5700, RegisterCollectLightsGridSystem);
+            ctx.Register(CollectionGridSystemId, 57000, RegisterCollectLightsGridSystem);
         }
 
         [EntityRoleInitializer("Role.Core.Senses.Source.Smell",
@@ -72,7 +72,7 @@ namespace RogueEntity.Core.Sensing.Sources.Smell
             where TItemId : IEntityKey
         {
             var ctx = initializer.DeclareEntityContext<TItemId>();
-            ctx.Register(CollectionGridSystemId, 5700, RegisterCollectLightsContinuousSystem);
+            ctx.Register(CollectionGridSystemId, 57000, RegisterCollectLightsContinuousSystem);
         }
 
         void RegisterPrepareSystem<TGameContext, TItemId>(IServiceResolver serviceResolver,

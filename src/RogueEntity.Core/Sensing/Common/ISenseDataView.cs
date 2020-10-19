@@ -8,7 +8,6 @@ namespace RogueEntity.Core.Sensing.Common
         bool TryQuery(int x,
                       int y,
                       out float intensity,
-                      out SenseDirection directionality,
-                      out SenseDataFlags flags);
+                      out SenseDirectionStore directionality);
     }
 }

@@ -59,9 +59,9 @@ namespace RogueEntity.Core.Sensing.Sources.Light
         {
             var ctx = initializer.DeclareEntityContext<TItemId>();
             ctx.Register(RegisterEntityId, 0, RegisterEntities);
-            ctx.Register(LightsPreparationSystemId, 5000, RegisterPrepareLightSystem);
-            ctx.Register(LightsComputeSystemId, 5800, RegisterProcessLightCalculateSystem);
-            ctx.Register(LightsFinializedSystemId, 5900, RegisterFinishLightCalculateSystem);
+            ctx.Register(LightsPreparationSystemId, 50000, RegisterPrepareLightSystem);
+            ctx.Register(LightsComputeSystemId, 58000, RegisterProcessLightCalculateSystem);
+            ctx.Register(LightsFinializedSystemId, 59000, RegisterFinishLightCalculateSystem);
         }
 
         [EntityRoleInitializer("Role.Core.Senses.Source.Light",
@@ -72,7 +72,7 @@ namespace RogueEntity.Core.Sensing.Sources.Light
             where TItemId : IEntityKey
         {
             var ctx = initializer.DeclareEntityContext<TItemId>();
-            ctx.Register(LightsCollectionGridSystemId, 5700, RegisterCollectLightsGridSystem);
+            ctx.Register(LightsCollectionGridSystemId, 57000, RegisterCollectLightsGridSystem);
         }
 
         [EntityRoleInitializer("Role.Core.Senses.Source.Light",
@@ -83,7 +83,7 @@ namespace RogueEntity.Core.Sensing.Sources.Light
             where TItemId : IEntityKey
         {
             var ctx = initializer.DeclareEntityContext<TItemId>();
-            ctx.Register(LightsCollectionGridSystemId, 5700, RegisterCollectLightsContinuousSystem);
+            ctx.Register(LightsCollectionGridSystemId, 57000, RegisterCollectLightsContinuousSystem);
         }
 
         void RegisterPrepareLightSystem<TGameContext, TItemId>(IServiceResolver serviceResolver,

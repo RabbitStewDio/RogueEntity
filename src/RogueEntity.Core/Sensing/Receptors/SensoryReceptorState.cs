@@ -8,6 +8,15 @@ using RogueEntity.Core.Utils;
 
 namespace RogueEntity.Core.Sensing.Receptors
 {
+    public static class SensoryReceptorState
+    {
+        public static SensoryReceptorState<TSense> Create<TSense>()
+            where TSense : ISense
+        {
+            return new SensoryReceptorState<TSense>(default, SenseSourceDirtyState.UnconditionallyDirty, Position.Invalid);
+        }
+    }
+    
     [EntityComponent(EntityConstructor.NonConstructable)]
     [DataContract]
     [MessagePackObject]

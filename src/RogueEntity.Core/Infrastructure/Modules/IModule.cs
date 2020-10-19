@@ -30,4 +30,15 @@ namespace RogueEntity.Core.Infrastructure.Modules
                       int priority,
                       ModuleEntityContext.EntitySystemRegistrationDelegate<TGameContext, TEntityId> entitySystemRegistration = null);
     }
+    
+    public static class ModuleEntityContextExtensions 
+    {
+        public static ModuleEntityContext.EntitySystemRegistrationDelegate<TGameContext, TEntityId> Empty<TGameContext, TEntityId>(this IModuleEntityContext<TGameContext, TEntityId> ctx)
+            where TEntityId : IEntityKey
+        {
+            return (a, b, c, d) =>
+            {
+            };
+        }
+    }
 }

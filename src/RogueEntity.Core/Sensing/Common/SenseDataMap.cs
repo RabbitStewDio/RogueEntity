@@ -36,19 +36,17 @@ namespace RogueEntity.Core.Sensing.Common
             directionData.ClearData();
         }
 
-        public bool TryQuery(int x, int y, out float intensity, out SenseDirection directionality, out SenseDataFlags flags)
+        public bool TryQuery(int x, int y, out float intensity, out SenseDirectionStore directionality)
         {
             if (sensitivityData.TryGet(x, y, out intensity) &&
                 directionData.TryGet(x, y, out var raw))
             {
                 var d = new SenseDirectionStore(raw);
-                directionality = d.Direction;
-                flags = d.Flags;
+                directionality = d;
                 return true;
             }
 
             directionality = default;
-            flags = default;
             return false;
         }
 
@@ -72,6 +70,13 @@ namespace RogueEntity.Core.Sensing.Common
             return default;
         }
 
+        public bool TryStore(int x, int y, float intensity, SenseDirectionStore directions)
+        {
+            var r1 = sensitivityData.TrySet(x, y, intensity);
+            var r2 = directionData.TrySet(x, y, directions.RawData);
+            return r1 && r2;
+        }
+        
         public int TileSizeX
         {
             get { return sensitivityData.TileSizeX; }

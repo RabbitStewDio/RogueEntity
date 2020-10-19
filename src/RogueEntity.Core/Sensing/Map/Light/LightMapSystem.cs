@@ -3,6 +3,7 @@ using JetBrains.Annotations;
 using RogueEntity.Core.Sensing.Cache;
 using RogueEntity.Core.Sensing.Common;
 using RogueEntity.Core.Sensing.Common.Blitter;
+using RogueEntity.Core.Sensing.Receptors.Light;
 using RogueEntity.Core.Sensing.Sources.Light;
 using RogueEntity.Core.Utils.Maps;
 

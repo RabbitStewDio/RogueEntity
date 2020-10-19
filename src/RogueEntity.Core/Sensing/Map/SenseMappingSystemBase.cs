@@ -7,6 +7,7 @@ using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Sensing.Cache;
 using RogueEntity.Core.Sensing.Common;
 using RogueEntity.Core.Sensing.Common.Blitter;
+using RogueEntity.Core.Sensing.Receptors;
 using RogueEntity.Core.Sensing.Sources;
 using RogueEntity.Core.Utils;
 using Serilog;
@@ -77,10 +78,10 @@ namespace RogueEntity.Core.Sensing.Map
         /// <typeparam name="TItemId"></typeparam>
         /// <typeparam name="TGameContext"></typeparam>
         public void CollectSenseSources<TItemId, TGameContext>(IEntityViewControl<TItemId> v,
-                                                         TGameContext context,
-                                                         TItemId k,
-                                                         in TSenseSourceDefinition definition,
-                                                         in SenseSourceState<TSense> state)
+                                                               TGameContext context,
+                                                               TItemId k,
+                                                               in TSenseSourceDefinition definition,
+                                                               in SenseSourceState<TSense> state)
             where TItemId : IEntityKey
         {
             if (!state.LastPosition.IsInvalid)
@@ -100,9 +101,41 @@ namespace RogueEntity.Core.Sensing.Map
         {
             Parallel.ForEach(activeLightsPerLevel.Values, ProcessSenseMapInstance);
 
-            v.ResetComponent<SenseDirtyFlag<VisionSense>>();
+            v.ResetComponent<SenseDirtyFlag<TSense>>();
         }
 
+        
+        public void ApplyReceptorFieldOfView<TItemId, TGameContext>(IEntityViewControl<TItemId> v,
+                                                                    TGameContext context,
+                                                                    TItemId k,
+                                                                    in SensoryReceptorState<TSense> receptorState,
+                                                                    in SenseReceptorDirtyFlag<TSense> receptorDirtyFlag,
+                                                                    in SingleLevelSenseDirectionMapData<TSense> brightnessMap)
+            where TItemId : IEntityKey
+        {
+            if (!receptorState.SenseSource.TryGetValue(out var sourceData))
+            {
+                v.WriteBack(k, brightnessMap.WithDisabledState());
+                return;
+            }
+
+            var lastPosition = receptorState.LastPosition;
+            var z = lastPosition.GridZ;
+            if (!TryGetSenseData(z, out var lights))
+            {
+                v.WriteBack(k, brightnessMap.WithDisabledState());
+                return;
+            }
+
+            var dest = brightnessMap.SenseMap;
+            dest.Clear();
+            
+            SenseReceptors.CopyReceptorFieldOfView(dest, lastPosition, sourceData, lights);
+
+            v.WriteBack(k, brightnessMap.WithLevel(z));
+        }
+
+        
         /// <summary>
         ///  Step 5: Clear the collected sense sources
         /// </summary>
@@ -141,7 +174,7 @@ namespace RogueEntity.Core.Sensing.Map
             lights.Add(p, s);
         }
 
-        protected bool TryGetSenseData(int z, out ISenseDataView data)
+        public bool TryGetSenseData(int z, out ISenseDataView data)
         {
             if (activeLightsPerLevel.TryGetValue(z, out var level))
             {

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using RogueEntity.Core.Utils;
 
 namespace RogueEntity.Core.Sensing.Common
 {
@@ -65,6 +66,13 @@ namespace RogueEntity.Core.Sensing.Common
             return new SenseDirectionStore((byte)(direction | flags));
         }
 
+        public SenseDirectionStore Merge(SenseDirectionStore other)
+        {
+            var d = Direction.Intersect(other.Direction);
+            var f = other.Flags.WithObstructed(other.Flags);
+            return From(d, f);
+        }
+        
         public (int x, int y) ToDirectionalMovement()
         {
             return ToDirectionalMovement(Direction);
@@ -80,5 +88,24 @@ namespace RogueEntity.Core.Sensing.Common
             return (0, 0);
         }
         
+    }
+
+    public static class SenseDirectionExtensions
+    {
+        public static SenseDataFlags WithObstructed(this SenseDataFlags f, SenseDataFlags other)
+        {
+            return f | (other & SenseDataFlags.Obstructed);
+        }
+        
+        /// <summary>
+        ///   Marks all edges that are shared by both directions.
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <returns></returns>
+        public static SenseDirection Intersect(this SenseDirection a, SenseDirection b)
+        {
+            return a & b;
+        }
     }
 }

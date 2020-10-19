@@ -9,47 +9,46 @@ using RogueEntity.Core.Positioning.Continuous;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Sensing.Cache;
 using RogueEntity.Core.Sensing.Common.Blitter;
-using RogueEntity.Core.Sensing.Receptors.Light;
 using RogueEntity.Core.Sensing.Resistance;
 using RogueEntity.Core.Sensing.Resistance.Maps;
 using RogueEntity.Core.Sensing.Sources;
-using RogueEntity.Core.Sensing.Sources.Heat;
+using RogueEntity.Core.Sensing.Sources.Noise;
 
-namespace RogueEntity.Core.Sensing.Receptors.InfraVision
+namespace RogueEntity.Core.Sensing.Receptors.Noise
 {
-    public class InfraVisionSenseModule : ModuleBase
+    public class NoiseDirectionSenseModule : ModuleBase
     {
-        public const string ModuleId = "Core.Sense.Receptor.InfraVision";
+        public const string ModuleId = "Core.Sense.Receptor.Noise";
 
-        public static readonly EntitySystemId RegisterEntityId = VisionSenseModule.RegisterEntityId;
+        public static readonly EntitySystemId RegisterEntityId = "Entities.Core.Senses.Receptor.Noise";
 
-        public static readonly EntitySystemId ReceptorPreparationSystemId = "Systems.Core.Senses.Receptor.InfraVision.Prepare";
-        public static readonly EntitySystemId ReceptorCollectionGridSystemId = "Systems.Core.Senses.Receptor.InfraVision.Collect.Grid";
-        public static readonly EntitySystemId ReceptorCollectionContinuousSystemId = "Systems.Core.Senses.Receptor.InfraVision.Collect.Continuous";
-        public static readonly EntitySystemId SenseSourceCollectionContinuousSystemId = "Systems.Core.Senses.Receptor.InfraVision.CollectSources.Continuous";
-        public static readonly EntitySystemId ReceptorComputeFoVSystemId = "Systems.Core.Senses.Receptor.InfraVision.ComputeFieldOfView";
-        public static readonly EntitySystemId ReceptorComputeSystemId = "Systems.Core.Senses.Receptor.InfraVision.Compute";
-        public static readonly EntitySystemId ReceptorFinalizeSystemId = "Systems.Core.Senses.Receptor.InfraVision.Finalize";
+        public static readonly EntitySystemId ReceptorPreparationSystemId = "Systems.Core.Senses.Receptor.Noise.Prepare";
+        public static readonly EntitySystemId ReceptorCollectionGridSystemId = "Systems.Core.Senses.Receptor.Noise.Collect.Grid";
+        public static readonly EntitySystemId ReceptorCollectionContinuousSystemId = "Systems.Core.Senses.Receptor.Noise.Collect.Continuous";
+        public static readonly EntitySystemId SenseSourceCollectionContinuousSystemId = "Systems.Core.Senses.Receptor.Noise.CollectSources.Continuous";
+        public static readonly EntitySystemId ReceptorComputeFoVSystemId = "Systems.Core.Senses.Receptor.Noise.ComputeFieldOfView";
+        public static readonly EntitySystemId ReceptorComputeSystemId = "Systems.Core.Senses.Receptor.Noise.Compute";
+        public static readonly EntitySystemId ReceptorFinalizeSystemId = "Systems.Core.Senses.Receptor.Noise.Finalize";
 
-        public static readonly EntityRole SenseReceptorActorRole = new EntityRole("Role.Core.Senses.Receptor.InfraVision.ActorRole");
+        public static readonly EntityRole SenseReceptorActorRole = new EntityRole("Role.Core.Senses.Receptor.Noise.ActorRole");
 
-        public InfraVisionSenseModule()
+        public NoiseDirectionSenseModule()
         {
             Id = ModuleId;
             Author = "RogueEntity.Core";
             Name = "RogueEntity Core Module - Senses - Receptors";
-            Description = "Provides items and actors with a field of view for heat/infrared vision.";
+            Description = "Provides items and actors with a field of view for a directional sense of noise.";
             IsFrameworkModule = true;
 
             DeclareDependencies(ModuleDependency.Of(PositionModule.ModuleId),
                                 ModuleDependency.Of(SensoryResistanceModule.ModuleId),
-                                ModuleDependency.Of(HeatSourceModule.ModuleId),
+                                ModuleDependency.Of(NoiseSourceModule.ModuleId),
                                 ModuleDependency.Of(SensoryCacheModule.ModuleId));
 
             RequireRole(SenseReceptorActorRole);
         }
 
-        [EntityRoleInitializer("Role.Core.Senses.Receptor.Temperature.ActorRole")]
+        [EntityRoleInitializer("Role.Core.Senses.Receptor.Noise.ActorRole")]
         protected void InitializeRole<TGameContext, TItemId>(IServiceResolver serviceResolver,
                                                              IModuleInitializer<TGameContext> initializer,
                                                              EntityRole role)
@@ -64,7 +63,7 @@ namespace RogueEntity.Core.Sensing.Receptors.InfraVision
             ctx.Register(ReceptorFinalizeSystemId, 59500, RegisterFinalizeSystem);
         }
 
-        [EntityRoleInitializer("Role.Core.Senses.Receptor.Temperature.ActorRole",
+        [EntityRoleInitializer("Role.Core.Senses.Receptor.Noise.ActorRole",
                                ConditionalRoles = new[] {"Role.Core.Position.GridPositioned"})]
         protected void InitializeCollectReceptorsGrid<TGameContext, TItemId>(IServiceResolver serviceResolver,
                                                                              IModuleInitializer<TGameContext> initializer,
@@ -75,7 +74,7 @@ namespace RogueEntity.Core.Sensing.Receptors.InfraVision
             ctx.Register(ReceptorCollectionGridSystemId, 55000, RegisterCollectReceptorsGridSystem);
         }
 
-        [EntityRoleInitializer("Role.Core.Senses.Receptor.Temperature.ActorRole",
+        [EntityRoleInitializer("Role.Core.Senses.Receptor.Noise.ActorRole",
                                ConditionalRoles = new[] {"Role.Core.Position.ContinuousPositioned"})]
         protected void InitializeCollectReceptorsContinuous<TGameContext, TItemId>(IServiceResolver serviceResolver,
                                                                                    IModuleInitializer<TGameContext> initializer,
@@ -86,7 +85,7 @@ namespace RogueEntity.Core.Sensing.Receptors.InfraVision
             ctx.Register(ReceptorCollectionContinuousSystemId, 55000, RegisterCollectReceptorsContinuousSystem);
         }
 
-        [EntityRoleInitializer("Role.Core.Senses.Source.Temperature")]
+        [EntityRoleInitializer("Role.Core.Senses.Source.Noise")]
         protected void InitializeSenseCollection<TGameContext, TItemId>(IServiceResolver serviceResolver,
                                                                         IModuleInitializer<TGameContext> initializer,
                                                                         EntityRole role)
@@ -126,7 +125,7 @@ namespace RogueEntity.Core.Sensing.Receptors.InfraVision
 
             var system = registry.BuildSystem()
                                  .WithContext<TGameContext>()
-                                 .CreateSystem<SensoryReceptorData<VisionSense>, SensoryReceptorState<VisionSense>, ContinuousMapPosition>(ls.CollectReceptor);
+                                 .CreateSystem<SensoryReceptorData<NoiseSense>, SensoryReceptorState<NoiseSense>, ContinuousMapPosition>(ls.CollectReceptor);
             context.AddInitializationStepHandler(system);
             context.AddFixedStepHandlers(system);
         }
@@ -144,7 +143,7 @@ namespace RogueEntity.Core.Sensing.Receptors.InfraVision
 
             var system = registry.BuildSystem()
                                  .WithContext<TGameContext>()
-                                 .CreateSystem<SensoryReceptorData<VisionSense>, SensoryReceptorState<VisionSense>, EntityGridPosition>(ls.CollectReceptor);
+                                 .CreateSystem<SensoryReceptorData<NoiseSense>, SensoryReceptorState<NoiseSense>, EntityGridPosition>(ls.CollectReceptor);
             context.AddInitializationStepHandler(system);
             context.AddFixedStepHandlers(system);
         }
@@ -162,7 +161,7 @@ namespace RogueEntity.Core.Sensing.Receptors.InfraVision
 
             var system = registry.BuildSystem()
                                  .WithContext<TGameContext>()
-                                 .CreateSystem<HeatSourceDefinition, SenseSourceState<TemperatureSense>>(ls.CollectSenseSource);
+                                 .CreateSystem<NoiseSourceDefinition, SenseSourceState<NoiseSense>>(ls.CollectSenseSource);
             context.AddInitializationStepHandler(system);
             context.AddFixedStepHandlers(system);
         }
@@ -181,7 +180,7 @@ namespace RogueEntity.Core.Sensing.Receptors.InfraVision
             var refreshLocalSenseState =
                 registry.BuildSystem()
                         .WithContext<TGameContext>()
-                        .CreateSystem<SensoryReceptorData<VisionSense>, SensoryReceptorState<VisionSense>, SenseReceptorDirtyFlag<VisionSense>>(ls.RefreshLocalReceptorState);
+                        .CreateSystem<SensoryReceptorData<NoiseSense>, SensoryReceptorState<NoiseSense>, SenseReceptorDirtyFlag<NoiseSense>>(ls.RefreshLocalReceptorState);
             context.AddInitializationStepHandler(refreshLocalSenseState);
             context.AddFixedStepHandlers(refreshLocalSenseState);
         }
@@ -197,16 +196,16 @@ namespace RogueEntity.Core.Sensing.Receptors.InfraVision
                 return;
             }
 
-            if (!serviceResolver.TryResolve(out ISenseDataBlitter senseBlitter))
+            if (!serviceResolver.TryResolve(out IDirectionalSenseBlitter senseBlitter))
             {
-                senseBlitter = new DefaultSenseDataBlitter();
+                senseBlitter = new DefaultDirectionalSenseBlitter();
             }
 
 
-            var omni = new OmnidirectionalSenseReceptorSystem<VisionSense, TemperatureSense>(ls, senseBlitter);
+            var uniSys = new UnidirectionalSenseReceptorSystem<NoiseSense, NoiseSense>(ls, senseBlitter);
             var system = registry.BuildSystem()
                                  .WithContext<TGameContext>()
-                                 .CreateSystem<SingleLevelSenseDirectionMapData<VisionSense>, SensoryReceptorState<VisionSense>>(omni.CopySenseSourcesToVisionField);
+                                 .CreateSystem<SingleLevelSenseDirectionMapData<NoiseSense>, SensoryReceptorState<NoiseSense>>(uniSys.CopySenseSourcesToVisionField);
 
 
             context.AddInitializationStepHandler(system);
@@ -228,9 +227,9 @@ namespace RogueEntity.Core.Sensing.Receptors.InfraVision
             context.AddFixedStepHandlers(ls.EndSenseCalculation);
         }
 
-        static bool GetOrCreateLightSystem(IServiceResolver serviceResolver, out SenseReceptorSystem<VisionSense, TemperatureSense> ls)
+        static bool GetOrCreateLightSystem(IServiceResolver serviceResolver, out SenseReceptorSystem<NoiseSense, NoiseSense> ls)
         {
-            if (!serviceResolver.TryResolve(out IHeatPhysicsConfiguration physicsConfig))
+            if (!serviceResolver.TryResolve(out INoisePhysicsConfiguration physicsConfig))
             {
                 ls = default;
                 return false;
@@ -238,10 +237,10 @@ namespace RogueEntity.Core.Sensing.Receptors.InfraVision
 
             if (!serviceResolver.TryResolve(out ls))
             {
-                ls = new SenseReceptorSystem<VisionSense, TemperatureSense>(serviceResolver.ResolveToReference<ISensePropertiesSource>(),
-                                                                            serviceResolver.ResolveToReference<ISenseStateCacheProvider>(),
-                                                                            physicsConfig.HeatPhysics,
-                                                                            physicsConfig.CreateHeatPropagationAlgorithm());
+                ls = new SenseReceptorSystem<NoiseSense, NoiseSense>(serviceResolver.ResolveToReference<ISensePropertiesSource>(),
+                                                                     serviceResolver.ResolveToReference<ISenseStateCacheProvider>(),
+                                                                     physicsConfig.NoisePhysics,
+                                                                     physicsConfig.CreateNoisePropagationAlgorithm());
             }
 
             return true;
@@ -250,10 +249,10 @@ namespace RogueEntity.Core.Sensing.Receptors.InfraVision
         void RegisterEntities<TItemId>(IServiceResolver serviceResolver, EntityRegistry<TItemId> registry)
             where TItemId : IEntityKey
         {
-            registry.RegisterNonConstructable<SensoryReceptorData<VisionSense>>();
-            registry.RegisterNonConstructable<SensoryReceptorState<VisionSense>>();
-            registry.RegisterNonConstructable<SingleLevelSenseDirectionMapData<VisionSense>>();
-            registry.RegisterFlag<SenseReceptorDirtyFlag<VisionSense>>();
+            registry.RegisterNonConstructable<SensoryReceptorData<NoiseSense>>();
+            registry.RegisterNonConstructable<SensoryReceptorState<NoiseSense>>();
+            registry.RegisterNonConstructable<SingleLevelSenseDirectionMapData<NoiseSense>>();
+            registry.RegisterFlag<SenseReceptorDirtyFlag<NoiseSense>>();
         }
     }
 }

@@ -44,7 +44,7 @@ namespace RogueEntity.Core.Sensing.Resistance
         {
             var ctx = initializer.DeclareEntityContext<TItemId>();
             ctx.Register(RegisterEntitiesId, 0, RegisterEntities);
-            ctx.Register(ExecuteSystem, 5400, RegisterResistanceSystemExecution);
+            ctx.Register(ExecuteSystem, 51000, RegisterResistanceSystemExecution);
             ctx.Register(RegisterSystem, 500, RegisterResistanceSystemLifecycle);
         }
 

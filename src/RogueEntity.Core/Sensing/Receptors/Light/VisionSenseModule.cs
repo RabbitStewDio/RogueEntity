@@ -25,8 +25,10 @@ namespace RogueEntity.Core.Sensing.Receptors.Light
         public static readonly EntitySystemId ReceptorPreparationSystemId = "Systems.Core.Senses.Receptor.Vision.Prepare";
         public static readonly EntitySystemId ReceptorCollectionGridSystemId = "Systems.Core.Senses.Receptor.Vision.CollectReceptors.Grid";
         public static readonly EntitySystemId ReceptorCollectionContinuousSystemId = "Systems.Core.Senses.Receptor.Vision.CollectReceptors.Continuous";
-        public static readonly EntitySystemId SenseSourceCollectionContinuousSystemId = "Systems.Core.Senses.Receptor.Vision.CollectSources.Continuous";
+        public static readonly EntitySystemId ReceptorComputeFoVSystemId = "Systems.Core.Senses.Receptor.Vision.ComputeFieldOfView";
+        public static readonly EntitySystemId SenseSourceCollectionSystemId = "Systems.Core.Senses.Receptor.Vision.CollectSources.Continuous";
         public static readonly EntitySystemId ReceptorComputeSystemId = "Systems.Core.Senses.Receptor.Vision.Compute";
+        public static readonly EntitySystemId ReceptorFinalizeSystemId = "Systems.Core.Senses.Receptor.Vision.Finalize";
 
         public static readonly EntityRole SenseReceptorActorRole = new EntityRole("Role.Core.Senses.Receptor.Vision.ActorRole");
 
@@ -56,8 +58,10 @@ namespace RogueEntity.Core.Sensing.Receptors.Light
         {
             var ctx = initializer.DeclareEntityContext<TItemId>();
             ctx.Register(RegisterEntityId, 0, RegisterEntities);
-            ctx.Register(ReceptorPreparationSystemId, 5000, RegisterPrepareSystem);
-            ctx.Register(ReceptorComputeSystemId, 5850, RegisterCalculateSystem);
+            ctx.Register(ReceptorPreparationSystemId, 50000, RegisterPrepareSystem);
+            ctx.Register(ReceptorComputeFoVSystemId, 56000, RegisterComputeReceptorFieldOfView);
+            ctx.Register(ReceptorComputeSystemId, 58500, RegisterCalculateSystem);
+            ctx.Register(ReceptorFinalizeSystemId, 59500, RegisterFinalizeSystem);
         }
 
         [EntityRoleInitializer("Role.Core.Senses.Receptor.Vision.ActorRole",
@@ -68,7 +72,7 @@ namespace RogueEntity.Core.Sensing.Receptors.Light
             where TItemId : IEntityKey
         {
             var ctx = initializer.DeclareEntityContext<TItemId>();
-            ctx.Register(ReceptorCollectionGridSystemId, 5500, RegisterCollectReceptorsGridSystem);
+            ctx.Register(ReceptorCollectionGridSystemId, 55000, RegisterCollectReceptorsGridSystem);
         }
 
         [EntityRoleInitializer("Role.Core.Senses.Receptor.Vision.ActorRole",
@@ -79,7 +83,7 @@ namespace RogueEntity.Core.Sensing.Receptors.Light
             where TItemId : IEntityKey
         {
             var ctx = initializer.DeclareEntityContext<TItemId>();
-            ctx.Register(ReceptorCollectionContinuousSystemId, 5500, RegisterCollectReceptorsContinuousSystem);
+            ctx.Register(ReceptorCollectionContinuousSystemId, 55000, RegisterCollectReceptorsContinuousSystem);
         }
 
         [EntityRoleInitializer("Role.Core.Senses.Source.Light")]
@@ -89,7 +93,7 @@ namespace RogueEntity.Core.Sensing.Receptors.Light
             where TItemId : IEntityKey
         {
             var ctx = initializer.DeclareEntityContext<TItemId>();
-            ctx.Register(SenseSourceCollectionContinuousSystemId, 5750, RegisterCollectSenseSourcesSystem);
+            ctx.Register(SenseSourceCollectionSystemId, 57500, RegisterCollectSenseSourcesSystem);
         }
 
         void RegisterPrepareSystem<TGameContext, TItemId>(IServiceResolver serviceResolver,
@@ -125,13 +129,6 @@ namespace RogueEntity.Core.Sensing.Receptors.Light
                                  .CreateSystem<SensoryReceptorData<VisionSense>, SensoryReceptorState<VisionSense>, ContinuousMapPosition>(ls.CollectReceptor);
             context.AddInitializationStepHandler(system);
             context.AddFixedStepHandlers(system);
-
-            var refreshLocalSenseState =
-                registry.BuildSystem()
-                        .WithContext<TGameContext>()
-                        .CreateSystem<SensoryReceptorData<VisionSense>, SensoryReceptorState<VisionSense>, SenseReceptorDirtyFlag<VisionSense>, ContinuousMapPosition>(ls.RefreshLocalReceptorState);
-            context.AddInitializationStepHandler(refreshLocalSenseState);
-            context.AddFixedStepHandlers(refreshLocalSenseState);
         }
 
         void RegisterCollectReceptorsContinuousSystem<TGameContext, TItemId>(IServiceResolver resolver,
@@ -150,12 +147,23 @@ namespace RogueEntity.Core.Sensing.Receptors.Light
                                  .CreateSystem<SensoryReceptorData<VisionSense>, SensoryReceptorState<VisionSense>, EntityGridPosition>(ls.CollectReceptor);
             context.AddInitializationStepHandler(system);
             context.AddFixedStepHandlers(system);
+        }
+
+        void RegisterComputeReceptorFieldOfView<TGameContext, TItemId>(IServiceResolver resolver,
+                                                                       IGameLoopSystemRegistration<TGameContext> context,
+                                                                       EntityRegistry<TItemId> registry,
+                                                                       ICommandHandlerRegistration<TGameContext, TItemId> handler)
+            where TItemId : IEntityKey
+        {
+            if (!GetOrCreateLightSystem(resolver, out var ls))
+            {
+                return;
+            }
 
             var refreshLocalSenseState =
                 registry.BuildSystem()
                         .WithContext<TGameContext>()
-                        .CreateSystem<SensoryReceptorData<VisionSense>, SensoryReceptorState<VisionSense>, SenseReceptorDirtyFlag<VisionSense>, EntityGridPosition>(ls.RefreshLocalReceptorState);
-
+                        .CreateSystem<SensoryReceptorData<VisionSense>, SensoryReceptorState<VisionSense>, SenseReceptorDirtyFlag<VisionSense>>(ls.RefreshLocalReceptorState);
             context.AddInitializationStepHandler(refreshLocalSenseState);
             context.AddFixedStepHandlers(refreshLocalSenseState);
         }
@@ -188,20 +196,38 @@ namespace RogueEntity.Core.Sensing.Receptors.Light
             {
                 return;
             }
+
+            if (!serviceResolver.TryResolve(out ISenseDataBlitter blitter))
+            {
+                blitter = new DefaultSenseDataBlitter();
+            }
             
+            var omniSystem = new OmnidirectionalSenseReceptorSystem<VisionSense, VisionSense>(ls, blitter);
             var system = registry.BuildSystem()
                                  .WithContext<TGameContext>()
-                                 .CreateSystem<SingleLevelBrightnessMap, SensoryReceptorState<VisionSense>>(ls.CopySenseSourcesToVisionField);
-            
+                                 .CreateSystem<SingleLevelSenseDirectionMapData<VisionSense>, SensoryReceptorState<VisionSense>>(omniSystem.CopySenseSourcesToVisionField);
+
 
             context.AddInitializationStepHandler(system);
             context.AddFixedStepHandlers(system);
-            
+        }
+
+        void RegisterFinalizeSystem<TGameContext, TItemId>(IServiceResolver serviceResolver,
+                                                           IGameLoopSystemRegistration<TGameContext> context,
+                                                           EntityRegistry<TItemId> registry,
+                                                           ICommandHandlerRegistration<TGameContext, TItemId> handler)
+            where TItemId : IEntityKey
+        {
+            if (!GetOrCreateLightSystem(serviceResolver, out var ls))
+            {
+                return;
+            }
+
             context.AddInitializationStepHandler(ls.EndSenseCalculation);
             context.AddFixedStepHandlers(ls.EndSenseCalculation);
         }
 
-        static bool GetOrCreateLightSystem(IServiceResolver serviceResolver, out VisionSenseSystem<VisionSense> ls)
+        static bool GetOrCreateLightSystem(IServiceResolver serviceResolver, out SenseReceptorSystem<VisionSense, VisionSense> ls)
         {
             if (!serviceResolver.TryResolve(out ILightPhysicsConfiguration physicsConfig))
             {
@@ -209,18 +235,12 @@ namespace RogueEntity.Core.Sensing.Receptors.Light
                 return false;
             }
 
-            if (!serviceResolver.TryResolve(out ISenseDataBlitter senseBlitter))
-            {
-                senseBlitter = new DefaultSenseDataBlitter();
-            }
-
             if (!serviceResolver.TryResolve(out ls))
             {
-                ls = new VisionSenseSystem<VisionSense>(serviceResolver.ResolveToReference<ISensePropertiesSource>(),
-                                                        serviceResolver.ResolveToReference<ISenseStateCacheProvider>(),
-                                                        physicsConfig.LightPhysics,
-                                                        physicsConfig.CreateLightPropagationAlgorithm(),
-                                                        senseBlitter);
+                ls = new SenseReceptorSystem<VisionSense, VisionSense>(serviceResolver.ResolveToReference<ISensePropertiesSource>(),
+                                                                       serviceResolver.ResolveToReference<ISenseStateCacheProvider>(),
+                                                                       physicsConfig.LightPhysics,
+                                                                       physicsConfig.CreateLightPropagationAlgorithm());
             }
 
             return true;
@@ -231,7 +251,7 @@ namespace RogueEntity.Core.Sensing.Receptors.Light
         {
             registry.RegisterNonConstructable<SensoryReceptorData<VisionSense>>();
             registry.RegisterNonConstructable<SensoryReceptorState<VisionSense>>();
-            registry.RegisterNonConstructable<SingleLevelBrightnessMap>();
+            registry.RegisterNonConstructable<SingleLevelSenseDirectionMapData<VisionSense>>();
             registry.RegisterFlag<SenseReceptorDirtyFlag<VisionSense>>();
         }
     }

@@ -15,31 +15,22 @@ namespace RogueEntity.Core.Sensing.Receptors.Light
     {
         [DataMember(Order = 0)]
         [Key(0)]
-        public int Z { get; set; }
+        SingleLevelSenseDirectionMapData<VisionSense> backend;
+        
         [DataMember(Order = 1)]
         [Key(1)]
-        public SenseDataMap SenseMap { get; }
-        [DataMember(Order = 2)]
-        [Key(2)]
         public BoundedDataView<Color> RawColorData { get; private set; }
 
-        public SingleLevelBrightnessMap()
-        {
-            Z = int.MinValue;
-            SenseMap = new SenseDataMap();
-        }
-
         [SerializationConstructor]
-        public SingleLevelBrightnessMap(int z, SenseDataMap senseMap, BoundedDataView<Color> rawColorData)
+        public SingleLevelBrightnessMap(SingleLevelSenseDirectionMapData<VisionSense> backend, BoundedDataView<Color> rawColorData)
         {
-            Z = z;
-            SenseMap = senseMap;
+            this.backend = backend;
             RawColorData = rawColorData;
         }
 
         public bool TryGetLightColors(int z, out IReadOnlyView2D<Color> colorData)
         {
-            if (RawColorData != null && z == this.Z)
+            if (RawColorData != null && z == this.backend.Z)
             {
                 colorData = RawColorData;
                 return true;
@@ -49,16 +40,9 @@ namespace RogueEntity.Core.Sensing.Receptors.Light
             return false;
         }
 
-        public bool TryGetLightIntensity(int z, out ISenseDataView intensities)
+        public bool TryGetSenseData(int z, out ISenseDataView intensities)
         {
-            if (z == this.Z)
-            {
-                intensities = SenseMap;
-                return true;
-            }
-
-            intensities = default;
-            return false;
+            return backend.TryGetIntensity(z, out intensities);
         }
 
         public BoundedDataView<Color> CreateColorMap(Rectangle bounds)

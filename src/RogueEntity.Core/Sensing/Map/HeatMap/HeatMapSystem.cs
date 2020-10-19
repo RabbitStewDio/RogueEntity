@@ -1,14 +1,16 @@
 using System;
+using EnTTSharp.Entities;
 using JetBrains.Annotations;
 using RogueEntity.Core.Meta.ItemTraits;
 using RogueEntity.Core.Sensing.Cache;
-using RogueEntity.Core.Sensing.Common;
 using RogueEntity.Core.Sensing.Common.Blitter;
+using RogueEntity.Core.Sensing.Receptors;
+using RogueEntity.Core.Sensing.Receptors.InfraVision;
 using RogueEntity.Core.Sensing.Sources.Heat;
 
 namespace RogueEntity.Core.Sensing.Map.HeatMap
 {
-    public class HeatMapSystem: SenseMappingSystemBase<TemperatureSense, HeatSourceDefinition>, IHeatMap
+    public class HeatMapSystem: SenseMappingSystemBase<VisionSense, HeatSourceDefinition>, IHeatMap
     {
         readonly IHeatPhysicsConfiguration heatPhysics;
 
@@ -19,14 +21,11 @@ namespace RogueEntity.Core.Sensing.Map.HeatMap
             this.heatPhysics = heatPhysics ?? throw new ArgumentNullException(nameof(heatPhysics));
         }
 
-        public bool TryGetHeatIntensity(int z, out ISenseDataView brightnessMap)
-        {
-            return TryGetSenseData(z, out brightnessMap);
-        }
-
+        
         public Temperature GetEnvironmentTemperature(int z)
         {
             return heatPhysics.GetEnvironmentTemperature(z);
         }
+        
     }
 }

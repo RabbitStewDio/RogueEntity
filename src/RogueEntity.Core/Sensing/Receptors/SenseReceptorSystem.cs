@@ -24,11 +24,11 @@ namespace RogueEntity.Core.Sensing.Receptors
     /// </summary>
     /// <typeparam name="TReceptorSense"></typeparam>
     /// <typeparam name="TSourceSense"></typeparam>
-    public class SenseReceptorSystemBase<TReceptorSense, TSourceSense>
+    public class SenseReceptorSystem<TReceptorSense, TSourceSense>
         where TReceptorSense : ISense
         where TSourceSense : ISense
     {
-        static readonly ILogger Logger = SLog.ForContext<SenseReceptorSystemBase<TReceptorSense, TSourceSense>>();
+        static readonly ILogger Logger = SLog.ForContext<SenseReceptorSystem<TReceptorSense, TSourceSense>>();
         const int ZLayerTimeToLive = 50;
 
         readonly Lazy<ISensePropertiesSource> senseProperties;
@@ -42,7 +42,7 @@ namespace RogueEntity.Core.Sensing.Receptors
         Optional<ISenseStateCacheView> cacheView;
         int currentTime;
 
-        public SenseReceptorSystemBase([NotNull] Lazy<ISensePropertiesSource> senseProperties,
+        public SenseReceptorSystem([NotNull] Lazy<ISensePropertiesSource> senseProperties,
                                        [NotNull] Lazy<ISenseStateCacheProvider> senseCacheProvider,
                                        [NotNull] ISensePhysics physics,
                                        [NotNull] ISensePropagationAlgorithm sensePropagationAlgorithm)
@@ -57,7 +57,17 @@ namespace RogueEntity.Core.Sensing.Receptors
             this.zLevelBuffer = new List<int>();
         }
 
-        protected bool TryGetLevel(int z, out SenseDataLevel level) => activeLightsPerLevel.TryGetValue(z, out level);
+        public bool TryGetLevel(int z, out ISenseReceptorProcessor level)
+        {
+            if (activeLightsPerLevel.TryGetValue(z, out var levelRaw))
+            {
+                level = levelRaw;
+                return true;
+            }
+
+            level = default;
+            return false;
+        }
 
         /// <summary>
         ///   To be called once during initialization.
@@ -154,7 +164,7 @@ namespace RogueEntity.Core.Sensing.Receptors
                     return;
                 }
 
-                lights = new SenseDataLevel(level, cacheView,  senseData, physics);
+                lights = new SenseDataLevel(level, cacheView, senseData, physics);
                 activeLightsPerLevel[level] = lights;
             }
 
@@ -182,8 +192,8 @@ namespace RogueEntity.Core.Sensing.Receptors
             where TItemId : IEntityKey
             where TSenseSource : ISenseDefinition
         {
-            if (senseDefinition.Enabled && 
-                !senseState.LastPosition.IsInvalid && 
+            if (senseDefinition.Enabled &&
+                !senseState.LastPosition.IsInvalid &&
                 activeLightsPerLevel.TryGetValue(senseState.LastPosition.GridZ, out var level))
             {
                 if (level.IsOverlapping(senseDefinition.SenseDefinition.Intensity, senseState.LastPosition))
@@ -225,16 +235,20 @@ namespace RogueEntity.Core.Sensing.Receptors
         /// <typeparam name="TItemId"></typeparam>
         /// <typeparam name="TGameContext"></typeparam>
         /// <typeparam name="TPosition"></typeparam>
-        public void RefreshLocalReceptorState<TItemId, TGameContext, TPosition>(IEntityViewControl<TItemId> v,
-                                                                                TGameContext context,
-                                                                                TItemId k,
-                                                                                in SensoryReceptorData<TReceptorSense> definition,
-                                                                                in SensoryReceptorState<TReceptorSense> state,
-                                                                                in SenseReceptorDirtyFlag<TReceptorSense> dirtyMarker,
-                                                                                in TPosition pos)
+        public void RefreshLocalReceptorState<TItemId, TGameContext>(IEntityViewControl<TItemId> v,
+                                                                     TGameContext context,
+                                                                     TItemId k,
+                                                                     in SensoryReceptorData<TReceptorSense> definition,
+                                                                     in SensoryReceptorState<TReceptorSense> state,
+                                                                     in SenseReceptorDirtyFlag<TReceptorSense> dirtyMarker)
             where TItemId : IEntityKey
-            where TPosition : IPosition
         {
+            var pos = state.LastPosition;
+            if (pos.IsInvalid)
+            {
+                return;
+            }
+
             if (TryGetResistanceView(pos.GridZ, out var resistanceView))
             {
                 state.SenseSource.TryGetValue(out var dataIn);
@@ -365,7 +379,7 @@ namespace RogueEntity.Core.Sensing.Receptors
             }
         }
 
-        protected class SenseDataLevel
+        protected class SenseDataLevel: ISenseReceptorProcessor
         {
             public readonly IReadOnlyView2D<float> ResistanceView;
             public int LastRecentlyUsedTime { get; private set; }
@@ -421,7 +435,7 @@ namespace RogueEntity.Core.Sensing.Receptors
                     {
                         return;
                     }
-                    
+
                     directionalSenseMapServices.ProcessSenseSources(brightnessMap, new Position2D(p.GridX, p.GridY), blitter, blittableSenses);
                 }
                 finally
@@ -429,7 +443,7 @@ namespace RogueEntity.Core.Sensing.Receptors
                     blittableSenses.Clear();
                 }
             }
-            
+
             public void ProcessOmnidirectional(ISenseDataBlitter blitter, in SenseDataMap brightnessMap, bool flaggedAsDirty)
             {
                 var blittableSenses = new List<(Position2D, SenseSourceData)>();
@@ -450,7 +464,7 @@ namespace RogueEntity.Core.Sensing.Receptors
                     {
                         return;
                     }
-                    
+
                     senseMapServices.ProcessSenseSources(brightnessMap, blitter, blittableSenses);
                 }
                 finally
@@ -467,14 +481,14 @@ namespace RogueEntity.Core.Sensing.Receptors
 
             public void AddReceptor(float intensity, in Position pos)
             {
-                var radius = (int) Math.Ceiling(physics.SignalRadiusForIntensity(intensity));
+                var radius = (int)Math.Ceiling(physics.SignalRadiusForIntensity(intensity));
                 var bounds = new Rectangle(new Coord(pos.GridX, pos.GridY), radius, radius);
                 receptorBounds.Add(bounds);
             }
 
             public bool IsOverlapping(float intensity, in Position pos)
             {
-                var radius = (int) Math.Ceiling(physics.SignalRadiusForIntensity(intensity));
+                var radius = (int)Math.Ceiling(physics.SignalRadiusForIntensity(intensity));
                 var bounds = new Rectangle(new Coord(pos.GridX, pos.GridY), radius, radius);
                 foreach (var b in receptorBounds)
                 {
@@ -487,5 +501,11 @@ namespace RogueEntity.Core.Sensing.Receptors
                 return false;
             }
         }
+    }
+
+    public interface ISenseReceptorProcessor
+    {
+        void ProcessDirectional(IDirectionalSenseBlitter blitter, in Position p, in SenseDataMap brightnessMap, bool flaggedAsDirty);
+        void ProcessOmnidirectional(ISenseDataBlitter blitter, in SenseDataMap brightnessMap, bool flaggedAsDirty);
     }
 }
