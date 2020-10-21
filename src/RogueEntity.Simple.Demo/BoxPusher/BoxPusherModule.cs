@@ -11,7 +11,6 @@ using RogueEntity.Core.Sensing.Cache;
 using RogueEntity.Core.Sensing.Discovery;
 using RogueEntity.Core.Sensing.Resistance;
 using RogueEntity.Core.Sensing.Resistance.Maps;
-using RogueEntity.Core.Sensing.Sources;
 
 namespace RogueEntity.Simple.BoxPusher
 {
@@ -56,7 +55,7 @@ namespace RogueEntity.Simple.BoxPusher
         [EntityRoleInitializer("Role.Core.Senses.Resistance.ResistanceDataProvider")]
         protected void InitializeRole<TGameContext, TItemId>(IModuleInitializer<TGameContext> initializer, EntityRole role)
             where TItemId : IEntityKey
-            where TGameContext : IItemContext<TGameContext, TItemId>, IGridMapContext<TGameContext, TItemId>
+            where TGameContext : IItemContext<TGameContext, TItemId>, IGridMapContext<TGameContext, TItemId>, IGridMapRawDataContext<TItemId>
         {
             var ctx = initializer.DeclareEntityContext<TItemId>();
             ctx.Register(SetUpGameSenseResistancesId, 1100, RegisterResistanceSystemConfiguration);
@@ -67,7 +66,7 @@ namespace RogueEntity.Simple.BoxPusher
                                                                           EntityRegistry<TItemId> registry, 
                                                                           ICommandHandlerRegistration<TGameContext, TItemId> handler)
             where TItemId : IEntityKey
-            where TGameContext : IItemContext<TGameContext, TItemId>, IGridMapContext<TGameContext, TItemId>
+            where TGameContext : IItemContext<TGameContext, TItemId>, IGridMapContext<TGameContext, TItemId>, IGridMapRawDataContext<TItemId>
         {
             if (serviceResolver.TryResolve(out SenseStateCacheProvider cache))
             {

@@ -8,6 +8,7 @@ using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Sensing.Cache;
 using RogueEntity.Core.Sensing.Common;
 using RogueEntity.Core.Sensing.Common.Blitter;
+using RogueEntity.Core.Sensing.Resistance;
 using RogueEntity.Core.Sensing.Resistance.Maps;
 using RogueEntity.Core.Sensing.Sources;
 using RogueEntity.Core.Utils;
@@ -24,7 +25,7 @@ namespace RogueEntity.Core.Sensing.Receptors
     /// </summary>
     /// <typeparam name="TReceptorSense"></typeparam>
     /// <typeparam name="TSourceSense"></typeparam>
-    public class SenseReceptorSystem<TReceptorSense, TSourceSense>
+    public abstract class SenseReceptorSystem<TReceptorSense, TSourceSense>
         where TReceptorSense : ISense
         where TSourceSense : ISense
     {
@@ -164,7 +165,7 @@ namespace RogueEntity.Core.Sensing.Receptors
                     return;
                 }
 
-                lights = new SenseDataLevel(level, cacheView, senseData, physics);
+                lights = new SenseDataLevel(level, cacheView, CreateSensoryResistanceView(senseData), physics);
                 activeLightsPerLevel[level] = lights;
             }
 
@@ -214,7 +215,7 @@ namespace RogueEntity.Core.Sensing.Receptors
                     return;
                 }
 
-                lights = new SenseDataLevel(level, cacheView, senseData, physics);
+                lights = new SenseDataLevel(level, cacheView, CreateSensoryResistanceView(senseData), physics);
                 activeLightsPerLevel[level] = lights;
             }
 
@@ -350,34 +351,7 @@ namespace RogueEntity.Core.Sensing.Receptors
             return false;
         }
 
-
-        class BlockVisionMap : IReadOnlyView2D<float>
-        {
-            readonly IReadOnlyMapData<SenseProperties> cellProperties;
-
-            public BlockVisionMap(IReadOnlyMapData<SenseProperties> cellProperties)
-            {
-                this.cellProperties = cellProperties;
-            }
-
-            public float this[int x, int y]
-            {
-                get
-                {
-                    if (x < 0 || x >= cellProperties.Width)
-                    {
-                        return 0;
-                    }
-
-                    if (y < 0 || x >= cellProperties.Height)
-                    {
-                        return 0;
-                    }
-
-                    return cellProperties[x, y].blocksLight;
-                }
-            }
-        }
+        protected abstract IReadOnlyView2D<float> CreateSensoryResistanceView(IReadOnlyView2D<SensoryResistance> resistanceMap);
 
         protected class SenseDataLevel: ISenseReceptorProcessor
         {
@@ -392,13 +366,13 @@ namespace RogueEntity.Core.Sensing.Receptors
 
             public SenseDataLevel(int z,
                                   Optional<ISenseStateCacheView> senseCache,
-                                  IReadOnlyMapData<SenseProperties> resistanceMap,
+                                  IReadOnlyView2D<float> resistanceMap,
                                   ISensePhysics physics)
             {
                 this.physics = physics;
                 this.senseMapServices = new SenseDataMapServices(z, senseCache);
                 this.directionalSenseMapServices = new DirectionalSenseDataMapServices(z, senseCache);
-                this.ResistanceView = new BlockVisionMap(resistanceMap);
+                this.ResistanceView = resistanceMap;
                 this.sources = new List<SenseSourceState<TSourceSense>>();
                 this.receptorBounds = new List<Rectangle>();
             }

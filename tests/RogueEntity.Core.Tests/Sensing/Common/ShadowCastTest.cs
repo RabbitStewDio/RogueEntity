@@ -120,7 +120,7 @@ namespace RogueEntity.Core.Tests.Sensing.Common
         public void ValidateMap(string name, int width, int height, string sourceText, string resultText)
         {
             var radius = width / 2;
-            var source = new SenseSourceDefinition(DistanceCalculation.EUCLIDEAN, radius + 1, radius + 1);
+            var source = new SenseSourceDefinition(DistanceCalculation.EUCLIDEAN, radius + 1);
             var sd = new SenseSourceData(radius);
             var pos = new Position2D(width / 2, height / 2);
             

@@ -3,14 +3,29 @@ using System.Collections.Generic;
 using System.Runtime.Serialization;
 using System.Threading;
 using GoRogue;
+using JetBrains.Annotations;
 using MessagePack;
 using RogueEntity.Core.Positioning;
 
 namespace RogueEntity.Core.Utils.Maps
 {
+    public interface IDynamicDataView2D<T> : IView2D<T>
+    {
+        int OffsetX { get; }
+        int OffsetY { get; }
+        int TileSizeX { get; }
+        int TileSizeY { get; }
+
+        bool TrySet(int x, int y, in T value);
+        bool TryGet(int x, int y, out T result);
+
+        List<Rectangle> GetActiveTiles(List<Rectangle> data = null);
+        bool TryGetData(int x, int y, out IBoundedDataViewRawAccess<T> raw);
+    }
+
     [DataContract]
     [MessagePackObject]
-    public class DynamicDataView<T> : IReadOnlyView2D<T>
+    public class DynamicDataView<T> : IDynamicDataView2D<T>
     {
         public event EventHandler<DynamicDataViewEventArgs<T>> ViewCreated;
         public event EventHandler<DynamicDataViewEventArgs<T>> ViewExpired;
@@ -18,18 +33,30 @@ namespace RogueEntity.Core.Utils.Maps
         [DataMember(Order = 0)]
         [Key(0)]
         readonly int tileSizeX;
+
         [DataMember(Order = 1)]
         [Key(1)]
         readonly int tileSizeY;
+
         [DataMember(Order = 2)]
         [Key(2)]
         readonly Dictionary<Position2D, TrackedDataView> index;
+
         [DataMember(Order = 3)]
         [Key(3)]
         readonly List<Position2D> expired;
+
         [DataMember(Order = 4)]
         [Key(4)]
         long currentTime;
+
+        [DataMember(Order = 5)]
+        [Key(5)]
+        int offsetX;
+
+        [DataMember(Order = 6)]
+        [Key(6)]
+        int offsetY;
 
         [IgnoreDataMember]
         [IgnoreMember]
@@ -38,6 +65,14 @@ namespace RogueEntity.Core.Utils.Maps
         [IgnoreDataMember]
         [IgnoreMember]
         public int TileSizeY => tileSizeY;
+
+        [IgnoreDataMember]
+        [IgnoreMember]
+        public int OffsetX => offsetX;
+
+        [IgnoreDataMember]
+        [IgnoreMember]
+        public int OffsetY => offsetY;
 
         public DynamicDataView(int tileSizeX, int tileSizeY)
         {
@@ -51,13 +86,32 @@ namespace RogueEntity.Core.Utils.Maps
         }
 
         [SerializationConstructor]
-        protected DynamicDataView(int tileSizeX, int tileSizeY, Dictionary<Position2D, TrackedDataView> index, List<Position2D> expired, long currentTime)
+        protected DynamicDataView(int tileSizeX, int tileSizeY, [NotNull] Dictionary<Position2D, TrackedDataView> index, [NotNull] List<Position2D> expired, long currentTime)
         {
             this.tileSizeX = tileSizeX;
             this.tileSizeY = tileSizeY;
-            this.index = index;
-            this.expired = expired;
+            this.index = index ?? throw new ArgumentNullException(nameof(index));
+            this.expired = expired ?? throw new ArgumentNullException(nameof(expired));
             this.currentTime = currentTime;
+        }
+
+        public List<Rectangle> GetActiveTiles(List<Rectangle> data = null)
+        {
+            if (data == null)
+            {
+                data = new List<Rectangle>();
+            }
+            else
+            {
+                data.Clear();
+            }
+
+            foreach (var k in index.Values)
+            {
+                data.Add(k.Bounds);
+            }
+
+            return data;
         }
 
         public void PrepareFrame(long time)
@@ -101,32 +155,45 @@ namespace RogueEntity.Core.Utils.Maps
 
         public BoundedDataView<T> GetOrCreateData(int x, int y)
         {
-            var dx = x / tileSizeX;
-            var dy = y / tileSizeY;
-            if (!index.TryGetValue(new Position2D(dx, dy), out var data))
+            if (TryGetDataInternal(x, y, out TrackedDataView rawData))
             {
-                data = new TrackedDataView(new Rectangle(dx * tileSizeX, dy * tileSizeY, tileSizeX, tileSizeY), currentTime);
-                index[new Position2D(dx, dy)] = data;
-                ViewCreated?.Invoke(this, new DynamicDataViewEventArgs<T>(data));
-            }
-            else
-            {
-                data.MarkUsedForWriting();
+                rawData.MarkUsedForWriting();
+                return rawData;
             }
 
+            var dx = MapPartitions.TileSplit(x, offsetX, tileSizeX);
+            var dy = MapPartitions.TileSplit(y, offsetX, tileSizeY);
+            var data = new TrackedDataView(new Rectangle(dx * tileSizeX + offsetX, dy * tileSizeY + offsetY, tileSizeX, tileSizeY), currentTime);
+            data.MarkUsedForReading();
+            data.MarkUsedForWriting();
+
+            index[new Position2D(dx, dy)] = data;
+            ViewCreated?.Invoke(this, new DynamicDataViewEventArgs<T>(data));
             return data;
         }
 
-        public bool TrySet(int x, int y, T value)
+        public bool TryGetData(int x, int y, out IBoundedDataViewRawAccess<T> raw)
+        {
+            if (TryGetDataInternal(x, y, out TrackedDataView t))
+            {
+                raw = t;
+                return true;
+            }
+
+            raw = default;
+            return false;
+        }
+
+        public bool TrySet(int x, int y, in T value)
         {
             var data = GetOrCreateData(x, y);
             return data.TrySet(x, y, value);
         }
 
-        bool TryGetData(int x, int y, out TrackedDataView data)
+        bool TryGetDataInternal(int x, int y, out TrackedDataView data)
         {
-            var dx = x / tileSizeX;
-            var dy = y / tileSizeY;
+            var dx = MapPartitions.TileSplit(x, offsetX, tileSizeX);
+            var dy = MapPartitions.TileSplit(y, offsetX, tileSizeY);
             if (!index.TryGetValue(new Position2D(dx, dy), out data))
             {
                 return false;
@@ -138,7 +205,7 @@ namespace RogueEntity.Core.Utils.Maps
 
         public bool TryGet(int x, int y, out T result)
         {
-            if (TryGetData(x, y, out var data))
+            if (TryGetDataInternal(x, y, out TrackedDataView data))
             {
                 return data.TryGet(x, y, out result);
             }
@@ -160,6 +227,10 @@ namespace RogueEntity.Core.Utils.Maps
 
                 return default;
             }
+            set
+            {
+                TrySet(x, y, in value);
+            }
         }
 
         [DataContract]
@@ -169,9 +240,11 @@ namespace RogueEntity.Core.Utils.Maps
             [DataMember(Order = 2)]
             [Key(2)]
             long currentTime;
+
             [DataMember(Order = 3)]
             [Key(3)]
             int usedForReading;
+
             [DataMember(Order = 4)]
             [Key(4)]
             int usedForWriting;
@@ -196,7 +269,7 @@ namespace RogueEntity.Core.Utils.Maps
             [DataMember(Order = 5)]
             [Key(5)]
             public long LastUsed { get; private set; }
-            
+
             public void MarkUnused(long time)
             {
                 lock (this)
@@ -221,7 +294,7 @@ namespace RogueEntity.Core.Utils.Maps
             [IgnoreDataMember]
             [IgnoreMember]
             public bool IsUsedForReading => usedForReading != 0;
-            
+
             [IgnoreDataMember]
             [IgnoreMember]
             public bool IsUsedForWriting => usedForWriting != 0;

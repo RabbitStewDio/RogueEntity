@@ -265,7 +265,7 @@ namespace RogueEntity.Core.Positioning.Grid
                                            TItemId targetItem,
                                            Position p,
                                            bool forceMove,
-                                           IMapData<TItemId> map,
+                                           IView2D<TItemId> map,
                                            IGridMapDataContext<TGameContext, TItemId> mapData)
         {
             if (!Equality.Equals(sourceItem, map[p.GridX, p.GridY]))

@@ -91,14 +91,6 @@ namespace RogueEntity.Core.Positioning.Grid
                 return false;
             }
 
-            var gridX = p.GridX;
-            var gridY = p.GridY;
-            if (gridX < 0 || gridY < 0 || gridX >= map.Width || gridY >= map.Height)
-            {
-                logger.Verbose("Desired position is out of range for map size of {Size} with {Pos}", (gridX, gridY), p);
-                return false;
-            }
-
             var itemAtPos = map[p.GridX, p.GridY];
             if (itemAtPos.IsEmpty)
             {

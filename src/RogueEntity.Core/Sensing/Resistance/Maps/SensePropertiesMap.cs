@@ -1,53 +1,38 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
+using GoRogue;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Positioning.MapLayers;
-using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.MapChunks;
 using RogueEntity.Core.Utils.Maps;
 
 namespace RogueEntity.Core.Sensing.Resistance.Maps
 {
-    public class SensePropertiesMap<TGameContext> : IReadOnlyMapData<SenseProperties>
+    public class SensePropertiesMap<TGameContext> : IReadOnlyView2D<SensoryResistance>
     {
-        readonly IAddByteBlitter blitter;
-        readonly Dictionary<MapLayer, Dictionary<int, ISensePropertiesDataProcessor<TGameContext>>> dependencies;
-        CombinedBlitterResultProcessor<TGameContext, ISensePropertiesDataProcessor<TGameContext>> combiner;
-        byte[] data;
+        readonly int z;
+        readonly Dictionary<MapLayer, ISensePropertiesDataProcessor<TGameContext>> dependencies;
+        readonly DynamicDataView<SensoryResistance> data;
+        readonly DynamicBoolDataView dataDirty;
+        readonly List<ISensePropertiesDataProcessor<TGameContext>> dependenciesAsList;
         bool combinerDirty;
 
-        public int Height { get; private set; }
-        public int Width { get; private set; }
-
-        public SensePropertiesMap(IAddByteBlitter blitter, int width, int height)
+        public SensePropertiesMap(IAddByteBlitter blitter, int z, int tileWidth, int tileHeight)
         {
-            this.blitter = blitter;
-            this.dependencies = new Dictionary<MapLayer, Dictionary<int, ISensePropertiesDataProcessor<TGameContext>>>();
-
-            data = new byte[0];
-            Height = 0;
-            Width = 0;
+            this.z = z;
+            this.dependencies = new Dictionary<MapLayer, ISensePropertiesDataProcessor<TGameContext>>();
+            this.data = new DynamicDataView<SensoryResistance>(tileWidth, tileHeight);
+            this.dataDirty = new DynamicBoolDataView(tileWidth, tileHeight);
         }
 
-        public bool IsDefined(MapLayer layer, int z)
+        public bool IsDefined(MapLayer layer)
         {
-            return dependencies.TryGetValue(layer, out var x) && x.ContainsKey(z);
+            return dependencies.TryGetValue(layer, out var x);
         }
-        
-        public void AddProcess(MapLayer layer, int z, ISensePropertiesDataProcessor<TGameContext> p)
+
+        public void AddProcess(MapLayer layer, ISensePropertiesDataProcessor<TGameContext> p)
         {
-            if (!dependencies.TryGetValue(layer, out var processorByMapLayer))
-            {
-                processorByMapLayer = new Dictionary<int, ISensePropertiesDataProcessor<TGameContext>>();
-                dependencies[layer] = processorByMapLayer;
-            }
-
-            if (processorByMapLayer.TryGetValue(z, out var dataProcessor))
-            {
-                throw new ArgumentException("Duplicate entry.");
-            }
-
-            processorByMapLayer.Add(z, p);
+            dependencies.Add(layer, p);
             combinerDirty = true;
         }
 
@@ -55,134 +40,90 @@ namespace RogueEntity.Core.Sensing.Resistance.Maps
         {
             if (dependencies.TryGetValue(layer, out var processorByMapLayer))
             {
-                processorByMapLayer.Clear();
+                dependencies.Remove(layer);
                 combinerDirty = true;
             }
         }
-        
-        public void RemoveProcess(MapLayer layer, int z)
-        {
-            if (!dependencies.TryGetValue(layer, out var processorByMapLayer))
-            {
-                return;
-            }
 
-            if (processorByMapLayer.Remove(z))
-            {
-                combinerDirty = true;
-            }
-        }
-        
-        public SenseProperties this[int x, int y]
+        public SensoryResistance this[int x, int y]
         {
             get
             {
-                if (combiner == null)
-                {
-                    return default;
-                }
-                
-                var offset = (x + y * Width) * combiner.WordSize;
-                return new SenseProperties(
-                    Percentage.FromRaw(data[offset]),
-                    Percentage.FromRaw(data[offset + 1]),
-                    Percentage.FromRaw(data[offset + 2])
-                );
+                return data[x, y];
             }
         }
 
         public void MarkDirty(MapLayer mapLayer, EntityGridPosition pos)
         {
-            if (pos.IsInvalid)
+            if (pos.IsInvalid || pos.GridZ != z)
             {
                 return;
             }
 
+            var x = pos.GridX;
+            var y = pos.GridY;
             if (mapLayer == MapLayer.Indeterminate)
             {
-                foreach (var procs in dependencies.Values)
+                dataDirty.TrySet(x, y, true);
+                foreach (var p in dependencies.Values)
                 {
-                    foreach (var d in procs.Values)
-                    {
-                        d.MarkDirty(pos.GridX, pos.GridY);
-                    }
+                    p.MarkDirty(x, y);
                 }
             }
-            else if (dependencies.TryGetValue(mapLayer, out var processorsByLayer) &&
-                     processorsByLayer.TryGetValue(pos.GridZ, out var d))
+            else if (dependencies.TryGetValue(mapLayer, out var processorsByLayer))
             {
-                d.MarkDirty(pos.GridX, pos.GridY);
+                dataDirty.TrySet(x, y, true);
+                processorsByLayer.MarkDirty(x, y);
             }
         }
 
         public void ResetDirtyFlags()
         {
-            foreach (var procs in dependencies.Values)
+            foreach (var p in dependencies.Values)
             {
-                foreach (var d in procs.Values)
-                {
-                    d.ResetDirtyFlags();
-                }
+                p.ResetDirtyFlags();
             }
         }
 
-        (Dimension size, int wordSize) ComputeMaxSize()
-        {
-            int width = 0;
-            int height = 0;
-            int wordSize = 0;
-            foreach (var procs in dependencies.Values)
-            {
-                foreach (var d in procs.Values)
-                {
-                    width = Math.Max(d.Width, width);
-                    height = Math.Max(d.Height, height);
-                    wordSize = Math.Max(d.WordSize, wordSize);
-                }
-            }
-            
-            return (new Dimension(width, height), wordSize);
-        }
-        
         public void Process(TGameContext c)
-        {
-            EnsureCombinerIsValid();
-
-            foreach (var procs in dependencies.Values)
-            {
-                foreach (var d in procs.Values)
-                {
-                    d.Process(c);
-                }
-            }
-
-            combiner.Process(c);
-        }
-
-        void EnsureCombinerIsValid()
         {
             if (combinerDirty)
             {
-                var (s, ws) = ComputeMaxSize();
-                if (combiner == null ||
-                    (combiner.Width < s.Width || combiner.Height < s.Height || ws != combiner.WordSize))
+                dependenciesAsList.Clear();
+                foreach (var d in dependencies.Values)
                 {
-                    Width = s.Width;
-                    Height = s.Height;
-                    var (spanSizeX, spanSizeY) = ChunkProcessor.ComputeSpanSize(blitter, s.Width, s.Height);
-                    combiner = new CombinedBlitterResultProcessor<TGameContext, ISensePropertiesDataProcessor<TGameContext>>(
-                        s.Width, s.Height, ws, spanSizeX, spanSizeY, data, blitter);
-                    Array.Resize(ref data, Width * Height * ws);
+                    dependenciesAsList.Add(d);
                 }
-
-                combiner.Reset();
-                foreach (var procs in dependencies.Values)
+            }
+            
+            var hs = new HashSet<Rectangle>();
+            foreach (var d in dependenciesAsList)
+            {
+                d.Process(c);
+                foreach (var t in d.ProcessedTiles)
                 {
-                    foreach (var d in procs.Values)
+                    hs.Add(t);
+                }
+            }
+
+
+            Parallel.ForEach(hs, ProcessTile);
+        }
+
+        void ProcessTile(Rectangle bounds)
+        {
+            foreach (var (x, y) in bounds)
+            {
+                var sp = new SensoryResistance();
+                foreach (var p in dependenciesAsList)
+                {
+                    if (p.Data.TryGet(x, y, out var d))
                     {
-                        combiner.Add(d);
+                        sp += d;
                     }
                 }
+
+                data.TrySet(x, y, sp);
             }
         }
     }

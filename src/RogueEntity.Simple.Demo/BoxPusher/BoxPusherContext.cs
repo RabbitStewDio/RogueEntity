@@ -10,8 +10,7 @@ namespace RogueEntity.Simple.BoxPusher
     public class BoxPusherContext: IItemContext<BoxPusherContext, ItemReference>, 
                                    IItemContext<BoxPusherContext, ActorReference>,
                                    IGridMapContext<BoxPusherContext, ItemReference>,
-                                   IGridMapContext<BoxPusherContext, ActorReference>,
-                                   IMapBoundsContext
+                                   IGridMapContext<BoxPusherContext, ActorReference>
     {
         ItemContextBackend<BoxPusherContext, ItemReference> itemContext;
         ItemContextBackend<BoxPusherContext, ActorReference> actorContext;
@@ -19,21 +18,17 @@ namespace RogueEntity.Simple.BoxPusher
         DefaultGridPositionContextBackend<BoxPusherContext, ItemReference> itemMap;
         DefaultGridPositionContextBackend<BoxPusherContext, ActorReference> actorMap;
 
-        public BoxPusherContext(int width, int height)
+        public BoxPusherContext(int tileWidth, int tileHeight)
         {
             itemContext = new ItemContextBackend<BoxPusherContext, ItemReference>(new ItemReferenceMetaData());
             actorContext = new ItemContextBackend<BoxPusherContext, ActorReference>(new ActorReferenceMetaData());
             
             itemMap = new DefaultGridPositionContextBackend<BoxPusherContext, ItemReference>()
-                .WithMapLayer(BoxPusherMapLayers.Floor, new OnDemandGridMapDataContext<BoxPusherContext, ItemReference>(BoxPusherMapLayers.Floor, width, height))
-                .WithMapLayer(BoxPusherMapLayers.Items, new OnDemandGridMapDataContext<BoxPusherContext, ItemReference>(BoxPusherMapLayers.Items, width, height));
+                .WithRawMapLayer(BoxPusherMapLayers.Floor, new OnDemandGridMapDataContext<BoxPusherContext, ItemReference>(BoxPusherMapLayers.Floor, tileWidth, tileHeight))
+                .WithRawMapLayer(BoxPusherMapLayers.Items, new OnDemandGridMapDataContext<BoxPusherContext, ItemReference>(BoxPusherMapLayers.Items, tileWidth, tileHeight));
             actorMap = new DefaultGridPositionContextBackend<BoxPusherContext, ActorReference>()
-                .WithMapLayer(BoxPusherMapLayers.Actors, new OnDemandGridMapDataContext<BoxPusherContext, ActorReference>(BoxPusherMapLayers.Actors, width, height));
-            
-            MapExtent = new MapBoundary(width, height, 5);
+                .WithRawMapLayer(BoxPusherMapLayers.Actors, new OnDemandGridMapDataContext<BoxPusherContext, ActorReference>(BoxPusherMapLayers.Actors, tileWidth, tileHeight));
         }
-
-        public MapBoundary MapExtent { get; }
 
         IItemResolver<BoxPusherContext, ItemReference> IItemContext<BoxPusherContext, ItemReference>.ItemResolver => itemContext.ItemResolver;
         IItemResolver<BoxPusherContext, ActorReference> IItemContext<BoxPusherContext, ActorReference>.ItemResolver => actorContext.ItemResolver;
@@ -49,6 +44,16 @@ namespace RogueEntity.Simple.BoxPusher
         public bool TryGetGridDataFor(MapLayer layer, out IGridMapDataContext<BoxPusherContext, ActorReference> data)
         {
             return actorMap.TryGetGridDataFor(layer, out data);
+        }
+
+        public bool TryGetGridRawDataFor(MapLayer layer, out IGridMapRawDataContext<ItemReference> data)
+        {
+            return itemMap.TryGetGridRawDataFor(layer, out data);
+        }
+
+        public bool TryGetGridRawDataFor(MapLayer layer, out IGridMapRawDataContext<ActorReference> data)
+        {
+            return actorMap.TryGetGridRawDataFor(layer, out data);
         }
 
         public ItemRegistry<BoxPusherContext, ActorReference> ActorRegistry

@@ -14,14 +14,14 @@ namespace RogueEntity.Core.Movement.Pathing
         readonly TGameContext context;
         readonly TActorId actor;
         readonly IReadOnlyMapData<MovementCost> baseMoveCost;
-        readonly IReadOnlyMapData<TActorId> actorPositions;
+        readonly IReadOnlyView2D<TActorId> actorPositions;
         readonly IReadOnlyMapData<MovementIntent<TActorId>> reservationMap;
         readonly int maximumActorAwarenessDistance;
 
         public MovementIntentCostCalculator(TGameContext context,
                                                    TActorId actor,
                                                    IReadOnlyMapData<MovementCost> baseMoveCost,
-                                                   IReadOnlyMapData<TActorId> actorPositions,
+                                                   IReadOnlyView2D<TActorId> actorPositions,
                                                    IReadOnlyMapData<MovementIntent<TActorId>> reservationMap,
                                                    int maximumActorAwarenessDistance)
         {

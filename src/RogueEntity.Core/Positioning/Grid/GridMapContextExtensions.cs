@@ -12,8 +12,6 @@ namespace RogueEntity.Core.Positioning.Grid
                 return false;
             }
             
-            if (p.GridX < 0 || p.GridX >= data.Width) return false;
-            if (p.GridY < 0 || p.GridY >= data.Height) return false;
             return true;
         }
     }

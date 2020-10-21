@@ -16,7 +16,7 @@ using RogueEntity.Core.Sensing.Sources.Heat;
 
 namespace RogueEntity.Core.Sensing.Receptors.Heat
 {
-    public class HeatDirectionSenseModule: ModuleBase
+    public class HeatDirectionSenseModule : ModuleBase
     {
         public const string ModuleId = "Core.Sense.Receptor.Noise";
 
@@ -237,10 +237,10 @@ namespace RogueEntity.Core.Sensing.Receptors.Heat
 
             if (!serviceResolver.TryResolve(out ls))
             {
-                ls = new SenseReceptorSystem<TemperatureSense, TemperatureSense>(serviceResolver.ResolveToReference<ISensePropertiesSource>(),
-                                                                                 serviceResolver.ResolveToReference<ISenseStateCacheProvider>(),
-                                                                                 physicsConfig.NoisePhysics,
-                                                                                 physicsConfig.CreateNoisePropagationAlgorithm());
+                ls = new HeatReceptorSystem(serviceResolver.ResolveToReference<ISensePropertiesSource>(),
+                                            serviceResolver.ResolveToReference<ISenseStateCacheProvider>(),
+                                            physicsConfig.NoisePhysics,
+                                            physicsConfig.CreateNoisePropagationAlgorithm());
             }
 
             return true;

@@ -201,7 +201,7 @@ namespace RogueEntity.Core.Sensing.Receptors.Light
             {
                 blitter = new DefaultSenseDataBlitter();
             }
-            
+
             var omniSystem = new OmnidirectionalSenseReceptorSystem<VisionSense, VisionSense>(ls, blitter);
             var system = registry.BuildSystem()
                                  .WithContext<TGameContext>()
@@ -237,10 +237,10 @@ namespace RogueEntity.Core.Sensing.Receptors.Light
 
             if (!serviceResolver.TryResolve(out ls))
             {
-                ls = new SenseReceptorSystem<VisionSense, VisionSense>(serviceResolver.ResolveToReference<ISensePropertiesSource>(),
-                                                                       serviceResolver.ResolveToReference<ISenseStateCacheProvider>(),
-                                                                       physicsConfig.LightPhysics,
-                                                                       physicsConfig.CreateLightPropagationAlgorithm());
+                ls = new VisionReceptorSystem(serviceResolver.ResolveToReference<ISensePropertiesSource>(),
+                                              serviceResolver.ResolveToReference<ISenseStateCacheProvider>(),
+                                              physicsConfig.LightPhysics,
+                                              physicsConfig.CreateLightPropagationAlgorithm());
             }
 
             return true;

@@ -42,7 +42,6 @@ namespace RogueEntity.Core.Sensing.Sources.Light
 
         public void Initialize(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, IItemDeclaration item)
         {
-            var radius = lightPhysics.LightPhysics.SignalRadiusForIntensity(Intensity);
             var l = new LightSourceDefinition(new SenseSourceDefinition(lightPhysics.LightPhysics.DistanceMeasurement, Intensity), Hue, Saturation, Enabled);
             var s = new SenseSourceState<VisionSense>(Optional.Empty<SenseSourceData>(), SenseSourceDirtyState.UnconditionallyDirty, Position.Invalid);
 

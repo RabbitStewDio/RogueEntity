@@ -7,6 +7,12 @@ using MessagePack;
 
 namespace RogueEntity.Core.Utils.Maps
 {
+    public interface IBoundedBoolDataViewRawAccess
+    {
+        Rectangle Bounds { get; }
+        byte[] Data { get; }
+    }
+    
     [DataContract]
     [MessagePackObject]
     public class BoundedBoolDataView: IReadOnlyView2D<bool>
@@ -61,8 +67,13 @@ namespace RogueEntity.Core.Utils.Maps
 
         public void Resize(in Rectangle newBounds)
         {
+            if (bounds.Width == newBounds.Width &&
+                bounds.Height == newBounds.Height)
+            {
+                return;
+            }
+
             var size = Align(bounds.Width * bounds.Height, WordSize);
-            
             if (bounds.Width >= newBounds.Width &&
                 bounds.Height >= newBounds.Height)
             {

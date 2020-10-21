@@ -6,17 +6,24 @@ using RogueEntity.Core.Positioning;
 
 namespace RogueEntity.Core.Utils.Maps
 {
+    public interface IBoundedDataViewRawAccess<TData>: IView2D<TData>
+    {
+        Rectangle Bounds { get; }
+        TData[] Data { get; }
+    }
+
     /// <summary>
     ///   A data view backed up by a dense array, but able to handle 
     /// </summary>
     /// <typeparam name="TData"></typeparam>
     [DataContract]
     [MessagePackObject]
-    public class BoundedDataView<TData>: IReadOnlyView2D<TData>
+    public class BoundedDataView<TData> : IReadOnlyView2D<TData>, IBoundedDataViewRawAccess<TData>
     {
         [DataMember(Order = 0)]
         [Key(0)]
         Rectangle bounds;
+
         [DataMember(Order = 1)]
         [Key(1)]
         TData[] data;
@@ -34,7 +41,7 @@ namespace RogueEntity.Core.Utils.Maps
             {
                 throw new ArgumentException();
             }
-            
+
             this.bounds = bounds;
             this.data = data;
         }
@@ -49,11 +56,18 @@ namespace RogueEntity.Core.Utils.Maps
 
         public void Resize(in Rectangle newBounds)
         {
+            if (bounds.Width == newBounds.Width &&
+                bounds.Height == newBounds.Height)
+            {
+                return;
+            }
+            
             if (bounds.Width >= newBounds.Width &&
-                bounds.Height >= newBounds.Height)
+                     bounds.Height >= newBounds.Height)
             {
                 // rebase origin, but dont change coordinates.
                 this.bounds = new Rectangle(newBounds.MinExtentX, newBounds.MinExtentY, bounds.Width, bounds.Height);
+                Array.Clear(data, 0, data.Length);
             }
             else
             {

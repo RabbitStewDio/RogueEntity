@@ -9,9 +9,13 @@ namespace RogueEntity.Core.Sensing.Resistance.Maps
         void AddSenseLayerFactory(ISenseLayerFactory<TGameContext> layerHandler);
         
         bool TryGet(int z, out SensePropertiesMap<TGameContext> data);
-        bool TryGetOrCreate(int z, int width, int height, out SensePropertiesMap<TGameContext> data);
+        bool TryGetOrCreate(int z, out SensePropertiesMap<TGameContext> data);
         void Remove(int z);
         
         ReadOnlyListWrapper<int> DefinedLayers { get; }
+        
+        int TileWidth { get; }
+        int TileHeight { get; }
+        
     }
 }

@@ -1,16 +1,13 @@
-using System.Runtime.Versioning;
 using EnTTSharp.Entities;
 using EnTTSharp.Entities.Systems;
 using RogueEntity.Core.Infrastructure.Commands;
 using RogueEntity.Core.Infrastructure.GameLoops;
 using RogueEntity.Core.Infrastructure.Modules;
 using RogueEntity.Core.Positioning;
-using RogueEntity.Core.Positioning.Continuous;
-using RogueEntity.Core.Positioning.Grid;
-using RogueEntity.Core.Sensing.Map.Light;
 using RogueEntity.Core.Sensing.Receptors;
+using RogueEntity.Core.Sensing.Receptors.InfraVision;
 using RogueEntity.Core.Sensing.Receptors.Light;
-using RogueEntity.Core.Sensing.Sources.Light;
+using RogueEntity.Core.Sensing.Receptors.Touch;
 
 namespace RogueEntity.Core.Sensing.Discovery
 {
@@ -20,10 +17,10 @@ namespace RogueEntity.Core.Sensing.Discovery
         public const string ModuleId = "Core.Sense.Discovery";
 
         public static readonly EntitySystemId RegisterEntities = "Entities.Core.Senses.DiscoveredArea";
-        public static readonly EntitySystemId RegisterSystem = "Systems.Core.Senses.DiscoveredArea";
+        public static readonly EntitySystemId RegisterVisionSystem = "Systems.Core.Senses.DiscoveredArea.Vision";
+        public static readonly EntitySystemId RegisterInfraVisionSystem = "Systems.Core.Senses.DiscoveredArea.InfraVision";
+        public static readonly EntitySystemId RegisterTouchSystem = "Systems.Core.Senses.DiscoveredArea.Touch";
         public static readonly EntityRole DiscoveryActorRole = new EntityRole("Role.Core.Senses.DiscoveredArea");
-        public static readonly EntityRole DiscoveryActorRoleGrid = new EntityRole("Role.Core.Senses.DiscoveredArea.Grid");
-        public static readonly EntityRole DiscoveryActorRoleContinuous = new EntityRole("Role.Core.Senses.DiscoveredArea.Continuous");
 
         public SenseDiscoveryModule()
         {
@@ -34,7 +31,10 @@ namespace RogueEntity.Core.Sensing.Discovery
             IsFrameworkModule = true;
 
             DeclareDependencies(ModuleDependency.Of(PositionModule.ModuleId),
-                                ModuleDependency.Of(VisionSenseModule.ModuleId));
+                                ModuleDependency.Of(VisionSenseModule.ModuleId),
+                                ModuleDependency.Of(InfraVisionSenseModule.ModuleId),
+                                ModuleDependency.Of(TouchSenseModule.ModuleId)
+            );
 
             RequireRole(DiscoveryActorRole);
         }
@@ -47,65 +47,85 @@ namespace RogueEntity.Core.Sensing.Discovery
         {
             var ctx = initializer.DeclareEntityContext<TActorId>();
             ctx.Register(RegisterEntities, 0, RegisterDiscoveryEntities);
+            ctx.Register(RegisterVisionSystem, 60_000, RegisterDiscoveryActionsVision);
+            ctx.Register(RegisterInfraVisionSystem, 60_100, RegisterDiscoveryActionsInfraVision);
+            ctx.Register(RegisterTouchSystem, 60_200, RegisterDiscoveryActionsTouch);
         }
 
-        [EntityRoleInitializer("Role.Core.Senses.DiscoveredArea.Grid")]
-        protected void InitializeGrid<TGameContext, TActorId>(IServiceResolver serviceResolver,
-                                                              IModuleInitializer<TGameContext> initializer,
-                                                              EntityRole role)
+        void RegisterDiscoveryActionsVision<TGameContext, TActorId>(IServiceResolver serviceResolver,
+                                                                    IGameLoopSystemRegistration<TGameContext> context,
+                                                                    EntityRegistry<TActorId> registry,
+                                                                    ICommandHandlerRegistration<TGameContext, TActorId> handler)
             where TActorId : IEntityKey
         {
-            var ctx = initializer.DeclareEntityContext<TActorId>();
-            ctx.Register(RegisterSystem, 7000, RegisterDiscoveryActionsGrid);
-        }
-
-        [EntityRoleInitializer("Role.Core.Senses.DiscoveredArea.Continuous")]
-        protected void InitializeContinuous<TGameContext, TActorId>(IServiceResolver serviceResolver,
-                                                                    IModuleInitializer<TGameContext> initializer,
-                                                                    EntityRole role)
-            where TActorId : IEntityKey
-        {
-            var ctx = initializer.DeclareEntityContext<TActorId>();
-            ctx.Register(RegisterSystem, 7000, RegisterDiscoveryActionsContinuous);
-        }
-
-        void RegisterDiscoveryActionsGrid<TGameContext, TActorId>(IServiceResolver serviceResolver,
-                                                                  IGameLoopSystemRegistration<TGameContext> context,
-                                                                  EntityRegistry<TActorId> registry,
-                                                                  ICommandHandlerRegistration<TGameContext, TActorId> handler)
-            where TActorId : IEntityKey
-        {
-            var system = new DiscoveryMapSystem(serviceResolver.ResolveToReference<IBrightnessMap>());
+            var system = GetOrCreate(serviceResolver);
 
             var entitySystem = registry.BuildSystem()
                                        .WithContext<TGameContext>()
-                                       .CreateSystem<EntityGridPosition, OnDemandDiscoveryMap, SensoryReceptorState<VisionSense>>(system.ExpandDiscoveredAreaGrid);
+                                       .CreateSystem<DiscoveryMapData,
+                                           SensoryReceptorState<VisionSense>,
+                                           SingleLevelSenseDirectionMapData<VisionSense, VisionSense>,
+                                           SenseReceptorDirtyFlag<VisionSense>>(system.ExpandDiscoveredArea);
 
             context.AddFixedStepHandlers(entitySystem);
             context.AddInitializationStepHandler(entitySystem);
         }
 
-        void RegisterDiscoveryActionsContinuous<TGameContext, TActorId>(IServiceResolver serviceResolver,
-                                                                        IGameLoopSystemRegistration<TGameContext> context,
-                                                                        EntityRegistry<TActorId> registry,
-                                                                        ICommandHandlerRegistration<TGameContext, TActorId> handler)
+        void RegisterDiscoveryActionsInfraVision<TGameContext, TActorId>(IServiceResolver serviceResolver,
+                                                                         IGameLoopSystemRegistration<TGameContext> context,
+                                                                         EntityRegistry<TActorId> registry,
+                                                                         ICommandHandlerRegistration<TGameContext, TActorId> handler)
             where TActorId : IEntityKey
         {
-            var system = new DiscoveryMapSystem(serviceResolver.ResolveToReference<IBrightnessMap>());
+            var system = GetOrCreate(serviceResolver);
 
             var entitySystem = registry.BuildSystem()
                                        .WithContext<TGameContext>()
-                                       .CreateSystem<ContinuousMapPosition, OnDemandDiscoveryMap, SensoryReceptorState<VisionSense>>(system.ExpandDiscoveredAreaContinuous);
+                                       .CreateSystem<DiscoveryMapData,
+                                           SensoryReceptorState<VisionSense>,
+                                           SingleLevelSenseDirectionMapData<VisionSense, TemperatureSense>,
+                                           SenseReceptorDirtyFlag<VisionSense>>(system.ExpandDiscoveredArea);
 
             context.AddFixedStepHandlers(entitySystem);
             context.AddInitializationStepHandler(entitySystem);
+        }
+
+        void RegisterDiscoveryActionsTouch<TGameContext, TActorId>(IServiceResolver serviceResolver,
+                                                                   IGameLoopSystemRegistration<TGameContext> context,
+                                                                   EntityRegistry<TActorId> registry,
+                                                                   ICommandHandlerRegistration<TGameContext, TActorId> handler)
+            where TActorId : IEntityKey
+        {
+            var system = GetOrCreate(serviceResolver);
+
+            var entitySystem = registry.BuildSystem()
+                                       .WithContext<TGameContext>()
+                                       .CreateSystem<DiscoveryMapData,
+                                           SensoryReceptorState<TouchSense>,
+                                           SingleLevelSenseDirectionMapData<TouchSense, TouchSense>,
+                                           SenseReceptorDirtyFlag<TouchSense>>(system.ExpandDiscoveredArea);
+
+            context.AddFixedStepHandlers(entitySystem);
+            context.AddInitializationStepHandler(entitySystem);
+        }
+
+        DiscoveryMapSystem GetOrCreate(IServiceResolver resolver)
+        {
+            if (resolver.TryResolve(out DiscoveryMapSystem s))
+            {
+                return s;
+            }
+
+            s = new DiscoveryMapSystem();
+            resolver.Store(s);
+            return s;
         }
 
         void RegisterDiscoveryEntities<TActorId>(IServiceResolver serviceResolver,
                                                  EntityRegistry<TActorId> registry)
             where TActorId : IEntityKey
         {
-            registry.RegisterNonConstructable<OnDemandDiscoveryMap>();
+            registry.RegisterNonConstructable<DiscoveryMapData>();
         }
     }
 }

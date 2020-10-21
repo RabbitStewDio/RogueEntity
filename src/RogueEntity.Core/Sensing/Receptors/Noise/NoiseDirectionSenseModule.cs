@@ -237,10 +237,10 @@ namespace RogueEntity.Core.Sensing.Receptors.Noise
 
             if (!serviceResolver.TryResolve(out ls))
             {
-                ls = new SenseReceptorSystem<NoiseSense, NoiseSense>(serviceResolver.ResolveToReference<ISensePropertiesSource>(),
-                                                                     serviceResolver.ResolveToReference<ISenseStateCacheProvider>(),
-                                                                     physicsConfig.NoisePhysics,
-                                                                     physicsConfig.CreateNoisePropagationAlgorithm());
+                ls = new NoiseReceptorSystem(serviceResolver.ResolveToReference<ISensePropertiesSource>(),
+                                             serviceResolver.ResolveToReference<ISenseStateCacheProvider>(),
+                                             physicsConfig.NoisePhysics,
+                                             physicsConfig.CreateNoisePropagationAlgorithm());
             }
 
             return true;

@@ -238,10 +238,10 @@ namespace RogueEntity.Core.Sensing.Receptors.InfraVision
 
             if (!serviceResolver.TryResolve(out ls))
             {
-                ls = new SenseReceptorSystem<VisionSense, TemperatureSense>(serviceResolver.ResolveToReference<ISensePropertiesSource>(),
-                                                                            serviceResolver.ResolveToReference<ISenseStateCacheProvider>(),
-                                                                            physicsConfig.HeatPhysics,
-                                                                            physicsConfig.CreateHeatPropagationAlgorithm());
+                ls = new InfraVisionReceptorSystem(serviceResolver.ResolveToReference<ISensePropertiesSource>(),
+                                                   serviceResolver.ResolveToReference<ISenseStateCacheProvider>(),
+                                                   physicsConfig.HeatPhysics,
+                                                   physicsConfig.CreateHeatPropagationAlgorithm());
             }
 
             return true;

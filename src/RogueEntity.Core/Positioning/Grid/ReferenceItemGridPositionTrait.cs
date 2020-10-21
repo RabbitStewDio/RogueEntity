@@ -154,11 +154,6 @@ namespace RogueEntity.Core.Positioning.Grid
 
             var gridX = desiredPosition.GridX;
             var gridY = desiredPosition.GridY;
-            if (gridX < 0 || gridY < 0 || gridX >= targetMap.Width || gridY >= targetMap.Height)
-            {
-                logger.Verbose("Desired position is out of range for map size of {Size} with {Pos}", (gridX, gridY), desiredPosition);
-                return false;
-            }
             if (!targetMap[gridX, gridY].IsEmpty)
             {
                 // target position is not empty. We would overwrite 

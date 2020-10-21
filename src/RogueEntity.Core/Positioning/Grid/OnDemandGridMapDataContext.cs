@@ -5,37 +5,60 @@ using RogueEntity.Core.Utils.Maps;
 
 namespace RogueEntity.Core.Positioning.Grid
 {
-    public class OnDemandGridMapDataContext<TGameContext, TItemId> : IGridMapDataContext<TGameContext, TItemId>
+    public class OnDemandGridMapDataContext<TGameContext, TItemId> : IGridMapDataContext<TGameContext, TItemId>, IGridMapRawDataContext<TItemId>
     {
-        public int Width { get; }
-        public int Height { get; }
         public event EventHandler<PositionDirtyEventArgs> PositionDirty;
         
         readonly MapLayer layer;
-        readonly Dictionary<int, IMapData<TItemId>> mapDataByDepth;
+        readonly int tileWidth;
+        readonly int tileHeight;
+        readonly Dictionary<int, IDynamicDataView2D<TItemId>> mapDataByDepth;
 
-        public OnDemandGridMapDataContext(MapLayer layer, int width, int height)
+        public OnDemandGridMapDataContext(MapLayer layer, int tileWidth, int tileHeight)
         {
             this.layer = layer;
-            Width = width;
-            Height = height;
-            mapDataByDepth = new Dictionary<int, IMapData<TItemId>>();
+            this.tileWidth = tileWidth;
+            this.tileHeight = tileHeight;
+            mapDataByDepth = new Dictionary<int, IDynamicDataView2D<TItemId>>();
         }
 
-        public bool TryGetMap(int z, out IMapData<TItemId> data, MapAccess accessMode = MapAccess.ReadOnly)
+        public bool TryGetRaw(int z, out IDynamicDataView2D<TItemId> data, MapAccess accessMode = MapAccess.ReadOnly)
         {
-            if (mapDataByDepth.TryGetValue(z, out data))
+            if (mapDataByDepth.TryGetValue(z, out var rdata))
             {
+                data = rdata;
                 return true;
             }
 
             if (accessMode == MapAccess.ReadOnly)
             {
+                data = default;
                 return false;
             }
 
-            data = new DenseMapData<TItemId>(Width, Height);
-            mapDataByDepth[z] = data;
+            rdata = new DynamicDataView<TItemId>(tileWidth, tileHeight);
+            mapDataByDepth[z] = rdata;
+            data = rdata;
+            return true;
+        }
+
+        public bool TryGetMap(int z, out IView2D<TItemId> data, MapAccess accessMode = MapAccess.ReadOnly)
+        {
+            if (mapDataByDepth.TryGetValue(z, out var rdata))
+            {
+                data = rdata;
+                return true;
+            }
+
+            if (accessMode == MapAccess.ReadOnly)
+            {
+                data = default;
+                return false;
+            }
+
+            rdata = new DynamicDataView<TItemId>(tileWidth, tileHeight);
+            mapDataByDepth[z] = rdata;
+            data = rdata;
             return true;
         }
 

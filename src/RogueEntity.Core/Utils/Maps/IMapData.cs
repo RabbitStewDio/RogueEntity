@@ -5,6 +5,11 @@
         T this[int x, int y] { get; }
     }
     
+    public interface IView2D<T>: IReadOnlyView2D<T>
+    {
+        new T this[int x, int y] { get; set; }
+    }
+    
     public interface IMapData<T>: IReadOnlyMapData<T>
     {
         new T this[int x, int y] { get; set; }

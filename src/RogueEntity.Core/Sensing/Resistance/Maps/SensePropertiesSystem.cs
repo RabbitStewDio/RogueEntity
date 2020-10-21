@@ -9,16 +9,24 @@ namespace RogueEntity.Core.Sensing.Resistance.Maps
 {
     public class SensePropertiesSystem<TGameContext>: ISensePropertiesSource, ISensePropertiesSystem<TGameContext>
     {
+        readonly int tileWidth;
+        readonly int tileHeight;
         readonly SensePropertiesLayerStore<TGameContext> propertiesMap;
         readonly IAddByteBlitter blitter;
         readonly List<ISenseLayerFactory<TGameContext>> layerFactories2; 
 
-        public SensePropertiesSystem(IAddByteBlitter blitter = default)
+        public SensePropertiesSystem(int tileWidth, int tileHeight, IAddByteBlitter blitter = default)
         {
+            this.tileWidth = tileWidth;
+            this.tileHeight = tileHeight;
             this.propertiesMap = new SensePropertiesLayerStore<TGameContext>();
             this.blitter = blitter ?? new DefaultAddByteBlitter();
             this.layerFactories2 = new List<ISenseLayerFactory<TGameContext>>();
         }
+
+        public int TileWidth => tileWidth;
+
+        public int TileHeight => tileHeight;
 
         public void OnPositionDirty(object source, PositionDirtyEventArgs args)
         {
@@ -57,7 +65,7 @@ namespace RogueEntity.Core.Sensing.Resistance.Maps
             propertiesMap.Process(context);
         }
 
-        public bool TryGet(int z, out IReadOnlyMapData<SenseProperties> data)
+        public bool TryGet(int z, out IReadOnlyView2D<SensoryResistance> data)
         {
             if (propertiesMap.TryGetLayer(z, out var layerData))
             {
@@ -79,14 +87,14 @@ namespace RogueEntity.Core.Sensing.Resistance.Maps
             return propertiesMap.TryGetLayer(z, out data);
         }
         
-        public bool TryGetOrCreate(int z, int width, int height, out SensePropertiesMap<TGameContext> data)
+        public bool TryGetOrCreate(int z, out SensePropertiesMap<TGameContext> data)
         {
             if (propertiesMap.TryGetLayer(z, out data))
             {
                 return true;
             }
             
-            data = new SensePropertiesMap<TGameContext>(blitter, width, height);
+            data = new SensePropertiesMap<TGameContext>(blitter, z, tileWidth, tileHeight);
             propertiesMap.SetLayer(z, data);
             return true;
         }

@@ -9,7 +9,6 @@ using RogueEntity.Core.Positioning.Continuous;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Sensing.Cache;
 using RogueEntity.Core.Sensing.Common.Blitter;
-using RogueEntity.Core.Sensing.Receptors.Noise;
 using RogueEntity.Core.Sensing.Resistance;
 using RogueEntity.Core.Sensing.Resistance.Maps;
 using RogueEntity.Core.Sensing.Sources;
@@ -17,9 +16,9 @@ using RogueEntity.Core.Sensing.Sources.Smell;
 
 namespace RogueEntity.Core.Sensing.Receptors.Smell
 {
-    public class SmellDirectionSenseModule: ModuleBase
+    public class SmellDirectionSenseModule : ModuleBase
     {
-        public const string ModuleId = "Core.Sense.Receptor.Noise";
+        public const string ModuleId = "Core.Sense.Receptor.Smell";
 
         public static readonly EntitySystemId RegisterEntityId = "Entities.Core.Senses.Receptor.Smell";
 
@@ -238,10 +237,10 @@ namespace RogueEntity.Core.Sensing.Receptors.Smell
 
             if (!serviceResolver.TryResolve(out ls))
             {
-                ls = new SenseReceptorSystem<SmellSense, SmellSense>(serviceResolver.ResolveToReference<ISensePropertiesSource>(),
-                                                                     serviceResolver.ResolveToReference<ISenseStateCacheProvider>(),
-                                                                     physicsConfig.NoisePhysics,
-                                                                     physicsConfig.CreateNoisePropagationAlgorithm());
+                ls = new SmellReceptorSystem(serviceResolver.ResolveToReference<ISensePropertiesSource>(),
+                                             serviceResolver.ResolveToReference<ISenseStateCacheProvider>(),
+                                             physicsConfig.NoisePhysics,
+                                             physicsConfig.CreateNoisePropagationAlgorithm());
             }
 
             return true;

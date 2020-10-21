@@ -1,5 +1,7 @@
+using GoRogue;
 using RogueEntity.Core.Positioning.MapLayers;
-using RogueEntity.Core.Utils.MapChunks;
+using RogueEntity.Core.Utils;
+using RogueEntity.Core.Utils.Maps;
 
 namespace RogueEntity.Core.Sensing.Resistance.Maps
 {
@@ -8,12 +10,15 @@ namespace RogueEntity.Core.Sensing.Resistance.Maps
     ///   of unrelated kinds.
     /// </summary>
     /// <typeparam name="TGameContext"></typeparam>
-    public interface ISensePropertiesDataProcessor<TGameContext> : ICachableChunkProcessor<TGameContext>, IByteBlitterDataSource
+    public interface ISensePropertiesDataProcessor<TGameContext>
     {
-        int Width { get; }
-        int Height { get; }
-        
         MapLayer Layer { get; }
         int ZPosition { get; }
+        DynamicDataView<SensoryResistance> Data { get; }
+        ReadOnlyListWrapper<Rectangle> ProcessedTiles { get; }
+        
+        void MarkDirty(int posGridX, int posGridY);
+        void ResetDirtyFlags();
+        void Process(TGameContext context);
     }
 }

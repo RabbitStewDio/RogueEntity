@@ -1,7 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 using System.Threading;
 using GoRogue;
+using JetBrains.Annotations;
+using MessagePack;
 using RogueEntity.Core.Positioning;
 
 namespace RogueEntity.Core.Utils.Maps
@@ -11,31 +14,97 @@ namespace RogueEntity.Core.Utils.Maps
         public event EventHandler<DynamicBoolDataViewEventArgs> ViewCreated;
         public event EventHandler<DynamicBoolDataViewEventArgs> ViewExpired;
 
+        [DataMember(Order = 0)]
+        [Key(0)]
         readonly int tileSizeX;
+        [DataMember(Order = 1)]
+        [Key(1)]
         readonly int tileSizeY;
+        [DataMember(Order = 2)]
+        [Key(2)]
         readonly Dictionary<Position2D, TrackedDataView> index;
+        [DataMember(Order = 3)]
+        [Key(3)]
         readonly List<Position2D> expired;
+        [DataMember(Order = 4)]
+        [Key(4)]
         long currentTime;
 
-        public int TileSizeX
-        {
-            get { return tileSizeX; }
-        }
+        [DataMember(Order = 5)]
+        [Key(5)]
+        int offsetX;
 
-        public int TileSizeY
-        {
-            get { return tileSizeY; }
-        }
+        [DataMember(Order = 6)]
+        [Key(6)]
+        int offsetY;
 
-        public DynamicBoolDataView(int tileSizeX, int tileSizeY)
+        [IgnoreDataMember]
+        [IgnoreMember]
+        public int TileSizeX => tileSizeX;
+
+        [IgnoreDataMember]
+        [IgnoreMember]
+        public int TileSizeY => tileSizeY;
+
+        [IgnoreDataMember]
+        [IgnoreMember]
+        public int OffsetX => offsetX;
+
+        [IgnoreDataMember]
+        [IgnoreMember]
+        public int OffsetY => offsetY;
+
+        public DynamicBoolDataView(int tileSizeX, int tileSizeY) : this(0, 0, tileSizeX, tileSizeY)
+        {
+            
+        }
+        
+        public DynamicBoolDataView(int offsetX, int offsetY, int tileSizeX, int tileSizeY)
         {
             if (tileSizeX <= 0) throw new ArgumentException(nameof(tileSizeX));
             if (tileSizeY <= 0) throw new ArgumentException(nameof(tileSizeY));
 
+            this.offsetX = offsetX;
+            this.offsetY = offsetY;
             this.tileSizeX = tileSizeX;
             this.tileSizeY = tileSizeY;
             index = new Dictionary<Position2D, TrackedDataView>();
             expired = new List<Position2D>();
+        }
+
+        [SerializationConstructor]
+        internal DynamicBoolDataView(int tileSizeX, int tileSizeY, 
+                                     [NotNull] Dictionary<Position2D, TrackedDataView> index,
+                                     [NotNull] List<Position2D> expired, 
+                                     long currentTime, 
+                                     int offsetX, int offsetY)
+        {
+            this.tileSizeX = tileSizeX;
+            this.tileSizeY = tileSizeY;
+            this.index = index ?? throw new ArgumentNullException(nameof(index));
+            this.expired = expired ?? throw new ArgumentNullException(nameof(expired));
+            this.currentTime = currentTime;
+            this.offsetX = offsetX;
+            this.offsetY = offsetY;
+        }
+
+        public List<Rectangle> GetActiveTiles(List<Rectangle> data = null)
+        {
+            if (data == null)
+            {
+                data = new List<Rectangle>();
+            }
+            else
+            {
+                data.Clear();
+            }
+
+            foreach (var k in index.Values)
+            {
+                data.Add(k.Bounds);
+            }
+
+            return data;
         }
 
         public void PrepareFrame(long time)
@@ -92,11 +161,11 @@ namespace RogueEntity.Core.Utils.Maps
         
         public BoundedBoolDataView GetOrCreateData(int x, int y)
         {
-            var dx = x / tileSizeX;
-            var dy = y / tileSizeY;
+            var dx = MapPartitions.TileSplit(x, offsetX, tileSizeX);
+            var dy = MapPartitions.TileSplit(y, offsetX, tileSizeY);
             if (!index.TryGetValue(new Position2D(dx, dy), out var data))
             {
-                data = new TrackedDataView(new Rectangle(dx * tileSizeX, dy * tileSizeY, tileSizeX, tileSizeY), currentTime);
+                data = new TrackedDataView(new Rectangle(dx * tileSizeX + offsetX, dy * tileSizeY + offsetY, tileSizeX, tileSizeY), currentTime);
                 index[new Position2D(dx, dy)] = data;
                 ViewCreated?.Invoke(this, new DynamicBoolDataViewEventArgs(data));
             }
@@ -128,8 +197,8 @@ namespace RogueEntity.Core.Utils.Maps
         
         bool TryGetData(int x, int y, out TrackedDataView data)
         {
-            var dx = x / tileSizeX;
-            var dy = y / tileSizeY;
+            var dx = MapPartitions.TileSplit(x, offsetX, tileSizeX);
+            var dy = MapPartitions.TileSplit(y, offsetX, tileSizeY);
             if (!index.TryGetValue(new Position2D(dx, dy), out data))
             {
                 return false;
@@ -162,9 +231,13 @@ namespace RogueEntity.Core.Utils.Maps
 
                 return default;
             }
+            set
+            {
+                TrySet(x, y, value);
+            }
         }
 
-        class TrackedDataView : BoundedBoolDataView
+        internal class TrackedDataView : BoundedBoolDataView
         {
             long currentTime;
             public long LastUsed { get; private set; }

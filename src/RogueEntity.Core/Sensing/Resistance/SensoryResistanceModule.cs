@@ -40,7 +40,6 @@ namespace RogueEntity.Core.Sensing.Resistance
                                                              IModuleInitializer<TGameContext> initializer,
                                                              EntityRole role)
             where TItemId : IEntityKey
-            where TGameContext : IMapBoundsContext
         {
             var ctx = initializer.DeclareEntityContext<TItemId>();
             ctx.Register(RegisterEntitiesId, 0, RegisterEntities);
@@ -52,7 +51,6 @@ namespace RogueEntity.Core.Sensing.Resistance
                                                                       IGameLoopSystemRegistration<TGameContext> context, 
                                                                       EntityRegistry<TItemId> registry, 
                                                                       ICommandHandlerRegistration<TGameContext, TItemId> handler)
-            where TGameContext : IMapBoundsContext
             where TItemId : IEntityKey
         {
             var system = GetOrCreateSensePropertiesSystem<TGameContext>(resolver);
@@ -85,7 +83,7 @@ namespace RogueEntity.Core.Sensing.Resistance
                 blitter = new DefaultAddByteBlitter();
             }
             
-            system = new SensePropertiesSystem<TGameContext>(blitter);
+            system = new SensePropertiesSystem<TGameContext>(64, 64, blitter);
             serviceResolver.Store(system);
             serviceResolver.Store<ISensePropertiesSystem<TGameContext>>(system);
             serviceResolver.Store<ISensePropertiesSource>(system);

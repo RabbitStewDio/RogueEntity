@@ -5,7 +5,7 @@ namespace RogueEntity.Core.Utils.Maps
 {
     [MessagePackObject]
     [DataContract]
-    public class ConstantMap<T>: IReadOnlyMapData<T>, IReadOnlyMapData3D<T>
+    public class ConstantMap<T>: IReadOnlyMapData<T>, IReadOnlyMapData3D<T>, IReadOnlyView2D<T>
     {
         [Key(3)]
         [DataMember(Order = 3)]

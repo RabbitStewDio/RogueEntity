@@ -2,7 +2,6 @@
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Movement.ItemCosts;
 using RogueEntity.Core.Positioning;
-using RogueEntity.Core.Sensing;
 using RogueEntity.Core.Sensing.Discovery;
 using RogueEntity.Core.Utils.Maps;
 
@@ -24,7 +23,7 @@ namespace RogueEntity.Core.Movement.Pathing
 
             var costMap = ActorMovementCost.Create(actor, context, zLevel);
 
-            if (context.ItemResolver.TryQueryData(actor, context, out OnDemandDiscoveryMapData discoveryMap) &&
+            if (context.ItemResolver.TryQueryData(actor, context, out DiscoveryMapData discoveryMap) &&
                 context.ItemResolver.TryQueryData(actor, context, out Position pos) &&
                 discoveryMap.TryGetMap(pos.GridZ, out var map))
             {
@@ -39,10 +38,10 @@ namespace RogueEntity.Core.Movement.Pathing
         public class RestrictedCostMap : IReadOnlyMapData<MovementCost>
         {
             readonly IReadOnlyMapData<MovementCost> costData;
-            readonly IReadOnlyMapData<bool> discoveryMap;
+            readonly IReadOnlyView2D<bool> discoveryMap;
 
             public RestrictedCostMap(IReadOnlyMapData<MovementCost> costData, 
-                                     IReadOnlyMapData<bool> discoveryMap)
+                                     IReadOnlyView2D<bool> discoveryMap)
             {
                 this.costData = costData;
                 this.discoveryMap = discoveryMap;

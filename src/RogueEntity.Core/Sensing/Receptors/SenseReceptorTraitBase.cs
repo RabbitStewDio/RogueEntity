@@ -12,25 +12,25 @@ namespace RogueEntity.Core.Sensing.Receptors
         where TSense : ISense
     {
         readonly ISensePhysics physics;
-        readonly float intensity;
+        protected readonly float Intensity;
 
         protected SenseReceptorTraitBase([NotNull] ISensePhysics physics, float intensity)
         {
             this.physics = physics ?? throw new ArgumentNullException(nameof(physics));
-            this.intensity = intensity;
+            this.Intensity = intensity;
         }
-
+        
         public abstract string Id { get; }
         public abstract int Priority { get; }
 
-        public void Initialize(IEntityViewControl<TActorId> v, TGameContext context, TActorId k, IItemDeclaration item)
+        public virtual void Initialize(IEntityViewControl<TActorId> v, TGameContext context, TActorId k, IItemDeclaration item)
         {
-            v.AssignComponent(k, new SensoryReceptorData<TSense>(new SenseSourceDefinition(physics.DistanceMeasurement, intensity), true));
+            v.AssignComponent(k, new SensoryReceptorData<TSense>(new SenseSourceDefinition(physics.DistanceMeasurement, Intensity), true));
             v.AssignComponent(k, SensoryReceptorState.Create<TSense>());
             v.AssignComponent(k, SingleLevelSenseDirectionMapData.Create<TSense, TSource>());
         }
 
-        public void Apply(IEntityViewControl<TActorId> v, TGameContext context, TActorId k, IItemDeclaration item)
+        public virtual void Apply(IEntityViewControl<TActorId> v, TGameContext context, TActorId k, IItemDeclaration item)
         {
             if (!v.GetComponent(k, out SensoryReceptorData<TSense> _))
             {

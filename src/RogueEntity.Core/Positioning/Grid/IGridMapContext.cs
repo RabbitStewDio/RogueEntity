@@ -13,5 +13,6 @@ namespace RogueEntity.Core.Positioning.Grid
     {
         ReadOnlyListWrapper<MapLayer> GridLayers();
         bool TryGetGridDataFor(MapLayer layer, out IGridMapDataContext<TGameContext, TItemId> data);
+        bool TryGetGridRawDataFor(MapLayer layer, out IGridMapRawDataContext<TItemId> data);
     }
 }

@@ -7,6 +7,7 @@ using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Sensing.Cache;
 using RogueEntity.Core.Sensing.Common;
 using RogueEntity.Core.Sensing.Common.Blitter;
+using RogueEntity.Core.Sensing.Resistance;
 using RogueEntity.Core.Sensing.Resistance.Maps;
 using RogueEntity.Core.Sensing.Sources.Light;
 using RogueEntity.Core.Utils;
@@ -15,7 +16,7 @@ using Serilog;
 
 namespace RogueEntity.Core.Sensing.Sources
 {
-    public class SenseSystemBase<TSense, TSenseSourceDefinition>
+    public abstract class SenseSystemBase<TSense, TSenseSourceDefinition>
         where TSenseSourceDefinition : ISenseDefinition
         where TSense : ISense
     {
@@ -231,34 +232,6 @@ namespace RogueEntity.Core.Sensing.Sources
             zLevelBuffer.Clear();
         }
 
-        class BlockVisionMap : IReadOnlyView2D<float>
-        {
-            readonly IReadOnlyMapData<SenseProperties> cellProperties;
-
-            public BlockVisionMap(IReadOnlyMapData<SenseProperties> cellProperties)
-            {
-                this.cellProperties = cellProperties;
-            }
-
-            public float this[int x, int y]
-            {
-                get
-                {
-                    if (x < 0 || x >= cellProperties.Width)
-                    {
-                        return 0;
-                    }
-
-                    if (y < 0 || x >= cellProperties.Height)
-                    {
-                        return 0;
-                    }
-
-                    return cellProperties[x, y].blocksLight;
-                }
-            }
-        }
-
         protected bool TryGetResistanceView(int z, out IReadOnlyView2D<float> resistanceView)
         {
             if (activeLightsPerLevel.TryGetValue(z, out var level))
@@ -270,7 +243,7 @@ namespace RogueEntity.Core.Sensing.Sources
 
             if (senseProperties.Value.TryGet(z, out var sensePropertiesForLevel))
             {
-                level = new SenseDataLevel(sensePropertiesForLevel);
+                level = new SenseDataLevel(CreateSensoryResistanceView(sensePropertiesForLevel));
                 level.MarkUsed(currentTime);
                 activeLightsPerLevel[z] = level;
                 resistanceView = level.ResistanceView;
@@ -281,14 +254,16 @@ namespace RogueEntity.Core.Sensing.Sources
             return false;
         }
 
+        protected abstract IReadOnlyView2D<float> CreateSensoryResistanceView(IReadOnlyView2D<SensoryResistance> resistanceMap);
+        
         class SenseDataLevel
         {
             public readonly IReadOnlyView2D<float> ResistanceView;
             public int LastRecentlyUsedTime { get; private set; }
 
-            public SenseDataLevel(IReadOnlyMapData<SenseProperties> resistanceMap)
+            public SenseDataLevel(IReadOnlyView2D<float> resistanceMap)
             {
-                this.ResistanceView = new BlockVisionMap(resistanceMap);
+                this.ResistanceView = resistanceMap;
             }
 
             public void MarkUsed(int currentTime)

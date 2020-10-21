@@ -1,98 +1,71 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Threading;
 using EnTTSharp.Entities;
 using GoRogue;
-using GoRogue.SenseMapping;
-using RogueEntity.Core.Positioning;
-using RogueEntity.Core.Positioning.Continuous;
-using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Sensing.Receptors;
-using RogueEntity.Core.Sensing.Receptors.Light;
-using RogueEntity.Core.Sensing.Sources.Light;
+using RogueEntity.Core.Utils.Maps;
 
 namespace RogueEntity.Core.Sensing.Discovery
 {
-    public class DiscoveryMapSystem
+    public sealed class DiscoveryMapSystem : IDisposable
     {
-        readonly Lazy<IBrightnessMap> brightnessSource;
+        readonly ThreadLocal<List<Rectangle>> partitionBounds;
 
-        public DiscoveryMapSystem(Lazy<IBrightnessMap> brightnessSource)
+        public DiscoveryMapSystem()
         {
-            this.brightnessSource = brightnessSource ?? throw new ArgumentNullException(nameof(brightnessSource));
+            this.partitionBounds = new ThreadLocal<List<Rectangle>>(() => new List<Rectangle>());
         }
 
-        void ExpandDiscoveredAreaImpl<TGameContext, TActorId, TPosition, TSense>(IEntityViewControl<TActorId> v,
-                                                                                 TGameContext context,
-                                                                                 TActorId k,
-                                                                                 in TPosition pos,
-                                                                                 in OnDemandDiscoveryMap onDemandDiscovery,
-                                                                                 in SensoryReceptorState<TSense> vision)
-            where TActorId : IEntityKey
-            where TSense : ISense, IEquatable<TSense>
-            where TPosition : IPosition
+        public void Dispose()
         {
-            if (!vision.IsDirty())
-            {
-                return;
-            }
-            
-            if (!brightnessSource.Value.TryGetLightData(pos.GridZ, out var senseMap))
-            {
-                return;
-            }
-            
-            if (!onDemandDiscovery.TryGetMap(pos.GridZ, out var target))
+            partitionBounds?.Dispose();
+        }
+
+        [SuppressMessage("ReSharper", "UnusedParameter.Global")]
+        public void ExpandDiscoveredArea<TGameContext, TActorId, TSourceSense, TReceptorSense>(IEntityViewControl<TActorId> v,
+                                                                                               TGameContext context,
+                                                                                               TActorId k,
+                                                                                               in DiscoveryMapData map,
+                                                                                               in SensoryReceptorState<TReceptorSense> receptor,
+                                                                                               in SingleLevelSenseDirectionMapData<TReceptorSense, TSourceSense> vision,
+                                                                                               in SenseReceptorDirtyFlag<TReceptorSense> unused)
+            where TActorId : IEntityKey
+            where TReceptorSense : ISense
+        {
+            var pos = receptor.LastPosition;
+            if (!receptor.SenseSource.TryGetValue(out var sense) ||
+                pos.IsInvalid)
             {
                 return;
             }
 
-            var visionField = vision.SenseData as ISenseBlitterDataSource<float>;
-            var (lMin, lMax, gMin) = visionField.CalculateBounds(target.Width, target.Height);
+            var partitions = partitionBounds.Value;
+            var senseBounds = new Rectangle(new Coord(pos.GridX, pos.GridY), sense.Radius, sense.Radius);
+            senseBounds.PartitionBy(map.OffsetX, map.OffsetY, map.TileWidth, map.TileHeight, partitions);
 
-            var light = visionField.SourceData;
-            var lightWidth = visionField.Width;
-
-            for (var yOffset = 0; yOffset <= lMax.Y - lMin.Y; yOffset++)
+            if (!vision.TryGetIntensity(pos.GridZ, out var senseMap))
             {
-                for (var xOffset = 0; xOffset <= lMax.X - lMin.X; xOffset++)
+                return;
+            }
+
+            if (!map.TryGetWritableMap(pos.GridZ, out var target))
+            {
+                return;
+            }
+
+            foreach (var p in partitions)
+            {
+                foreach (var (x, y) in p)
                 {
-                    var c = new Coord(xOffset, yOffset);
-                    var gCur = gMin + c;
-                    var lCur = lMin + c;
-
-                    if (senseMap.QueryBrightness(gCur.X, gCur.Y) <= 0)
+                    if (senseMap.TryQuery(x, y, out var intensity, out _) &&
+                        intensity > 0)
                     {
-                        continue;
-                    }
-
-                    if (!target[gCur.X, gCur.Y] && 
-                        light[lCur.X + lCur.Y * lightWidth] > 0)
-                    {
-                        target[gCur.X, gCur.Y] = true;
+                        target[x, y] = true;
                     }
                 }
             }
-        }
-
-        public void ExpandDiscoveredAreaContinuous<TGameContext, TActorId>(IEntityViewControl<TActorId> v,
-                                                                           TGameContext context,
-                                                                           TActorId k,
-                                                                           in ContinuousMapPosition pos,
-                                                                           in OnDemandDiscoveryMap onDemandDiscovery,
-                                                                           in SensoryReceptorState<VisionSense> vision)
-            where TActorId : IEntityKey
-        {
-            ExpandDiscoveredAreaImpl(v, context, k, in pos, in onDemandDiscovery, in vision);
-        }
-
-        public void ExpandDiscoveredAreaGrid<TGameContext, TActorId>(IEntityViewControl<TActorId> v,
-                                                                     TGameContext context,
-                                                                     TActorId k,
-                                                                     in EntityGridPosition pos,
-                                                                     in OnDemandDiscoveryMap onDemandDiscovery,
-                                                                     in SensoryReceptorState<VisionSense> vision)
-            where TActorId : IEntityKey
-        {
-            ExpandDiscoveredAreaImpl(v, context, k, in pos, in onDemandDiscovery, in vision);
         }
     }
 }
