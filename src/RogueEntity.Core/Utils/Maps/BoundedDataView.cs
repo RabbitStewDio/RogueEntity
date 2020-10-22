@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Serialization;
 using GoRogue;
 using MessagePack;
@@ -6,19 +7,13 @@ using RogueEntity.Core.Positioning;
 
 namespace RogueEntity.Core.Utils.Maps
 {
-    public interface IBoundedDataViewRawAccess<TData>: IView2D<TData>
-    {
-        Rectangle Bounds { get; }
-        TData[] Data { get; }
-    }
-
     /// <summary>
     ///   A data view backed up by a dense array, but able to handle 
     /// </summary>
     /// <typeparam name="TData"></typeparam>
     [DataContract]
     [MessagePackObject]
-    public class BoundedDataView<TData> : IReadOnlyView2D<TData>, IBoundedDataViewRawAccess<TData>
+    public class BoundedDataView<TData> : IBoundedDataViewRawAccess<TData>, IEquatable<BoundedDataView<TData>>
     {
         [DataMember(Order = 0)]
         [Key(0)]
@@ -81,9 +76,9 @@ namespace RogueEntity.Core.Utils.Maps
             Array.Clear(data, 0, data.Length);
         }
 
-        public void Clear(in Rectangle bounds)
+        public void Clear(in Rectangle clearBounds)
         {
-            var boundsLocal = this.bounds.GetIntersection(bounds);
+            var boundsLocal = this.bounds.GetIntersection(clearBounds);
             if (boundsLocal.Width == 0 || boundsLocal.Height == 0)
             {
                 return;
@@ -95,14 +90,14 @@ namespace RogueEntity.Core.Utils.Maps
 
             for (int y = minY; y < maxY; y += 1)
             {
-                var idx = bounds.Width * y;
+                var idx = clearBounds.Width * y;
                 Array.Clear(data, idx, boundsLocal.Width);
             }
         }
 
-        public void Fill(in Rectangle bounds, TData v)
+        public void Fill(in Rectangle fillBounds, TData v)
         {
-            var boundsLocal = this.bounds.GetIntersection(bounds);
+            var boundsLocal = this.bounds.GetIntersection(fillBounds);
             if (boundsLocal.Width == 0 || boundsLocal.Height == 0)
             {
                 return;
@@ -114,7 +109,7 @@ namespace RogueEntity.Core.Utils.Maps
 
             for (int y = minY; y < maxY; y += 1)
             {
-                var idx = bounds.Width * y;
+                var idx = fillBounds.Width * y;
                 var idxMax = idx + boundsLocal.Width;
                 for (int x = idx; x < idxMax; x += 1)
                 {
@@ -242,6 +237,57 @@ namespace RogueEntity.Core.Utils.Maps
             var y = Math.DivRem(idx, bounds.Width, out var x);
             pos = new Position2D(x + bounds.X, y + bounds.Y);
             return true;
+        }
+
+        public bool Equals(BoundedDataView<TData> other)
+        {
+            if (ReferenceEquals(null, other))
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
+
+            return bounds.Equals(other.bounds) && CoreExtensions.EqualsList(data, other.data);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj))
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, obj))
+            {
+                return true;
+            }
+
+            if (obj.GetType() != this.GetType())
+            {
+                return false;
+            }
+
+            return Equals((BoundedDataView<TData>) obj);
+        }
+
+        [SuppressMessage("ReSharper", "NonReadonlyMemberInGetHashCode")]
+        public override int GetHashCode()
+        {
+            return bounds.GetHashCode();
+        }
+
+        public static bool operator ==(BoundedDataView<TData> left, BoundedDataView<TData> right)
+        {
+            return Equals(left, right);
+        }
+
+        public static bool operator !=(BoundedDataView<TData> left, BoundedDataView<TData> right)
+        {
+            return !Equals(left, right);
         }
     }
 }

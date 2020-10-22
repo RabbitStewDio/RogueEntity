@@ -9,7 +9,6 @@ using RogueEntity.Core.Positioning.Continuous;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Sensing.Cache;
 using RogueEntity.Core.Sensing.Common;
-using RogueEntity.Core.Sensing.Common.Blitter;
 using RogueEntity.Core.Sensing.Resistance;
 using RogueEntity.Core.Sensing.Resistance.Maps;
 
@@ -36,7 +35,7 @@ namespace RogueEntity.Core.Sensing.Sources.Noise
                                 ModuleDependency.Of(SensoryCacheModule.ModuleId),
                                 ModuleDependency.Of(PositionModule.ModuleId));
 
-            RequireRole(NoiseSourceRole).WithImpliedRole(SenseSources.SenseSourceRole).WithImpliedRole(SensoryCacheModule.SenseCacheSourceRole);;
+            RequireRole(NoiseSourceRole).WithImpliedRole(SenseSources.SenseSourceRole).WithImpliedRole(SensoryCacheModule.SenseCacheSourceRole);
         }
 
         [EntityRoleInitializer("Role.Core.Senses.Source.Noise")]
@@ -61,7 +60,7 @@ namespace RogueEntity.Core.Sensing.Sources.Noise
             where TItemId : IEntityKey
         {
             var ctx = initializer.DeclareEntityContext<TItemId>();
-            ctx.Register(CollectionGridSystemId, 57000, RegisterCollectLightsGridSystem);
+            ctx.Register(CollectionGridSystemId, 55000, RegisterCollectLightsGridSystem);
         }
 
         [EntityRoleInitializer("Role.Core.Senses.Source.Noise",
@@ -72,7 +71,25 @@ namespace RogueEntity.Core.Sensing.Sources.Noise
             where TItemId : IEntityKey
         {
             var ctx = initializer.DeclareEntityContext<TItemId>();
-            ctx.Register(CollectionGridSystemId, 57000, RegisterCollectLightsContinuousSystem);
+            ctx.Register(CollectionGridSystemId, 55000, RegisterCollectLightsContinuousSystem);
+        }
+
+        [EntityRoleInitializer("Role.Core.Senses.Source.Noise",
+                               ConditionalRoles = new[]
+                               {
+                                   "Role.Core.Position.GridPositioned",
+                                   "Role.Core.Senses.Cache.InvalidationSource"
+                               })]
+        protected void InitializeLightSenseCache<TGameContext, TItemId>(IServiceResolver serviceResolver,
+                                                                        IModuleInitializer<TGameContext> initializer,
+                                                                        EntityRole role)
+            where TItemId : IEntityKey
+            where TGameContext : IGridMapContext<TGameContext, TItemId>
+        {
+            if (serviceResolver.TryResolve(out SenseCacheSetUpSystem<TGameContext> o))
+            {
+                o.RegisterSense<NoiseSense>();
+            }
         }
 
         void RegisterPrepareSystem<TGameContext, TItemId>(IServiceResolver serviceResolver,
@@ -164,8 +181,7 @@ namespace RogueEntity.Core.Sensing.Sources.Noise
 
         static bool GetOrCreateLightSystem(IServiceResolver serviceResolver, out NoiseSystem ls)
         {
-            if (!serviceResolver.TryResolve(out ISenseDataBlitter senseBlitterFactory) ||
-                !serviceResolver.TryResolve(out INoisePhysicsConfiguration physicsConfig))
+            if (!serviceResolver.TryResolve(out INoisePhysicsConfiguration physicsConfig))
             {
                 ls = default;
                 return false;
@@ -174,10 +190,11 @@ namespace RogueEntity.Core.Sensing.Sources.Noise
             if (!serviceResolver.TryResolve(out ls))
             {
                 ls = new NoiseSystem(serviceResolver.ResolveToReference<ISensePropertiesSource>(),
-                                    serviceResolver.ResolveToReference<ISenseStateCacheProvider>(),
+                                    serviceResolver.ResolveToReference<IGlobalSenseStateCacheProvider>(),
+                                    serviceResolver.ResolveToReference<ITimeSource>(),
+                                    serviceResolver.Resolve<ISenseStateCacheControl>(),
                                     physicsConfig.CreateNoisePropagationAlgorithm(),
-                                    physicsConfig.NoisePhysics,
-                                    senseBlitterFactory);
+                                    physicsConfig.NoisePhysics);
             }
 
             return true;

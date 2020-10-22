@@ -1,4 +1,5 @@
 ﻿using System;
+using RogueEntity.Core.Positioning.MapLayers;
 
 namespace RogueEntity.Core.Positioning
 {
@@ -92,6 +93,11 @@ namespace RogueEntity.Core.Positioning
             return new Position(x, y, this.Z, this.LayerId);
         }
 
+        public Position From(double x, double y) 
+        {
+            return new Position(x, y, this.Z, this.LayerId);
+        }
+
         public static Position From<TPosition>(TPosition p) where TPosition: IPosition
         {
             if (p.IsInvalid)
@@ -100,6 +106,11 @@ namespace RogueEntity.Core.Positioning
             }
 
             return new Position(p.X, p.Y, p.Z, p.LayerId);
+        }
+        
+        public static Position Of(MapLayer layer, double x, double y, double z = 0)
+        {
+            return new Position(x, y, z, layer.LayerId);
         }
     }
 }

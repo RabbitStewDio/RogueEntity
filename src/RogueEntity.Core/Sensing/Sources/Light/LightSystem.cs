@@ -1,5 +1,6 @@
 using System;
 using JetBrains.Annotations;
+using RogueEntity.Core.Infrastructure.Time;
 using RogueEntity.Core.Sensing.Cache;
 using RogueEntity.Core.Sensing.Common;
 using RogueEntity.Core.Sensing.Common.Blitter;
@@ -16,10 +17,11 @@ namespace RogueEntity.Core.Sensing.Sources.Light
     {
 
         public LightSystem([NotNull] Lazy<ISensePropertiesSource> senseProperties,
-                           [NotNull] Lazy<ISenseStateCacheProvider> senseCacheProvider,
+                           [NotNull] Lazy<IGlobalSenseStateCacheProvider> senseCacheProvider,
+                           [NotNull] Lazy<ITimeSource> timeSource,
+                           [NotNull] ISenseStateCacheControl senseCacheControl,
                            [NotNull] ISensePropagationAlgorithm sensePropagationAlgorithm,
-                           [NotNull] ILightPhysicsConfiguration lightPhysics,
-                           ISenseDataBlitter blitterFactory = null): base(senseProperties, senseCacheProvider, sensePropagationAlgorithm, lightPhysics.LightPhysics, blitterFactory)
+                           [NotNull] ILightPhysicsConfiguration lightPhysics): base(senseProperties, senseCacheProvider, timeSource, senseCacheControl, sensePropagationAlgorithm, lightPhysics.LightPhysics)
         {
         }
         

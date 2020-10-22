@@ -57,7 +57,7 @@ namespace RogueEntity.Core.Sensing.Discovery
 
             foreach (var p in partitions)
             {
-                foreach (var (x, y) in p)
+                foreach (var (x, y) in p.Contents)
                 {
                     if (senseMap.TryQuery(x, y, out var intensity, out _) &&
                         intensity > 0)

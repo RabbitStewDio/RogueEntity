@@ -7,10 +7,12 @@ namespace RogueEntity.Core.Positioning.MapLayers
     public class MapLayerRegistry: IEnumerable<MapLayer>
     {
         readonly Dictionary<byte, MapLayer> layersById;
+        public readonly MapLayer Indeterminate; 
 
         public MapLayerRegistry()
         {
             layersById = new Dictionary<byte, MapLayer>();
+            Indeterminate = new MapLayer(0, nameof(Indeterminate));
         }
 
         IEnumerator IEnumerable.GetEnumerator()

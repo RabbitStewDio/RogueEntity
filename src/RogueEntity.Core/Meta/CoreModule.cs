@@ -12,7 +12,7 @@ namespace RogueEntity.Core.Meta
     [Module]
     public class CoreModule : ModuleBase
     {
-        public const string ModuleId = "Core.MetaModule";
+        public static readonly string ModuleId = "Core.MetaModule";
 
         public static readonly EntitySystemId CommonComponentsId = "Entities.Core.CommonEntities";
         public static readonly EntitySystemId PlayerComponentsId = "Entities.Core.Player";

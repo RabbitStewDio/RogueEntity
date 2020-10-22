@@ -9,7 +9,6 @@ using RogueEntity.Core.Positioning.Continuous;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Sensing.Cache;
 using RogueEntity.Core.Sensing.Common;
-using RogueEntity.Core.Sensing.Common.Blitter;
 using RogueEntity.Core.Sensing.Resistance;
 using RogueEntity.Core.Sensing.Resistance.Maps;
 
@@ -72,7 +71,7 @@ namespace RogueEntity.Core.Sensing.Sources.Light
             where TItemId : IEntityKey
         {
             var ctx = initializer.DeclareEntityContext<TItemId>();
-            ctx.Register(LightsCollectionGridSystemId, 57000, RegisterCollectLightsGridSystem);
+            ctx.Register(LightsCollectionGridSystemId, 55000, RegisterCollectLightsGridSystem);
         }
 
         [EntityRoleInitializer("Role.Core.Senses.Source.Light",
@@ -83,7 +82,25 @@ namespace RogueEntity.Core.Sensing.Sources.Light
             where TItemId : IEntityKey
         {
             var ctx = initializer.DeclareEntityContext<TItemId>();
-            ctx.Register(LightsCollectionGridSystemId, 57000, RegisterCollectLightsContinuousSystem);
+            ctx.Register(LightsCollectionGridSystemId, 55000, RegisterCollectLightsContinuousSystem);
+        }
+
+        [EntityRoleInitializer("Role.Core.Senses.Source.Light",
+                               ConditionalRoles = new[]
+                               {
+                                   "Role.Core.Position.GridPositioned",
+                                   "Role.Core.Senses.Cache.InvalidationSource"
+                               })]
+        protected void InitializeLightSenseCache<TGameContext, TItemId>(IServiceResolver serviceResolver,
+                                                                        IModuleInitializer<TGameContext> initializer,
+                                                                        EntityRole role)
+            where TItemId : IEntityKey
+            where TGameContext : IGridMapContext<TGameContext, TItemId>
+        {
+            if (serviceResolver.TryResolve(out SenseCacheSetUpSystem<TGameContext> o))
+            {
+                o.RegisterSense<VisionSense>();
+            }
         }
 
         void RegisterPrepareLightSystem<TGameContext, TItemId>(IServiceResolver serviceResolver,
@@ -135,13 +152,12 @@ namespace RogueEntity.Core.Sensing.Sources.Light
                                  .CreateSystem<LightSourceDefinition, SenseSourceState<VisionSense>, EntityGridPosition>(ls.FindDirtySenseSources);
             context.AddInitializationStepHandler(system);
             context.AddFixedStepHandlers(system);
-
         }
 
         void RegisterProcessLightCalculateSystem<TGameContext, TItemId>(IServiceResolver resolver,
-                                                                       IGameLoopSystemRegistration<TGameContext> context,
-                                                                       EntityRegistry<TItemId> registry,
-                                                                       ICommandHandlerRegistration<TGameContext, TItemId> handler)
+                                                                        IGameLoopSystemRegistration<TGameContext> context,
+                                                                        EntityRegistry<TItemId> registry,
+                                                                        ICommandHandlerRegistration<TGameContext, TItemId> handler)
             where TItemId : IEntityKey
         {
             if (!GetOrCreateLightSystem(resolver, out var ls))
@@ -153,16 +169,15 @@ namespace RogueEntity.Core.Sensing.Sources.Light
                 registry.BuildSystem()
                         .WithContext<TGameContext>()
                         .CreateSystem<LightSourceDefinition, SenseSourceState<VisionSense>, SenseDirtyFlag<VisionSense>, ObservedSenseSource<VisionSense>>(ls.RefreshLocalSenseState);
-            
+
             context.AddInitializationStepHandler(refreshLocalSenseState);
             context.AddFixedStepHandlers(refreshLocalSenseState);
-            
         }
-        
+
         void RegisterFinishLightCalculateSystem<TGameContext, TItemId>(IServiceResolver serviceResolver,
-                                                                 IGameLoopSystemRegistration<TGameContext> context,
-                                                                 EntityRegistry<TItemId> registry,
-                                                                 ICommandHandlerRegistration<TGameContext, TItemId> handler)
+                                                                       IGameLoopSystemRegistration<TGameContext> context,
+                                                                       EntityRegistry<TItemId> registry,
+                                                                       ICommandHandlerRegistration<TGameContext, TItemId> handler)
             where TItemId : IEntityKey
         {
             if (!GetOrCreateLightSystem(serviceResolver, out var ls))
@@ -177,8 +192,7 @@ namespace RogueEntity.Core.Sensing.Sources.Light
 
         static bool GetOrCreateLightSystem(IServiceResolver serviceResolver, out LightSystem ls)
         {
-            if (!serviceResolver.TryResolve(out ISenseDataBlitter senseBlitterFactory) ||
-                !serviceResolver.TryResolve(out ILightPhysicsConfiguration physicsConfig))
+            if (!serviceResolver.TryResolve(out ILightPhysicsConfiguration physicsConfig))
             {
                 ls = default;
                 return false;
@@ -187,10 +201,11 @@ namespace RogueEntity.Core.Sensing.Sources.Light
             if (!serviceResolver.TryResolve(out ls))
             {
                 ls = new LightSystem(serviceResolver.ResolveToReference<ISensePropertiesSource>(),
-                                     serviceResolver.ResolveToReference<ISenseStateCacheProvider>(),
+                                     serviceResolver.ResolveToReference<IGlobalSenseStateCacheProvider>(),
+                                     serviceResolver.ResolveToReference<ITimeSource>(),
+                                     serviceResolver.Resolve<ISenseStateCacheControl>(),
                                      physicsConfig.CreateLightPropagationAlgorithm(),
-                                     physicsConfig,
-                                     senseBlitterFactory);
+                                     physicsConfig);
             }
 
             return true;

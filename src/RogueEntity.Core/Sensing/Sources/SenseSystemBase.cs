@@ -9,7 +9,6 @@ using RogueEntity.Core.Sensing.Common;
 using RogueEntity.Core.Sensing.Common.Blitter;
 using RogueEntity.Core.Sensing.Resistance;
 using RogueEntity.Core.Sensing.Resistance.Maps;
-using RogueEntity.Core.Sensing.Sources.Light;
 using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.Maps;
 using Serilog;
@@ -25,7 +24,10 @@ namespace RogueEntity.Core.Sensing.Sources
 
         readonly Dictionary<int, SenseDataLevel> activeLightsPerLevel;
         readonly Lazy<ISensePropertiesSource> senseProperties;
-        readonly Lazy<ISenseStateCacheProvider> senseCacheProvider;
+        readonly Lazy<IGlobalSenseStateCacheProvider> senseCacheProvider;
+        readonly Lazy<ITimeSource> timeSource;
+
+        readonly ISenseStateCacheControl senseCacheControl;
         readonly ISensePropagationAlgorithm sensePropagationAlgorithm;
         readonly ISensePhysics physics;
         readonly List<int> zLevelBuffer;
@@ -33,17 +35,20 @@ namespace RogueEntity.Core.Sensing.Sources
         int currentTime;
 
         public SenseSystemBase([NotNull] Lazy<ISensePropertiesSource> senseProperties,
-                               [NotNull] Lazy<ISenseStateCacheProvider> senseCacheProvider,
+                               [NotNull] Lazy<IGlobalSenseStateCacheProvider> senseCacheProvider,
+                               [NotNull] Lazy<ITimeSource> timeSource,
+                               [NotNull] ISenseStateCacheControl senseCacheControl,
                                [NotNull] ISensePropagationAlgorithm sensePropagationAlgorithm,
-                               [NotNull] ISensePhysics physics,
-                               ISenseDataBlitter blitterFactory = null)
+                               [NotNull] ISensePhysics physics)
         {
             this.senseProperties = senseProperties ?? throw new ArgumentNullException(nameof(senseProperties));
             this.sensePropagationAlgorithm = sensePropagationAlgorithm ?? throw new ArgumentNullException(nameof(sensePropagationAlgorithm));
             this.physics = physics ?? throw new ArgumentNullException(nameof(physics));
             this.activeLightsPerLevel = new Dictionary<int, SenseDataLevel>();
             this.zLevelBuffer = new List<int>();
-            this.senseCacheProvider = senseCacheProvider;
+            this.senseCacheProvider = senseCacheProvider ?? throw new ArgumentNullException(nameof(senseCacheProvider));
+            this.timeSource = timeSource;
+            this.senseCacheControl = senseCacheControl ?? throw new ArgumentNullException(nameof(senseCacheControl));
         }
 
         /// <summary>
@@ -54,7 +59,7 @@ namespace RogueEntity.Core.Sensing.Sources
         public void EnsureSenseCacheAvailable<TGameContext>(TGameContext context)
         {
             var provider = senseCacheProvider.Value;
-            if (!provider.TryGetSenseCache<TSense>(out var cache))
+            if (!provider.TryGetGlobalSenseCache(out var cache))
             {
                 cacheView = Optional.ValueOf(cache);
             }
@@ -78,9 +83,8 @@ namespace RogueEntity.Core.Sensing.Sources
         ///  Step 0: Clear any previously left-over state
         /// </summary>
         public void BeginSenseCalculation<TGameContext>(TGameContext ctx)
-            where TGameContext: ITimeContext
         {
-            currentTime = ctx.TimeSource.FixedStepTime;
+            currentTime = timeSource.Value.FixedStepTime;
         }
         
         /// <summary>
@@ -112,6 +116,8 @@ namespace RogueEntity.Core.Sensing.Sources
                     var nstate = state.WithPosition(position).WithDirtyState(SenseSourceDirtyState.Dirty);
                     v.WriteBack(k, in nstate);
                     v.AssignOrReplace(k, new SenseDirtyFlag<TSense>());
+                    
+                    senseCacheControl.MarkDirty<TSense>(position);
                 }
                 else if (state.State != SenseSourceDirtyState.Active ||
                          (cacheView.TryGetValue(out var cache) && cache.IsDirty(pos, physics.SignalRadiusForIntensity(definition.SenseDefinition.Intensity))))
@@ -119,6 +125,8 @@ namespace RogueEntity.Core.Sensing.Sources
                     var nstate = state.WithDirtyState(SenseSourceDirtyState.Dirty);
                     v.WriteBack(k, in nstate);
                     v.AssignOrReplace(k, new SenseDirtyFlag<TSense>());
+                    
+                    senseCacheControl.MarkDirty<TSense>(position);
                 }
                 return;
             }
@@ -129,6 +137,11 @@ namespace RogueEntity.Core.Sensing.Sources
                 var nstate = state.WithDirtyState(SenseSourceDirtyState.Dirty);
                 v.WriteBack(k, in nstate);
                 v.AssignOrReplace(k, new SenseDirtyFlag<TSense>());
+
+                if (!state.LastPosition.IsInvalid)
+                {
+                    senseCacheControl.MarkDirty<TSense>(state.LastPosition);
+                }
             }
 
             // lights that are not enabled and have not been enabled in the last

@@ -74,11 +74,17 @@ namespace RogueEntity.Core.Utils.Maps
         [IgnoreMember]
         public int OffsetY => offsetY;
 
-        public DynamicDataView(int tileSizeX, int tileSizeY)
+        public DynamicDataView(int tileSizeX, int tileSizeY) : this(0, 0, tileSizeX, tileSizeY)
+        {
+        }
+
+        public DynamicDataView(int offsetX, int offsetY, int tileSizeX, int tileSizeY)
         {
             if (tileSizeX <= 0) throw new ArgumentException(nameof(tileSizeX));
             if (tileSizeY <= 0) throw new ArgumentException(nameof(tileSizeY));
 
+            this.offsetX = offsetX;
+            this.offsetY = offsetY;
             this.tileSizeX = tileSizeX;
             this.tileSizeY = tileSizeY;
             index = new Dictionary<Position2D, TrackedDataView>();
@@ -86,8 +92,16 @@ namespace RogueEntity.Core.Utils.Maps
         }
 
         [SerializationConstructor]
-        protected DynamicDataView(int tileSizeX, int tileSizeY, [NotNull] Dictionary<Position2D, TrackedDataView> index, [NotNull] List<Position2D> expired, long currentTime)
+        protected DynamicDataView(int tileSizeX,
+                                  int tileSizeY,
+                                  [NotNull] Dictionary<Position2D, TrackedDataView> index,
+                                  [NotNull] List<Position2D> expired,
+                                  long currentTime,
+                                  int offsetX,
+                                  int offsetY)
         {
+            this.offsetX = offsetX;
+            this.offsetY = offsetY;
             this.tileSizeX = tileSizeX;
             this.tileSizeY = tileSizeY;
             this.index = index ?? throw new ArgumentNullException(nameof(index));
@@ -162,7 +176,7 @@ namespace RogueEntity.Core.Utils.Maps
             }
 
             var dx = MapPartitions.TileSplit(x, offsetX, tileSizeX);
-            var dy = MapPartitions.TileSplit(y, offsetX, tileSizeY);
+            var dy = MapPartitions.TileSplit(y, offsetY, tileSizeY);
             var data = new TrackedDataView(new Rectangle(dx * tileSizeX + offsetX, dy * tileSizeY + offsetY, tileSizeX, tileSizeY), currentTime);
             data.MarkUsedForReading();
             data.MarkUsedForWriting();
@@ -193,7 +207,7 @@ namespace RogueEntity.Core.Utils.Maps
         bool TryGetDataInternal(int x, int y, out TrackedDataView data)
         {
             var dx = MapPartitions.TileSplit(x, offsetX, tileSizeX);
-            var dy = MapPartitions.TileSplit(y, offsetX, tileSizeY);
+            var dy = MapPartitions.TileSplit(y, offsetY, tileSizeY);
             if (!index.TryGetValue(new Position2D(dx, dy), out data))
             {
                 return false;

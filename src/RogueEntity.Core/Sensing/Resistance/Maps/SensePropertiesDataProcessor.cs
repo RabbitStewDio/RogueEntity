@@ -123,7 +123,7 @@ namespace RogueEntity.Core.Sensing.Resistance.Maps
             }
 
             var itemResolver = context.ItemResolver;
-            foreach (var (x, y) in bounds)
+            foreach (var (x, y) in bounds.Contents)
             {
                 var groundItemRef = groundData[x, y];
                 if (itemResolver.TryQueryData(groundItemRef, context, out SensoryResistance groundItem))
@@ -141,7 +141,7 @@ namespace RogueEntity.Core.Sensing.Resistance.Maps
         {
             var (groundData, context, bounds) = param;
             var itemResolver = context.ItemResolver;
-            foreach (var (x, y) in bounds)
+            foreach (var (x, y) in bounds.Contents)
             {
                 var groundItemRef = groundData[x, y];
                 if (itemResolver.TryQueryData(groundItemRef, context, out SensoryResistance groundItem))

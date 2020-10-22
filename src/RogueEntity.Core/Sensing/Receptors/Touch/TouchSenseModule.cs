@@ -42,9 +42,10 @@ namespace RogueEntity.Core.Sensing.Receptors.Touch
 
             DeclareDependencies(ModuleDependency.Of(PositionModule.ModuleId),
                                 ModuleDependency.Of(SensoryResistanceModule.ModuleId),
-                                ModuleDependency.Of(SensoryCacheModule.ModuleId));
+                                ModuleDependency.Of(SensoryCacheModule.ModuleId),
+                                ModuleDependency.Of(TouchSourceModule.ModuleId));
 
-            RequireRole(SenseReceptorActorRole);
+            RequireRole(SenseReceptorActorRole).WithImpliedRole(TouchSourceModule.TouchSourceRole);
         }
 
         [EntityRoleInitializer("Role.Core.Senses.Receptor.Touch.ActorRole")]
@@ -52,7 +53,6 @@ namespace RogueEntity.Core.Sensing.Receptors.Touch
                                                              IModuleInitializer<TGameContext> initializer,
                                                              EntityRole role)
             where TItemId : IEntityKey
-            where TGameContext : ITimeContext
         {
             var ctx = initializer.DeclareEntityContext<TItemId>();
             ctx.Register(RegisterEntityId, 0, RegisterEntities);
@@ -70,7 +70,7 @@ namespace RogueEntity.Core.Sensing.Receptors.Touch
             where TItemId : IEntityKey
         {
             var ctx = initializer.DeclareEntityContext<TItemId>();
-            ctx.Register(ReceptorCollectionGridSystemId, 55000, RegisterCollectReceptorsGridSystem);
+            ctx.Register(ReceptorCollectionGridSystemId, 55500, RegisterCollectReceptorsGridSystem);
         }
 
         [EntityRoleInitializer("Role.Core.Senses.Receptor.Touch.ActorRole",
@@ -81,7 +81,7 @@ namespace RogueEntity.Core.Sensing.Receptors.Touch
             where TItemId : IEntityKey
         {
             var ctx = initializer.DeclareEntityContext<TItemId>();
-            ctx.Register(ReceptorCollectionContinuousSystemId, 55000, RegisterCollectReceptorsContinuousSystem);
+            ctx.Register(ReceptorCollectionContinuousSystemId, 55500, RegisterCollectReceptorsContinuousSystem);
         }
 
         [EntityRoleInitializer("Role.Core.Senses.Source.Touch")]
@@ -99,7 +99,6 @@ namespace RogueEntity.Core.Sensing.Receptors.Touch
                                                           EntityRegistry<TItemId> registry,
                                                           ICommandHandlerRegistration<TGameContext, TItemId> handler)
             where TItemId : IEntityKey
-            where TGameContext : ITimeContext
         {
             if (!GetOrCreateLightSystem(serviceResolver, out var ls))
             {
@@ -238,6 +237,8 @@ namespace RogueEntity.Core.Sensing.Receptors.Touch
             {
                 ls = new TouchReceptorSystem(serviceResolver.ResolveToReference<ISensePropertiesSource>(),
                                              serviceResolver.ResolveToReference<ISenseStateCacheProvider>(),
+                                             serviceResolver.ResolveToReference<IGlobalSenseStateCacheProvider>(),
+                                             serviceResolver.ResolveToReference<ITimeSource>(),
                                              physicsConfig.NoisePhysics,
                                              physicsConfig.CreateNoisePropagationAlgorithm());
             }

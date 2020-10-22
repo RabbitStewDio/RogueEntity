@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Serialization;
 using System.Text;
 using GoRogue;
@@ -7,15 +8,9 @@ using MessagePack;
 
 namespace RogueEntity.Core.Utils.Maps
 {
-    public interface IBoundedBoolDataViewRawAccess
-    {
-        Rectangle Bounds { get; }
-        byte[] Data { get; }
-    }
-    
     [DataContract]
     [MessagePackObject]
-    public class BoundedBoolDataView: IReadOnlyView2D<bool>
+    public class BoundedBoolDataView: IBoundedBoolDataViewRawAccess, IEquatable<BoundedBoolDataView>
     {
         [Key(0)]
         [DataMember(Order = 0)]
@@ -148,7 +143,7 @@ namespace RogueEntity.Core.Utils.Maps
                 var chunkIndex = Math.DivRem(rawBitIdx, WordSize, out var innerIndex);
                 var bitMask = (byte) (1u << innerIndex);
                 var oldV = data[chunkIndex];
-                var newV = 0;
+                int newV;
                 if (value)
                 {
                     newV = oldV | bitMask;
@@ -184,10 +179,60 @@ namespace RogueEntity.Core.Utils.Maps
             Array.Clear(data, 0, data.Length);
         }
 
-
         public bool AnyValueSet()
         {
             return anyValueSet != 0;
+        }
+
+        public bool Equals(BoundedBoolDataView other)
+        {
+            if (ReferenceEquals(null, other))
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
+
+            return bounds.Equals(other.bounds) && data.Equals(other.data);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj))
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, obj))
+            {
+                return true;
+            }
+
+            if (obj.GetType() != this.GetType())
+            {
+                return false;
+            }
+
+            return Equals((BoundedBoolDataView) obj);
+        }
+
+        [SuppressMessage("ReSharper", "NonReadonlyMemberInGetHashCode")]
+        public override int GetHashCode()
+        {
+            return bounds.GetHashCode();
+        }
+
+        public static bool operator ==(BoundedBoolDataView left, BoundedBoolDataView right)
+        {
+            return Equals(left, right);
+        }
+
+        public static bool operator !=(BoundedBoolDataView left, BoundedBoolDataView right)
+        {
+            return !Equals(left, right);
         }
     }
 }

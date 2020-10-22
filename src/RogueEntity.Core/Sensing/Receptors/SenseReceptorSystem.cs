@@ -34,6 +34,8 @@ namespace RogueEntity.Core.Sensing.Receptors
 
         readonly Lazy<ISensePropertiesSource> senseProperties;
         readonly Lazy<ISenseStateCacheProvider> senseCacheProvider;
+        readonly Lazy<IGlobalSenseStateCacheProvider> globalSenseCacheProvider;
+        readonly Lazy<ITimeSource> timeSource;
         readonly Dictionary<int, SenseDataLevel> activeLightsPerLevel;
         readonly ISensePropagationAlgorithm sensePropagationAlgorithm;
         readonly List<int> zLevelBuffer;
@@ -41,17 +43,22 @@ namespace RogueEntity.Core.Sensing.Receptors
         readonly ISenseDataBlitter blitter;
 
         Optional<ISenseStateCacheView> cacheView;
+        Optional<ISenseStateCacheView> globalCacheView;
         int currentTime;
 
         public SenseReceptorSystem([NotNull] Lazy<ISensePropertiesSource> senseProperties,
-                                       [NotNull] Lazy<ISenseStateCacheProvider> senseCacheProvider,
-                                       [NotNull] ISensePhysics physics,
-                                       [NotNull] ISensePropagationAlgorithm sensePropagationAlgorithm)
+                                   [NotNull] Lazy<ISenseStateCacheProvider> senseCacheProvider,
+                                   [NotNull] Lazy<IGlobalSenseStateCacheProvider> globalSenseCacheProvider,
+                                   [NotNull] Lazy<ITimeSource> timeSource,
+                                   [NotNull] ISensePhysics physics,
+                                   [NotNull] ISensePropagationAlgorithm sensePropagationAlgorithm)
         {
             this.sensePropagationAlgorithm = sensePropagationAlgorithm ?? throw new ArgumentNullException(nameof(sensePropagationAlgorithm));
             this.blitter = blitter ?? throw new ArgumentNullException(nameof(blitter));
             this.senseProperties = senseProperties ?? throw new ArgumentNullException(nameof(senseProperties));
             this.senseCacheProvider = senseCacheProvider ?? throw new ArgumentNullException(nameof(senseCacheProvider));
+            this.globalSenseCacheProvider = globalSenseCacheProvider;
+            this.timeSource = timeSource;
             this.physics = physics ?? throw new ArgumentNullException(nameof(physics));
 
             this.activeLightsPerLevel = new Dictionary<int, SenseDataLevel>();
@@ -78,9 +85,19 @@ namespace RogueEntity.Core.Sensing.Receptors
         public void EnsureSenseCacheAvailable<TGameContext>(TGameContext context)
         {
             var provider = senseCacheProvider.Value;
-            if (!provider.TryGetSenseCache<TReceptorSense>(out var cache))
+            if (!provider.TryGetSenseCache<TSourceSense>(out var cache))
             {
                 cacheView = Optional.ValueOf(cache);
+            }
+            else
+            {
+                Logger.Verbose("This light system will not react to map changes");
+            }
+
+            var globalProvider = globalSenseCacheProvider.Value;
+            if (!globalProvider.TryGetGlobalSenseCache(out var gcache))
+            {
+                globalCacheView = Optional.ValueOf(gcache);
             }
             else
             {
@@ -92,9 +109,8 @@ namespace RogueEntity.Core.Sensing.Receptors
         ///  Step 0: Clear any previously left-over state
         /// </summary>
         public void BeginSenseCalculation<TGameContext>(TGameContext ctx)
-            where TGameContext : ITimeContext
         {
-            currentTime = ctx.TimeSource.FixedStepTime;
+            currentTime = timeSource.Value.FixedStepTime;
         }
 
         /// <summary>
@@ -125,15 +141,14 @@ namespace RogueEntity.Core.Sensing.Receptors
                 {
                     var nstate = state.WithPosition(position).WithDirtyState(SenseSourceDirtyState.Dirty);
                     v.WriteBack(k, in nstate);
-                    v.AssignOrReplace(k, new SenseReceptorDirtyFlag<VisionSense>());
+                    v.AssignOrReplace(k, new SenseReceptorDirtyFlag<TReceptorSense>());
                 }
                 else if (state.State != SenseSourceDirtyState.Active ||
-                         (cacheView.TryGetValue(out var cache) &&
-                          cache.IsDirty(pos, physics.SignalRadiusForIntensity(definition.SenseDefinition.Intensity))))
+                         IsCacheDirty(in position, physics.SignalRadiusForIntensity(definition.SenseDefinition.Intensity)))
                 {
                     var nstate = state.WithDirtyState(SenseSourceDirtyState.Dirty);
                     v.WriteBack(k, in nstate);
-                    v.AssignOrReplace(k, new SenseReceptorDirtyFlag<VisionSense>());
+                    v.AssignOrReplace(k, new SenseReceptorDirtyFlag<TReceptorSense>());
                 }
 
                 AddActiveSenseReceptor(definition.SenseDefinition.Intensity, position);
@@ -153,6 +168,33 @@ namespace RogueEntity.Core.Sensing.Receptors
 
             // lights that are not enabled and have not been enabled in the last
             // turn can be safely ignored.
+        }
+
+        bool IsCacheDirty(in Position pos, float radius)
+        {
+            bool haveTestedCache = false;
+            if (globalCacheView.TryGetValue(out var gcache))
+            {
+                if (gcache.IsDirty(pos, radius))
+                {
+                    return true;
+                }
+
+                haveTestedCache = true;
+            }
+
+            if (cacheView.TryGetValue(out var cache))
+            {
+                if (gcache.IsDirty(pos, radius))
+                {
+                    return true;
+                }
+
+                haveTestedCache = true;
+            }
+
+            // if there are no caches at all, assume that everything is dirty.
+            return !haveTestedCache;
         }
 
         void AddActiveSenseReceptor(float intensity, in Position pos)
@@ -353,7 +395,7 @@ namespace RogueEntity.Core.Sensing.Receptors
 
         protected abstract IReadOnlyView2D<float> CreateSensoryResistanceView(IReadOnlyView2D<SensoryResistance> resistanceMap);
 
-        protected class SenseDataLevel: ISenseReceptorProcessor
+        protected class SenseDataLevel : ISenseReceptorProcessor
         {
             public readonly IReadOnlyView2D<float> ResistanceView;
             public int LastRecentlyUsedTime { get; private set; }

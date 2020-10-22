@@ -9,7 +9,6 @@ using RogueEntity.Core.Positioning.Continuous;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Sensing.Cache;
 using RogueEntity.Core.Sensing.Common;
-using RogueEntity.Core.Sensing.Common.Blitter;
 using RogueEntity.Core.Sensing.Resistance;
 using RogueEntity.Core.Sensing.Resistance.Maps;
 
@@ -18,7 +17,7 @@ namespace RogueEntity.Core.Sensing.Sources.Touch
     public class TouchSourceModule: ModuleBase
     {
        public static readonly string ModuleId = "Core.Senses.Source.Touch";
-        public static readonly EntityRole SmellSourceRole = new EntityRole("Role.Core.Senses.Source.Touch");
+        public static readonly EntityRole TouchSourceRole = new EntityRole("Role.Core.Senses.Source.Touch");
 
         public static readonly EntitySystemId PreparationSystemId = "Systems.Core.Senses.Source.Touch.Prepare";
         public static readonly EntitySystemId CollectionGridSystemId = "Systems.Core.Senses.Source.Touch.Collect.Grid";
@@ -36,7 +35,7 @@ namespace RogueEntity.Core.Sensing.Sources.Touch
                                 ModuleDependency.Of(SensoryCacheModule.ModuleId),
                                 ModuleDependency.Of(PositionModule.ModuleId));
 
-            RequireRole(SmellSourceRole).WithImpliedRole(SenseSources.SenseSourceRole).WithImpliedRole(SensoryCacheModule.SenseCacheSourceRole);;
+            RequireRole(TouchSourceRole).WithImpliedRole(SenseSources.SenseSourceRole).WithImpliedRole(SensoryCacheModule.SenseCacheSourceRole);
         }
 
         [EntityRoleInitializer("Role.Core.Senses.Source.Touch")]
@@ -61,7 +60,7 @@ namespace RogueEntity.Core.Sensing.Sources.Touch
             where TItemId : IEntityKey
         {
             var ctx = initializer.DeclareEntityContext<TItemId>();
-            ctx.Register(CollectionGridSystemId, 57000, RegisterCollectLightsGridSystem);
+            ctx.Register(CollectionGridSystemId, 55000, RegisterCollectLightsGridSystem);
         }
 
         [EntityRoleInitializer("Role.Core.Senses.Source.Touch",
@@ -72,13 +71,31 @@ namespace RogueEntity.Core.Sensing.Sources.Touch
             where TItemId : IEntityKey
         {
             var ctx = initializer.DeclareEntityContext<TItemId>();
-            ctx.Register(CollectionGridSystemId, 57000, RegisterCollectLightsContinuousSystem);
+            ctx.Register(CollectionGridSystemId, 55000, RegisterCollectLightsContinuousSystem);
+        }
+
+        [EntityRoleInitializer("Role.Core.Senses.Source.Touch",
+                               ConditionalRoles = new[]
+                               {
+                                   "Role.Core.Position.GridPositioned",
+                                   "Role.Core.Senses.Cache.InvalidationSource"
+                               })]
+        protected void InitializeLightSenseCache<TGameContext, TItemId>(IServiceResolver serviceResolver,
+                                                                        IModuleInitializer<TGameContext> initializer,
+                                                                        EntityRole role)
+            where TItemId : IEntityKey
+            where TGameContext : IGridMapContext<TGameContext, TItemId>
+        {
+            if (serviceResolver.TryResolve(out SenseCacheSetUpSystem<TGameContext> o))
+            {
+                o.RegisterSense<VisionSense>();
+            }
         }
 
         void RegisterPrepareSystem<TGameContext, TItemId>(IServiceResolver serviceResolver,
-                                                               IGameLoopSystemRegistration<TGameContext> context,
-                                                               EntityRegistry<TItemId> registry,
-                                                               ICommandHandlerRegistration<TGameContext, TItemId> handler)
+                                                          IGameLoopSystemRegistration<TGameContext> context,
+                                                          EntityRegistry<TItemId> registry,
+                                                          ICommandHandlerRegistration<TGameContext, TItemId> handler)
             where TItemId : IEntityKey
             where TGameContext : ITimeContext
         {
@@ -127,9 +144,9 @@ namespace RogueEntity.Core.Sensing.Sources.Touch
         }
 
         void RegisterCalculateSystem<TGameContext, TItemId>(IServiceResolver serviceResolver,
-                                                                 IGameLoopSystemRegistration<TGameContext> context,
-                                                                 EntityRegistry<TItemId> registry,
-                                                                 ICommandHandlerRegistration<TGameContext, TItemId> handler)
+                                                            IGameLoopSystemRegistration<TGameContext> context,
+                                                            EntityRegistry<TItemId> registry,
+                                                            ICommandHandlerRegistration<TGameContext, TItemId> handler)
             where TItemId : IEntityKey
         {
             if (!GetOrCreateLightSystem(serviceResolver, out var ls))
@@ -164,8 +181,7 @@ namespace RogueEntity.Core.Sensing.Sources.Touch
 
         static bool GetOrCreateLightSystem(IServiceResolver serviceResolver, out TouchSystem ls)
         {
-            if (!serviceResolver.TryResolve(out ISenseDataBlitter senseBlitterFactory) ||
-                !serviceResolver.TryResolve(out ITouchPhysicsConfiguration physicsConfig))
+            if (!serviceResolver.TryResolve(out ITouchPhysicsConfiguration physicsConfig))
             {
                 ls = default;
                 return false;
@@ -174,10 +190,11 @@ namespace RogueEntity.Core.Sensing.Sources.Touch
             if (!serviceResolver.TryResolve(out ls))
             {
                 ls = new TouchSystem(serviceResolver.ResolveToReference<ISensePropertiesSource>(),
-                                     serviceResolver.ResolveToReference<ISenseStateCacheProvider>(),
+                                     serviceResolver.ResolveToReference<IGlobalSenseStateCacheProvider>(),
+                                     serviceResolver.ResolveToReference<ITimeSource>(),
+                                     serviceResolver.Resolve<ISenseStateCacheControl>(),
                                      physicsConfig.CreateTouchPropagationAlgorithm(),
-                                     physicsConfig.TouchPhysics,
-                                     senseBlitterFactory);
+                                     physicsConfig.TouchPhysics);
             }
 
             return true;

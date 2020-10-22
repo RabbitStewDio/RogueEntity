@@ -1,5 +1,6 @@
 using System;
 using JetBrains.Annotations;
+using RogueEntity.Core.Infrastructure.Time;
 using RogueEntity.Core.Sensing.Cache;
 using RogueEntity.Core.Sensing.Common;
 using RogueEntity.Core.Sensing.Resistance;
@@ -13,8 +14,11 @@ namespace RogueEntity.Core.Sensing.Receptors.Noise
     {
         public NoiseReceptorSystem([NotNull] Lazy<ISensePropertiesSource> senseProperties,
                                    [NotNull] Lazy<ISenseStateCacheProvider> senseCacheProvider,
+                                   [NotNull] Lazy<IGlobalSenseStateCacheProvider> globalSenseCacheProvider,
+                                   [NotNull] Lazy<ITimeSource> timeSource,
                                    [NotNull] ISensePhysics physics,
-                                   [NotNull] ISensePropagationAlgorithm sensePropagationAlgorithm) : base(senseProperties, senseCacheProvider, physics, sensePropagationAlgorithm)
+                                   [NotNull] ISensePropagationAlgorithm sensePropagationAlgorithm) : 
+            base(senseProperties, senseCacheProvider, globalSenseCacheProvider, timeSource, physics, sensePropagationAlgorithm)
         {
         }
 

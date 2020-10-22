@@ -3,10 +3,8 @@ using RogueEntity.Core.Infrastructure.Commands;
 using RogueEntity.Core.Infrastructure.GameLoops;
 using RogueEntity.Core.Infrastructure.Modules;
 using RogueEntity.Core.Meta;
-using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Sensing.Cache;
 using RogueEntity.Core.Sensing.Resistance.Maps;
-using RogueEntity.Core.Utils.MapChunks;
 
 namespace RogueEntity.Core.Sensing.Resistance
 {
@@ -78,12 +76,7 @@ namespace RogueEntity.Core.Sensing.Resistance
                 return system;
             }
 
-            if (!serviceResolver.TryResolve(out IAddByteBlitter blitter))
-            {
-                blitter = new DefaultAddByteBlitter();
-            }
-            
-            system = new SensePropertiesSystem<TGameContext>(64, 64, blitter);
+            system = new SensePropertiesSystem<TGameContext>(64, 64);
             serviceResolver.Store(system);
             serviceResolver.Store<ISensePropertiesSystem<TGameContext>>(system);
             serviceResolver.Store<ISensePropertiesSource>(system);

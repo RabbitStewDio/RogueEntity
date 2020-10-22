@@ -15,7 +15,7 @@ namespace RogueEntity.Core.Sensing.Receptors
                                                    ISenseDataView lights)
         {
             var bounds = new Rectangle(new Coord(lastPosition.GridX, lastPosition.GridY), sourceData.Radius, sourceData.Radius);
-            foreach (var d in bounds)
+            foreach (var d in bounds.Contents)
             {
                 if (lights.TryQuery(d.X, d.Y, out var intensity, out var dir) &&
                     sourceData.TryQuery(d.X, d.Y, out var perceptionStr, out var perceptionDir) &&

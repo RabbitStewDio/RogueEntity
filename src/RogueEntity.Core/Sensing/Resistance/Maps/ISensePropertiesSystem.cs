@@ -1,3 +1,4 @@
+using System;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Utils;
 
@@ -5,6 +6,7 @@ namespace RogueEntity.Core.Sensing.Resistance.Maps
 {
     public interface ISensePropertiesSystem<TGameContext>
     {
+        event EventHandler<PositionDirtyEventArgs> SenseResistancePositionDirty;
         void OnPositionDirty(object source, PositionDirtyEventArgs args);
         void AddSenseLayerFactory(ISenseLayerFactory<TGameContext> layerHandler);
         

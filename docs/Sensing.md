@@ -32,3 +32,19 @@ source and a sense receptor. A noise forms a relationship between the
 noise source and the actor hearing the noise. 
 
 
+
+
+---
+
+Sense Caching:
+
+- Tracks cache validation information for sense sources and sense receptors.
+- Two tracks:
+  - Global: Cache information from map updates that influence how sense data 
+            travels through map cells. This in return affects sense sources.
+            Any active sense source affected by such a change will in turn 
+            mark the sense receptor cache as invalid.
+  - ReceptorCache:
+            Tracks the validity of sense sources. This information is updated
+            when sense sources are computed. It tracks changes to sense source
+            emissions and sense source positions.

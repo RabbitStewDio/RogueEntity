@@ -38,12 +38,15 @@ namespace RogueEntity.Core.Sensing.Resistance.Maps
             return layers.TryGetValue(z, out layerData);
         }
 
-        public void MarkDirty(MapLayer l, EntityGridPosition pos)
+        public bool MarkDirty(MapLayer l, EntityGridPosition pos)
         {
             if (TryGetLayer(pos.GridZ, out var d))
             {
-                d?.MarkDirty(l, pos);
+                d.MarkDirty(l, pos);
+                return true;
             }
+
+            return false;
         }
 
         public void ResetDirtyFlags()

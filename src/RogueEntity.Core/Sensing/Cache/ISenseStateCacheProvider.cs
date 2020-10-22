@@ -1,3 +1,5 @@
+using RogueEntity.Core.Positioning;
+
 namespace RogueEntity.Core.Sensing.Cache
 {
     public interface ISenseStateCacheProvider
@@ -5,12 +7,13 @@ namespace RogueEntity.Core.Sensing.Cache
         public bool TryGetSenseCache<TSense>(out ISenseStateCacheView senseCache);
     }
 
-    public class NoOpSenseCacheProvider: ISenseStateCacheProvider
+    public interface IGlobalSenseStateCacheProvider
     {
-        public bool TryGetSenseCache<TSense>(out ISenseStateCacheView senseCache)
-        {
-            senseCache = default;
-            return false;
-        }
+        bool TryGetGlobalSenseCache(out ISenseStateCacheView senseCache);
+    }
+
+    public interface ISenseStateCacheControl
+    {
+        void MarkDirty<TSense>(in Position p);
     }
 }

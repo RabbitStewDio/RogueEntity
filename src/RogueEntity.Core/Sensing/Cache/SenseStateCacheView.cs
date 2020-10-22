@@ -18,7 +18,7 @@ namespace RogueEntity.Core.Sensing.Cache
         readonly Dictionary<int, DynamicBoolDataView> trackersPerLayer;
         bool globallyDirty;
 
-        public SenseStateCacheView(int tileSizeX = 64, int tileSizeY = 64, int resolution = 8)
+        public SenseStateCacheView(int tileSizeX, int tileSizeY, int resolution)
         {
             if (resolution < 1) throw new ArgumentException(nameof(resolution));
 
@@ -28,6 +28,11 @@ namespace RogueEntity.Core.Sensing.Cache
             this.trackersPerLayer = new Dictionary<int, DynamicBoolDataView>();
         }
 
+        public void MarkGloballyDirty()
+        {
+            globallyDirty = true;
+        }
+        
         public void MarkClean()
         {
             foreach (var l in trackersPerLayer.Values)
@@ -38,12 +43,12 @@ namespace RogueEntity.Core.Sensing.Cache
             globallyDirty = false;
         }
 
-        public void MarkDirty(Position p)
+        public void MarkDirty(in Position p)
         {
             if (!trackersPerLayer.TryGetValue(p.GridZ, out var data))
             {
                 data = new DynamicBoolDataView(tileSizeX, tileSizeY);
-                return;
+                trackersPerLayer[p.GridZ] = data;
             }
 
             var px = p.GridX / resolution;
@@ -65,8 +70,7 @@ namespace RogueEntity.Core.Sensing.Cache
                 return data[p.GridX / resolution, p.GridY / resolution];
             }
 
-            // always err on the safe side.
-            return true;
+            return false;
         }
 
         public bool IsDirty(int z, in Rectangle rect)
@@ -103,7 +107,7 @@ namespace RogueEntity.Core.Sensing.Cache
                     }
 
                     var limit = data.Bounds.GetIntersection(in scaledBounds);
-                    foreach (var lpos in limit)
+                    foreach (var lpos in limit.Contents)
                     {
                         if (map[lpos.X, lpos.Y])
                         {

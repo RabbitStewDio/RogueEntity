@@ -1,48 +1,53 @@
 using System;
+using System.Collections.Generic;
 using JetBrains.Annotations;
-using RogueEntity.Core.Positioning;
-using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Positioning.MapLayers;
 
 namespace RogueEntity.Core.Sensing.Cache
 {
-    public class SenseCacheSetUpSystem<TGameContext, TItemId>
-        where TGameContext: IGridMapContext<TGameContext, TItemId>
+    public interface ISenseCacheSetupSystem
     {
-        readonly Lazy<SenseStateCacheProvider> cacheProvider;
-        readonly MapLayer[] layers;
+        void RegisterCacheLayer(MapLayer layer);
+    }
+    
+    public class SenseCacheSetUpSystem<TGameContext>: ISenseCacheSetupSystem
+    {
+        readonly Lazy<SenseStateCache> cacheProvider;
+        readonly HashSet<MapLayer> layers;
+        readonly HashSet<Type> senses;
 
-        public SenseCacheSetUpSystem([NotNull] Lazy<SenseStateCacheProvider> cacheProvider, params MapLayer[] layers)
+        public SenseCacheSetUpSystem([NotNull] Lazy<SenseStateCache> cacheProvider)
         {
             this.cacheProvider = cacheProvider ?? throw new ArgumentNullException(nameof(cacheProvider));
-            this.layers = layers;
+            this.layers = new HashSet<MapLayer>();
+            this.senses = new HashSet<Type>();
+        }
+
+        public void RegisterCacheLayer(MapLayer layer)
+        {
+            layers.Add(layer);
+        }
+
+        public void RegisterSense<TSense>() where TSense: ISense
+        {
+            senses.Add(typeof(TSense));
         }
 
         public void Start(TGameContext context)
         {
-            foreach (var l in layers)
+            foreach (var layer in layers)
             {
-                if (context.TryGetGridDataFor(l, out var data))
-                {
-                    data.PositionDirty += OnDirty;
-                }
+                cacheProvider.Value.ActivateGlobalCacheLayer(layer);
+            }
+            
+            foreach (var sense in senses)
+            {
+                cacheProvider.Value.ActivateTrackedSenseSource(sense);
             }
         }
         
         public void Stop(TGameContext context)
         {
-            foreach (var l in layers)
-            {
-                if (context.TryGetGridDataFor(l, out var data))
-                {
-                    data.PositionDirty -= OnDirty;
-                }
-            }
-        }
-
-        void OnDirty(object o, PositionDirtyEventArgs args)
-        {
-            cacheProvider.Value.MarkDirty(args.Position);
         }
     }
 }

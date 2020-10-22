@@ -1,5 +1,6 @@
 using System;
 using JetBrains.Annotations;
+using RogueEntity.Core.Infrastructure.Time;
 using RogueEntity.Core.Sensing.Cache;
 using RogueEntity.Core.Sensing.Common;
 using RogueEntity.Core.Sensing.Common.Blitter;
@@ -14,11 +15,12 @@ namespace RogueEntity.Core.Sensing.Sources.Heat
         [NotNull] readonly IHeatPhysicsConfiguration heatPhysics;
 
         public HeatSystem([NotNull] Lazy<ISensePropertiesSource> senseProperties,
-                          [NotNull] Lazy<ISenseStateCacheProvider> senseCacheProvider,
+                          [NotNull] Lazy<IGlobalSenseStateCacheProvider> senseCacheProvider,
+                          [NotNull] Lazy<ITimeSource> timeSource,
+                          [NotNull] ISenseStateCacheControl senseCacheControl,
                           [NotNull] ISensePropagationAlgorithm sensePropagationAlgorithm,
-                          [NotNull] IHeatPhysicsConfiguration heatPhysics,
-                          ISenseDataBlitter blitterFactory = null) : 
-            base(senseProperties, senseCacheProvider, sensePropagationAlgorithm, heatPhysics.HeatPhysics, blitterFactory)
+                          [NotNull] IHeatPhysicsConfiguration heatPhysics) :
+            base(senseProperties, senseCacheProvider, timeSource, senseCacheControl, sensePropagationAlgorithm, heatPhysics.HeatPhysics)
         {
             this.heatPhysics = heatPhysics ?? throw new ArgumentNullException(nameof(heatPhysics));
         }
@@ -28,9 +30,9 @@ namespace RogueEntity.Core.Sensing.Sources.Heat
             return new HeatResistanceView(resistanceMap);
         }
 
-        protected override SenseSourceData RefreshSenseState<TPosition>(HeatSourceDefinition definition, 
-                                                                        TPosition pos, 
-                                                                        IReadOnlyView2D<float> resistanceView, 
+        protected override SenseSourceData RefreshSenseState<TPosition>(HeatSourceDefinition definition,
+                                                                        TPosition pos,
+                                                                        IReadOnlyView2D<float> resistanceView,
                                                                         SenseSourceData data)
         {
             var environmentTemperature = heatPhysics.GetEnvironmentTemperature(pos.GridZ);

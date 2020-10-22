@@ -53,7 +53,6 @@ namespace RogueEntity.Core.Sensing.Receptors.Noise
                                                              IModuleInitializer<TGameContext> initializer,
                                                              EntityRole role)
             where TItemId : IEntityKey
-            where TGameContext : ITimeContext
         {
             var ctx = initializer.DeclareEntityContext<TItemId>();
             ctx.Register(RegisterEntityId, 0, RegisterEntities);
@@ -71,7 +70,7 @@ namespace RogueEntity.Core.Sensing.Receptors.Noise
             where TItemId : IEntityKey
         {
             var ctx = initializer.DeclareEntityContext<TItemId>();
-            ctx.Register(ReceptorCollectionGridSystemId, 55000, RegisterCollectReceptorsGridSystem);
+            ctx.Register(ReceptorCollectionGridSystemId, 55500, RegisterCollectReceptorsGridSystem);
         }
 
         [EntityRoleInitializer("Role.Core.Senses.Receptor.Noise.ActorRole",
@@ -82,7 +81,7 @@ namespace RogueEntity.Core.Sensing.Receptors.Noise
             where TItemId : IEntityKey
         {
             var ctx = initializer.DeclareEntityContext<TItemId>();
-            ctx.Register(ReceptorCollectionContinuousSystemId, 55000, RegisterCollectReceptorsContinuousSystem);
+            ctx.Register(ReceptorCollectionContinuousSystemId, 55500, RegisterCollectReceptorsContinuousSystem);
         }
 
         [EntityRoleInitializer("Role.Core.Senses.Source.Noise")]
@@ -100,7 +99,6 @@ namespace RogueEntity.Core.Sensing.Receptors.Noise
                                                           EntityRegistry<TItemId> registry,
                                                           ICommandHandlerRegistration<TGameContext, TItemId> handler)
             where TItemId : IEntityKey
-            where TGameContext : ITimeContext
         {
             if (!GetOrCreateLightSystem(serviceResolver, out var ls))
             {
@@ -239,6 +237,8 @@ namespace RogueEntity.Core.Sensing.Receptors.Noise
             {
                 ls = new NoiseReceptorSystem(serviceResolver.ResolveToReference<ISensePropertiesSource>(),
                                              serviceResolver.ResolveToReference<ISenseStateCacheProvider>(),
+                                             serviceResolver.ResolveToReference<IGlobalSenseStateCacheProvider>(),
+                                             serviceResolver.ResolveToReference<ITimeSource>(),
                                              physicsConfig.NoisePhysics,
                                              physicsConfig.CreateNoisePropagationAlgorithm());
             }

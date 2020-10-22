@@ -162,7 +162,7 @@ namespace RogueEntity.Core.Utils.Maps
         public BoundedBoolDataView GetOrCreateData(int x, int y)
         {
             var dx = MapPartitions.TileSplit(x, offsetX, tileSizeX);
-            var dy = MapPartitions.TileSplit(y, offsetX, tileSizeY);
+            var dy = MapPartitions.TileSplit(y, offsetY, tileSizeY);
             if (!index.TryGetValue(new Position2D(dx, dy), out var data))
             {
                 data = new TrackedDataView(new Rectangle(dx * tileSizeX + offsetX, dy * tileSizeY + offsetY, tileSizeX, tileSizeY), currentTime);
@@ -198,7 +198,7 @@ namespace RogueEntity.Core.Utils.Maps
         bool TryGetData(int x, int y, out TrackedDataView data)
         {
             var dx = MapPartitions.TileSplit(x, offsetX, tileSizeX);
-            var dy = MapPartitions.TileSplit(y, offsetX, tileSizeY);
+            var dy = MapPartitions.TileSplit(y, offsetY, tileSizeY);
             if (!index.TryGetValue(new Position2D(dx, dy), out data))
             {
                 return false;
