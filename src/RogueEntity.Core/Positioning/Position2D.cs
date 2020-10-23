@@ -1,13 +1,22 @@
 using System;
+using System.Runtime.Serialization;
 using GoRogue;
+using MessagePack;
 
 namespace RogueEntity.Core.Positioning
 {
+    [DataContract]
+    [MessagePackObject]
     public readonly struct Position2D : IEquatable<Position2D>
     {
+        [DataMember(Order = 0)]
+        [Key(0)]
         public readonly int X;
+        [DataMember(Order = 1)]
+        [Key(1)]
         public readonly int Y;
 
+        [SerializationConstructor]
         public Position2D(int x, int y)
         {
             X = x;

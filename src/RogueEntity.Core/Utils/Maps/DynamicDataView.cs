@@ -9,20 +9,6 @@ using RogueEntity.Core.Positioning;
 
 namespace RogueEntity.Core.Utils.Maps
 {
-    public interface IDynamicDataView2D<T> : IView2D<T>
-    {
-        int OffsetX { get; }
-        int OffsetY { get; }
-        int TileSizeX { get; }
-        int TileSizeY { get; }
-
-        bool TrySet(int x, int y, in T value);
-        bool TryGet(int x, int y, out T result);
-
-        List<Rectangle> GetActiveTiles(List<Rectangle> data = null);
-        bool TryGetData(int x, int y, out IBoundedDataViewRawAccess<T> raw);
-    }
-
     [DataContract]
     [MessagePackObject]
     public class DynamicDataView<T> : IDynamicDataView2D<T>
@@ -41,10 +27,6 @@ namespace RogueEntity.Core.Utils.Maps
         [DataMember(Order = 2)]
         [Key(2)]
         readonly Dictionary<Position2D, TrackedDataView> index;
-
-        [DataMember(Order = 3)]
-        [Key(3)]
-        readonly List<Position2D> expired;
 
         [DataMember(Order = 4)]
         [Key(4)]
@@ -74,6 +56,10 @@ namespace RogueEntity.Core.Utils.Maps
         [IgnoreMember]
         public int OffsetY => offsetY;
 
+        [IgnoreDataMember]
+        [IgnoreMember]
+        readonly List<Position2D> expired;
+        
         public DynamicDataView(int tileSizeX, int tileSizeY) : this(0, 0, tileSizeX, tileSizeY)
         {
         }
@@ -87,15 +73,14 @@ namespace RogueEntity.Core.Utils.Maps
             this.offsetY = offsetY;
             this.tileSizeX = tileSizeX;
             this.tileSizeY = tileSizeY;
-            index = new Dictionary<Position2D, TrackedDataView>();
-            expired = new List<Position2D>();
+            this.index = new Dictionary<Position2D, TrackedDataView>();
+            this.expired = new List<Position2D>();
         }
 
         [SerializationConstructor]
         protected DynamicDataView(int tileSizeX,
                                   int tileSizeY,
                                   [NotNull] Dictionary<Position2D, TrackedDataView> index,
-                                  [NotNull] List<Position2D> expired,
                                   long currentTime,
                                   int offsetX,
                                   int offsetY)
@@ -105,8 +90,13 @@ namespace RogueEntity.Core.Utils.Maps
             this.tileSizeX = tileSizeX;
             this.tileSizeY = tileSizeY;
             this.index = index ?? throw new ArgumentNullException(nameof(index));
-            this.expired = expired ?? throw new ArgumentNullException(nameof(expired));
+            this.expired = new List<Position2D>();
             this.currentTime = currentTime;
+
+            foreach (var idx in index.Values)
+            {
+                idx.MarkUnused(currentTime);
+            }
         }
 
         public List<Rectangle> GetActiveTiles(List<Rectangle> data = null)
@@ -251,16 +241,16 @@ namespace RogueEntity.Core.Utils.Maps
         [MessagePackObject]
         protected class TrackedDataView : BoundedDataView<T>
         {
-            [DataMember(Order = 2)]
-            [Key(2)]
+            [IgnoreMember]
+            [IgnoreDataMember]
             long currentTime;
-
-            [DataMember(Order = 3)]
-            [Key(3)]
+            
+            [IgnoreMember]
+            [IgnoreDataMember]
             int usedForReading;
 
-            [DataMember(Order = 4)]
-            [Key(4)]
+            [IgnoreMember]
+            [IgnoreDataMember]
             int usedForWriting;
 
             public TrackedDataView(in Rectangle bounds, long time) : base(in bounds)
@@ -272,16 +262,12 @@ namespace RogueEntity.Core.Utils.Maps
             }
 
             [SerializationConstructor]
-            public TrackedDataView(Rectangle bounds, T[] data, long currentTime, int usedForReading, int usedForWriting, long lastUsed) : base(bounds, data)
+            public TrackedDataView(Rectangle bounds, T[] data) : base(bounds, data)
             {
-                this.currentTime = currentTime;
-                this.usedForReading = usedForReading;
-                this.usedForWriting = usedForWriting;
-                LastUsed = lastUsed;
             }
 
-            [DataMember(Order = 5)]
-            [Key(5)]
+            [IgnoreMember]
+            [IgnoreDataMember]
             public long LastUsed { get; private set; }
 
             public void MarkUnused(long time)

@@ -17,15 +17,18 @@ namespace RogueEntity.Core.Positioning.Grid
     [MessagePackObject]
     public readonly struct EntityGridPosition : IEquatable<EntityGridPosition>, IPosition
     {
-        const int MaxXYValue = (1 << 24) - 1;
-        const int MaxZValue = (1 << 12) - 1;
+        public const int MinXYValue = 0;
+        public const int MaxXYValue = (1 << 24) - 1;
+        public const int MinZValue = 0;
+        public const int MaxZValue = (1 << 11) - 1;
         
-        const int MaxLValue = 7;
+        public const int MinLValue = 0;
+        public const int MaxLValue = 15;
 
         const ulong XMask = 0x0000_0000_00FF_FFFFL;
         const ulong YMask = 0x0000_FFFF_FF00_0000L;
-        const ulong ZMask = 0x0FFF_0000_0000_0000L;
-        const ulong LMask = 0x7000_0000_0000_0000L;
+        const ulong ZMask = 0x07FF_0000_0000_0000L;
+        const ulong LMask = 0x7800_0000_0000_0000L;
         const ulong VMask = 0x8000_0000_0000_0000L;
         const ulong PMask = 0x0FFF_FFFF_FFFF_FFFFL;
 
@@ -63,7 +66,7 @@ namespace RogueEntity.Core.Positioning.Grid
             data |= x & XMask;
             data |= ((ulong)y << 24) & YMask;
             data |= ((ulong)z << 48) & ZMask;
-            data |= ((ulong)layer << 60) & LMask;
+            data |= ((ulong)layer << 59) & LMask;
             position = data;
         }
 
@@ -75,25 +78,31 @@ namespace RogueEntity.Core.Positioning.Grid
 
         public static EntityGridPosition Of(MapLayer layer, int x, int y, int z = 0)
         {
-            if (x < 0) throw new ArgumentException();
-            if (y < 0) throw new ArgumentException();
-            if (z < 0) throw new ArgumentException();
-
+            if (x < 0) throw new ArgumentOutOfRangeException(nameof(x), x, $"should be between {MinXYValue} and {MaxXYValue}");
+            if (y < 0) throw new ArgumentOutOfRangeException(nameof(y), y, $"should be between {MinXYValue} and {MaxXYValue}");
+            if (z < 0) throw new ArgumentOutOfRangeException(nameof(z), z, $"should be between {MinXYValue} and {MaxXYValue}");
+            if (x > MaxXYValue) throw new ArgumentOutOfRangeException(nameof(x), x, $"should be between {MinXYValue} and {MaxXYValue}");
+            if (y > MaxXYValue) throw new ArgumentOutOfRangeException(nameof(y), y, $"should be between {MinXYValue} and {MaxXYValue}");
+            if (z > MaxZValue) throw new ArgumentOutOfRangeException(nameof(z), z, $"should be between {MinZValue} and {MaxZValue}");
+            
             return new EntityGridPosition(layer.LayerId, (uint) x, (uint)y, (uint)z);
         }
 
         public static EntityGridPosition OfRaw(byte layer, int x, int y, int z = 0)
         {
-            if (x < 0) throw new ArgumentException();
-            if (y < 0) throw new ArgumentException();
-            if (z < 0) throw new ArgumentException();
+            if (x < 0) throw new ArgumentOutOfRangeException(nameof(x), x, $"should be between {MinXYValue} and {MaxXYValue}");
+            if (y < 0) throw new ArgumentOutOfRangeException(nameof(y), y, $"should be between {MinXYValue} and {MaxXYValue}");
+            if (z < 0) throw new ArgumentOutOfRangeException(nameof(z), z, $"should be between {MinXYValue} and {MaxXYValue}");
+            if (x > MaxXYValue) throw new ArgumentOutOfRangeException(nameof(x), x, $"should be between {MinXYValue} and {MaxXYValue}");
+            if (y > MaxXYValue) throw new ArgumentOutOfRangeException(nameof(y), y, $"should be between {MinXYValue} and {MaxXYValue}");
+            if (z > MaxZValue) throw new ArgumentOutOfRangeException(nameof(z), z, $"should be between {MinZValue} and {MaxZValue}");
 
             return new EntityGridPosition(layer, (uint) x, (uint)y, (uint)z);
         }
 
         [IgnoreMember]
         [IgnoreDataMember]
-        public bool IsInvalid => LayerId == 0;
+        public bool IsInvalid => (position & VMask) != VMask;
 
         public static EntityGridPosition Invalid => default;
 
@@ -152,7 +161,7 @@ namespace RogueEntity.Core.Positioning.Grid
                     throw new ArgumentException("Invalid");
                 }
 
-                return (byte)((position & LMask) >> 60);
+                return (byte)((position & LMask) >> 59);
             }
         }
 

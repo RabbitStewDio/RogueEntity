@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using JetBrains.Annotations;
 using RogueEntity.Core.Positioning.Grid;
-using RogueEntity.Core.Positioning.MapLayers;
 using RogueEntity.Core.Utils;
 
 namespace RogueEntity.Core.Sensing.Resistance.Maps
@@ -16,21 +16,21 @@ namespace RogueEntity.Core.Sensing.Resistance.Maps
             this.layers = new Dictionary<int, SensePropertiesMap<TGameContext>>();
         }
 
-        public ReadOnlyListWrapper<int> Layers => layers.Keys.ToList();
+        public ReadOnlyListWrapper<int> ZLayers => layers.Keys.ToList();
         
-        public void ClearLayer(int z)
+        public void RemoveLayer(int z)
         {
             layers.Remove(z);
         }
-        
-        public void SetLayer(int z, SensePropertiesMap<TGameContext> layerData)
+
+        public void DefineLayer(int z, [NotNull] SensePropertiesMap<TGameContext> layerData)
         {
             if (z < 0)
             {
                 throw new ArgumentOutOfRangeException();
             }
 
-            layers[z] = layerData;
+            layers[z] = layerData ?? throw new ArgumentNullException(nameof(layerData));
         }
 
         public bool TryGetLayer(int z, out SensePropertiesMap<TGameContext> layerData)
@@ -38,11 +38,11 @@ namespace RogueEntity.Core.Sensing.Resistance.Maps
             return layers.TryGetValue(z, out layerData);
         }
 
-        public bool MarkDirty(MapLayer l, EntityGridPosition pos)
+        public bool MarkDirty(EntityGridPosition pos)
         {
             if (TryGetLayer(pos.GridZ, out var d))
             {
-                d.MarkDirty(l, pos);
+                d.MarkDirty(pos);
                 return true;
             }
 
@@ -53,7 +53,7 @@ namespace RogueEntity.Core.Sensing.Resistance.Maps
         {
             foreach (var d in layers.Values)
             {
-                d?.ResetDirtyFlags();
+                d.ResetDirtyFlags();
             }
         }
 
@@ -61,7 +61,7 @@ namespace RogueEntity.Core.Sensing.Resistance.Maps
         {
             foreach (var d in layers.Values)
             {
-                d?.Process(c);
+                d.Process(c);
             }
         }
     }

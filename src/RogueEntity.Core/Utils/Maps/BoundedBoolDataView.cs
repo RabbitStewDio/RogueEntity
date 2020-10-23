@@ -34,7 +34,7 @@ namespace RogueEntity.Core.Utils.Maps
         }
 
         [SerializationConstructor]
-        internal BoundedBoolDataView(Rectangle bounds, [NotNull] byte[] data, int anyValueSet)
+        protected internal BoundedBoolDataView(Rectangle bounds, [NotNull] byte[] data, int anyValueSet)
         {
             if (data == null)
             {
@@ -115,7 +115,34 @@ namespace RogueEntity.Core.Utils.Maps
 
             return false;
         }
-        
+
+        public bool TryGet(int x, int y, out bool result)
+        {
+            if (!TryGetRawIndex(x, y, out var rawBitIdx))
+            {
+                result = default;
+                return false;
+            }
+            
+            var chunkIndex = Math.DivRem(rawBitIdx, WordSize, out var innerIndex);
+            var chunk = data[chunkIndex];
+            if (chunk == 0)
+            {
+                result = false;
+                return true;
+            }
+
+            if (chunk == byte.MaxValue)
+            {
+                result = true;
+                return true;
+            }
+
+            var bitMask = 1u << innerIndex;
+            result = (chunk & bitMask) == bitMask;
+            return true;
+        }
+
         public bool this[int x, int y]
         {
             get

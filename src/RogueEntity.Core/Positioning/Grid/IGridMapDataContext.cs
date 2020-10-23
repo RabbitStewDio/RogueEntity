@@ -22,4 +22,30 @@ namespace RogueEntity.Core.Positioning.Grid
     {
         bool TryGetRaw(int z, out IDynamicDataView2D<TItemId> data, MapAccess accessMode = MapAccess.ReadOnly);
     }
+
+    public static class GridMapDataContextExtensions
+    {
+        public static bool TryGet<TGameContext, TItemId, TPosition>(this IGridMapDataContext<TGameContext, TItemId> data, in TPosition pos, out TItemId d)
+            where TPosition: IPosition
+        {
+            if (!data.TryGetMap(pos.GridZ, out var map))
+            {
+                d = default;
+                return false;
+            }
+
+            return map.TryGet(pos.GridX, pos.GridY, out d);
+        }
+
+        public static bool TrySet<TGameContext, TItemId, TPosition>(this IGridMapDataContext<TGameContext, TItemId> data, in TPosition pos, in TItemId d)
+            where TPosition: IPosition
+        {
+            if (!data.TryGetMap(pos.GridZ, out var map, MapAccess.ForWriting))
+            {
+                return false;
+            }
+
+            return map.TrySet(pos.GridX, pos.GridY, in d);
+        }
+    }
 }

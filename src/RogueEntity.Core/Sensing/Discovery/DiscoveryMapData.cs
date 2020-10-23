@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Serialization;
 using EnTTSharp.Entities.Attributes;
+using JetBrains.Annotations;
 using MessagePack;
 using RogueEntity.Core.Utils.Maps;
 
@@ -46,6 +47,19 @@ namespace RogueEntity.Core.Sensing.Discovery
             mapData = new Dictionary<int, DynamicBoolDataView>();
         }
 
+        [SerializationConstructor]
+        internal DiscoveryMapData(int tileWidth, int tileHeight, int offsetX, int offsetY, [NotNull] Dictionary<int, DynamicBoolDataView> mapData)
+        {
+            if (tileWidth <= 0) throw new ArgumentOutOfRangeException(nameof(tileWidth));
+            if (tileHeight <= 0) throw new ArgumentOutOfRangeException(nameof(tileHeight));
+            
+            this.tileWidth = tileWidth;
+            this.tileHeight = tileHeight;
+            this.offsetX = offsetX;
+            this.offsetY = offsetY;
+            this.mapData = mapData ?? throw new ArgumentNullException(nameof(mapData));
+        }
+
         [IgnoreMember]
         [IgnoreDataMember]
         public int OffsetX => offsetX;
@@ -61,17 +75,6 @@ namespace RogueEntity.Core.Sensing.Discovery
         [IgnoreMember]
         [IgnoreDataMember]
         public int TileHeight => tileHeight;
-
-        [SerializationConstructor]
-        internal DiscoveryMapData(int tileWidth, int tileHeight, Dictionary<int, DynamicBoolDataView> mapData)
-        {
-            if (tileWidth <= 0) throw new ArgumentOutOfRangeException(nameof(tileWidth));
-            if (tileHeight <= 0) throw new ArgumentOutOfRangeException(nameof(tileHeight));
-
-            this.tileWidth = tileWidth;
-            this.tileHeight = tileHeight;
-            this.mapData = mapData ?? throw new ArgumentNullException(nameof(mapData));
-        }
 
         public bool TryGetWritableMap(int z, out DynamicBoolDataView data)
         {

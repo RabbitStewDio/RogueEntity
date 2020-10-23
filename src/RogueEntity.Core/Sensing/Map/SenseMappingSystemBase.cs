@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using EnTTSharp.Entities;
 using JetBrains.Annotations;
+using RogueEntity.Core.Infrastructure.Time;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Sensing.Cache;
 using RogueEntity.Core.Sensing.Common;
@@ -24,16 +25,18 @@ namespace RogueEntity.Core.Sensing.Map
         const int ZLayerTimeToLive = 50;
 
         readonly Lazy<ISenseStateCacheProvider> senseCacheProvider;
+        readonly Lazy<ITimeSource> timeSource;
         readonly Dictionary<int, SenseDataLevel> activeLightsPerLevel;
         readonly ISenseDataBlitter blitterFactory;
         readonly List<int> zLevelBuffer;
         Optional<ISenseStateCacheView> senseCache;
-        int currentTime;
 
         public SenseMappingSystemBase([NotNull] Lazy<ISenseStateCacheProvider> senseCacheProvider,
+                                      [NotNull] Lazy<ITimeSource> timeSource,
                                       ISenseDataBlitter blitterFactory = null)
         {
             this.senseCacheProvider = senseCacheProvider ?? throw new ArgumentNullException(nameof(senseCacheProvider));
+            this.timeSource = timeSource;
             this.blitterFactory = blitterFactory ?? new DefaultSenseDataBlitter();
             this.activeLightsPerLevel = new Dictionary<int, SenseDataLevel>();
             this.zLevelBuffer = new List<int>();
@@ -142,6 +145,7 @@ namespace RogueEntity.Core.Sensing.Map
         /// </summary>
         public void EndSenseCalculation<TGameContext>(TGameContext ctx)
         {
+            var currentTime = timeSource.Value.FixedStepTime;
             zLevelBuffer.Clear();
             foreach (var l in activeLightsPerLevel)
             {
@@ -171,6 +175,7 @@ namespace RogueEntity.Core.Sensing.Map
                 activeLightsPerLevel[level] = lights;
             }
 
+            var currentTime = timeSource.Value.FixedStepTime;
             lights.MarkUsed(currentTime);
             lights.Add(p, s);
         }
@@ -179,6 +184,7 @@ namespace RogueEntity.Core.Sensing.Map
         {
             if (activeLightsPerLevel.TryGetValue(z, out var level))
             {
+                var currentTime = timeSource.Value.FixedStepTime;
                 level.MarkUsed(currentTime);
                 data = level.SenseMap;
                 return true;

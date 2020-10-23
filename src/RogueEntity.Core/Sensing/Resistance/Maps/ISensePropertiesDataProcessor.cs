@@ -19,6 +19,6 @@ namespace RogueEntity.Core.Sensing.Resistance.Maps
         
         void MarkDirty(int posGridX, int posGridY);
         void ResetDirtyFlags();
-        void Process(TGameContext context);
+        bool Process(TGameContext context);
     }
 }

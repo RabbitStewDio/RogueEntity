@@ -120,6 +120,11 @@ namespace RogueEntity.Core.Utils
             return new Percentage(valueOto1);
         }
 
+        public static Percentage Of(double valueOto1)
+        {
+            return new Percentage((float) valueOto1);
+        }
+
         public static Percentage FromRaw(byte rawData)
         {
             return new Percentage(rawData);

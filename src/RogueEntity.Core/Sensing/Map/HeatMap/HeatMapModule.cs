@@ -3,6 +3,7 @@ using EnTTSharp.Entities.Systems;
 using RogueEntity.Core.Infrastructure.Commands;
 using RogueEntity.Core.Infrastructure.GameLoops;
 using RogueEntity.Core.Infrastructure.Modules;
+using RogueEntity.Core.Infrastructure.Time;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Sensing.Cache;
 using RogueEntity.Core.Sensing.Common.Blitter;
@@ -59,7 +60,7 @@ namespace RogueEntity.Core.Sensing.Map.HeatMap
             ctx.Register(ReceptorCollectSystemId, 5750, RegisterCollectSenseSourcesSystem);
             ctx.Register(ReceptorComputeSystemId, 5850, RegisterComputeSenseMapSystem);
             ctx.Register(ReceptorApplySystemId, 5900, RegisterApplySenseMapSystem);
-            
+
             // disable the per-receptor handling of sense sources.
             // we already compute a global view, that can be used here as well.
             ctx.Register(VisionSenseModule.SenseSourceCollectionSystemId, 5850, ctx.Empty());
@@ -78,15 +79,15 @@ namespace RogueEntity.Core.Sensing.Map.HeatMap
                 registry.BuildSystem()
                         .WithContext<TGameContext>()
                         .CreateSystem<HeatSourceDefinition, SenseSourceState<TemperatureSense>>(hs.CollectSenseSources);
-            
+
             context.AddInitializationStepHandler(system);
             context.AddFixedStepHandlers(system);
         }
 
         void RegisterComputeSenseMapSystem<TGameContext, TItemId>(IServiceResolver resolver,
-                                                                      IGameLoopSystemRegistration<TGameContext> context,
-                                                                      EntityRegistry<TItemId> registry,
-                                                                      ICommandHandlerRegistration<TGameContext, TItemId> handler)
+                                                                  IGameLoopSystemRegistration<TGameContext> context,
+                                                                  EntityRegistry<TItemId> registry,
+                                                                  ICommandHandlerRegistration<TGameContext, TItemId> handler)
             where TItemId : IEntityKey
         {
             var hs = GetOrCreate(resolver);
@@ -96,19 +97,19 @@ namespace RogueEntity.Core.Sensing.Map.HeatMap
         }
 
         void RegisterApplySenseMapSystem<TGameContext, TItemId>(IServiceResolver resolver,
-                                                                      IGameLoopSystemRegistration<TGameContext> context,
-                                                                      EntityRegistry<TItemId> registry,
-                                                                      ICommandHandlerRegistration<TGameContext, TItemId> handler)
+                                                                IGameLoopSystemRegistration<TGameContext> context,
+                                                                EntityRegistry<TItemId> registry,
+                                                                ICommandHandlerRegistration<TGameContext, TItemId> handler)
             where TItemId : IEntityKey
         {
             var hs = GetOrCreate(resolver);
 
             var system = registry.BuildSystem()
-                    .WithContext<TGameContext>()
-                    .CreateSystem<SensoryReceptorState<VisionSense>,
-                        SenseReceptorDirtyFlag<VisionSense>,
-                        SingleLevelSenseDirectionMapData<VisionSense, TemperatureSense>>(hs.ApplyReceptorFieldOfView);
-            
+                                 .WithContext<TGameContext>()
+                                 .CreateSystem<SensoryReceptorState<VisionSense>,
+                                     SenseReceptorDirtyFlag<VisionSense>,
+                                     SingleLevelSenseDirectionMapData<VisionSense, TemperatureSense>>(hs.ApplyReceptorFieldOfView);
+
             context.AddInitializationStepHandler(system);
             context.AddFixedStepHandlers(system);
         }
@@ -134,6 +135,7 @@ namespace RogueEntity.Core.Sensing.Map.HeatMap
             }
 
             system = new HeatMapSystem(resolver.ResolveToReference<ISenseStateCacheProvider>(),
+                                       resolver.ResolveToReference<ITimeSource>(),
                                        resolver.Resolve<IHeatPhysicsConfiguration>(),
                                        blitter);
             return system;

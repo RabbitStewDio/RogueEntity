@@ -54,7 +54,7 @@ namespace RogueEntity.Core.Meta.Items
             }
         }
 
-        public void Register(IReferenceItemDeclaration<TContext, TItemId> itemDeclaration)
+        public ItemDeclarationId Register(IReferenceItemDeclaration<TContext, TItemId> itemDeclaration)
         {
             if (itemsById.ContainsKey(itemDeclaration.Id))
             {
@@ -76,9 +76,10 @@ namespace RogueEntity.Core.Meta.Items
             }
 
             items.Clear();
+            return itemDeclaration.Id;
         }
 
-        public void Register(IBulkItemDeclaration<TContext, TItemId> item)
+        public ItemDeclarationId Register(IBulkItemDeclaration<TContext, TItemId> item)
         {
             if (itemsById.ContainsKey(item.Id))
             {
@@ -107,6 +108,8 @@ namespace RogueEntity.Core.Meta.Items
             }
 
             items.Clear();
+
+            return item.Id;
         }
 
         public IItemDeclaration ReferenceItemById(ItemDeclarationId id)

@@ -27,6 +27,12 @@ namespace RogueEntity.Core.Utils.Maps
             Height = height;
         }
 
+        public bool TryGet(int x, int y, out T data)
+        {
+            data = value;
+            return true;
+        }
+
         public T this[int x, int y] => value;
 
         public T this[int x, int y, int z] => value;

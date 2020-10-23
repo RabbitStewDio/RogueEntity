@@ -39,7 +39,7 @@ namespace RogueEntity.Core.Tests.Positioning
 
         protected override TestGridPositionContext CreateContext()
         {
-            return new TestGridPositionContext().WithMapLayer(itemLayer, new OnDemandGridMapDataContext<TestGridPositionContext, ItemReference>(itemLayer, 100, 100));
+            return new TestGridPositionContext().WithMapLayer(itemLayer, new DefaultGridMapDataContext<TestGridPositionContext, ItemReference>(itemLayer, 100, 100));
         }
 
         protected override ReferenceItemGridPositionTrait<TestGridPositionContext, ItemReference> CreateTrait()

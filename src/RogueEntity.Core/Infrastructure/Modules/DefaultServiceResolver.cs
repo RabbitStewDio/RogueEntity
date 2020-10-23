@@ -12,6 +12,7 @@ namespace RogueEntity.Core.Infrastructure.Modules
         public DefaultServiceResolver()
         {
             backend = new Dictionary<Type, object>();
+            promisedReferences = new HashSet<Type>();
         }
 
         public bool TryResolve<TServiceObject>(out TServiceObject o)

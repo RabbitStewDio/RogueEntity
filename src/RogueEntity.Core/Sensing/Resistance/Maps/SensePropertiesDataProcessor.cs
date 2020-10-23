@@ -8,14 +8,16 @@ using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Positioning.MapLayers;
 using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.Maps;
+using Serilog;
 
 namespace RogueEntity.Core.Sensing.Resistance.Maps
 {
     public class SensePropertiesDataProcessor<TGameContext, TItemId> : ISensePropertiesDataProcessor<TGameContext>
-        where TGameContext : IItemContext<TGameContext, TItemId>, IGridMapContext<TGameContext, TItemId>, IGridMapRawDataContext<TItemId>
+        where TGameContext : IItemContext<TGameContext, TItemId>, IGridMapContext<TGameContext, TItemId>
         where TItemId : IEntityKey
     {
-
+        static readonly ILogger Logger = SLog.ForContext<SensePropertiesDataProcessor<TGameContext, TItemId>>();
+        
         readonly Action<(IDynamicDataView2D<TItemId> raw, TGameContext context, Rectangle bounds)> processFastDelegate;
         readonly Action<(IView2D<TItemId> raw, TGameContext context, Rectangle bounds)> processSlowDelegate;
         readonly int zPosition;
@@ -24,21 +26,25 @@ namespace RogueEntity.Core.Sensing.Resistance.Maps
         readonly List<Rectangle> activeTilesCache;
         readonly List<(IView2D<TItemId> raw, TGameContext context, Rectangle bounds)> processingSlowParameterCache;
         readonly List<(IDynamicDataView2D<TItemId> raw, TGameContext context, Rectangle bounds)> processingFastParameterCache;
+        bool dirtyAfterCreation;
 
         public SensePropertiesDataProcessor(MapLayer layer,
                                             int zPosition,
+                                            int offsetX,
+                                            int offsetY,
                                             int tw,
                                             int th)
         {
             this.Layer = layer;
             this.zPosition = zPosition;
-            this.data = new DynamicDataView<SensoryResistance>(tw, th);
-            this.dirtyMap = new DynamicBoolDataView(tw, th);
+            this.data = new DynamicDataView<SensoryResistance>(offsetX, offsetY, tw, th);
+            this.dirtyMap = new DynamicBoolDataView(offsetX, offsetY, tw, th);
             this.activeTilesCache = new List<Rectangle>();
             this.processingFastParameterCache = new List<(IDynamicDataView2D<TItemId> raw, TGameContext context, Rectangle bounds)>();
             this.processingSlowParameterCache = new List<(IView2D<TItemId> raw, TGameContext context, Rectangle bounds)>();
             this.processFastDelegate = ProcessFast;
             this.processSlowDelegate = ProcessSlow;
+            this.dirtyAfterCreation = true;
         }
 
         public DynamicDataView<SensoryResistance> Data => data;
@@ -58,23 +64,35 @@ namespace RogueEntity.Core.Sensing.Resistance.Maps
             dirtyMap.ClearData();
         }
 
-        public void Process(TGameContext context)
+        public bool Process(TGameContext context)
         {
+            activeTilesCache.Clear();
+
             if (context.TryGetGridRawDataFor(Layer, out var mapDataRaw) &&
                 mapDataRaw.TryGetRaw(zPosition, out var mapData))
             {
                 ProcessRawData(context, mapData);
+                return true;
             }
-            else if (context.TryGetGridDataFor(Layer, out var gridRaw) &&
+            
+            if (context.TryGetGridDataFor(Layer, out var gridRaw) &&
                      gridRaw.TryGetMap(zPosition, out var gridMap))
             {
                 ProcessData(context, gridMap);
+                return true;
             }
-            
+
+            return false;
         }
 
         void ProcessData(TGameContext context, IView2D<TItemId> mapData)
         {
+            if (dirtyAfterCreation)
+            {
+                Logger.Warning("Unable to access tile information for mapping data. Unless all tiles were manually marked as dirty, the first iteration is probably wrong.");
+                dirtyAfterCreation = false;
+            }
+            
             var tc = dirtyMap.GetActiveTiles(activeTilesCache);
             processingSlowParameterCache.Clear();
             //
@@ -90,9 +108,10 @@ namespace RogueEntity.Core.Sensing.Resistance.Maps
                     }
                 }
             }
+
             Parallel.ForEach(processingSlowParameterCache, processSlowDelegate);
         }
-        
+
         void ProcessRawData(TGameContext context, IDynamicDataView2D<TItemId> mapData)
         {
             var tc = mapData.GetActiveTiles(activeTilesCache);
@@ -102,18 +121,17 @@ namespace RogueEntity.Core.Sensing.Resistance.Maps
             for (var i = tc.Count - 1; i >= 0; i--)
             {
                 var bounds = tc[i];
-                if (dirtyMap.TryGetData(bounds.X, bounds.Y, out var dataTile))
+                if (dirtyAfterCreation ||
+                    (dirtyMap.TryGetData(bounds.X, bounds.Y, out var dataTile) && dataTile.AnyValueSet()))
                 {
-                    if (dataTile.AnyValueSet())
-                    {
-                        processingFastParameterCache.Add((mapData, context, bounds));
-                    }
+                    processingFastParameterCache.Add((mapData, context, bounds));
                 }
             }
-            
+
+            dirtyAfterCreation = false;
             Parallel.ForEach(processingFastParameterCache, processFastDelegate);
         }
-        
+
         void ProcessFast((IDynamicDataView2D<TItemId> raw, TGameContext context, Rectangle bounds) param)
         {
             var (raw, context, bounds) = param;
@@ -136,10 +154,11 @@ namespace RogueEntity.Core.Sensing.Resistance.Maps
                 }
             }
         }
-        
+
         void ProcessSlow((IView2D<TItemId> raw, TGameContext context, Rectangle bounds) param)
         {
             var (groundData, context, bounds) = param;
+
             var itemResolver = context.ItemResolver;
             foreach (var (x, y) in bounds.Contents)
             {

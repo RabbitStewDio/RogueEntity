@@ -12,6 +12,18 @@ namespace RogueEntity.Core.Sensing.Sources.Heat
             this.cellProperties = cellProperties;
         }
 
+        public bool TryGet(int x, int y, out float data)
+        {
+            if (cellProperties.TryGet(x, y, out var raw))
+            {
+                data = raw.BlocksHeat;
+                return true;
+            }
+
+            data = default;
+            return false;
+        }
+
         public float this[int x, int y]
         {
             get

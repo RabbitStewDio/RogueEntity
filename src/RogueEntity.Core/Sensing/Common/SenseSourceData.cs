@@ -43,7 +43,23 @@ namespace RogueEntity.Core.Sensing.Common
             directionality = new SenseDirectionStore(Directions[linIndex]);
             return true;
         }
-        
+
+        public bool TryGet(int x, int y, out float intensity)
+        {
+            var dx = x + Radius;
+            var dy = y + Radius;
+            if (dx < 0 || dx >= LineWidth ||
+                dy < 0 || dy >= LineWidth)
+            {
+                intensity = default;
+                return false;
+            }
+            
+            var linIndex = dx + dy * LineWidth;
+            intensity = Intensities[linIndex];
+            return true;
+        }
+
         public float this[int x, int y]
         {
             get

@@ -8,7 +8,7 @@ namespace RogueEntity.Core.Sensing.Resistance.Maps
 {
     public class DynamicSenseLayerFactory<TGameContext, TItemId> : ISenseLayerFactory<TGameContext>
         where TItemId : IEntityKey
-        where TGameContext : IItemContext<TGameContext, TItemId>, IGridMapContext<TGameContext, TItemId>, IGridMapRawDataContext<TItemId>
+        where TGameContext : IItemContext<TGameContext, TItemId>, IGridMapContext<TGameContext, TItemId>
     {
         readonly MapLayer layer;
         readonly List<int> cachedZLevels;
@@ -40,26 +40,24 @@ namespace RogueEntity.Core.Sensing.Resistance.Maps
 
             foreach (var z in cachedZLevels)
             {
-                if (!gridMapDataContext.TryGetMap(z, out var map))
+                if (!gridMapDataContext.TryGetMap(z, out _))
                 {
                     // If the map no longer contains the z-layer we previously seen,
                     // kick it out from the system for good.
-                    if (system.TryGet(z, out var mlx))
+                    if (system.TryGetData(z, out var mlx))
                     {
                         mlx.RemoveLayer(layer);
                     }
                     continue;
                 }
-                
-                if (!system.TryGetOrCreate(z, out var ml))
-                {
-                    continue;
-                }
-                
+
+                var ml = system.GetOrCreate(z);
                 if (!ml.IsDefined(layer))
                 {
                     var proc = new SensePropertiesDataProcessor<TGameContext, TItemId>(layer,
                                                                                        z,
+                                                                                       system.OffsetX,
+                                                                                       system.OffsetY,
                                                                                        system.TileWidth, 
                                                                                        system.TileHeight);
                     ml.AddProcess(layer, proc);

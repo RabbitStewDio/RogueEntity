@@ -2,11 +2,13 @@
 {
     public interface IReadOnlyView2D<T>
     {
+        bool TryGet(int x, int y, out T data);
         T this[int x, int y] { get; }
     }
     
     public interface IView2D<T>: IReadOnlyView2D<T>
     {
+        bool TrySet(int x, int y, in T data);
         new T this[int x, int y] { get; set; }
     }
     

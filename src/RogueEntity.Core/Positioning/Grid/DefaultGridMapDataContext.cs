@@ -5,18 +5,24 @@ using RogueEntity.Core.Utils.Maps;
 
 namespace RogueEntity.Core.Positioning.Grid
 {
-    public class OnDemandGridMapDataContext<TGameContext, TItemId> : IGridMapDataContext<TGameContext, TItemId>, IGridMapRawDataContext<TItemId>
+    public sealed class DefaultGridMapDataContext<TGameContext, TItemId> : IGridMapDataContext<TGameContext, TItemId>, IGridMapRawDataContext<TItemId>
     {
         public event EventHandler<PositionDirtyEventArgs> PositionDirty;
-        
+
         readonly MapLayer layer;
+        readonly int offsetX;
+        readonly int offsetY;
         readonly int tileWidth;
         readonly int tileHeight;
         readonly Dictionary<int, IDynamicDataView2D<TItemId>> mapDataByDepth;
 
-        public OnDemandGridMapDataContext(MapLayer layer, int tileWidth, int tileHeight)
+        public DefaultGridMapDataContext(MapLayer layer, int tileWidth, int tileHeight) : this(layer, 0, 0, tileWidth, tileHeight) { }
+
+        public DefaultGridMapDataContext(MapLayer layer, int offsetX, int offsetY, int tileWidth, int tileHeight)
         {
             this.layer = layer;
+            this.offsetX = offsetX;
+            this.offsetY = offsetY;
             this.tileWidth = tileWidth;
             this.tileHeight = tileHeight;
             mapDataByDepth = new Dictionary<int, IDynamicDataView2D<TItemId>>();
@@ -36,7 +42,7 @@ namespace RogueEntity.Core.Positioning.Grid
                 return false;
             }
 
-            rdata = new DynamicDataView<TItemId>(tileWidth, tileHeight);
+            rdata = new DynamicDataView<TItemId>(offsetX, offsetY, tileWidth, tileHeight);
             mapDataByDepth[z] = rdata;
             data = rdata;
             return true;
@@ -62,10 +68,10 @@ namespace RogueEntity.Core.Positioning.Grid
             return true;
         }
 
-        public virtual void MarkDirty<TPosition>(in TPosition position)
+        public void MarkDirty<TPosition>(in TPosition position)
             where TPosition : IPosition
         {
-            PositionDirty?.Invoke(this, new PositionDirtyEventArgs(Position.From(position), layer));
+            PositionDirty?.Invoke(this, new PositionDirtyEventArgs(Position.From(position)));
         }
 
         public List<int> QueryActiveZLevels(List<int> cachedResults = null)
@@ -78,7 +84,7 @@ namespace RogueEntity.Core.Positioning.Grid
             {
                 cachedResults.Clear();
             }
-            
+
             foreach (var k in mapDataByDepth.Keys)
             {
                 cachedResults.Add(k);

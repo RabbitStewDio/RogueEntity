@@ -1,5 +1,6 @@
 using System;
 using JetBrains.Annotations;
+using RogueEntity.Core.Infrastructure.Time;
 using RogueEntity.Core.Meta.ItemTraits;
 using RogueEntity.Core.Sensing.Cache;
 using RogueEntity.Core.Sensing.Common.Blitter;
@@ -13,8 +14,9 @@ namespace RogueEntity.Core.Sensing.Map.HeatMap
         readonly IHeatPhysicsConfiguration heatPhysics;
 
         public HeatMapSystem([NotNull] Lazy<ISenseStateCacheProvider> senseCacheProvider, 
+                             [NotNull] Lazy<ITimeSource> timeSource,
                              [NotNull] IHeatPhysicsConfiguration heatPhysics,
-                             ISenseDataBlitter blitterFactory = null) : base(senseCacheProvider, blitterFactory)
+                             ISenseDataBlitter blitterFactory = null) : base(senseCacheProvider, timeSource, blitterFactory)
         {
             this.heatPhysics = heatPhysics ?? throw new ArgumentNullException(nameof(heatPhysics));
         }

@@ -9,7 +9,7 @@ namespace RogueEntity.Core.Sensing.Resistance.Maps
     {
         public static void AddLayer<TGameContext, TItemId>(this ISensePropertiesSystem<TGameContext> system, MapLayer mapLayer)
             where TItemId : IEntityKey
-            where TGameContext : IItemContext<TGameContext, TItemId>, IGridMapContext<TGameContext, TItemId>, IGridMapRawDataContext<TItemId>
+            where TGameContext : IItemContext<TGameContext, TItemId>, IGridMapContext<TGameContext, TItemId>
         {
             system.AddSenseLayerFactory(new DynamicSenseLayerFactory<TGameContext, TItemId>(mapLayer));
         }

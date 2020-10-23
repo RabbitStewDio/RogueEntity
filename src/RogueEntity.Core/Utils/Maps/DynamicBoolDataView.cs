@@ -9,6 +9,8 @@ using RogueEntity.Core.Positioning;
 
 namespace RogueEntity.Core.Utils.Maps
 {
+    [DataContract]
+    [MessagePackObject]
     public class DynamicBoolDataView : IReadOnlyView2D<bool>
     {
         public event EventHandler<DynamicBoolDataViewEventArgs> ViewCreated;
@@ -17,25 +19,25 @@ namespace RogueEntity.Core.Utils.Maps
         [DataMember(Order = 0)]
         [Key(0)]
         readonly int tileSizeX;
+
         [DataMember(Order = 1)]
         [Key(1)]
         readonly int tileSizeY;
+
         [DataMember(Order = 2)]
         [Key(2)]
         readonly Dictionary<Position2D, TrackedDataView> index;
+
         [DataMember(Order = 3)]
         [Key(3)]
-        readonly List<Position2D> expired;
+        long currentTime;
+
         [DataMember(Order = 4)]
         [Key(4)]
-        long currentTime;
+        int offsetX;
 
         [DataMember(Order = 5)]
         [Key(5)]
-        int offsetX;
-
-        [DataMember(Order = 6)]
-        [Key(6)]
         int offsetY;
 
         [IgnoreDataMember]
@@ -54,11 +56,14 @@ namespace RogueEntity.Core.Utils.Maps
         [IgnoreMember]
         public int OffsetY => offsetY;
 
+        [IgnoreDataMember]
+        [IgnoreMember]
+        readonly List<Position2D> expired;
+
         public DynamicBoolDataView(int tileSizeX, int tileSizeY) : this(0, 0, tileSizeX, tileSizeY)
         {
-            
         }
-        
+
         public DynamicBoolDataView(int offsetX, int offsetY, int tileSizeX, int tileSizeY)
         {
             if (tileSizeX <= 0) throw new ArgumentException(nameof(tileSizeX));
@@ -73,19 +78,24 @@ namespace RogueEntity.Core.Utils.Maps
         }
 
         [SerializationConstructor]
-        internal DynamicBoolDataView(int tileSizeX, int tileSizeY, 
+        internal DynamicBoolDataView(int tileSizeX,
+                                     int tileSizeY,
                                      [NotNull] Dictionary<Position2D, TrackedDataView> index,
-                                     [NotNull] List<Position2D> expired, 
-                                     long currentTime, 
-                                     int offsetX, int offsetY)
+                                     long currentTime,
+                                     int offsetX,
+                                     int offsetY)
         {
             this.tileSizeX = tileSizeX;
             this.tileSizeY = tileSizeY;
             this.index = index ?? throw new ArgumentNullException(nameof(index));
-            this.expired = expired ?? throw new ArgumentNullException(nameof(expired));
+            this.expired = new List<Position2D>();
             this.currentTime = currentTime;
             this.offsetX = offsetX;
             this.offsetY = offsetY;
+            foreach (var idx in index.Values)
+            {
+                idx.MarkUnused(currentTime);
+            }
         }
 
         public List<Rectangle> GetActiveTiles(List<Rectangle> data = null)
@@ -158,7 +168,7 @@ namespace RogueEntity.Core.Utils.Maps
 
             return false;
         }
-        
+
         public BoundedBoolDataView GetOrCreateData(int x, int y)
         {
             var dx = MapPartitions.TileSplit(x, offsetX, tileSizeX);
@@ -180,7 +190,7 @@ namespace RogueEntity.Core.Utils.Maps
         public bool TrySet(int x, int y, bool value)
         {
             var data = GetOrCreateData(x, y);
-            return data[x,y] = value;
+            return data[x, y] = value;
         }
 
         public bool TryGetData(int x, int y, out BoundedBoolDataView data)
@@ -194,7 +204,7 @@ namespace RogueEntity.Core.Utils.Maps
             data = default;
             return false;
         }
-        
+
         bool TryGetData(int x, int y, out TrackedDataView data)
         {
             var dx = MapPartitions.TileSplit(x, offsetX, tileSizeX);
@@ -237,12 +247,30 @@ namespace RogueEntity.Core.Utils.Maps
             }
         }
 
+        [DataContract]
+        [MessagePackObject]
         internal class TrackedDataView : BoundedBoolDataView
         {
+            [IgnoreMember]
+            [IgnoreDataMember]
             long currentTime;
+
+            [IgnoreMember]
+            [IgnoreDataMember]
             public long LastUsed { get; private set; }
+
+            [IgnoreMember]
+            [IgnoreDataMember]
             int usedForReading;
+
+            [IgnoreMember]
+            [IgnoreDataMember]
             int usedForWriting;
+
+            [SerializationConstructor]
+            protected internal TrackedDataView(Rectangle bounds, [NotNull] byte[] data, int anyValueSet) : base(bounds, data, anyValueSet)
+            {
+            }
 
             public TrackedDataView(in Rectangle bounds, long time) : base(in bounds)
             {
@@ -273,7 +301,12 @@ namespace RogueEntity.Core.Utils.Maps
                 Interlocked.CompareExchange(ref usedForWriting, 1, 0);
             }
 
+            [IgnoreMember]
+            [IgnoreDataMember]
             public bool IsUsedForReading => usedForReading != 0;
+
+            [IgnoreMember]
+            [IgnoreDataMember]
             public bool IsUsedForWriting => usedForWriting != 0;
 
             public void MarkUsedAge()

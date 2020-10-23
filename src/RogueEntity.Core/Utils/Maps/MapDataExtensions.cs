@@ -6,14 +6,25 @@ namespace RogueEntity.Core.Utils.Maps
 {
     public static class MapDataExtensions
     {
-
-        public readonly struct MapView<T>: IReadOnlyView2D<T>
+        public readonly struct MapView<T> : IReadOnlyView2D<T>
         {
             readonly IReadOnlyMapData<T> map;
 
             public MapView([NotNull] IReadOnlyMapData<T> map)
             {
                 this.map = map ?? throw new ArgumentNullException(nameof(map));
+            }
+
+            public bool TryGet(int x, int y, out T data)
+            {
+                if (x < 0 || y < 0 || x >= map.Width || y >= map.Height)
+                {
+                    data = default;
+                    return false;
+                }
+                
+                data = map[x, y];
+                return true;
             }
 
             public T this[int x, int y]
@@ -25,10 +36,10 @@ namespace RogueEntity.Core.Utils.Maps
                     return map[x, y];
                 }
             }
-        } 
+        }
 
         public static MapView<T> ToView<T>(this IReadOnlyMapData<T> map) => new MapView<T>(map);
-        
+
         /// <summary>
         /// Allows stringifying the contents of a map view. Takes characters to
         /// surround the map printout, and each row, the method used to get the string representation

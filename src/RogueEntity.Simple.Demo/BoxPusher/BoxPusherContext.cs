@@ -24,10 +24,10 @@ namespace RogueEntity.Simple.BoxPusher
             actorContext = new ItemContextBackend<BoxPusherContext, ActorReference>(new ActorReferenceMetaData());
             
             itemMap = new DefaultGridPositionContextBackend<BoxPusherContext, ItemReference>()
-                .WithRawMapLayer(BoxPusherMapLayers.Floor, new OnDemandGridMapDataContext<BoxPusherContext, ItemReference>(BoxPusherMapLayers.Floor, tileWidth, tileHeight))
-                .WithRawMapLayer(BoxPusherMapLayers.Items, new OnDemandGridMapDataContext<BoxPusherContext, ItemReference>(BoxPusherMapLayers.Items, tileWidth, tileHeight));
+                .WithRawMapLayer(BoxPusherMapLayers.Floor, new DefaultGridMapDataContext<BoxPusherContext, ItemReference>(BoxPusherMapLayers.Floor, tileWidth, tileHeight))
+                .WithRawMapLayer(BoxPusherMapLayers.Items, new DefaultGridMapDataContext<BoxPusherContext, ItemReference>(BoxPusherMapLayers.Items, tileWidth, tileHeight));
             actorMap = new DefaultGridPositionContextBackend<BoxPusherContext, ActorReference>()
-                .WithRawMapLayer(BoxPusherMapLayers.Actors, new OnDemandGridMapDataContext<BoxPusherContext, ActorReference>(BoxPusherMapLayers.Actors, tileWidth, tileHeight));
+                .WithRawMapLayer(BoxPusherMapLayers.Actors, new DefaultGridMapDataContext<BoxPusherContext, ActorReference>(BoxPusherMapLayers.Actors, tileWidth, tileHeight));
         }
 
         IItemResolver<BoxPusherContext, ItemReference> IItemContext<BoxPusherContext, ItemReference>.ItemResolver => itemContext.ItemResolver;

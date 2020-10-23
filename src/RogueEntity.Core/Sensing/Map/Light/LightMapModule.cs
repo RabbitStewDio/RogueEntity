@@ -3,6 +3,7 @@ using EnTTSharp.Entities.Systems;
 using RogueEntity.Core.Infrastructure.Commands;
 using RogueEntity.Core.Infrastructure.GameLoops;
 using RogueEntity.Core.Infrastructure.Modules;
+using RogueEntity.Core.Infrastructure.Time;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Sensing.Cache;
 using RogueEntity.Core.Sensing.Common.Blitter;
@@ -132,7 +133,9 @@ namespace RogueEntity.Core.Sensing.Map.Light
                 blitter = new DefaultSenseDataBlitter();
             }
 
-            system = new LightMapSystem(resolver.ResolveToReference<ISenseStateCacheProvider>(), blitter);
+            system = new LightMapSystem(resolver.ResolveToReference<ISenseStateCacheProvider>(), 
+                                        resolver.ResolveToReference<ITimeSource>(),
+                                        blitter);
             return system;
         }
     }

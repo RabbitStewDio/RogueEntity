@@ -10,12 +10,14 @@ namespace RogueEntity.Core.Sensing.Resistance.Maps
         void OnPositionDirty(object source, PositionDirtyEventArgs args);
         void AddSenseLayerFactory(ISenseLayerFactory<TGameContext> layerHandler);
         
-        bool TryGet(int z, out SensePropertiesMap<TGameContext> data);
-        bool TryGetOrCreate(int z, out SensePropertiesMap<TGameContext> data);
+        bool TryGetData(int z, out ISensePropertiesLayer<TGameContext> data);
+        ISensePropertiesLayer<TGameContext> GetOrCreate(int z);
         void Remove(int z);
         
-        ReadOnlyListWrapper<int> DefinedLayers { get; }
+        ReadOnlyListWrapper<int> DefinedZLayers { get; }
         
+        int OffsetX { get; }
+        int OffsetY { get; }
         int TileWidth { get; }
         int TileHeight { get; }
         
