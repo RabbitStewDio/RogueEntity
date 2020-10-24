@@ -8,12 +8,14 @@ using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Sensing.Cache;
 using RogueEntity.Core.Sensing.Common;
 using RogueEntity.Core.Sensing.Common.Blitter;
+using RogueEntity.Core.Sensing.Common.Physics;
 using RogueEntity.Core.Sensing.Resistance;
 using RogueEntity.Core.Sensing.Resistance.Maps;
 using RogueEntity.Core.Sensing.Sources;
 using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.Maps;
 using Serilog;
+using Rectangle = RogueEntity.Core.Utils.Rectangle;
 
 namespace RogueEntity.Core.Sensing.Receptors
 {
@@ -498,14 +500,14 @@ namespace RogueEntity.Core.Sensing.Receptors
             public void AddReceptor(float intensity, in Position pos)
             {
                 var radius = (int)Math.Ceiling(physics.SignalRadiusForIntensity(intensity));
-                var bounds = new Rectangle(new Coord(pos.GridX, pos.GridY), radius, radius);
+                var bounds = new Rectangle(new Position2D(pos.GridX, pos.GridY), radius, radius);
                 receptorBounds.Add(bounds);
             }
 
             public bool IsOverlapping(float intensity, in Position pos)
             {
                 var radius = (int)Math.Ceiling(physics.SignalRadiusForIntensity(intensity));
-                var bounds = new Rectangle(new Coord(pos.GridX, pos.GridY), radius, radius);
+                var bounds = new Rectangle(new Position2D(pos.GridX, pos.GridY), radius, radius);
                 foreach (var b in receptorBounds)
                 {
                     if (bounds.Intersects(b))

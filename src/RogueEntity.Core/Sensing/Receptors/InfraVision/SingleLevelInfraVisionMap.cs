@@ -2,6 +2,7 @@ using System;
 using JetBrains.Annotations;
 using RogueEntity.Core.Meta.ItemTraits;
 using RogueEntity.Core.Sensing.Common;
+using RogueEntity.Core.Sensing.Common.Physics;
 using RogueEntity.Core.Sensing.Map.HeatMap;
 
 namespace RogueEntity.Core.Sensing.Receptors.InfraVision

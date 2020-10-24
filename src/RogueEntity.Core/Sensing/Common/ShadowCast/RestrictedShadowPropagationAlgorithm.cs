@@ -2,6 +2,8 @@ using System;
 using GoRogue;
 using JetBrains.Annotations;
 using RogueEntity.Core.Positioning;
+using RogueEntity.Core.Sensing.Common.Physics;
+using RogueEntity.Core.Utils.Algorithms;
 using RogueEntity.Core.Utils.Maps;
 using static RogueEntity.Core.Sensing.Common.ShadowCast.ShadowPropagationAlgorithmHelpers;
 
@@ -126,7 +128,7 @@ namespace RogueEntity.Core.Sensing.Common.ShadowCast
                     else
                     {
                         var at2 = Math.Abs(angle - MathHelpers.ScaledAtan2Approx(currentY, currentX));
-                        var distanceFromOrigin = dist.Calculate(deltaX, deltaY);
+                        var distanceFromOrigin = (float) dist.Calculate(deltaX, deltaY, 0);
                         if (distanceFromOrigin <= radius && (at2 <= span * 0.5 || at2 >= 1.0 - span * 0.5))
                         {
                             var strengthAtDistance = sensePhysics.SignalStrengthAtDistance(distanceFromOrigin, maxRadius);

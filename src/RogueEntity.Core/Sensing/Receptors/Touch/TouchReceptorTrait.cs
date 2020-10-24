@@ -1,5 +1,6 @@
 using EnTTSharp.Entities;
 using JetBrains.Annotations;
+using RogueEntity.Core.Sensing.Common.Physics;
 
 namespace RogueEntity.Core.Sensing.Receptors.Touch
 {

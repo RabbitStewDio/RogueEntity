@@ -1,7 +1,5 @@
 using System;
 using System.Collections.Generic;
-using GoRogue;
-using GoRogue.Util;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Utils.Maps;
 using Serilog;

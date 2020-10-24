@@ -1,7 +1,6 @@
 using RogueEntity.Core.Meta.ItemTraits;
-using RogueEntity.Core.Sensing.Common;
 
-namespace RogueEntity.Core.Sensing
+namespace RogueEntity.Core.Sensing.Common.Physics
 {
     public interface IHeatPhysicsConfiguration
     {

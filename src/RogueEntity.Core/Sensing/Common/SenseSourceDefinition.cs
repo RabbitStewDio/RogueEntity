@@ -1,10 +1,9 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Serialization;
-using GoRogue;
-using GoRogue.SenseMapping;
 using MessagePack;
 using RogueEntity.Core.Utils;
+using RogueEntity.Core.Utils.Algorithms;
 
 namespace RogueEntity.Core.Sensing.Common
 {
@@ -49,15 +48,14 @@ namespace RogueEntity.Core.Sensing.Common
 
         /// <summary>
         /// The distance calculation used to determine what shape the radius has (or a type
-        /// implicitly convertible to <see cref="GoRogue.DistanceCalculation"/>, such as <see cref="GoRogue.Radius"/>).
+        /// implicitly convertible to <see cref="DistanceCalculation"/>, such as <see cref="GoRogue.Radius"/>).
         /// </summary>
         [IgnoreMember]
         [IgnoreDataMember]
         public DistanceCalculation DistanceCalculation => distanceCalculation;
 
         /// <summary>
-        /// Whether or not this source is enabled. If a source is disabled when <see cref="SenseMap{TSenseSource}.Calculate"/>
-        /// is called, the source does not calculate values and is effectively assumed to be "off".
+        /// Whether or not this source is enabled. If a source is disabled, the source does not calculate values and is effectively assumed to be "off".
         /// </summary>
         [IgnoreMember]
         [IgnoreDataMember]
@@ -94,14 +92,14 @@ namespace RogueEntity.Core.Sensing.Common
         [IgnoreDataMember]
         public float Span => span;
 
-        public SenseSourceDefinition WithIntensity(float intensity)
+        public SenseSourceDefinition WithIntensity(float newIntensity)
         {
-            return new SenseSourceDefinition(distanceCalculation, intensity, angle, span);
+            return new SenseSourceDefinition(distanceCalculation, newIntensity, angle, span);
         }
         
         public bool Equals(SenseSourceDefinition other)
         {
-            return Equals(distanceCalculation, other.distanceCalculation) && intensity.Equals(other.intensity) && angle.Equals(other.angle) && span.Equals(other.span) && enabled == other.enabled;
+            return distanceCalculation == other.distanceCalculation && intensity.Equals(other.intensity) && angle.Equals(other.angle) && span.Equals(other.span) && enabled == other.enabled;
         }
 
         public override bool Equals(object obj)
@@ -113,7 +111,7 @@ namespace RogueEntity.Core.Sensing.Common
         {
             unchecked
             {
-                var hashCode = (distanceCalculation != null ? distanceCalculation.GetHashCode() : 0);
+                var hashCode = (int)distanceCalculation;
                 hashCode = (hashCode * 397) ^ intensity.GetHashCode();
                 hashCode = (hashCode * 397) ^ angle.GetHashCode();
                 hashCode = (hashCode * 397) ^ span.GetHashCode();

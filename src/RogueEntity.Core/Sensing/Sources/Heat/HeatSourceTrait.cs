@@ -5,6 +5,7 @@ using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Meta.ItemTraits;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Sensing.Common;
+using RogueEntity.Core.Sensing.Common.Physics;
 using RogueEntity.Core.Utils;
 
 namespace RogueEntity.Core.Sensing.Sources.Heat
@@ -13,7 +14,6 @@ namespace RogueEntity.Core.Sensing.Sources.Heat
                                                           IItemComponentTrait<TGameContext, TItemId, Temperature>,
                                                           IItemComponentTrait<TGameContext, TItemId, HeatSourceDefinition>
         where TItemId : IEntityKey
-        where TGameContext: IHeatPhysicsConfiguration
     {
         public string Id => "Core.Item.Temperature";
         public int Priority => 100;

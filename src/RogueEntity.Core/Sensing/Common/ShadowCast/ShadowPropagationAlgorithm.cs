@@ -2,6 +2,8 @@ using System;
 using GoRogue;
 using JetBrains.Annotations;
 using RogueEntity.Core.Positioning;
+using RogueEntity.Core.Sensing.Common.Physics;
+using RogueEntity.Core.Utils.Algorithms;
 using RogueEntity.Core.Utils.Maps;
 using static RogueEntity.Core.Sensing.Common.ShadowCast.ShadowPropagationAlgorithmHelpers;
 
@@ -88,7 +90,7 @@ namespace RogueEntity.Core.Sensing.Common.ShadowCast
                         break;
                     }
 
-                    var distanceFromOrigin = dist.Calculate(deltaX, deltaY);
+                    var distanceFromOrigin = (float) dist.Calculate(deltaX, deltaY, 0);
                     var resistance = resistanceMap[globalCurrentX, globalCurrentY];
                     var fullyBlocked = IsFullyBlocked(resistance);
                     if (distanceFromOrigin <= radius)

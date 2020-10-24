@@ -1,7 +1,6 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Serialization;
-using GoRogue;
 using MessagePack;
 using RogueEntity.Core.Positioning;
 

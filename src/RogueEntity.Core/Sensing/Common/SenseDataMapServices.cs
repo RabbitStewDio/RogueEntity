@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using GoRogue;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Sensing.Cache;
 using RogueEntity.Core.Sensing.Common.Blitter;
@@ -122,6 +121,6 @@ namespace RogueEntity.Core.Sensing.Common
             return bounds;
         }
 
-        static Rectangle LightToRectangle(Position2D pos, SenseSourceData sd) => new Rectangle(new Coord(pos.X, pos.Y), sd.Radius, sd.Radius);
+        static Rectangle LightToRectangle(Position2D pos, SenseSourceData sd) => new Rectangle(new Position2D(pos.X, pos.Y), sd.Radius, sd.Radius);
     }
 }

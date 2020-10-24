@@ -1,7 +1,7 @@
-using GoRogue;
 using RogueEntity.Core.Infrastructure.Modules;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Sensing.Common;
+using RogueEntity.Core.Utils;
 
 namespace RogueEntity.Core.Sensing.Receptors
 {
@@ -14,7 +14,7 @@ namespace RogueEntity.Core.Sensing.Receptors
                                                    SenseSourceData sourceData,
                                                    ISenseDataView lights)
         {
-            var bounds = new Rectangle(new Coord(lastPosition.GridX, lastPosition.GridY), sourceData.Radius, sourceData.Radius);
+            var bounds = new Rectangle(new Position2D(lastPosition.GridX, lastPosition.GridY), sourceData.Radius, sourceData.Radius);
             foreach (var d in bounds.Contents)
             {
                 if (lights.TryQuery(d.X, d.Y, out var intensity, out var dir) &&

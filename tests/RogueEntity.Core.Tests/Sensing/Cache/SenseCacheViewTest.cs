@@ -1,8 +1,8 @@
 using FluentAssertions;
-using GoRogue;
 using NUnit.Framework;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Sensing.Cache;
+using RogueEntity.Core.Utils;
 
 namespace RogueEntity.Core.Tests.Sensing.Cache
 {

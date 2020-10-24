@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
-using GoRogue;
 using RogueEntity.Core.Positioning;
+using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.Maps;
 
 namespace RogueEntity.Core.Sensing.Cache
@@ -129,7 +129,7 @@ namespace RogueEntity.Core.Sensing.Cache
             }
 
             var radiusInt = (int)Math.Ceiling(radius);
-            var rect = new Rectangle(new Coord(center.GridX, center.GridY), radiusInt, radiusInt);
+            var rect = new Rectangle(new Position2D(center.GridX, center.GridY), radiusInt, radiusInt);
             return IsDirty(center.GridZ, in rect);
         }
     }

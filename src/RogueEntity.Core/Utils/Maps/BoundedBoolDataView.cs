@@ -2,7 +2,6 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Serialization;
 using System.Text;
-using GoRogue;
 using JetBrains.Annotations;
 using MessagePack;
 

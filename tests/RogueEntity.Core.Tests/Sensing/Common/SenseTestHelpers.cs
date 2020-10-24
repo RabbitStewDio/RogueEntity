@@ -1,7 +1,7 @@
 using System;
 using System.IO;
-using GoRogue;
 using RogueEntity.Core.Positioning;
+using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.Maps;
 
 namespace RogueEntity.Core.Tests.Sensing.Common

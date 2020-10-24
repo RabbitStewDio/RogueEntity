@@ -1,6 +1,4 @@
-using RogueEntity.Core.Sensing.Common;
-
-namespace RogueEntity.Core.Sensing
+namespace RogueEntity.Core.Sensing.Common.Physics
 {
     public interface ILightPhysicsConfiguration
     {

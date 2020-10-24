@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using JetBrains.Annotations;
 using RogueEntity.Core.Positioning;
+using RogueEntity.Core.Sensing.Common.Physics;
 using RogueEntity.Core.Utils.Maps;
 
 namespace RogueEntity.Core.Sensing.Common.FloodFill

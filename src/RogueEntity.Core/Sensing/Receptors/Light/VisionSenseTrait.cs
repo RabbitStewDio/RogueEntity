@@ -1,5 +1,6 @@
 using EnTTSharp.Entities;
 using RogueEntity.Core.Meta.Items;
+using RogueEntity.Core.Sensing.Common.Physics;
 
 namespace RogueEntity.Core.Sensing.Receptors.Light
 {

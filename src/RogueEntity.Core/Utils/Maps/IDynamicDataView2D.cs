@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using GoRogue;
 
 namespace RogueEntity.Core.Utils.Maps
 {

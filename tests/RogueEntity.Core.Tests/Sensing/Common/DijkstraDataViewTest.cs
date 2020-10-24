@@ -1,8 +1,7 @@
 using FluentAssertions;
-using GoRogue;
 using NUnit.Framework;
 using RogueEntity.Core.Positioning;
-using RogueEntity.Core.Utils.Algorithms;
+using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.Maps;
 
 namespace RogueEntity.Core.Tests.Sensing.Common

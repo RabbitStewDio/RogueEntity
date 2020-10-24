@@ -4,6 +4,7 @@ using RogueEntity.Core.Infrastructure.Time;
 using RogueEntity.Core.Meta.ItemTraits;
 using RogueEntity.Core.Sensing.Cache;
 using RogueEntity.Core.Sensing.Common.Blitter;
+using RogueEntity.Core.Sensing.Common.Physics;
 using RogueEntity.Core.Sensing.Receptors.InfraVision;
 using RogueEntity.Core.Sensing.Sources.Heat;
 

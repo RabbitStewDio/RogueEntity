@@ -2,6 +2,7 @@ using System;
 using System.Runtime.Serialization;
 using GoRogue;
 using MessagePack;
+using RogueEntity.Core.Utils.Algorithms;
 
 namespace RogueEntity.Core.Positioning
 {
@@ -157,7 +158,13 @@ namespace RogueEntity.Core.Positioning
         public static implicit operator Position2D((int x, int y) p)
         {
             return new Position2D(p.x, p.y);
-        }  
+        }
+
+        public static Position2D From(int linearIndex, int lineWidth)
+        {
+            var y = Math.DivRem(linearIndex, lineWidth, out var x);
+            return new Position2D(x, y);
+        }
     }
 
     public static class PositionExtensions

@@ -4,7 +4,7 @@ using System.Text;
 
 namespace RogueEntity.Core.Infrastructure.Modules
 {
-    public class DefaultServiceResolver: IServiceResolver
+    public class DefaultServiceResolver: IServiceResolver, IDisposable
     {
         readonly Dictionary<Type, object> backend;
         readonly HashSet<Type> promisedReferences;
@@ -72,6 +72,20 @@ namespace RogueEntity.Core.Infrastructure.Modules
             throw new ModuleInitializationException("Unable to fulfil promises made during module initialization. \n" +
                                                     "The following unregistered services were requested: \n" +
                                                     b);
+        }
+
+        public void Dispose()
+        {
+            foreach (var d in backend.Values)
+            {
+                if (d is IDisposable disposable)
+                {
+                    disposable.Dispose();
+                }
+            }
+            
+            promisedReferences.Clear();
+            backend.Clear();
         }
     }
 }

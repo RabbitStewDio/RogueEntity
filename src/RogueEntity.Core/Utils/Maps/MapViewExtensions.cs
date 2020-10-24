@@ -1,6 +1,5 @@
 using System;
 using System.Text;
-using GoRogue;
 
 namespace RogueEntity.Core.Utils.Maps
 {

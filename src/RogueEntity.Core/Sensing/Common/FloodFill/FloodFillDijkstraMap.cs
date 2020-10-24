@@ -2,9 +2,11 @@ using System;
 using GoRogue;
 using JetBrains.Annotations;
 using RogueEntity.Core.Positioning;
+using RogueEntity.Core.Sensing.Common.Physics;
 using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.Algorithms;
 using RogueEntity.Core.Utils.Maps;
+using Rectangle = RogueEntity.Core.Utils.Rectangle;
 
 namespace RogueEntity.Core.Sensing.Common.FloodFill
 {
@@ -54,7 +56,7 @@ namespace RogueEntity.Core.Sensing.Common.FloodFill
             this.ResistanceMap = resistanceMap ?? throw new ArgumentNullException(nameof(resistanceMap));
             var radiusInt = (int)Math.Ceiling(radius);
             this.Resize(new Rectangle(origin.X - radiusInt, origin.Y - radiusInt, 2 * radiusInt + 1, 2 * radiusInt + 1));
-            this.directions = Sense.DistanceCalculation.AsAdjacencyRule().DirectionsOfNeighborsList();
+            this.directions = Sense.DistanceCalculation.AsAdjacencyRule().DirectionsOfNeighbors();
             this.valid = true;
         }
 
@@ -120,7 +122,7 @@ namespace RogueEntity.Core.Sensing.Common.FloodFill
             }
 
             var distanceForStep = Sense.DistanceCalculation.Calculate(d.ToCoordinates());
-            var signalStrength = SensePhysics.SignalStrengthAtDistance((Sense.Intensity - stepOriginCost) + distanceForStep, radius);
+            var signalStrength = SensePhysics.SignalStrengthAtDistance((float) ((Sense.Intensity - stepOriginCost) + distanceForStep), radius);
             var totalCost = Sense.Intensity * signalStrength * (1 - resistance);
             cost = stepOriginCost - totalCost;
             return true;

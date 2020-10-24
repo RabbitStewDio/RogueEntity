@@ -6,6 +6,7 @@ using GoRogue;
 using NUnit.Framework;
 using RogueEntity.Core.Infrastructure.Modules;
 using RogueEntity.Core.Meta.Items;
+using RogueEntity.Core.Utils;
 
 namespace RogueEntity.Core.Tests.Modules
 {

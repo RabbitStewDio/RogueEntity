@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using EnTTSharp.Entities;
-using GoRogue;
+using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Sensing.Receptors;
+using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.Maps;
 
 namespace RogueEntity.Core.Sensing.Discovery
@@ -42,7 +43,7 @@ namespace RogueEntity.Core.Sensing.Discovery
             }
 
             var partitions = partitionBounds.Value;
-            var senseBounds = new Rectangle(new Coord(pos.GridX, pos.GridY), sense.Radius, sense.Radius);
+            var senseBounds = new Rectangle(new Position2D(pos.GridX, pos.GridY), sense.Radius, sense.Radius);
             senseBounds.PartitionBy(map.OffsetX, map.OffsetY, map.TileWidth, map.TileHeight, partitions);
 
             if (!vision.TryGetIntensity(pos.GridZ, out var senseMap))
