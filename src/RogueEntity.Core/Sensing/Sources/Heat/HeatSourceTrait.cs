@@ -32,6 +32,7 @@ namespace RogueEntity.Core.Sensing.Sources.Heat
             if (baseTemperature.TryGetValue(out var value))
             {
                 v.AssignComponent(k, new HeatSourceDefinition(new SenseSourceDefinition(physicsConfiguration.HeatPhysics.DistanceMeasurement, value.ToKelvin()), true));
+                v.AssignComponent(k, new SenseSourceState<TemperatureSense>(Optional.Empty<SenseSourceData>(), SenseSourceDirtyState.UnconditionallyDirty, Position.Invalid));
             }
         }
 
@@ -99,6 +100,7 @@ namespace RogueEntity.Core.Sensing.Sources.Heat
         public bool TryRemove(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, out TItemId changedK)
         {
             v.RemoveComponent<HeatSourceDefinition>(k);
+            v.RemoveComponent<SenseSourceState<TemperatureSense>>(k);
             changedK = k;
             return true;
         }

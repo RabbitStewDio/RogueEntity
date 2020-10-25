@@ -512,18 +512,6 @@ namespace RogueEntity.Core.Utils
         public Rectangle WithY(int y) => new Rectangle(X, y, Width, Height);
 
         /// <summary>
-        /// Returns all positions in the rectangle.
-        /// </summary>
-        /// <returns>All positions in the rectangle.</returns>
-        public IEnumerable<Position2D> Positions()
-        {
-            for (int y = Y; y <= MaxExtentY; y++)
-            for (int x = X; x <= MaxExtentX; x++)
-                yield return new Position2D(x, y);
-        }
-
-
-        /// <summary>
         /// Creates and returns a new rectangle that has the same position and width as the current
         /// one, but with the height changed to the given value.
         /// </summary>
@@ -867,7 +855,7 @@ namespace RogueEntity.Core.Utils
         /// is NOT in <paramref name="rect2"/>.</returns>
         public static IEnumerable<Position2D> GetDifference(this Rectangle rect1, Rectangle rect2)
         {
-            foreach (var pos in rect1.Positions())
+            foreach (var pos in rect1.Contents)
             {
                 if (rect2.Contains(pos))
                     continue;

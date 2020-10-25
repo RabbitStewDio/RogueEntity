@@ -15,16 +15,16 @@ namespace RogueEntity.Core.Sensing.Sources.Light
         [Key(0)]
         public readonly SenseSourceDefinition SenseDefinition;
 
+        [DataMember(Order = 1)]
+        [Key(1)]
+        public readonly float Hue;
+
         [DataMember(Order = 2)]
         [Key(2)]
-        public readonly float Hue;
+        public readonly float Saturation;
 
         [DataMember(Order = 3)]
         [Key(3)]
-        public readonly float Saturation;
-
-        [DataMember(Order = 4)]
-        [Key(4)]
         public readonly bool Enabled;
 
 

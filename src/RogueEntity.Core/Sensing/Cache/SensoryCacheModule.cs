@@ -114,7 +114,7 @@ namespace RogueEntity.Core.Sensing.Cache
         {
             if (!resolver.TryResolve(out SenseStateCache cache))
             {
-                cache = new SenseStateCache(64, 64, 16);
+                cache = new SenseStateCache(4, 64, 64);
                 resolver.Store(cache);
                 resolver.Store<ISenseStateCacheProvider>(cache);
                 resolver.Store<IGlobalSenseStateCacheProvider>(cache);

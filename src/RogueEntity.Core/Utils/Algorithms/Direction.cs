@@ -1,5 +1,4 @@
 using System;
-using GoRogue;
 using RogueEntity.Core.Positioning;
 
 namespace RogueEntity.Core.Utils.Algorithms

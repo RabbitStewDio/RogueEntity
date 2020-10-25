@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using EnTTSharp.Entities;
-using GoRogue;
 using JetBrains.Annotations;
 using RogueEntity.Core.Infrastructure.Time;
 using RogueEntity.Core.Positioning;
@@ -139,21 +138,24 @@ namespace RogueEntity.Core.Sensing.Receptors
             if (definition.Enabled)
             {
                 var position = Position.From(pos);
-                if (state.LastPosition != position)
+                var localIntensity = ComputeIntensity(definition.SenseDefinition, in position);
+                if (state.LastPosition != position ||
+                    Math.Abs(state.LastIntensity - localIntensity) > 0.05f)
                 {
-                    var nstate = state.WithPosition(position).WithDirtyState(SenseSourceDirtyState.Dirty);
+                    // todo
+                    var nstate = state.WithPosition(position).WithIntensity(localIntensity).WithDirtyState(SenseSourceDirtyState.Dirty);
                     v.WriteBack(k, in nstate);
                     v.AssignOrReplace(k, new SenseReceptorDirtyFlag<TReceptorSense>());
                 }
                 else if (state.State != SenseSourceDirtyState.Active ||
-                         IsCacheDirty(in position, physics.SignalRadiusForIntensity(definition.SenseDefinition.Intensity)))
+                         IsCacheDirty(in position, physics.SignalRadiusForIntensity(localIntensity)))
                 {
                     var nstate = state.WithDirtyState(SenseSourceDirtyState.Dirty);
                     v.WriteBack(k, in nstate);
                     v.AssignOrReplace(k, new SenseReceptorDirtyFlag<TReceptorSense>());
                 }
 
-                AddActiveSenseReceptor(definition.SenseDefinition.Intensity, position);
+                AddActiveSenseReceptor(localIntensity, position);
                 return;
             }
 
@@ -172,6 +174,11 @@ namespace RogueEntity.Core.Sensing.Receptors
             // turn can be safely ignored.
         }
 
+        protected virtual float ComputeIntensity(in SenseSourceDefinition sd, in Position p)
+        {
+            return sd.Intensity;
+        }
+        
         bool IsCacheDirty(in Position pos, float radius)
         {
             bool haveTestedCache = false;
@@ -241,7 +248,7 @@ namespace RogueEntity.Core.Sensing.Receptors
                 !senseState.LastPosition.IsInvalid &&
                 activeLightsPerLevel.TryGetValue(senseState.LastPosition.GridZ, out var level))
             {
-                if (level.IsOverlapping(senseDefinition.SenseDefinition.Intensity, senseState.LastPosition))
+                if (level.IsOverlapping(senseState.LastIntensity, senseState.LastPosition))
                 {
                     AddActiveSenseSource(senseState);
                     v.AssignOrReplace<ObservedSenseSource<TSourceSense>>(k);
@@ -297,19 +304,20 @@ namespace RogueEntity.Core.Sensing.Receptors
             if (TryGetResistanceView(pos.GridZ, out var resistanceView))
             {
                 state.SenseSource.TryGetValue(out var dataIn);
-                var data = RefreshReceptorState(definition, pos, resistanceView, dataIn);
+                var data = RefreshReceptorState(definition, state.LastIntensity, pos, resistanceView, dataIn);
                 state.WithDirtyState(SenseSourceDirtyState.Active).WithSenseState(data);
             }
         }
 
         protected virtual SenseSourceData RefreshReceptorState<TPosition>(SensoryReceptorData<TReceptorSense> definition,
+                                                                          float intensity,
                                                                           TPosition pos,
                                                                           IReadOnlyView2D<float> resistanceView,
                                                                           SenseSourceData data)
             where TPosition : IPosition
         {
             var position = new Position2D(pos.GridX, pos.GridY);
-            data = sensePropagationAlgorithm.Calculate(definition.SenseDefinition, position, resistanceView, data);
+            data = sensePropagationAlgorithm.Calculate(definition.SenseDefinition, intensity, position, resistanceView, data);
             return data;
         }
 

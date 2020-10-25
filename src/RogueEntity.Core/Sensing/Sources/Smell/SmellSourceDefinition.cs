@@ -1,9 +1,13 @@
 using System.Runtime.Serialization;
+using EnTTSharp.Entities.Attributes;
 using MessagePack;
 using RogueEntity.Core.Sensing.Common;
 
 namespace RogueEntity.Core.Sensing.Sources.Smell
 {
+    [EntityComponent(EntityConstructor.NonConstructable)]
+    [MessagePackObject]
+    [DataContract]
     public readonly struct SmellSourceDefinition: ISenseDefinition
     {
         [DataMember(Order = 0)]
@@ -12,11 +16,11 @@ namespace RogueEntity.Core.Sensing.Sources.Smell
 
         [DataMember(Order = 1)]
         [Key(1)]
-        public readonly bool Enabled;
+        public readonly SmellSource Smell;
 
         [DataMember(Order = 2)]
         [Key(2)]
-        public readonly SmellSource Smell;
+        public readonly bool Enabled;
         
         [IgnoreMember]
         [IgnoreDataMember]

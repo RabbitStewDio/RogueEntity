@@ -15,7 +15,7 @@ namespace RogueEntity.Core.Tests.Sensing.Cache
         public void GlobalOperations()
         {
             var ctx = new SenseMappingTestContext();
-            var cache = new SenseStateCache(4, 4, 2);
+            var cache = new SenseStateCache(2, 0, 0, 4, 4);
 
             cache.ActivateGlobalCacheLayer(TestMapLayers.One);
             cache.ActivateGlobalCacheLayer(TestMapLayers.Two);
@@ -46,7 +46,7 @@ namespace RogueEntity.Core.Tests.Sensing.Cache
         public void LocalOperations()
         {
             var ctx = new SenseMappingTestContext();
-            var cache = new SenseStateCache(4, 4, 2);
+            var cache = new SenseStateCache(2, 4, 4);
 
             cache.ActivateGlobalCacheLayer(TestMapLayers.One);
             cache.ActivateGlobalCacheLayer(TestMapLayers.Two);
@@ -84,7 +84,7 @@ namespace RogueEntity.Core.Tests.Sensing.Cache
             var sps = new SensePropertiesSystem<SenseMappingTestContext>(4, 4);
             
             var ctx = new SenseMappingTestContext();
-            var cache = new SenseStateCache(4, 4, 2);    
+            var cache = new SenseStateCache(2, 4, 4);    
             var conn = new SensePropertiesConnectorSystem<SenseMappingTestContext>(sps, cache);
             
             cache.ActivateGlobalCacheLayer(TestMapLayers.One);

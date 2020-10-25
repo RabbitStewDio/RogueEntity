@@ -1,4 +1,3 @@
-using GoRogue;
 using RogueEntity.Core.Positioning;
 using Rectangle = RogueEntity.Core.Utils.Rectangle;
 

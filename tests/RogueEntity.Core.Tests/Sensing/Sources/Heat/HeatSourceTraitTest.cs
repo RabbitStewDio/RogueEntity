@@ -1,5 +1,4 @@
 using EnTTSharp.Entities;
-using GoRogue;
 using NUnit.Framework;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Meta.ItemTraits;

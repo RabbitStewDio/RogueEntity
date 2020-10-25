@@ -228,7 +228,7 @@ namespace RogueEntity.Core.Sensing.Receptors.Heat
 
         static bool GetOrCreateLightSystem(IServiceResolver serviceResolver, out SenseReceptorSystem<TemperatureSense, TemperatureSense> ls)
         {
-            if (!serviceResolver.TryResolve(out INoisePhysicsConfiguration physicsConfig))
+            if (!serviceResolver.TryResolve(out IHeatPhysicsConfiguration physicsConfig))
             {
                 ls = default;
                 return false;
@@ -240,8 +240,7 @@ namespace RogueEntity.Core.Sensing.Receptors.Heat
                                             serviceResolver.ResolveToReference<ISenseStateCacheProvider>(),
                                             serviceResolver.ResolveToReference<IGlobalSenseStateCacheProvider>(),
                                             serviceResolver.ResolveToReference<ITimeSource>(),
-                                            physicsConfig.NoisePhysics,
-                                            physicsConfig.CreateNoisePropagationAlgorithm());
+                                            physicsConfig);
             }
 
             return true;

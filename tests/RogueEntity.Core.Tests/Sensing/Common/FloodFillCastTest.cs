@@ -7,7 +7,7 @@ using RogueEntity.Core.Sensing.Common.Physics;
 using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.Algorithms;
 using RogueEntity.Core.Utils.Maps;
-using static RogueEntity.Core.Tests.Sensing.Common.SenseTestHelpers;
+using static RogueEntity.Core.Tests.Sensing.SenseTestHelpers;
 
 namespace RogueEntity.Core.Tests.Sensing.Common
 {
@@ -85,15 +85,15 @@ namespace RogueEntity.Core.Tests.Sensing.Common
             var sd = new SenseSourceData(radius);
             var pos = new Position2D(width / 2, height / 2);
 
-            var resistanceMap = Parse(width, height, sourceText);
+            var resistanceMap = Parse(sourceText);
             Console.WriteLine("Using room layout \n" + PrintMap(resistanceMap));
 
             var algo = new FloodFillPropagationAlgorithm(LinearDecaySensePhysics.For(DistanceCalculation.Euclid), new FloodFillWorkingDataSource());
-            var calculatedResult = algo.Calculate(source, pos, resistanceMap.ToView(), null);
+            var calculatedResult = algo.Calculate(source, source.Intensity, pos, resistanceMap, null);
             Console.WriteLine(PrintMap(calculatedResult, new Rectangle(new Position2D(0, 0), radius, radius)));
 
-            var expectedResult = Parse(width, height, resultText);
-            AssertEquals(calculatedResult, expectedResult.ToView(), new Rectangle(0, 0, width, height), pos);
+            var expectedResult = Parse(resultText);
+            AssertEquals(calculatedResult, expectedResult, new Rectangle(0, 0, width, height), pos);
         }
     }
 }

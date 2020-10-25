@@ -15,35 +15,31 @@ namespace RogueEntity.Core.Sensing.Common
         [Key(0)]
         [DataMember(Order = 0)]
         readonly DistanceCalculation distanceCalculation;
+        [Key(1)]
+        [DataMember(Order = 1)]
+        readonly float intensity;
         [Key(2)]
         [DataMember(Order = 2)]
-        readonly float intensity;
+        readonly float angle;
         [Key(3)]
         [DataMember(Order = 3)]
-        readonly float angle;
+        readonly float span;
         [Key(4)]
         [DataMember(Order = 4)]
-        readonly float span;
-        [Key(5)]
-        [DataMember(Order = 5)]
         readonly bool enabled;
-
-        public SenseSourceDefinition(DistanceCalculation distanceCalculation,
-                                     float intensity): this(distanceCalculation, intensity, 0, 360)
-        {
-        }
 
         [SerializationConstructor]
         public SenseSourceDefinition(DistanceCalculation distanceCalculation,
                                      float intensity,
-                                     float angle,
-                                     float span)
+                                     float angle = 0,
+                                     float span = 360, 
+                                     bool enabled = true)
         {
             this.distanceCalculation = distanceCalculation;
             this.angle = (float)((angle > 360.0 || angle < 0) ? Math.IEEERemainder(angle, 360.0) : angle);
             this.span = span.Clamp(0, 360);
             this.intensity = intensity;
-            this.enabled = true;
+            this.enabled = enabled;
         }
 
         /// <summary>

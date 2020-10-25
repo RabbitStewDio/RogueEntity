@@ -15,7 +15,7 @@ namespace RogueEntity.Core.Tests.Sensing.Resistance
         ItemDeclarationId wall;
         ItemDeclarationId ceilingFan;
         SensePropertiesSystem<SenseMappingTestContext> sps;
-        
+
         [SetUp]
         public void SetUp()
         {
@@ -37,11 +37,11 @@ namespace RogueEntity.Core.Tests.Sensing.Resistance
             sps.Start(ctx);
             sps.DefinedZLayers.Should().BeEmpty();
             sps.TryGet(0, out _).Should().BeFalse();
-            
-            ctx.TryGetGridDataFor(TestMapLayers.One, out IGridMapDataContext<SenseMappingTestContext, ItemReference> dataLayer1).Should().BeTrue();
+
+            ctx.TryGetItemGridDataFor(TestMapLayers.One, out var dataLayer1).Should().BeTrue();
             dataLayer1.TrySet(EntityGridPosition.Of(TestMapLayers.One, 0, 0, 0), ctx.ItemResolver.Instantiate(ctx, wall)).Should().BeTrue();
 
-            ctx.TryGetGridDataFor(TestMapLayers.Two, out IGridMapDataContext<SenseMappingTestContext, ItemReference> dataLayer2).Should().BeTrue();
+            ctx.TryGetItemGridDataFor(TestMapLayers.Two, out var dataLayer2).Should().BeTrue();
             dataLayer2.TrySet(EntityGridPosition.Of(TestMapLayers.Two, 0, 0, 0), ctx.ItemResolver.Instantiate(ctx, ceilingFan)).Should().BeTrue();
 
             sps.ProcessSenseProperties(ctx);
@@ -49,8 +49,8 @@ namespace RogueEntity.Core.Tests.Sensing.Resistance
 
             sps.TryGet(0, out var map).Should().BeTrue();
             map[0, 0].Should().Be(new SensoryResistance(Percentage.Full, Percentage.Full, Percentage.Of(0.2f), Percentage.Of(0.5f)));
-            
-            
+
+
             sps.Stop(ctx);
         }
     }

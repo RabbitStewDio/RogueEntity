@@ -1,6 +1,5 @@
 using System.Runtime.Serialization;
 using EnTTSharp.Entities.Attributes;
-using GoRogue;
 using MessagePack;
 using RogueEntity.Core.Sensing.Common;
 using RogueEntity.Core.Sensing.Map.Light;

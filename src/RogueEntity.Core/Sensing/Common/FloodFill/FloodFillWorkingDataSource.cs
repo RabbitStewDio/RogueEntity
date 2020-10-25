@@ -22,6 +22,7 @@ namespace RogueEntity.Core.Sensing.Common.FloodFill
         }
 
         public FloodFillWorkingData Create(in SenseSourceDefinition sense,
+                                           float intensity,
                                            in Position2D origin,
                                            [NotNull] ISensePhysics sensePhysics,
                                            [NotNull] IReadOnlyView2D<float> resistanceMap)
@@ -29,12 +30,12 @@ namespace RogueEntity.Core.Sensing.Common.FloodFill
             if (dataStore.IsValueCreated)
             {
                 var value = dataStore.Value;
-                value.Configure(in sense, in origin, sensePhysics, resistanceMap);
+                value.Configure(in sense, intensity, in origin, sensePhysics, resistanceMap);
                 return value;
             }
             else
             {
-                var v = new FloodFillWorkingData(in sense, in origin, sensePhysics, resistanceMap);
+                var v = new FloodFillWorkingData(in sense, intensity, in origin, sensePhysics, resistanceMap);
                 dataStore.Value = v;
                 return v;
             }

@@ -4,16 +4,16 @@ using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.Maps;
 
-namespace RogueEntity.Core.Tests.Sensing.Common
+namespace RogueEntity.Core.Tests.Sensing
 {
-    public class SenseTestHelpers
+    public static class SenseTestHelpers
     {
         public static void AssertEquals(IReadOnlyView2D<float> source,
                                         IReadOnlyView2D<float> other,
                                         in Rectangle bounds,
                                         in Position2D offset)
         {
-            foreach (var pos in bounds.Positions())
+            foreach (var pos in bounds.Contents)
             {
                 var (x, y) = pos;
 
@@ -28,9 +28,9 @@ namespace RogueEntity.Core.Tests.Sensing.Common
             }
         }
 
-        public static DenseMapData<float> Parse(int width, int height, string text)
+        public static DynamicDataView<float> Parse(string text)
         {
-            var map = new DenseMapData<float>(width, height);
+            var map = new DynamicDataView<float>(0, 0, 64, 64);
             var row = -1;
             using var sr = new StringReader(text);
 
@@ -51,11 +51,14 @@ namespace RogueEntity.Core.Tests.Sensing.Common
 
                 row += 1;
                 var vs = line.Split(",");
-                for (var index = 0; index < Math.Min(width, vs.Length); index++)
+                for (var index = 0; index < vs.Length; index++)
                 {
                     var v = vs[index];
-                    if (string.IsNullOrWhiteSpace(v))
+                    if (string.IsNullOrWhiteSpace(v) || v.Trim().Equals("."))
                     {
+                        // Allows for some cleaner to see maps. Using a 
+                        // dot for zero makes the cell countable by humans, but 
+                        // reduces visual weight to see the interesting bits of data.
                         map[index, row] = 0;
                     }
                     else
@@ -70,6 +73,11 @@ namespace RogueEntity.Core.Tests.Sensing.Common
             return map;
         }
 
+        public static string PrintMap(DynamicDataView<float> s)
+        {
+            return PrintMap(s, s.ActiveBounds);
+        }
+
         public static string PrintMap(IReadOnlyMapData<float> s)
         {
             return s.ExtendToString(
@@ -81,7 +89,26 @@ namespace RogueEntity.Core.Tests.Sensing.Common
         {
             return s.ExtendToString(bounds,
                                     elementSeparator: ",",
-                                    elementStringifier: (f) => $"{f,7:0.000}");
+                                    elementStringifier: (f) => f != 0 ? $"{f,7:0.000}" : "   .   ");
         }
+
+        public static void ImportData<TResult, TSource>(this DynamicDataView<TResult> targetMap, DynamicDataView<TSource> source, Func<TSource, TResult> converter)
+        {
+            foreach (var bounds in source.GetActiveTiles())
+            {
+                if (!source.TryGetData(bounds.X, bounds.Y, out var tile))
+                {
+                    continue;
+                }
+
+                foreach (var (x, y) in tile.Bounds.Contents)
+                {
+                    if (!tile.TryGet(x, y, out var s)) continue;
+                    targetMap.TrySet(x, y, converter(s));
+                }
+            }
+        }
+        
+        public static Lazy<T> AsLazy<T>(this T l) => new Lazy<T>(l);
     }
 }

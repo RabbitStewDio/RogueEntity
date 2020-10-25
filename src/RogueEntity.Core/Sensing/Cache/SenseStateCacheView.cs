@@ -12,19 +12,27 @@ namespace RogueEntity.Core.Sensing.Cache
     /// </summary>
     public class SenseStateCacheView : ISenseStateCacheView
     {
+        readonly int offsetX;
+        readonly int offsetY;
         readonly int tileSizeX;
         readonly int tileSizeY;
         readonly int resolution;
         readonly Dictionary<int, DynamicBoolDataView> trackersPerLayer;
         bool globallyDirty;
 
-        public SenseStateCacheView(int tileSizeX, int tileSizeY, int resolution)
+        public SenseStateCacheView(int resolution, int tileSizeX, int tileSizeY) : this(resolution, 0, 0, tileSizeX, tileSizeY)
+        {
+        }
+
+        public SenseStateCacheView(int resolution, int offsetX, int offsetY, int tileSizeX, int tileSizeY)
         {
             if (resolution < 1) throw new ArgumentException(nameof(resolution));
 
             this.tileSizeX = tileSizeX;
             this.tileSizeY = tileSizeY;
             this.resolution = resolution;
+            this.offsetX = offsetX;
+            this.offsetY = offsetY;
             this.trackersPerLayer = new Dictionary<int, DynamicBoolDataView>();
         }
 
@@ -47,7 +55,7 @@ namespace RogueEntity.Core.Sensing.Cache
         {
             if (!trackersPerLayer.TryGetValue(p.GridZ, out var data))
             {
-                data = new DynamicBoolDataView(tileSizeX, tileSizeY);
+                data = new DynamicBoolDataView(offsetX, offsetY, tileSizeX, tileSizeY);
                 trackersPerLayer[p.GridZ] = data;
             }
 

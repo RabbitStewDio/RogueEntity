@@ -1,5 +1,6 @@
 using System;
 using RogueEntity.Core.Positioning;
+using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.Maps;
 
 namespace RogueEntity.Core.Sensing.Common
@@ -12,6 +13,7 @@ namespace RogueEntity.Core.Sensing.Common
         public readonly byte[] Directions;
         public readonly float[] Intensities;
         public readonly int LineWidth;
+        bool cleared;
         
         public SenseSourceData(int radius)
         {
@@ -23,6 +25,8 @@ namespace RogueEntity.Core.Sensing.Common
 
         public int Radius { get; }
 
+        public Rectangle Bounds => new Rectangle(new Position2D(0,0), Radius, Radius);
+        
         public bool TryQuery(int x,
                              int y,
                              out float intensity,
@@ -125,8 +129,17 @@ namespace RogueEntity.Core.Sensing.Common
 
         public void Reset()
         {
-            Array.Clear(Intensities, 0, Intensities.Length);
-            Array.Clear(Directions, 0, Directions.Length);
+            if (!cleared)
+            {
+                Array.Clear(Intensities, 0, Intensities.Length);
+                Array.Clear(Directions, 0, Directions.Length);
+                cleared = true;
+            }
+        }
+
+        public void MarkWritten()
+        {
+            cleared = false;
         }
     }
 }

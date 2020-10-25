@@ -47,7 +47,7 @@ namespace RogueEntity.Core.Tests.Sensing.Resistance
         [Test]
         public void TestMapProcessing()
         {
-            ctx.TryGetGridDataFor(TestMapLayers.One, out IGridMapDataContext<SenseMappingTestContext, ItemReference> data).Should().BeTrue();
+            ctx.TryGetItemGridDataFor(TestMapLayers.One, out var data).Should().BeTrue();
             data.TrySet(EntityGridPosition.Of(TestMapLayers.One, 0, 0, 0), ctx.ItemResolver.Instantiate(ctx, wall)).Should().BeTrue();
 
             s.AddProcess(TestMapLayers.One, new SensePropertiesDataProcessor<SenseMappingTestContext, ItemReference>(TestMapLayers.One, 0, 0, 0, 64, 64));
@@ -70,10 +70,10 @@ namespace RogueEntity.Core.Tests.Sensing.Resistance
         [Test]
         public void TestCombinedMapProcessing()
         {
-            ctx.TryGetGridDataFor(TestMapLayers.One, out IGridMapDataContext<SenseMappingTestContext, ItemReference> dataLayer1).Should().BeTrue();
+            ctx.TryGetItemGridDataFor(TestMapLayers.One, out var dataLayer1).Should().BeTrue();
             dataLayer1.TrySet(EntityGridPosition.Of(TestMapLayers.One, 0, 0, 0), ctx.ItemResolver.Instantiate(ctx, wall)).Should().BeTrue();
 
-            ctx.TryGetGridDataFor(TestMapLayers.Two, out IGridMapDataContext<SenseMappingTestContext, ItemReference> dataLayer2).Should().BeTrue();
+            ctx.TryGetItemGridDataFor(TestMapLayers.Two, out var dataLayer2).Should().BeTrue();
             dataLayer2.TrySet(EntityGridPosition.Of(TestMapLayers.Two, 0, 0, 0), ctx.ItemResolver.Instantiate(ctx, ceilingFan)).Should().BeTrue();
 
             s.AddProcess(TestMapLayers.One, new SensePropertiesDataProcessor<SenseMappingTestContext, ItemReference>(TestMapLayers.One, 0, 0, 0, 64, 64));

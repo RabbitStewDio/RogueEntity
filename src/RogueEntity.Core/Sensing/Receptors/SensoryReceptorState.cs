@@ -23,6 +23,7 @@ namespace RogueEntity.Core.Sensing.Receptors
     public class SensoryReceptorState<TSense>
         where TSense : ISense
     {
+        public float LastIntensity { get; private set; }
         public Position LastPosition { get; private set; }
         public Optional<SenseSourceData> SenseSource { get; private set; }
         public SenseSourceDirtyState State { get; private set; }
@@ -42,6 +43,12 @@ namespace RogueEntity.Core.Sensing.Receptors
             }
 
             LastPosition = position;
+            return this;
+        }
+
+        public SensoryReceptorState<TSense> WithIntensity(float intensity)
+        {
+            LastIntensity = intensity;
             return this;
         }
 

@@ -1,9 +1,13 @@
 using System.Runtime.Serialization;
+using EnTTSharp.Entities.Attributes;
 using MessagePack;
 using RogueEntity.Core.Sensing.Common;
 
 namespace RogueEntity.Core.Sensing.Sources.Noise
 {
+    [EntityComponent(EntityConstructor.NonConstructable)]
+    [MessagePackObject]
+    [DataContract]
     public readonly struct NoiseSourceDefinition: ISenseDefinition
     {
         [DataMember(Order = 0)]
@@ -12,12 +16,12 @@ namespace RogueEntity.Core.Sensing.Sources.Noise
 
         [DataMember(Order = 1)]
         [Key(1)]
-        public readonly bool Enabled;
-
-        [DataMember(Order = 2)]
-        [Key(2)]
         public readonly NoiseClip Clip;
         
+        [DataMember(Order = 2)]
+        [Key(2)]
+        public readonly bool Enabled;
+
         [IgnoreMember]
         [IgnoreDataMember]
         SenseSourceDefinition ISenseDefinition.SenseDefinition => SenseDefinition;

@@ -22,8 +22,10 @@ namespace RogueEntity.Core.Sensing.Cache
     ///    the change to the sense source should trigger an update of the sensors
     ///    in range.
     /// </summary>
-    public class SenseStateCache : ISenseStateCacheProvider, IGlobalSenseStateCacheProvider
+    public class SenseStateCache : ISenseStateCacheProvider, IGlobalSenseStateCacheProvider, ISenseStateCacheControl
     {
+        readonly int offsetX;
+        readonly int offsetY;
         readonly int tileSizeX;
         readonly int tileSizeY;
         readonly int resolution;
@@ -31,18 +33,32 @@ namespace RogueEntity.Core.Sensing.Cache
         readonly Dictionary<Type, SenseStateCacheView> senseCaches;
         readonly SenseStateCacheView globalSenseRecord;
 
-        public SenseStateCache(int tileSizeX, int tileSizeY, int resolution)
+        public SenseStateCache(int resolution, int tileSizeX, int tileSizeY): this(resolution, 0, 0, tileSizeX, tileSizeY)
+        {
+        }
+        
+        public SenseStateCache(int resolution, int offsetX, int offsetY, int tileSizeX, int tileSizeY)
         {
             if (resolution < 1)
             {
                 throw new ArgumentOutOfRangeException(nameof(resolution), resolution, "must be 1 or larger");
             }
+            if (tileSizeX < 1)
+            {
+                throw new ArgumentOutOfRangeException(nameof(tileSizeX), tileSizeX, "must be 1 or larger");
+            }
+            if (tileSizeY < 1)
+            {
+                throw new ArgumentOutOfRangeException(nameof(tileSizeY), tileSizeY, "must be 1 or larger");
+            }
 
             this.tileSizeX = tileSizeX;
             this.tileSizeY = tileSizeY;
             this.resolution = resolution;
+            this.offsetX = offsetX;
+            this.offsetY = offsetY;
             senseCaches = new Dictionary<Type, SenseStateCacheView>();
-            globalSenseRecord = new SenseStateCacheView(tileSizeX, tileSizeY, resolution);
+            globalSenseRecord = new SenseStateCacheView(resolution, offsetX, offsetY, tileSizeX, tileSizeY);
         }
 
         public bool TryGetGlobalSenseCache(out ISenseStateCacheView senseCache)
@@ -79,7 +95,7 @@ namespace RogueEntity.Core.Sensing.Cache
         {
             if (!senseCaches.TryGetValue(senseType, out var record))
             {
-                record = new SenseStateCacheView(tileSizeX, tileSizeY, resolution);
+                record = new SenseStateCacheView(resolution, offsetX, offsetY, tileSizeX, tileSizeY);
                 senseCaches[senseType] = record;
             }
         }
@@ -98,7 +114,7 @@ namespace RogueEntity.Core.Sensing.Cache
         /// </summary>
         /// <param name="p"></param>
         /// <typeparam name="TSense"></typeparam>
-        public void MarkDirty<TSense>(Position p)
+        public void MarkDirty<TSense>(in Position p)
         {
             if (senseCaches.TryGetValue(typeof(TSense), out var r))
             {

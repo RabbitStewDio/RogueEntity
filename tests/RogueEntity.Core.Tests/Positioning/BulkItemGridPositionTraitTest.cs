@@ -23,7 +23,6 @@ namespace RogueEntity.Core.Tests.Positioning
             return new ItemComponentTestDataFactory<EntityGridPosition>(Optional.Empty<EntityGridPosition>(),
                                                                         EntityGridPosition.Of(itemLayer, 10, 10, 10),
                                                                         EntityGridPosition.Of(itemLayer, 10, 20, 10))
-                   .WithInvalidResult(EntityGridPosition.Of(itemLayer, 1000, 1000, 10)) // Given map is only 100x100 cells
                    .WithRemovedResult(Optional.Empty<EntityGridPosition>())
                 ;
         }

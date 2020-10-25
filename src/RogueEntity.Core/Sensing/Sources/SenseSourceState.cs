@@ -11,6 +11,7 @@ namespace RogueEntity.Core.Sensing.Sources
     [EntityComponent]
     public class SenseSourceState<TSense>
     {
+        public float LastIntensity { get; private set; }
         public Position LastPosition { get; private set; }
         public Optional<SenseSourceData> SenseSource { get; private set; }
         public SenseSourceDirtyState State { get; private set; }
@@ -30,6 +31,12 @@ namespace RogueEntity.Core.Sensing.Sources
             }
 
             LastPosition = position;
+            return this;
+        }
+        
+        public SenseSourceState<TSense> WithIntensity(float intensity)
+        {
+            LastIntensity = intensity;
             return this;
         }
         

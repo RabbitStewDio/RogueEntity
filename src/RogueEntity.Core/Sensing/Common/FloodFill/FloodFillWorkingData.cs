@@ -10,16 +10,17 @@ namespace RogueEntity.Core.Sensing.Common.FloodFill
         public readonly FloodFillDijkstraMap ResultMap;
 
         public FloodFillWorkingData(in SenseSourceDefinition sense,
+                                    float intensity,
                                     in Position2D origin,
                                     [NotNull] ISensePhysics sensePhysics,
                                     [NotNull] IReadOnlyView2D<float> resistanceMap)
         {
-            ResultMap = FloodFillDijkstraMap.Create(in sense, in origin, sensePhysics, resistanceMap);
+            ResultMap = FloodFillDijkstraMap.Create(in sense, intensity, in origin, sensePhysics, resistanceMap);
         }
 
-        public void Configure(in SenseSourceDefinition sense, in Position2D origin, ISensePhysics sensePhysics, IReadOnlyView2D<float> resistanceMap)
+        public void Configure(in SenseSourceDefinition sense, float intensity, in Position2D origin, ISensePhysics sensePhysics, IReadOnlyView2D<float> resistanceMap)
         {
-            ResultMap.Configure(in sense, in origin, sensePhysics, resistanceMap);
+            ResultMap.Configure(in sense, intensity, in origin, sensePhysics, resistanceMap);
         }
     }
 }

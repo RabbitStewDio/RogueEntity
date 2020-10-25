@@ -241,8 +241,7 @@ namespace RogueEntity.Core.Sensing.Receptors.InfraVision
                                                    serviceResolver.ResolveToReference<ISenseStateCacheProvider>(),
                                                    serviceResolver.ResolveToReference<IGlobalSenseStateCacheProvider>(),
                                                    serviceResolver.ResolveToReference<ITimeSource>(),
-                                                   physicsConfig.HeatPhysics,
-                                                   physicsConfig.CreateHeatPropagationAlgorithm());
+                                                   physicsConfig);
             }
 
             return true;

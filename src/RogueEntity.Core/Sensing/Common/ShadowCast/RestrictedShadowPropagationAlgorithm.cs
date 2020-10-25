@@ -1,8 +1,8 @@
 using System;
-using GoRogue;
 using JetBrains.Annotations;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Sensing.Common.Physics;
+using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.Algorithms;
 using RogueEntity.Core.Utils.Maps;
 using static RogueEntity.Core.Sensing.Common.ShadowCast.ShadowPropagationAlgorithmHelpers;
@@ -18,13 +18,14 @@ namespace RogueEntity.Core.Sensing.Common.ShadowCast
             this.sensePhysics = sensePhysics ?? throw new ArgumentNullException(nameof(sensePhysics));
         }
 
-        public SenseSourceData Calculate<TResistanceMap>(SenseSourceDefinition sense,
-                                                         Position2D position,
-                                                         TResistanceMap resistanceMap,
+        public SenseSourceData Calculate<TResistanceMap>(in SenseSourceDefinition sense,
+                                                         float intensity,
+                                                         in Position2D position,
+                                                         in TResistanceMap resistanceMap,
                                                          SenseSourceData data = null)
             where TResistanceMap : IReadOnlyView2D<float>
         {
-            var radius = (int)Math.Ceiling(sensePhysics.SignalRadiusForIntensity(sense.Intensity));
+            var radius = (int)Math.Ceiling(sensePhysics.SignalRadiusForIntensity(intensity));
             if (data == null ||
                 data.Radius != radius)
             {
@@ -36,27 +37,27 @@ namespace RogueEntity.Core.Sensing.Common.ShadowCast
             }
 
             ShadowCastLimited(1, 1.0f, 0.0f, new PropagationDirection(0, 1, 1, 0), resistanceMap,
-                              sense, position, data);
+                              sense, intensity, position, data);
             ShadowCastLimited(1, 1.0f, 0.0f, new PropagationDirection(1, 0, 0, 1), resistanceMap,
-                              sense, position, data);
+                              sense, intensity, position, data);
 
             ShadowCastLimited(1, 1.0f, 0.0f, new PropagationDirection(0, -1, 1, 0), resistanceMap,
-                              sense, position, data);
+                              sense, intensity, position, data);
 
             ShadowCastLimited(1, 1.0f, 0.0f, new PropagationDirection(-1, 0, 0, 1), resistanceMap,
-                              sense, position, data);
+                              sense, intensity, position, data);
 
             ShadowCastLimited(1, 1.0f, 0.0f, new PropagationDirection(0, -1, -1, 0), resistanceMap,
-                              sense, position, data);
+                              sense, intensity, position, data);
 
             ShadowCastLimited(1, 1.0f, 0.0f, new PropagationDirection(-1, 0, 0, -1), resistanceMap,
-                              sense, position, data);
+                              sense, intensity, position, data);
 
             ShadowCastLimited(1, 1.0f, 0.0f, new PropagationDirection(0, 1, -1, 0), resistanceMap,
-                              sense, position, data);
+                              sense, intensity, position, data);
 
             ShadowCastLimited(1, 1.0f, 0.0f, new PropagationDirection(1, 0, 0, -1), resistanceMap,
-                              sense, position, data);
+                              sense, intensity, position, data);
 
             return data;
         }
@@ -68,6 +69,7 @@ namespace RogueEntity.Core.Sensing.Common.ShadowCast
                                                in PropagationDirection p,
                                                TResistanceMap resistanceMap,
                                                in SenseSourceDefinition sense,
+                                               float intensity,
                                                in Position2D pos,
                                                in SenseSourceData light)
             where TResistanceMap : IReadOnlyView2D<float>
@@ -82,7 +84,6 @@ namespace RogueEntity.Core.Sensing.Common.ShadowCast
 
             float newStart = 0;
 
-            var intensity = sense.Intensity;
             var dist = sense.DistanceCalculation;
             var maxRadius = sensePhysics.SignalRadiusForIntensity(intensity);
             var radius = (int)Math.Ceiling(maxRadius);
@@ -141,7 +142,7 @@ namespace RogueEntity.Core.Sensing.Common.ShadowCast
                         if (fullyBlocked && distance < radius) // Wall within FOV
                         {
                             blocked = true;
-                            ShadowCastLimited(distance + 1, start, leftSlope, p, resistanceMap, sense, pos, light);
+                            ShadowCastLimited(distance + 1, start, leftSlope, p, resistanceMap, sense, intensity, pos, light);
                             newStart = rightSlope;
                         }
                     }

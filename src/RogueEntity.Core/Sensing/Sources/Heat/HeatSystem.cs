@@ -1,9 +1,9 @@
 using System;
 using JetBrains.Annotations;
 using RogueEntity.Core.Infrastructure.Time;
+using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Sensing.Cache;
 using RogueEntity.Core.Sensing.Common;
-using RogueEntity.Core.Sensing.Common.Blitter;
 using RogueEntity.Core.Sensing.Common.Physics;
 using RogueEntity.Core.Sensing.Resistance;
 using RogueEntity.Core.Sensing.Resistance.Maps;
@@ -31,8 +31,16 @@ namespace RogueEntity.Core.Sensing.Sources.Heat
             return new HeatResistanceView(resistanceMap);
         }
 
-        protected override SenseSourceData RefreshSenseState<TPosition>(HeatSourceDefinition definition,
-                                                                        TPosition pos,
+        protected override float ComputeIntensity(in SenseSourceDefinition sd, in Position p)
+        {
+            var localTemperature = heatPhysics.GetEnvironmentTemperature(p.GridZ).ToKelvin();
+            var itemTemperature = sd.Intensity;
+            return itemTemperature - localTemperature;
+        }
+
+        protected override SenseSourceData RefreshSenseState<TPosition>(in HeatSourceDefinition definition,
+                                                                        float intensity,
+                                                                        in TPosition pos,
                                                                         IReadOnlyView2D<float> resistanceView,
                                                                         SenseSourceData data)
         {
@@ -41,8 +49,7 @@ namespace RogueEntity.Core.Sensing.Sources.Heat
 
             var envKelvin = environmentTemperature.ToKelvin();
             var intensityRelative = senseDefinition.Intensity - envKelvin;
-            var defRel = definition.WithSenseSource(senseDefinition.WithIntensity(intensityRelative));
-            var result = base.RefreshSenseState(defRel, pos, resistanceView, data);
+            var result = base.RefreshSenseState(definition, intensityRelative, pos, resistanceView, data);
 
             var intensities = result.Intensities;
             for (var i = 0; i < intensities.Length; i++)

@@ -32,30 +32,40 @@ namespace RogueEntity.Core.Tests.Sensing
         {
             return actorMap.GridLayers();
         }
-        
-        public bool TryGetGridDataFor(MapLayer layer, out IGridMapDataContext<SenseMappingTestContext, ActorReference> data)
-        {
-            return actorMap.TryGetGridDataFor(layer, out data);
-        }
-
-        public bool TryGetGridRawDataFor(MapLayer layer, out IGridMapRawDataContext<ActorReference> data)
-        {
-            return actorMap.TryGetGridRawDataFor(layer, out data);
-        }
 
         ReadOnlyListWrapper<MapLayer> IGridMapContext<SenseMappingTestContext, ItemReference>.GridLayers()
         {
             return itemMap.GridLayers();
         }
 
-        public bool TryGetGridDataFor(MapLayer layer, out IGridMapDataContext<SenseMappingTestContext, ItemReference> data)
+        public bool TryGetItemGridDataFor(MapLayer layer, out IGridMapDataContext<SenseMappingTestContext, ItemReference> data)
         {
             return itemMap.TryGetGridDataFor(layer, out data);
         }
 
-        public bool TryGetGridRawDataFor(MapLayer layer, out IGridMapRawDataContext<ItemReference> data)
+        public bool TryGetActorGridDataFor(MapLayer layer, out IGridMapDataContext<SenseMappingTestContext, ActorReference> data)
+        {
+            return actorMap.TryGetGridDataFor(layer, out data);
+        }
+
+        bool IGridMapContext<SenseMappingTestContext, ItemReference>.TryGetGridDataFor(MapLayer layer, out IGridMapDataContext<SenseMappingTestContext, ItemReference> data)
+        {
+            return itemMap.TryGetGridDataFor(layer, out data);
+        }
+
+        bool IGridMapContext<SenseMappingTestContext, ItemReference>.TryGetGridRawDataFor(MapLayer layer, out IGridMapRawDataContext<ItemReference> data)
         {
             return itemMap.TryGetGridRawDataFor(layer, out data);
+        }
+
+        bool IGridMapContext<SenseMappingTestContext, ActorReference>.TryGetGridDataFor(MapLayer layer, out IGridMapDataContext<SenseMappingTestContext, ActorReference> data)
+        {
+            return actorMap.TryGetGridDataFor(layer, out data);
+        }
+
+        bool IGridMapContext<SenseMappingTestContext, ActorReference>.TryGetGridRawDataFor(MapLayer layer, out IGridMapRawDataContext<ActorReference> data)
+        {
+            return actorMap.TryGetGridRawDataFor(layer, out data);
         }
 
         public ItemRegistry<SenseMappingTestContext, ItemReference> ItemRegistry
@@ -63,7 +73,7 @@ namespace RogueEntity.Core.Tests.Sensing
             get { return itemBackend.ItemRegistry; }
         }
 
-        public EntityRegistry<ItemReference> EntityRegistry
+        public EntityRegistry<ItemReference> ItemEntityRegistry
         {
             get { return itemBackend.EntityRegistry; }
         }

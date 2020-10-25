@@ -24,7 +24,7 @@ namespace RogueEntity.Core.Sensing.Sources.Touch
 
         protected override IReadOnlyView2D<float> CreateSensoryResistanceView(IReadOnlyView2D<SensoryResistance> resistanceMap)
         {
-            return new ConstantMap<float>(0, 0, 1);
+            return new ConstantMap<float>(0, 0, 0);
         }
     }
 }

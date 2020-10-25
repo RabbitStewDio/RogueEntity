@@ -1,6 +1,5 @@
 using System.Linq;
 using System.Runtime.InteropServices;
-using GoRogue;
 using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.Algorithms;
 

@@ -4,7 +4,7 @@ using MessagePack;
 
 namespace RogueEntity.Core.Sensing
 {
-    [EntityComponent]
+    [EntityComponent(EntityConstructor.Flag)]
     [DataContract]
     [MessagePackObject]
     public readonly struct ObservedSenseSource<TSense> 

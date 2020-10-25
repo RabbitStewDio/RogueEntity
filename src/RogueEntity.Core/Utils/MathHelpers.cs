@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace GoRogue
+namespace RogueEntity.Core.Utils
 {
 	/// <summary>
 	/// Static class consisting of mathematical "helper" functions and constants -- things like angle

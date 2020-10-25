@@ -1,4 +1,6 @@
+using System;
 using EnTTSharp.Entities;
+using JetBrains.Annotations;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Sensing.Common;
@@ -18,9 +20,9 @@ namespace RogueEntity.Core.Sensing.Sources.Light
         public float Intensity { get; }
         public bool Enabled { get; }
 
-        public LightSourceTrait(ILightPhysicsConfiguration lightPhysics, float hue, float saturation, float intensity, bool enabled)
+        public LightSourceTrait([NotNull] ILightPhysicsConfiguration lightPhysics, float hue, float saturation, float intensity, bool enabled)
         {
-            this.lightPhysics = lightPhysics;
+            this.lightPhysics = lightPhysics ?? throw new ArgumentNullException(nameof(lightPhysics));
             Hue = hue.Clamp(0, 1);
             Saturation = saturation;
             Intensity = intensity;
@@ -30,8 +32,6 @@ namespace RogueEntity.Core.Sensing.Sources.Light
         /// <summary>
         ///   Creates a white light.
         /// </summary>
-        /// <param name="intensity"></param>
-        /// <param name="enabled"></param>
         public LightSourceTrait(ILightPhysicsConfiguration lightPhysics, 
                                 float intensity, 
                                 bool enabled = true): this(lightPhysics, 0, 0, intensity, enabled)
@@ -80,7 +80,7 @@ namespace RogueEntity.Core.Sensing.Sources.Light
                 }
             }
             
-            v.AssignComponent(k, t);
+            v.AssignOrReplace(k, t);
             if (!v.GetComponent(k, out SenseSourceState<VisionSense> s))
             {
                 s = new SenseSourceState<VisionSense>(Optional.Empty<SenseSourceData>(), SenseSourceDirtyState.UnconditionallyDirty, Position.Invalid);
@@ -89,15 +89,17 @@ namespace RogueEntity.Core.Sensing.Sources.Light
             else
             {
                 s = s.WithDirtyState(SenseSourceDirtyState.UnconditionallyDirty);
-                v.AssignComponent(k, in s);
+                v.ReplaceComponent(k, in s);
             }
             return true;
         }
 
         public bool TryRemove(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, out TItemId changedItem)
         {
+            v.RemoveComponent<LightSourceDefinition>(k);
+            v.RemoveComponent<SenseSourceState<VisionSense>>(k);
             changedItem = k;
-            return false;
+            return true;
         }
     }
 }

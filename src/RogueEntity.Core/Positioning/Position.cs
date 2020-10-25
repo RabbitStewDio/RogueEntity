@@ -25,14 +25,18 @@ namespace RogueEntity.Core.Positioning
     /// </summary>
     public readonly struct Position : IEquatable<Position>, IPosition
     {
-        public static Position Invalid = default; 
-        
+        public static Position Invalid = default;
+
         public double X { get; }
         public double Y { get; }
         public double Z { get; }
         public byte LayerId { get; }
 
         public bool IsInvalid => LayerId == 0;
+
+        public Position(double x, double y, double z, MapLayer layer) : this(x, y, z, layer.LayerId)
+        {
+        }
 
         public Position(double x, double y, double z, byte layer)
         {
@@ -83,22 +87,24 @@ namespace RogueEntity.Core.Positioning
             return !left.Equals(right);
         }
 
-        public Position Apply<TPosition>(TPosition p) where TPosition : IPosition
+        public Position Apply<TPosition>(TPosition p)
+            where TPosition : IPosition
         {
             return new Position(p.X, p.Y, p.Z, this.LayerId);
         }
 
-        public Position From(int x, int y) 
+        public Position From(int x, int y)
         {
             return new Position(x, y, this.Z, this.LayerId);
         }
 
-        public Position From(double x, double y) 
+        public Position From(double x, double y)
         {
             return new Position(x, y, this.Z, this.LayerId);
         }
 
-        public static Position From<TPosition>(TPosition p) where TPosition: IPosition
+        public static Position From<TPosition>(TPosition p)
+            where TPosition : IPosition
         {
             if (p.IsInvalid)
             {
@@ -107,7 +113,7 @@ namespace RogueEntity.Core.Positioning
 
             return new Position(p.X, p.Y, p.Z, p.LayerId);
         }
-        
+
         public static Position Of(MapLayer layer, double x, double y, double z = 0)
         {
             return new Position(x, y, z, layer.LayerId);

@@ -98,6 +98,30 @@ namespace RogueEntity.Core.Utils.Maps
             }
         }
 
+        public Rectangle ActiveBounds
+        {
+            get
+            {
+                if (index.Count == 0) return default;
+
+                Rectangle r = default;
+                
+                foreach (var k in index.Values)
+                {
+                    if (r.Width == 0 || r.Height == 0)
+                    {
+                        r = k.Bounds;
+                    }
+                    else
+                    {
+                        r = r.GetUnion(k.Bounds);
+                    }
+                }
+
+                return r;
+            }
+        }
+        
         public List<Rectangle> GetActiveTiles(List<Rectangle> data = null)
         {
             if (data == null)
