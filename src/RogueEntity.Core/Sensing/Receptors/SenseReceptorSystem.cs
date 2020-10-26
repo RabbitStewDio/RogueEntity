@@ -41,7 +41,6 @@ namespace RogueEntity.Core.Sensing.Receptors
         readonly ISensePropagationAlgorithm sensePropagationAlgorithm;
         readonly List<int> zLevelBuffer;
         readonly ISensePhysics physics;
-        readonly ISenseDataBlitter blitter;
 
         Optional<ISenseStateCacheView> cacheView;
         Optional<ISenseStateCacheView> globalCacheView;
@@ -55,7 +54,6 @@ namespace RogueEntity.Core.Sensing.Receptors
                                    [NotNull] ISensePropagationAlgorithm sensePropagationAlgorithm)
         {
             this.sensePropagationAlgorithm = sensePropagationAlgorithm ?? throw new ArgumentNullException(nameof(sensePropagationAlgorithm));
-            this.blitter = blitter ?? throw new ArgumentNullException(nameof(blitter));
             this.senseProperties = senseProperties ?? throw new ArgumentNullException(nameof(senseProperties));
             this.senseCacheProvider = senseCacheProvider ?? throw new ArgumentNullException(nameof(senseCacheProvider));
             this.globalSenseCacheProvider = globalSenseCacheProvider;
@@ -86,7 +84,7 @@ namespace RogueEntity.Core.Sensing.Receptors
         public void EnsureSenseCacheAvailable<TGameContext>(TGameContext context)
         {
             var provider = senseCacheProvider.Value;
-            if (!provider.TryGetSenseCache<TSourceSense>(out var cache))
+            if (provider.TryGetSenseCache<TSourceSense>(out var cache))
             {
                 cacheView = Optional.ValueOf(cache);
             }
@@ -96,7 +94,7 @@ namespace RogueEntity.Core.Sensing.Receptors
             }
 
             var globalProvider = globalSenseCacheProvider.Value;
-            if (!globalProvider.TryGetGlobalSenseCache(out var gcache))
+            if (globalProvider.TryGetGlobalSenseCache(out var gcache))
             {
                 globalCacheView = Optional.ValueOf(gcache);
             }
@@ -164,6 +162,7 @@ namespace RogueEntity.Core.Sensing.Receptors
                 // Light has been disabled since the last calculation.
                 var nstate = state.WithPosition(Position.Invalid).WithDirtyState(SenseSourceDirtyState.Dirty);
                 v.WriteBack(k, in nstate);
+                v.AssignOrReplace(k, new SenseReceptorDirtyFlag<TReceptorSense>());
                 if (state.SenseSource.TryGetValue(out var data))
                 {
                     data.Reset();
@@ -178,7 +177,7 @@ namespace RogueEntity.Core.Sensing.Receptors
         {
             return sd.Intensity;
         }
-        
+
         bool IsCacheDirty(in Position pos, float radius)
         {
             bool haveTestedCache = false;
@@ -194,7 +193,7 @@ namespace RogueEntity.Core.Sensing.Receptors
 
             if (cacheView.TryGetValue(out var cache))
             {
-                if (gcache.IsDirty(pos, radius))
+                if (cache.IsDirty(pos, radius))
                 {
                     return true;
                 }
@@ -441,7 +440,11 @@ namespace RogueEntity.Core.Sensing.Receptors
                 sources.Add(senseSourceState);
             }
 
-            public void ProcessDirectional(IDirectionalSenseBlitter blitter, in Position p, in SenseDataMap brightnessMap, bool flaggedAsDirty)
+            public void ProcessDirectional(IDirectionalSenseBlitter blitter,
+                                           in Position p,
+                                           in SenseDataMap brightnessMap,
+                                           in Rectangle senseBoundaries,
+                                           bool flaggedAsDirty)
             {
                 var blittableSenses = new List<(Position2D, SenseSourceData)>();
                 try
@@ -462,7 +465,7 @@ namespace RogueEntity.Core.Sensing.Receptors
                         return;
                     }
 
-                    directionalSenseMapServices.ProcessSenseSources(brightnessMap, new Position2D(p.GridX, p.GridY), blitter, blittableSenses);
+                    directionalSenseMapServices.ProcessSenseSources(brightnessMap, senseBoundaries, new Position2D(p.GridX, p.GridY), blitter, blittableSenses);
                 }
                 finally
                 {
@@ -470,7 +473,10 @@ namespace RogueEntity.Core.Sensing.Receptors
                 }
             }
 
-            public void ProcessOmnidirectional(ISenseDataBlitter blitter, in SenseDataMap brightnessMap, bool flaggedAsDirty)
+            public void ProcessOmnidirectional(ISenseDataBlitter blitter,
+                                               in SenseDataMap brightnessMap,
+                                               in Rectangle senseBoundaries,
+                                               bool flaggedAsDirty)
             {
                 var blittableSenses = new List<(Position2D, SenseSourceData)>();
                 try
@@ -491,7 +497,7 @@ namespace RogueEntity.Core.Sensing.Receptors
                         return;
                     }
 
-                    senseMapServices.ProcessSenseSources(brightnessMap, blitter, blittableSenses);
+                    senseMapServices.ProcessSenseSources(brightnessMap, senseBoundaries, blitter, blittableSenses);
                 }
                 finally
                 {
@@ -531,7 +537,7 @@ namespace RogueEntity.Core.Sensing.Receptors
 
     public interface ISenseReceptorProcessor
     {
-        void ProcessDirectional(IDirectionalSenseBlitter blitter, in Position p, in SenseDataMap brightnessMap, bool flaggedAsDirty);
-        void ProcessOmnidirectional(ISenseDataBlitter blitter, in SenseDataMap brightnessMap, bool flaggedAsDirty);
+        void ProcessDirectional(IDirectionalSenseBlitter blitter, in Position p, in SenseDataMap brightnessMap, in Rectangle senseBoundaries, bool flaggedAsDirty);
+        void ProcessOmnidirectional(ISenseDataBlitter blitter, in SenseDataMap brightnessMap, in Rectangle senseBoundaries, bool flaggedAsDirty);
     }
 }

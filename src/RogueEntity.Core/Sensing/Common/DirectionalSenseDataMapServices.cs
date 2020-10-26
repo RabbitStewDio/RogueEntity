@@ -16,8 +16,9 @@ namespace RogueEntity.Core.Sensing.Common
         readonly int zLevel;
         readonly List<ProcessData> parameterBuffer;
         readonly Optional<ISenseStateCacheView> senseCache;
-        
-        
+        List<Rectangle> partitionsBuffer;
+
+
         public DirectionalSenseDataMapServices(int zLevel, Optional<ISenseStateCacheView> senseCache)
         {
             this.zLevel = zLevel;
@@ -51,23 +52,19 @@ namespace RogueEntity.Core.Sensing.Common
         }
 
         void QuerySenseDataTiles(SenseDataMap m, 
+                                 Rectangle targetBounds,
                                  Position2D targetPos,
                                  IDirectionalSenseBlitter blitter,
                                  List<(Position2D, SenseSourceData)> senses)
         {
-            var affectedBounds = GetSenseBounds(senses);
+            var affectedBounds = GetSenseBounds(senses).GetIntersection(targetBounds);
             var tsX = m.TileSizeX;
             var tsY = m.TileSizeY;
 
-            for (var ty = affectedBounds.Y; ty <= affectedBounds.MaxExtentY; ty += tsY)
-            for (var tx = affectedBounds.X; tx <= affectedBounds.MaxExtentX; tx += tsX)
+            partitionsBuffer = affectedBounds.PartitionBy(m.OffsetX, m.OffsetY, m.TileSizeX, m.TileSizeY, partitionsBuffer);
+            foreach (var r in partitionsBuffer)
             {
-                m.FetchRawData(tx, tx, out var tile, out var dir);
-                if (senseCache.TryGetValue(out var value) && !value.IsDirty(zLevel, tile.Bounds))
-                {
-                    continue;
-                }
-                
+                m.FetchRawData(r.X, r.Y, out var tile, out var dir);
                 var bounds = tile.Bounds.GetIntersection(affectedBounds);
                 parameterBuffer.Add(new ProcessData(senses, targetPos, blitter, bounds, tile, dir));
             }
@@ -95,7 +92,8 @@ namespace RogueEntity.Core.Sensing.Common
             }
         }
 
-        public void ProcessSenseSources(SenseDataMap m, 
+        public void ProcessSenseSources(SenseDataMap m,
+                                        Rectangle targetBounds,
                                         Position2D targetPos,
                                         IDirectionalSenseBlitter blitter,
                                         List<(Position2D pos, SenseSourceData sense)> senses)
@@ -106,7 +104,7 @@ namespace RogueEntity.Core.Sensing.Common
             }
 
             parameterBuffer.Clear();
-            QuerySenseDataTiles(m, targetPos, blitter, senses);
+            QuerySenseDataTiles(m, targetBounds, targetPos, blitter, senses);
             Parallel.ForEach(parameterBuffer, ProcessDataDelegate);
             parameterBuffer.Clear();
         }

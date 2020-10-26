@@ -1,11 +1,46 @@
 using System;
+using System.Collections.Generic;
 using System.Runtime.Serialization;
 using JetBrains.Annotations;
 using MessagePack;
+using RogueEntity.Core.Positioning;
+using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.Maps;
 
 namespace RogueEntity.Core.Sensing.Common
 {
+    public class SenseDirectionStoreTileWrapper: IReadOnlyBoundedDataView<SenseDirectionStore>
+    {
+        readonly IReadOnlyBoundedDataView<byte> raw;
+
+        public SenseDirectionStoreTileWrapper([NotNull] IReadOnlyBoundedDataView<byte> raw)
+        {
+            this.raw = raw ?? throw new ArgumentNullException(nameof(raw));
+        }
+
+        public bool TryGet(int x, int y, out SenseDirectionStore data)
+        {
+            if (raw.TryGet(x, y, out var dataRaw))
+            {
+                data = new SenseDirectionStore(dataRaw);
+                return true;
+            }
+
+            data = default;
+            return false;
+        }
+
+        public SenseDirectionStore this[int x, int y]
+        {
+            get { return new SenseDirectionStore(raw[x, y]); }
+        }
+
+        public Rectangle Bounds
+        {
+            get { return raw.Bounds; }
+        }
+    }
+    
     [DataContract]
     [MessagePackObject]
     public class SenseDataMap : ISenseDataView
@@ -17,10 +52,14 @@ namespace RogueEntity.Core.Sensing.Common
         [Key(1)]
         readonly DynamicDataView<byte> directionData;
 
-        public SenseDataMap(int tileWidth = 64, int tileHeight = 64)
+        public SenseDataMap(int tileWidth = 64, int tileHeight = 64) : this(0, 0, tileWidth, tileHeight)
         {
-            sensitivityData = new DynamicDataView<float>(tileWidth, tileHeight);
-            directionData = new DynamicDataView<byte>(tileWidth, tileHeight);
+        }
+        
+        public SenseDataMap(int offsetX, int offsetY, int tileWidth, int tileHeight)
+        {
+            sensitivityData = new DynamicDataView<float>(offsetX, offsetY, tileWidth, tileHeight);
+            directionData = new DynamicDataView<byte>(offsetX, offsetY, tileWidth, tileHeight);
         }
 
         [SerializationConstructor]
@@ -34,6 +73,11 @@ namespace RogueEntity.Core.Sensing.Common
         {
             sensitivityData.ClearData();
             directionData.ClearData();
+        }
+
+        public Rectangle GetActiveBounds()
+        {
+            return sensitivityData.GetActiveBounds();
         }
 
         public bool TryQuery(int x, int y, out float intensity, out SenseDirectionStore directionality)
@@ -77,6 +121,21 @@ namespace RogueEntity.Core.Sensing.Common
             return r1 && r2;
         }
         
+        public int OffsetX
+        {
+            get { return sensitivityData.OffsetX; }
+        }
+
+        public int OffsetY
+        {
+            get { return sensitivityData.OffsetY; }
+        }
+
+        public List<Rectangle> GetActiveTiles(List<Rectangle> data = null)
+        {
+            return sensitivityData.GetActiveTiles(data);
+        }
+
         public int TileSizeX
         {
             get { return sensitivityData.TileSizeX; }
@@ -85,6 +144,50 @@ namespace RogueEntity.Core.Sensing.Common
         public int TileSizeY
         {
             get { return sensitivityData.TileSizeY; }
+        }
+
+        float IReadOnlyView2D<float>.this[int x, int y]
+        {
+            get { return sensitivityData[x, y]; }
+        }
+
+        SenseDirectionStore IReadOnlyView2D<SenseDirectionStore>.this[int x, int y]
+        {
+            get { return new SenseDirectionStore(directionData[x, y]); }
+        }
+
+        public bool TryGet(int x, int y, out float data)
+        {
+            return sensitivityData.TryGet(x, y, out data);
+        }
+
+        public bool TryGetData(int x, int y, out IReadOnlyBoundedDataView<float> raw)
+        {
+            return sensitivityData.TryGetData(x, y, out raw);
+        }
+
+        public bool TryGet(int x, int y, out SenseDirectionStore data)
+        {
+            if (directionData.TryGet(x, y, out var d))
+            {
+                data = new SenseDirectionStore(d);
+                return true;
+            }
+
+            data = default;
+            return false;
+        }
+
+        public bool TryGetData(int x, int y, out IReadOnlyBoundedDataView<SenseDirectionStore> raw)
+        {
+            if (directionData.TryGetData(x, y, out var rawBytes))
+            {
+                raw = new SenseDirectionStoreTileWrapper(rawBytes);
+                return true;
+            }
+
+            raw = default;
+            return false;
         }
 
         public void FetchRawData(int x, int y, out BoundedDataView<float> brightness, out BoundedDataView<byte> directions)

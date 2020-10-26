@@ -8,7 +8,7 @@ namespace RogueEntity.Core.Sensing.Receptors.Light
                                                             IItemComponentInformationTrait<TGameContext, TActorId, IBrightnessMap>
         where TActorId : IEntityKey
     {
-        public VisionSenseTrait(ILightPhysicsConfiguration physics, float senseIntensity): base(physics.LightPhysics, senseIntensity)
+        public VisionSenseTrait(ILightPhysicsConfiguration physics, float senseIntensity, bool active = true): base(physics.LightPhysics, senseIntensity, active)
         {
         }
 

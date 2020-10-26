@@ -13,7 +13,7 @@ namespace RogueEntity.Core.Sensing.Receptors.Heat
         [NotNull] readonly IHeatPhysicsConfiguration physicsConfiguration;
 
         public HeatDirectionSenseTrait([NotNull] IHeatPhysicsConfiguration physicsConfiguration,
-                                       float intensity) : base(physicsConfiguration.HeatPhysics, intensity)
+                                       float intensity, bool active = true) : base(physicsConfiguration.HeatPhysics, intensity, active)
         {
             this.physicsConfiguration = physicsConfiguration;
         }

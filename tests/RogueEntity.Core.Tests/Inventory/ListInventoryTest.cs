@@ -209,7 +209,6 @@ namespace RogueEntity.Core.Tests.Inventory
             Inventory.TryAddItem(Context, contentItem, out _).Should().BeTrue();
             Inventory.TryAddItem(Context, stackingItem.WithData(15), out _).Should().BeTrue();
 
-            var resultList = new List<ItemReference>();
             Inventory.TryRemoveItemsInBulk(Context, BulkContentDeclaration, 5).Should().ContainInOrder(stackingItem.WithData(5));
             Inventory.Items.Should().ContainInOrder(stackingItem.WithData(60), contentItem, stackingItem.WithData(10));
             Inventory.TryRemoveItemsInBulk(Context, BulkContentDeclaration, 25).Should().ContainInOrder(stackingItem.WithData(10), stackingItem.WithData(15));

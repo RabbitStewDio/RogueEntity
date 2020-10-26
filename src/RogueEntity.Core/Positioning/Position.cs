@@ -3,20 +3,6 @@ using RogueEntity.Core.Positioning.MapLayers;
 
 namespace RogueEntity.Core.Positioning
 {
-    public interface IPosition
-    {
-        double X { get; }
-        double Y { get; }
-        double Z { get; }
-
-        int GridX { get; }
-        int GridY { get; }
-        int GridZ { get; }
-
-        byte LayerId { get; }
-        bool IsInvalid { get; }
-    }
-
     /// <summary>
     ///   A generic data transfer object for position data. Use this if your need to
     ///   work with position data from multiple organisation schemas.
@@ -26,13 +12,22 @@ namespace RogueEntity.Core.Positioning
     public readonly struct Position : IEquatable<Position>, IPosition
     {
         public static Position Invalid = default;
+        readonly byte layerId;
 
         public double X { get; }
         public double Y { get; }
         public double Z { get; }
-        public byte LayerId { get; }
 
-        public bool IsInvalid => LayerId == 0;
+        public byte LayerId
+        {
+            get
+            {
+                if (layerId == 0) throw new InvalidOperationException();
+                return (byte) (layerId - 1);
+            }
+        }
+
+        public bool IsInvalid => layerId == 0;
 
         public Position(double x, double y, double z, MapLayer layer) : this(x, y, z, layer.LayerId)
         {
@@ -43,17 +38,21 @@ namespace RogueEntity.Core.Positioning
             X = x;
             Y = y;
             Z = z;
-            LayerId = layer;
+            layerId = (byte) (layer + 1);
         }
 
         public override string ToString()
         {
+            if (IsInvalid)
+            {
+                return "Position(Invalid)";
+            }
             return $"Position({nameof(X)}: {X}, {nameof(Y)}: {Y}, {nameof(Z)}: {Z}, {nameof(LayerId)}: {LayerId})";
         }
 
         public bool Equals(Position other)
         {
-            return X.Equals(other.X) && Y.Equals(other.Y) && Z.Equals(other.Z) && LayerId.Equals(other.LayerId);
+            return X.Equals(other.X) && Y.Equals(other.Y) && Z.Equals(other.Z) && layerId.Equals(other.layerId);
         }
 
         public override bool Equals(object obj)
@@ -68,7 +67,7 @@ namespace RogueEntity.Core.Positioning
                 var hashCode = X.GetHashCode();
                 hashCode = (hashCode * 397) ^ Y.GetHashCode();
                 hashCode = (hashCode * 397) ^ Z.GetHashCode();
-                hashCode = (hashCode * 397) ^ LayerId.GetHashCode();
+                hashCode = (hashCode * 397) ^ layerId.GetHashCode();
                 return hashCode;
             }
         }

@@ -10,7 +10,7 @@ namespace RogueEntity.Core.Utils.Maps
 {
     [DataContract]
     [MessagePackObject]
-    public class DynamicBoolDataView : IReadOnlyView2D<bool>
+    public class DynamicBoolDataView : IReadOnlyDynamicDataView2D<bool>, IReadOnlyView2D<bool>
     {
         public event EventHandler<DynamicBoolDataViewEventArgs> ViewCreated;
         public event EventHandler<DynamicBoolDataViewEventArgs> ViewExpired;
@@ -59,6 +59,10 @@ namespace RogueEntity.Core.Utils.Maps
         [IgnoreMember]
         readonly List<Position2D> expired;
 
+        [IgnoreDataMember]
+        [IgnoreMember]
+        Rectangle activeBounds;
+
         public DynamicBoolDataView(int tileSizeX, int tileSizeY) : this(0, 0, tileSizeX, tileSizeY)
         {
         }
@@ -95,6 +99,32 @@ namespace RogueEntity.Core.Utils.Maps
             {
                 idx.MarkUnused(currentTime);
             }
+        }
+
+        public Rectangle GetActiveBounds()
+        {
+            if (index.Count == 0) return default;
+            if (activeBounds.Width != 0 && activeBounds.Height != 0)
+            {
+                return activeBounds;
+            }
+
+            Rectangle r = default;
+
+            foreach (var k in index.Values)
+            {
+                if (r.Width == 0 || r.Height == 0)
+                {
+                    r = k.Bounds;
+                }
+                else
+                {
+                    r = r.GetUnion(k.Bounds);
+                }
+            }
+
+            activeBounds = r;
+            return r;
         }
 
         public List<Rectangle> GetActiveTiles(List<Rectangle> data = null)
@@ -152,15 +182,19 @@ namespace RogueEntity.Core.Utils.Maps
                 }
             }
 
-            foreach (var e in expired)
+            if (expired.Count != 0)
             {
-                index.Remove(e);
+                activeBounds = default;
+                foreach (var e in expired)
+                {
+                    index.Remove(e);
+                }
             }
         }
 
         public bool Any(int x, int y)
         {
-            if (TryGetData(x, y, out TrackedDataView data))
+            if (TryGetDataInternal(x, y, out TrackedDataView data))
             {
                 return data.Any(x, y);
             }
@@ -177,6 +211,7 @@ namespace RogueEntity.Core.Utils.Maps
                 data = new TrackedDataView(new Rectangle(dx * tileSizeX + offsetX, dy * tileSizeY + offsetY, tileSizeX, tileSizeY), currentTime);
                 index[new Position2D(dx, dy)] = data;
                 ViewCreated?.Invoke(this, new DynamicBoolDataViewEventArgs(data));
+                activeBounds = default;
             }
             else
             {
@@ -192,9 +227,21 @@ namespace RogueEntity.Core.Utils.Maps
             return data[x, y] = value;
         }
 
-        public bool TryGetData(int x, int y, out BoundedBoolDataView data)
+        bool IReadOnlyDynamicDataView2D<bool>.TryGetData(int x, int y, out IReadOnlyBoundedDataView<bool> raw)
         {
-            if (TryGetData(x, y, out TrackedDataView v))
+            if (TryGetData(x, y, out var data))
+            {
+                raw = data;
+                return true;
+            }
+
+            raw = default;
+            return false;
+        }
+
+        public bool TryGetData(int x, int y, out IReadOnlyBoundedBoolDataView data)
+        {
+            if (TryGetDataInternal(x, y, out TrackedDataView v))
             {
                 data = v;
                 return true;
@@ -204,7 +251,7 @@ namespace RogueEntity.Core.Utils.Maps
             return false;
         }
 
-        bool TryGetData(int x, int y, out TrackedDataView data)
+        bool TryGetDataInternal(int x, int y, out TrackedDataView data)
         {
             var dx = MapPartitions.TileSplit(x, offsetX, tileSizeX);
             var dy = MapPartitions.TileSplit(y, offsetY, tileSizeY);
@@ -219,7 +266,7 @@ namespace RogueEntity.Core.Utils.Maps
 
         public bool TryGet(int x, int y, out bool result)
         {
-            if (TryGetData(x, y, out TrackedDataView data))
+            if (TryGetDataInternal(x, y, out TrackedDataView data))
             {
                 result = data[x, y];
                 return true;

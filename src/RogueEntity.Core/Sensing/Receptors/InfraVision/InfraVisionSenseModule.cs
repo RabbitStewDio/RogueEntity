@@ -125,7 +125,7 @@ namespace RogueEntity.Core.Sensing.Receptors.InfraVision
 
             var system = registry.BuildSystem()
                                  .WithContext<TGameContext>()
-                                 .CreateSystem<SensoryReceptorData<VisionSense>, SensoryReceptorState<VisionSense>, ContinuousMapPosition>(ls.CollectReceptor);
+                                 .CreateSystem<SensoryReceptorData<VisionSense>, SensoryReceptorState<VisionSense>, EntityGridPosition>(ls.CollectReceptor);
             context.AddInitializationStepHandler(system);
             context.AddFixedStepHandlers(system);
         }
@@ -143,7 +143,7 @@ namespace RogueEntity.Core.Sensing.Receptors.InfraVision
 
             var system = registry.BuildSystem()
                                  .WithContext<TGameContext>()
-                                 .CreateSystem<SensoryReceptorData<VisionSense>, SensoryReceptorState<VisionSense>, EntityGridPosition>(ls.CollectReceptor);
+                                 .CreateSystem<SensoryReceptorData<VisionSense>, SensoryReceptorState<VisionSense>, ContinuousMapPosition>(ls.CollectReceptor);
             context.AddInitializationStepHandler(system);
             context.AddFixedStepHandlers(system);
         }
@@ -222,6 +222,23 @@ namespace RogueEntity.Core.Sensing.Receptors.InfraVision
             {
                 return;
             }
+
+            var clearReceptorStateSystem =
+                registry.BuildSystem()
+                        .WithContext<TGameContext>()
+                        .CreateSystem<SensoryReceptorData<VisionSense>, SensoryReceptorState<VisionSense>, SenseReceptorDirtyFlag<VisionSense>>(ls.ResetReceptorCacheState);
+
+            context.AddInitializationStepHandler(clearReceptorStateSystem);
+            context.AddFixedStepHandlers(clearReceptorStateSystem);
+            
+            var clearObservedStateSystem =
+                registry.BuildSystem()
+                        .WithContext<TGameContext>()
+                        .CreateSystem<ObservedSenseSource<TemperatureSense>>(ls.ResetSenseSourceObservedState);
+
+            context.AddInitializationStepHandler(clearObservedStateSystem);
+            context.AddFixedStepHandlers(clearObservedStateSystem);
+
 
             context.AddInitializationStepHandler(ls.EndSenseCalculation);
             context.AddFixedStepHandlers(ls.EndSenseCalculation);

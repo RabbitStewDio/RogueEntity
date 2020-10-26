@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Serialization;
 using System.Text;
@@ -7,9 +8,15 @@ using MessagePack;
 
 namespace RogueEntity.Core.Utils.Maps
 {
+    public interface IReadOnlyBoundedBoolDataView : IReadOnlyBoundedDataView<bool>
+    {
+        bool Any(int x, int y);
+        bool AnyValueSet();
+    } 
+    
     [DataContract]
     [MessagePackObject]
-    public class BoundedBoolDataView: IBoundedBoolDataViewRawAccess, IEquatable<BoundedBoolDataView>
+    public class BoundedBoolDataView: IReadOnlyBoundedBoolDataView, IBoundedBoolDataViewRawAccess, IEquatable<BoundedBoolDataView>
     {
         [Key(0)]
         [DataMember(Order = 0)]

@@ -1,4 +1,5 @@
 using EnTTSharp.Entities;
+using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Sensing.Common.Blitter;
 
 namespace RogueEntity.Core.Sensing.Receptors
@@ -32,11 +33,12 @@ namespace RogueEntity.Core.Sensing.Receptors
                 return;
             }
 
+            var senseBoundaries = perceptionFoV.Bounds.WithCenter(new Position2D(state.LastPosition.GridX, state.LastPosition.GridY));
             var senseMap = brightnessMap.SenseMap;
-            level.ProcessOmnidirectional(blitter, senseMap, v.GetComponent(k, out SenseReceptorDirtyFlag<TTargetSense> _));
+            level.ProcessOmnidirectional(blitter, senseMap, senseBoundaries, v.GetComponent(k, out SenseReceptorDirtyFlag<TTargetSense> _));
             v.WriteBack(k, brightnessMap.WithLevel(state.LastPosition.GridZ));
             
-            SenseReceptors.CopyReceptorFieldOfView(senseMap, state.LastPosition, perceptionFoV, senseMap);
+            SenseReceptors.CopyReceptorFieldOfView(senseMap, state.LastPosition, state.LastIntensity, perceptionFoV, senseMap);
         }
         
     }

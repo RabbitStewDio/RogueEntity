@@ -1,7 +1,6 @@
 using RogueEntity.Core.Infrastructure.Modules;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Sensing.Common;
-using RogueEntity.Core.Utils;
 
 namespace RogueEntity.Core.Sensing.Receptors
 {
@@ -11,17 +10,26 @@ namespace RogueEntity.Core.Sensing.Receptors
 
         public static void CopyReceptorFieldOfView(SenseDataMap dest,
                                                    Position lastPosition,
+                                                   float maxPerception,
                                                    SenseSourceData sourceData,
                                                    ISenseDataView lights)
         {
-            var bounds = new Rectangle(new Position2D(lastPosition.GridX, lastPosition.GridY), sourceData.Radius, sourceData.Radius);
-            foreach (var d in bounds.Contents)
+            var bounds = sourceData.Bounds;
+            foreach (var (x, y) in bounds.Contents)
             {
-                if (lights.TryQuery(d.X, d.Y, out var intensity, out var dir) &&
-                    sourceData.TryQuery(d.X, d.Y, out var perceptionStr, out var perceptionDir) &&
+                var mapX = x + lastPosition.GridX;
+                var mapY = y + lastPosition.GridY;
+                
+                if (lights.TryQuery(mapX, mapY, out var intensity, out var dir) &&
+                    sourceData.TryQuery(x, y, out var perceptionStr, out var perceptionDir) &&
                     perceptionStr > 0)
                 {
-                    dest.TryStore(d.X, d.Y, perceptionStr * intensity, dir.Merge(perceptionDir));
+                    dest.TryStore(mapX, mapY, intensity * (perceptionStr / maxPerception), dir.Merge(perceptionDir));
+                   // dest.TryStore(mapX, mapY,  perceptionStr , dir.Merge(perceptionDir));
+                }
+                else
+                {
+                    dest.TryStore(mapX, mapY, 0, default);
                 }
             }
         }

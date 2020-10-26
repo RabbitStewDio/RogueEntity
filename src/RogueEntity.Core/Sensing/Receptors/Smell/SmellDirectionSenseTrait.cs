@@ -10,7 +10,7 @@ namespace RogueEntity.Core.Sensing.Receptors.Smell
         where TActorId : IBulkDataStorageKey<TActorId>
     {
         public SmellDirectionSenseTrait([NotNull] ISmellPhysicsConfiguration physicsConfiguration,
-                                        float intensity) : base(physicsConfiguration.SmellPhysics, intensity)
+                                        float intensity, bool active = true) : base(physicsConfiguration.SmellPhysics, intensity, active)
         {
         }
 

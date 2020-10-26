@@ -18,11 +18,13 @@ namespace RogueEntity.Core.Sensing.Receptors.Touch
     {
         readonly ITouchPhysicsConfiguration touchPhysics;
 
-        public TouchReceptorTrait([NotNull] ITouchPhysicsConfiguration touchPhysics) : base(touchPhysics.TouchPhysics, 0)
+        public TouchReceptorTrait([NotNull] ITouchPhysicsConfiguration touchPhysics, bool active = true) : base(touchPhysics.TouchPhysics, GetStandardIntensity(touchPhysics), active)
         {
             this.touchPhysics = touchPhysics;
         }
 
+        static float GetStandardIntensity(ITouchPhysicsConfiguration p) => 1 + p.TouchPhysics.DistanceMeasurement.MaximumStepDistance();
+        
         public override string Id => "Core.Sense.Receptor.Touch";
         public override int Priority => 100;
 
@@ -31,7 +33,7 @@ namespace RogueEntity.Core.Sensing.Receptors.Touch
             base.Initialize(v, context, k, item);
             
             var distanceCalculation = touchPhysics.TouchPhysics.DistanceMeasurement;
-            v.AssignComponent(k, new TouchSourceDefinition(new SenseSourceDefinition(distanceCalculation, 1 + distanceCalculation.MaximumStepDistance()), true));
+            v.AssignComponent(k, new TouchSourceDefinition(new SenseSourceDefinition(distanceCalculation, Intensity), true));
             v.AssignComponent(k, new SenseSourceState<TouchSense>(Optional.Empty<SenseSourceData>(), SenseSourceDirtyState.UnconditionallyDirty, Position.Invalid));
         }
 

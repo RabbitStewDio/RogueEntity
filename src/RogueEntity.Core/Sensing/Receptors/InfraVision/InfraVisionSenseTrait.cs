@@ -10,7 +10,7 @@ namespace RogueEntity.Core.Sensing.Receptors.InfraVision
     {
         readonly IHeatPhysicsConfiguration physics;
 
-        public InfraVisionSenseTrait(IHeatPhysicsConfiguration physics, float senseIntensity): base(physics.HeatPhysics, senseIntensity)
+        public InfraVisionSenseTrait(IHeatPhysicsConfiguration physics, float senseIntensity, bool active = true): base(physics.HeatPhysics, senseIntensity, active)
         {
             this.physics = physics;
         }

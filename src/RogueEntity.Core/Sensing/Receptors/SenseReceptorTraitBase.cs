@@ -14,11 +14,13 @@ namespace RogueEntity.Core.Sensing.Receptors
     {
         readonly ISensePhysics physics;
         protected readonly float Intensity;
+        readonly bool active;
 
-        protected SenseReceptorTraitBase([NotNull] ISensePhysics physics, float intensity)
+        protected SenseReceptorTraitBase([NotNull] ISensePhysics physics, float intensity, bool active)
         {
             this.physics = physics ?? throw new ArgumentNullException(nameof(physics));
             this.Intensity = intensity;
+            this.active = active;
         }
         
         public abstract string Id { get; }
@@ -26,7 +28,7 @@ namespace RogueEntity.Core.Sensing.Receptors
 
         public virtual void Initialize(IEntityViewControl<TActorId> v, TGameContext context, TActorId k, IItemDeclaration item)
         {
-            v.AssignComponent(k, new SensoryReceptorData<TSense>(new SenseSourceDefinition(physics.DistanceMeasurement, Intensity), true));
+            v.AssignComponent(k, new SensoryReceptorData<TSense>(new SenseSourceDefinition(physics.DistanceMeasurement, Intensity), active));
             v.AssignComponent(k, SensoryReceptorState.Create<TSense>());
             v.AssignComponent(k, SingleLevelSenseDirectionMapData.Create<TSense, TSource>());
         }
@@ -65,7 +67,7 @@ namespace RogueEntity.Core.Sensing.Receptors
                 }
             }
 
-            v.AssignComponent(k, t);
+            v.AssignOrReplace(k, t);
             if (!v.GetComponent(k, out SensoryReceptorState<TSense> s))
             {
                 v.AssignComponent(k, SensoryReceptorState.Create<TSense>());
@@ -73,7 +75,7 @@ namespace RogueEntity.Core.Sensing.Receptors
             else
             {
                 s = s.WithDirtyState(SenseSourceDirtyState.UnconditionallyDirty);
-                v.AssignComponent(k, in s);
+                v.ReplaceComponent(k, in s);
             }
 
             return true;

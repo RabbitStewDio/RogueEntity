@@ -75,7 +75,7 @@ namespace RogueEntity.Core.Tests.Sensing
 
         public static string PrintMap(DynamicDataView<float> s)
         {
-            return PrintMap(s, s.ActiveBounds);
+            return PrintMap(s, s.GetActiveBounds());
         }
 
         public static string PrintMap(IReadOnlyMapData<float> s)

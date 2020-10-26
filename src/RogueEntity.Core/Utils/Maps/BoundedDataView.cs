@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Serialization;
 using MessagePack;
@@ -47,6 +48,8 @@ namespace RogueEntity.Core.Utils.Maps
         [IgnoreDataMember]
         [IgnoreMember]
         public TData[] Data => data;
+
+        public IReadOnlyList<TData> RawData => Data;
 
         public void Resize(in Rectangle newBounds)
         {

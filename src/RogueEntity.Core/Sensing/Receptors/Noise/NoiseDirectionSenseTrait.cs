@@ -10,7 +10,7 @@ namespace RogueEntity.Core.Sensing.Receptors.Noise
         where TActorId : IBulkDataStorageKey<TActorId>
     {
         public NoiseDirectionSenseTrait([NotNull] INoisePhysicsConfiguration physicsConfiguration,
-                                        float intensity): base(physicsConfiguration.NoisePhysics, intensity)
+                                        float intensity, bool active = true): base(physicsConfiguration.NoisePhysics, intensity, active)
         {
         }
 

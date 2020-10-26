@@ -222,6 +222,22 @@ namespace RogueEntity.Core.Sensing.Receptors.Light
                 return;
             }
 
+            var clearReceptorStateSystem =
+                registry.BuildSystem()
+                        .WithContext<TGameContext>()
+                        .CreateSystem<SensoryReceptorData<VisionSense>, SensoryReceptorState<VisionSense>, SenseReceptorDirtyFlag<VisionSense>>(ls.ResetReceptorCacheState);
+
+            context.AddInitializationStepHandler(clearReceptorStateSystem);
+            context.AddFixedStepHandlers(clearReceptorStateSystem);
+            
+            var clearObservedStateSystem =
+                registry.BuildSystem()
+                        .WithContext<TGameContext>()
+                        .CreateSystem<ObservedSenseSource<VisionSense>>(ls.ResetSenseSourceObservedState);
+
+            context.AddInitializationStepHandler(clearObservedStateSystem);
+            context.AddFixedStepHandlers(clearObservedStateSystem);
+            
             context.AddInitializationStepHandler(ls.EndSenseCalculation);
             context.AddFixedStepHandlers(ls.EndSenseCalculation);
         }

@@ -31,9 +31,9 @@ namespace RogueEntity.Core.Sensing.Map
         readonly List<int> zLevelBuffer;
         Optional<ISenseStateCacheView> senseCache;
 
-        public SenseMappingSystemBase([NotNull] Lazy<ISenseStateCacheProvider> senseCacheProvider,
-                                      [NotNull] Lazy<ITimeSource> timeSource,
-                                      ISenseDataBlitter blitterFactory = null)
+        protected SenseMappingSystemBase([NotNull] Lazy<ISenseStateCacheProvider> senseCacheProvider,
+                                         [NotNull] Lazy<ITimeSource> timeSource,
+                                         ISenseDataBlitter blitterFactory = null)
         {
             this.senseCacheProvider = senseCacheProvider ?? throw new ArgumentNullException(nameof(senseCacheProvider));
             this.timeSource = timeSource;
@@ -78,7 +78,6 @@ namespace RogueEntity.Core.Sensing.Map
         /// <param name="k"></param>
         /// <param name="definition"></param>
         /// <param name="state"></param>
-        /// <param name="pos"></param>
         /// <typeparam name="TItemId"></typeparam>
         /// <typeparam name="TGameContext"></typeparam>
         public void CollectSenseSources<TItemId, TGameContext>(IEntityViewControl<TItemId> v,
@@ -134,7 +133,7 @@ namespace RogueEntity.Core.Sensing.Map
             var dest = brightnessMap.SenseMap;
             dest.Clear();
             
-            SenseReceptors.CopyReceptorFieldOfView(dest, lastPosition, sourceData, lights);
+            SenseReceptors.CopyReceptorFieldOfView(dest, lastPosition, receptorState.LastIntensity, sourceData, lights);
 
             v.WriteBack(k, brightnessMap.WithLevel(z));
         }
@@ -199,8 +198,8 @@ namespace RogueEntity.Core.Sensing.Map
             public readonly SenseDataMap SenseMap;
             readonly SenseDataMapServices senseMapServices;
             readonly ISenseDataBlitter blitter;
-            readonly List<(Position2D, SenseSourceState<TSourceSense>)> collectedSenses;
-            readonly List<(Position2D, SenseSourceData)> blittableSenses;
+            readonly List<(Position2D pos, SenseSourceState<TSourceSense> senseState)> collectedSenses;
+            readonly List<(Position2D pos, SenseSourceData senseData)> blittableSenses;
             public int LastRecentlyUsedTime { get; private set; }
 
             public SenseDataLevel(int z,
@@ -231,15 +230,26 @@ namespace RogueEntity.Core.Sensing.Map
                 blittableSenses.Clear();
                 try
                 {
+                    Rectangle targetBounds = default;
                     foreach (var collectedSense in collectedSenses)
                     {
-                        if (collectedSense.Item2.SenseSource.TryGetValue(out var sd))
+                        if (collectedSense.senseState.SenseSource.TryGetValue(out var sd))
                         {
-                            blittableSenses.Add((collectedSense.Item1, sd));
+                            var senseBounds = sd.Bounds.WithCenter(collectedSense.senseState.LastPosition.ToGridXY());
+                            if (blittableSenses.Count == 0)
+                            {
+                                targetBounds = senseBounds;
+                            }
+                            else
+                            {
+                                targetBounds = targetBounds.GetUnion(senseBounds);
+                            }
+                            
+                            blittableSenses.Add((collectedSense.pos, sd));
                         }
                     }
 
-                    senseMapServices.ProcessSenseSources(SenseMap, blitter, blittableSenses);
+                    senseMapServices.ProcessSenseSources(SenseMap, targetBounds, blitter, blittableSenses);
                 }
                 finally
                 {

@@ -47,7 +47,6 @@ namespace RogueEntity.Core.Tests.Sensing.Sources
 
         protected abstract TSenseSystem CreateSystem();
 
-
         protected virtual List<Action<SenseMappingTestContext>> CreateSystemActions()
         {
             var ls = senseSystem;
@@ -91,9 +90,8 @@ namespace RogueEntity.Core.Tests.Sensing.Sources
                                                            .DoWith(x => AttachTrait(x)));
 
             timeSource = new TestTimeSource();
-
             senseProperties = new SensePropertiesSourceFixture();
-
+            
             senseCache = new SenseStateCache(2, 64, 64);
 
             senseSystem = CreateSystem();
@@ -171,7 +169,7 @@ namespace RogueEntity.Core.Tests.Sensing.Sources
 
             // the resulting sense information is stored relative to the sense origin, with the origin point at the centre of the bounds
             // thus the result map must be mapped to the same area.
-            SenseTestHelpers.AssertEquals(vaData, expectedResult, expectedResult.ActiveBounds, new Position2D(vaData.Radius, vaData.Radius));
+            SenseTestHelpers.AssertEquals(vaData, expectedResult, expectedResult.GetActiveBounds(), new Position2D(vaData.Radius, vaData.Radius));
         }
     }
 }

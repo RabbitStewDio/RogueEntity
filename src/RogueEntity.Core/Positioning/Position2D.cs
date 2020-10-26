@@ -165,14 +165,4 @@ namespace RogueEntity.Core.Positioning
             return new Position2D(x, y);
         }
     }
-
-    public static class PositionExtensions
-    {
-        public static Position2D ToPosition2D(this Direction d)
-        {
-            var c = d.ToCoordinates();
-            return new Position2D(c.X, c.Y);
-        }
-
-    }
 }

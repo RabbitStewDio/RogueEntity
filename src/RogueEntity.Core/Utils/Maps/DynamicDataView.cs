@@ -58,7 +58,11 @@ namespace RogueEntity.Core.Utils.Maps
         [IgnoreDataMember]
         [IgnoreMember]
         readonly List<Position2D> expired;
-        
+
+        [IgnoreDataMember]
+        [IgnoreMember]
+        Rectangle activeBounds;
+
         public DynamicDataView(int tileSizeX, int tileSizeY) : this(0, 0, tileSizeX, tileSizeY)
         {
         }
@@ -98,30 +102,32 @@ namespace RogueEntity.Core.Utils.Maps
             }
         }
 
-        public Rectangle ActiveBounds
+        public Rectangle GetActiveBounds()
         {
-            get
+            if (index.Count == 0) return default;
+            if (activeBounds.Width != 0 && activeBounds.Height != 0)
             {
-                if (index.Count == 0) return default;
-
-                Rectangle r = default;
-                
-                foreach (var k in index.Values)
-                {
-                    if (r.Width == 0 || r.Height == 0)
-                    {
-                        r = k.Bounds;
-                    }
-                    else
-                    {
-                        r = r.GetUnion(k.Bounds);
-                    }
-                }
-
-                return r;
+                return activeBounds;
             }
+
+            Rectangle r = default;
+
+            foreach (var k in index.Values)
+            {
+                if (r.Width == 0 || r.Height == 0)
+                {
+                    r = k.Bounds;
+                }
+                else
+                {
+                    r = r.GetUnion(k.Bounds);
+                }
+            }
+
+            activeBounds = r;
+            return r;
         }
-        
+
         public List<Rectangle> GetActiveTiles(List<Rectangle> data = null)
         {
             if (data == null)
@@ -174,9 +180,13 @@ namespace RogueEntity.Core.Utils.Maps
                 }
             }
 
-            foreach (var e in expired)
+            if (expired.Count != 0)
             {
-                index.Remove(e);
+                activeBounds = default;
+                foreach (var e in expired)
+                {
+                    index.Remove(e);
+                }
             }
         }
 
@@ -196,10 +206,23 @@ namespace RogueEntity.Core.Utils.Maps
 
             index[new Position2D(dx, dy)] = data;
             ViewCreated?.Invoke(this, new DynamicDataViewEventArgs<T>(data));
+            activeBounds = default;
             return data;
         }
 
-        public bool TryGetData(int x, int y, out IBoundedDataViewRawAccess<T> raw)
+        public bool TryGetData(int x, int y, out IReadOnlyBoundedDataView<T> raw)
+        {
+            if (TryGetDataInternal(x, y, out TrackedDataView t))
+            {
+                raw = t;
+                return true;
+            }
+
+            raw = default;
+            return false;
+        }
+
+        public bool TryGetRawAccess(int x, int y, out IBoundedDataViewRawAccess<T> raw)
         {
             if (TryGetDataInternal(x, y, out TrackedDataView t))
             {
@@ -267,7 +290,7 @@ namespace RogueEntity.Core.Utils.Maps
             [IgnoreMember]
             [IgnoreDataMember]
             long currentTime;
-            
+
             [IgnoreMember]
             [IgnoreDataMember]
             int usedForReading;

@@ -222,6 +222,19 @@ namespace RogueEntity.Core.Sensing.Receptors.Smell
                 return;
             }
 
+            var clearReceptorStateSystem =
+                registry.BuildSystem()
+                        .WithContext<TGameContext>()
+                        .CreateSystem<SensoryReceptorData<SmellSense>, SensoryReceptorState<SmellSense>, SenseReceptorDirtyFlag<SmellSense>>(ls.ResetReceptorCacheState);
+
+            context.AddInitializationStepHandler(clearReceptorStateSystem);
+            context.AddFixedStepHandlers(clearReceptorStateSystem);
+            
+            var clearObservedStateSystem =
+                registry.BuildSystem()
+                        .WithContext<TGameContext>()
+                        .CreateSystem<ObservedSenseSource<SmellSense>>(ls.ResetSenseSourceObservedState);
+
             context.AddInitializationStepHandler(ls.EndSenseCalculation);
             context.AddFixedStepHandlers(ls.EndSenseCalculation);
         }

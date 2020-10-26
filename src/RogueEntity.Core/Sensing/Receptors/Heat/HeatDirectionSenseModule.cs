@@ -222,6 +222,22 @@ namespace RogueEntity.Core.Sensing.Receptors.Heat
                 return;
             }
 
+            var clearReceptorStateSystem =
+                registry.BuildSystem()
+                        .WithContext<TGameContext>()
+                        .CreateSystem<SensoryReceptorData<TemperatureSense>, SensoryReceptorState<TemperatureSense>, SenseReceptorDirtyFlag<TemperatureSense>>(ls.ResetReceptorCacheState);
+
+            context.AddInitializationStepHandler(clearReceptorStateSystem);
+            context.AddFixedStepHandlers(clearReceptorStateSystem);
+            
+            var clearObservedStateSystem =
+                registry.BuildSystem()
+                        .WithContext<TGameContext>()
+                        .CreateSystem<ObservedSenseSource<TemperatureSense>>(ls.ResetSenseSourceObservedState);
+
+            context.AddInitializationStepHandler(clearObservedStateSystem);
+            context.AddFixedStepHandlers(clearObservedStateSystem);
+            
             context.AddInitializationStepHandler(ls.EndSenseCalculation);
             context.AddFixedStepHandlers(ls.EndSenseCalculation);
         }
