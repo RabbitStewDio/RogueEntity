@@ -15,11 +15,11 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Heat
 {
     public class HeatReceptorTraitTest: ItemComponentTraitTestBase<SenseMappingTestContext, ActorReference, SensoryReceptorData<TemperatureSense>, HeatDirectionSenseTrait<SenseMappingTestContext, ActorReference>>
     {
-        readonly HeatPhysicsConfiguration physics;
+        readonly HeatSenseReceptorPhysicsConfiguration physics;
 
         public HeatReceptorTraitTest()
         {
-            physics = new HeatPhysicsConfiguration(new LinearDecaySensePhysics(DistanceCalculation.Chebyshev), Temperature.FromCelsius(0));
+            physics = new HeatSenseReceptorPhysicsConfiguration(new HeatPhysicsConfiguration(new LinearDecaySensePhysics(DistanceCalculation.Chebyshev), Temperature.FromCelsius(0)));
         }
 
         protected override SenseMappingTestContext CreateContext()

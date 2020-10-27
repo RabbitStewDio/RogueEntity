@@ -126,14 +126,14 @@ namespace RogueEntity.Core.Tests.Sensing.Common
             var sd = new SenseSourceData(radius);
             var pos = new Position2D(width / 2, height / 2);
             
-            var resistanceMap = Parse(sourceText);
+            var resistanceMap = Parse(sourceText, out _);
             Console.WriteLine("Using room layout \n" + PrintMap(resistanceMap));
             
             var algo = new ShadowPropagationAlgorithm(LinearDecaySensePhysics.For(DistanceCalculation.Euclid));
             var calculatedResult = algo.Calculate(source, source.Intensity, pos, resistanceMap, null);
             Console.WriteLine(PrintMap(calculatedResult, new Rectangle(new Position2D(0,0), radius, radius)));
 
-            var expectedResult = Parse(resultText);
+            var expectedResult = Parse(resultText, out _);
             AssertEquals(calculatedResult, expectedResult, new Rectangle(0, 0, width, height), pos);
         }
     }

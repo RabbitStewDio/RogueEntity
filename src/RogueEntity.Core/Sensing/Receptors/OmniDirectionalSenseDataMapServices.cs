@@ -9,7 +9,7 @@ using RogueEntity.Core.Utils.Maps;
 
 namespace RogueEntity.Core.Sensing.Common
 {
-    public class SenseDataMapServices
+    public class OmniDirectionalSenseDataMapServices
     {
         static readonly Action<ProcessData> ProcessDataDelegate = ProcessTile;
         
@@ -18,7 +18,7 @@ namespace RogueEntity.Core.Sensing.Common
         readonly Optional<ISenseStateCacheView> senseCache;
         List<Rectangle> partitionsBuffer;
         
-        public SenseDataMapServices(int zLevel, Optional<ISenseStateCacheView> senseCache)
+        public OmniDirectionalSenseDataMapServices(int zLevel, Optional<ISenseStateCacheView> senseCache)
         {
             this.zLevel = zLevel;
             this.senseCache = senseCache;

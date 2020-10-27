@@ -14,14 +14,14 @@ namespace RogueEntity.Core.Sensing.Receptors.Heat
 {
     public class HeatReceptorSystem : SenseReceptorSystem<TemperatureSense, TemperatureSense>
     {
-        readonly IHeatPhysicsConfiguration physics;
+        readonly IHeatSenseReceptorPhysicsConfiguration physics;
 
         public HeatReceptorSystem([NotNull] Lazy<ISensePropertiesSource> senseProperties,
                                   [NotNull] Lazy<ISenseStateCacheProvider> senseCacheProvider,
                                   [NotNull] Lazy<IGlobalSenseStateCacheProvider> globalSenseCacheProvider,
                                   [NotNull] Lazy<ITimeSource> timeSource,
-                                  [NotNull] IHeatPhysicsConfiguration physics) : 
-            base(senseProperties, senseCacheProvider, globalSenseCacheProvider, timeSource, physics.HeatPhysics, physics.CreateHeatPropagationAlgorithm())
+                                  [NotNull] IHeatSenseReceptorPhysicsConfiguration physics) :
+            base(senseProperties, senseCacheProvider, globalSenseCacheProvider, timeSource, physics.HeatPhysics, physics.CreateHeatSensorPropagationAlgorithm())
         {
             this.physics = physics;
         }
@@ -29,13 +29,6 @@ namespace RogueEntity.Core.Sensing.Receptors.Heat
         protected override IReadOnlyView2D<float> CreateSensoryResistanceView(IReadOnlyView2D<SensoryResistance> resistanceMap)
         {
             return new HeatResistanceView(resistanceMap);
-        }
-
-        protected override float ComputeIntensity(in SenseSourceDefinition sd, in Position p)
-        {
-            var localTemperature = physics.GetEnvironmentTemperature(p.GridZ).ToKelvin();
-            var itemTemperature = sd.Intensity;
-            return itemTemperature - localTemperature;
         }
     }
 }

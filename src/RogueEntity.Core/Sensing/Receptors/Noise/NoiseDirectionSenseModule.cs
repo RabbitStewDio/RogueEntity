@@ -8,6 +8,7 @@ using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Continuous;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Sensing.Cache;
+using RogueEntity.Core.Sensing.Common;
 using RogueEntity.Core.Sensing.Common.Blitter;
 using RogueEntity.Core.Sensing.Common.Physics;
 using RogueEntity.Core.Sensing.Resistance;
@@ -256,7 +257,7 @@ namespace RogueEntity.Core.Sensing.Receptors.Noise
                                              serviceResolver.ResolveToReference<ISenseStateCacheProvider>(),
                                              serviceResolver.ResolveToReference<IGlobalSenseStateCacheProvider>(),
                                              serviceResolver.ResolveToReference<ITimeSource>(),
-                                             physicsConfig.NoisePhysics,
+                                             new FullStrengthSensePhysics(physicsConfig.NoisePhysics),
                                              physicsConfig.CreateNoisePropagationAlgorithm());
             }
 

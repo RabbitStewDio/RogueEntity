@@ -8,6 +8,7 @@ using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Continuous;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Sensing.Cache;
+using RogueEntity.Core.Sensing.Common;
 using RogueEntity.Core.Sensing.Common.Blitter;
 using RogueEntity.Core.Sensing.Common.Physics;
 using RogueEntity.Core.Sensing.Resistance;
@@ -244,20 +245,25 @@ namespace RogueEntity.Core.Sensing.Receptors.Light
 
         static bool GetOrCreateLightSystem(IServiceResolver serviceResolver, out SenseReceptorSystem<VisionSense, VisionSense> ls)
         {
-            if (!serviceResolver.TryResolve(out ILightPhysicsConfiguration physicsConfig))
-            {
-                ls = default;
-                return false;
-            }
-
             if (!serviceResolver.TryResolve(out ls))
             {
+                if (!serviceResolver.TryResolve(out IVisionSenseReceptorPhysicsConfiguration receptorPhysics))
+                {
+                    if (!serviceResolver.TryResolve(out ILightPhysicsConfiguration physicsConfig))
+                    {
+                        ls = default;
+                        return false;
+                    }
+                    
+                    receptorPhysics = new VisionSenseReceptorPhysicsConfiguration(physicsConfig);
+                }
+               
                 ls = new VisionReceptorSystem(serviceResolver.ResolveToReference<ISensePropertiesSource>(),
                                               serviceResolver.ResolveToReference<ISenseStateCacheProvider>(),
                                               serviceResolver.ResolveToReference<IGlobalSenseStateCacheProvider>(),
                                               serviceResolver.ResolveToReference<ITimeSource>(),
-                                              physicsConfig.LightPhysics,
-                                              physicsConfig.CreateLightPropagationAlgorithm());
+                                              receptorPhysics.VisionPhysics,
+                                              receptorPhysics.CreateVisionSensorPropagationAlgorithm());
             }
 
             return true;

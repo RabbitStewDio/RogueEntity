@@ -16,6 +16,7 @@ using RogueEntity.Core.Sensing.Sources;
 using RogueEntity.Core.Tests.Sensing.Sources;
 using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.Algorithms;
+using RogueEntity.Core.Utils.Maps;
 
 namespace RogueEntity.Core.Tests.Sensing.Receptor
 {
@@ -142,11 +143,14 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor
             var sd = new SenseSourceData(10);
             foreach (var p in sd.Bounds.Contents)
             {
-                var str = (float) DistanceCalculation.Euclid.Calculate(p);
-                sd.Write(p, new Position2D(0, 0), str);
+                var str = radius - (float)DistanceCalculation.Euclid.Calculate(p);
+                if (str > 0)
+                {
+                    sd.Write(p, new Position2D(0, 0), str);
+                }
             }
 
-            sd.Write(new Position2D(0, 0), new Position2D(0, 0), 1);
+            sd.Write(new Position2D(0, 0), new Position2D(0, 0), radius);
             sd.MarkWritten();
             return sd;
         }
@@ -159,9 +163,9 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor
             context.ItemResolver.TryUpdateData(inactive, context, EntityGridPosition.Of(TestMapLayers.One, 13, 13), out _).Should().BeTrue();
         }
 
-        protected void PerformTest(string id, string sourceText, string expectedResultText)
+        protected void PerformTest(string id, string sourceText, string expectedPerceptionResult, string expectedSenseMap)
         {
-            senseProperties.GetOrCreate(0).ImportData(SenseTestHelpers.Parse(sourceText), Convert);
+            senseProperties.GetOrCreate(0).ImportData(SenseTestHelpers.Parse(sourceText, out var activeTestArea), Convert);
 
             var sourceActive10 = context.ItemResolver.Instantiate(context, senseSourceActive10);
             var sourceActive5 = context.ItemResolver.Instantiate(context, senseSourceActive5);
@@ -199,25 +203,26 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor
                 vc.SenseSource.TryGetValue(out var vcData).Should().BeFalse("because this sense is inactive");
             }
 
-            Console.WriteLine("Computed Result:");
-            Console.WriteLine(SenseTestHelpers.PrintMap(vaData, vaData.Bounds));
+            Console.WriteLine("Computed Perception Result:");
+            Console.WriteLine(SenseTestHelpers.PrintMap(vaData.TranslateBy(26, 4), activeTestArea));
             Console.WriteLine("--");
 
             context.ItemEntityRegistry.GetComponent(active10, out SingleLevelSenseDirectionMapData<TReceptorSense, TSourceSense> rawSenseData).Should().BeTrue();
             rawSenseData.TryGetIntensity(0, out var senseData).Should().BeTrue();
             senseData.GetActiveBounds().Width.Should().NotBe(0);
             senseData.GetActiveBounds().Height.Should().NotBe(0);
-            
-            Console.WriteLine("Computed Result:");
-            Console.WriteLine(senseData.GetActiveBounds());
-            Console.WriteLine(SenseTestHelpers.PrintMap(senseData, new Rectangle(new Position2D(26, 4), 10, 10)));
-            Console.WriteLine("--");
 
-            var expectedResult = SenseTestHelpers.Parse(expectedResultText);
+            Console.WriteLine("Computed SenseMap Result:");
+            Console.WriteLine(SenseTestHelpers.PrintMap(senseData, activeTestArea));
+            Console.WriteLine("--");
 
             // the resulting sense information is stored relative to the sense origin, with the origin point at the centre of the bounds
             // thus the result map must be mapped to the same area.
-            SenseTestHelpers.AssertEquals(vaData, expectedResult, expectedResult.GetActiveBounds(), new Position2D(vaData.Radius, vaData.Radius));
+            var expectedPerceptionData = SenseTestHelpers.Parse(expectedPerceptionResult, out _);
+            SenseTestHelpers.AssertEquals(vaData, expectedPerceptionData, activeTestArea, new Position2D(26, 4));
+            
+            var expectedSenseMapData = SenseTestHelpers.Parse(expectedSenseMap, out _);
+            SenseTestHelpers.AssertEquals(senseData, expectedSenseMapData, activeTestArea, new Position2D());
         }
 
         [TearDown]

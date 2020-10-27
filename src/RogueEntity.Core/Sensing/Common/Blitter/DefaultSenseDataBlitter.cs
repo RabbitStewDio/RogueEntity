@@ -16,7 +16,7 @@ namespace RogueEntity.Core.Sensing.Common.Blitter
             for (int y = bounds.Y; y < bounds.Y + bounds.Height; y += 1)
             for (int x = bounds.X; x < bounds.X + bounds.Width; x += 1)
             {
-                if (senseSource.TryQuery(x - sensePosition.X, y - sensePosition.Y, out var intensity, out var dir))
+                if (senseSource.TryQuery(x - sensePosition.X, y - sensePosition.Y, out var intensity, out var dir) && intensity > 0)
                 {
                     brightnessTarget[x, y] = Math.Max(intensity, brightnessTarget[x, y]);
                     directionTarget[x, y] |= dir.RawData;

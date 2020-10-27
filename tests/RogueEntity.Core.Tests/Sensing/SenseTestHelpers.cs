@@ -22,18 +22,21 @@ namespace RogueEntity.Core.Tests.Sensing
                 if (Math.Abs(result - expected) > 0.005f)
                 {
                     throw new ArgumentException($"Error in comparison at [{x}, {y}]: Expected {expected:0.000} but found {result:0.000}.\n" +
+                                                $"{bounds} \n" +
                                                 $"SourceMap:\n" + PrintMap(source, new Rectangle(bounds.MinExtentX - offset.X, bounds.MinExtentY - offset.Y, bounds.Width, bounds.Height)) + "\n" +
                                                 $"Expected:\n" + PrintMap(other, in bounds));
                 }
             }
         }
 
-        public static DynamicDataView<float> Parse(string text)
+        public static DynamicDataView<float> Parse(string text) => Parse(text, out _);
+        public static DynamicDataView<float> Parse(string text, out Rectangle parsedBounds)
         {
             var map = new DynamicDataView<float>(0, 0, 64, 64);
             var row = -1;
             using var sr = new StringReader(text);
 
+            var maxX = 0;
             string line;
             while ((line = sr.ReadLine()) != null)
             {
@@ -67,9 +70,11 @@ namespace RogueEntity.Core.Tests.Sensing
                         // able to write an error free float constant.
                         map[index, row] = float.Parse(v);
                     }
+                    maxX = Math.Max(maxX, index);
                 }
             }
 
+            parsedBounds = new Rectangle(0, 0, maxX + 1, row + 1);
             return map;
         }
 

@@ -8,6 +8,7 @@ using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Continuous;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Sensing.Cache;
+using RogueEntity.Core.Sensing.Common;
 using RogueEntity.Core.Sensing.Common.Blitter;
 using RogueEntity.Core.Sensing.Common.Physics;
 using RogueEntity.Core.Sensing.Resistance;
@@ -241,7 +242,7 @@ namespace RogueEntity.Core.Sensing.Receptors.Smell
 
         static bool GetOrCreateLightSystem(IServiceResolver serviceResolver, out SenseReceptorSystem<SmellSense, SmellSense> ls)
         {
-            if (!serviceResolver.TryResolve(out INoisePhysicsConfiguration physicsConfig))
+            if (!serviceResolver.TryResolve(out ISmellPhysicsConfiguration physicsConfig))
             {
                 ls = default;
                 return false;
@@ -253,8 +254,8 @@ namespace RogueEntity.Core.Sensing.Receptors.Smell
                                              serviceResolver.ResolveToReference<ISenseStateCacheProvider>(),
                                              serviceResolver.ResolveToReference<IGlobalSenseStateCacheProvider>(),
                                              serviceResolver.ResolveToReference<ITimeSource>(),
-                                             physicsConfig.NoisePhysics,
-                                             physicsConfig.CreateNoisePropagationAlgorithm());
+                                             new FullStrengthSensePhysics(physicsConfig.SmellPhysics),
+                                             physicsConfig.CreateSmellPropagationAlgorithm());
             }
 
             return true;

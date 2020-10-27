@@ -196,7 +196,7 @@ namespace RogueEntity.Core.Sensing.Map
         public class SenseDataLevel
         {
             public readonly SenseDataMap SenseMap;
-            readonly SenseDataMapServices senseMapServices;
+            readonly OmniDirectionalSenseDataMapServices senseMapServices;
             readonly ISenseDataBlitter blitter;
             readonly List<(Position2D pos, SenseSourceState<TSourceSense> senseState)> collectedSenses;
             readonly List<(Position2D pos, SenseSourceData senseData)> blittableSenses;
@@ -207,7 +207,7 @@ namespace RogueEntity.Core.Sensing.Map
                                   ISenseDataBlitter blitter = null)
             {
                 this.blitter = blitter ?? new DefaultSenseDataBlitter();
-                this.senseMapServices = new SenseDataMapServices(z, senseCache);
+                this.senseMapServices = new OmniDirectionalSenseDataMapServices(z, senseCache);
                 this.SenseMap = new SenseDataMap();
                 this.blittableSenses = new List<(Position2D, SenseSourceData)>();
                 this.collectedSenses = new List<(Position2D, SenseSourceState<TSourceSense>)>();

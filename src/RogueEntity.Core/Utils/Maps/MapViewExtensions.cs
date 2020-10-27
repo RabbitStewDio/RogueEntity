@@ -5,6 +5,11 @@ namespace RogueEntity.Core.Utils.Maps
 {
     public static class MapViewExtensions
     {
+        public static TranslatedDataView<TData> TranslateBy<TData>(this IReadOnlyView2D<TData> view, int offsetX, int offsetY)
+        {
+            return new TranslatedDataView<TData>(view, offsetX, offsetY);
+        }
+        
         /// <summary>
         /// Allows stringifying the contents of a map view. Takes characters to
         /// surround the map printout, and each row, the method used to get the string representation

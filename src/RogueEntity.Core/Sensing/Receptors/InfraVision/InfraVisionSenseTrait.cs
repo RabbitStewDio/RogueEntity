@@ -1,6 +1,5 @@
 using EnTTSharp.Entities;
 using RogueEntity.Core.Meta.Items;
-using RogueEntity.Core.Sensing.Common.Physics;
 
 namespace RogueEntity.Core.Sensing.Receptors.InfraVision
 {
@@ -8,9 +7,9 @@ namespace RogueEntity.Core.Sensing.Receptors.InfraVision
                                                                  IItemComponentInformationTrait<TGameContext, TActorId, IHeatMap>
         where TActorId : IEntityKey
     {
-        readonly IHeatPhysicsConfiguration physics;
+        readonly IInfraVisionSenseReceptorPhysicsConfiguration physics;
 
-        public InfraVisionSenseTrait(IHeatPhysicsConfiguration physics, float senseIntensity, bool active = true): base(physics.HeatPhysics, senseIntensity, active)
+        public InfraVisionSenseTrait(IInfraVisionSenseReceptorPhysicsConfiguration physics, float senseIntensity, bool active = true): base(physics.InfraVisionPhysics, senseIntensity, active)
         {
             this.physics = physics;
         }

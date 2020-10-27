@@ -10,10 +10,11 @@ namespace RogueEntity.Core.Sensing.Receptors.Heat
                                                                    IItemComponentInformationTrait<TGameContext, TActorId, IHeatMap>
         where TActorId : IBulkDataStorageKey<TActorId>
     {
-        [NotNull] readonly IHeatPhysicsConfiguration physicsConfiguration;
+        [NotNull] readonly IHeatSenseReceptorPhysicsConfiguration physicsConfiguration;
 
-        public HeatDirectionSenseTrait([NotNull] IHeatPhysicsConfiguration physicsConfiguration,
-                                       float intensity, bool active = true) : base(physicsConfiguration.HeatPhysics, intensity, active)
+        public HeatDirectionSenseTrait([NotNull] IHeatSenseReceptorPhysicsConfiguration physicsConfiguration,
+                                       float intensity,
+                                       bool active = true) : base(physicsConfiguration.HeatPhysics, intensity, active)
         {
             this.physicsConfiguration = physicsConfiguration;
         }

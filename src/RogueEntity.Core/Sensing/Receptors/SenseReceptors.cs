@@ -25,7 +25,6 @@ namespace RogueEntity.Core.Sensing.Receptors
                     perceptionStr > 0)
                 {
                     dest.TryStore(mapX, mapY, intensity * (perceptionStr / maxPerception), dir.Merge(perceptionDir));
-                   // dest.TryStore(mapX, mapY,  perceptionStr , dir.Merge(perceptionDir));
                 }
                 else
                 {

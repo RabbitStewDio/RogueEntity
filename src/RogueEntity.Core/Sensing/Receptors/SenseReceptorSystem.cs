@@ -46,7 +46,7 @@ namespace RogueEntity.Core.Sensing.Receptors
         Optional<ISenseStateCacheView> globalCacheView;
         int currentTime;
 
-        public SenseReceptorSystem([NotNull] Lazy<ISensePropertiesSource> senseProperties,
+        protected SenseReceptorSystem([NotNull] Lazy<ISensePropertiesSource> senseProperties,
                                    [NotNull] Lazy<ISenseStateCacheProvider> senseCacheProvider,
                                    [NotNull] Lazy<IGlobalSenseStateCacheProvider> globalSenseCacheProvider,
                                    [NotNull] Lazy<ITimeSource> timeSource,
@@ -411,7 +411,7 @@ namespace RogueEntity.Core.Sensing.Receptors
 
             readonly ISensePhysics physics;
             readonly List<SenseSourceState<TSourceSense>> sources;
-            readonly SenseDataMapServices senseMapServices;
+            readonly OmniDirectionalSenseDataMapServices senseMapServices;
             readonly DirectionalSenseDataMapServices directionalSenseMapServices;
             readonly List<Rectangle> receptorBounds;
 
@@ -421,7 +421,7 @@ namespace RogueEntity.Core.Sensing.Receptors
                                   ISensePhysics physics)
             {
                 this.physics = physics;
-                this.senseMapServices = new SenseDataMapServices(z, senseCache);
+                this.senseMapServices = new OmniDirectionalSenseDataMapServices(z, senseCache);
                 this.directionalSenseMapServices = new DirectionalSenseDataMapServices(z, senseCache);
                 this.ResistanceView = resistanceMap;
                 this.sources = new List<SenseSourceState<TSourceSense>>();

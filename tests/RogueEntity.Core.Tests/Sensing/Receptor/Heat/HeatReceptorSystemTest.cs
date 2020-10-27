@@ -3,22 +3,22 @@ using EnTTSharp.Entities.Systems;
 using NUnit.Framework;
 using RogueEntity.Core.Infrastructure.Time;
 using RogueEntity.Core.Meta.Items;
+using RogueEntity.Core.Meta.ItemTraits;
 using RogueEntity.Core.Sensing;
 using RogueEntity.Core.Sensing.Cache;
-using RogueEntity.Core.Sensing.Common;
 using RogueEntity.Core.Sensing.Common.Blitter;
 using RogueEntity.Core.Sensing.Common.Physics;
 using RogueEntity.Core.Sensing.Receptors;
-using RogueEntity.Core.Sensing.Receptors.Light;
+using RogueEntity.Core.Sensing.Receptors.Heat;
 using RogueEntity.Core.Sensing.Resistance;
 using RogueEntity.Core.Sensing.Resistance.Maps;
-using RogueEntity.Core.Sensing.Sources.Light;
+using RogueEntity.Core.Sensing.Sources.Heat;
 using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.Algorithms;
 
-namespace RogueEntity.Core.Tests.Sensing.Receptor.Vision
+namespace RogueEntity.Core.Tests.Sensing.Receptor.Heat
 {
-    public class VisionReceptorSystemTest : SenseReceptorSystemBase<VisionSense, VisionSense, LightSourceDefinition>
+    public class HeatReceptorSystemTest : SenseReceptorSystemBase<TemperatureSense, TemperatureSense, HeatSourceDefinition>
     {
         const string EmptyRoom = @"
 // 11x11; an empty room
@@ -96,16 +96,16 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Vision
    .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   
 ";
 
-        readonly LightPhysicsConfiguration physics;
+        readonly HeatPhysicsConfiguration physics;
 
-        public VisionReceptorSystemTest()
+        public HeatReceptorSystemTest()
         {
-            this.physics = new LightPhysicsConfiguration(LinearDecaySensePhysics.For(DistanceCalculation.Chebyshev));
+            this.physics = new HeatPhysicsConfiguration(LinearDecaySensePhysics.For(DistanceCalculation.Chebyshev), Temperature.FromCelsius(0));
         }
 
         protected override SensoryResistance Convert(float f)
         {
-            return new SensoryResistance(Percentage.Of(f), Percentage.Empty, Percentage.Empty, Percentage.Empty);
+            return new SensoryResistance(Percentage.Empty, Percentage.Empty, Percentage.Of(f), Percentage.Empty);
         }
 
         protected override Action<SenseMappingTestContext> CreateCopyAction()
@@ -113,46 +113,46 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Vision
             var builder = context.ItemEntityRegistry.BuildSystem()
                                  .WithContext<SenseMappingTestContext>();
 
-            var omniSystem = new OmnidirectionalSenseReceptorSystem<VisionSense, VisionSense>(senseSystem, new DefaultSenseDataBlitter());
-            return builder.CreateSystem<SingleLevelSenseDirectionMapData<VisionSense, VisionSense>, SensoryReceptorState<VisionSense>>(omniSystem.CopySenseSourcesToVisionField);
+            var omniSystem = new OmnidirectionalSenseReceptorSystem<TemperatureSense, TemperatureSense>(senseSystem, new DefaultSenseDataBlitter());
+            return builder.CreateSystem<SingleLevelSenseDirectionMapData<TemperatureSense, TemperatureSense>, SensoryReceptorState<TemperatureSense>>(omniSystem.CopySenseSourcesToVisionField);
         }
 
         protected override ReferenceItemDeclaration<SenseMappingTestContext, ItemReference> AttachTrait(ReferenceItemDeclaration<SenseMappingTestContext, ItemReference> decl)
         {
+            var phy = new HeatSenseReceptorPhysicsConfiguration(physics);
             switch (decl.Id.Id)
             {
                 case "SenseReceptor-Active-10":
-                    decl.WithTrait(new VisionSenseTrait<SenseMappingTestContext, ItemReference>(physics, 10));
+                    decl.WithTrait(new HeatDirectionSenseTrait<SenseMappingTestContext, ItemReference>(phy, 10));
                     return decl;
                 case "SenseReceptor-Active-5":
-                    decl.WithTrait(new VisionSenseTrait<SenseMappingTestContext, ItemReference>(physics, 5));
+                    decl.WithTrait(new HeatDirectionSenseTrait<SenseMappingTestContext, ItemReference>(phy, 5));
                     return decl;
                 case "SenseReceptor-Inactive-5":
-                    decl.WithTrait(new VisionSenseTrait<SenseMappingTestContext, ItemReference>(physics, 5, false));
+                    decl.WithTrait(new HeatDirectionSenseTrait<SenseMappingTestContext, ItemReference>(phy, 5, false));
                     return decl;
                 case "SenseSource-Active-10":
-                    decl.WithTrait(new LightSourceTrait<SenseMappingTestContext, ItemReference>(physics, 10));
+                    decl.WithTrait(new HeatSourceTrait<SenseMappingTestContext, ItemReference>(physics, Temperature.FromCelsius(10)));
                     return decl;
                 case "SenseSource-Active-5":
-                    decl.WithTrait(new LightSourceTrait<SenseMappingTestContext, ItemReference>(physics, 5));
+                    decl.WithTrait(new HeatSourceTrait<SenseMappingTestContext, ItemReference>(physics, Temperature.FromCelsius(5)));
                     return decl;
                 case "SenseSource-Inactive-5":
-                    decl.WithTrait(new LightSourceTrait<SenseMappingTestContext, ItemReference>(physics, 5, false));
+                    decl.WithTrait(new HeatSourceTrait<SenseMappingTestContext, ItemReference>(physics));
                     return decl;
                 default:
                     throw new ArgumentException();
             }
         }
 
-        protected override SenseReceptorSystem<VisionSense, VisionSense> CreateSystem()
+        protected override SenseReceptorSystem<TemperatureSense, TemperatureSense> CreateSystem()
         {
-            var phy = new VisionSenseReceptorPhysicsConfiguration(physics);
-            return new VisionReceptorSystem(senseProperties.AsLazy<ISensePropertiesSource>(),
-                                            senseCache.AsLazy<ISenseStateCacheProvider>(),
-                                            senseCache.AsLazy<IGlobalSenseStateCacheProvider>(),
-                                            timeSource.AsLazy<ITimeSource>(),
-                                            phy.VisionPhysics,
-                                            phy.CreateVisionSensorPropagationAlgorithm());
+            var phy = new HeatSenseReceptorPhysicsConfiguration(physics);
+            return new HeatReceptorSystem(senseProperties.AsLazy<ISensePropertiesSource>(),
+                                          senseCache.AsLazy<ISenseStateCacheProvider>(),
+                                          senseCache.AsLazy<IGlobalSenseStateCacheProvider>(),
+                                          timeSource.AsLazy<ITimeSource>(),
+                                          phy);
         }
 
         [Test]

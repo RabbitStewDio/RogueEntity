@@ -2,17 +2,16 @@ using System;
 using JetBrains.Annotations;
 using RogueEntity.Core.Meta.ItemTraits;
 using RogueEntity.Core.Sensing.Common;
-using RogueEntity.Core.Sensing.Common.Physics;
 using RogueEntity.Core.Sensing.Receptors.InfraVision;
 
 namespace RogueEntity.Core.Sensing.Receptors.Heat
 {
     public class SingleLevelHeatDirectionMap: IHeatMap
     {
-        readonly IHeatPhysicsConfiguration heatPhysics;
+        readonly IHeatSenseReceptorPhysicsConfiguration heatPhysics;
         readonly SingleLevelSenseDirectionMapData<TemperatureSense, TemperatureSense> backend;
 
-        public SingleLevelHeatDirectionMap([NotNull] IHeatPhysicsConfiguration heatPhysics,
+        public SingleLevelHeatDirectionMap([NotNull] IHeatSenseReceptorPhysicsConfiguration heatPhysics,
                                            SingleLevelSenseDirectionMapData<TemperatureSense, TemperatureSense> backend)
         {
             this.heatPhysics = heatPhysics ?? throw new ArgumentNullException(nameof(heatPhysics));

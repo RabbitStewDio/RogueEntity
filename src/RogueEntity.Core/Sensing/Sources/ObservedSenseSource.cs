@@ -2,7 +2,7 @@ using System.Runtime.Serialization;
 using EnTTSharp.Entities.Attributes;
 using MessagePack;
 
-namespace RogueEntity.Core.Sensing
+namespace RogueEntity.Core.Sensing.Sources
 {
     [EntityComponent(EntityConstructor.Flag)]
     [DataContract]

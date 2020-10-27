@@ -44,7 +44,8 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.InfraVision
 
         protected override InfraVisionSenseTrait<SenseMappingTestContext, ActorReference> CreateTrait()
         {
-            return new InfraVisionSenseTrait<SenseMappingTestContext, ActorReference>(physics, 1.9f);
+            var phy = new InfraVisionSenseReceptorPhysicsConfiguration(physics);
+            return new InfraVisionSenseTrait<SenseMappingTestContext, ActorReference>(phy, 1.9f);
         }
 
         protected override IItemComponentTestDataFactory<SensoryReceptorData<VisionSense>> ProduceTestData(EntityRelations<ActorReference> relations)

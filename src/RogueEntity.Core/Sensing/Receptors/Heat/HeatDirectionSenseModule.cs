@@ -8,6 +8,7 @@ using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Continuous;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Sensing.Cache;
+using RogueEntity.Core.Sensing.Common;
 using RogueEntity.Core.Sensing.Common.Blitter;
 using RogueEntity.Core.Sensing.Common.Physics;
 using RogueEntity.Core.Sensing.Resistance;
@@ -244,10 +245,15 @@ namespace RogueEntity.Core.Sensing.Receptors.Heat
 
         static bool GetOrCreateLightSystem(IServiceResolver serviceResolver, out SenseReceptorSystem<TemperatureSense, TemperatureSense> ls)
         {
-            if (!serviceResolver.TryResolve(out IHeatPhysicsConfiguration physicsConfig))
+            if (!serviceResolver.TryResolve(out IHeatSenseReceptorPhysicsConfiguration physicsConfig))
             {
-                ls = default;
-                return false;
+                if (!serviceResolver.TryResolve(out IHeatPhysicsConfiguration heatPhysics))
+                {
+                    ls = default;
+                    return false;
+                }
+
+                physicsConfig = new HeatSenseReceptorPhysicsConfiguration(heatPhysics);
             }
 
             if (!serviceResolver.TryResolve(out ls))
