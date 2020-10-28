@@ -3,6 +3,7 @@ using NUnit.Framework;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Sensing;
 using RogueEntity.Core.Sensing.Common;
+using RogueEntity.Core.Sensing.Common.FloodFill;
 using RogueEntity.Core.Sensing.Common.Physics;
 using RogueEntity.Core.Sensing.Receptors;
 using RogueEntity.Core.Sensing.Receptors.Touch;
@@ -16,11 +17,14 @@ namespace RogueEntity.Core.Tests.Sensing.Sources.Touch
     [TestFixture]
     public class TouchSourceTraitTest : ItemComponentTraitTestBase<SenseMappingTestContext, ActorReference, TouchSourceDefinition, TouchReceptorTrait<SenseMappingTestContext, ActorReference>>
     {
-        readonly TouchPhysicsConfiguration physics;
+        readonly TouchSenseReceptorPhysicsConfiguration physics;
 
         public TouchSourceTraitTest()
         {
-            physics = new TouchPhysicsConfiguration(new LinearDecaySensePhysics(DistanceCalculation.Chebyshev));
+            physics = new TouchSenseReceptorPhysicsConfiguration(
+                new TouchPhysicsConfiguration(new LinearDecaySensePhysics(DistanceCalculation.Chebyshev)),
+                new FloodFillWorkingDataSource()
+            );
         }
 
         protected override SenseMappingTestContext CreateContext()
@@ -50,7 +54,7 @@ namespace RogueEntity.Core.Tests.Sensing.Sources.Touch
         protected override IItemComponentTestDataFactory<TouchSourceDefinition> ProduceTestData(EntityRelations<ActorReference> relations)
         {
             var distanceCalculation = physics.TouchPhysics.DistanceMeasurement;
-            var intensity = distanceCalculation.MaximumStepDistance() + 1;
+            var intensity = distanceCalculation.MaximumStepDistance();
             return new ItemComponentTestDataFactory<TouchSourceDefinition>(new TouchSourceDefinition(new SenseSourceDefinition(distanceCalculation, intensity), true),
                                                                            new TouchSourceDefinition(new SenseSourceDefinition(distanceCalculation, intensity), false),
                                                                            new TouchSourceDefinition(new SenseSourceDefinition(distanceCalculation, intensity), true)

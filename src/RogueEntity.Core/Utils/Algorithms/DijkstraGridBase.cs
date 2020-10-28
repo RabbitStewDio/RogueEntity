@@ -114,8 +114,7 @@ namespace RogueEntity.Core.Utils.Algorithms
                         continue;
                     }
 
-                    if (!EdgeCostInformation(in openNodePosition, in d, openNodeWeight, out var cost) ||
-                        cost == 0)
+                    if (!EdgeCostInformation(in openNodePosition, in d, openNodeWeight, out var cost))
                     {
                         continue;
                     }

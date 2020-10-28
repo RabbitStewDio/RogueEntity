@@ -2,6 +2,7 @@ using EnTTSharp.Entities;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Sensing;
 using RogueEntity.Core.Sensing.Common;
+using RogueEntity.Core.Sensing.Common.FloodFill;
 using RogueEntity.Core.Sensing.Common.Physics;
 using RogueEntity.Core.Sensing.Receptors;
 using RogueEntity.Core.Sensing.Receptors.Light;
@@ -14,13 +15,17 @@ using RogueEntity.Core.Utils.Algorithms;
 
 namespace RogueEntity.Core.Tests.Sensing.Receptor.Smell
 {
-    public class SmellReceptorTraitTest: ItemComponentTraitTestBase<SenseMappingTestContext, ActorReference, SensoryReceptorData<SmellSense>, SmellDirectionSenseTrait<SenseMappingTestContext, ActorReference>>
+    public class SmellReceptorTraitTest : ItemComponentTraitTestBase<SenseMappingTestContext, ActorReference, SensoryReceptorData<SmellSense>,
+        SmellDirectionSenseTrait<SenseMappingTestContext, ActorReference>>
     {
-        readonly SmellPhysicsConfiguration physics;
+        readonly SmellSenseReceptorPhysicsConfiguration physics;
 
         public SmellReceptorTraitTest()
         {
-            physics = new SmellPhysicsConfiguration(new LinearDecaySensePhysics(DistanceCalculation.Chebyshev));
+            physics = new SmellSenseReceptorPhysicsConfiguration(
+                new SmellPhysicsConfiguration(new LinearDecaySensePhysics(DistanceCalculation.Chebyshev)),
+                new FloodFillWorkingDataSource()
+            );
         }
 
         protected override SenseMappingTestContext CreateContext()
@@ -30,7 +35,7 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Smell
             context.ActorEntityRegistry.RegisterNonConstructable<SenseSourceState<SmellSense>>();
             context.ActorEntityRegistry.RegisterFlag<ObservedSenseSource<SmellSense>>();
             context.ActorEntityRegistry.RegisterFlag<SenseDirtyFlag<SmellSense>>();
-            
+
             context.ActorEntityRegistry.RegisterNonConstructable<SensoryReceptorData<SmellSense>>();
             context.ActorEntityRegistry.RegisterNonConstructable<SensoryReceptorState<SmellSense>>();
             context.ActorEntityRegistry.RegisterNonConstructable<SingleLevelSenseDirectionMapData<SmellSense, SmellSense>>();
@@ -38,7 +43,7 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Smell
 
             return context;
         }
-        
+
         protected override EntityRegistry<ActorReference> EntityRegistry => Context.ActorEntityRegistry;
         protected override ItemRegistry<SenseMappingTestContext, ActorReference> ItemRegistry => Context.ActorRegistry;
         protected override IBulkDataStorageMetaData<ActorReference> ItemIdMetaData => new ActorReferenceMetaData();
@@ -50,9 +55,10 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Smell
 
         protected override IItemComponentTestDataFactory<SensoryReceptorData<SmellSense>> ProduceTestData(EntityRelations<ActorReference> relations)
         {
-            return new ItemComponentTestDataFactory<SensoryReceptorData<SmellSense>>(new SensoryReceptorData<SmellSense>(new SenseSourceDefinition(physics.SmellPhysics.DistanceMeasurement, 1.9f), true),
-                                                                                     new SensoryReceptorData<SmellSense>(new SenseSourceDefinition(physics.SmellPhysics.DistanceMeasurement, 10), true),
-                                                                                     new SensoryReceptorData<SmellSense>(new SenseSourceDefinition(physics.SmellPhysics.DistanceMeasurement, 12), false)
+            return new ItemComponentTestDataFactory<SensoryReceptorData<SmellSense>>(
+                new SensoryReceptorData<SmellSense>(new SenseSourceDefinition(physics.SmellPhysics.DistanceMeasurement, 1.9f), true),
+                new SensoryReceptorData<SmellSense>(new SenseSourceDefinition(physics.SmellPhysics.DistanceMeasurement, 10), true),
+                new SensoryReceptorData<SmellSense>(new SenseSourceDefinition(physics.SmellPhysics.DistanceMeasurement, 12), false)
             ).WithRemoveProhibited();
         }
     }

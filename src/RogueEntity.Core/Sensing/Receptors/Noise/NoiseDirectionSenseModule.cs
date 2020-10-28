@@ -10,6 +10,7 @@ using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Sensing.Cache;
 using RogueEntity.Core.Sensing.Common;
 using RogueEntity.Core.Sensing.Common.Blitter;
+using RogueEntity.Core.Sensing.Common.FloodFill;
 using RogueEntity.Core.Sensing.Common.Physics;
 using RogueEntity.Core.Sensing.Resistance;
 using RogueEntity.Core.Sensing.Resistance.Maps;
@@ -230,7 +231,7 @@ namespace RogueEntity.Core.Sensing.Receptors.Noise
 
             context.AddInitializationStepHandler(clearReceptorStateSystem);
             context.AddFixedStepHandlers(clearReceptorStateSystem);
-            
+
             var clearObservedStateSystem =
                 registry.BuildSystem()
                         .WithContext<TGameContext>()
@@ -238,17 +239,27 @@ namespace RogueEntity.Core.Sensing.Receptors.Noise
 
             context.AddInitializationStepHandler(clearObservedStateSystem);
             context.AddFixedStepHandlers(clearObservedStateSystem);
-            
+
             context.AddInitializationStepHandler(ls.EndSenseCalculation);
             context.AddFixedStepHandlers(ls.EndSenseCalculation);
         }
 
         static bool GetOrCreateLightSystem(IServiceResolver serviceResolver, out SenseReceptorSystem<NoiseSense, NoiseSense> ls)
         {
-            if (!serviceResolver.TryResolve(out INoisePhysicsConfiguration physicsConfig))
+            if (!serviceResolver.TryResolve(out INoiseSenseReceptorPhysicsConfiguration physics))
             {
-                ls = default;
-                return false;
+                if (!serviceResolver.TryResolve(out INoisePhysicsConfiguration physicsConfig))
+                {
+                    ls = default;
+                    return false;
+                }
+                
+                if (!serviceResolver.TryResolve(out FloodFillWorkingDataSource ds))
+                {
+                    ds = new FloodFillWorkingDataSource();
+                }
+                
+                physics = new NoiseSenseReceptorPhysicsConfiguration(physicsConfig, ds);
             }
 
             if (!serviceResolver.TryResolve(out ls))
@@ -257,8 +268,8 @@ namespace RogueEntity.Core.Sensing.Receptors.Noise
                                              serviceResolver.ResolveToReference<ISenseStateCacheProvider>(),
                                              serviceResolver.ResolveToReference<IGlobalSenseStateCacheProvider>(),
                                              serviceResolver.ResolveToReference<ITimeSource>(),
-                                             new FullStrengthSensePhysics(physicsConfig.NoisePhysics),
-                                             physicsConfig.CreateNoisePropagationAlgorithm());
+                                             new FullStrengthSensePhysics(physics.NoisePhysics),
+                                             physics.CreateNoiseSensorPropagationAlgorithm());
             }
 
             return true;

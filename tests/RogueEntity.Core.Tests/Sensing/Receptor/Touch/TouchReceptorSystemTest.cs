@@ -3,23 +3,25 @@ using EnTTSharp.Entities.Systems;
 using NUnit.Framework;
 using RogueEntity.Core.Infrastructure.Time;
 using RogueEntity.Core.Meta.Items;
-using RogueEntity.Core.Meta.ItemTraits;
+using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Sensing;
 using RogueEntity.Core.Sensing.Cache;
+using RogueEntity.Core.Sensing.Common;
 using RogueEntity.Core.Sensing.Common.Blitter;
 using RogueEntity.Core.Sensing.Common.FloodFill;
 using RogueEntity.Core.Sensing.Common.Physics;
 using RogueEntity.Core.Sensing.Receptors;
-using RogueEntity.Core.Sensing.Receptors.Heat;
+using RogueEntity.Core.Sensing.Receptors.Touch;
 using RogueEntity.Core.Sensing.Resistance;
 using RogueEntity.Core.Sensing.Resistance.Maps;
-using RogueEntity.Core.Sensing.Sources.Heat;
+using RogueEntity.Core.Sensing.Sources;
+using RogueEntity.Core.Sensing.Sources.Touch;
 using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.Algorithms;
 
-namespace RogueEntity.Core.Tests.Sensing.Receptor.Heat
+namespace RogueEntity.Core.Tests.Sensing.Receptor.Touch
 {
-    public class HeatReceptorSystemTest : SenseReceptorSystemBase<TemperatureSense, TemperatureSense, HeatSourceDefinition>
+    public class TouchReceptorSystemTest : SenseReceptorSystemBase<TouchSense, TouchSense, TouchSourceDefinition>
     {
         const string EmptyRoom = @"
 // 11x11; an empty room
@@ -49,16 +51,16 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Heat
 
         const string EmptyRoomPerceptionStrength = @"
    .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   
-   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   , 10.000, 10.000, 10.000, 10.000, 10.000, 10.000, 10.000, 10.000, 10.000, 10.000, 10.000, 10.000, 10.000,   .   
-   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   , 10.000, 10.000, 10.000, 10.000, 10.000, 10.000, 10.000, 10.000, 10.000, 10.000, 10.000, 10.000, 10.000,   .   
-   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   , 10.000, 10.000, 10.000, 10.000, 10.000, 10.000, 10.000, 10.000, 10.000, 10.000, 10.000, 10.000, 10.000,   .   
-   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   , 10.000, 10.000, 10.000, 10.000, 10.000, 10.000, 10.000, 10.000, 10.000, 10.000, 10.000, 10.000, 10.000,   .   
-   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   , 10.000, 10.000, 10.000, 10.000, 10.000, 10.000, 10.000, 10.000, 10.000, 10.000, 10.000, 10.000, 10.000,   .   
-   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   , 10.000, 10.000, 10.000, 10.000, 10.000, 10.000, 10.000, 10.000, 10.000, 10.000, 10.000, 10.000, 10.000,   .   
-   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   , 10.000, 10.000, 10.000, 10.000, 10.000, 10.000, 10.000, 10.000, 10.000, 10.000, 10.000, 10.000, 10.000,   .   
-   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   , 10.000, 10.000, 10.000, 10.000, 10.000, 10.000, 10.000, 10.000, 10.000, 10.000, 10.000, 10.000, 10.000,   .   
-   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   , 10.000, 10.000, 10.000, 10.000, 10.000, 10.000, 10.000, 10.000, 10.000, 10.000, 10.000, 10.000, 10.000,   .   
-   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   , 10.000, 10.000, 10.000, 10.000, 10.000, 10.000, 10.000, 10.000, 10.000, 10.000, 10.000, 10.000, 10.000,   .   
+   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   
+   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   
+   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,  1.000,  1.000,  1.000,   .   ,   .   
+   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,  1.000,  1.000,  1.000,   .   ,   .   
+   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,  1.000,  1.000,  1.000,   .   ,   .   
+   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   
+   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   
+   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   
+   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   
+   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   
    .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   
    .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   
    .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   
@@ -74,16 +76,16 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Heat
 
         const string EmptyRoomSenseMapResult = @"
    .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   
-   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,  0.780,  1.515,  2.190,  2.789,  3.292,  3.675,  3.917,  4.000,  3.917,  3.675,   .   
-   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,  0.566,  1.398,  2.190,  2.929,  3.597,  4.169,  4.615,  4.901,  5.000,  4.901,  4.615,   .   
-   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,  0.151,  1.056,  1.938,  2.789,  3.597,  4.343,  5.000,  5.528,  5.877,  6.000,  5.877,  5.528,   .   
-   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,  0.513,  1.456,  2.384,  3.292,  4.169,  5.000,  5.757,  6.394,  6.838,  7.000,  6.838,  6.394,   .   
-   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,  0.780,  1.754,  2.720,  3.675,  4.615,  5.528,  6.394,  7.172,  7.764,  8.000,  7.764,  7.172,   .   
-   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,  0.945,  1.938,  2.929,  3.917,  4.901,  5.877,  6.838,  7.764,  8.586,  9.000,  8.586,  7.764,   .   
-   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,  1.000,  2.000,  3.000,  4.000,  5.000,  6.000,  7.000,  8.000,  9.000, 10.000,  9.000,  8.000,   .   
-   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,  0.945,  1.938,  2.929,  3.917,  4.901,  5.877,  6.838,  7.764,  8.586,  9.000,  8.586,  7.764,   .   
-   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,  0.780,  1.754,  2.720,  3.675,  4.615,  5.528,  6.394,  7.172,  7.764,  8.000,  7.764,  7.172,   .   
-   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,  0.513,  1.456,  2.384,  3.292,  4.169,  5.000,  5.757,  6.394,  6.838,  7.000,  6.838,  6.394,   .   
+   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   
+   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   
+   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,  8.586,  9.000,  8.586,   .   ,   .   
+   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,  9.000, 10.000,  9.000,   .   ,   .   
+   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,  8.586,  9.000,  8.586,   .   ,   .   
+   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   
+   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   
+   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   
+   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   
+   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   
    .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   
    .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   
    .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   
@@ -97,18 +99,20 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Heat
    .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   
 ";
 
-        readonly HeatPhysicsConfiguration sourcePhysics;
-        readonly HeatSenseReceptorPhysicsConfiguration physics;
+        readonly TouchPhysicsConfiguration sourcePhysics;
+        readonly TouchSenseReceptorPhysicsConfiguration physics;
 
-        public HeatReceptorSystemTest()
+
+        public TouchReceptorSystemTest()
         {
-            this.sourcePhysics = new HeatPhysicsConfiguration(LinearDecaySensePhysics.For(DistanceCalculation.Chebyshev), Temperature.FromCelsius(0));
-            this.physics = new HeatSenseReceptorPhysicsConfiguration(sourcePhysics, new FloodFillWorkingDataSource());
+            this.sourcePhysics = new TouchPhysicsConfiguration(LinearDecaySensePhysics.For(DistanceCalculation.Chebyshev));
+            this.physics = new TouchSenseReceptorPhysicsConfiguration(sourcePhysics, new FloodFillWorkingDataSource());
         }
 
         protected override SensoryResistance Convert(float f)
         {
-            return new SensoryResistance(Percentage.Empty, Percentage.Empty, Percentage.Of(f), Percentage.Empty);
+            // ignored for touch.
+            return new SensoryResistance();
         }
 
         protected override Action<SenseMappingTestContext> CreateCopyAction()
@@ -116,44 +120,62 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Heat
             var builder = context.ItemEntityRegistry.BuildSystem()
                                  .WithContext<SenseMappingTestContext>();
 
-            var omniSystem = new OmnidirectionalSenseReceptorSystem<TemperatureSense, TemperatureSense>(senseSystem, new DefaultSenseDataBlitter());
-            return builder.CreateSystem<SingleLevelSenseDirectionMapData<TemperatureSense, TemperatureSense>, SensoryReceptorState<TemperatureSense>>(omniSystem.CopySenseSourcesToVisionField);
+            var omniSystem = new OmnidirectionalSenseReceptorSystem<TouchSense, TouchSense>(senseSystem, new DefaultSenseDataBlitter());
+            return builder.CreateSystem<SingleLevelSenseDirectionMapData<TouchSense, TouchSense>, SensoryReceptorState<TouchSense>>(omniSystem.CopySenseSourcesToVisionField);
         }
 
         protected override ReferenceItemDeclaration<SenseMappingTestContext, ItemReference> AttachTrait(ReferenceItemDeclaration<SenseMappingTestContext, ItemReference> decl)
         {
+            var phy = new TouchSenseReceptorPhysicsConfiguration(sourcePhysics, new FloodFillWorkingDataSource());
             switch (decl.Id.Id)
             {
                 case "SenseReceptor-Active-10":
-                    decl.WithTrait(new HeatDirectionSenseTrait<SenseMappingTestContext, ItemReference>(physics, 10));
+                    decl.WithTrait(new TouchReceptorTrait<SenseMappingTestContext, ItemReference>(phy));
                     return decl;
                 case "SenseReceptor-Active-5":
-                    decl.WithTrait(new HeatDirectionSenseTrait<SenseMappingTestContext, ItemReference>(physics, 5));
+                    decl.WithTrait(new TouchReceptorTrait<SenseMappingTestContext, ItemReference>(phy));
                     return decl;
                 case "SenseReceptor-Inactive-5":
-                    decl.WithTrait(new HeatDirectionSenseTrait<SenseMappingTestContext, ItemReference>(physics, 5, false));
+                    decl.WithTrait(new TouchReceptorTrait<SenseMappingTestContext, ItemReference>(phy, false));
                     return decl;
                 case "SenseSource-Active-10":
-                    decl.WithTrait(new HeatSourceTrait<SenseMappingTestContext, ItemReference>(sourcePhysics, Temperature.FromCelsius(10)));
                     return decl;
                 case "SenseSource-Active-5":
-                    decl.WithTrait(new HeatSourceTrait<SenseMappingTestContext, ItemReference>(sourcePhysics, Temperature.FromCelsius(5)));
                     return decl;
                 case "SenseSource-Inactive-5":
-                    decl.WithTrait(new HeatSourceTrait<SenseMappingTestContext, ItemReference>(sourcePhysics));
                     return decl;
                 default:
                     throw new ArgumentException();
             }
         }
 
-        protected override SenseReceptorSystem<TemperatureSense, TemperatureSense> CreateSystem()
+        protected override SenseReceptorSystem<TouchSense, TouchSense> CreateSystem()
         {
-            return new HeatReceptorSystem(senseProperties.AsLazy<ISensePropertiesSource>(),
-                                          senseCache.AsLazy<ISenseStateCacheProvider>(),
-                                          senseCache.AsLazy<IGlobalSenseStateCacheProvider>(),
-                                          timeSource.AsLazy<ITimeSource>(),
-                                          physics);
+            return new TouchReceptorSystem(senseProperties.AsLazy<ISensePropertiesSource>(),
+                                           senseCache.AsLazy<ISenseStateCacheProvider>(),
+                                           senseCache.AsLazy<IGlobalSenseStateCacheProvider>(),
+                                           timeSource.AsLazy<ITimeSource>(),
+                                           physics.TouchPhysics,
+                                           physics.CreateTouchSensorPropagationAlgorithm());
+        }
+
+        protected override void PrepareSourceItems(ItemReference active10, ItemReference active5, ItemReference inactive)
+        {
+            // we do not use separate source objects.
+        }
+
+        protected override void PrepareReceptorItems(ItemReference active10, ItemReference active5, ItemReference inactive)
+        {
+            base.PrepareReceptorItems(active10, active5, inactive);
+            context.ItemEntityRegistry.AssignOrReplace(active10,
+                                                       new SenseSourceState<TouchSense>(ComputeDummySourceData(active10, 10),
+                                                                                        SenseSourceDirtyState.Active, Position.Of(TestMapLayers.One, 26, 4)));
+            context.ItemEntityRegistry.AssignOrReplace(active5,
+                                                       new SenseSourceState<TouchSense>(ComputeDummySourceData(active5, 5),
+                                                                                        SenseSourceDirtyState.Active, Position.Of(TestMapLayers.One, 7, 9)));
+            context.ItemEntityRegistry.AssignOrReplace(inactive,
+                                                       new SenseSourceState<TouchSense>(default,
+                                                                                        SenseSourceDirtyState.Inactive, Position.Invalid));
         }
 
         [Test]

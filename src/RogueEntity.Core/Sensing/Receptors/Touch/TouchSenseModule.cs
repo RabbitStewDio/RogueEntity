@@ -8,8 +8,8 @@ using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Continuous;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Sensing.Cache;
-using RogueEntity.Core.Sensing.Common;
 using RogueEntity.Core.Sensing.Common.Blitter;
+using RogueEntity.Core.Sensing.Common.FloodFill;
 using RogueEntity.Core.Sensing.Common.Physics;
 using RogueEntity.Core.Sensing.Resistance;
 using RogueEntity.Core.Sensing.Resistance.Maps;
@@ -236,7 +236,8 @@ namespace RogueEntity.Core.Sensing.Receptors.Touch
                 registry.BuildSystem()
                         .WithContext<TGameContext>()
                         .CreateSystem<ObservedSenseSource<TouchSense>>(ls.ResetSenseSourceObservedState);
-
+            context.AddInitializationStepHandler(clearObservedStateSystem);
+            context.AddFixedStepHandlers(clearObservedStateSystem);
 
             context.AddInitializationStepHandler(ls.EndSenseCalculation);
             context.AddFixedStepHandlers(ls.EndSenseCalculation);
@@ -244,10 +245,20 @@ namespace RogueEntity.Core.Sensing.Receptors.Touch
 
         static bool GetOrCreateLightSystem(IServiceResolver serviceResolver, out SenseReceptorSystem<TouchSense, TouchSense> ls)
         {
-            if (!serviceResolver.TryResolve(out ITouchPhysicsConfiguration physicsConfig))
+            if (!serviceResolver.TryResolve(out ITouchReceptorPhysicsConfiguration physics))
             {
-                ls = default;
-                return false;
+                if (!serviceResolver.TryResolve(out ITouchPhysicsConfiguration physicsConfig))
+                {
+                    ls = default;
+                    return false;
+                }
+                
+                if (!serviceResolver.TryResolve(out FloodFillWorkingDataSource ds))
+                {
+                    ds = new FloodFillWorkingDataSource();
+                }
+
+                physics = new TouchSenseReceptorPhysicsConfiguration(physicsConfig, ds);
             }
 
             if (!serviceResolver.TryResolve(out ls))
@@ -256,8 +267,8 @@ namespace RogueEntity.Core.Sensing.Receptors.Touch
                                              serviceResolver.ResolveToReference<ISenseStateCacheProvider>(),
                                              serviceResolver.ResolveToReference<IGlobalSenseStateCacheProvider>(),
                                              serviceResolver.ResolveToReference<ITimeSource>(),
-                                             new FullStrengthSensePhysics(physicsConfig.TouchPhysics),
-                                             physicsConfig.CreateTouchPropagationAlgorithm());
+                                             new FullStrengthSensePhysics(physics.TouchPhysics),
+                                             physics.CreateTouchSensorPropagationAlgorithm());
             }
 
             return true;

@@ -16,14 +16,14 @@ namespace RogueEntity.Core.Sensing.Receptors.Touch
                                                              IItemComponentTrait<TGameContext, TActorId, TouchSourceDefinition>
         where TActorId : IEntityKey
     {
-        readonly ITouchPhysicsConfiguration touchPhysics;
+        readonly ITouchReceptorPhysicsConfiguration touchPhysics;
 
-        public TouchReceptorTrait([NotNull] ITouchPhysicsConfiguration touchPhysics, bool active = true) : base(touchPhysics.TouchPhysics, GetStandardIntensity(touchPhysics), active)
+        public TouchReceptorTrait([NotNull] ITouchReceptorPhysicsConfiguration touchPhysics, bool active = true) : base(touchPhysics.TouchPhysics, GetStandardIntensity(touchPhysics), active)
         {
             this.touchPhysics = touchPhysics;
         }
 
-        static float GetStandardIntensity(ITouchPhysicsConfiguration p) => 1 + p.TouchPhysics.DistanceMeasurement.MaximumStepDistance();
+        static float GetStandardIntensity(ITouchReceptorPhysicsConfiguration p) => p.TouchPhysics.DistanceMeasurement.MaximumStepDistance();
         
         public override string Id => "Core.Sense.Receptor.Touch";
         public override int Priority => 100;

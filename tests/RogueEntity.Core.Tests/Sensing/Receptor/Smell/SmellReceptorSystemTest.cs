@@ -1,25 +1,25 @@
 using System;
 using EnTTSharp.Entities.Systems;
+using FluentAssertions;
 using NUnit.Framework;
 using RogueEntity.Core.Infrastructure.Time;
 using RogueEntity.Core.Meta.Items;
-using RogueEntity.Core.Meta.ItemTraits;
 using RogueEntity.Core.Sensing;
 using RogueEntity.Core.Sensing.Cache;
 using RogueEntity.Core.Sensing.Common.Blitter;
 using RogueEntity.Core.Sensing.Common.FloodFill;
 using RogueEntity.Core.Sensing.Common.Physics;
 using RogueEntity.Core.Sensing.Receptors;
-using RogueEntity.Core.Sensing.Receptors.Heat;
+using RogueEntity.Core.Sensing.Receptors.Smell;
 using RogueEntity.Core.Sensing.Resistance;
 using RogueEntity.Core.Sensing.Resistance.Maps;
-using RogueEntity.Core.Sensing.Sources.Heat;
+using RogueEntity.Core.Sensing.Sources.Smell;
 using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.Algorithms;
 
-namespace RogueEntity.Core.Tests.Sensing.Receptor.Heat
+namespace RogueEntity.Core.Tests.Sensing.Receptor.Smell
 {
-    public class HeatReceptorSystemTest : SenseReceptorSystemBase<TemperatureSense, TemperatureSense, HeatSourceDefinition>
+    public class SmellReceptorSystemTest : SenseReceptorSystemBase<SmellSense, SmellSense, SmellSourceDefinition>
     {
         const string EmptyRoom = @"
 // 11x11; an empty room
@@ -97,18 +97,19 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Heat
    .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   
 ";
 
-        readonly HeatPhysicsConfiguration sourcePhysics;
-        readonly HeatSenseReceptorPhysicsConfiguration physics;
+        readonly SmellSenseReceptorPhysicsConfiguration physics;
+        readonly SmellPhysicsConfiguration sourcePhysics;
 
-        public HeatReceptorSystemTest()
+        public SmellReceptorSystemTest()
         {
-            this.sourcePhysics = new HeatPhysicsConfiguration(LinearDecaySensePhysics.For(DistanceCalculation.Chebyshev), Temperature.FromCelsius(0));
-            this.physics = new HeatSenseReceptorPhysicsConfiguration(sourcePhysics, new FloodFillWorkingDataSource());
+            this.sourcePhysics = new SmellPhysicsConfiguration(LinearDecaySensePhysics.For(DistanceCalculation.Chebyshev)); 
+            this.physics = new SmellSenseReceptorPhysicsConfiguration(sourcePhysics, new FloodFillWorkingDataSource()
+            );
         }
 
         protected override SensoryResistance Convert(float f)
         {
-            return new SensoryResistance(Percentage.Empty, Percentage.Empty, Percentage.Of(f), Percentage.Empty);
+            return new SensoryResistance(Percentage.Empty, Percentage.Empty, Percentage.Empty, Percentage.Of(f));
         }
 
         protected override Action<SenseMappingTestContext> CreateCopyAction()
@@ -116,8 +117,8 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Heat
             var builder = context.ItemEntityRegistry.BuildSystem()
                                  .WithContext<SenseMappingTestContext>();
 
-            var omniSystem = new OmnidirectionalSenseReceptorSystem<TemperatureSense, TemperatureSense>(senseSystem, new DefaultSenseDataBlitter());
-            return builder.CreateSystem<SingleLevelSenseDirectionMapData<TemperatureSense, TemperatureSense>, SensoryReceptorState<TemperatureSense>>(omniSystem.CopySenseSourcesToVisionField);
+            var omniSystem = new OmnidirectionalSenseReceptorSystem<SmellSense, SmellSense>(senseSystem, new DefaultSenseDataBlitter());
+            return builder.CreateSystem<SingleLevelSenseDirectionMapData<SmellSense, SmellSense>, SensoryReceptorState<SmellSense>>(omniSystem.CopySenseSourcesToVisionField);
         }
 
         protected override ReferenceItemDeclaration<SenseMappingTestContext, ItemReference> AttachTrait(ReferenceItemDeclaration<SenseMappingTestContext, ItemReference> decl)
@@ -125,35 +126,43 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Heat
             switch (decl.Id.Id)
             {
                 case "SenseReceptor-Active-10":
-                    decl.WithTrait(new HeatDirectionSenseTrait<SenseMappingTestContext, ItemReference>(physics, 10));
+                    decl.WithTrait(new SmellDirectionSenseTrait<SenseMappingTestContext, ItemReference>(physics, 10));
                     return decl;
                 case "SenseReceptor-Active-5":
-                    decl.WithTrait(new HeatDirectionSenseTrait<SenseMappingTestContext, ItemReference>(physics, 5));
+                    decl.WithTrait(new SmellDirectionSenseTrait<SenseMappingTestContext, ItemReference>(physics, 5));
                     return decl;
                 case "SenseReceptor-Inactive-5":
-                    decl.WithTrait(new HeatDirectionSenseTrait<SenseMappingTestContext, ItemReference>(physics, 5, false));
+                    decl.WithTrait(new SmellDirectionSenseTrait<SenseMappingTestContext, ItemReference>(physics, 5, false));
                     return decl;
                 case "SenseSource-Active-10":
-                    decl.WithTrait(new HeatSourceTrait<SenseMappingTestContext, ItemReference>(sourcePhysics, Temperature.FromCelsius(10)));
+                    decl.WithTrait(new SmellSourceTrait<SenseMappingTestContext, ItemReference>(sourcePhysics));
                     return decl;
                 case "SenseSource-Active-5":
-                    decl.WithTrait(new HeatSourceTrait<SenseMappingTestContext, ItemReference>(sourcePhysics, Temperature.FromCelsius(5)));
+                    decl.WithTrait(new SmellSourceTrait<SenseMappingTestContext, ItemReference>(sourcePhysics));
                     return decl;
                 case "SenseSource-Inactive-5":
-                    decl.WithTrait(new HeatSourceTrait<SenseMappingTestContext, ItemReference>(sourcePhysics));
+                    decl.WithTrait(new SmellSourceTrait<SenseMappingTestContext, ItemReference>(sourcePhysics));
                     return decl;
                 default:
                     throw new ArgumentException();
             }
         }
 
-        protected override SenseReceptorSystem<TemperatureSense, TemperatureSense> CreateSystem()
+        protected override SenseReceptorSystem<SmellSense, SmellSense> CreateSystem()
         {
-            return new HeatReceptorSystem(senseProperties.AsLazy<ISensePropertiesSource>(),
-                                          senseCache.AsLazy<ISenseStateCacheProvider>(),
-                                          senseCache.AsLazy<IGlobalSenseStateCacheProvider>(),
-                                          timeSource.AsLazy<ITimeSource>(),
-                                          physics);
+            return new SmellReceptorSystem(senseProperties.AsLazy<ISensePropertiesSource>(),
+                                           senseCache.AsLazy<ISenseStateCacheProvider>(),
+                                           senseCache.AsLazy<IGlobalSenseStateCacheProvider>(),
+                                           timeSource.AsLazy<ITimeSource>(),
+                                           physics.SmellPhysics,
+                                           physics.CreateSmellSensorPropagationAlgorithm());
+        }
+
+        protected override void PrepareSourceItems(ItemReference active10, ItemReference active5, ItemReference inactive)
+        {
+            context.ItemResolver.TryUpdateData(active10, context, new SmellSource(10, "Strength10"), out _).Should().BeTrue();
+            context.ItemResolver.TryUpdateData(active5, context, new SmellSource(5, "Strength5"), out _).Should().BeTrue();
+            base.PrepareSourceItems(active10, active5, inactive);
         }
 
         [Test]

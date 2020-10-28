@@ -136,7 +136,7 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor
                                                                                           SenseSourceDirtyState.Inactive, Position.Invalid));
         }
 
-        SenseSourceData ComputeDummySourceData(ItemReference e, int radius)
+        protected SenseSourceData ComputeDummySourceData(ItemReference e, int radius)
         {
             context.ItemEntityRegistry.GetComponent(e, out TSenseSourceDefinition sourceDef).Should().BeTrue();
 

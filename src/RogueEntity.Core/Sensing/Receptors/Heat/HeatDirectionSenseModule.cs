@@ -10,6 +10,7 @@ using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Sensing.Cache;
 using RogueEntity.Core.Sensing.Common;
 using RogueEntity.Core.Sensing.Common.Blitter;
+using RogueEntity.Core.Sensing.Common.FloodFill;
 using RogueEntity.Core.Sensing.Common.Physics;
 using RogueEntity.Core.Sensing.Resistance;
 using RogueEntity.Core.Sensing.Resistance.Maps;
@@ -253,7 +254,12 @@ namespace RogueEntity.Core.Sensing.Receptors.Heat
                     return false;
                 }
 
-                physicsConfig = new HeatSenseReceptorPhysicsConfiguration(heatPhysics);
+                if (!serviceResolver.TryResolve(out FloodFillWorkingDataSource ds))
+                {
+                    ds = new FloodFillWorkingDataSource();
+                }
+                
+                physicsConfig = new HeatSenseReceptorPhysicsConfiguration(heatPhysics, ds);
             }
 
             if (!serviceResolver.TryResolve(out ls))
