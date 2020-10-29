@@ -1,6 +1,6 @@
 using RogueEntity.Core.Positioning.MapLayers;
 
-namespace RogueEntity.Simple.BoxPusher
+namespace RogueEntity.Simple.Demo.BoxPusher
 {
     public static class BoxPusherMapLayers
     {

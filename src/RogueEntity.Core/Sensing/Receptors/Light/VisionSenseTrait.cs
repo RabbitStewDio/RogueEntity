@@ -1,6 +1,5 @@
 using EnTTSharp.Entities;
 using RogueEntity.Core.Meta.Items;
-using RogueEntity.Core.Sensing.Common.Physics;
 
 namespace RogueEntity.Core.Sensing.Receptors.Light
 {
@@ -8,7 +7,7 @@ namespace RogueEntity.Core.Sensing.Receptors.Light
                                                             IItemComponentInformationTrait<TGameContext, TActorId, IBrightnessMap>
         where TActorId : IEntityKey
     {
-        public VisionSenseTrait(ILightPhysicsConfiguration physics, float senseIntensity, bool active = true): base(physics.LightPhysics, senseIntensity, active)
+        public VisionSenseTrait(IVisionSenseReceptorPhysicsConfiguration physics, float senseIntensity, bool active = true): base(physics.VisionPhysics, senseIntensity, active)
         {
         }
 

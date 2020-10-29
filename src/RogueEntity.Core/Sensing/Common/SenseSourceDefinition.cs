@@ -44,7 +44,7 @@ namespace RogueEntity.Core.Sensing.Common
 
         /// <summary>
         /// The distance calculation used to determine what shape the radius has (or a type
-        /// implicitly convertible to <see cref="DistanceCalculation"/>, such as <see cref="GoRogue.Radius"/>).
+        /// implicitly convertible to <see cref="DistanceCalculation"/>.
         /// </summary>
         [IgnoreMember]
         [IgnoreDataMember]

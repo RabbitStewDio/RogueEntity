@@ -17,11 +17,11 @@ namespace RogueEntity.Core.Tests.Positioning
         [Test]
         public void OutOfRangeX()
         {
-            this.Invoking(x => EntityGridPosition.Of(TestMapLayers.One, int.MaxValue, 0, 0)).Should().Throw<ArgumentOutOfRangeException>();
-            this.Invoking(x => EntityGridPosition.Of(TestMapLayers.One, 0, int.MaxValue, 0)).Should().Throw<ArgumentOutOfRangeException>();
+            this.Invoking(x => EntityGridPosition.Of(TestMapLayers.One, int.MaxValue, 0)).Should().Throw<ArgumentOutOfRangeException>();
+            this.Invoking(x => EntityGridPosition.Of(TestMapLayers.One, 0, int.MaxValue)).Should().Throw<ArgumentOutOfRangeException>();
             this.Invoking(x => EntityGridPosition.Of(TestMapLayers.One, 0, 0, int.MaxValue)).Should().Throw<ArgumentOutOfRangeException>();
-            this.Invoking(x => EntityGridPosition.Of(TestMapLayers.One, int.MinValue, 0, 0)).Should().Throw<ArgumentOutOfRangeException>();
-            this.Invoking(x => EntityGridPosition.Of(TestMapLayers.One, 0, int.MinValue, 0)).Should().Throw<ArgumentOutOfRangeException>();
+            this.Invoking(x => EntityGridPosition.Of(TestMapLayers.One, int.MinValue, 0)).Should().Throw<ArgumentOutOfRangeException>();
+            this.Invoking(x => EntityGridPosition.Of(TestMapLayers.One, 0, int.MinValue)).Should().Throw<ArgumentOutOfRangeException>();
             this.Invoking(x => EntityGridPosition.Of(TestMapLayers.One, 0, 0, int.MinValue)).Should().Throw<ArgumentOutOfRangeException>();
         }
 
@@ -38,7 +38,7 @@ namespace RogueEntity.Core.Tests.Positioning
         [Test]
         public void MinValueTest()
         {
-            var p = EntityGridPosition.Of(TestMapLayers.One, EntityGridPosition.MinXYValue, EntityGridPosition.MinXYValue, EntityGridPosition.MinZValue);
+            var p = EntityGridPosition.Of(TestMapLayers.One, EntityGridPosition.MinXYValue, EntityGridPosition.MinXYValue);
             p.IsInvalid.Should().BeFalse();
             p.X.Should().Be(EntityGridPosition.MinXYValue);
             p.Y.Should().Be(EntityGridPosition.MinXYValue);

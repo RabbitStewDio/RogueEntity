@@ -2,96 +2,109 @@
 using System.Runtime.Serialization;
 using EnTTSharp.Entities.Attributes;
 using MessagePack;
+using RogueEntity.Core.Utils;
 
 namespace RogueEntity.Core.Positioning.Continuous
 {
+    /// <summary>
+    ///   A fixed point representation of a continuous position.
+    ///
+    ///   Allows for a maximum range of 2^21 [2M] meters on X and Y, and 2^14 [8K] meters on the Z axis. All coordinates have
+    ///   a resolution of 1024 Units per meter.
+    /// </summary>
     [EntityComponent]
     [DataContract]
     [Serializable]
     [MessagePackObject]
     public readonly struct ContinuousMapPosition : IPosition, IEquatable<ContinuousMapPosition>
     {
-        const ulong MaxCoordinate = 0xFFFF_FFFF_FFFF;
-        const float MaxCoordinateMeter = MaxCoordinate / 1000f;
+        const double UnitScale = 1024;
+        const int MaxZUnit = 0x7F_FFFF;
+        const int ZMask = 0xFF_FFFF;
 
+        const double MaxXY = int.MaxValue / UnitScale;
+        const double MaxZ = MaxZUnit / UnitScale;
+        
         [DataMember(Order = 0)]
         [Key(0)]
-        readonly ulong dataA;
+        public readonly int XUnit;
 
         [DataMember(Order = 1)]
         [Key(1)]
-        readonly ulong dataB;
+        public readonly int YUnit;
 
-        public double X => XUnit / 1000f;
-        public double Y => YUnit / 1000f;
-        public double Z => ZUnit / 1000f;
+        readonly uint zUnitAndLayerId;
 
-        public ulong XUnit => dataA & 0x0000_FFFF_FFFF_FFFF;
-        public ulong YUnit => dataB & 0x0000_FFFF_FFFF_FFFF;
+        public double X => XUnit / UnitScale;
+        public double Y => YUnit / UnitScale;
+        public double Z => ZUnit / UnitScale;
 
-        public ulong ZUnit => ((dataA & 0xFFFF_0000_0000_0000) >> 48) |
-                              ((dataB & 0xFF00_0000_0000_0000) >> 36);
+        public int ZUnit => (int) (zUnitAndLayerId & ZMask) - MaxZUnit;
 
-        public byte LayerId => (byte)((dataB & 0x00FF_0000_0000_0000) >> 48);
+        public byte LayerId => (byte)((zUnitAndLayerId & 0xFF00_0000) >> 24);
 
         [SerializationConstructor]
-        ContinuousMapPosition(ulong dataA, ulong dataB)
+        public ContinuousMapPosition(int xUnit, int yUnit, uint zUnitAndLayerId)
         {
-            this.dataA = dataA;
-            this.dataB = dataB;
+            XUnit = xUnit;
+            YUnit = yUnit;
+            this.zUnitAndLayerId = zUnitAndLayerId;
         }
 
-        public ContinuousMapPosition(ulong x, ulong y, ulong z, byte l)
+        ContinuousMapPosition(int x, int y, int z, byte l)
         {
-            dataA = ((z & 0xFFFFul) << 48) | (x & 0x0000_FFFF_FFFF_FFFF);
-            dataB = ((z & 0xFF_0000ul) << 36) |
-                    (x & 0x0000_FFFF_FFFF_FFFF) |
-                    ((ulong)(l) << 48);
+            XUnit = x;
+            YUnit = y;
+            var zz = (z + MaxZUnit).Clamp(0, ZMask); 
+            zUnitAndLayerId = (uint) ((l << 24) & zz);
         }
 
         public ContinuousMapPosition(double x, double y, double z, byte l) :
-            this(FloatToMillimeter(x), FloatToMillimeter(y), FloatToMillimeter(z), l)
-
+            this(FloatToMillimeter(x, MaxXY), FloatToMillimeter(y, MaxXY), FloatToMillimeter(z, MaxZ), l)
         {
         }
 
         public static ContinuousMapPosition From(in Position p)
         {
             if (p.IsInvalid) return Invalid;
-            return new ContinuousMapPosition(FloatToMillimeter(p.X), FloatToMillimeter(p.Y), FloatToMillimeter(p.Z), p.LayerId);
+            return new ContinuousMapPosition(FloatToMillimeter(p.X, MaxXY), FloatToMillimeter(p.Y, MaxXY), FloatToMillimeter(p.Z, MaxZ), p.LayerId);
         }
 
         public int GridX => (int)(X + 0.5f);
         public int GridY => (int)(Y + 0.5f);
         public int GridZ => (int)(Z + 0.5f);
 
-        static ulong FloatToMillimeter(double value)
+        static int FloatToMillimeter(double value, double maxValue)
         {
             if (value < 0) value = 0;
-            if (value > MaxCoordinateMeter) value = MaxCoordinateMeter;
+            if (value > maxValue) value = maxValue;
 
-            return (ulong)(value / 1000f);
+            return (int) Math.Round(value / UnitScale, MidpointRounding.AwayFromZero);
         }
 
         public bool IsInvalid => LayerId == 0;
 
         public static ContinuousMapPosition Invalid => default;
 
-        public bool Equals(ContinuousMapPosition other)
-        {
-            return dataA == other.dataA && dataB == other.dataB;
-        }
 
         public override bool Equals(object obj)
         {
             return obj is ContinuousMapPosition other && Equals(other);
         }
 
+        public bool Equals(ContinuousMapPosition other)
+        {
+            return XUnit == other.XUnit && YUnit == other.YUnit && zUnitAndLayerId == other.zUnitAndLayerId;
+        }
+
         public override int GetHashCode()
         {
             unchecked
             {
-                return (dataA.GetHashCode() * 397) ^ dataB.GetHashCode();
+                var hashCode = XUnit;
+                hashCode = (hashCode * 397) ^ YUnit;
+                hashCode = (hashCode * 397) ^ (int) zUnitAndLayerId;
+                return hashCode;
             }
         }
 

@@ -10,11 +10,9 @@ using RogueEntity.Core.Sensing.Common.Blitter;
 using RogueEntity.Core.Sensing.Common.Physics;
 using RogueEntity.Core.Sensing.Receptors;
 using RogueEntity.Core.Sensing.Receptors.InfraVision;
-using RogueEntity.Core.Sensing.Receptors.Light;
 using RogueEntity.Core.Sensing.Resistance;
 using RogueEntity.Core.Sensing.Resistance.Maps;
 using RogueEntity.Core.Sensing.Sources.Heat;
-using RogueEntity.Core.Sensing.Sources.Light;
 using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.Algorithms;
 

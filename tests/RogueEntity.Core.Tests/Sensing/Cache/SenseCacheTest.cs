@@ -1,8 +1,6 @@
-using System;
 using FluentAssertions;
 using NUnit.Framework;
 using RogueEntity.Core.Positioning;
-using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Sensing;
 using RogueEntity.Core.Sensing.Cache;
 using RogueEntity.Core.Sensing.Resistance.Maps;
@@ -14,7 +12,6 @@ namespace RogueEntity.Core.Tests.Sensing.Cache
         [Test]
         public void GlobalOperations()
         {
-            var ctx = new SenseMappingTestContext();
             var cache = new SenseStateCache(2, 0, 0, 4, 4);
 
             cache.ActivateGlobalCacheLayer(TestMapLayers.One);
@@ -24,7 +21,7 @@ namespace RogueEntity.Core.Tests.Sensing.Cache
             cache.MarkClean();
 
             cache.TryGetSenseCache<SmellSense>(out _).Should().BeFalse();
-            cache.TryGetSenseCache<TouchSense>(out var touchCacheView).Should().BeTrue();
+            cache.TryGetSenseCache<TouchSense>(out _).Should().BeTrue();
             cache.TryGetSenseCache<VisionSense>(out var visionCacheView).Should().BeTrue();
             cache.TryGetGlobalSenseCache(out var globalCacheView).Should().BeTrue();
             
@@ -45,7 +42,6 @@ namespace RogueEntity.Core.Tests.Sensing.Cache
         [Test]
         public void LocalOperations()
         {
-            var ctx = new SenseMappingTestContext();
             var cache = new SenseStateCache(2, 4, 4);
 
             cache.ActivateGlobalCacheLayer(TestMapLayers.One);

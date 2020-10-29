@@ -31,6 +31,7 @@ namespace RogueEntity.Core.Utils.Algorithms
         /// method. Appropriate directions are returned in clockwise order from the given starting
         /// direction.
         /// </summary>
+        /// <param name="type"></param>
         /// <param name="startingDirection">The direction to start with.  null or <see cref="Direction.None"/>
         /// causes the default starting direction to be used, which is UP for CARDINALS/EIGHT_WAY, and UP_RIGHT
         /// for diagonals.</param>
@@ -100,6 +101,7 @@ namespace RogueEntity.Core.Utils.Algorithms
         /// method. Appropriate directions are returned in counter-clockwise order from the given
         /// starting direction.
         /// </summary>
+        /// <param name="type"></param>
         /// <param name="startingDirection">The direction to start with.  null or <see cref="Direction.None"/>
         /// causes the default starting direction to be used, which is UP for CARDINALS/EIGHT_WAY, and UP_LEFT
         /// for diagonals.</param>
@@ -171,6 +173,7 @@ namespace RogueEntity.Core.Utils.Algorithms
         /// Gets all neighbors of the specified location, based on the current adjacency method.
         /// Cardinals are returned before any diagonals.
         /// </summary>
+        /// <param name="r"></param>
         /// <param name="startingLocation">Location to return neighbors for.</param>
         /// <returns>All neighbors of the given location.</returns>
         public static IEnumerable<Position2D> Neighbors(this AdjacencyRule r, Position2D startingLocation)
@@ -183,6 +186,7 @@ namespace RogueEntity.Core.Utils.Algorithms
         /// Gets all neighbors of the specified location, based on the current adjacency method.
         /// Cardinals are returned before any diagonals.
         /// </summary>
+        /// <param name="r"></param>
         /// <param name="startingX">X-Position2D of location to return neighbors for.</param>
         /// <param name="startingY">Y-Position2D of location to return neighbors for.</param>
         /// <returns>All neighbors of the given location.</returns>
@@ -193,6 +197,7 @@ namespace RogueEntity.Core.Utils.Algorithms
         /// Neighbors are returned in clockwise order, starting with the neighbor in the given
         /// starting direction.
         /// </summary>
+        /// <param name="r"></param>
         /// <param name="startingLocation">Location to return neighbors for.</param>
         /// <param name="startingDirection">
         /// The neighbor in this direction will be returned first, proceeding clockwise.
@@ -211,6 +216,7 @@ namespace RogueEntity.Core.Utils.Algorithms
         /// Neighbors are returned in clockwise order, starting with the neighbor in the given
         /// starting direction.
         /// </summary>
+        /// <param name="r"></param>
         /// <param name="startingX">X-Position2D of location to return neighbors for.</param>
         /// <param name="startingY">Y-Position2D of location to return neighbors for.</param>
         /// <param name="startingDirection">
@@ -227,6 +233,7 @@ namespace RogueEntity.Core.Utils.Algorithms
         /// Neighbors are returned in counter-clockwise order, starting with the neighbor in the given
         /// starting direction.
         /// </summary>
+        /// <param name="r"></param>
         /// <param name="startingLocation">Location to return neighbors for.</param>
         /// <param name="startingDirection">
         /// The neighbor in this direction will be returned first, proceeding counter-clockwise.
@@ -245,6 +252,7 @@ namespace RogueEntity.Core.Utils.Algorithms
         /// Neighbors are returned in counter-clockwise order, starting with the neighbor in the given
         /// starting direction.
         /// </summary>
+        /// <param name="r"></param>
         /// <param name="startingX">X-Position2D of location to return neighbors for.</param>
         /// <param name="startingY">Y-Position2D of location to return neighbors for.</param>
         /// <param name="startingDirection">

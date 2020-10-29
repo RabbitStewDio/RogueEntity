@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using FluentAssertions;
 using NUnit.Framework;
 using RogueEntity.Core.Meta.Items;
@@ -39,10 +38,10 @@ namespace RogueEntity.Core.Tests.Sensing.Resistance
             sps.TryGet(0, out _).Should().BeFalse();
 
             ctx.TryGetItemGridDataFor(TestMapLayers.One, out var dataLayer1).Should().BeTrue();
-            dataLayer1.TrySet(EntityGridPosition.Of(TestMapLayers.One, 0, 0, 0), ctx.ItemResolver.Instantiate(ctx, wall)).Should().BeTrue();
+            dataLayer1.TrySet(EntityGridPosition.Of(TestMapLayers.One, 0, 0), ctx.ItemResolver.Instantiate(ctx, wall)).Should().BeTrue();
 
             ctx.TryGetItemGridDataFor(TestMapLayers.Two, out var dataLayer2).Should().BeTrue();
-            dataLayer2.TrySet(EntityGridPosition.Of(TestMapLayers.Two, 0, 0, 0), ctx.ItemResolver.Instantiate(ctx, ceilingFan)).Should().BeTrue();
+            dataLayer2.TrySet(EntityGridPosition.Of(TestMapLayers.Two, 0, 0), ctx.ItemResolver.Instantiate(ctx, ceilingFan)).Should().BeTrue();
 
             sps.ProcessSenseProperties(ctx);
             sps.DefinedZLayers.Should().BeEquivalentTo(0);

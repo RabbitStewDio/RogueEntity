@@ -11,7 +11,6 @@ using RogueEntity.Core.Sensing.Cache;
 using RogueEntity.Core.Sensing.Common;
 using RogueEntity.Core.Sensing.Resistance;
 using RogueEntity.Core.Sensing.Sources;
-using RogueEntity.Core.Sensing.Sources.Heat;
 
 namespace RogueEntity.Core.Tests.Sensing.Sources
 {
@@ -100,7 +99,7 @@ namespace RogueEntity.Core.Tests.Sensing.Sources
             senseSystemActions = CreateSystemActions();
 
             context.TryGetItemGridDataFor(TestMapLayers.One, out var mapData).Should().BeTrue();
-            mapData.TryGetMap(0, out var map, MapAccess.ForWriting).Should().BeTrue();
+            mapData.TryGetMap(0, out _, MapAccess.ForWriting).Should().BeTrue();
         }
 
         [TearDown]
@@ -153,13 +152,13 @@ namespace RogueEntity.Core.Tests.Sensing.Sources
             vb.State.Should().Be(SenseSourceDirtyState.Active);
 
             va.SenseSource.TryGetValue(out var vaData).Should().BeTrue("because this sense is observed");
-            vb.SenseSource.TryGetValue(out var vbData).Should().BeFalse("because this sense is not observed by anyone, and thus not computed");
+            vb.SenseSource.TryGetValue(out _).Should().BeFalse("because this sense is not observed by anyone, and thus not computed");
 
             if (haveInactiveState)
             {
                 vc.LastPosition.Should().Be(new Position());
                 vc.State.Should().Be(SenseSourceDirtyState.Inactive);
-                vc.SenseSource.TryGetValue(out var vcData).Should().BeFalse("because this sense is inactive");
+                vc.SenseSource.TryGetValue(out _).Should().BeFalse("because this sense is inactive");
             }
 
             Console.WriteLine("Computed Result:");

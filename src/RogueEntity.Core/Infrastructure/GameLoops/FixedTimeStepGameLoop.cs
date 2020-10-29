@@ -35,6 +35,7 @@ namespace RogueEntity.Core.Infrastructure.GameLoops
             VariableStepHandlers = new List<ActionSystemEntry<TGameContext>>();
             LateStepHandlers = new List<ActionSystemEntry<TGameContext>>();
             InitializationStepHandlers = new List<ActionSystemEntry<TGameContext>>();
+            DisposeStepHandlers = new List<ActionSystemEntry<TGameContext>>();
         }
 
         public ITimeSource TimeSource

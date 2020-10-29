@@ -76,7 +76,7 @@ namespace RogueEntity.Core.Sensing.Discovery
         [IgnoreDataMember]
         public int TileHeight => tileHeight;
 
-        public bool TryGetWritableMap(int z, out DynamicBoolDataView data)
+        public bool TryGetWritableMap(int z, out IDynamicDataView2D<bool> data)
         {
             if (mapData.TryGetValue(z, out var dataForLevel))
             {
@@ -84,8 +84,9 @@ namespace RogueEntity.Core.Sensing.Discovery
                 return true;
             }
 
-            data = new DynamicBoolDataView(OffsetX, OffsetY, TileWidth, TileHeight);
-            mapData[z] = data;
+            var d = new DynamicBoolDataView(OffsetX, OffsetY, TileWidth, TileHeight);
+            mapData[z] = d;
+            data = d;
             return true;
         }
         

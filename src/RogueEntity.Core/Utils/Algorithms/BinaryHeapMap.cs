@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using JetBrains.Annotations;
 
 namespace RogueEntity.Core.Utils.Algorithms
 {
@@ -139,6 +140,10 @@ namespace RogueEntity.Core.Utils.Algorithms
 
             }
 
+            /// <summary>
+            ///   Used when debugging this b***st**rd of a class.
+            /// </summary>
+            [UsedImplicitly]
             public void Revalidate()
             {
                 var keys = Keys();

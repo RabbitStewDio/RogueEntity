@@ -2,7 +2,6 @@ using System.Runtime.Serialization;
 using EnTTSharp.Entities.Attributes;
 using MessagePack;
 using RogueEntity.Core.Sensing.Common;
-using RogueEntity.Core.Sensing.Map.Light;
 using RogueEntity.Core.Utils.Maps;
 using Rectangle = RogueEntity.Core.Utils.Rectangle;
 

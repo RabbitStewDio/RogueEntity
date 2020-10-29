@@ -40,12 +40,12 @@ namespace RogueEntity.Core.Sensing.Receptors
                 return;
             }
 
-            if (!v.GetComponent(k, out SensoryReceptorState<TSense> s))
+            if (!v.GetComponent(k, out SensoryReceptorState<TSense> _))
             {
                 v.AssignComponent(k, SensoryReceptorState.Create<TSense>());
             }
 
-            if (!v.GetComponent(k, out SingleLevelSenseDirectionMapData<TSense, TSource> m))
+            if (!v.GetComponent(k, out SingleLevelSenseDirectionMapData<TSense, TSource> _))
             {
                 v.AssignComponent(k, SingleLevelSenseDirectionMapData.Create<TSense, TSource>());
             }

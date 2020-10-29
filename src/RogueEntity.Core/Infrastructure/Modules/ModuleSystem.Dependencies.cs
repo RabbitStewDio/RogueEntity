@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 
 namespace RogueEntity.Core.Infrastructure.Modules
 {
+    [SuppressMessage("ReSharper", "UnusedTypeParameter")]
     public partial class ModuleSystem<TGameContext>
     {
         string PrintModuleDependencyList(List<ModuleRecord> orderedRecords)

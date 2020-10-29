@@ -44,7 +44,7 @@ namespace RogueEntity.Core.Utils.Maps
 
         public bool Any(int x, int y)
         {
-            var chunkIndex = Math.DivRem(y * Width + x, WordSize, out var innerIndex);
+            var chunkIndex = Math.DivRem(y * Width + x, WordSize, out _);
             var chunk = data[chunkIndex];
             return chunk != 0;
         }

@@ -3,7 +3,6 @@ using JetBrains.Annotations;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Sensing.Common;
-using RogueEntity.Core.Sensing.Common.Physics;
 using RogueEntity.Core.Sensing.Sources;
 using RogueEntity.Core.Sensing.Sources.Touch;
 using RogueEntity.Core.Utils;

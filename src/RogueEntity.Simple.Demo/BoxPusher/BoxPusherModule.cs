@@ -14,7 +14,7 @@ using RogueEntity.Core.Sensing.Receptors.Light;
 using RogueEntity.Core.Sensing.Resistance;
 using RogueEntity.Core.Sensing.Resistance.Maps;
 
-namespace RogueEntity.Simple.BoxPusher
+namespace RogueEntity.Simple.Demo.BoxPusher
 {
     public class BoxPusherModule : ModuleBase
     {

@@ -1,17 +1,11 @@
-using System;
-using System.Collections.Generic;
-using EnTTSharp.Entities.Systems;
 using NUnit.Framework;
 using RogueEntity.Core.Infrastructure.Time;
 using RogueEntity.Core.Meta.Items;
-using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Sensing;
 using RogueEntity.Core.Sensing.Cache;
-using RogueEntity.Core.Sensing.Common;
 using RogueEntity.Core.Sensing.Common.Physics;
 using RogueEntity.Core.Sensing.Resistance;
 using RogueEntity.Core.Sensing.Resistance.Maps;
-using RogueEntity.Core.Sensing.Sources;
 using RogueEntity.Core.Sensing.Sources.Light;
 using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.Algorithms;

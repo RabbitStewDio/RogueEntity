@@ -1,4 +1,3 @@
-using EnTTSharp.Entities.Attributes;
 using RogueEntity.Core.Meta.Base;
 
 namespace RogueEntity.Core.Positioning

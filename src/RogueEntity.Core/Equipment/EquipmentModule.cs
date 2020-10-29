@@ -35,7 +35,7 @@ namespace RogueEntity.Core.Equipment
             where TItemId : IBulkDataStorageKey<TItemId>
         {
             var entityContext = initializer.DeclareEntityContext<TItemId>();
-            entityContext.Register(EquipmentModule.ContainedItemsComponentId, -19000, RegisterContainedItemEntities<TItemId>);
+            entityContext.Register(ContainedItemsComponentId, -19000, RegisterContainedItemEntities);
         }
 
         [EntityRelationInitializer("Relation.Core.Equipment")]
@@ -46,7 +46,7 @@ namespace RogueEntity.Core.Equipment
             where TItemId : IBulkDataStorageKey<TItemId>
         {
             var entityContext = initializer.DeclareEntityContext<TActorId>();
-            entityContext.Register(EquipmentModule.ContainerComponentId, -19000, RegisterContainerEntities<TActorId, TItemId>);
+            entityContext.Register(ContainerComponentId, -19000, RegisterContainerEntities<TActorId, TItemId>);
         }
 
         void RegisterContainedItemEntities<TItemId>(IServiceResolver serviceResolver,

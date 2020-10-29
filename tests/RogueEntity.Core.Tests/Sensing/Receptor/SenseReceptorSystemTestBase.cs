@@ -9,12 +9,10 @@ using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Sensing;
 using RogueEntity.Core.Sensing.Cache;
 using RogueEntity.Core.Sensing.Common;
-using RogueEntity.Core.Sensing.Common.Physics;
 using RogueEntity.Core.Sensing.Receptors;
 using RogueEntity.Core.Sensing.Resistance;
 using RogueEntity.Core.Sensing.Sources;
 using RogueEntity.Core.Tests.Sensing.Sources;
-using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.Algorithms;
 using RogueEntity.Core.Utils.Maps;
 
@@ -96,7 +94,7 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor
             senseSystemActions = CreateSystemActions();
 
             context.TryGetItemGridDataFor(TestMapLayers.One, out var mapData).Should().BeTrue();
-            mapData.TryGetMap(0, out var map, MapAccess.ForWriting).Should().BeTrue();
+            mapData.TryGetMap(0, out _, MapAccess.ForWriting).Should().BeTrue();
         }
 
         protected virtual List<Action<SenseMappingTestContext>> CreateSystemActions()
@@ -138,7 +136,7 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor
 
         protected SenseSourceData ComputeDummySourceData(ItemReference e, int radius)
         {
-            context.ItemEntityRegistry.GetComponent(e, out TSenseSourceDefinition sourceDef).Should().BeTrue();
+            context.ItemEntityRegistry.GetComponent(e, out TSenseSourceDefinition _).Should().BeTrue();
 
             var sd = new SenseSourceData(10);
             foreach (var p in sd.Bounds.Contents)
@@ -194,13 +192,13 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor
             vb.State.Should().Be(SenseSourceDirtyState.Active);
 
             va.SenseSource.TryGetValue(out var vaData).Should().BeTrue();
-            vb.SenseSource.TryGetValue(out var vbData).Should().BeTrue();
+            vb.SenseSource.TryGetValue(out _).Should().BeTrue();
 
             if (haveInactiveState)
             {
                 vc.LastPosition.Should().Be(new Position());
                 vc.State.Should().Be(SenseSourceDirtyState.Inactive);
-                vc.SenseSource.TryGetValue(out var vcData).Should().BeFalse("because this sense is inactive");
+                vc.SenseSource.TryGetValue(out _).Should().BeFalse("because this sense is inactive");
             }
 
             Console.WriteLine("Computed Perception Result:");

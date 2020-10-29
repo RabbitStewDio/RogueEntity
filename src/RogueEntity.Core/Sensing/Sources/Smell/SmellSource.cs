@@ -1,7 +1,6 @@
 using System;
 using System.Runtime.Serialization;
 using MessagePack;
-using RogueEntity.Core.Sensing.Sources.Noise;
 
 namespace RogueEntity.Core.Sensing.Sources.Smell
 {

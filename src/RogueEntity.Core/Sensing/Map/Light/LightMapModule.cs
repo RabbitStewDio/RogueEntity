@@ -117,7 +117,6 @@ namespace RogueEntity.Core.Sensing.Map.Light
         {
             var hs = GetOrCreate(resolver);
 
-            context.AddInitializationStepHandler(hs.EnsureSenseCacheAvailable);
             context.AddDisposeStepHandler(hs.ShutDown);
         }
 
@@ -133,8 +132,7 @@ namespace RogueEntity.Core.Sensing.Map.Light
                 blitter = new DefaultSenseDataBlitter();
             }
 
-            system = new LightMapSystem(resolver.ResolveToReference<ISenseStateCacheProvider>(), 
-                                        resolver.ResolveToReference<ITimeSource>(),
+            system = new LightMapSystem(resolver.ResolveToReference<ITimeSource>(),
                                         blitter);
             return system;
         }

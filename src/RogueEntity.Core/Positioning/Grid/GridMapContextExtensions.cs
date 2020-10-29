@@ -7,7 +7,7 @@ namespace RogueEntity.Core.Positioning.Grid
             where TPosition : IPosition
         {
             if (p.IsInvalid) return false;
-            if (!context.TryGetMap(p.GridZ, out var data))
+            if (!context.TryGetMap(p.GridZ, out _))
             {
                 return false;
             }

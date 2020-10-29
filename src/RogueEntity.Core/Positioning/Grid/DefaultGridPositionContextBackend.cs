@@ -44,10 +44,11 @@ namespace RogueEntity.Core.Positioning.Grid
             return this;
         }
 
-        public DefaultGridPositionContextBackend<TGameContext, TItemId> WithDefaultMapLayer(MapLayer layer, int offsetX, int offsetY, int tileWidth = 64, int tileHeight = 64)
+        public DefaultGridPositionContextBackend<TGameContext, TItemId> WithDefaultMapLayer(MapLayer layer, int offsetX, int offsetY, int tileWidth, int tileHeight)
         {
             return WithRawMapLayer(layer, new DefaultGridMapDataContext<TGameContext, TItemId>(layer, offsetX, offsetY, tileWidth, tileHeight));
         }
+        
         public DefaultGridPositionContextBackend<TGameContext, TItemId> WithDefaultMapLayer(MapLayer layer, int tileWidth = 64, int tileHeight = 64)
         {
             return WithRawMapLayer(layer, new DefaultGridMapDataContext<TGameContext, TItemId>(layer, tileWidth, tileHeight));

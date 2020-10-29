@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using RogueEntity.Core.Utils;
 
 namespace RogueEntity.Core.Sensing.Common
 {

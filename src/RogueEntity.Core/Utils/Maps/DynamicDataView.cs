@@ -222,6 +222,18 @@ namespace RogueEntity.Core.Utils.Maps
             return false;
         }
 
+        public bool TryGetWriteAccess(int x, int y, out IBoundedDataView<T> raw)
+        {
+            if (TryGetDataInternal(x, y, out TrackedDataView t))
+            {
+                raw = t;
+                return true;
+            }
+
+            raw = default;
+            return false;
+        }
+
         public bool TryGetRawAccess(int x, int y, out IBoundedDataViewRawAccess<T> raw)
         {
             if (TryGetDataInternal(x, y, out TrackedDataView t))

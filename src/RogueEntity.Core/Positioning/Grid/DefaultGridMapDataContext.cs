@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using JetBrains.Annotations;
 using RogueEntity.Core.Positioning.MapLayers;
 using RogueEntity.Core.Utils.Maps;
 
@@ -9,7 +10,6 @@ namespace RogueEntity.Core.Positioning.Grid
     {
         public event EventHandler<PositionDirtyEventArgs> PositionDirty;
 
-        readonly MapLayer layer;
         readonly int offsetX;
         readonly int offsetY;
         readonly int tileWidth;
@@ -20,13 +20,16 @@ namespace RogueEntity.Core.Positioning.Grid
 
         public DefaultGridMapDataContext(MapLayer layer, int offsetX, int offsetY, int tileWidth, int tileHeight)
         {
-            this.layer = layer;
+            this.Layer = layer;
             this.offsetX = offsetX;
             this.offsetY = offsetY;
             this.tileWidth = tileWidth;
             this.tileHeight = tileHeight;
             mapDataByDepth = new Dictionary<int, IDynamicDataView2D<TItemId>>();
         }
+        
+        [UsedImplicitly] 
+        public MapLayer Layer { get; }
 
         public bool TryGetRaw(int z, out IDynamicDataView2D<TItemId> data, MapAccess accessMode = MapAccess.ReadOnly)
         {

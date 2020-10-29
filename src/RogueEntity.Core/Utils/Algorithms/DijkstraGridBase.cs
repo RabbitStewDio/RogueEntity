@@ -227,6 +227,8 @@ namespace RogueEntity.Core.Utils.Algorithms
         ///   Returns a path from the current position to the nearest goal. 
         /// </summary>
         /// <param name="p"></param>
+        /// <param name="goalStrength"></param>
+        /// <param name="maxLength"></param>
         /// <returns></returns>
         protected List<Position2D> FindPath(Position2D p,
                                             out float goalStrength,

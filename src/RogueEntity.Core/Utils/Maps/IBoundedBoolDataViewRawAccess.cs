@@ -1,8 +1,7 @@
 namespace RogueEntity.Core.Utils.Maps
 {
-    public interface IBoundedBoolDataViewRawAccess: IReadOnlyView2D<bool>
+    public interface IBoundedBoolDataViewRawAccess: IBoundedDataView<bool>
     {
-        Rectangle Bounds { get; }
         byte[] Data { get; }
     }
 }

@@ -1,6 +1,7 @@
 using RogueEntity.Core.Sensing.Common;
 using RogueEntity.Core.Sensing.Common.FloodFill;
 using RogueEntity.Core.Sensing.Common.Physics;
+using RogueEntity.Core.Sensing.Sources.Smell;
 
 namespace RogueEntity.Core.Sensing.Receptors.Smell
 {

@@ -1,4 +1,3 @@
-using System;
 using System.Runtime.Serialization;
 using EnTTSharp.Entities.Attributes;
 using MessagePack;
@@ -13,7 +12,7 @@ namespace RogueEntity.Core.Sensing.Receptors
         public static SensoryReceptorState<TSense> Create<TSense>()
             where TSense : ISense
         {
-            return new SensoryReceptorState<TSense>(default, SenseSourceDirtyState.UnconditionallyDirty, Position.Invalid);
+            return new SensoryReceptorState<TSense>(default, SenseSourceDirtyState.UnconditionallyDirty, Position.Invalid, 0);
         }
     }
     
@@ -23,13 +22,22 @@ namespace RogueEntity.Core.Sensing.Receptors
     public class SensoryReceptorState<TSense>
         where TSense : ISense
     {
-        public float LastIntensity { get; private set; }
-        public Position LastPosition { get; private set; }
+        [Key(0)]
+        [DataMember(Order = 0)]
         public Optional<SenseSourceData> SenseSource { get; private set; }
+        [Key(1)]
+        [DataMember(Order = 1)]
         public SenseSourceDirtyState State { get; private set; }
+        [Key(2)]
+        [DataMember(Order = 2)]
+        public Position LastPosition { get; private set; }
+        [Key(3)]
+        [DataMember(Order = 3)]
+        public float LastIntensity { get; private set; }
 
-        public SensoryReceptorState(Optional<SenseSourceData> senseSource, SenseSourceDirtyState state, Position lastPosition)
+        public SensoryReceptorState(Optional<SenseSourceData> senseSource, SenseSourceDirtyState state, Position lastPosition, float lastIntensity)
         {
+            LastIntensity = lastIntensity;
             SenseSource = senseSource;
             State = state;
             LastPosition = lastPosition;

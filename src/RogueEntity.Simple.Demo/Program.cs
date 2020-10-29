@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Xna.Framework;
-using RogueEntity.Simple.BoxPusher;
+using RogueEntity.Simple.Demo.BoxPusher;
 using Serilog;
 using Console = SadConsole.Console;
 

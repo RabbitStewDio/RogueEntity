@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using JetBrains.Annotations;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Sensing.Common.Physics;
@@ -45,6 +46,7 @@ namespace RogueEntity.Core.Sensing.Common.FloodFill
             return result;
         }
         
+        [SuppressMessage("ReSharper", "ParameterHidesMember")]
         public void Configure(in SenseSourceDefinition sense,
                               float intensity,
                               in Position2D origin, 

@@ -30,8 +30,7 @@ namespace RogueEntity.Core.Tests.Sensing.Discovery
                 throw new ArgumentException();
             }
             var writable = (DiscoveryMapData)d;
-            ProduceDiscoveryData(writable);
-            return new ItemComponentTestDataFactory<IDiscoveryMap>(d);
+            return new ItemComponentTestDataFactory<IDiscoveryMap>(ProduceDiscoveryData(writable));
         }
 
         protected override DiscoveryMapTrait<SenseMappingTestContext, ActorReference> CreateTrait()

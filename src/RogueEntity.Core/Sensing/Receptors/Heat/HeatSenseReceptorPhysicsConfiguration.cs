@@ -2,7 +2,7 @@ using RogueEntity.Core.Meta.ItemTraits;
 using RogueEntity.Core.Sensing.Common;
 using RogueEntity.Core.Sensing.Common.FloodFill;
 using RogueEntity.Core.Sensing.Common.Physics;
-using RogueEntity.Core.Sensing.Common.ShadowCast;
+using RogueEntity.Core.Sensing.Sources.Heat;
 
 namespace RogueEntity.Core.Sensing.Receptors.Heat
 {

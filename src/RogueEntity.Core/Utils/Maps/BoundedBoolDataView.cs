@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Serialization;
 using System.Text;
@@ -110,6 +109,8 @@ namespace RogueEntity.Core.Utils.Maps
             return false;
         }
 
+        
+        
         public bool Any(int x, int y)
         {
             if (TryGetRawIndex(x, y, out var rawBitIdx))
@@ -149,6 +150,31 @@ namespace RogueEntity.Core.Utils.Maps
             return true;
         }
 
+        public bool TrySet(int x, int y, in bool value)
+        {
+            if (!TryGetRawIndex(x, y, out var rawBitIdx))
+            {
+                return false;
+            }
+                
+            var chunkIndex = Math.DivRem(rawBitIdx, WordSize, out var innerIndex);
+            var bitMask = (byte) (1u << innerIndex);
+            var oldV = this.data[chunkIndex];
+            int newV;
+            if (value)
+            {
+                newV = oldV | bitMask;
+            }
+            else
+            {
+                newV = data[chunkIndex] & ~bitMask;
+            }
+                
+            data[chunkIndex] = (byte) newV;
+            anyValueSet += Math.Sign(newV - oldV);
+            return true;
+        }
+
         public bool this[int x, int y]
         {
             get
@@ -168,26 +194,7 @@ namespace RogueEntity.Core.Utils.Maps
             }
             set
             {
-                if (!TryGetRawIndex(x, y, out var rawBitIdx))
-                {
-                    return;
-                }
-                
-                var chunkIndex = Math.DivRem(rawBitIdx, WordSize, out var innerIndex);
-                var bitMask = (byte) (1u << innerIndex);
-                var oldV = data[chunkIndex];
-                int newV;
-                if (value)
-                {
-                    newV = oldV | bitMask;
-                }
-                else
-                {
-                    newV = data[chunkIndex] & ~bitMask;
-                }
-                
-                data[chunkIndex] = (byte) newV;
-                anyValueSet += Math.Sign(newV - oldV);
+                TrySet(x, y, in value);
             }
         }
 

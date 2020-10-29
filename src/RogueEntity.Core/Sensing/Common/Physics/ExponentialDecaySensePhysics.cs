@@ -1,5 +1,4 @@
 using System;
-using JetBrains.Annotations;
 using RogueEntity.Core.Utils.Algorithms;
 
 namespace RogueEntity.Core.Sensing.Common.Physics

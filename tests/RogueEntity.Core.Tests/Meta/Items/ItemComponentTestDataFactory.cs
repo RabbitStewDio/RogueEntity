@@ -1,5 +1,4 @@
-﻿using RogueEntity.Core.Meta.Items;
-using RogueEntity.Core.Utils;
+﻿using RogueEntity.Core.Utils;
 
 namespace RogueEntity.Core.Tests.Meta.Items
 {

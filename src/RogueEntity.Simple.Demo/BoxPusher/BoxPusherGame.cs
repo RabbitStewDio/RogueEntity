@@ -1,7 +1,7 @@
 using RogueEntity.Core.Infrastructure.Modules;
 using Serilog;
 
-namespace RogueEntity.Simple.BoxPusher
+namespace RogueEntity.Simple.Demo.BoxPusher
 {
     public class BoxPusherGame
     {

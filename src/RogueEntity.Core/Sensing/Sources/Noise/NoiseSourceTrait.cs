@@ -4,7 +4,6 @@ using JetBrains.Annotations;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Sensing.Common;
-using RogueEntity.Core.Sensing.Common.Physics;
 using RogueEntity.Core.Utils;
 
 namespace RogueEntity.Core.Sensing.Sources.Noise
@@ -29,7 +28,7 @@ namespace RogueEntity.Core.Sensing.Sources.Noise
 
         public void Apply(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, IItemDeclaration item)
         {
-            if (!v.GetComponent(k, out NoiseSourceDefinition l))
+            if (!v.GetComponent(k, out NoiseSourceDefinition _))
             {
                 return;
             }

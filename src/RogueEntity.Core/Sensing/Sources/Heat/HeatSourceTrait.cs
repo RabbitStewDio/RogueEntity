@@ -5,7 +5,6 @@ using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Meta.ItemTraits;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Sensing.Common;
-using RogueEntity.Core.Sensing.Common.Physics;
 using RogueEntity.Core.Utils;
 
 namespace RogueEntity.Core.Sensing.Sources.Heat

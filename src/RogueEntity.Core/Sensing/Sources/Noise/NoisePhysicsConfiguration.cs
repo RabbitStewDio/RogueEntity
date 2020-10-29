@@ -1,8 +1,10 @@
 using System;
 using JetBrains.Annotations;
+using RogueEntity.Core.Sensing.Common;
 using RogueEntity.Core.Sensing.Common.FloodFill;
+using RogueEntity.Core.Sensing.Common.Physics;
 
-namespace RogueEntity.Core.Sensing.Common.Physics
+namespace RogueEntity.Core.Sensing.Sources.Noise
 {
     public class NoisePhysicsConfiguration: INoisePhysicsConfiguration, IDisposable
     {

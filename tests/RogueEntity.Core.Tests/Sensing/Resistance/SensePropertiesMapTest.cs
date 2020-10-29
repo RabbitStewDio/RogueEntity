@@ -1,6 +1,5 @@
 using FluentAssertions;
 using NUnit.Framework;
-using NUnit.Framework.Internal.Commands;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Positioning.MapLayers;
@@ -48,7 +47,7 @@ namespace RogueEntity.Core.Tests.Sensing.Resistance
         public void TestMapProcessing()
         {
             ctx.TryGetItemGridDataFor(TestMapLayers.One, out var data).Should().BeTrue();
-            data.TrySet(EntityGridPosition.Of(TestMapLayers.One, 0, 0, 0), ctx.ItemResolver.Instantiate(ctx, wall)).Should().BeTrue();
+            data.TrySet(EntityGridPosition.Of(TestMapLayers.One, 0, 0), ctx.ItemResolver.Instantiate(ctx, wall)).Should().BeTrue();
 
             s.AddProcess(TestMapLayers.One, new SensePropertiesDataProcessor<SenseMappingTestContext, ItemReference>(TestMapLayers.One, 0, 0, 0, 64, 64));
 
@@ -56,13 +55,13 @@ namespace RogueEntity.Core.Tests.Sensing.Resistance
             s.ResetDirtyFlags();
             s[0, 0].Should().Be(new SensoryResistance(Percentage.Full, Percentage.Of(0.5), Percentage.Empty, Percentage.Empty));
 
-            data.TrySet(EntityGridPosition.Of(TestMapLayers.One, 0, 0, 0), default).Should().BeTrue();
+            data.TrySet(EntityGridPosition.Of(TestMapLayers.One, 0, 0), default).Should().BeTrue();
             // without someone marking the data as dirty, no update will be done.
             s.Process(ctx);
             s[0, 0].Should().Be(new SensoryResistance(Percentage.Full, Percentage.Of(0.5), Percentage.Empty, Percentage.Empty));
             
             // After marking the map dirty, the processor should now see the map contents and update accordingly
-            s.MarkDirty(EntityGridPosition.Of(TestMapLayers.One, 0, 0, 0));
+            s.MarkDirty(EntityGridPosition.Of(TestMapLayers.One, 0, 0));
             s.Process(ctx);
             s[0, 0].Should().Be(new SensoryResistance());
         }
@@ -71,16 +70,16 @@ namespace RogueEntity.Core.Tests.Sensing.Resistance
         public void TestCombinedMapProcessing()
         {
             ctx.TryGetItemGridDataFor(TestMapLayers.One, out var dataLayer1).Should().BeTrue();
-            dataLayer1.TrySet(EntityGridPosition.Of(TestMapLayers.One, 0, 0, 0), ctx.ItemResolver.Instantiate(ctx, wall)).Should().BeTrue();
+            dataLayer1.TrySet(EntityGridPosition.Of(TestMapLayers.One, 0, 0), ctx.ItemResolver.Instantiate(ctx, wall)).Should().BeTrue();
 
             ctx.TryGetItemGridDataFor(TestMapLayers.Two, out var dataLayer2).Should().BeTrue();
-            dataLayer2.TrySet(EntityGridPosition.Of(TestMapLayers.Two, 0, 0, 0), ctx.ItemResolver.Instantiate(ctx, ceilingFan)).Should().BeTrue();
+            dataLayer2.TrySet(EntityGridPosition.Of(TestMapLayers.Two, 0, 0), ctx.ItemResolver.Instantiate(ctx, ceilingFan)).Should().BeTrue();
 
             s.AddProcess(TestMapLayers.One, new SensePropertiesDataProcessor<SenseMappingTestContext, ItemReference>(TestMapLayers.One, 0, 0, 0, 64, 64));
             s.AddProcess(TestMapLayers.Two, new SensePropertiesDataProcessor<SenseMappingTestContext, ItemReference>(TestMapLayers.Two, 0, 0, 0, 64, 64));
 
             // After marking the map dirty, the processor should now see the map contents and update accordingly
-            s.MarkDirty(EntityGridPosition.Of(TestMapLayers.Indeterminate, 0, 0, 0));
+            s.MarkDirty(EntityGridPosition.Of(TestMapLayers.Indeterminate, 0, 0));
             s.Process(ctx);
             s[0, 0].Should().Be(new SensoryResistance(Percentage.Full, Percentage.Full, Percentage.Of(0.2f), Percentage.Of(0.5f)));
         }

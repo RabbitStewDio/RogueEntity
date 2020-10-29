@@ -2,9 +2,11 @@ using System;
 using System.Collections.Generic;
 using JetBrains.Annotations;
 using RogueEntity.Core.Meta.ItemTraits;
+using RogueEntity.Core.Sensing.Common;
+using RogueEntity.Core.Sensing.Common.Physics;
 using RogueEntity.Core.Sensing.Common.ShadowCast;
 
-namespace RogueEntity.Core.Sensing.Common.Physics
+namespace RogueEntity.Core.Sensing.Sources.Heat
 {
     public class HeatPhysicsConfiguration: IHeatPhysicsConfiguration
     {

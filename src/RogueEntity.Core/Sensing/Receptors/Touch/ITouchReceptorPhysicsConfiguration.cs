@@ -1,5 +1,6 @@
 using RogueEntity.Core.Sensing.Common;
 using RogueEntity.Core.Sensing.Common.Physics;
+using RogueEntity.Core.Sensing.Sources.Touch;
 
 namespace RogueEntity.Core.Sensing.Receptors.Touch
 {

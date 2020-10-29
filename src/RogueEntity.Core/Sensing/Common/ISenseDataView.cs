@@ -5,6 +5,7 @@ using RogueEntity.Core.Utils.Maps;
 
 namespace RogueEntity.Core.Sensing.Common
 {
+    [SuppressMessage("ReSharper", "PossibleInterfaceMemberAmbiguity")]
     public interface ISenseDataView: IReadOnlyDynamicDataView2D<float>, IReadOnlyDynamicDataView2D<SenseDirectionStore>
     {
         new int OffsetX { get; }

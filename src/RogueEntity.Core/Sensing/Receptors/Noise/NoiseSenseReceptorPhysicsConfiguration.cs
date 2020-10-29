@@ -1,7 +1,7 @@
 using RogueEntity.Core.Sensing.Common;
 using RogueEntity.Core.Sensing.Common.FloodFill;
 using RogueEntity.Core.Sensing.Common.Physics;
-using RogueEntity.Core.Sensing.Common.ShadowCast;
+using RogueEntity.Core.Sensing.Sources.Noise;
 
 namespace RogueEntity.Core.Sensing.Receptors.Noise
 {

@@ -1,5 +1,4 @@
 using System;
-using JetBrains.Annotations;
 using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.Algorithms;
 

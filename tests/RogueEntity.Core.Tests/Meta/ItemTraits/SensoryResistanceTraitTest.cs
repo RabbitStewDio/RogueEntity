@@ -1,6 +1,5 @@
 ﻿using EnTTSharp.Entities;
 using RogueEntity.Core.Meta.Items;
-using RogueEntity.Core.Meta.ItemTraits;
 using RogueEntity.Core.Sensing.Resistance;
 using RogueEntity.Core.Tests.Meta.Items;
 using RogueEntity.Core.Utils;

@@ -1,6 +1,3 @@
-using System;
-using JetBrains.Annotations;
-
 namespace RogueEntity.Core.Sensing.Cache
 {
     public class NoOpSenseCacheProvider: ISenseStateCacheProvider, IGlobalSenseStateCacheProvider

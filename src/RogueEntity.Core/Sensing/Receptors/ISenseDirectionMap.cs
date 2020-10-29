@@ -1,5 +1,4 @@
 using RogueEntity.Core.Sensing.Common;
-using RogueEntity.Core.Sensing.Receptors.InfraVision;
 
 namespace RogueEntity.Core.Sensing.Receptors
 {

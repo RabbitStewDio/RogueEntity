@@ -1,3 +1,4 @@
+using System;
 using EnTTSharp.Entities;
 using EnTTSharp.Entities.Systems;
 using RogueEntity.Core.Infrastructure.Commands;
@@ -7,7 +8,6 @@ using RogueEntity.Core.Infrastructure.Time;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Sensing.Cache;
 using RogueEntity.Core.Sensing.Common.Blitter;
-using RogueEntity.Core.Sensing.Common.Physics;
 using RogueEntity.Core.Sensing.Receptors;
 using RogueEntity.Core.Sensing.Receptors.InfraVision;
 using RogueEntity.Core.Sensing.Receptors.Light;
@@ -15,9 +15,9 @@ using RogueEntity.Core.Sensing.Resistance;
 using RogueEntity.Core.Sensing.Sources;
 using RogueEntity.Core.Sensing.Sources.Heat;
 
-namespace RogueEntity.Core.Sensing.Map.HeatMap
+namespace RogueEntity.Core.Sensing.Map.InfraVision
 {
-    public class HeatMapModule : ModuleBase
+    public class InfraVisionMapModule : ModuleBase
     {
         public const string ModuleId = "Core.Sense.Map.Temperature";
 
@@ -28,7 +28,7 @@ namespace RogueEntity.Core.Sensing.Map.HeatMap
         public static readonly EntitySystemId ReceptorComputeSystemId = "Systems.Core.Senses.Map.Temperature.Compute";
         public static readonly EntitySystemId ReceptorApplySystemId = "Systems.Core.Senses.Map.Temperature.ApplyReceptorFieldOfView";
 
-        public HeatMapModule()
+        public InfraVisionMapModule()
         {
             Id = ModuleId;
 
@@ -119,13 +119,12 @@ namespace RogueEntity.Core.Sensing.Map.HeatMap
         {
             var hs = GetOrCreate(resolver);
 
-            context.AddInitializationStepHandler(hs.EnsureSenseCacheAvailable);
             context.AddDisposeStepHandler(hs.ShutDown);
         }
 
-        HeatMapSystem GetOrCreate(IServiceResolver resolver)
+        InfraVisionMapSystem GetOrCreate(IServiceResolver resolver)
         {
-            if (resolver.TryResolve(out HeatMapSystem system))
+            if (resolver.TryResolve(out InfraVisionMapSystem system))
             {
                 return system;
             }
@@ -135,10 +134,19 @@ namespace RogueEntity.Core.Sensing.Map.HeatMap
                 blitter = new DefaultSenseDataBlitter();
             }
 
-            system = new HeatMapSystem(resolver.ResolveToReference<ISenseStateCacheProvider>(),
-                                       resolver.ResolveToReference<ITimeSource>(),
-                                       resolver.Resolve<IHeatPhysicsConfiguration>(),
-                                       blitter);
+            if (!resolver.TryResolve(out IInfraVisionSenseReceptorPhysicsConfiguration physics))
+            {
+                if (!resolver.TryResolve(out IHeatPhysicsConfiguration sourcePhysics))
+                {
+                    throw new InvalidOperationException("There is neither a heat-physics nor a infra-vision physics configuration defined");
+                }
+                
+                physics = new InfraVisionSenseReceptorPhysicsConfiguration(sourcePhysics);
+            }
+
+            system = new InfraVisionMapSystem(resolver.ResolveToReference<ITimeSource>(),
+                                              physics,
+                                              blitter);
             return system;
         }
     }

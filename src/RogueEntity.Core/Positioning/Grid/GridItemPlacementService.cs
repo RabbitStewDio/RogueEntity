@@ -305,7 +305,7 @@ namespace RogueEntity.Core.Positioning.Grid
                 return false;
             }
 
-            if (!context.ItemResolver.TryQueryData(targetItem, context, out ImmobilityMarker m))
+            if (!context.ItemResolver.TryQueryData(targetItem, context, out ImmobilityMarker _))
             {
                 map[p.GridX, p.GridY] = targetItem;
                 mapData.MarkDirty(p);

@@ -6,7 +6,6 @@ using RogueEntity.Core.Sensing.Common.Physics;
 using RogueEntity.Core.Sensing.Common.ShadowCast;
 using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.Algorithms;
-using RogueEntity.Core.Utils.Maps;
 using static RogueEntity.Core.Tests.Sensing.SenseTestHelpers;
 
 namespace RogueEntity.Core.Tests.Sensing.Common
@@ -123,14 +122,13 @@ namespace RogueEntity.Core.Tests.Sensing.Common
         {
             var radius = width / 2;
             var source = new SenseSourceDefinition(DistanceCalculation.Euclid, radius + 1);
-            var sd = new SenseSourceData(radius);
             var pos = new Position2D(width / 2, height / 2);
             
             var resistanceMap = Parse(sourceText, out _);
             Console.WriteLine("Using room layout \n" + PrintMap(resistanceMap));
             
             var algo = new ShadowPropagationAlgorithm(LinearDecaySensePhysics.For(DistanceCalculation.Euclid));
-            var calculatedResult = algo.Calculate(source, source.Intensity, pos, resistanceMap, null);
+            var calculatedResult = algo.Calculate(source, source.Intensity, pos, resistanceMap);
             Console.WriteLine(PrintMap(calculatedResult, new Rectangle(new Position2D(0,0), radius, radius)));
 
             var expectedResult = Parse(resultText, out _);

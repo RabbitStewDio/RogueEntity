@@ -215,7 +215,7 @@ namespace RogueEntity.Core.Sensing.Receptors
                     return;
                 }
 
-                lights = new SenseDataLevel(level, cacheView, CreateSensoryResistanceView(senseData), physics);
+                lights = new SenseDataLevel(CreateSensoryResistanceView(senseData), physics);
                 activeLightsPerLevel[level] = lights;
             }
 
@@ -265,7 +265,7 @@ namespace RogueEntity.Core.Sensing.Receptors
                     return;
                 }
 
-                lights = new SenseDataLevel(level, cacheView, CreateSensoryResistanceView(senseData), physics);
+                lights = new SenseDataLevel(CreateSensoryResistanceView(senseData), physics);
                 activeLightsPerLevel[level] = lights;
             }
 
@@ -282,10 +282,8 @@ namespace RogueEntity.Core.Sensing.Receptors
         /// <param name="definition"></param>
         /// <param name="state"></param>
         /// <param name="dirtyMarker"></param>
-        /// <param name="pos"></param>
         /// <typeparam name="TItemId"></typeparam>
         /// <typeparam name="TGameContext"></typeparam>
-        /// <typeparam name="TPosition"></typeparam>
         public void RefreshLocalReceptorState<TItemId, TGameContext>(IEntityViewControl<TItemId> v,
                                                                      TGameContext context,
                                                                      TItemId k,
@@ -329,6 +327,7 @@ namespace RogueEntity.Core.Sensing.Receptors
         /// <param name="k"></param>
         /// <param name="definition"></param>
         /// <param name="state"></param>
+        /// <param name="dirty"></param>
         /// <typeparam name="TItemId"></typeparam>
         /// <typeparam name="TGameContext"></typeparam>
         public void ResetReceptorCacheState<TItemId, TGameContext>(IEntityViewControl<TItemId> v,
@@ -404,7 +403,7 @@ namespace RogueEntity.Core.Sensing.Receptors
 
         protected abstract IReadOnlyView2D<float> CreateSensoryResistanceView(IReadOnlyView2D<SensoryResistance> resistanceMap);
 
-        protected class SenseDataLevel : ISenseReceptorProcessor
+        class SenseDataLevel : ISenseReceptorProcessor
         {
             public readonly IReadOnlyView2D<float> ResistanceView;
             public int LastRecentlyUsedTime { get; private set; }
@@ -415,14 +414,12 @@ namespace RogueEntity.Core.Sensing.Receptors
             readonly DirectionalSenseDataMapServices directionalSenseMapServices;
             readonly List<Rectangle> receptorBounds;
 
-            public SenseDataLevel(int z,
-                                  Optional<ISenseStateCacheView> senseCache,
-                                  IReadOnlyView2D<float> resistanceMap,
+            public SenseDataLevel(IReadOnlyView2D<float> resistanceMap,
                                   ISensePhysics physics)
             {
                 this.physics = physics;
-                this.senseMapServices = new OmniDirectionalSenseDataMapServices(z, senseCache);
-                this.directionalSenseMapServices = new DirectionalSenseDataMapServices(z, senseCache);
+                this.senseMapServices = new OmniDirectionalSenseDataMapServices();
+                this.directionalSenseMapServices = new DirectionalSenseDataMapServices();
                 this.ResistanceView = resistanceMap;
                 this.sources = new List<SenseSourceState<TSourceSense>>();
                 this.receptorBounds = new List<Rectangle>();

@@ -1,7 +1,6 @@
 using EnTTSharp.Entities;
 using JetBrains.Annotations;
 using RogueEntity.Core.Meta.Items;
-using RogueEntity.Core.Sensing.Common.Physics;
 using RogueEntity.Core.Sensing.Receptors.InfraVision;
 
 namespace RogueEntity.Core.Sensing.Receptors.Heat

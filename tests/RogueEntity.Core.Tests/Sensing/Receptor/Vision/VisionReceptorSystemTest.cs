@@ -5,7 +5,6 @@ using RogueEntity.Core.Infrastructure.Time;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Sensing;
 using RogueEntity.Core.Sensing.Cache;
-using RogueEntity.Core.Sensing.Common;
 using RogueEntity.Core.Sensing.Common.Blitter;
 using RogueEntity.Core.Sensing.Common.Physics;
 using RogueEntity.Core.Sensing.Receptors;
@@ -96,11 +95,13 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Vision
    .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   
 ";
 
-        readonly LightPhysicsConfiguration physics;
+        readonly LightPhysicsConfiguration sourcePhysics;
+        readonly VisionSenseReceptorPhysicsConfiguration physics;
 
         public VisionReceptorSystemTest()
         {
-            this.physics = new LightPhysicsConfiguration(LinearDecaySensePhysics.For(DistanceCalculation.Chebyshev));
+            this.sourcePhysics = new LightPhysicsConfiguration(LinearDecaySensePhysics.For(DistanceCalculation.Chebyshev));
+            this.physics = new VisionSenseReceptorPhysicsConfiguration(sourcePhysics);
         }
 
         protected override SensoryResistance Convert(float f)
@@ -131,13 +132,13 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Vision
                     decl.WithTrait(new VisionSenseTrait<SenseMappingTestContext, ItemReference>(physics, 5, false));
                     return decl;
                 case "SenseSource-Active-10":
-                    decl.WithTrait(new LightSourceTrait<SenseMappingTestContext, ItemReference>(physics, 10));
+                    decl.WithTrait(new LightSourceTrait<SenseMappingTestContext, ItemReference>(sourcePhysics, 10));
                     return decl;
                 case "SenseSource-Active-5":
-                    decl.WithTrait(new LightSourceTrait<SenseMappingTestContext, ItemReference>(physics, 5));
+                    decl.WithTrait(new LightSourceTrait<SenseMappingTestContext, ItemReference>(sourcePhysics, 5));
                     return decl;
                 case "SenseSource-Inactive-5":
-                    decl.WithTrait(new LightSourceTrait<SenseMappingTestContext, ItemReference>(physics, 5, false));
+                    decl.WithTrait(new LightSourceTrait<SenseMappingTestContext, ItemReference>(sourcePhysics, 5, false));
                     return decl;
                 default:
                     throw new ArgumentException();
@@ -146,13 +147,12 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Vision
 
         protected override SenseReceptorSystem<VisionSense, VisionSense> CreateSystem()
         {
-            var phy = new VisionSenseReceptorPhysicsConfiguration(physics);
             return new VisionReceptorSystem(senseProperties.AsLazy<ISensePropertiesSource>(),
                                             senseCache.AsLazy<ISenseStateCacheProvider>(),
                                             senseCache.AsLazy<IGlobalSenseStateCacheProvider>(),
                                             timeSource.AsLazy<ITimeSource>(),
-                                            phy.VisionPhysics,
-                                            phy.CreateVisionSensorPropagationAlgorithm());
+                                            physics.VisionPhysics,
+                                            physics.CreateVisionSensorPropagationAlgorithm());
         }
 
         [Test]

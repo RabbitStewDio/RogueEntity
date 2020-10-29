@@ -16,11 +16,11 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Vision
     [TestFixture]
     public class VisionReceptorTraitTest: ItemComponentTraitTestBase<SenseMappingTestContext, ActorReference, SensoryReceptorData<VisionSense>, VisionSenseTrait<SenseMappingTestContext, ActorReference>>
     {
-        readonly LightPhysicsConfiguration physics;
+        readonly VisionSenseReceptorPhysicsConfiguration physics;
 
         public VisionReceptorTraitTest()
         {
-            physics = new LightPhysicsConfiguration(new LinearDecaySensePhysics(DistanceCalculation.Chebyshev));
+            physics = new VisionSenseReceptorPhysicsConfiguration(new LightPhysicsConfiguration(new LinearDecaySensePhysics(DistanceCalculation.Chebyshev)));
         }
 
         protected override SenseMappingTestContext CreateContext()
@@ -50,9 +50,9 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Vision
 
         protected override IItemComponentTestDataFactory<SensoryReceptorData<VisionSense>> ProduceTestData(EntityRelations<ActorReference> relations)
         {
-            return new ItemComponentTestDataFactory<SensoryReceptorData<VisionSense>>(new SensoryReceptorData<VisionSense>(new SenseSourceDefinition(physics.LightPhysics.DistanceMeasurement, 1.9f), true),
-                                                                                      new SensoryReceptorData<VisionSense>(new SenseSourceDefinition(physics.LightPhysics.DistanceMeasurement, 10), true),
-                                                                                      new SensoryReceptorData<VisionSense>(new SenseSourceDefinition(physics.LightPhysics.DistanceMeasurement, 12), false)
+            return new ItemComponentTestDataFactory<SensoryReceptorData<VisionSense>>(new SensoryReceptorData<VisionSense>(new SenseSourceDefinition(physics.VisionPhysics.DistanceMeasurement, 1.9f), true),
+                                                                                      new SensoryReceptorData<VisionSense>(new SenseSourceDefinition(physics.VisionPhysics.DistanceMeasurement, 10), true),
+                                                                                      new SensoryReceptorData<VisionSense>(new SenseSourceDefinition(physics.VisionPhysics.DistanceMeasurement, 12), false)
             ).WithRemoveProhibited();
         }
     }

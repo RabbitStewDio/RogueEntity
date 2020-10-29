@@ -1,10 +1,15 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RogueEntity.Core.Infrastructure.Modules
 {
+    [SuppressMessage("ReSharper", "UnusedTypeParameter")]
     public delegate void RegisterRoleEntities<TGameContext, TSubjectId>(TGameContext context, IModuleInitializer<TGameContext> initializer, EntityRole role);
+    [SuppressMessage("ReSharper", "UnusedTypeParameter")]
     public delegate void RegisterRelationEntities<TGameContext, TSubjectId>(TGameContext context, IModuleInitializer<TGameContext> initializer, EntityRelation role);
+    [SuppressMessage("ReSharper", "UnusedTypeParameter")]
     public delegate void RegisterRoleSystemDelegate<TGameContext, TSubjectId>(TGameContext context, IModuleInitializer<TGameContext> initializer, EntityRole role);
+    [SuppressMessage("ReSharper", "UnusedTypeParameter")]
     public delegate void RegisterRelationSystemDelegate<TGameContext, TSubjectId, TObjectId>(TGameContext context, IModuleInitializer<TGameContext> initializer, EntityRelation role);
 
     public readonly struct EntityRole : IEquatable<EntityRole>

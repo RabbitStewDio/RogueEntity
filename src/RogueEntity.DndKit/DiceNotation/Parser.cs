@@ -41,7 +41,7 @@ namespace RogueEntity.DndKit.DiceNotation
 
 		// Evaluates the postfix expression, returning the final term (the one to evaluate to roll
 		// the expression)
-		private static ITerm evaluatePostfix(List<string> postfix)
+        static ITerm evaluatePostfix(List<string> postfix)
 		{
 			var operands = new Stack<ITerm>();
 

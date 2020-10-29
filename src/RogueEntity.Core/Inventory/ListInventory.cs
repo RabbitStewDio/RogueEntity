@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using EnTTSharp.Entities;
 using RogueEntity.Core.Meta.Base;
 using RogueEntity.Core.Meta.Items;
@@ -498,6 +499,7 @@ namespace RogueEntity.Core.Inventory
             return Equals((ListInventory<TGameContext, TOwnerId, TItemId>)obj);
         }
 
+        [SuppressMessage("ReSharper", "NonReadonlyMemberInGetHashCode")]
         public override int GetHashCode()
         {
             return Data.GetHashCode();

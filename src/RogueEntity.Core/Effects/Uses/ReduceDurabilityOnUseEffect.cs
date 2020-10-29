@@ -13,10 +13,6 @@ namespace RogueEntity.Core.Effects.Uses
         where TGameContext : IItemContext<TGameContext, TItemId>, IRandomContext
     {
 
-        public ReduceDurabilityOnUseEffect()
-        {
-        }
-
         public bool TryActivate(TActorId user, TGameContext context, TItemId itemToBeUsed, out TItemId usedItem)
         {
             if (context.ItemResolver.TryQueryData(itemToBeUsed, context, out Durability d))

@@ -39,7 +39,7 @@ namespace RogueEntity.Core.Utils
                 return false;
             }
 
-            while (ProduceIterator(out var incr, out var start, out var end, out int maxPos))
+            while (ProduceIterator(out var incr, out var start, out _, out int maxPos))
             {
                 pos += 1;
                 if (pos < maxPos)

@@ -16,7 +16,6 @@ using RogueEntity.Core.Sensing.Resistance;
 using RogueEntity.Core.Sensing.Resistance.Maps;
 using RogueEntity.Core.Sensing.Sources;
 using RogueEntity.Core.Sensing.Sources.Touch;
-using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.Algorithms;
 
 namespace RogueEntity.Core.Tests.Sensing.Receptor.Touch

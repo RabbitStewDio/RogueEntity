@@ -126,8 +126,8 @@ namespace RogueEntity.Core.Tests.Sensing.Sources.Touch
             vc.State.Should().Be(SenseSourceDirtyState.Active);
 
             va.SenseSource.TryGetValue(out var vaData).Should().BeTrue("because this sense is observed");
-            vb.SenseSource.TryGetValue(out var vbData).Should().BeFalse("because we marked this source non-observed.");
-            vc.SenseSource.TryGetValue(out var vcData).Should().BeTrue();
+            vb.SenseSource.TryGetValue(out _).Should().BeFalse("because we marked this source non-observed.");
+            vc.SenseSource.TryGetValue(out _).Should().BeTrue();
 
             Console.WriteLine("Computed Result:");
             Console.WriteLine(SenseTestHelpers.PrintMap(vaData, vaData.Bounds));

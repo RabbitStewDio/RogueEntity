@@ -102,10 +102,10 @@ namespace RogueEntity.Core.Utils
 												   Func<V, string> valueStringifier = null, string kvSeparator = " : ", string pairSeparator = ", ", string end = "}")
 		{
 			if (keyStringifier == null)
-				keyStringifier = DefaultStringConversion<K>;
+				keyStringifier = DefaultStringConversion;
 
 			if (valueStringifier == null)
-				valueStringifier = DefaultStringConversion<V>;
+				valueStringifier = DefaultStringConversion;
 
 			var result = new StringBuilder(begin);
 			bool first = true;

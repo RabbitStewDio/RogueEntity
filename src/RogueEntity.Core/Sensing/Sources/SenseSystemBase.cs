@@ -6,7 +6,6 @@ using RogueEntity.Core.Infrastructure.Time;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Sensing.Cache;
 using RogueEntity.Core.Sensing.Common;
-using RogueEntity.Core.Sensing.Common.Blitter;
 using RogueEntity.Core.Sensing.Common.Physics;
 using RogueEntity.Core.Sensing.Resistance;
 using RogueEntity.Core.Sensing.Resistance.Maps;
@@ -156,7 +155,7 @@ namespace RogueEntity.Core.Sensing.Sources
         {
             return sd.Intensity;
         }
-        
+
         /// <summary>
         ///   Step 2: Compute the local light state. This radiates the light from the light source and
         ///   stores the lit area in a local map. This can safely run in parallel.
@@ -167,10 +166,9 @@ namespace RogueEntity.Core.Sensing.Sources
         /// <param name="definition"></param>
         /// <param name="state"></param>
         /// <param name="dirtyMarker"></param>
-        /// <param name="pos"></param>
+        /// <param name="observed"></param>
         /// <typeparam name="TItemId"></typeparam>
         /// <typeparam name="TGameContext"></typeparam>
-        /// <typeparam name="TPosition"></typeparam>
         public void RefreshLocalSenseState<TItemId, TGameContext>(IEntityViewControl<TItemId> v,
                                                                   TGameContext context,
                                                                   TItemId k,
@@ -221,6 +219,7 @@ namespace RogueEntity.Core.Sensing.Sources
         /// <param name="k"></param>
         /// <param name="definition"></param>
         /// <param name="state"></param>
+        /// <param name="dirtyFlag"></param>
         /// <typeparam name="TItemId"></typeparam>
         /// <typeparam name="TGameContext"></typeparam>
         public void ResetSenseSourceCacheState<TItemId, TGameContext>(IEntityViewControl<TItemId> v,

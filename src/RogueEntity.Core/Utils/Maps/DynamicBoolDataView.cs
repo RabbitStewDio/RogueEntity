@@ -10,7 +10,7 @@ namespace RogueEntity.Core.Utils.Maps
 {
     [DataContract]
     [MessagePackObject]
-    public class DynamicBoolDataView : IReadOnlyDynamicDataView2D<bool>, IReadOnlyView2D<bool>
+    public class DynamicBoolDataView : IDynamicDataView2D<bool>
     {
         public event EventHandler<DynamicBoolDataViewEventArgs> ViewCreated;
         public event EventHandler<DynamicBoolDataViewEventArgs> ViewExpired;
@@ -221,7 +221,7 @@ namespace RogueEntity.Core.Utils.Maps
             return data;
         }
 
-        public bool TrySet(int x, int y, bool value)
+        public bool TrySet(int x, int y, in bool value)
         {
             var data = GetOrCreateData(x, y);
             return data[x, y] = value;
@@ -248,6 +248,24 @@ namespace RogueEntity.Core.Utils.Maps
             }
 
             data = default;
+            return false;
+        }
+
+        public bool TryGetWriteAccess(int x, int y, out IBoundedDataView<bool> data)
+        {
+            if (TryGetDataInternal(x, y, out TrackedDataView v))
+            {
+                data = v;
+                return true;
+            }
+
+            data = default;
+            return false;
+        }
+
+        public bool TryGetRawAccess(int x, int y, out IBoundedDataViewRawAccess<bool> raw)
+        {
+            raw = default;
             return false;
         }
 
@@ -292,6 +310,7 @@ namespace RogueEntity.Core.Utils.Maps
                 TrySet(x, y, value);
             }
         }
+
 
         [DataContract]
         [MessagePackObject]

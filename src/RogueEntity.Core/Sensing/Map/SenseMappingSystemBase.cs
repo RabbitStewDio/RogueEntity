@@ -5,7 +5,6 @@ using EnTTSharp.Entities;
 using JetBrains.Annotations;
 using RogueEntity.Core.Infrastructure.Time;
 using RogueEntity.Core.Positioning;
-using RogueEntity.Core.Sensing.Cache;
 using RogueEntity.Core.Sensing.Common;
 using RogueEntity.Core.Sensing.Common.Blitter;
 using RogueEntity.Core.Sensing.Receptors;
@@ -24,40 +23,18 @@ namespace RogueEntity.Core.Sensing.Map
         static readonly Action<SenseDataLevel> ProcessSenseMapInstance = v => v.ProcessSenseSources();
         const int ZLayerTimeToLive = 50;
 
-        readonly Lazy<ISenseStateCacheProvider> senseCacheProvider;
         readonly Lazy<ITimeSource> timeSource;
         readonly Dictionary<int, SenseDataLevel> activeLightsPerLevel;
         readonly ISenseDataBlitter blitterFactory;
         readonly List<int> zLevelBuffer;
-        Optional<ISenseStateCacheView> senseCache;
 
-        protected SenseMappingSystemBase([NotNull] Lazy<ISenseStateCacheProvider> senseCacheProvider,
-                                         [NotNull] Lazy<ITimeSource> timeSource,
-                                         ISenseDataBlitter blitterFactory = null)
+        protected SenseMappingSystemBase([NotNull] Lazy<ITimeSource> timeSource,
+                                         ISenseDataBlitter blitterFactory)
         {
-            this.senseCacheProvider = senseCacheProvider ?? throw new ArgumentNullException(nameof(senseCacheProvider));
             this.timeSource = timeSource;
             this.blitterFactory = blitterFactory ?? new DefaultSenseDataBlitter();
             this.activeLightsPerLevel = new Dictionary<int, SenseDataLevel>();
             this.zLevelBuffer = new List<int>();
-        }
-
-        /// <summary>
-        ///   To be called once during initialization.
-        /// </summary>
-        /// <param name="context"></param>
-        /// <typeparam name="TGameContext"></typeparam>
-        public void EnsureSenseCacheAvailable<TGameContext>(TGameContext context)
-        {
-            var provider = senseCacheProvider.Value;
-            if (!provider.TryGetSenseCache<TTargetSense>(out var cache))
-            {
-                senseCache = Optional.ValueOf(cache);
-            }
-            else
-            {
-                Logger.Verbose("This light system will not react to map changes");
-            }
         }
 
         /// <summary>
@@ -95,7 +72,7 @@ namespace RogueEntity.Core.Sensing.Map
         }
 
         /// <summary>
-        ///   Step 3: Copy all processed senses into the global sense map.
+        ///   Step 2: Copy all processed senses into the global sense map.
         /// </summary>
         /// <param name="v"></param>
         /// <typeparam name="TItemId"></typeparam>
@@ -104,10 +81,30 @@ namespace RogueEntity.Core.Sensing.Map
         {
             Parallel.ForEach(activeLightsPerLevel.Values, ProcessSenseMapInstance);
 
-            v.ResetComponent<SenseDirtyFlag<TTargetSense>>();
+            v.ResetComponent<SenseDirtyFlag<TSourceSense>>();
         }
 
         
+        /// <summary>
+        ///   Step 3: Apply sense map data to each sense-receptor in need of updates. This action replaces the
+        ///   <see cref="OmnidirectionalSenseReceptorSystem{TTargetSense,TSourceSense}.CopySenseSourcesToVisionField{TItemId,TGameContext}"/>
+        ///   action of the SenseReceptorModule. Instead of populating the receptor from each sense source
+        ///   individually, we can reuse the already computed global sense map as data source.
+        /// </summary>
+        /// <remarks>
+        ///   This only works well for omni-directional sources, like light or infra-vision receptors. Directional
+        ///   sensing is highly location specific and cannot be replaced this way.
+        ///
+        ///   This action must be executed after the sense-receptor had a chance to compute its own field of view.
+        /// </remarks>
+        /// <param name="v"></param>
+        /// <param name="context"></param>
+        /// <param name="k"></param>
+        /// <param name="receptorState"></param>
+        /// <param name="receptorDirtyFlag"></param>
+        /// <param name="brightnessMap"></param>
+        /// <typeparam name="TItemId"></typeparam>
+        /// <typeparam name="TGameContext"></typeparam>
         public void ApplyReceptorFieldOfView<TItemId, TGameContext>(IEntityViewControl<TItemId> v,
                                                                     TGameContext context,
                                                                     TItemId k,
@@ -140,7 +137,7 @@ namespace RogueEntity.Core.Sensing.Map
 
         
         /// <summary>
-        ///  Step 5: Clear the collected sense sources
+        ///  Step 4: Finally clear the collected sense sources
         /// </summary>
         public void EndSenseCalculation<TGameContext>(TGameContext ctx)
         {
@@ -170,7 +167,7 @@ namespace RogueEntity.Core.Sensing.Map
             var level = p.GridZ;
             if (!activeLightsPerLevel.TryGetValue(level, out var lights))
             {
-                lights = new SenseDataLevel(level, senseCache, blitterFactory);
+                lights = new SenseDataLevel(blitterFactory);
                 activeLightsPerLevel[level] = lights;
             }
 
@@ -193,7 +190,7 @@ namespace RogueEntity.Core.Sensing.Map
             return false;
         }
 
-        public class SenseDataLevel
+        class SenseDataLevel
         {
             public readonly SenseDataMap SenseMap;
             readonly OmniDirectionalSenseDataMapServices senseMapServices;
@@ -202,18 +199,14 @@ namespace RogueEntity.Core.Sensing.Map
             readonly List<(Position2D pos, SenseSourceData senseData)> blittableSenses;
             public int LastRecentlyUsedTime { get; private set; }
 
-            public SenseDataLevel(int z,
-                                  Optional<ISenseStateCacheView> senseCache,
-                                  ISenseDataBlitter blitter = null)
+            public SenseDataLevel(ISenseDataBlitter blitter = null)
             {
                 this.blitter = blitter ?? new DefaultSenseDataBlitter();
-                this.senseMapServices = new OmniDirectionalSenseDataMapServices(z, senseCache);
+                this.senseMapServices = new OmniDirectionalSenseDataMapServices();
                 this.SenseMap = new SenseDataMap();
                 this.blittableSenses = new List<(Position2D, SenseSourceData)>();
                 this.collectedSenses = new List<(Position2D, SenseSourceState<TSourceSense>)>();
             }
-
-            public bool ForceDirty { get; set; }
 
             public void Add(Position p, SenseSourceState<TSourceSense> sense)
             {

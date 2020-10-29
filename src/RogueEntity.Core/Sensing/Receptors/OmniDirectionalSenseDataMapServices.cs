@@ -2,26 +2,22 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using RogueEntity.Core.Positioning;
-using RogueEntity.Core.Sensing.Cache;
+using RogueEntity.Core.Sensing.Common;
 using RogueEntity.Core.Sensing.Common.Blitter;
 using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.Maps;
 
-namespace RogueEntity.Core.Sensing.Common
+namespace RogueEntity.Core.Sensing.Receptors
 {
     public class OmniDirectionalSenseDataMapServices
     {
         static readonly Action<ProcessData> ProcessDataDelegate = ProcessTile;
         
-        readonly int zLevel;
         readonly List<ProcessData> parameterBuffer;
-        readonly Optional<ISenseStateCacheView> senseCache;
         List<Rectangle> partitionsBuffer;
         
-        public OmniDirectionalSenseDataMapServices(int zLevel, Optional<ISenseStateCacheView> senseCache)
+        public OmniDirectionalSenseDataMapServices()
         {
-            this.zLevel = zLevel;
-            this.senseCache = senseCache;
             this.parameterBuffer = new List<ProcessData>();
         }
 
