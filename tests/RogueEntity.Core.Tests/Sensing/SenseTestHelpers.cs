@@ -29,6 +29,37 @@ namespace RogueEntity.Core.Tests.Sensing
             }
         }
 
+        public static void AssertEquals(IReadOnlyView2D<bool> source,
+                                        IReadOnlyView2D<bool> other,
+                                        in Rectangle bounds,
+                                        in Position2D offset)
+        {
+            foreach (var pos in bounds.Contents)
+            {
+                var (x, y) = pos;
+
+                var result = source[x - offset.X, y - offset.Y];
+                var expected = other[x, y];
+                if (result != expected)
+                {
+                    throw new ArgumentException($"Error in comparison at [{x}, {y}]: Expected {expected} but found {result}.\n" +
+                                                $"{bounds} \n" +
+                                                $"SourceMap:\n" + PrintMap(source, new Rectangle(bounds.MinExtentX - offset.X, bounds.MinExtentY - offset.Y, bounds.Width, bounds.Height)) + "\n" +
+                                                $"Expected:\n" + PrintMap(other, in bounds));
+                }
+            }
+        }
+
+        public static DynamicBoolDataView ParseBool(string text) => ParseBool(text, out _);
+
+        public static DynamicBoolDataView ParseBool(string text, out Rectangle parsedBounds)
+        {
+            var tmp = Parse(text, out parsedBounds);
+            var result = new DynamicBoolDataView(tmp.OffsetX, tmp.OffsetY, tmp.TileSizeX, tmp.TileSizeY);
+            ImportData(result, tmp, f => f > 0);
+            return result;
+        }
+        
         public static DynamicDataView<float> Parse(string text) => Parse(text, out _);
         public static DynamicDataView<float> Parse(string text, out Rectangle parsedBounds)
         {
@@ -97,7 +128,14 @@ namespace RogueEntity.Core.Tests.Sensing
                                     elementStringifier: (f) => f != 0 ? $"{f,7:0.000}" : "   .   ");
         }
 
-        public static void ImportData<TResult, TSource>(this DynamicDataView<TResult> targetMap, DynamicDataView<TSource> source, Func<TSource, TResult> converter)
+        public static string PrintMap(IReadOnlyView2D<bool> s, in Rectangle bounds)
+        {
+            return s.ExtendToString(bounds,
+                                    elementSeparator: ",",
+                                    elementStringifier: (f) => f ? $" 1" : " .");
+        }
+
+        public static void ImportData<TResult, TSource>(this IDynamicDataView2D<TResult> targetMap, DynamicDataView<TSource> source, Func<TSource, TResult> converter)
         {
             foreach (var bounds in source.GetActiveTiles())
             {

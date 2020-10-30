@@ -1,24 +1,17 @@
 using EnTTSharp.Entities;
-using EnTTSharp.Entities.Systems;
-using RogueEntity.Core.Infrastructure.Commands;
-using RogueEntity.Core.Infrastructure.GameLoops;
 using RogueEntity.Core.Infrastructure.Modules;
 using RogueEntity.Core.Infrastructure.Time;
 using RogueEntity.Core.Positioning;
-using RogueEntity.Core.Positioning.Continuous;
-using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Sensing.Cache;
-using RogueEntity.Core.Sensing.Common.Blitter;
 using RogueEntity.Core.Sensing.Common.FloodFill;
 using RogueEntity.Core.Sensing.Common.Physics;
 using RogueEntity.Core.Sensing.Resistance;
 using RogueEntity.Core.Sensing.Resistance.Maps;
-using RogueEntity.Core.Sensing.Sources;
 using RogueEntity.Core.Sensing.Sources.Touch;
 
 namespace RogueEntity.Core.Sensing.Receptors.Touch
 {
-    public class TouchSenseModule : ModuleBase
+    public class TouchSenseModule : SenseReceptorModuleBase<TouchSense, TouchSense, TouchSourceDefinition>
     {
         public const string ModuleId = "Core.Sense.Receptor.Touch";
 
@@ -60,7 +53,7 @@ namespace RogueEntity.Core.Sensing.Receptors.Touch
             ctx.Register(RegisterEntityId, 0, RegisterEntities);
             ctx.Register(ReceptorPreparationSystemId, 50000, RegisterPrepareSystem);
             ctx.Register(ReceptorComputeFoVSystemId, 56000, RegisterComputeReceptorFieldOfView);
-            ctx.Register(ReceptorComputeSystemId, 58500, RegisterCalculateSystem);
+            ctx.Register(ReceptorComputeSystemId, 58500, RegisterCalculateOmniDirectionalSystem);
             ctx.Register(ReceptorFinalizeSystemId, 59500, RegisterFinalizeSystem);
         }
 
@@ -96,154 +89,7 @@ namespace RogueEntity.Core.Sensing.Receptors.Touch
             ctx.Register(SenseSourceCollectionContinuousSystemId, 57500, RegisterCollectSenseSourcesSystem);
         }
 
-        void RegisterPrepareSystem<TGameContext, TItemId>(IServiceResolver serviceResolver,
-                                                          IGameLoopSystemRegistration<TGameContext> context,
-                                                          EntityRegistry<TItemId> registry,
-                                                          ICommandHandlerRegistration<TGameContext, TItemId> handler)
-            where TItemId : IEntityKey
-        {
-            if (!GetOrCreateLightSystem(serviceResolver, out var ls))
-            {
-                return;
-            }
-
-            context.AddInitializationStepHandler(ls.EnsureSenseCacheAvailable);
-            context.AddInitializationStepHandler(ls.BeginSenseCalculation);
-            context.AddFixedStepHandlers(ls.BeginSenseCalculation);
-        }
-
-        void RegisterCollectReceptorsGridSystem<TGameContext, TItemId>(IServiceResolver resolver,
-                                                                       IGameLoopSystemRegistration<TGameContext> context,
-                                                                       EntityRegistry<TItemId> registry,
-                                                                       ICommandHandlerRegistration<TGameContext, TItemId> handler)
-            where TItemId : IEntityKey
-        {
-            if (!GetOrCreateLightSystem(resolver, out var ls))
-            {
-                return;
-            }
-
-            var system = registry.BuildSystem()
-                                 .WithContext<TGameContext>()
-                                 .CreateSystem<SensoryReceptorData<TouchSense>, SensoryReceptorState<TouchSense>, ContinuousMapPosition>(ls.CollectReceptor);
-            context.AddInitializationStepHandler(system);
-            context.AddFixedStepHandlers(system);
-        }
-
-        void RegisterCollectReceptorsContinuousSystem<TGameContext, TItemId>(IServiceResolver resolver,
-                                                                             IGameLoopSystemRegistration<TGameContext> context,
-                                                                             EntityRegistry<TItemId> registry,
-                                                                             ICommandHandlerRegistration<TGameContext, TItemId> handler)
-            where TItemId : IEntityKey
-        {
-            if (!GetOrCreateLightSystem(resolver, out var ls))
-            {
-                return;
-            }
-
-            var system = registry.BuildSystem()
-                                 .WithContext<TGameContext>()
-                                 .CreateSystem<SensoryReceptorData<TouchSense>, SensoryReceptorState<TouchSense>, EntityGridPosition>(ls.CollectReceptor);
-            context.AddInitializationStepHandler(system);
-            context.AddFixedStepHandlers(system);
-        }
-
-        void RegisterCollectSenseSourcesSystem<TGameContext, TItemId>(IServiceResolver resolver,
-                                                                      IGameLoopSystemRegistration<TGameContext> context,
-                                                                      EntityRegistry<TItemId> registry,
-                                                                      ICommandHandlerRegistration<TGameContext, TItemId> handler)
-            where TItemId : IEntityKey
-        {
-            if (!GetOrCreateLightSystem(resolver, out var ls))
-            {
-                return;
-            }
-
-            var system = registry.BuildSystem()
-                                 .WithContext<TGameContext>()
-                                 .CreateSystem<TouchSourceDefinition, SenseSourceState<TouchSense>>(ls.CollectSenseSource);
-            context.AddInitializationStepHandler(system);
-            context.AddFixedStepHandlers(system);
-        }
-
-        void RegisterComputeReceptorFieldOfView<TGameContext, TItemId>(IServiceResolver resolver,
-                                                                       IGameLoopSystemRegistration<TGameContext> context,
-                                                                       EntityRegistry<TItemId> registry,
-                                                                       ICommandHandlerRegistration<TGameContext, TItemId> handler)
-            where TItemId : IEntityKey
-        {
-            if (!GetOrCreateLightSystem(resolver, out var ls))
-            {
-                return;
-            }
-
-            var refreshLocalSenseState =
-                registry.BuildSystem()
-                        .WithContext<TGameContext>()
-                        .CreateSystem<SensoryReceptorData<TouchSense>, SensoryReceptorState<TouchSense>, SenseReceptorDirtyFlag<TouchSense>>(ls.RefreshLocalReceptorState);
-            context.AddInitializationStepHandler(refreshLocalSenseState);
-            context.AddFixedStepHandlers(refreshLocalSenseState);
-        }
-
-        void RegisterCalculateSystem<TGameContext, TItemId>(IServiceResolver serviceResolver,
-                                                            IGameLoopSystemRegistration<TGameContext> context,
-                                                            EntityRegistry<TItemId> registry,
-                                                            ICommandHandlerRegistration<TGameContext, TItemId> handler)
-            where TItemId : IEntityKey
-        {
-            if (!GetOrCreateLightSystem(serviceResolver, out var ls))
-            {
-                return;
-            }
-
-            if (!serviceResolver.TryResolve(out ISenseDataBlitter senseBlitter))
-            {
-                senseBlitter = new DefaultSenseDataBlitter();
-            }
-
-
-            var uniSys = new OmnidirectionalSenseReceptorSystem<TouchSense, TouchSense>(ls, senseBlitter);
-            var system = registry.BuildSystem()
-                                 .WithContext<TGameContext>()
-                                 .CreateSystem<SingleLevelSenseDirectionMapData<TouchSense, TouchSense>, SensoryReceptorState<TouchSense>>(uniSys.CopySenseSourcesToVisionField);
-
-
-            context.AddInitializationStepHandler(system);
-            context.AddFixedStepHandlers(system);
-        }
-
-        void RegisterFinalizeSystem<TGameContext, TItemId>(IServiceResolver serviceResolver,
-                                                           IGameLoopSystemRegistration<TGameContext> context,
-                                                           EntityRegistry<TItemId> registry,
-                                                           ICommandHandlerRegistration<TGameContext, TItemId> handler)
-            where TItemId : IEntityKey
-        {
-            if (!GetOrCreateLightSystem(serviceResolver, out var ls))
-            {
-                return;
-            }
-
-            
-            var clearReceptorStateSystem =
-                registry.BuildSystem()
-                        .WithContext<TGameContext>()
-                        .CreateSystem<SensoryReceptorData<TouchSense>, SensoryReceptorState<TouchSense>, SenseReceptorDirtyFlag<TouchSense>>(ls.ResetReceptorCacheState);
-
-            context.AddInitializationStepHandler(clearReceptorStateSystem);
-            context.AddFixedStepHandlers(clearReceptorStateSystem);
-            
-            var clearObservedStateSystem =
-                registry.BuildSystem()
-                        .WithContext<TGameContext>()
-                        .CreateSystem<ObservedSenseSource<TouchSense>>(ls.ResetSenseSourceObservedState);
-            context.AddInitializationStepHandler(clearObservedStateSystem);
-            context.AddFixedStepHandlers(clearObservedStateSystem);
-
-            context.AddInitializationStepHandler(ls.EndSenseCalculation);
-            context.AddFixedStepHandlers(ls.EndSenseCalculation);
-        }
-
-        static bool GetOrCreateLightSystem(IServiceResolver serviceResolver, out SenseReceptorSystem<TouchSense, TouchSense> ls)
+        protected override bool GetOrCreateLightSystem(IServiceResolver serviceResolver, out SenseReceptorSystem<TouchSense, TouchSense> ls)
         {
             if (!serviceResolver.TryResolve(out ITouchReceptorPhysicsConfiguration physics))
             {
@@ -272,15 +118,6 @@ namespace RogueEntity.Core.Sensing.Receptors.Touch
             }
 
             return true;
-        }
-
-        void RegisterEntities<TItemId>(IServiceResolver serviceResolver, EntityRegistry<TItemId> registry)
-            where TItemId : IEntityKey
-        {
-            registry.RegisterNonConstructable<SensoryReceptorData<TouchSense>>();
-            registry.RegisterNonConstructable<SensoryReceptorState<TouchSense>>();
-            registry.RegisterNonConstructable<SingleLevelSenseDirectionMapData<TouchSense, TouchSense>>();
-            registry.RegisterFlag<SenseReceptorDirtyFlag<TouchSense>>();
         }
     }
 }

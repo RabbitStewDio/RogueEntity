@@ -22,7 +22,7 @@ namespace RogueEntity.Core.Sensing.Receptors
                                                                          TGameContext context,
                                                                          TItemId k,
                                                                          in SingleLevelSenseDirectionMapData<TTargetSense, TSourceSense> brightnessMap,
-                                                                         in SensoryReceptorState<TTargetSense> state)
+                                                                         in SensoryReceptorState<TTargetSense, TSourceSense> state)
             where TItemId : IEntityKey
         {
             if (state.LastPosition.IsInvalid || 
@@ -34,7 +34,7 @@ namespace RogueEntity.Core.Sensing.Receptors
 
             var senseBoundaries = perceptionFoV.Bounds.WithCenter(new Position2D(state.LastPosition.GridX, state.LastPosition.GridY));
             var senseMap = brightnessMap.SenseMap;
-            level.ProcessDirectional(blitter, state.LastPosition, senseMap, senseBoundaries, v.GetComponent(k, out SenseReceptorDirtyFlag<TTargetSense> _));
+            level.ProcessDirectional(blitter, state.LastPosition, senseMap, senseBoundaries, v.GetComponent(k, out SenseReceptorDirtyFlag<TTargetSense, TSourceSense> _));
             brightnessMap.WithLevel(state.LastPosition.GridZ);
             
             SenseReceptors.CopyReceptorFieldOfView(senseMap, state.LastPosition, state.LastIntensity, perceptionFoV, senseMap);

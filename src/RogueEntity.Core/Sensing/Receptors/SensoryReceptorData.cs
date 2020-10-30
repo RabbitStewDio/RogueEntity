@@ -10,8 +10,8 @@ namespace RogueEntity.Core.Sensing.Receptors
     [EntityComponent(EntityConstructor.NonConstructable)]
     [DataContract]
     [MessagePackObject]
-    public readonly struct SensoryReceptorData<TSense>: ISenseDefinition, IEquatable<SensoryReceptorData<TSense>>
-        where TSense : ISense
+    public readonly struct SensoryReceptorData<TReceptorSense, TSourceSense>: ISenseDefinition, IEquatable<SensoryReceptorData<TReceptorSense, TSourceSense>>
+        where TReceptorSense : ISense
     {
         [DataMember(Order = 0)]
         [Key(0)]
@@ -36,24 +36,24 @@ namespace RogueEntity.Core.Sensing.Receptors
             Enabled = enabled;
         }
 
-        public SensoryReceptorData<TSense> WithSenseSource(SenseSourceDefinition sense)
+        public SensoryReceptorData<TReceptorSense, TSourceSense> WithSenseSource(SenseSourceDefinition sense)
         {
-            return new SensoryReceptorData<TSense>(sense, Enabled);
+            return new SensoryReceptorData<TReceptorSense, TSourceSense>(sense, Enabled);
         }
 
-        public SensoryReceptorData<TSense> WithEnabled(bool enabled = true)
+        public SensoryReceptorData<TReceptorSense, TSourceSense> WithEnabled(bool enabled = true)
         {
-            return new SensoryReceptorData<TSense>(SenseDefinition, enabled);
+            return new SensoryReceptorData<TReceptorSense, TSourceSense>(SenseDefinition, enabled);
         }
 
-        public bool Equals(SensoryReceptorData<TSense> other)
+        public bool Equals(SensoryReceptorData<TReceptorSense, TSourceSense> other)
         {
             return SenseDefinition.Equals(other.SenseDefinition) && Enabled == other.Enabled;
         }
 
         public override bool Equals(object obj)
         {
-            return obj is SensoryReceptorData<TSense> other && Equals(other);
+            return obj is SensoryReceptorData<TReceptorSense, TSourceSense> other && Equals(other);
         }
 
         public override int GetHashCode()
@@ -64,12 +64,12 @@ namespace RogueEntity.Core.Sensing.Receptors
             }
         }
 
-        public static bool operator ==(SensoryReceptorData<TSense> left, SensoryReceptorData<TSense> right)
+        public static bool operator ==(SensoryReceptorData<TReceptorSense, TSourceSense> left, SensoryReceptorData<TReceptorSense, TSourceSense> right)
         {
             return left.Equals(right);
         }
 
-        public static bool operator !=(SensoryReceptorData<TSense> left, SensoryReceptorData<TSense> right)
+        public static bool operator !=(SensoryReceptorData<TReceptorSense, TSourceSense> left, SensoryReceptorData<TReceptorSense, TSourceSense> right)
         {
             return !left.Equals(right);
         }

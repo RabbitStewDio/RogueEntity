@@ -6,15 +6,15 @@ namespace RogueEntity.Core.Sensing.Receptors
 {
     public static class SingleLevelSenseDirectionMapData
     {
-        public static SingleLevelSenseDirectionMapData<TSense, TSource> Create<TSense, TSource>()
+        public static SingleLevelSenseDirectionMapData<TReceptorSense, TSourceSense> Create<TReceptorSense, TSourceSense>()
         {
-            return new SingleLevelSenseDirectionMapData<TSense, TSource>(int.MinValue, new SenseDataMap());
+            return new SingleLevelSenseDirectionMapData<TReceptorSense, TSourceSense>(int.MinValue, new SenseDataMap());
         }
     }
     
     [DataContract]
     [MessagePackObject]
-    public readonly struct SingleLevelSenseDirectionMapData<TSense, TSource>
+    public readonly struct SingleLevelSenseDirectionMapData<TReceptorSense, TSourceSense>
     {
         [DataMember(Order = 0)]
         [Key(0)]
@@ -43,14 +43,14 @@ namespace RogueEntity.Core.Sensing.Receptors
             return false;
         }
 
-        public SingleLevelSenseDirectionMapData<TSense, TSource> WithDisabledState()
+        public SingleLevelSenseDirectionMapData<TReceptorSense, TSourceSense> WithDisabledState()
         {
-            return new SingleLevelSenseDirectionMapData<TSense, TSource>(int.MinValue, SenseMap);
+            return new SingleLevelSenseDirectionMapData<TReceptorSense, TSourceSense>(int.MinValue, SenseMap);
         }
 
-        public SingleLevelSenseDirectionMapData<TSense, TSource> WithLevel(int z)
+        public SingleLevelSenseDirectionMapData<TReceptorSense, TSourceSense> WithLevel(int z)
         {
-            return new SingleLevelSenseDirectionMapData<TSense, TSource>(z, SenseMap);
+            return new SingleLevelSenseDirectionMapData<TReceptorSense, TSourceSense>(z, SenseMap);
         }
     }
 }

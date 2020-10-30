@@ -13,7 +13,7 @@ using RogueEntity.Core.Utils.Algorithms;
 
 namespace RogueEntity.Core.Tests.Sensing.Receptor.Touch
 {
-    public class TouchReceptorTraitTest : ItemComponentTraitTestBase<SenseMappingTestContext, ActorReference, SensoryReceptorData<TouchSense>,
+    public class TouchReceptorTraitTest : ItemComponentTraitTestBase<SenseMappingTestContext, ActorReference, SensoryReceptorData<TouchSense, TouchSense>,
         TouchReceptorTrait<SenseMappingTestContext, ActorReference>>
     {
         readonly TouchSenseReceptorPhysicsConfiguration physics;
@@ -34,10 +34,10 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Touch
             context.ActorEntityRegistry.RegisterFlag<ObservedSenseSource<TouchSense>>();
             context.ActorEntityRegistry.RegisterFlag<SenseDirtyFlag<TouchSense>>();
 
-            context.ActorEntityRegistry.RegisterNonConstructable<SensoryReceptorData<TouchSense>>();
-            context.ActorEntityRegistry.RegisterNonConstructable<SensoryReceptorState<TouchSense>>();
+            context.ActorEntityRegistry.RegisterNonConstructable<SensoryReceptorData<TouchSense, TouchSense>>();
+            context.ActorEntityRegistry.RegisterNonConstructable<SensoryReceptorState<TouchSense, TouchSense>>();
             context.ActorEntityRegistry.RegisterNonConstructable<SingleLevelSenseDirectionMapData<TouchSense, TouchSense>>();
-            context.ActorEntityRegistry.RegisterFlag<SenseReceptorDirtyFlag<TouchSense>>();
+            context.ActorEntityRegistry.RegisterFlag<SenseReceptorDirtyFlag<TouchSense, TouchSense>>();
 
             return context;
         }
@@ -51,14 +51,14 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Touch
             return new TouchReceptorTrait<SenseMappingTestContext, ActorReference>(physics);
         }
 
-        protected override IItemComponentTestDataFactory<SensoryReceptorData<TouchSense>> ProduceTestData(EntityRelations<ActorReference> relations)
+        protected override IItemComponentTestDataFactory<SensoryReceptorData<TouchSense, TouchSense>> ProduceTestData(EntityRelations<ActorReference> relations)
         {
             var distanceCalculation = physics.TouchPhysics.DistanceMeasurement;
             var intensity = distanceCalculation.MaximumStepDistance();
-            return new ItemComponentTestDataFactory<SensoryReceptorData<TouchSense>>(
-                new SensoryReceptorData<TouchSense>(new SenseSourceDefinition(physics.TouchPhysics.DistanceMeasurement, intensity), true),
-                new SensoryReceptorData<TouchSense>(new SenseSourceDefinition(physics.TouchPhysics.DistanceMeasurement, intensity), true),
-                new SensoryReceptorData<TouchSense>(new SenseSourceDefinition(physics.TouchPhysics.DistanceMeasurement, intensity), false)
+            return new ItemComponentTestDataFactory<SensoryReceptorData<TouchSense, TouchSense>>(
+                new SensoryReceptorData<TouchSense, TouchSense>(new SenseSourceDefinition(physics.TouchPhysics.DistanceMeasurement, intensity), true),
+                new SensoryReceptorData<TouchSense, TouchSense>(new SenseSourceDefinition(physics.TouchPhysics.DistanceMeasurement, intensity), true),
+                new SensoryReceptorData<TouchSense, TouchSense>(new SenseSourceDefinition(physics.TouchPhysics.DistanceMeasurement, intensity), false)
             ).WithRemoveProhibited();
         }
     }

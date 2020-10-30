@@ -1,23 +1,16 @@
 using EnTTSharp.Entities;
-using EnTTSharp.Entities.Systems;
-using RogueEntity.Core.Infrastructure.Commands;
-using RogueEntity.Core.Infrastructure.GameLoops;
 using RogueEntity.Core.Infrastructure.Modules;
 using RogueEntity.Core.Infrastructure.Time;
 using RogueEntity.Core.Positioning;
-using RogueEntity.Core.Positioning.Continuous;
-using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Sensing.Cache;
-using RogueEntity.Core.Sensing.Common.Blitter;
 using RogueEntity.Core.Sensing.Common.FloodFill;
 using RogueEntity.Core.Sensing.Resistance;
 using RogueEntity.Core.Sensing.Resistance.Maps;
-using RogueEntity.Core.Sensing.Sources;
 using RogueEntity.Core.Sensing.Sources.Heat;
 
 namespace RogueEntity.Core.Sensing.Receptors.Heat
 {
-    public class HeatDirectionSenseModule : ModuleBase
+    public class HeatDirectionSenseModule : SenseReceptorModuleBase<TemperatureSense, TemperatureSense, HeatSourceDefinition>
     {
         public const string ModuleId = "Core.Sense.Receptor.Noise";
 
@@ -59,7 +52,7 @@ namespace RogueEntity.Core.Sensing.Receptors.Heat
             ctx.Register(RegisterEntityId, 0, RegisterEntities);
             ctx.Register(ReceptorPreparationSystemId, 50000, RegisterPrepareSystem);
             ctx.Register(ReceptorComputeFoVSystemId, 56000, RegisterComputeReceptorFieldOfView);
-            ctx.Register(ReceptorComputeSystemId, 58500, RegisterCalculateSystem);
+            ctx.Register(ReceptorComputeSystemId, 58500, RegisterCalculateUniDirectionalSystem);
             ctx.Register(ReceptorFinalizeSystemId, 59500, RegisterFinalizeSystem);
         }
 
@@ -95,154 +88,7 @@ namespace RogueEntity.Core.Sensing.Receptors.Heat
             ctx.Register(SenseSourceCollectionContinuousSystemId, 57500, RegisterCollectSenseSourcesSystem);
         }
 
-        void RegisterPrepareSystem<TGameContext, TItemId>(IServiceResolver serviceResolver,
-                                                          IGameLoopSystemRegistration<TGameContext> context,
-                                                          EntityRegistry<TItemId> registry,
-                                                          ICommandHandlerRegistration<TGameContext, TItemId> handler)
-            where TItemId : IEntityKey
-        {
-            if (!GetOrCreateLightSystem(serviceResolver, out var ls))
-            {
-                return;
-            }
-
-            context.AddInitializationStepHandler(ls.EnsureSenseCacheAvailable);
-            context.AddInitializationStepHandler(ls.BeginSenseCalculation);
-            context.AddFixedStepHandlers(ls.BeginSenseCalculation);
-        }
-
-        void RegisterCollectReceptorsGridSystem<TGameContext, TItemId>(IServiceResolver resolver,
-                                                                       IGameLoopSystemRegistration<TGameContext> context,
-                                                                       EntityRegistry<TItemId> registry,
-                                                                       ICommandHandlerRegistration<TGameContext, TItemId> handler)
-            where TItemId : IEntityKey
-        {
-            if (!GetOrCreateLightSystem(resolver, out var ls))
-            {
-                return;
-            }
-
-            var system = registry.BuildSystem()
-                                 .WithContext<TGameContext>()
-                                 .CreateSystem<SensoryReceptorData<TemperatureSense>, SensoryReceptorState<TemperatureSense>, ContinuousMapPosition>(ls.CollectReceptor);
-            context.AddInitializationStepHandler(system);
-            context.AddFixedStepHandlers(system);
-        }
-
-        void RegisterCollectReceptorsContinuousSystem<TGameContext, TItemId>(IServiceResolver resolver,
-                                                                             IGameLoopSystemRegistration<TGameContext> context,
-                                                                             EntityRegistry<TItemId> registry,
-                                                                             ICommandHandlerRegistration<TGameContext, TItemId> handler)
-            where TItemId : IEntityKey
-        {
-            if (!GetOrCreateLightSystem(resolver, out var ls))
-            {
-                return;
-            }
-
-            var system = registry.BuildSystem()
-                                 .WithContext<TGameContext>()
-                                 .CreateSystem<SensoryReceptorData<TemperatureSense>, SensoryReceptorState<TemperatureSense>, EntityGridPosition>(ls.CollectReceptor);
-            context.AddInitializationStepHandler(system);
-            context.AddFixedStepHandlers(system);
-        }
-
-        void RegisterCollectSenseSourcesSystem<TGameContext, TItemId>(IServiceResolver resolver,
-                                                                      IGameLoopSystemRegistration<TGameContext> context,
-                                                                      EntityRegistry<TItemId> registry,
-                                                                      ICommandHandlerRegistration<TGameContext, TItemId> handler)
-            where TItemId : IEntityKey
-        {
-            if (!GetOrCreateLightSystem(resolver, out var ls))
-            {
-                return;
-            }
-
-            var system = registry.BuildSystem()
-                                 .WithContext<TGameContext>()
-                                 .CreateSystem<HeatSourceDefinition, SenseSourceState<TemperatureSense>>(ls.CollectSenseSource);
-            context.AddInitializationStepHandler(system);
-            context.AddFixedStepHandlers(system);
-        }
-
-        void RegisterComputeReceptorFieldOfView<TGameContext, TItemId>(IServiceResolver resolver,
-                                                                       IGameLoopSystemRegistration<TGameContext> context,
-                                                                       EntityRegistry<TItemId> registry,
-                                                                       ICommandHandlerRegistration<TGameContext, TItemId> handler)
-            where TItemId : IEntityKey
-        {
-            if (!GetOrCreateLightSystem(resolver, out var ls))
-            {
-                return;
-            }
-
-            var refreshLocalSenseState =
-                registry.BuildSystem()
-                        .WithContext<TGameContext>()
-                        .CreateSystem<SensoryReceptorData<TemperatureSense>, SensoryReceptorState<TemperatureSense>, SenseReceptorDirtyFlag<TemperatureSense>>(ls.RefreshLocalReceptorState);
-            context.AddInitializationStepHandler(refreshLocalSenseState);
-            context.AddFixedStepHandlers(refreshLocalSenseState);
-        }
-
-        void RegisterCalculateSystem<TGameContext, TItemId>(IServiceResolver serviceResolver,
-                                                            IGameLoopSystemRegistration<TGameContext> context,
-                                                            EntityRegistry<TItemId> registry,
-                                                            ICommandHandlerRegistration<TGameContext, TItemId> handler)
-            where TItemId : IEntityKey
-        {
-            if (!GetOrCreateLightSystem(serviceResolver, out var ls))
-            {
-                return;
-            }
-
-            if (!serviceResolver.TryResolve(out IDirectionalSenseBlitter senseBlitter))
-            {
-                senseBlitter = new DefaultDirectionalSenseBlitter();
-            }
-
-
-            var uniSys = new UnidirectionalSenseReceptorSystem<TemperatureSense, TemperatureSense>(ls, senseBlitter);
-            var system = registry.BuildSystem()
-                                 .WithContext<TGameContext>()
-                                 .CreateSystem<SingleLevelSenseDirectionMapData<TemperatureSense, TemperatureSense>, SensoryReceptorState<TemperatureSense>>(uniSys.CopySenseSourcesToVisionField);
-
-
-            context.AddInitializationStepHandler(system);
-            context.AddFixedStepHandlers(system);
-        }
-
-        void RegisterFinalizeSystem<TGameContext, TItemId>(IServiceResolver serviceResolver,
-                                                           IGameLoopSystemRegistration<TGameContext> context,
-                                                           EntityRegistry<TItemId> registry,
-                                                           ICommandHandlerRegistration<TGameContext, TItemId> handler)
-            where TItemId : IEntityKey
-        {
-            if (!GetOrCreateLightSystem(serviceResolver, out var ls))
-            {
-                return;
-            }
-
-            var clearReceptorStateSystem =
-                registry.BuildSystem()
-                        .WithContext<TGameContext>()
-                        .CreateSystem<SensoryReceptorData<TemperatureSense>, SensoryReceptorState<TemperatureSense>, SenseReceptorDirtyFlag<TemperatureSense>>(ls.ResetReceptorCacheState);
-
-            context.AddInitializationStepHandler(clearReceptorStateSystem);
-            context.AddFixedStepHandlers(clearReceptorStateSystem);
-            
-            var clearObservedStateSystem =
-                registry.BuildSystem()
-                        .WithContext<TGameContext>()
-                        .CreateSystem<ObservedSenseSource<TemperatureSense>>(ls.ResetSenseSourceObservedState);
-
-            context.AddInitializationStepHandler(clearObservedStateSystem);
-            context.AddFixedStepHandlers(clearObservedStateSystem);
-            
-            context.AddInitializationStepHandler(ls.EndSenseCalculation);
-            context.AddFixedStepHandlers(ls.EndSenseCalculation);
-        }
-
-        static bool GetOrCreateLightSystem(IServiceResolver serviceResolver, out SenseReceptorSystem<TemperatureSense, TemperatureSense> ls)
+        protected override bool GetOrCreateLightSystem(IServiceResolver serviceResolver, out SenseReceptorSystem<TemperatureSense, TemperatureSense> ls)
         {
             if (!serviceResolver.TryResolve(out IHeatSenseReceptorPhysicsConfiguration physicsConfig))
             {
@@ -270,15 +116,6 @@ namespace RogueEntity.Core.Sensing.Receptors.Heat
             }
 
             return true;
-        }
-
-        void RegisterEntities<TItemId>(IServiceResolver serviceResolver, EntityRegistry<TItemId> registry)
-            where TItemId : IEntityKey
-        {
-            registry.RegisterNonConstructable<SensoryReceptorData<TemperatureSense>>();
-            registry.RegisterNonConstructable<SensoryReceptorState<TemperatureSense>>();
-            registry.RegisterNonConstructable<SingleLevelSenseDirectionMapData<TemperatureSense, TemperatureSense>>();
-            registry.RegisterFlag<SenseReceptorDirtyFlag<TemperatureSense>>();
         }
     }
 }

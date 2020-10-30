@@ -59,10 +59,10 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor
             context.ItemEntityRegistry.RegisterNonConstructable<EntityGridPosition>();
             context.ItemEntityRegistry.RegisterNonConstructable<EntityGridPositionChangedMarker>();
             context.ItemEntityRegistry.RegisterFlag<ImmobilityMarker>();
-            context.ItemEntityRegistry.RegisterNonConstructable<SensoryReceptorData<TReceptorSense>>();
-            context.ItemEntityRegistry.RegisterNonConstructable<SensoryReceptorState<TReceptorSense>>();
+            context.ItemEntityRegistry.RegisterNonConstructable<SensoryReceptorData<TReceptorSense, TSourceSense>>();
+            context.ItemEntityRegistry.RegisterNonConstructable<SensoryReceptorState<TReceptorSense, TSourceSense>>();
             context.ItemEntityRegistry.RegisterNonConstructable<SingleLevelSenseDirectionMapData<TReceptorSense, TSourceSense>>();
-            context.ItemEntityRegistry.RegisterFlag<SenseReceptorDirtyFlag<TReceptorSense>>();
+            context.ItemEntityRegistry.RegisterFlag<SenseReceptorDirtyFlag<TReceptorSense, TSourceSense>>();
 
             senseSourceActive10 = context.ItemRegistry.Register(new ReferenceItemDeclaration<SenseMappingTestContext, ItemReference>("SenseSource-Active-10")
                                                                 .WithTrait(new ReferenceItemGridPositionTrait<SenseMappingTestContext, ItemReference>(context.ItemResolver, TestMapLayers.One))
@@ -105,11 +105,11 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor
             return new List<Action<SenseMappingTestContext>>
             {
                 ls.BeginSenseCalculation,
-                builder.CreateSystem<SensoryReceptorData<TReceptorSense>, SensoryReceptorState<TReceptorSense>, EntityGridPosition>(ls.CollectReceptor), // 5550
-                builder.CreateSystem<SensoryReceptorData<TReceptorSense>, SensoryReceptorState<TReceptorSense>, SenseReceptorDirtyFlag<TReceptorSense>>(ls.RefreshLocalReceptorState), // 5600
+                builder.CreateSystem<SensoryReceptorData<TReceptorSense, TSourceSense>, SensoryReceptorState<TReceptorSense, TSourceSense>, EntityGridPosition>(ls.CollectReceptor), // 5550
+                builder.CreateSystem<SensoryReceptorData<TReceptorSense, TSourceSense>, SensoryReceptorState<TReceptorSense, TSourceSense>, SenseReceptorDirtyFlag<TReceptorSense, TSourceSense>>(ls.RefreshLocalReceptorState), // 5600
                 builder.CreateSystem<TSenseSourceDefinition, SenseSourceState<TSourceSense>>(ls.CollectSenseSource), // 5750
                 CreateCopyAction(), // 5850
-                builder.CreateSystem<SensoryReceptorData<TReceptorSense>, SensoryReceptorState<TReceptorSense>, SenseReceptorDirtyFlag<TReceptorSense>>(ls.ResetReceptorCacheState), // 5900
+                builder.CreateSystem<SensoryReceptorData<TReceptorSense, TSourceSense>, SensoryReceptorState<TReceptorSense, TSourceSense>, SenseReceptorDirtyFlag<TReceptorSense, TSourceSense>>(ls.ResetReceptorCacheState), // 5900
                 builder.CreateSystem<ObservedSenseSource<TSourceSense>>(ls.ResetSenseSourceObservedState), // 5900
                 ls.EndSenseCalculation
             };
@@ -181,9 +181,9 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor
                 a(context);
             }
 
-            context.ItemEntityRegistry.GetComponent(active10, out SensoryReceptorState<TReceptorSense> va).Should().BeTrue();
-            context.ItemEntityRegistry.GetComponent(active5, out SensoryReceptorState<TReceptorSense> vb).Should().BeTrue();
-            bool haveInactiveState = context.ItemEntityRegistry.GetComponent(inactive, out SensoryReceptorState<TReceptorSense> vc);
+            context.ItemEntityRegistry.GetComponent(active10, out SensoryReceptorState<TReceptorSense, TSourceSense> va).Should().BeTrue();
+            context.ItemEntityRegistry.GetComponent(active5, out SensoryReceptorState<TReceptorSense, TSourceSense> vb).Should().BeTrue();
+            bool haveInactiveState = context.ItemEntityRegistry.GetComponent(inactive, out SensoryReceptorState<TReceptorSense, TSourceSense> vc);
 
             va.LastPosition.Should().Be(new Position(26, 4, 0, TestMapLayers.One));
             vb.LastPosition.Should().Be(new Position(7, 9, 0, TestMapLayers.One));

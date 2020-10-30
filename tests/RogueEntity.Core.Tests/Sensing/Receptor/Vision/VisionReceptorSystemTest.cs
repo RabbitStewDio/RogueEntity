@@ -115,7 +115,7 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Vision
                                  .WithContext<SenseMappingTestContext>();
 
             var omniSystem = new OmnidirectionalSenseReceptorSystem<VisionSense, VisionSense>(senseSystem, new DefaultSenseDataBlitter());
-            return builder.CreateSystem<SingleLevelSenseDirectionMapData<VisionSense, VisionSense>, SensoryReceptorState<VisionSense>>(omniSystem.CopySenseSourcesToVisionField);
+            return builder.CreateSystem<SingleLevelSenseDirectionMapData<VisionSense, VisionSense>, SensoryReceptorState<VisionSense, VisionSense>>(omniSystem.CopySenseSourcesToVisionField);
         }
 
         protected override ReferenceItemDeclaration<SenseMappingTestContext, ItemReference> AttachTrait(ReferenceItemDeclaration<SenseMappingTestContext, ItemReference> decl)

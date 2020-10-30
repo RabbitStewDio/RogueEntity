@@ -14,7 +14,7 @@ using RogueEntity.Core.Utils.Algorithms;
 
 namespace RogueEntity.Core.Tests.Sensing.Receptor.Heat
 {
-    public class HeatReceptorTraitTest : ItemComponentTraitTestBase<SenseMappingTestContext, ActorReference, SensoryReceptorData<TemperatureSense>,
+    public class HeatReceptorTraitTest : ItemComponentTraitTestBase<SenseMappingTestContext, ActorReference, SensoryReceptorData<TemperatureSense, TemperatureSense>,
         HeatDirectionSenseTrait<SenseMappingTestContext, ActorReference>>
     {
         readonly HeatSenseReceptorPhysicsConfiguration physics;
@@ -35,10 +35,10 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Heat
             context.ActorEntityRegistry.RegisterFlag<ObservedSenseSource<TemperatureSense>>();
             context.ActorEntityRegistry.RegisterFlag<SenseDirtyFlag<TemperatureSense>>();
 
-            context.ActorEntityRegistry.RegisterNonConstructable<SensoryReceptorData<TemperatureSense>>();
-            context.ActorEntityRegistry.RegisterNonConstructable<SensoryReceptorState<TemperatureSense>>();
+            context.ActorEntityRegistry.RegisterNonConstructable<SensoryReceptorData<TemperatureSense, TemperatureSense>>();
+            context.ActorEntityRegistry.RegisterNonConstructable<SensoryReceptorState<TemperatureSense, TemperatureSense>>();
             context.ActorEntityRegistry.RegisterNonConstructable<SingleLevelSenseDirectionMapData<TemperatureSense, TemperatureSense>>();
-            context.ActorEntityRegistry.RegisterFlag<SenseReceptorDirtyFlag<TemperatureSense>>();
+            context.ActorEntityRegistry.RegisterFlag<SenseReceptorDirtyFlag<TemperatureSense, TemperatureSense>>();
 
             return context;
         }
@@ -52,12 +52,12 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Heat
             return new HeatDirectionSenseTrait<SenseMappingTestContext, ActorReference>(physics, 1.9f);
         }
 
-        protected override IItemComponentTestDataFactory<SensoryReceptorData<TemperatureSense>> ProduceTestData(EntityRelations<ActorReference> relations)
+        protected override IItemComponentTestDataFactory<SensoryReceptorData<TemperatureSense, TemperatureSense>> ProduceTestData(EntityRelations<ActorReference> relations)
         {
-            return new ItemComponentTestDataFactory<SensoryReceptorData<TemperatureSense>>(
-                new SensoryReceptorData<TemperatureSense>(new SenseSourceDefinition(physics.HeatPhysics.DistanceMeasurement, 1.9f), true),
-                new SensoryReceptorData<TemperatureSense>(new SenseSourceDefinition(physics.HeatPhysics.DistanceMeasurement, 10), true),
-                new SensoryReceptorData<TemperatureSense>(new SenseSourceDefinition(physics.HeatPhysics.DistanceMeasurement, 12), false)
+            return new ItemComponentTestDataFactory<SensoryReceptorData<TemperatureSense, TemperatureSense>>(
+                new SensoryReceptorData<TemperatureSense, TemperatureSense>(new SenseSourceDefinition(physics.HeatPhysics.DistanceMeasurement, 1.9f), true),
+                new SensoryReceptorData<TemperatureSense, TemperatureSense>(new SenseSourceDefinition(physics.HeatPhysics.DistanceMeasurement, 10), true),
+                new SensoryReceptorData<TemperatureSense, TemperatureSense>(new SenseSourceDefinition(physics.HeatPhysics.DistanceMeasurement, 12), false)
             ).WithRemoveProhibited();
         }
     }

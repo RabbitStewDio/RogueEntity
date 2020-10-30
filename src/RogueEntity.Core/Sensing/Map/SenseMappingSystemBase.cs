@@ -108,8 +108,8 @@ namespace RogueEntity.Core.Sensing.Map
         public void ApplyReceptorFieldOfView<TItemId, TGameContext>(IEntityViewControl<TItemId> v,
                                                                     TGameContext context,
                                                                     TItemId k,
-                                                                    in SensoryReceptorState<TTargetSense> receptorState,
-                                                                    in SenseReceptorDirtyFlag<TTargetSense> receptorDirtyFlag,
+                                                                    in SensoryReceptorState<TTargetSense, TSourceSense> receptorState,
+                                                                    in SenseReceptorDirtyFlag<TTargetSense, TSourceSense> receptorDirtyFlag,
                                                                     in SingleLevelSenseDirectionMapData<TTargetSense, TSourceSense> brightnessMap)
             where TItemId : IEntityKey
         {

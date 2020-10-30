@@ -117,7 +117,7 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Heat
                                  .WithContext<SenseMappingTestContext>();
 
             var omniSystem = new OmnidirectionalSenseReceptorSystem<TemperatureSense, TemperatureSense>(senseSystem, new DefaultSenseDataBlitter());
-            return builder.CreateSystem<SingleLevelSenseDirectionMapData<TemperatureSense, TemperatureSense>, SensoryReceptorState<TemperatureSense>>(omniSystem.CopySenseSourcesToVisionField);
+            return builder.CreateSystem<SingleLevelSenseDirectionMapData<TemperatureSense, TemperatureSense>, SensoryReceptorState<TemperatureSense, TemperatureSense>>(omniSystem.CopySenseSourcesToVisionField);
         }
 
         protected override ReferenceItemDeclaration<SenseMappingTestContext, ItemReference> AttachTrait(ReferenceItemDeclaration<SenseMappingTestContext, ItemReference> decl)

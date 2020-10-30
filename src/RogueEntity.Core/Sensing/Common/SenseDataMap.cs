@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.Serialization;
 using JetBrains.Annotations;
 using MessagePack;
+using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.Maps;
 
@@ -120,6 +121,15 @@ namespace RogueEntity.Core.Sensing.Common
             return r1 && r2;
         }
         
+        public void Write(Position2D point,
+                          Position2D origin,
+                          float intensity, 
+                          SenseDataFlags flags = SenseDataFlags.None)
+        {
+            var direction = point - origin;
+            TryStore(point.X, point.Y, intensity, SenseDirectionStore.From(direction.X, direction.Y).With(flags));
+        }
+
         public int OffsetX
         {
             get { return sensitivityData.OffsetX; }

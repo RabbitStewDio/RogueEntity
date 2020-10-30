@@ -25,15 +25,16 @@ namespace RogueEntity.Core.Sensing.Discovery
         }
 
         [SuppressMessage("ReSharper", "UnusedParameter.Global")]
-        public void ExpandDiscoveredArea<TGameContext, TActorId, TSourceSense, TReceptorSense>(IEntityViewControl<TActorId> v,
+        public void ExpandDiscoveredArea<TGameContext, TActorId, TReceptorSense, TSourceSense>(IEntityViewControl<TActorId> v,
                                                                                                TGameContext context,
                                                                                                TActorId k,
                                                                                                in DiscoveryMapData map,
-                                                                                               in SensoryReceptorState<TReceptorSense> receptor,
+                                                                                               in SensoryReceptorState<TReceptorSense, TSourceSense> receptor,
                                                                                                in SingleLevelSenseDirectionMapData<TReceptorSense, TSourceSense> vision,
-                                                                                               in SenseReceptorDirtyFlag<TReceptorSense> unused)
+                                                                                               in SenseReceptorDirtyFlag<TReceptorSense, TSourceSense> unused)
             where TActorId : IEntityKey
             where TReceptorSense : ISense
+            where TSourceSense : ISense
         {
             var pos = receptor.LastPosition;
             if (!receptor.SenseSource.TryGetValue(out var sense) ||
@@ -42,9 +43,7 @@ namespace RogueEntity.Core.Sensing.Discovery
                 return;
             }
 
-            var partitions = partitionBounds.Value;
             var senseBounds = new Rectangle(new Position2D(pos.GridX, pos.GridY), sense.Radius, sense.Radius);
-            senseBounds.PartitionBy(map.OffsetX, map.OffsetY, map.TileWidth, map.TileHeight, partitions);
 
             if (!vision.TryGetIntensity(pos.GridZ, out var senseMap))
             {
@@ -56,15 +55,15 @@ namespace RogueEntity.Core.Sensing.Discovery
                 return;
             }
 
-            foreach (var p in partitions)
+            // var partitions = partitionBounds.Value;
+            // senseBounds.PartitionBy(map.OffsetX, map.OffsetY, map.TileWidth, map.TileHeight, partitions);
+
+            foreach (var (x, y) in senseBounds.Contents)
             {
-                foreach (var (x, y) in p.Contents)
+                if (senseMap.TryQuery(x, y, out var intensity, out _) &&
+                    intensity > 0)
                 {
-                    if (senseMap.TryQuery(x, y, out var intensity, out _) &&
-                        intensity > 0)
-                    {
-                        target[x, y] = true;
-                    }
+                    target[x, y] = true;
                 }
             }
         }

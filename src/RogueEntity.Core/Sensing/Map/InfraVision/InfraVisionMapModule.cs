@@ -107,8 +107,8 @@ namespace RogueEntity.Core.Sensing.Map.InfraVision
 
             var system = registry.BuildSystem()
                                  .WithContext<TGameContext>()
-                                 .CreateSystem<SensoryReceptorState<VisionSense>,
-                                     SenseReceptorDirtyFlag<VisionSense>,
+                                 .CreateSystem<SensoryReceptorState<VisionSense, TemperatureSense>,
+                                     SenseReceptorDirtyFlag<VisionSense, TemperatureSense>,
                                      SingleLevelSenseDirectionMapData<VisionSense, TemperatureSense>>(hs.ApplyReceptorFieldOfView);
 
             context.AddInitializationStepHandler(system);

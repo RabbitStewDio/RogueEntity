@@ -14,7 +14,7 @@ using RogueEntity.Core.Utils.Algorithms;
 namespace RogueEntity.Core.Tests.Sensing.Receptor.Vision
 {
     [TestFixture]
-    public class VisionReceptorTraitTest: ItemComponentTraitTestBase<SenseMappingTestContext, ActorReference, SensoryReceptorData<VisionSense>, VisionSenseTrait<SenseMappingTestContext, ActorReference>>
+    public class VisionReceptorTraitTest: ItemComponentTraitTestBase<SenseMappingTestContext, ActorReference, SensoryReceptorData<VisionSense, VisionSense>, VisionSenseTrait<SenseMappingTestContext, ActorReference>>
     {
         readonly VisionSenseReceptorPhysicsConfiguration physics;
 
@@ -31,10 +31,10 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Vision
             context.ActorEntityRegistry.RegisterFlag<ObservedSenseSource<VisionSense>>();
             context.ActorEntityRegistry.RegisterFlag<SenseDirtyFlag<VisionSense>>();
             
-            context.ActorEntityRegistry.RegisterNonConstructable<SensoryReceptorData<VisionSense>>();
-            context.ActorEntityRegistry.RegisterNonConstructable<SensoryReceptorState<VisionSense>>();
+            context.ActorEntityRegistry.RegisterNonConstructable<SensoryReceptorData<VisionSense, VisionSense>>();
+            context.ActorEntityRegistry.RegisterNonConstructable<SensoryReceptorState<VisionSense, VisionSense>>();
             context.ActorEntityRegistry.RegisterNonConstructable<SingleLevelSenseDirectionMapData<VisionSense, VisionSense>>();
-            context.ActorEntityRegistry.RegisterFlag<SenseReceptorDirtyFlag<VisionSense>>();
+            context.ActorEntityRegistry.RegisterFlag<SenseReceptorDirtyFlag<VisionSense, VisionSense>>();
 
             return context;
         }
@@ -48,11 +48,11 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Vision
             return new VisionSenseTrait<SenseMappingTestContext, ActorReference>(physics, 1.9f);
         }
 
-        protected override IItemComponentTestDataFactory<SensoryReceptorData<VisionSense>> ProduceTestData(EntityRelations<ActorReference> relations)
+        protected override IItemComponentTestDataFactory<SensoryReceptorData<VisionSense, VisionSense>> ProduceTestData(EntityRelations<ActorReference> relations)
         {
-            return new ItemComponentTestDataFactory<SensoryReceptorData<VisionSense>>(new SensoryReceptorData<VisionSense>(new SenseSourceDefinition(physics.VisionPhysics.DistanceMeasurement, 1.9f), true),
-                                                                                      new SensoryReceptorData<VisionSense>(new SenseSourceDefinition(physics.VisionPhysics.DistanceMeasurement, 10), true),
-                                                                                      new SensoryReceptorData<VisionSense>(new SenseSourceDefinition(physics.VisionPhysics.DistanceMeasurement, 12), false)
+            return new ItemComponentTestDataFactory<SensoryReceptorData<VisionSense, VisionSense>>(new SensoryReceptorData<VisionSense, VisionSense>(new SenseSourceDefinition(physics.VisionPhysics.DistanceMeasurement, 1.9f), true),
+                                                                                                   new SensoryReceptorData<VisionSense, VisionSense>(new SenseSourceDefinition(physics.VisionPhysics.DistanceMeasurement, 10), true),
+                                                                                                   new SensoryReceptorData<VisionSense, VisionSense>(new SenseSourceDefinition(physics.VisionPhysics.DistanceMeasurement, 12), false)
             ).WithRemoveProhibited();
         }
     }

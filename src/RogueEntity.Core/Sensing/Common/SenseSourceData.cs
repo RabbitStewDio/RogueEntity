@@ -106,7 +106,7 @@ namespace RogueEntity.Core.Sensing.Common
         }
 
         public void Write(Position2D point,
-                          Position2D direction,
+                          Position2D origin,
                           float intensity, 
                           SenseDataFlags flags = SenseDataFlags.None)
         {
@@ -123,6 +123,7 @@ namespace RogueEntity.Core.Sensing.Common
             
             var linIndex = dx + dy * LineWidth;
 
+            var direction = point - origin;
             Intensities[linIndex] = intensity;
             Directions[linIndex] = SenseDirectionStore.From(direction.X, direction.Y).With(flags).RawData;
         }

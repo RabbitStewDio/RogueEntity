@@ -52,10 +52,10 @@ namespace RogueEntity.Core.Tests.Sensing.Map
             context.ItemEntityRegistry.RegisterNonConstructable<EntityGridPosition>();
             context.ItemEntityRegistry.RegisterNonConstructable<EntityGridPositionChangedMarker>();
             context.ItemEntityRegistry.RegisterFlag<ImmobilityMarker>();
-            context.ItemEntityRegistry.RegisterNonConstructable<SensoryReceptorData<TReceptorSense>>();
-            context.ItemEntityRegistry.RegisterNonConstructable<SensoryReceptorState<TReceptorSense>>();
+            context.ItemEntityRegistry.RegisterNonConstructable<SensoryReceptorData<TReceptorSense, TSourceSense>>();
+            context.ItemEntityRegistry.RegisterNonConstructable<SensoryReceptorState<TReceptorSense, TSourceSense>>();
             context.ItemEntityRegistry.RegisterNonConstructable<SingleLevelSenseDirectionMapData<TReceptorSense, TSourceSense>>();
-            context.ItemEntityRegistry.RegisterFlag<SenseReceptorDirtyFlag<TReceptorSense>>();
+            context.ItemEntityRegistry.RegisterFlag<SenseReceptorDirtyFlag<TReceptorSense, TSourceSense>>();
 
             senseSourceActive10 = context.ItemRegistry.Register(new ReferenceItemDeclaration<SenseMappingTestContext, ItemReference>("SenseSource-Active-10")
                                                                 .WithTrait(new ReferenceItemGridPositionTrait<SenseMappingTestContext, ItemReference>(context.ItemResolver, TestMapLayers.One))
@@ -100,8 +100,8 @@ namespace RogueEntity.Core.Tests.Sensing.Map
             var builder = context.ItemEntityRegistry.BuildSystem().WithContext<SenseMappingTestContext>();
             var collectSystem = builder.CreateSystem<TSenseSourceDefinition, SenseSourceState<TSourceSense>>(senseSystem.CollectSenseSources);
             void ProcessAction(SenseMappingTestContext c) => senseSystem.ProcessSenseMap(c.ItemEntityRegistry);
-            var applyReceptorFieldOfViewAction = builder.CreateSystem<SensoryReceptorState<TReceptorSense>, 
-                SenseReceptorDirtyFlag<TReceptorSense>, SingleLevelSenseDirectionMapData<TReceptorSense, TSourceSense>>(senseSystem.ApplyReceptorFieldOfView);
+            var applyReceptorFieldOfViewAction = builder.CreateSystem<SensoryReceptorState<TReceptorSense, TSourceSense>, 
+                SenseReceptorDirtyFlag<TReceptorSense, TSourceSense>, SingleLevelSenseDirectionMapData<TReceptorSense, TSourceSense>>(senseSystem.ApplyReceptorFieldOfView);
 
             return new List<Action<SenseMappingTestContext>>
             {
@@ -165,19 +165,19 @@ namespace RogueEntity.Core.Tests.Sensing.Map
             context.ItemResolver.TryUpdateData(active5, context, EntityGridPosition.Of(TestMapLayers.One, 7, 9), out _).Should().BeTrue();
             context.ItemResolver.TryUpdateData(inactive, context, EntityGridPosition.Of(TestMapLayers.One, 13, 13), out _).Should().BeTrue();
             
-            context.ItemEntityRegistry.AssignComponent<SenseReceptorDirtyFlag<TReceptorSense>>(active10);            
-            context.ItemEntityRegistry.AssignComponent<SenseReceptorDirtyFlag<TReceptorSense>>(active5);            
-            context.ItemEntityRegistry.AssignComponent<SenseReceptorDirtyFlag<TReceptorSense>>(inactive);            
+            context.ItemEntityRegistry.AssignComponent<SenseReceptorDirtyFlag<TReceptorSense, TSourceSense>>(active10);            
+            context.ItemEntityRegistry.AssignComponent<SenseReceptorDirtyFlag<TReceptorSense, TSourceSense>>(active5);            
+            context.ItemEntityRegistry.AssignComponent<SenseReceptorDirtyFlag<TReceptorSense, TSourceSense>>(inactive);            
             
             context.ItemEntityRegistry.AssignOrReplace(active10,
-                                                       new SensoryReceptorState<TReceptorSense>(ComputeDummySourceData(active10, 10),
-                                                                                                    SenseSourceDirtyState.Active, Position.Of(TestMapLayers.One, 26, 4), 10));
+                                                       new SensoryReceptorState<TReceptorSense, TSourceSense>(ComputeDummySourceData(active10, 10),
+                                                                                                              SenseSourceDirtyState.Active, Position.Of(TestMapLayers.One, 26, 4), 10));
             context.ItemEntityRegistry.AssignOrReplace(active5,
-                                                       new SensoryReceptorState<TReceptorSense>(ComputeDummySourceData(active5, 5),
-                                                                                                SenseSourceDirtyState.Active, Position.Of(TestMapLayers.One, 7, 9), 5));
+                                                       new SensoryReceptorState<TReceptorSense, TSourceSense>(ComputeDummySourceData(active5, 5),
+                                                                                                              SenseSourceDirtyState.Active, Position.Of(TestMapLayers.One, 7, 9), 5));
             context.ItemEntityRegistry.AssignOrReplace(inactive,
-                                                       new SensoryReceptorState<TReceptorSense>(default,
-                                                                                                SenseSourceDirtyState.Inactive, Position.Invalid, 0));
+                                                       new SensoryReceptorState<TReceptorSense, TSourceSense>(default,
+                                                                                                              SenseSourceDirtyState.Inactive, Position.Invalid, 0));
         }
 
         protected void PerformTest(string id, string sourceText, string expectedGlobalSenseMap, string expectedPerceptionResult, string expectedLocalSenseMap)
@@ -200,9 +200,9 @@ namespace RogueEntity.Core.Tests.Sensing.Map
                 a(context);
             }
 
-            context.ItemEntityRegistry.GetComponent(active10, out SensoryReceptorState<TReceptorSense> va).Should().BeTrue();
-            context.ItemEntityRegistry.GetComponent(active5, out SensoryReceptorState<TReceptorSense> vb).Should().BeTrue();
-            bool haveInactiveState = context.ItemEntityRegistry.GetComponent(inactive, out SensoryReceptorState<TReceptorSense> vc);
+            context.ItemEntityRegistry.GetComponent(active10, out SensoryReceptorState<TReceptorSense, TSourceSense> va).Should().BeTrue();
+            context.ItemEntityRegistry.GetComponent(active5, out SensoryReceptorState<TReceptorSense, TSourceSense> vb).Should().BeTrue();
+            bool haveInactiveState = context.ItemEntityRegistry.GetComponent(inactive, out SensoryReceptorState<TReceptorSense, TSourceSense> vc);
 
             va.LastPosition.Should().Be(new Position(26, 4, 0, TestMapLayers.One));
             vb.LastPosition.Should().Be(new Position(7, 9, 0, TestMapLayers.One));

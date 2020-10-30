@@ -13,7 +13,8 @@ using RogueEntity.Core.Utils.Algorithms;
 
 namespace RogueEntity.Core.Tests.Sensing.Receptor.InfraVision
 {
-    public class InfraVisionReceptorTraitTest: ItemComponentTraitTestBase<SenseMappingTestContext, ActorReference, SensoryReceptorData<VisionSense>, InfraVisionSenseTrait<SenseMappingTestContext, ActorReference>>
+    public class InfraVisionReceptorTraitTest : ItemComponentTraitTestBase<SenseMappingTestContext, ActorReference, SensoryReceptorData<VisionSense, TemperatureSense>,
+        InfraVisionSenseTrait<SenseMappingTestContext, ActorReference>>
     {
         readonly HeatPhysicsConfiguration physics;
 
@@ -29,15 +30,15 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.InfraVision
             context.ActorEntityRegistry.RegisterNonConstructable<SenseSourceState<TemperatureSense>>();
             context.ActorEntityRegistry.RegisterFlag<ObservedSenseSource<TemperatureSense>>();
             context.ActorEntityRegistry.RegisterFlag<SenseDirtyFlag<TemperatureSense>>();
-            
-            context.ActorEntityRegistry.RegisterNonConstructable<SensoryReceptorData<VisionSense>>();
-            context.ActorEntityRegistry.RegisterNonConstructable<SensoryReceptorState<VisionSense>>();
+
+            context.ActorEntityRegistry.RegisterNonConstructable<SensoryReceptorData<VisionSense, TemperatureSense>>();
+            context.ActorEntityRegistry.RegisterNonConstructable<SensoryReceptorState<VisionSense, TemperatureSense>>();
             context.ActorEntityRegistry.RegisterNonConstructable<SingleLevelSenseDirectionMapData<VisionSense, TemperatureSense>>();
-            context.ActorEntityRegistry.RegisterFlag<SenseReceptorDirtyFlag<VisionSense>>();
+            context.ActorEntityRegistry.RegisterFlag<SenseReceptorDirtyFlag<VisionSense, TemperatureSense>>();
 
             return context;
         }
-        
+
         protected override EntityRegistry<ActorReference> EntityRegistry => Context.ActorEntityRegistry;
         protected override ItemRegistry<SenseMappingTestContext, ActorReference> ItemRegistry => Context.ActorRegistry;
         protected override IBulkDataStorageMetaData<ActorReference> ItemIdMetaData => new ActorReferenceMetaData();
@@ -48,11 +49,12 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.InfraVision
             return new InfraVisionSenseTrait<SenseMappingTestContext, ActorReference>(phy, 1.9f);
         }
 
-        protected override IItemComponentTestDataFactory<SensoryReceptorData<VisionSense>> ProduceTestData(EntityRelations<ActorReference> relations)
+        protected override IItemComponentTestDataFactory<SensoryReceptorData<VisionSense, TemperatureSense>> ProduceTestData(EntityRelations<ActorReference> relations)
         {
-            return new ItemComponentTestDataFactory<SensoryReceptorData<VisionSense>>(new SensoryReceptorData<VisionSense>(new SenseSourceDefinition(physics.HeatPhysics.DistanceMeasurement, 1.9f), true),
-                                                                                      new SensoryReceptorData<VisionSense>(new SenseSourceDefinition(physics.HeatPhysics.DistanceMeasurement, 10), true),
-                                                                                      new SensoryReceptorData<VisionSense>(new SenseSourceDefinition(physics.HeatPhysics.DistanceMeasurement, 12), false)
+            return new ItemComponentTestDataFactory<SensoryReceptorData<VisionSense, TemperatureSense>>(
+                new SensoryReceptorData<VisionSense, TemperatureSense>(new SenseSourceDefinition(physics.HeatPhysics.DistanceMeasurement, 1.9f), true),
+                new SensoryReceptorData<VisionSense, TemperatureSense>(new SenseSourceDefinition(physics.HeatPhysics.DistanceMeasurement, 10), true),
+                new SensoryReceptorData<VisionSense, TemperatureSense>(new SenseSourceDefinition(physics.HeatPhysics.DistanceMeasurement, 12), false)
             ).WithRemoveProhibited();
         }
     }

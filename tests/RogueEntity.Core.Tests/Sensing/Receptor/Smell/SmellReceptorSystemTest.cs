@@ -118,7 +118,7 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Smell
                                  .WithContext<SenseMappingTestContext>();
 
             var omniSystem = new OmnidirectionalSenseReceptorSystem<SmellSense, SmellSense>(senseSystem, new DefaultSenseDataBlitter());
-            return builder.CreateSystem<SingleLevelSenseDirectionMapData<SmellSense, SmellSense>, SensoryReceptorState<SmellSense>>(omniSystem.CopySenseSourcesToVisionField);
+            return builder.CreateSystem<SingleLevelSenseDirectionMapData<SmellSense, SmellSense>, SensoryReceptorState<SmellSense, SmellSense>>(omniSystem.CopySenseSourcesToVisionField);
         }
 
         protected override ReferenceItemDeclaration<SenseMappingTestContext, ItemReference> AttachTrait(ReferenceItemDeclaration<SenseMappingTestContext, ItemReference> decl)

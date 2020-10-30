@@ -9,18 +9,20 @@ namespace RogueEntity.Core.Sensing.Receptors
 {
     public static class SensoryReceptorState
     {
-        public static SensoryReceptorState<TSense> Create<TSense>()
-            where TSense : ISense
+        public static SensoryReceptorState<TReceptorSense, TSourceSense> Create<TReceptorSense, TSourceSense>()
+            where TReceptorSense : ISense
+            where TSourceSense : ISense
         {
-            return new SensoryReceptorState<TSense>(default, SenseSourceDirtyState.UnconditionallyDirty, Position.Invalid, 0);
+            return new SensoryReceptorState<TReceptorSense, TSourceSense>(default, SenseSourceDirtyState.UnconditionallyDirty, Position.Invalid, 0);
         }
     }
     
     [EntityComponent(EntityConstructor.NonConstructable)]
     [DataContract]
     [MessagePackObject]
-    public class SensoryReceptorState<TSense>
-        where TSense : ISense
+    public class SensoryReceptorState<TReceptorSense, TSourceSense>
+        where TReceptorSense : ISense
+        where TSourceSense : ISense
     {
         [Key(0)]
         [DataMember(Order = 0)]
@@ -43,7 +45,7 @@ namespace RogueEntity.Core.Sensing.Receptors
             LastPosition = lastPosition;
         }
 
-        public SensoryReceptorState<TSense> WithPosition(Position position)
+        public SensoryReceptorState<TReceptorSense, TSourceSense> WithPosition(Position position)
         {
             if (position == LastPosition)
             {
@@ -54,13 +56,13 @@ namespace RogueEntity.Core.Sensing.Receptors
             return this;
         }
 
-        public SensoryReceptorState<TSense> WithIntensity(float intensity)
+        public SensoryReceptorState<TReceptorSense, TSourceSense> WithIntensity(float intensity)
         {
             LastIntensity = intensity;
             return this;
         }
 
-        public SensoryReceptorState<TSense> WithSenseState(SenseSourceData state)
+        public SensoryReceptorState<TReceptorSense, TSourceSense> WithSenseState(SenseSourceData state)
         {
             if (state == SenseSource)
             {
@@ -71,7 +73,7 @@ namespace RogueEntity.Core.Sensing.Receptors
             return this;
         }
 
-        public SensoryReceptorState<TSense> WithOutSenseState()
+        public SensoryReceptorState<TReceptorSense, TSourceSense> WithOutSenseState()
         {
             if (!SenseSource.HasValue)
             {
@@ -82,7 +84,7 @@ namespace RogueEntity.Core.Sensing.Receptors
             return this;
         }
 
-        public SensoryReceptorState<TSense> WithDirtyState(SenseSourceDirtyState p)
+        public SensoryReceptorState<TReceptorSense, TSourceSense> WithDirtyState(SenseSourceDirtyState p)
         {
             State = p;
             return this;

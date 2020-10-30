@@ -116,7 +116,7 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Noise
                                  .WithContext<SenseMappingTestContext>();
 
             var omniSystem = new OmnidirectionalSenseReceptorSystem<NoiseSense, NoiseSense>(senseSystem, new DefaultSenseDataBlitter());
-            return builder.CreateSystem<SingleLevelSenseDirectionMapData<NoiseSense, NoiseSense>, SensoryReceptorState<NoiseSense>>(omniSystem.CopySenseSourcesToVisionField);
+            return builder.CreateSystem<SingleLevelSenseDirectionMapData<NoiseSense, NoiseSense>, SensoryReceptorState<NoiseSense, NoiseSense>>(omniSystem.CopySenseSourcesToVisionField);
         }
 
         protected override ReferenceItemDeclaration<SenseMappingTestContext, ItemReference> AttachTrait(ReferenceItemDeclaration<SenseMappingTestContext, ItemReference> decl)

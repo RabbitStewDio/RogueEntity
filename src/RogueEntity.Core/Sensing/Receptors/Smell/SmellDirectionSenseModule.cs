@@ -17,7 +17,7 @@ using RogueEntity.Core.Sensing.Sources.Smell;
 
 namespace RogueEntity.Core.Sensing.Receptors.Smell
 {
-    public class SmellDirectionSenseModule : ModuleBase
+    public class SmellDirectionSenseModule : SenseReceptorModuleBase<SmellSense, SmellSense, SmellSourceDefinition>
     {
         public const string ModuleId = "Core.Sense.Receptor.Smell";
 
@@ -59,7 +59,7 @@ namespace RogueEntity.Core.Sensing.Receptors.Smell
             ctx.Register(RegisterEntityId, 0, RegisterEntities);
             ctx.Register(ReceptorPreparationSystemId, 50000, RegisterPrepareSystem);
             ctx.Register(ReceptorComputeFoVSystemId, 56000, RegisterComputeReceptorFieldOfView);
-            ctx.Register(ReceptorComputeSystemId, 58500, RegisterCalculateSystem);
+            ctx.Register(ReceptorComputeSystemId, 58500, RegisterCalculateUniDirectionalSystem);
             ctx.Register(ReceptorFinalizeSystemId, 59500, RegisterFinalizeSystem);
         }
 
@@ -95,153 +95,7 @@ namespace RogueEntity.Core.Sensing.Receptors.Smell
             ctx.Register(SenseSourceCollectionContinuousSystemId, 57500, RegisterCollectSenseSourcesSystem);
         }
 
-        void RegisterPrepareSystem<TGameContext, TItemId>(IServiceResolver serviceResolver,
-                                                          IGameLoopSystemRegistration<TGameContext> context,
-                                                          EntityRegistry<TItemId> registry,
-                                                          ICommandHandlerRegistration<TGameContext, TItemId> handler)
-            where TItemId : IEntityKey
-        {
-            if (!GetOrCreateLightSystem(serviceResolver, out var ls))
-            {
-                return;
-            }
-
-            context.AddInitializationStepHandler(ls.EnsureSenseCacheAvailable);
-            context.AddInitializationStepHandler(ls.BeginSenseCalculation);
-            context.AddFixedStepHandlers(ls.BeginSenseCalculation);
-        }
-
-        void RegisterCollectReceptorsGridSystem<TGameContext, TItemId>(IServiceResolver resolver,
-                                                                       IGameLoopSystemRegistration<TGameContext> context,
-                                                                       EntityRegistry<TItemId> registry,
-                                                                       ICommandHandlerRegistration<TGameContext, TItemId> handler)
-            where TItemId : IEntityKey
-        {
-            if (!GetOrCreateLightSystem(resolver, out var ls))
-            {
-                return;
-            }
-
-            var system = registry.BuildSystem()
-                                 .WithContext<TGameContext>()
-                                 .CreateSystem<SensoryReceptorData<SmellSense>, SensoryReceptorState<SmellSense>, ContinuousMapPosition>(ls.CollectReceptor);
-            context.AddInitializationStepHandler(system);
-            context.AddFixedStepHandlers(system);
-        }
-
-        void RegisterCollectReceptorsContinuousSystem<TGameContext, TItemId>(IServiceResolver resolver,
-                                                                             IGameLoopSystemRegistration<TGameContext> context,
-                                                                             EntityRegistry<TItemId> registry,
-                                                                             ICommandHandlerRegistration<TGameContext, TItemId> handler)
-            where TItemId : IEntityKey
-        {
-            if (!GetOrCreateLightSystem(resolver, out var ls))
-            {
-                return;
-            }
-
-            var system = registry.BuildSystem()
-                                 .WithContext<TGameContext>()
-                                 .CreateSystem<SensoryReceptorData<SmellSense>, SensoryReceptorState<SmellSense>, EntityGridPosition>(ls.CollectReceptor);
-            context.AddInitializationStepHandler(system);
-            context.AddFixedStepHandlers(system);
-        }
-
-        void RegisterCollectSenseSourcesSystem<TGameContext, TItemId>(IServiceResolver resolver,
-                                                                      IGameLoopSystemRegistration<TGameContext> context,
-                                                                      EntityRegistry<TItemId> registry,
-                                                                      ICommandHandlerRegistration<TGameContext, TItemId> handler)
-            where TItemId : IEntityKey
-        {
-            if (!GetOrCreateLightSystem(resolver, out var ls))
-            {
-                return;
-            }
-
-            var system = registry.BuildSystem()
-                                 .WithContext<TGameContext>()
-                                 .CreateSystem<SmellSourceDefinition, SenseSourceState<SmellSense>>(ls.CollectSenseSource);
-            context.AddInitializationStepHandler(system);
-            context.AddFixedStepHandlers(system);
-        }
-
-        void RegisterComputeReceptorFieldOfView<TGameContext, TItemId>(IServiceResolver resolver,
-                                                                       IGameLoopSystemRegistration<TGameContext> context,
-                                                                       EntityRegistry<TItemId> registry,
-                                                                       ICommandHandlerRegistration<TGameContext, TItemId> handler)
-            where TItemId : IEntityKey
-        {
-            if (!GetOrCreateLightSystem(resolver, out var ls))
-            {
-                return;
-            }
-
-            var refreshLocalSenseState =
-                registry.BuildSystem()
-                        .WithContext<TGameContext>()
-                        .CreateSystem<SensoryReceptorData<SmellSense>, SensoryReceptorState<SmellSense>, SenseReceptorDirtyFlag<SmellSense>>(ls.RefreshLocalReceptorState);
-            context.AddInitializationStepHandler(refreshLocalSenseState);
-            context.AddFixedStepHandlers(refreshLocalSenseState);
-        }
-
-        void RegisterCalculateSystem<TGameContext, TItemId>(IServiceResolver serviceResolver,
-                                                            IGameLoopSystemRegistration<TGameContext> context,
-                                                            EntityRegistry<TItemId> registry,
-                                                            ICommandHandlerRegistration<TGameContext, TItemId> handler)
-            where TItemId : IEntityKey
-        {
-            if (!GetOrCreateLightSystem(serviceResolver, out var ls))
-            {
-                return;
-            }
-
-            if (!serviceResolver.TryResolve(out IDirectionalSenseBlitter senseBlitter))
-            {
-                senseBlitter = new DefaultDirectionalSenseBlitter();
-            }
-
-
-            var uniSys = new UnidirectionalSenseReceptorSystem<SmellSense, SmellSense>(ls, senseBlitter);
-            var system = registry.BuildSystem()
-                                 .WithContext<TGameContext>()
-                                 .CreateSystem<SingleLevelSenseDirectionMapData<SmellSense, SmellSense>, SensoryReceptorState<SmellSense>>(uniSys.CopySenseSourcesToVisionField);
-
-
-            context.AddInitializationStepHandler(system);
-            context.AddFixedStepHandlers(system);
-        }
-
-        void RegisterFinalizeSystem<TGameContext, TItemId>(IServiceResolver serviceResolver,
-                                                           IGameLoopSystemRegistration<TGameContext> context,
-                                                           EntityRegistry<TItemId> registry,
-                                                           ICommandHandlerRegistration<TGameContext, TItemId> handler)
-            where TItemId : IEntityKey
-        {
-            if (!GetOrCreateLightSystem(serviceResolver, out var ls))
-            {
-                return;
-            }
-
-            var clearReceptorStateSystem =
-                registry.BuildSystem()
-                        .WithContext<TGameContext>()
-                        .CreateSystem<SensoryReceptorData<SmellSense>, SensoryReceptorState<SmellSense>, SenseReceptorDirtyFlag<SmellSense>>(ls.ResetReceptorCacheState);
-
-            context.AddInitializationStepHandler(clearReceptorStateSystem);
-            context.AddFixedStepHandlers(clearReceptorStateSystem);
-
-            var clearObservedStateSystem =
-                registry.BuildSystem()
-                        .WithContext<TGameContext>()
-                        .CreateSystem<ObservedSenseSource<SmellSense>>(ls.ResetSenseSourceObservedState);
-            context.AddInitializationStepHandler(clearObservedStateSystem);
-            context.AddFixedStepHandlers(clearObservedStateSystem);
-
-            context.AddInitializationStepHandler(ls.EndSenseCalculation);
-            context.AddFixedStepHandlers(ls.EndSenseCalculation);
-        }
-
-        static bool GetOrCreateLightSystem(IServiceResolver serviceResolver, out SenseReceptorSystem<SmellSense, SmellSense> ls)
+        protected override bool GetOrCreateLightSystem(IServiceResolver serviceResolver, out SenseReceptorSystem<SmellSense, SmellSense> ls)
         {
             if (!serviceResolver.TryResolve(out ISmellSenseReceptorPhysicsConfiguration physics))
             {
@@ -270,15 +124,6 @@ namespace RogueEntity.Core.Sensing.Receptors.Smell
             }
 
             return true;
-        }
-
-        void RegisterEntities<TItemId>(IServiceResolver serviceResolver, EntityRegistry<TItemId> registry)
-            where TItemId : IEntityKey
-        {
-            registry.RegisterNonConstructable<SensoryReceptorData<SmellSense>>();
-            registry.RegisterNonConstructable<SensoryReceptorState<SmellSense>>();
-            registry.RegisterNonConstructable<SingleLevelSenseDirectionMapData<SmellSense, SmellSense>>();
-            registry.RegisterFlag<SenseReceptorDirtyFlag<SmellSense>>();
         }
     }
 }

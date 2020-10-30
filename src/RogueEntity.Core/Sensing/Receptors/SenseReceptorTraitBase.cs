@@ -7,10 +7,11 @@ using RogueEntity.Core.Sensing.Common.Physics;
 
 namespace RogueEntity.Core.Sensing.Receptors
 {
-    public abstract class SenseReceptorTraitBase<TGameContext, TActorId, TSense, TSource> : IReferenceItemTrait<TGameContext, TActorId>,
-                                                                                            IItemComponentTrait<TGameContext, TActorId, SensoryReceptorData<TSense>>
+    public abstract class SenseReceptorTraitBase<TGameContext, TActorId, TReceptorSense, TSourceSense> : IReferenceItemTrait<TGameContext, TActorId>,
+                                                                                                         IItemComponentTrait<TGameContext, TActorId, SensoryReceptorData<TReceptorSense, TSourceSense>>
         where TActorId : IEntityKey
-        where TSense : ISense
+        where TReceptorSense : ISense
+        where TSourceSense : ISense
     {
         readonly ISensePhysics physics;
         protected readonly float Intensity;
@@ -22,44 +23,44 @@ namespace RogueEntity.Core.Sensing.Receptors
             this.Intensity = intensity;
             this.active = active;
         }
-        
+
         public abstract string Id { get; }
         public abstract int Priority { get; }
 
         public virtual void Initialize(IEntityViewControl<TActorId> v, TGameContext context, TActorId k, IItemDeclaration item)
         {
-            v.AssignComponent(k, new SensoryReceptorData<TSense>(new SenseSourceDefinition(physics.DistanceMeasurement, Intensity), active));
-            v.AssignComponent(k, SensoryReceptorState.Create<TSense>());
-            v.AssignComponent(k, SingleLevelSenseDirectionMapData.Create<TSense, TSource>());
+            v.AssignComponent(k, new SensoryReceptorData<TReceptorSense, TSourceSense>(new SenseSourceDefinition(physics.DistanceMeasurement, Intensity), active));
+            v.AssignComponent(k, SensoryReceptorState.Create<TReceptorSense, TSourceSense>());
+            v.AssignComponent(k, SingleLevelSenseDirectionMapData.Create<TReceptorSense, TSourceSense>());
         }
 
         public virtual void Apply(IEntityViewControl<TActorId> v, TGameContext context, TActorId k, IItemDeclaration item)
         {
-            if (!v.GetComponent(k, out SensoryReceptorData<TSense> _))
+            if (!v.GetComponent(k, out SensoryReceptorData<TReceptorSense, TSourceSense> _))
             {
                 return;
             }
 
-            if (!v.GetComponent(k, out SensoryReceptorState<TSense> _))
+            if (!v.GetComponent(k, out SensoryReceptorState<TReceptorSense, TSourceSense> _))
             {
-                v.AssignComponent(k, SensoryReceptorState.Create<TSense>());
+                v.AssignComponent(k, SensoryReceptorState.Create<TReceptorSense, TSourceSense>());
             }
 
-            if (!v.GetComponent(k, out SingleLevelSenseDirectionMapData<TSense, TSource> _))
+            if (!v.GetComponent(k, out SingleLevelSenseDirectionMapData<TReceptorSense, TSourceSense> _))
             {
-                v.AssignComponent(k, SingleLevelSenseDirectionMapData.Create<TSense, TSource>());
+                v.AssignComponent(k, SingleLevelSenseDirectionMapData.Create<TReceptorSense, TSourceSense>());
             }
         }
 
-        public bool TryQuery(IEntityViewControl<TActorId> v, TGameContext context, TActorId k, out SensoryReceptorData<TSense> t)
+        public bool TryQuery(IEntityViewControl<TActorId> v, TGameContext context, TActorId k, out SensoryReceptorData<TReceptorSense, TSourceSense> t)
         {
             return v.GetComponent(k, out t);
         }
 
-        public bool TryUpdate(IEntityViewControl<TActorId> v, TGameContext context, TActorId k, in SensoryReceptorData<TSense> t, out TActorId changedK)
+        public bool TryUpdate(IEntityViewControl<TActorId> v, TGameContext context, TActorId k, in SensoryReceptorData<TReceptorSense, TSourceSense> t, out TActorId changedK)
         {
             changedK = k;
-            if (v.GetComponent(k, out SensoryReceptorData<TSense> existing))
+            if (v.GetComponent(k, out SensoryReceptorData<TReceptorSense, TSourceSense> existing))
             {
                 if (existing == t)
                 {
@@ -68,9 +69,9 @@ namespace RogueEntity.Core.Sensing.Receptors
             }
 
             v.AssignOrReplace(k, t);
-            if (!v.GetComponent(k, out SensoryReceptorState<TSense> s))
+            if (!v.GetComponent(k, out SensoryReceptorState<TReceptorSense, TSourceSense> s))
             {
-                v.AssignComponent(k, SensoryReceptorState.Create<TSense>());
+                v.AssignComponent(k, SensoryReceptorState.Create<TReceptorSense, TSourceSense>());
             }
             else
             {

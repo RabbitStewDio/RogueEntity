@@ -13,7 +13,7 @@ using RogueEntity.Core.Utils.Algorithms;
 
 namespace RogueEntity.Core.Tests.Sensing.Receptor.Noise
 {
-    public class NoiseReceptorTraitTest : ItemComponentTraitTestBase<SenseMappingTestContext, ActorReference, SensoryReceptorData<NoiseSense>,
+    public class NoiseReceptorTraitTest : ItemComponentTraitTestBase<SenseMappingTestContext, ActorReference, SensoryReceptorData<NoiseSense, NoiseSense>,
         NoiseDirectionSenseTrait<SenseMappingTestContext, ActorReference>>
     {
         readonly NoiseSenseReceptorPhysicsConfiguration physics;
@@ -34,10 +34,10 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Noise
             context.ActorEntityRegistry.RegisterFlag<ObservedSenseSource<NoiseSense>>();
             context.ActorEntityRegistry.RegisterFlag<SenseDirtyFlag<NoiseSense>>();
 
-            context.ActorEntityRegistry.RegisterNonConstructable<SensoryReceptorData<NoiseSense>>();
-            context.ActorEntityRegistry.RegisterNonConstructable<SensoryReceptorState<NoiseSense>>();
+            context.ActorEntityRegistry.RegisterNonConstructable<SensoryReceptorData<NoiseSense, NoiseSense>>();
+            context.ActorEntityRegistry.RegisterNonConstructable<SensoryReceptorState<NoiseSense, NoiseSense>>();
             context.ActorEntityRegistry.RegisterNonConstructable<SingleLevelSenseDirectionMapData<NoiseSense, NoiseSense>>();
-            context.ActorEntityRegistry.RegisterFlag<SenseReceptorDirtyFlag<NoiseSense>>();
+            context.ActorEntityRegistry.RegisterFlag<SenseReceptorDirtyFlag<NoiseSense, NoiseSense>>();
 
             return context;
         }
@@ -51,12 +51,12 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Noise
             return new NoiseDirectionSenseTrait<SenseMappingTestContext, ActorReference>(physics, 1.9f);
         }
 
-        protected override IItemComponentTestDataFactory<SensoryReceptorData<NoiseSense>> ProduceTestData(EntityRelations<ActorReference> relations)
+        protected override IItemComponentTestDataFactory<SensoryReceptorData<NoiseSense, NoiseSense>> ProduceTestData(EntityRelations<ActorReference> relations)
         {
-            return new ItemComponentTestDataFactory<SensoryReceptorData<NoiseSense>>(
-                new SensoryReceptorData<NoiseSense>(new SenseSourceDefinition(physics.NoisePhysics.DistanceMeasurement, 1.9f), true),
-                new SensoryReceptorData<NoiseSense>(new SenseSourceDefinition(physics.NoisePhysics.DistanceMeasurement, 10), true),
-                new SensoryReceptorData<NoiseSense>(new SenseSourceDefinition(physics.NoisePhysics.DistanceMeasurement, 12), false)
+            return new ItemComponentTestDataFactory<SensoryReceptorData<NoiseSense, NoiseSense>>(
+                new SensoryReceptorData<NoiseSense, NoiseSense>(new SenseSourceDefinition(physics.NoisePhysics.DistanceMeasurement, 1.9f), true),
+                new SensoryReceptorData<NoiseSense, NoiseSense>(new SenseSourceDefinition(physics.NoisePhysics.DistanceMeasurement, 10), true),
+                new SensoryReceptorData<NoiseSense, NoiseSense>(new SenseSourceDefinition(physics.NoisePhysics.DistanceMeasurement, 12), false)
             ).WithRemoveProhibited();
         }
     }

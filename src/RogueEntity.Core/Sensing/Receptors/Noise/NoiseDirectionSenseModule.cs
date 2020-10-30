@@ -1,24 +1,17 @@
 using EnTTSharp.Entities;
-using EnTTSharp.Entities.Systems;
-using RogueEntity.Core.Infrastructure.Commands;
-using RogueEntity.Core.Infrastructure.GameLoops;
 using RogueEntity.Core.Infrastructure.Modules;
 using RogueEntity.Core.Infrastructure.Time;
 using RogueEntity.Core.Positioning;
-using RogueEntity.Core.Positioning.Continuous;
-using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Sensing.Cache;
-using RogueEntity.Core.Sensing.Common.Blitter;
 using RogueEntity.Core.Sensing.Common.FloodFill;
 using RogueEntity.Core.Sensing.Common.Physics;
 using RogueEntity.Core.Sensing.Resistance;
 using RogueEntity.Core.Sensing.Resistance.Maps;
-using RogueEntity.Core.Sensing.Sources;
 using RogueEntity.Core.Sensing.Sources.Noise;
 
 namespace RogueEntity.Core.Sensing.Receptors.Noise
 {
-    public class NoiseDirectionSenseModule : ModuleBase
+    public class NoiseDirectionSenseModule : SenseReceptorModuleBase<NoiseSense, NoiseSense, NoiseSourceDefinition>
     {
         public const string ModuleId = "Core.Sense.Receptor.Noise";
 
@@ -60,7 +53,7 @@ namespace RogueEntity.Core.Sensing.Receptors.Noise
             ctx.Register(RegisterEntityId, 0, RegisterEntities);
             ctx.Register(ReceptorPreparationSystemId, 50000, RegisterPrepareSystem);
             ctx.Register(ReceptorComputeFoVSystemId, 56000, RegisterComputeReceptorFieldOfView);
-            ctx.Register(ReceptorComputeSystemId, 58500, RegisterCalculateSystem);
+            ctx.Register(ReceptorComputeSystemId, 58500, RegisterCalculateUniDirectionalSystem);
             ctx.Register(ReceptorFinalizeSystemId, 59500, RegisterFinalizeSystem);
         }
 
@@ -96,154 +89,7 @@ namespace RogueEntity.Core.Sensing.Receptors.Noise
             ctx.Register(SenseSourceCollectionContinuousSystemId, 57500, RegisterCollectSenseSourcesSystem);
         }
 
-        void RegisterPrepareSystem<TGameContext, TItemId>(IServiceResolver serviceResolver,
-                                                          IGameLoopSystemRegistration<TGameContext> context,
-                                                          EntityRegistry<TItemId> registry,
-                                                          ICommandHandlerRegistration<TGameContext, TItemId> handler)
-            where TItemId : IEntityKey
-        {
-            if (!GetOrCreateLightSystem(serviceResolver, out var ls))
-            {
-                return;
-            }
-
-            context.AddInitializationStepHandler(ls.EnsureSenseCacheAvailable);
-            context.AddInitializationStepHandler(ls.BeginSenseCalculation);
-            context.AddFixedStepHandlers(ls.BeginSenseCalculation);
-        }
-
-        void RegisterCollectReceptorsGridSystem<TGameContext, TItemId>(IServiceResolver resolver,
-                                                                       IGameLoopSystemRegistration<TGameContext> context,
-                                                                       EntityRegistry<TItemId> registry,
-                                                                       ICommandHandlerRegistration<TGameContext, TItemId> handler)
-            where TItemId : IEntityKey
-        {
-            if (!GetOrCreateLightSystem(resolver, out var ls))
-            {
-                return;
-            }
-
-            var system = registry.BuildSystem()
-                                 .WithContext<TGameContext>()
-                                 .CreateSystem<SensoryReceptorData<NoiseSense>, SensoryReceptorState<NoiseSense>, ContinuousMapPosition>(ls.CollectReceptor);
-            context.AddInitializationStepHandler(system);
-            context.AddFixedStepHandlers(system);
-        }
-
-        void RegisterCollectReceptorsContinuousSystem<TGameContext, TItemId>(IServiceResolver resolver,
-                                                                             IGameLoopSystemRegistration<TGameContext> context,
-                                                                             EntityRegistry<TItemId> registry,
-                                                                             ICommandHandlerRegistration<TGameContext, TItemId> handler)
-            where TItemId : IEntityKey
-        {
-            if (!GetOrCreateLightSystem(resolver, out var ls))
-            {
-                return;
-            }
-
-            var system = registry.BuildSystem()
-                                 .WithContext<TGameContext>()
-                                 .CreateSystem<SensoryReceptorData<NoiseSense>, SensoryReceptorState<NoiseSense>, EntityGridPosition>(ls.CollectReceptor);
-            context.AddInitializationStepHandler(system);
-            context.AddFixedStepHandlers(system);
-        }
-
-        void RegisterCollectSenseSourcesSystem<TGameContext, TItemId>(IServiceResolver resolver,
-                                                                      IGameLoopSystemRegistration<TGameContext> context,
-                                                                      EntityRegistry<TItemId> registry,
-                                                                      ICommandHandlerRegistration<TGameContext, TItemId> handler)
-            where TItemId : IEntityKey
-        {
-            if (!GetOrCreateLightSystem(resolver, out var ls))
-            {
-                return;
-            }
-
-            var system = registry.BuildSystem()
-                                 .WithContext<TGameContext>()
-                                 .CreateSystem<NoiseSourceDefinition, SenseSourceState<NoiseSense>>(ls.CollectSenseSource);
-            context.AddInitializationStepHandler(system);
-            context.AddFixedStepHandlers(system);
-        }
-
-        void RegisterComputeReceptorFieldOfView<TGameContext, TItemId>(IServiceResolver resolver,
-                                                                       IGameLoopSystemRegistration<TGameContext> context,
-                                                                       EntityRegistry<TItemId> registry,
-                                                                       ICommandHandlerRegistration<TGameContext, TItemId> handler)
-            where TItemId : IEntityKey
-        {
-            if (!GetOrCreateLightSystem(resolver, out var ls))
-            {
-                return;
-            }
-
-            var refreshLocalSenseState =
-                registry.BuildSystem()
-                        .WithContext<TGameContext>()
-                        .CreateSystem<SensoryReceptorData<NoiseSense>, SensoryReceptorState<NoiseSense>, SenseReceptorDirtyFlag<NoiseSense>>(ls.RefreshLocalReceptorState);
-            context.AddInitializationStepHandler(refreshLocalSenseState);
-            context.AddFixedStepHandlers(refreshLocalSenseState);
-        }
-
-        void RegisterCalculateSystem<TGameContext, TItemId>(IServiceResolver serviceResolver,
-                                                            IGameLoopSystemRegistration<TGameContext> context,
-                                                            EntityRegistry<TItemId> registry,
-                                                            ICommandHandlerRegistration<TGameContext, TItemId> handler)
-            where TItemId : IEntityKey
-        {
-            if (!GetOrCreateLightSystem(serviceResolver, out var ls))
-            {
-                return;
-            }
-
-            if (!serviceResolver.TryResolve(out IDirectionalSenseBlitter senseBlitter))
-            {
-                senseBlitter = new DefaultDirectionalSenseBlitter();
-            }
-
-
-            var uniSys = new UnidirectionalSenseReceptorSystem<NoiseSense, NoiseSense>(ls, senseBlitter);
-            var system = registry.BuildSystem()
-                                 .WithContext<TGameContext>()
-                                 .CreateSystem<SingleLevelSenseDirectionMapData<NoiseSense, NoiseSense>, SensoryReceptorState<NoiseSense>>(uniSys.CopySenseSourcesToVisionField);
-
-
-            context.AddInitializationStepHandler(system);
-            context.AddFixedStepHandlers(system);
-        }
-
-        void RegisterFinalizeSystem<TGameContext, TItemId>(IServiceResolver serviceResolver,
-                                                           IGameLoopSystemRegistration<TGameContext> context,
-                                                           EntityRegistry<TItemId> registry,
-                                                           ICommandHandlerRegistration<TGameContext, TItemId> handler)
-            where TItemId : IEntityKey
-        {
-            if (!GetOrCreateLightSystem(serviceResolver, out var ls))
-            {
-                return;
-            }
-
-            var clearReceptorStateSystem =
-                registry.BuildSystem()
-                        .WithContext<TGameContext>()
-                        .CreateSystem<SensoryReceptorData<NoiseSense>, SensoryReceptorState<NoiseSense>, SenseReceptorDirtyFlag<NoiseSense>>(ls.ResetReceptorCacheState);
-
-            context.AddInitializationStepHandler(clearReceptorStateSystem);
-            context.AddFixedStepHandlers(clearReceptorStateSystem);
-
-            var clearObservedStateSystem =
-                registry.BuildSystem()
-                        .WithContext<TGameContext>()
-                        .CreateSystem<ObservedSenseSource<NoiseSense>>(ls.ResetSenseSourceObservedState);
-
-            context.AddInitializationStepHandler(clearObservedStateSystem);
-            context.AddFixedStepHandlers(clearObservedStateSystem);
-
-            context.AddInitializationStepHandler(ls.EndSenseCalculation);
-            context.AddFixedStepHandlers(ls.EndSenseCalculation);
-        }
-
-        static bool GetOrCreateLightSystem(IServiceResolver serviceResolver, out SenseReceptorSystem<NoiseSense, NoiseSense> ls)
+        protected override bool GetOrCreateLightSystem(IServiceResolver serviceResolver, out SenseReceptorSystem<NoiseSense, NoiseSense> ls)
         {
             if (!serviceResolver.TryResolve(out INoiseSenseReceptorPhysicsConfiguration physics))
             {
@@ -272,15 +118,6 @@ namespace RogueEntity.Core.Sensing.Receptors.Noise
             }
 
             return true;
-        }
-
-        void RegisterEntities<TItemId>(IServiceResolver serviceResolver, EntityRegistry<TItemId> registry)
-            where TItemId : IEntityKey
-        {
-            registry.RegisterNonConstructable<SensoryReceptorData<NoiseSense>>();
-            registry.RegisterNonConstructable<SensoryReceptorState<NoiseSense>>();
-            registry.RegisterNonConstructable<SingleLevelSenseDirectionMapData<NoiseSense, NoiseSense>>();
-            registry.RegisterFlag<SenseReceptorDirtyFlag<NoiseSense>>();
         }
     }
 }

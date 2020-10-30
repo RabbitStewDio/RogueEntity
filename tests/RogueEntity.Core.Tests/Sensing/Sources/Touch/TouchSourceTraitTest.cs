@@ -35,10 +35,10 @@ namespace RogueEntity.Core.Tests.Sensing.Sources.Touch
             context.ActorEntityRegistry.RegisterFlag<ObservedSenseSource<TouchSense>>();
             context.ActorEntityRegistry.RegisterFlag<SenseDirtyFlag<TouchSense>>();
 
-            context.ActorEntityRegistry.RegisterNonConstructable<SensoryReceptorData<TouchSense>>();
-            context.ActorEntityRegistry.RegisterNonConstructable<SensoryReceptorState<TouchSense>>();
+            context.ActorEntityRegistry.RegisterNonConstructable<SensoryReceptorData<TouchSense, TouchSense>>();
+            context.ActorEntityRegistry.RegisterNonConstructable<SensoryReceptorState<TouchSense, TouchSense>>();
             context.ActorEntityRegistry.RegisterNonConstructable<SingleLevelSenseDirectionMapData<TouchSense, TouchSense>>();
-            context.ActorEntityRegistry.RegisterFlag<SenseReceptorDirtyFlag<TouchSense>>();
+            context.ActorEntityRegistry.RegisterFlag<SenseReceptorDirtyFlag<TouchSense, TouchSense>>();
             return context;
         }
 

@@ -13,7 +13,7 @@ using RogueEntity.Core.Utils.Algorithms;
 
 namespace RogueEntity.Core.Tests.Sensing.Receptor.Smell
 {
-    public class SmellReceptorTraitTest : ItemComponentTraitTestBase<SenseMappingTestContext, ActorReference, SensoryReceptorData<SmellSense>,
+    public class SmellReceptorTraitTest : ItemComponentTraitTestBase<SenseMappingTestContext, ActorReference, SensoryReceptorData<SmellSense, SmellSense>,
         SmellDirectionSenseTrait<SenseMappingTestContext, ActorReference>>
     {
         readonly SmellSenseReceptorPhysicsConfiguration physics;
@@ -34,10 +34,10 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Smell
             context.ActorEntityRegistry.RegisterFlag<ObservedSenseSource<SmellSense>>();
             context.ActorEntityRegistry.RegisterFlag<SenseDirtyFlag<SmellSense>>();
 
-            context.ActorEntityRegistry.RegisterNonConstructable<SensoryReceptorData<SmellSense>>();
-            context.ActorEntityRegistry.RegisterNonConstructable<SensoryReceptorState<SmellSense>>();
+            context.ActorEntityRegistry.RegisterNonConstructable<SensoryReceptorData<SmellSense, SmellSense>>();
+            context.ActorEntityRegistry.RegisterNonConstructable<SensoryReceptorState<SmellSense, SmellSense>>();
             context.ActorEntityRegistry.RegisterNonConstructable<SingleLevelSenseDirectionMapData<SmellSense, SmellSense>>();
-            context.ActorEntityRegistry.RegisterFlag<SenseReceptorDirtyFlag<SmellSense>>();
+            context.ActorEntityRegistry.RegisterFlag<SenseReceptorDirtyFlag<SmellSense, SmellSense>>();
 
             return context;
         }
@@ -51,12 +51,12 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Smell
             return new SmellDirectionSenseTrait<SenseMappingTestContext, ActorReference>(physics, 1.9f);
         }
 
-        protected override IItemComponentTestDataFactory<SensoryReceptorData<SmellSense>> ProduceTestData(EntityRelations<ActorReference> relations)
+        protected override IItemComponentTestDataFactory<SensoryReceptorData<SmellSense, SmellSense>> ProduceTestData(EntityRelations<ActorReference> relations)
         {
-            return new ItemComponentTestDataFactory<SensoryReceptorData<SmellSense>>(
-                new SensoryReceptorData<SmellSense>(new SenseSourceDefinition(physics.SmellPhysics.DistanceMeasurement, 1.9f), true),
-                new SensoryReceptorData<SmellSense>(new SenseSourceDefinition(physics.SmellPhysics.DistanceMeasurement, 10), true),
-                new SensoryReceptorData<SmellSense>(new SenseSourceDefinition(physics.SmellPhysics.DistanceMeasurement, 12), false)
+            return new ItemComponentTestDataFactory<SensoryReceptorData<SmellSense, SmellSense>>(
+                new SensoryReceptorData<SmellSense, SmellSense>(new SenseSourceDefinition(physics.SmellPhysics.DistanceMeasurement, 1.9f), true),
+                new SensoryReceptorData<SmellSense, SmellSense>(new SenseSourceDefinition(physics.SmellPhysics.DistanceMeasurement, 10), true),
+                new SensoryReceptorData<SmellSense, SmellSense>(new SenseSourceDefinition(physics.SmellPhysics.DistanceMeasurement, 12), false)
             ).WithRemoveProhibited();
         }
     }

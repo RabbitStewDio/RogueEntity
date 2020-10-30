@@ -127,8 +127,8 @@ namespace RogueEntity.Core.Sensing.Receptors
         public void CollectReceptor<TItemId, TGameContext, TPosition>(IEntityViewControl<TItemId> v,
                                                                       TGameContext context,
                                                                       TItemId k,
-                                                                      in SensoryReceptorData<TReceptorSense> definition,
-                                                                      in SensoryReceptorState<TReceptorSense> state,
+                                                                      in SensoryReceptorData<TReceptorSense, TSourceSense> definition,
+                                                                      in SensoryReceptorState<TReceptorSense, TSourceSense> state,
                                                                       in TPosition pos)
             where TItemId : IEntityKey
             where TPosition : IPosition
@@ -143,14 +143,14 @@ namespace RogueEntity.Core.Sensing.Receptors
                     // todo
                     var nstate = state.WithPosition(position).WithIntensity(localIntensity).WithDirtyState(SenseSourceDirtyState.Dirty);
                     v.WriteBack(k, in nstate);
-                    v.AssignOrReplace(k, new SenseReceptorDirtyFlag<TReceptorSense>());
+                    v.AssignOrReplace(k, new SenseReceptorDirtyFlag<TReceptorSense, TSourceSense>());
                 }
                 else if (state.State != SenseSourceDirtyState.Active ||
                          IsCacheDirty(in position, physics.SignalRadiusForIntensity(localIntensity)))
                 {
                     var nstate = state.WithDirtyState(SenseSourceDirtyState.Dirty);
                     v.WriteBack(k, in nstate);
-                    v.AssignOrReplace(k, new SenseReceptorDirtyFlag<TReceptorSense>());
+                    v.AssignOrReplace(k, new SenseReceptorDirtyFlag<TReceptorSense, TSourceSense>());
                 }
 
                 AddActiveSenseReceptor(localIntensity, position);
@@ -162,7 +162,7 @@ namespace RogueEntity.Core.Sensing.Receptors
                 // Light has been disabled since the last calculation.
                 var nstate = state.WithPosition(Position.Invalid).WithDirtyState(SenseSourceDirtyState.Dirty);
                 v.WriteBack(k, in nstate);
-                v.AssignOrReplace(k, new SenseReceptorDirtyFlag<TReceptorSense>());
+                v.AssignOrReplace(k, new SenseReceptorDirtyFlag<TReceptorSense, TSourceSense>());
                 if (state.SenseSource.TryGetValue(out var data))
                 {
                     data.Reset();
@@ -287,9 +287,9 @@ namespace RogueEntity.Core.Sensing.Receptors
         public void RefreshLocalReceptorState<TItemId, TGameContext>(IEntityViewControl<TItemId> v,
                                                                      TGameContext context,
                                                                      TItemId k,
-                                                                     in SensoryReceptorData<TReceptorSense> definition,
-                                                                     in SensoryReceptorState<TReceptorSense> state,
-                                                                     in SenseReceptorDirtyFlag<TReceptorSense> dirtyMarker)
+                                                                     in SensoryReceptorData<TReceptorSense, TSourceSense> definition,
+                                                                     in SensoryReceptorState<TReceptorSense, TSourceSense> state,
+                                                                     in SenseReceptorDirtyFlag<TReceptorSense, TSourceSense> dirtyMarker)
             where TItemId : IEntityKey
         {
             var pos = state.LastPosition;
@@ -306,7 +306,7 @@ namespace RogueEntity.Core.Sensing.Receptors
             }
         }
 
-        protected virtual SenseSourceData RefreshReceptorState<TPosition>(SensoryReceptorData<TReceptorSense> definition,
+        protected virtual SenseSourceData RefreshReceptorState<TPosition>(SensoryReceptorData<TReceptorSense, TSourceSense> definition,
                                                                           float intensity,
                                                                           TPosition pos,
                                                                           IReadOnlyView2D<float> resistanceView,
@@ -333,9 +333,9 @@ namespace RogueEntity.Core.Sensing.Receptors
         public void ResetReceptorCacheState<TItemId, TGameContext>(IEntityViewControl<TItemId> v,
                                                                    TGameContext context,
                                                                    TItemId k,
-                                                                   in SensoryReceptorData<TReceptorSense> definition,
-                                                                   in SensoryReceptorState<TReceptorSense> state,
-                                                                   in SenseReceptorDirtyFlag<TReceptorSense> dirty)
+                                                                   in SensoryReceptorData<TReceptorSense, TSourceSense> definition,
+                                                                   in SensoryReceptorState<TReceptorSense, TSourceSense> state,
+                                                                   in SenseReceptorDirtyFlag<TReceptorSense, TSourceSense> dirty)
             where TItemId : IEntityKey
         {
             if (definition.Enabled && state.State != SenseSourceDirtyState.Active)
