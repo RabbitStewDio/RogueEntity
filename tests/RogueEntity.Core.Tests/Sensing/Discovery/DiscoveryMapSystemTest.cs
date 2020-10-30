@@ -15,11 +15,9 @@ using RogueEntity.Core.Sensing.Common.Physics;
 using RogueEntity.Core.Sensing.Discovery;
 using RogueEntity.Core.Sensing.Receptors;
 using RogueEntity.Core.Sensing.Receptors.InfraVision;
-using RogueEntity.Core.Sensing.Receptors.Light;
 using RogueEntity.Core.Sensing.Receptors.Noise;
 using RogueEntity.Core.Sensing.Sources;
 using RogueEntity.Core.Sensing.Sources.Heat;
-using RogueEntity.Core.Sensing.Sources.Light;
 using RogueEntity.Core.Sensing.Sources.Noise;
 using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.Algorithms;
@@ -181,7 +179,7 @@ namespace RogueEntity.Core.Tests.Sensing.Discovery
             senseReceptorActive5 = context.ItemRegistry.Register(new ReferenceItemDeclaration<SenseMappingTestContext, ItemReference>("SenseReceptor-Active-5")
                                                                  .WithTrait(new ReferenceItemGridPositionTrait<SenseMappingTestContext, ItemReference>(context.ItemResolver, TestMapLayers.One))
                                                                  .WithTrait(new DiscoveryMapTrait<SenseMappingTestContext, ItemReference>())
-                                                                 .WithTrait(new NoiseDirectionSenseTrait<SenseMappingTestContext, ItemReference>(noiseSensePhysics, 10, true))
+                                                                 .WithTrait(new NoiseDirectionSenseTrait<SenseMappingTestContext, ItemReference>(noiseSensePhysics, 10))
             );
 
             timeSource = new TestTimeSource();
@@ -254,7 +252,6 @@ namespace RogueEntity.Core.Tests.Sensing.Discovery
         /// </summary>
         /// <param name="active10"></param>
         /// <param name="active5"></param>
-        /// <param name="inactive"></param>
         protected virtual void PrepareReceptorItems(ItemReference active10, ItemReference active5)
         {
             context.ItemResolver.TryUpdateData(active10, context, EntityGridPosition.Of(TestMapLayers.One, 26, 4), out _).Should().BeTrue();
@@ -280,13 +277,9 @@ namespace RogueEntity.Core.Tests.Sensing.Discovery
         public void TestExpandDiscoveredArea(string id, string baseMap, string expectedSenseMapActorA, string expectedSenseMapActorB, string expectedSenseMapAfterMoveA)
         {
             SenseTestHelpers.ParseBool(baseMap, out var activeTestArea);
-            var expectedMapActorA = SenseTestHelpers.ParseBool(expectedSenseMapActorA, out var activeTestAreaA);
-            var expectedMapActorB = SenseTestHelpers.ParseBool(expectedSenseMapActorB, out var activeTestAreaB);
-            var expectedMapActorAMoved = SenseTestHelpers.ParseBool(expectedSenseMapAfterMoveA, out var activeTestAreaAMoved);
-
-//            activeTestArea.Should().Be(activeTestAreaA);
-//            activeTestArea.Should().Be(activeTestAreaB);
-//            activeTestArea.Should().Be(activeTestAreaAMoved);
+            var expectedMapActorA = SenseTestHelpers.ParseBool(expectedSenseMapActorA, out _);
+            var expectedMapActorB = SenseTestHelpers.ParseBool(expectedSenseMapActorB, out _);
+            var expectedMapActorAMoved = SenseTestHelpers.ParseBool(expectedSenseMapAfterMoveA, out _);
             
             var active10 = context.ItemResolver.Instantiate(context, senseReceptorActive10);
             var active5 = context.ItemResolver.Instantiate(context, senseReceptorActive5);

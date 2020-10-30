@@ -6,7 +6,6 @@ using EnTTSharp.Entities;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Sensing.Receptors;
 using RogueEntity.Core.Utils;
-using RogueEntity.Core.Utils.Maps;
 
 namespace RogueEntity.Core.Sensing.Discovery
 {
