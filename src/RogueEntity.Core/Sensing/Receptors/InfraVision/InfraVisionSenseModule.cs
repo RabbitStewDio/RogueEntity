@@ -88,7 +88,7 @@ namespace RogueEntity.Core.Sensing.Receptors.InfraVision
             ctx.Register(SenseSourceCollectionContinuousSystemId, 57500, RegisterCollectSenseSourcesSystem);
         }
         
-        protected override bool GetOrCreateLightSystem(IServiceResolver serviceResolver, out SenseReceptorSystem<VisionSense, TemperatureSense> ls)
+        protected override bool GetOrCreateLightSystem(IServiceResolver serviceResolver, out SenseReceptorSystemBase<VisionSense, TemperatureSense> ls)
         {
             if (!serviceResolver.TryResolve(out IInfraVisionSenseReceptorPhysicsConfiguration physics))
             {

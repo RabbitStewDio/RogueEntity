@@ -88,7 +88,7 @@ namespace RogueEntity.Core.Sensing.Receptors.Smell
             ctx.Register(SenseSourceCollectionContinuousSystemId, 57500, RegisterCollectSenseSourcesSystem);
         }
 
-        protected override bool GetOrCreateLightSystem(IServiceResolver serviceResolver, out SenseReceptorSystem<SmellSense, SmellSense> ls)
+        protected override bool GetOrCreateLightSystem(IServiceResolver serviceResolver, out SenseReceptorSystemBase<SmellSense, SmellSense> ls)
         {
             if (!serviceResolver.TryResolve(out ISmellSenseReceptorPhysicsConfiguration physics))
             {

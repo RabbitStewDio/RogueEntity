@@ -10,7 +10,7 @@ using RogueEntity.Core.Utils.Maps;
 
 namespace RogueEntity.Core.Sensing.Receptors.Touch
 {
-    public class TouchReceptorSystem : SenseReceptorSystem<TouchSense, TouchSense>
+    public class TouchReceptorSystem : SenseReceptorSystemBase<TouchSense, TouchSense>
     {
         public TouchReceptorSystem([NotNull] Lazy<ISensePropertiesSource> senseProperties,
                                    [NotNull] Lazy<ISenseStateCacheProvider> senseCacheProvider,

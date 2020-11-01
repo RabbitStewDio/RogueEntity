@@ -7,7 +7,6 @@ using RogueEntity.Core.Infrastructure.Time;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Sensing.Common;
 using RogueEntity.Core.Sensing.Common.Blitter;
-using RogueEntity.Core.Sensing.Receptors;
 using RogueEntity.Core.Sensing.Sources;
 using RogueEntity.Core.Utils;
 using Serilog;
@@ -25,14 +24,14 @@ namespace RogueEntity.Core.Sensing.Map
 
         readonly Lazy<ITimeSource> timeSource;
         readonly Dictionary<int, SenseDataLevel> activeLightsPerLevel;
-        readonly ISenseDataBlitter blitterFactory;
+        readonly ISenseMapDataBlitter blitterFactory;
         readonly List<int> zLevelBuffer;
 
         protected SenseMappingSystemBase([NotNull] Lazy<ITimeSource> timeSource,
-                                         ISenseDataBlitter blitterFactory)
+                                         ISenseMapDataBlitter blitterFactory)
         {
             this.timeSource = timeSource;
-            this.blitterFactory = blitterFactory ?? new DefaultSenseDataBlitter();
+            this.blitterFactory = blitterFactory ?? new DefaultSenseMapDataBlitter();
             this.activeLightsPerLevel = new Dictionary<int, SenseDataLevel>();
             this.zLevelBuffer = new List<int>();
         }
@@ -83,61 +82,9 @@ namespace RogueEntity.Core.Sensing.Map
 
             v.ResetComponent<SenseDirtyFlag<TSourceSense>>();
         }
-
         
         /// <summary>
-        ///   Step 3: Apply sense map data to each sense-receptor in need of updates. This action replaces the
-        ///   <see cref="OmnidirectionalSenseReceptorSystem{TTargetSense,TSourceSense}.CopySenseSourcesToVisionField{TItemId,TGameContext}"/>
-        ///   action of the SenseReceptorModule. Instead of populating the receptor from each sense source
-        ///   individually, we can reuse the already computed global sense map as data source.
-        /// </summary>
-        /// <remarks>
-        ///   This only works well for omni-directional sources, like light or infra-vision receptors. Directional
-        ///   sensing is highly location specific and cannot be replaced this way.
-        ///
-        ///   This action must be executed after the sense-receptor had a chance to compute its own field of view.
-        /// </remarks>
-        /// <param name="v"></param>
-        /// <param name="context"></param>
-        /// <param name="k"></param>
-        /// <param name="receptorState"></param>
-        /// <param name="receptorDirtyFlag"></param>
-        /// <param name="brightnessMap"></param>
-        /// <typeparam name="TItemId"></typeparam>
-        /// <typeparam name="TGameContext"></typeparam>
-        public void ApplyReceptorFieldOfView<TItemId, TGameContext>(IEntityViewControl<TItemId> v,
-                                                                    TGameContext context,
-                                                                    TItemId k,
-                                                                    in SensoryReceptorState<TTargetSense, TSourceSense> receptorState,
-                                                                    in SenseReceptorDirtyFlag<TTargetSense, TSourceSense> receptorDirtyFlag,
-                                                                    in SingleLevelSenseDirectionMapData<TTargetSense, TSourceSense> brightnessMap)
-            where TItemId : IEntityKey
-        {
-            if (!receptorState.SenseSource.TryGetValue(out var sourceData))
-            {
-                v.WriteBack(k, brightnessMap.WithDisabledState());
-                return;
-            }
-
-            var lastPosition = receptorState.LastPosition;
-            var z = lastPosition.GridZ;
-            if (!TryGetSenseData(z, out var lights))
-            {
-                v.WriteBack(k, brightnessMap.WithDisabledState());
-                return;
-            }
-
-            var dest = brightnessMap.SenseMap;
-            dest.Clear();
-            
-            SenseReceptors.CopyReceptorFieldOfView(dest, lastPosition, receptorState.LastIntensity, sourceData, lights);
-
-            v.WriteBack(k, brightnessMap.WithLevel(z));
-        }
-
-        
-        /// <summary>
-        ///  Step 4: Finally clear the collected sense sources
+        ///  Step 3: Finally clear the collected sense sources
         /// </summary>
         public void EndSenseCalculation<TGameContext>(TGameContext ctx)
         {
@@ -176,7 +123,7 @@ namespace RogueEntity.Core.Sensing.Map
             lights.Add(p, s);
         }
 
-        public bool TryGetSenseData(int z, out ISenseDataView data)
+        public bool TryGetSenseData(int z, out IDynamicSenseDataView2D data)
         {
             if (activeLightsPerLevel.TryGetValue(z, out var level))
             {
@@ -193,16 +140,16 @@ namespace RogueEntity.Core.Sensing.Map
         class SenseDataLevel
         {
             public readonly SenseDataMap SenseMap;
-            readonly OmniDirectionalSenseDataMapServices senseMapServices;
-            readonly ISenseDataBlitter blitter;
+            readonly SenseMapBlitterService senseMapBlitterService;
+            readonly ISenseMapDataBlitter blitter;
             readonly List<(Position2D pos, SenseSourceState<TSourceSense> senseState)> collectedSenses;
             readonly List<(Position2D pos, SenseSourceData senseData)> blittableSenses;
             public int LastRecentlyUsedTime { get; private set; }
 
-            public SenseDataLevel(ISenseDataBlitter blitter = null)
+            public SenseDataLevel(ISenseMapDataBlitter blitter)
             {
-                this.blitter = blitter ?? new DefaultSenseDataBlitter();
-                this.senseMapServices = new OmniDirectionalSenseDataMapServices();
+                this.blitter = blitter;
+                this.senseMapBlitterService = new SenseMapBlitterService();
                 this.SenseMap = new SenseDataMap();
                 this.blittableSenses = new List<(Position2D, SenseSourceData)>();
                 this.collectedSenses = new List<(Position2D, SenseSourceState<TSourceSense>)>();
@@ -226,23 +173,25 @@ namespace RogueEntity.Core.Sensing.Map
                     Rectangle targetBounds = default;
                     foreach (var collectedSense in collectedSenses)
                     {
-                        if (collectedSense.senseState.SenseSource.TryGetValue(out var sd))
+                        if (!collectedSense.senseState.SenseSource.TryGetValue(out var sd))
                         {
-                            var senseBounds = sd.Bounds.WithCenter(collectedSense.senseState.LastPosition.ToGridXY());
-                            if (blittableSenses.Count == 0)
-                            {
-                                targetBounds = senseBounds;
-                            }
-                            else
-                            {
-                                targetBounds = targetBounds.GetUnion(senseBounds);
-                            }
-                            
-                            blittableSenses.Add((collectedSense.pos, sd));
+                            continue;
                         }
+
+                        var senseBounds = sd.Bounds.WithCenter(collectedSense.senseState.LastPosition.ToGridXY());
+                        if (blittableSenses.Count == 0)
+                        {
+                            targetBounds = senseBounds;
+                        }
+                        else
+                        {
+                            targetBounds = targetBounds.GetUnion(senseBounds);
+                        }
+                            
+                        blittableSenses.Add((collectedSense.pos, sd));
                     }
 
-                    senseMapServices.ProcessSenseSources(SenseMap, targetBounds, blitter, blittableSenses);
+                    senseMapBlitterService.ProcessSenseSources(SenseMap, targetBounds, blitter, blittableSenses);
                 }
                 finally
                 {

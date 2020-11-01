@@ -11,7 +11,7 @@ using RogueEntity.Core.Utils.Maps;
 
 namespace RogueEntity.Core.Sensing.Receptors.Noise
 {
-    public class NoiseReceptorSystem : SenseReceptorSystem<NoiseSense, NoiseSense>
+    public class NoiseReceptorSystem : SenseReceptorSystemBase<NoiseSense, NoiseSense>
     {
         public NoiseReceptorSystem([NotNull] Lazy<ISensePropertiesSource> senseProperties,
                                    [NotNull] Lazy<ISenseStateCacheProvider> senseCacheProvider,

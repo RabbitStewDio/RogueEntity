@@ -16,12 +16,13 @@ namespace RogueEntity.Core.Utils.Algorithms
             {
                 Direction.Up, Direction.Left, Direction.Down, Direction.Right
             };
-            EightWayNeighbours = new List<Direction>()
-            {
-                Direction.Up, Direction.UpLeft, Direction.Left, Direction.DownLeft, Direction.Down, Direction.DownRight, Direction.Right, Direction.UpRight
-            };
             DiagonalNeighbours = new List<Direction>()
             {
+                Direction.UpLeft, Direction.UpRight, Direction.DownRight, Direction.DownLeft
+            };
+            EightWayNeighbours = new List<Direction>()
+            {
+                Direction.Up, Direction.Left, Direction.Down, Direction.Right, 
                 Direction.UpLeft, Direction.UpRight, Direction.DownRight, Direction.DownLeft
             };
         }
@@ -264,6 +265,18 @@ namespace RogueEntity.Core.Utils.Algorithms
         public static IEnumerable<Position2D> NeighborsCounterClockwise(this AdjacencyRule r, int startingX, int startingY, Direction startingDirection = default)
             => r.NeighborsCounterClockwise(new Position2D(startingX, startingY), startingDirection);
 
+        /// <summary>
+        /// Gets directions leading to neighboring locations, according to the current adjacency
+        /// method. Appropriate directions are returned in cardinal direction first, diagonal directions afterwards,
+        /// both in clockwise order.
+        /// </summary>
+        /// <remarks>
+        ///   This makes sure that search algorithms like Dijkstra and A-Star prefer cardinal movement to
+        ///   diagonal movement when faced with the same cost. This just looks better than a drunken walk
+        ///   swaying away from a direct line. 
+        /// </remarks>
+        /// <param name="type"></param>
+        /// <returns>Directions that lead to neighboring locations.</returns>
         public static ReadOnlyListWrapper<Direction> DirectionsOfNeighbors(this AdjacencyRule type)
         {
             switch (type)

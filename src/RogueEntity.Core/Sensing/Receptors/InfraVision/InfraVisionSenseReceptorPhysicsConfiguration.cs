@@ -9,10 +9,13 @@ namespace RogueEntity.Core.Sensing.Receptors.InfraVision
     public class InfraVisionSenseReceptorPhysicsConfiguration: IInfraVisionSenseReceptorPhysicsConfiguration
     {
         readonly IHeatPhysicsConfiguration heatPhysics;
+        readonly ShadowPropagationResistanceDataSource dataSource;
 
-        public InfraVisionSenseReceptorPhysicsConfiguration(IHeatPhysicsConfiguration heatPhysics)
+        public InfraVisionSenseReceptorPhysicsConfiguration(IHeatPhysicsConfiguration heatPhysics,
+                                                            ShadowPropagationResistanceDataSource dataSource = null)
         {
             this.heatPhysics = heatPhysics;
+            this.dataSource = dataSource ?? new ShadowPropagationResistanceDataSource();
             InfraVisionPhysics = new FullStrengthSensePhysics(heatPhysics.HeatPhysics);
         }
 
@@ -25,7 +28,7 @@ namespace RogueEntity.Core.Sensing.Receptors.InfraVision
         
         public ISensePropagationAlgorithm CreateInfraVisionSensorPropagationAlgorithm()
         {
-            return new ShadowPropagationAlgorithm(InfraVisionPhysics);
+            return new ShadowPropagationAlgorithm(InfraVisionPhysics, dataSource);
         }
     }
 }

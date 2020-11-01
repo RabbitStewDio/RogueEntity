@@ -8,16 +8,20 @@ namespace RogueEntity.Core.Sensing.Sources.Light
 {
     public class LightPhysicsConfiguration: ILightPhysicsConfiguration
     {
-        public LightPhysicsConfiguration([NotNull] ISensePhysics lightPhysics)
+        readonly ShadowPropagationResistanceDataSource dataSource;
+        
+        public LightPhysicsConfiguration([NotNull] ISensePhysics lightPhysics, 
+                                         ShadowPropagationResistanceDataSource dataSource = null)
         {
             LightPhysics = lightPhysics ?? throw new ArgumentNullException(nameof(lightPhysics));
+            this.dataSource = dataSource ?? new ShadowPropagationResistanceDataSource();
         }
 
         public ISensePhysics LightPhysics { get; }
         
         public ISensePropagationAlgorithm CreateLightPropagationAlgorithm()
         {
-            return new ShadowPropagationAlgorithm(LightPhysics);
+            return new ShadowPropagationAlgorithm(LightPhysics, dataSource);
         }
     }
 }

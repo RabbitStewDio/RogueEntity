@@ -9,7 +9,7 @@ using RogueEntity.Core.Utils.Maps;
 
 namespace RogueEntity.Core.Sensing.Receptors.Heat
 {
-    public class HeatReceptorSystem : SenseReceptorSystem<TemperatureSense, TemperatureSense>
+    public class HeatReceptorSystem : SenseReceptorSystemBase<TemperatureSense, TemperatureSense>
     {
         public HeatReceptorSystem([NotNull] Lazy<ISensePropertiesSource> senseProperties,
                                   [NotNull] Lazy<ISenseStateCacheProvider> senseCacheProvider,

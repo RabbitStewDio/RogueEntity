@@ -89,7 +89,7 @@ namespace RogueEntity.Core.Sensing.Receptors.Touch
             ctx.Register(SenseSourceCollectionContinuousSystemId, 57500, RegisterCollectSenseSourcesSystem);
         }
 
-        protected override bool GetOrCreateLightSystem(IServiceResolver serviceResolver, out SenseReceptorSystem<TouchSense, TouchSense> ls)
+        protected override bool GetOrCreateLightSystem(IServiceResolver serviceResolver, out SenseReceptorSystemBase<TouchSense, TouchSense> ls)
         {
             if (!serviceResolver.TryResolve(out ITouchReceptorPhysicsConfiguration physics))
             {

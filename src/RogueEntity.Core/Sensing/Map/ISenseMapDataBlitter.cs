@@ -1,10 +1,11 @@
 using RogueEntity.Core.Positioning;
+using RogueEntity.Core.Sensing.Common;
+using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.Maps;
-using Rectangle = RogueEntity.Core.Utils.Rectangle;
 
-namespace RogueEntity.Core.Sensing.Common.Blitter
+namespace RogueEntity.Core.Sensing.Map
 {
-    public interface ISenseDataBlitter
+    public interface ISenseMapDataBlitter
     {
         void Blit(Rectangle bounds,
                   Position2D sensePosition,

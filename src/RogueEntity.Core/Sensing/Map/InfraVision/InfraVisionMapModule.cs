@@ -60,12 +60,6 @@ namespace RogueEntity.Core.Sensing.Map.InfraVision
             var ctx = initializer.DeclareEntityContext<TItemId>();
             ctx.Register(ReceptorCollectSystemId, 5750, RegisterCollectSenseSourcesSystem);
             ctx.Register(ReceptorComputeSystemId, 5850, RegisterComputeSenseMapSystem);
-            ctx.Register(ReceptorApplySystemId, 5900, RegisterApplySenseMapSystem);
-
-            // disable the per-receptor handling of sense sources.
-            // we already compute a global view, that can be used here as well.
-            ctx.Register(VisionSenseModule.SenseSourceCollectionSystemId, 5850, ctx.Empty());
-            ctx.Register(VisionSenseModule.ReceptorComputeSystemId, 5850, ctx.Empty());
         }
 
         void RegisterCollectSenseSourcesSystem<TGameContext, TItemId>(IServiceResolver resolver,
@@ -97,24 +91,6 @@ namespace RogueEntity.Core.Sensing.Map.InfraVision
             context.AddFixedStepHandlers(c => hs.ProcessSenseMap(registry));
         }
 
-        void RegisterApplySenseMapSystem<TGameContext, TItemId>(IServiceResolver resolver,
-                                                                IGameLoopSystemRegistration<TGameContext> context,
-                                                                EntityRegistry<TItemId> registry,
-                                                                ICommandHandlerRegistration<TGameContext, TItemId> handler)
-            where TItemId : IEntityKey
-        {
-            var hs = GetOrCreate(resolver);
-
-            var system = registry.BuildSystem()
-                                 .WithContext<TGameContext>()
-                                 .CreateSystem<SensoryReceptorState<VisionSense, TemperatureSense>,
-                                     SenseReceptorDirtyFlag<VisionSense, TemperatureSense>,
-                                     SingleLevelSenseDirectionMapData<VisionSense, TemperatureSense>>(hs.ApplyReceptorFieldOfView);
-
-            context.AddInitializationStepHandler(system);
-            context.AddFixedStepHandlers(system);
-        }
-
         void RegisterPrepareSystem<TGameContext>(IServiceResolver resolver, IGameLoopSystemRegistration<TGameContext> context)
         {
             var hs = GetOrCreate(resolver);
@@ -129,9 +105,9 @@ namespace RogueEntity.Core.Sensing.Map.InfraVision
                 return system;
             }
 
-            if (!resolver.TryResolve(out ISenseDataBlitter blitter))
+            if (!resolver.TryResolve(out ISenseMapDataBlitter blitter))
             {
-                blitter = new DefaultSenseDataBlitter();
+                blitter = new DefaultSenseMapDataBlitter();
             }
 
             if (!resolver.TryResolve(out IInfraVisionSenseReceptorPhysicsConfiguration physics))

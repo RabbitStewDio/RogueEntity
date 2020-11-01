@@ -10,13 +10,17 @@ namespace RogueEntity.Core.Sensing.Sources.Heat
 {
     public class HeatPhysicsConfiguration: IHeatPhysicsConfiguration
     {
+        readonly ShadowPropagationResistanceDataSource dataSource;
         readonly Dictionary<int, Temperature> environmentTemperatures;
         readonly Temperature fallbackTemperature;
 
-        public HeatPhysicsConfiguration([NotNull] ISensePhysics heatPhysics, Temperature fallbackTemperature)
+        public HeatPhysicsConfiguration([NotNull] ISensePhysics heatPhysics,
+                                        Temperature fallbackTemperature,
+                                        ShadowPropagationResistanceDataSource dataSource = null)
         {
             this.HeatPhysics = heatPhysics ?? throw new ArgumentNullException(nameof(heatPhysics));
             this.fallbackTemperature = fallbackTemperature;
+            this.dataSource = dataSource ?? new ShadowPropagationResistanceDataSource();
             this.environmentTemperatures = new Dictionary<int, Temperature>();
         }
 
@@ -39,7 +43,7 @@ namespace RogueEntity.Core.Sensing.Sources.Heat
 
         public ISensePropagationAlgorithm CreateHeatPropagationAlgorithm()
         {
-            return new ShadowPropagationAlgorithm(HeatPhysics);
+            return new ShadowPropagationAlgorithm(HeatPhysics, dataSource);
         }
     }
 }

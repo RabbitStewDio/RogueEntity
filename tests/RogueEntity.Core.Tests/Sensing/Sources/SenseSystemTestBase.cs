@@ -11,6 +11,8 @@ using RogueEntity.Core.Sensing.Cache;
 using RogueEntity.Core.Sensing.Common;
 using RogueEntity.Core.Sensing.Resistance;
 using RogueEntity.Core.Sensing.Sources;
+using RogueEntity.Core.Tests.Sensing.Common;
+using RogueEntity.Core.Utils.Maps;
 
 namespace RogueEntity.Core.Tests.Sensing.Sources
 {
@@ -164,6 +166,7 @@ namespace RogueEntity.Core.Tests.Sensing.Sources
             Console.WriteLine("Computed Result:");
             Console.WriteLine(SenseTestHelpers.PrintMap(vaData, vaData.Bounds));
             Console.WriteLine("--");
+            Console.WriteLine(SenseTestHelpers.PrintMap(new SenseMapDirectionTestView(vaData), vaData.Bounds));
             var expectedResult = SenseTestHelpers.Parse(expectedResultText);
 
             // the resulting sense information is stored relative to the sense origin, with the origin point at the centre of the bounds

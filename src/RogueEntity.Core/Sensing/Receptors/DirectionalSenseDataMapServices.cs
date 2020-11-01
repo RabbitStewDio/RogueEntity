@@ -25,50 +25,50 @@ namespace RogueEntity.Core.Sensing.Receptors
         {
             public readonly List<(Position2D pos, SenseSourceData sense)> Senses;
             public readonly Position2D TargetPos;
-            public readonly IDirectionalSenseBlitter Blitter;
+            public readonly ISenseReceptorBlitter ReceptorBlitter;
             public readonly Rectangle Bounds;
-            public readonly BoundedDataView<float> Tile;
-            public readonly BoundedDataView<byte> Dir;
+            public readonly BoundedDataView<float> ReceptorSenseIntensity;
+            public readonly BoundedDataView<byte> ReceptorSenseDirections;
 
             public ProcessData(List<(Position2D, SenseSourceData)> senses,
                                Position2D targetPos,
-                               IDirectionalSenseBlitter blitter,
+                               ISenseReceptorBlitter receptorBlitter,
                                Rectangle bounds,
-                               BoundedDataView<float> tile,
-                               BoundedDataView<byte> dir)
+                               BoundedDataView<float> receptorSenseIntensity,
+                               BoundedDataView<byte> receptorSenseDirections)
             {
                 this.Senses = senses;
                 this.TargetPos = targetPos;
-                this.Blitter = blitter;
+                this.ReceptorBlitter = receptorBlitter;
                 this.Bounds = bounds;
-                this.Tile = tile;
-                this.Dir = dir;
+                this.ReceptorSenseIntensity = receptorSenseIntensity;
+                this.ReceptorSenseDirections = receptorSenseDirections;
             }
         }
 
-        void QuerySenseDataTiles(SenseDataMap m, 
+        void QuerySenseDataTiles(SenseDataMap receptorSenseMap, 
                                  Rectangle targetBounds,
                                  Position2D targetPos,
-                                 IDirectionalSenseBlitter blitter,
+                                 ISenseReceptorBlitter receptorBlitter,
                                  List<(Position2D, SenseSourceData)> senses)
         {
             var affectedBounds = GetSenseBounds(senses).GetIntersection(targetBounds);
-            partitionsBuffer = affectedBounds.PartitionBy(m.OffsetX, m.OffsetY, m.TileSizeX, m.TileSizeY, partitionsBuffer);
+            partitionsBuffer = affectedBounds.PartitionBy(receptorSenseMap.OffsetX, receptorSenseMap.OffsetY, receptorSenseMap.TileSizeX, receptorSenseMap.TileSizeY, partitionsBuffer);
             foreach (var r in partitionsBuffer)
             {
-                m.FetchRawData(r.X, r.Y, out var tile, out var dir);
-                var bounds = tile.Bounds.GetIntersection(affectedBounds);
-                parameterBuffer.Add(new ProcessData(senses, targetPos, blitter, bounds, tile, dir));
+                receptorSenseMap.FetchRawData(r.X, r.Y, out var receptorSenseIntensity, out var receptorSenseDirection);
+                var bounds = receptorSenseIntensity.Bounds.GetIntersection(affectedBounds);
+                parameterBuffer.Add(new ProcessData(senses, targetPos, receptorBlitter, bounds, receptorSenseIntensity, receptorSenseDirection));
             }
         }
 
         static void ProcessTile(ProcessData data)
         {
-            var brightnessData = data.Tile;
-            var directionsData = data.Dir;
+            var receptorSenseIntensity = data.ReceptorSenseIntensity;
+            var receptorSenseDirections = data.ReceptorSenseDirections;
 
-            brightnessData.Clear(data.Bounds);
-            directionsData.Clear(data.Bounds);
+            receptorSenseIntensity.Clear(data.Bounds);
+            receptorSenseDirections.Clear(data.Bounds);
 
             foreach (var s in data.Senses)
             {
@@ -80,14 +80,14 @@ namespace RogueEntity.Core.Sensing.Receptors
 
                 var sense = s.sense;
                 var pos = s.pos;
-                data.Blitter.Blit(data.Bounds.GetIntersection(senseBounds), pos, data.TargetPos, sense, brightnessData, directionsData);
+                data.ReceptorBlitter.Blit(data.Bounds.GetIntersection(senseBounds), pos, data.TargetPos, sense, receptorSenseIntensity, receptorSenseDirections);
             }
         }
 
-        public void ProcessSenseSources(SenseDataMap m,
+        public void ProcessSenseSources(SenseDataMap receptorSenseMap,
                                         Rectangle targetBounds,
                                         Position2D targetPos,
-                                        IDirectionalSenseBlitter blitter,
+                                        ISenseReceptorBlitter receptorBlitter,
                                         List<(Position2D pos, SenseSourceData sense)> senses)
         {
             if (senses.Count == 0)
@@ -96,7 +96,7 @@ namespace RogueEntity.Core.Sensing.Receptors
             }
 
             parameterBuffer.Clear();
-            QuerySenseDataTiles(m, targetBounds, targetPos, blitter, senses);
+            QuerySenseDataTiles(receptorSenseMap, targetBounds, targetPos, receptorBlitter, senses);
             Parallel.ForEach(parameterBuffer, ProcessDataDelegate);
             parameterBuffer.Clear();
         }

@@ -4,6 +4,6 @@ namespace RogueEntity.Core.Sensing.Receptors
 {
     public interface ISenseDirectionMap
     {
-        bool TryGetSenseData(int z, out ISenseDataView intensities);
+        bool TryGetSenseData(int z, out IDynamicSenseDataView2D intensities);
     }
 }

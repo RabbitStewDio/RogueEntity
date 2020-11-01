@@ -9,7 +9,7 @@ using RogueEntity.Core.Utils.Maps;
 
 namespace RogueEntity.Core.Sensing.Receptors.InfraVision
 {
-    public class InfraVisionReceptorSystem : SenseReceptorSystem<VisionSense, TemperatureSense>
+    public class InfraVisionReceptorSystem : SenseReceptorSystemBase<VisionSense, TemperatureSense>
     {
         public InfraVisionReceptorSystem([NotNull] Lazy<ISensePropertiesSource> senseProperties,
                                          [NotNull] Lazy<ISenseStateCacheProvider> senseCacheProvider,

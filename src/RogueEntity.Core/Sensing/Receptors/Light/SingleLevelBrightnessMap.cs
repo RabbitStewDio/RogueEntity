@@ -39,7 +39,7 @@ namespace RogueEntity.Core.Sensing.Receptors.Light
             return false;
         }
 
-        public bool TryGetSenseData(int z, out ISenseDataView intensities)
+        public bool TryGetSenseData(int z, out IDynamicSenseDataView2D intensities)
         {
             return backend.TryGetIntensity(z, out intensities);
         }

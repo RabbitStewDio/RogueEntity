@@ -7,8 +7,11 @@ namespace RogueEntity.Core.Sensing.Receptors.Light
 {
     public class VisionSenseReceptorPhysicsConfiguration: IVisionSenseReceptorPhysicsConfiguration
     {
-        public VisionSenseReceptorPhysicsConfiguration(ILightPhysicsConfiguration lightPhysics)
+        readonly ShadowPropagationResistanceDataSource dataSource;
+        
+        public VisionSenseReceptorPhysicsConfiguration(ILightPhysicsConfiguration lightPhysics, ShadowPropagationResistanceDataSource dataSource = null)
         {
+            this.dataSource = dataSource ?? new ShadowPropagationResistanceDataSource();
             VisionPhysics = new FullStrengthSensePhysics(lightPhysics.LightPhysics);
         }
 
@@ -16,7 +19,7 @@ namespace RogueEntity.Core.Sensing.Receptors.Light
         
         public ISensePropagationAlgorithm CreateVisionSensorPropagationAlgorithm()
         {
-            return new ShadowPropagationAlgorithm(VisionPhysics);
+            return new ShadowPropagationAlgorithm(VisionPhysics, dataSource);
         }
     }
 }

@@ -58,12 +58,6 @@ namespace RogueEntity.Core.Sensing.Map.Light
             var ctx = initializer.DeclareEntityContext<TItemId>();
             ctx.Register(ReceptorCollectSystemId, 57500, RegisterCollectSenseSourcesSystem);
             ctx.Register(ReceptorComputeSystemId, 58500, RegisterComputeSenseMapSystem);
-            ctx.Register(ReceptorApplySystemId, 59000, RegisterApplySenseMapSystem);
-            
-            // disable the per-receptor handling of sense sources.
-            // we already compute a global view, that can be used here as well.
-            ctx.Register(VisionSenseModule.SenseSourceCollectionSystemId, 5850, ctx.Empty());
-            ctx.Register(VisionSenseModule.ReceptorComputeSystemId, 5850, ctx.Empty());
         }
 
         void RegisterCollectSenseSourcesSystem<TGameContext, TItemId>(IServiceResolver resolver,
@@ -95,24 +89,6 @@ namespace RogueEntity.Core.Sensing.Map.Light
             context.AddFixedStepHandlers(c => hs.ProcessSenseMap(registry));
         }
 
-        void RegisterApplySenseMapSystem<TGameContext, TItemId>(IServiceResolver resolver,
-                                                                      IGameLoopSystemRegistration<TGameContext> context,
-                                                                      EntityRegistry<TItemId> registry,
-                                                                      ICommandHandlerRegistration<TGameContext, TItemId> handler)
-            where TItemId : IEntityKey
-        {
-            var hs = GetOrCreate(resolver);
-
-            var system = registry.BuildSystem()
-                    .WithContext<TGameContext>()
-                    .CreateSystem<SensoryReceptorState<VisionSense, VisionSense>,
-                        SenseReceptorDirtyFlag<VisionSense, VisionSense>,
-                        SingleLevelSenseDirectionMapData<VisionSense, VisionSense>>(hs.ApplyReceptorFieldOfView);
-            
-            context.AddInitializationStepHandler(system);
-            context.AddFixedStepHandlers(system);
-        }
-
         void RegisterPrepareSystem<TGameContext>(IServiceResolver resolver, IGameLoopSystemRegistration<TGameContext> context)
         {
             var hs = GetOrCreate(resolver);
@@ -127,9 +103,9 @@ namespace RogueEntity.Core.Sensing.Map.Light
                 return system;
             }
 
-            if (!resolver.TryResolve(out ISenseDataBlitter blitter))
+            if (!resolver.TryResolve(out ISenseMapDataBlitter blitter))
             {
-                blitter = new DefaultSenseDataBlitter();
+                blitter = new DefaultSenseMapDataBlitter();
             }
 
             system = new LightMapSystem(resolver.ResolveToReference<ITimeSource>(),

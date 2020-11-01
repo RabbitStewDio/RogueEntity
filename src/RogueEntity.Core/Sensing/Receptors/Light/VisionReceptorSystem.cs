@@ -11,7 +11,7 @@ using RogueEntity.Core.Utils.Maps;
 
 namespace RogueEntity.Core.Sensing.Receptors.Light
 {
-    public class VisionReceptorSystem : SenseReceptorSystem<VisionSense, VisionSense>
+    public class VisionReceptorSystem : SenseReceptorSystemBase<VisionSense, VisionSense>
     {
         public VisionReceptorSystem([NotNull] Lazy<ISensePropertiesSource> senseProperties,
                                     [NotNull] Lazy<ISenseStateCacheProvider> senseCacheProvider,

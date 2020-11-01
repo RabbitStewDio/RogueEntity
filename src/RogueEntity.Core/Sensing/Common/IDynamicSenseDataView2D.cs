@@ -5,8 +5,17 @@ using RogueEntity.Core.Utils.Maps;
 
 namespace RogueEntity.Core.Sensing.Common
 {
+    public interface ISenseDataView
+    {
+        bool TryQuery(int x,
+                      int y,
+                      out float intensity,
+                      out SenseDirectionStore directionality);
+    }
+    
+    
     [SuppressMessage("ReSharper", "PossibleInterfaceMemberAmbiguity")]
-    public interface ISenseDataView: IReadOnlyDynamicDataView2D<float>, IReadOnlyDynamicDataView2D<SenseDirectionStore>
+    public interface IDynamicSenseDataView2D: IReadOnlyDynamicDataView2D<float>, IReadOnlyDynamicDataView2D<SenseDirectionStore>, ISenseDataView
     {
         new int OffsetX { get; }
         new int OffsetY { get; }
@@ -15,13 +24,5 @@ namespace RogueEntity.Core.Sensing.Common
 
         new List<Rectangle> GetActiveTiles(List<Rectangle> data = null);
         new Rectangle GetActiveBounds();
-        
-        float QueryBrightness(int x, int y);
-        SenseDirectionStore QueryDirection(int x, int y);
-        
-        bool TryQuery(int x,
-                      int y,
-                      out float intensity,
-                      out SenseDirectionStore directionality);
     }
 }

@@ -10,6 +10,12 @@ using RogueEntity.Core.Utils.Maps;
 
 namespace RogueEntity.Core.Sensing.Sources.Heat
 {
+    /// <summary>
+    ///   Computes a heat sense data map. The data is relative to the local environment temperature
+    ///   to allow eay comparison of relative intensities instead of having to deal with large
+    ///   numbers on all occasions. This makes heat sense scales comparable with vision or other sense
+    ///   sources. 
+    /// </summary>
     public class HeatSystem : SenseSystemBase<TemperatureSense, HeatSourceDefinition>
     {
         [NotNull] readonly IHeatPhysicsConfiguration heatPhysics;
@@ -49,13 +55,6 @@ namespace RogueEntity.Core.Sensing.Sources.Heat
             var envKelvin = environmentTemperature.ToKelvin();
             var intensityRelative = senseDefinition.Intensity - envKelvin;
             var result = base.RefreshSenseState(definition, intensityRelative, pos, resistanceView, data);
-
-            var intensities = result.Intensities;
-            for (var i = 0; i < intensities.Length; i++)
-            {
-                intensities[i] += envKelvin;
-            }
-
             return result;
         }
     }

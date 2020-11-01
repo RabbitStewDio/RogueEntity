@@ -31,7 +31,7 @@ namespace RogueEntity.Core.Sensing.Receptors
             Z = z;
         }
 
-        public bool TryGetIntensity(int z, out ISenseDataView intensities)
+        public bool TryGetIntensity(int z, out IDynamicSenseDataView2D intensities)
         {
             if (z == this.Z)
             {

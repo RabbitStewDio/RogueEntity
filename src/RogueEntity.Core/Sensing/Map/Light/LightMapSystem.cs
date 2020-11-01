@@ -12,11 +12,11 @@ namespace RogueEntity.Core.Sensing.Map.Light
     public class LightMapSystem : SenseMappingSystemBase<VisionSense, VisionSense, LightSourceDefinition>, IBrightnessMap
     {
         public LightMapSystem([NotNull] Lazy<ITimeSource> timeSource,
-                              ISenseDataBlitter blitterFactory) : base(timeSource, blitterFactory)
+                              ISenseMapDataBlitter blitterFactory) : base(timeSource, blitterFactory)
         {
         }
 
-        public bool TryGetLightIntensity(int z, out ISenseDataView brightnessMap)
+        public bool TryGetLightIntensity(int z, out IDynamicSenseDataView2D brightnessMap)
         {
             return TryGetSenseData(z, out brightnessMap);
         }

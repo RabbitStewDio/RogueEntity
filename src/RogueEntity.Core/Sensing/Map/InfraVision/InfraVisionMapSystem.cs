@@ -14,7 +14,7 @@ namespace RogueEntity.Core.Sensing.Map.InfraVision
 
         public InfraVisionMapSystem([NotNull] Lazy<ITimeSource> timeSource,
                                     [NotNull] IInfraVisionSenseReceptorPhysicsConfiguration heatPhysics,
-                                    ISenseDataBlitter blitterFactory = null) : base(timeSource, blitterFactory)
+                                    ISenseMapDataBlitter blitterFactory = null) : base(timeSource, blitterFactory)
         {
             this.heatPhysics = heatPhysics ?? throw new ArgumentNullException(nameof(heatPhysics));
         }

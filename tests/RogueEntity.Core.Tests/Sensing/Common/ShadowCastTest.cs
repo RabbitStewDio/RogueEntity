@@ -26,15 +26,27 @@ namespace RogueEntity.Core.Tests.Sensing.Common
 ";
 
         const string EmptyRoomResult = @"
-  0.000,  0.000,  0.000,  0.000,  0.000,  0.000,  0.000,  0.000,  0.000
-  0.000,  0.757,  1.394,  1.838,  2.000,  1.838,  1.394,  0.757,  0.000
-  0.000,  1.394,  2.172,  2.764,  3.000,  2.764,  2.172,  1.394,  0.000
-  0.000,  1.838,  2.764,  3.586,  4.000,  3.586,  2.764,  1.838,  0.000
-  0.000,  2.000,  3.000,  4.000,  5.000,  4.000,  3.000,  2.000,  0.000
-  0.000,  1.838,  2.764,  3.586,  4.000,  3.586,  2.764,  1.838,  0.000
-  0.000,  1.394,  2.172,  2.764,  3.000,  2.764,  2.172,  1.394,  0.000
-  0.000,  0.757,  1.394,  1.838,  2.000,  1.838,  1.394,  0.757,  0.000
-  0.000,  0.000,  0.000,  0.000,  0.000,  0.000,  0.000,  0.000,  0.000
+   .   ,   .   ,  0.528,  0.877,  1.000,  0.877,  0.528,   .   ,   .   
+   .   ,  0.757,  1.394,  1.838,  2.000,  1.838,  1.394,  0.757,   .   
+  0.528,  1.394,  2.172,  2.764,  3.000,  2.764,  2.172,  1.394,  0.528
+  0.877,  1.838,  2.764,  3.586,  4.000,  3.586,  2.764,  1.838,  0.877
+  1.000,  2.000,  3.000,  4.000,  5.000,  4.000,  3.000,  2.000,  1.000
+  0.877,  1.838,  2.764,  3.586,  4.000,  3.586,  2.764,  1.838,  0.877
+  0.528,  1.394,  2.172,  2.764,  3.000,  2.764,  2.172,  1.394,  0.528
+   .   ,  0.757,  1.394,  1.838,  2.000,  1.838,  1.394,  0.757,   .   
+   .   ,   .   ,  0.528,  0.877,  1.000,  0.877,  0.528,   .   ,   .   
+";
+
+        const string EmptyRoomDirections = @"
+  ~ ,  ~ , ┌# , ┌# , ┬# , ┐# , ┐# ,  ~ ,  ~ 
+  ~ , ┌  , ┌  , ┌  , ┬  , ┐  , ┐  , ┐  ,  ~ 
+ ┌# , ┌  , ┌  , ┌  , ┬  , ┐  , ┐  , ┐  , ┐# 
+ ┌# , ┌  , ┌  , ┌  , ┬  , ┐  , ┐  , ┐  , ┐# 
+ ├# , ├  , ├  , ├  , ┼ *, ┤  , ┤  , ┤  , ┤# 
+ └# , └  , └  , └  , ┴  , ┘  , ┘  , ┘  , ┘# 
+ └# , └  , └  , └  , ┴  , ┘  , ┘  , ┘  , ┘# 
+  ~ , └  , └  , └  , ┴  , ┘  , ┘  , ┘  ,  ~ 
+  ~ ,  ~ , └# , └# , ┴# , ┘# , ┘# ,  ~ ,  ~
 ";
 
         const string RoomWithPillars = @"
@@ -51,15 +63,27 @@ namespace RogueEntity.Core.Tests.Sensing.Common
 ";
 
         const string RoomWithPillarsResult = @"
-  0.000,  0.000,  0.000,  0.000,  0.000,  0.000,  0.000,  0.000,  0.000
-  0.000,  0.757,  1.394,  0.000,  0.000,  1.838,  0.000,  0.000,  0.000
-  0.000,  1.394,  2.172,  0.000,  0.000,  2.764,  0.000,  0.000,  0.000
-  0.000,  1.838,  2.764,  3.586,  4.000,  0.000,  0.000,  1.838,  0.000
-  0.000,  2.000,  3.000,  4.000,  5.000,  4.000,  3.000,  2.000,  0.000
-  0.000,  1.838,  2.764,  3.586,  4.000,  3.586,  2.764,  1.838,  0.000
-  0.000,  1.394,  0.000,  0.000,  3.000,  2.764,  0.000,  0.000,  0.000
-  0.000,  0.000,  0.000,  1.838,  2.000,  1.838,  1.394,  0.000,  0.000
-  0.000,  0.000,  0.000,  0.000,  0.000,  0.000,  0.000,  0.000,  0.000
+   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   
+   .   ,  0.757,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   
+  0.528,  1.394,  2.172,  2.764,  3.000,  2.764,   .   ,   .   ,   .   
+  0.877,  1.838,  2.764,  3.586,  4.000,  3.586,  2.764,  1.838,  0.877
+  1.000,  2.000,  3.000,  4.000,  5.000,  4.000,  3.000,  2.000,  1.000
+  0.877,  1.838,  2.764,  3.586,  4.000,  3.586,  2.764,  1.838,  0.877
+  0.528,  1.394,  2.172,  2.764,  3.000,  2.764,  2.172,  1.394,  0.528
+   .   ,   .   ,   .   ,  1.838,  2.000,  1.838,  1.394,   .   ,   .   
+   .   ,   .   ,   .   ,  0.877,  1.000,  0.877,  0.528,   .   ,   .   
+";
+
+        const string RoomWithPillarsDirection = @"
+  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ 
+  ~ , ┌  ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ 
+ ┌# , ┌  , ┌  , ┌# , ┬# , ┐  ,  ~ ,  ~ ,  ~ 
+ ┌# , ┌  , ┌  , ┌  , ┬  , ┐# , ┐# , ┐  , ┐# 
+ ├# , ├  , ├  , ├  , ┼ *, ┤  , ┤  , ┤  , ┤# 
+ └# , └  , └  , └  , ┴  , ┘  , ┘  , ┘  , ┘# 
+ └# , └  , └# , └# , ┴  , ┘  , ┘# , ┘# , ┘# 
+  ~ ,  ~ ,  ~ , └  , ┴  , ┘  , ┘  ,  ~ ,  ~ 
+  ~ ,  ~ ,  ~ , └# , ┴# , ┘# , ┘# ,  ~ ,  ~
 ";
 
         const string RoomDoorNear = @"
@@ -76,15 +100,27 @@ namespace RogueEntity.Core.Tests.Sensing.Common
 ";
 
         const string RoomDoorNearResult = @"
-  0.000,  0.000,  0.000,  0.000,  0.000,  0.000,  0.000,  0.000,  0.000
-  0.000,  0.000,  0.000,  0.000,  0.000,  0.000,  1.394,  0.757,  0.000
-  0.000,  0.000,  0.000,  0.000,  0.000,  2.764,  2.172,  1.394,  0.000
-  0.000,  0.000,  0.000,  0.000,  0.000,  3.586,  0.000,  0.000,  0.000
-  0.000,  2.000,  3.000,  4.000,  5.000,  4.000,  3.000,  2.000,  0.000
-  0.000,  0.000,  0.000,  0.000,  4.000,  0.000,  0.000,  0.000,  0.000
-  0.000,  0.000,  0.000,  2.764,  3.000,  2.764,  0.000,  0.000,  0.000
-  0.000,  0.000,  0.000,  1.838,  2.000,  1.838,  0.000,  0.000,  0.000
-  0.000,  0.000,  0.000,  0.000,  0.000,  0.000,  0.000,  0.000,  0.000
+   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   
+   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,  0.757,   .   
+   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,  2.172,   .   ,   .   
+  0.877,  1.838,  2.764,  3.586,  4.000,  3.586,  2.764,  1.838,  0.877
+  1.000,  2.000,  3.000,  4.000,  5.000,  4.000,  3.000,  2.000,  1.000
+  0.877,  1.838,  2.764,  3.586,  4.000,  3.586,  2.764,  1.838,  0.877
+   .   ,   .   ,   .   ,  2.764,  3.000,  2.764,   .   ,   .   ,   .   
+   .   ,   .   ,   .   ,  1.838,  2.000,  1.838,   .   ,   .   ,   .   
+   .   ,   .   ,  0.528,  0.877,  1.000,  0.877,  0.528,   .   ,   .   
+";
+
+        const string RoomDoorNearDirection = @"
+  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ 
+  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ , ┐  ,  ~ 
+  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ , ┐  ,  ~ ,  ~ 
+ ┌# , ┌# , ┌# , ┌# , ┬# , ┐  , ┐# , ┐# , ┐# 
+ ├# , ├  , ├  , ├  , ┼ *, ┤  , ┤  , ┤  , ┤# 
+ └# , └# , └# , └# , ┴  , ┘# , ┘# , ┘# , ┘# 
+  ~ ,  ~ ,  ~ , └  , ┴  , ┘  ,  ~ ,  ~ ,  ~ 
+  ~ ,  ~ ,  ~ , └  , ┴  , ┘  ,  ~ ,  ~ ,  ~ 
+  ~ ,  ~ , └# , └# , ┴# , ┘# , ┘# ,  ~ ,  ~
 ";
 
         const string RoomDoorFar = @"
@@ -101,38 +137,91 @@ namespace RogueEntity.Core.Tests.Sensing.Common
 ";
 
         const string RoomDoorFarResult = @"
-  0.000,  0.000,  0.000,  0.000,  0.000,  0.000,  0.000,  0.000,  0.000
-  0.000,  0.000,  0.000,  0.000,  0.000,  1.838,  1.394,  0.000,  0.000
-  0.000,  0.000,  0.000,  0.000,  0.000,  2.764,  0.000,  0.000,  0.000
-  0.000,  1.838,  2.764,  3.586,  4.000,  3.586,  2.764,  1.838,  0.000
-  0.000,  2.000,  3.000,  4.000,  5.000,  4.000,  3.000,  2.000,  0.000
-  0.000,  1.838,  2.764,  3.586,  4.000,  3.586,  2.764,  1.838,  0.000
-  0.000,  0.000,  0.000,  0.000,  3.000,  0.000,  0.000,  0.000,  0.000
-  0.000,  0.000,  0.000,  1.838,  2.000,  1.838,  0.000,  0.000,  0.000
-  0.000,  0.000,  0.000,  0.000,  0.000,  0.000,  0.000,  0.000,  0.000
+   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   
+   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,  1.394,   .   ,   .   
+  0.528,  1.394,  2.172,  2.764,  3.000,  2.764,  2.172,  1.394,  0.528
+  0.877,  1.838,  2.764,  3.586,  4.000,  3.586,  2.764,  1.838,  0.877
+  1.000,  2.000,  3.000,  4.000,  5.000,  4.000,  3.000,  2.000,  1.000
+  0.877,  1.838,  2.764,  3.586,  4.000,  3.586,  2.764,  1.838,  0.877
+  0.528,  1.394,  2.172,  2.764,  3.000,  2.764,  2.172,  1.394,  0.528
+   .   ,   .   ,   .   ,  1.838,  2.000,  1.838,   .   ,   .   ,   .   
+   .   ,   .   ,   .   ,  0.877,  1.000,  0.877,   .   ,   .   ,   .   
 ";
 
+        const string RoomDoorFarDirections = @"
+  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ 
+  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ , ┐  ,  ~ ,  ~ 
+ ┌# , ┌# , ┌# , ┌# , ┬# , ┐  , ┐# , ┐# , ┐# 
+ ┌# , ┌  , ┌  , ┌  , ┬  , ┐  , ┐  , ┐  , ┐# 
+ ├# , ├  , ├  , ├  , ┼ *, ┤  , ┤  , ┤  , ┤# 
+ └# , └  , └  , └  , ┴  , ┘  , ┘  , ┘  , ┘# 
+ └# , └# , └# , └# , ┴  , ┘# , ┘# , ┘# , ┘# 
+  ~ ,  ~ ,  ~ , └  , ┴  , ┘  ,  ~ ,  ~ ,  ~ 
+  ~ ,  ~ ,  ~ , └# , ┴# , ┘# ,  ~ ,  ~ ,  ~
+";
         
+        const string PartialBlockedRoom = @"
+// 11x11; an empty room
+1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0
+1.0, 0.0, 0.0, 0.0, 0.1, 0.0, 0.0, 0.0, 1.0 
+1.0, 0.0, 0.0, 0.0, 0.1, 0.0, 0.0, 0.0, 1.0 
+1.0, 0.0, 0.0, 0.0, 0.1, 0.0, 0.0, 0.0, 1.0 
+1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0 
+1.0, 0.0, 0.0, 0.0, 0.1, 0.0, 0.0, 0.0, 1.0 
+1.0, 0.0, 0.0, 0.5, 0.0, 0.0, 0.0, 0.0, 1.0 
+1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0 
+1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0
+";
+
+        const string PartialBlockedResult = @"
+   .   ,   .   ,  0.428,  0.639,  0.729,  0.639,  0.428,   .   ,   .   
+   .   ,  0.757,  1.255,  1.489,  1.620,  1.489,  1.255,  0.757,   .   
+  0.528,  1.394,  2.172,  2.488,  2.700,  2.488,  2.172,  1.394,  0.528
+  0.877,  1.838,  2.764,  3.586,  4.000,  3.586,  2.764,  1.838,  0.877
+  1.000,  2.000,  3.000,  4.000,  5.000,  4.000,  3.000,  2.000,  1.000
+  0.877,  1.838,  2.764,  3.586,  4.000,  3.586,  2.764,  1.838,  0.877
+  0.528,  1.394,  2.172,  2.488,  2.700,  2.488,  2.172,  1.394,  0.528
+   .   ,  0.757,  0.628,  1.654,  1.800,  1.654,  1.255,  0.757,   .   
+   .   ,   .   ,  0.475,  0.789,  0.900,  0.789,  0.475,   .   ,   .   
+";
+
+        const string PartialBlockedDirections = @"
+  ~ ,  ~ , ┌# , ┌# , ┬# , ┐# , ┐# ,  ~ ,  ~ 
+  ~ , ┌  , ┌  , ┌  , ┬  , ┐  , ┐  , ┐  ,  ~ 
+ ┌# , ┌  , ┌  , ┌  , ┬  , ┐  , ┐  , ┐  , ┐# 
+ ┌# , ┌  , ┌  , ┌  , ┬  , ┐  , ┐  , ┐  , ┐# 
+ ├# , ├  , ├  , ├  , ┼ *, ┤  , ┤  , ┤  , ┤# 
+ └# , └  , └  , └  , ┴  , ┘  , ┘  , ┘  , ┘# 
+ └# , └  , └  , └  , ┴  , ┘  , ┘  , ┘  , ┘# 
+  ~ , └  , └  , └  , ┴  , ┘  , ┘  , ┘  ,  ~ 
+  ~ ,  ~ , └# , └# , ┴# , ┘# , ┘# ,  ~ ,  ~
+";
+
         [Test]
-        [TestCase(nameof(EmptyRoom), 9, 9, EmptyRoom, EmptyRoomResult)]
-        [TestCase(nameof(RoomWithPillars), 9, 9, RoomWithPillars, RoomWithPillarsResult)]
-        [TestCase(nameof(RoomDoorNear), 9, 9, RoomDoorNear, RoomDoorNearResult)]
-        [TestCase(nameof(RoomDoorFar), 9, 9, RoomDoorFar, RoomDoorFarResult)]
-        public void ValidateMap(string name, int width, int height, string sourceText, string resultText)
+        [TestCase(nameof(PartialBlockedRoom), 9, 9, PartialBlockedRoom, PartialBlockedResult, PartialBlockedDirections)]
+        [TestCase(nameof(EmptyRoom), 9, 9, EmptyRoom, EmptyRoomResult, EmptyRoomDirections)]
+        [TestCase(nameof(RoomWithPillars), 9, 9, RoomWithPillars, RoomWithPillarsResult, RoomWithPillarsDirection)]
+        [TestCase(nameof(RoomDoorNear), 9, 9, RoomDoorNear, RoomDoorNearResult, RoomDoorNearDirection)]
+        [TestCase(nameof(RoomDoorFar), 9, 9, RoomDoorFar, RoomDoorFarResult, RoomDoorFarDirections)]
+        public void ValidateMap(string name, int width, int height, string resistanceMapText, string brightnessResultText, string directionResultText)
         {
             var radius = width / 2;
             var source = new SenseSourceDefinition(DistanceCalculation.Euclid, radius + 1);
             var pos = new Position2D(width / 2, height / 2);
-            
-            var resistanceMap = Parse(sourceText, out _);
-            Console.WriteLine("Using room layout \n" + PrintMap(resistanceMap));
-            
-            var algo = new ShadowPropagationAlgorithm(LinearDecaySensePhysics.For(DistanceCalculation.Euclid));
-            var calculatedResult = algo.Calculate(source, source.Intensity, pos, resistanceMap);
-            Console.WriteLine(PrintMap(calculatedResult, new Rectangle(new Position2D(0,0), radius, radius)));
 
-            var expectedResult = Parse(resultText, out _);
-            AssertEquals(calculatedResult, expectedResult, new Rectangle(0, 0, width, height), pos);
+            var resistanceMap = Parse(resistanceMapText, out var roomArea);
+            Console.WriteLine("Using room layout \n" + PrintMap(resistanceMap));
+
+            var algo = new ShadowPropagationAlgorithm(LinearDecaySensePhysics.For(DistanceCalculation.Euclid), new ShadowPropagationResistanceDataSource());
+            var calculatedBrightnessMap = algo.Calculate(source, source.Intensity, pos, resistanceMap);
+            Console.WriteLine(PrintMap(calculatedBrightnessMap, new Rectangle(new Position2D(0, 0), radius, radius)));
+            Console.WriteLine(PrintMap(new SenseMapDirectionTestView(calculatedBrightnessMap), new Rectangle(new Position2D(0, 0), radius, radius)));
+
+            var expectedResult = Parse(brightnessResultText, out _);
+            AssertEquals(calculatedBrightnessMap, expectedResult, new Rectangle(0, 0, width, height), pos);
+            
+            var expectedDirections = ParseDirections(directionResultText, out _);
+            AssertEquals(new SenseMapDirectionTestView(calculatedBrightnessMap), expectedDirections, new Rectangle(0, 0, width, height), pos);
         }
     }
 }

@@ -8,13 +8,33 @@ using static RogueEntity.Core.Sensing.Common.ShadowCast.ShadowPropagationAlgorit
 
 namespace RogueEntity.Core.Sensing.Common.ShadowCast
 {
-    public class ShadowPropagationAlgorithm: ISensePropagationAlgorithm
+    public class ShadowPropagationAlgorithm : ISensePropagationAlgorithm
     {
-        readonly ISensePhysics sensePhysics;
+        readonly struct ShadowParameters<TResistanceMap>
+            where TResistanceMap : IReadOnlyView2D<float>
+        {
+            public readonly TResistanceMap ResistanceMap;
+            public readonly SenseSourceDefinition Sense;
+            public readonly float Intensity;
+            public readonly Position2D Origin;
 
-        public ShadowPropagationAlgorithm([NotNull] ISensePhysics sensePhysics)
+            public ShadowParameters(in TResistanceMap resistanceMap, in SenseSourceDefinition sense, float intensity, in Position2D origin)
+            {
+                this.ResistanceMap = resistanceMap;
+                this.Sense = sense;
+                this.Intensity = intensity;
+                this.Origin = origin;
+            }
+        }
+
+        readonly ISensePhysics sensePhysics;
+        readonly ShadowPropagationResistanceDataSource dataSource;
+
+        public ShadowPropagationAlgorithm([NotNull] ISensePhysics sensePhysics, 
+                                          [NotNull] ShadowPropagationResistanceDataSource dataSource)
         {
             this.sensePhysics = sensePhysics ?? throw new ArgumentNullException(nameof(sensePhysics));
+            this.dataSource = dataSource ?? throw new ArgumentNullException(nameof(dataSource));
         }
 
         public SenseSourceData Calculate<TResistanceMap>(in SenseSourceDefinition sense,
@@ -34,12 +54,19 @@ namespace RogueEntity.Core.Sensing.Common.ShadowCast
                 data.Reset();
             }
 
+            var resistanceData = dataSource.Create(radius); 
+            
             data.Write(new Position2D(0, 0), intensity, SenseDirection.None, SenseDataFlags.SelfIlluminating);
+            resistanceData[0, 0] = 1;
+            var shadowParam = new ShadowParameters<TResistanceMap>(resistanceMap, sense, intensity, position);
             foreach (var d in DiagonalDirectionsOfNeighbors)
             {
                 var delta = d.ToCoordinates();
-                ShadowCast(1, 1.0f, 0.0f, new PropagationDirection(0, delta.X, delta.Y, 0), in resistanceMap, in sense, intensity, in position, data);
-                ShadowCast(1, 1.0f, 0.0f, new PropagationDirection(delta.X, 0, 0, delta.Y), in resistanceMap, in sense, intensity, in position, data);
+                Console.WriteLine("!START --------------------");
+                ShadowCast(1, 1.0f, 0.0f, new PropagationDirection(0, delta.X, delta.Y, 0), in shadowParam, data, resistanceData);
+                Console.WriteLine("xx");
+                ShadowCast(1, 1.0f, 0.0f, new PropagationDirection(delta.X, 0, 0, delta.Y), in shadowParam, data, resistanceData);
+                Console.WriteLine("!END --------------------");
             }
 
             return data;
@@ -49,11 +76,9 @@ namespace RogueEntity.Core.Sensing.Common.ShadowCast
                                         float start,
                                         float end,
                                         in PropagationDirection pd,
-                                        in TResistanceMap resistanceMap,
-                                        in SenseSourceDefinition sense,
-                                        float intensity,
-                                        in Position2D origin,
-                                        in SenseSourceData data)
+                                        in ShadowParameters<TResistanceMap> p,
+                                        in SenseSourceData data,
+                                        ShadowPropagationResistanceData resistanceData)
             where TResistanceMap : IReadOnlyView2D<float>
         {
             var newStart = 0f;
@@ -62,10 +87,9 @@ namespace RogueEntity.Core.Sensing.Common.ShadowCast
                 return;
             }
 
-            var dist = sense.DistanceCalculation;
-            var maxRadius = sensePhysics.SignalRadiusForIntensity(intensity);
+            var dist = p.Sense.DistanceCalculation;
+            var maxRadius = sensePhysics.SignalRadiusForIntensity(p.Intensity);
             var radius = (int)Math.Ceiling(maxRadius);
-            
             var blocked = false;
             for (var distance = row; !blocked && distance <= radius; distance++)
             {
@@ -75,8 +99,6 @@ namespace RogueEntity.Core.Sensing.Common.ShadowCast
                     var currentX = deltaX * pd.xx + deltaY * pd.xy;
                     var currentY = deltaX * pd.yx + deltaY * pd.yy;
 
-                    var globalCurrentX = origin.X + currentX;
-                    var globalCurrentY = origin.Y + currentY;
                     var leftSlope = (deltaX - 0.5f) / (deltaY + 0.5f);
                     var rightSlope = (deltaX + 0.5f) / (deltaY - 0.5f);
 
@@ -90,18 +112,35 @@ namespace RogueEntity.Core.Sensing.Common.ShadowCast
                         break;
                     }
 
-                    var distanceFromOrigin = (float) dist.Calculate(deltaX, deltaY, 0);
-                    var resistance = resistanceMap[globalCurrentX, globalCurrentY];
+                    var globalCurrentX = p.Origin.X + currentX;
+                    var globalCurrentY = p.Origin.Y + currentY;
+                    int prevX;
+                    int prevY;
+                    if (deltaX != 0)
+                    {
+                        prevX = (deltaX + 1) * pd.xx + (deltaY + 1) * pd.xy;
+                        prevY = (deltaX + 1) * pd.yx + (deltaY + 1) * pd.yy;
+                    }
+                    else
+                    {
+                        prevX = (deltaY + 1) * pd.xy;
+                        prevY = (deltaY + 1) * pd.yy;
+                    }
+
+                    var signalStrength = resistanceData[prevX, prevY];
+                    var distanceFromOrigin = (float)dist.Calculate(deltaX, deltaY, 0);
+                    var resistance = p.ResistanceMap[globalCurrentX, globalCurrentY];
                     var fullyBlocked = IsFullyBlocked(resistance);
                     if (distanceFromOrigin <= radius)
                     {
                         var strengthAtDistance = sensePhysics.SignalStrengthAtDistance(distanceFromOrigin, maxRadius);
-                        var bright = intensity * strengthAtDistance * (1 - resistance);
+                        var bright = p.Intensity * strengthAtDistance * signalStrength;
                         data.Write(new Position2D(currentX, currentY), bright,
                                    SenseDirectionStore.From(currentX, currentY).Direction,
                                    fullyBlocked ? SenseDataFlags.Obstructed : SenseDataFlags.None);
                     }
 
+                    resistanceData[currentX, currentY] = signalStrength * (1 - resistance);
                     if (blocked) // Previous cell was blocked
                     {
                         if (fullyBlocked)
@@ -118,11 +157,10 @@ namespace RogueEntity.Core.Sensing.Common.ShadowCast
                     {
                         blocked = true;
                         newStart = rightSlope;
-                        ShadowCast(distance + 1, start, leftSlope, in pd, in resistanceMap, in sense, intensity, in origin, in data);
+                        ShadowCast(distance + 1, start, leftSlope, in pd, in p, in data, resistanceData);
                     }
                 }
             }
-            
         }
     }
 }

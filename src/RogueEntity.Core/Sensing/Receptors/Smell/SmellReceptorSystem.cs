@@ -11,7 +11,7 @@ using RogueEntity.Core.Utils.Maps;
 
 namespace RogueEntity.Core.Sensing.Receptors.Smell
 {
-    public class SmellReceptorSystem : SenseReceptorSystem<SmellSense, SmellSense>
+    public class SmellReceptorSystem : SenseReceptorSystemBase<SmellSense, SmellSense>
     {
         public SmellReceptorSystem([NotNull] Lazy<ISensePropertiesSource> senseProperties,
                                    [NotNull] Lazy<ISenseStateCacheProvider> senseCacheProvider,

@@ -8,7 +8,7 @@ namespace RogueEntity.Core.Sensing.Common
     /// <summary>
     ///   Stores the sense source data relative to a origin point. 
     /// </summary>
-    public sealed class SenseSourceData : IReadOnlyView2D<float>
+    public sealed class SenseSourceData : IReadOnlyView2D<float>, ISenseDataView
     {
         public readonly byte[] Directions;
         public readonly float[] Intensities;
@@ -99,7 +99,7 @@ namespace RogueEntity.Core.Sensing.Common
             {
                 return;
             }
-            
+
             var linIndex = dx + dy * LineWidth;
             Intensities[linIndex] = intensity;
             Directions[linIndex] = SenseDirectionStore.From(direction, flags).RawData;
@@ -128,6 +128,7 @@ namespace RogueEntity.Core.Sensing.Common
             Directions[linIndex] = SenseDirectionStore.From(direction.X, direction.Y).With(flags).RawData;
         }
 
+        
         public void Reset()
         {
             if (!cleared)

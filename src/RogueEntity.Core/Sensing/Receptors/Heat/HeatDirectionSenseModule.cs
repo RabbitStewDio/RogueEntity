@@ -88,7 +88,7 @@ namespace RogueEntity.Core.Sensing.Receptors.Heat
             ctx.Register(SenseSourceCollectionContinuousSystemId, 57500, RegisterCollectSenseSourcesSystem);
         }
 
-        protected override bool GetOrCreateLightSystem(IServiceResolver serviceResolver, out SenseReceptorSystem<TemperatureSense, TemperatureSense> ls)
+        protected override bool GetOrCreateLightSystem(IServiceResolver serviceResolver, out SenseReceptorSystemBase<TemperatureSense, TemperatureSense> ls)
         {
             if (!serviceResolver.TryResolve(out IHeatSenseReceptorPhysicsConfiguration physicsConfig))
             {

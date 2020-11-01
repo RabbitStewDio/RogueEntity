@@ -18,7 +18,7 @@ namespace RogueEntity.Core.Sensing.Receptors.Heat
             this.backend = backend;
         }
 
-        public bool TryGetSenseData(int z, out ISenseDataView intensities)
+        public bool TryGetSenseData(int z, out IDynamicSenseDataView2D intensities)
         {
             return backend.TryGetIntensity(z, out intensities);
         }

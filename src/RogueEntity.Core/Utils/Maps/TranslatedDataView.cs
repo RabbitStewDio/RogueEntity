@@ -17,10 +17,6 @@ namespace RogueEntity.Core.Utils.Maps
 
         public bool TryGet(int x, int y, out TData dataRaw)
         {
-            if (x == 26 && y == 4)
-            {
-                Console.WriteLine("HERE: ");
-            }
             return data.TryGet(x - offsetX, y - offsetY, out dataRaw);
         }
 
@@ -33,7 +29,7 @@ namespace RogueEntity.Core.Utils.Maps
                     return dataRaw;
                 }
 
-                return default;
+                return dataRaw;
             }
         }
     }

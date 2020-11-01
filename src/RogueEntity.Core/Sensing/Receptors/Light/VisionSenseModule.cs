@@ -3,6 +3,7 @@ using RogueEntity.Core.Infrastructure.Modules;
 using RogueEntity.Core.Infrastructure.Time;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Sensing.Cache;
+using RogueEntity.Core.Sensing.Common.ShadowCast;
 using RogueEntity.Core.Sensing.Resistance;
 using RogueEntity.Core.Sensing.Resistance.Maps;
 using RogueEntity.Core.Sensing.Sources.Light;
@@ -87,7 +88,7 @@ namespace RogueEntity.Core.Sensing.Receptors.Light
             ctx.Register(SenseSourceCollectionSystemId, 57500, RegisterCollectSenseSourcesSystem);
         }
 
-        protected override bool GetOrCreateLightSystem(IServiceResolver serviceResolver, out SenseReceptorSystem<VisionSense, VisionSense> ls)
+        protected override bool GetOrCreateLightSystem(IServiceResolver serviceResolver, out SenseReceptorSystemBase<VisionSense, VisionSense> ls)
         {
             if (!serviceResolver.TryResolve(out ls))
             {
@@ -98,10 +99,16 @@ namespace RogueEntity.Core.Sensing.Receptors.Light
                         ls = default;
                         return false;
                     }
+
+                    if (!serviceResolver.TryResolve(out ShadowPropagationResistanceDataSource ds))
+                    {
+                        ds = new ShadowPropagationResistanceDataSource();
+                    }
                     
-                    receptorPhysics = new VisionSenseReceptorPhysicsConfiguration(physicsConfig);
+                    receptorPhysics = new VisionSenseReceptorPhysicsConfiguration(physicsConfig, ds);
                 }
-               
+                
+                
                 ls = new VisionReceptorSystem(serviceResolver.ResolveToReference<ISensePropertiesSource>(),
                                               serviceResolver.ResolveToReference<ISenseStateCacheProvider>(),
                                               serviceResolver.ResolveToReference<IGlobalSenseStateCacheProvider>(),

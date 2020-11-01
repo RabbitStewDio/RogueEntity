@@ -62,7 +62,14 @@ namespace RogueEntity.Core.Utils.Algorithms
             return c.Calculate(dx, dy, dz);
         }
 
-        public static double Calculate(this DistanceCalculation c, Position2D p1)
+        public static double Calculate(this DistanceCalculation c, in Position2D p1, in Position2D p2 )
+        {
+            var dx = p1.X - p2.X;
+            var dy = p1.Y - p2.Y;
+            return c.Calculate(dx, dy, 0);
+        }
+
+        public static double Calculate(this DistanceCalculation c, in Position2D p1)
         {
             var dx = p1.X;
             var dy = p1.Y;

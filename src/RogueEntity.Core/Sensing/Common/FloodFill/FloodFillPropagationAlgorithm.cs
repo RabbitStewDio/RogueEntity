@@ -34,10 +34,10 @@ namespace RogueEntity.Core.Sensing.Common.FloodFill
                 data.Reset();
             }
 
-            data.Write(new Position2D(0, 0), intensity, SenseDirection.None, SenseDataFlags.SelfIlluminating);
 
             var ndata = dataSource.Create(sense, intensity, position, sensePhysics, resistanceMap);
             ndata.ResultMap.Compute(data);
+//            data.Write(new Position2D(0, 0), intensity, SenseDirection.None, SenseDataFlags.SelfIlluminating);
             return data;
         }
     }

@@ -8,16 +8,20 @@ namespace RogueEntity.Core.Sensing.Sources.Touch
 {
     public class TouchPhysicsConfiguration: ITouchPhysicsConfiguration
     {
-        public TouchPhysicsConfiguration([NotNull] ISensePhysics touchPhysics)
+        readonly ShadowPropagationResistanceDataSource dataSource;
+
+        public TouchPhysicsConfiguration([NotNull] ISensePhysics touchPhysics,
+                                         ShadowPropagationResistanceDataSource dataSource = null)
         {
             TouchPhysics = touchPhysics ?? throw new ArgumentNullException(nameof(touchPhysics));
+            this.dataSource = dataSource ?? new ShadowPropagationResistanceDataSource();
         }
 
         public ISensePhysics TouchPhysics { get; }
         
         public ISensePropagationAlgorithm CreateTouchPropagationAlgorithm()
         {
-            return new ShadowPropagationAlgorithm(TouchPhysics);
+            return new ShadowPropagationAlgorithm(TouchPhysics, dataSource);
         }
     }
 }

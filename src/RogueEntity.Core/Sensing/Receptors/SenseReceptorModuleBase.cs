@@ -80,7 +80,7 @@ namespace RogueEntity.Core.Sensing.Receptors
 
             var system = registry.BuildSystem()
                                  .WithContext<TGameContext>()
-                                 .CreateSystem<TSenseSource, SenseSourceState<TSourceSense>>(ls.CollectSenseSource);
+                                 .CreateSystem<TSenseSource, SenseSourceState<TSourceSense>>(ls.CollectObservedSenseSource);
             context.AddInitializationStepHandler(system);
             context.AddFixedStepHandlers(system);
         }
@@ -116,12 +116,12 @@ namespace RogueEntity.Core.Sensing.Receptors
                 return;
             }
 
-            if (!serviceResolver.TryResolve(out ISenseDataBlitter senseBlitter))
+            if (!serviceResolver.TryResolve(out IRadiationSenseReceptorBlitter senseBlitter))
             {
-                senseBlitter = new DefaultSenseDataBlitter();
+                senseBlitter = new DefaultRadiationSenseReceptorBlitter();
             }
 
-            var omni = new OmnidirectionalSenseReceptorSystem<TReceptorSense, TSourceSense>(ls, senseBlitter);
+            var omni = new SenseReceptorBlitterSystem<TReceptorSense, TSourceSense>(ls, senseBlitter);
             var system = registry.BuildSystem()
                                  .WithContext<TGameContext>()
                                  .CreateSystem<SingleLevelSenseDirectionMapData<TReceptorSense, TSourceSense>, SensoryReceptorState<TReceptorSense, TSourceSense>>(omni.CopySenseSourcesToVisionField);
@@ -142,13 +142,13 @@ namespace RogueEntity.Core.Sensing.Receptors
                 return;
             }
 
-            if (!serviceResolver.TryResolve(out IDirectionalSenseBlitter senseBlitter))
+            if (!serviceResolver.TryResolve(out IDirectionalSenseReceptorBlitter senseBlitter))
             {
-                senseBlitter = new DefaultDirectionalSenseBlitter();
+                senseBlitter = new DefaultDirectionalSenseReceptorBlitter();
             }
 
 
-            var uniSys = new UnidirectionalSenseReceptorSystem<TReceptorSense, TSourceSense>(ls, senseBlitter);
+            var uniSys = new SenseReceptorBlitterSystem<TReceptorSense, TSourceSense>(ls, senseBlitter);
             var system = registry.BuildSystem()
                                  .WithContext<TGameContext>()
                                  .CreateSystem<SingleLevelSenseDirectionMapData<TReceptorSense,TSourceSense>, SensoryReceptorState<TReceptorSense, TSourceSense>>(uniSys.CopySenseSourcesToVisionField);
@@ -191,7 +191,7 @@ namespace RogueEntity.Core.Sensing.Receptors
             context.AddFixedStepHandlers(ls.EndSenseCalculation);
         }
 
-        protected abstract bool GetOrCreateLightSystem(IServiceResolver serviceResolver, out SenseReceptorSystem<TReceptorSense, TSourceSense> ls);
+        protected abstract bool GetOrCreateLightSystem(IServiceResolver serviceResolver, out SenseReceptorSystemBase<TReceptorSense, TSourceSense> ls);
 
         protected void RegisterEntities<TItemId>(IServiceResolver serviceResolver, EntityRegistry<TItemId> registry)
             where TItemId : IEntityKey

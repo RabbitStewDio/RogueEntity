@@ -81,11 +81,8 @@ namespace RogueEntity.Core.Sensing.Common.FloodFill
             base.RescanMap(out _, Bounds.Width * Bounds.Height);
 
             var sgn = Math.Sign(intensity);
-            var bounds = Bounds;
-            for (var y = bounds.MinExtentY; y <= bounds.MaxExtentY; y += 1)
-            for (var x = bounds.MinExtentX; x <= bounds.MaxExtentX; x += 1)
+            foreach (var pos in Bounds.Contents)
             {
-                var pos = new Position2D(x, y);
                 if (!TryGetCumulativeCost(pos, out var cost))
                 {
                     continue;
@@ -99,7 +96,7 @@ namespace RogueEntity.Core.Sensing.Common.FloodFill
                     senseDirection = SenseDirectionStore.From(delta.X, delta.Y).Direction;
                     flags |= ResistanceMap[pos.X, pos.Y] >= 1 ? SenseDataFlags.Obstructed : SenseDataFlags.None;
                 }
-                if (pos == default)
+                if (pos == origin)
                 {
                     flags |= SenseDataFlags.SelfIlluminating;
                 }

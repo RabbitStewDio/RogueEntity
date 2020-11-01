@@ -43,7 +43,7 @@ namespace RogueEntity.Core.Sensing.Common
     
     [DataContract]
     [MessagePackObject]
-    public class SenseDataMap : ISenseDataView
+    public class SenseDataMap : IDynamicSenseDataView2D
     {
         [DataMember(Order = 0)]
         [Key(0)]
@@ -92,26 +92,6 @@ namespace RogueEntity.Core.Sensing.Common
 
             directionality = default;
             return false;
-        }
-
-        public float QueryBrightness(int x, int y)
-        {
-            if (sensitivityData.TryGet(x, y, out var result))
-            {
-                return result;
-            }
-
-            return default;
-        }
-
-        public SenseDirectionStore QueryDirection(int x, int y)
-        {
-            if (directionData.TryGet(x, y, out var result))
-            {
-                return new SenseDirectionStore(result);
-            }
-
-            return default;
         }
 
         public bool TryStore(int x, int y, float intensity, SenseDirectionStore directions)

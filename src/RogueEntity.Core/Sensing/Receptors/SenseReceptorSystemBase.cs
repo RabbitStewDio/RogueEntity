@@ -26,11 +26,11 @@ namespace RogueEntity.Core.Sensing.Receptors
     /// </summary>
     /// <typeparam name="TReceptorSense"></typeparam>
     /// <typeparam name="TSourceSense"></typeparam>
-    public abstract class SenseReceptorSystem<TReceptorSense, TSourceSense>
+    public abstract class SenseReceptorSystemBase<TReceptorSense, TSourceSense>
         where TReceptorSense : ISense
         where TSourceSense : ISense
     {
-        static readonly ILogger Logger = SLog.ForContext<SenseReceptorSystem<TReceptorSense, TSourceSense>>();
+        static readonly ILogger Logger = SLog.ForContext<SenseReceptorSystemBase<TReceptorSense, TSourceSense>>();
         const int ZLayerTimeToLive = 50;
 
         readonly Lazy<ISensePropertiesSource> senseProperties;
@@ -46,7 +46,7 @@ namespace RogueEntity.Core.Sensing.Receptors
         Optional<ISenseStateCacheView> globalCacheView;
         int currentTime;
 
-        protected SenseReceptorSystem([NotNull] Lazy<ISensePropertiesSource> senseProperties,
+        protected SenseReceptorSystemBase([NotNull] Lazy<ISensePropertiesSource> senseProperties,
                                    [NotNull] Lazy<ISenseStateCacheProvider> senseCacheProvider,
                                    [NotNull] Lazy<IGlobalSenseStateCacheProvider> globalSenseCacheProvider,
                                    [NotNull] Lazy<ITimeSource> timeSource,
@@ -90,7 +90,7 @@ namespace RogueEntity.Core.Sensing.Receptors
             }
             else
             {
-                Logger.Verbose("This light system will not react to map changes");
+                Logger.Verbose("No per-sense cache: This Sense Receptor System will not react to sense source changes");
             }
 
             var globalProvider = globalSenseCacheProvider.Value;
@@ -100,7 +100,7 @@ namespace RogueEntity.Core.Sensing.Receptors
             }
             else
             {
-                Logger.Verbose("This light system will not react to map changes");
+                Logger.Verbose("No Global Sense Cache: This Sense Receptor System will not react to map changes");
             }
         }
 
@@ -235,7 +235,7 @@ namespace RogueEntity.Core.Sensing.Receptors
         /// <typeparam name="TItemId"></typeparam>
         /// <typeparam name="TGameContext"></typeparam>
         /// <typeparam name="TSenseSource"></typeparam>
-        public void CollectSenseSource<TItemId, TGameContext, TSenseSource>(IEntityViewControl<TItemId> v,
+        public void CollectObservedSenseSource<TItemId, TGameContext, TSenseSource>(IEntityViewControl<TItemId> v,
                                                                             TGameContext context,
                                                                             TItemId k,
                                                                             in TSenseSource senseDefinition,
@@ -410,7 +410,6 @@ namespace RogueEntity.Core.Sensing.Receptors
 
             readonly ISensePhysics physics;
             readonly List<SenseSourceState<TSourceSense>> sources;
-            readonly OmniDirectionalSenseDataMapServices senseMapServices;
             readonly DirectionalSenseDataMapServices directionalSenseMapServices;
             readonly List<Rectangle> receptorBounds;
 
@@ -418,7 +417,6 @@ namespace RogueEntity.Core.Sensing.Receptors
                                   ISensePhysics physics)
             {
                 this.physics = physics;
-                this.senseMapServices = new OmniDirectionalSenseDataMapServices();
                 this.directionalSenseMapServices = new DirectionalSenseDataMapServices();
                 this.ResistanceView = resistanceMap;
                 this.sources = new List<SenseSourceState<TSourceSense>>();
@@ -437,9 +435,9 @@ namespace RogueEntity.Core.Sensing.Receptors
                 sources.Add(senseSourceState);
             }
 
-            public void ProcessDirectional(IDirectionalSenseBlitter blitter,
+            public void ProcessDirectional(ISenseReceptorBlitter receptorBlitter,
                                            in Position p,
-                                           in SenseDataMap brightnessMap,
+                                           in SenseDataMap receptorSenseMap,
                                            in Rectangle senseBoundaries,
                                            bool flaggedAsDirty)
             {
@@ -462,39 +460,7 @@ namespace RogueEntity.Core.Sensing.Receptors
                         return;
                     }
 
-                    directionalSenseMapServices.ProcessSenseSources(brightnessMap, senseBoundaries, new Position2D(p.GridX, p.GridY), blitter, blittableSenses);
-                }
-                finally
-                {
-                    blittableSenses.Clear();
-                }
-            }
-
-            public void ProcessOmnidirectional(ISenseDataBlitter blitter,
-                                               in SenseDataMap brightnessMap,
-                                               in Rectangle senseBoundaries,
-                                               bool flaggedAsDirty)
-            {
-                var blittableSenses = new List<(Position2D, SenseSourceData)>();
-                try
-                {
-                    bool dirty = flaggedAsDirty;
-                    foreach (var collectedSense in Sources)
-                    {
-                        dirty |= (collectedSense.State == SenseSourceDirtyState.Dirty || collectedSense.State == SenseSourceDirtyState.UnconditionallyDirty);
-                        if (collectedSense.SenseSource.TryGetValue(out var sd))
-                        {
-                            var pos = collectedSense.LastPosition;
-                            blittableSenses.Add((new Position2D(pos.GridX, pos.GridY), sd));
-                        }
-                    }
-
-                    if (!dirty)
-                    {
-                        return;
-                    }
-
-                    senseMapServices.ProcessSenseSources(brightnessMap, senseBoundaries, blitter, blittableSenses);
+                    directionalSenseMapServices.ProcessSenseSources(receptorSenseMap, senseBoundaries, new Position2D(p.GridX, p.GridY), receptorBlitter, blittableSenses);
                 }
                 finally
                 {
@@ -534,7 +500,6 @@ namespace RogueEntity.Core.Sensing.Receptors
 
     public interface ISenseReceptorProcessor
     {
-        void ProcessDirectional(IDirectionalSenseBlitter blitter, in Position p, in SenseDataMap brightnessMap, in Rectangle senseBoundaries, bool flaggedAsDirty);
-        void ProcessOmnidirectional(ISenseDataBlitter blitter, in SenseDataMap brightnessMap, in Rectangle senseBoundaries, bool flaggedAsDirty);
+        void ProcessDirectional(ISenseReceptorBlitter receptorBlitter, in Position p, in SenseDataMap receptorSenseMap, in Rectangle senseBoundaries, bool flaggedAsDirty);
     }
 }

@@ -3,14 +3,14 @@ using System.Collections.Generic;
 
 namespace RogueEntity.Core.Utils.Algorithms
 {
-    public class IntPriorityQueue
+    public class IntPriorityQueue<TWeight> where TWeight: IComparable<TWeight>
     {
         internal readonly struct Node
         {
             public readonly int Data;
-            public readonly float Priority;
+            public readonly TWeight Priority;
 
-            public Node(int data, float priority)
+            public Node(int data, TWeight priority)
             {
                 this.Data = data;
                 this.Priority = priority;
@@ -121,7 +121,7 @@ namespace RogueEntity.Core.Utils.Algorithms
 
         public int Count => heap.Size;
 
-        public void Enqueue(int data, float priority)
+        public void Enqueue(int data, TWeight priority)
         {
             heap.Add(new Node(data, priority));
         }
@@ -137,7 +137,7 @@ namespace RogueEntity.Core.Utils.Algorithms
             heap.RemoveElement(node);
         }
 
-        public void UpdatePriority(int node, float priority)
+        public void UpdatePriority(int node, TWeight priority)
         {
             Remove(node);
             Enqueue(node, priority);

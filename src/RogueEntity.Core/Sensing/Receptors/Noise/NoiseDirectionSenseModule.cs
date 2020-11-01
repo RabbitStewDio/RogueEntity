@@ -89,7 +89,7 @@ namespace RogueEntity.Core.Sensing.Receptors.Noise
             ctx.Register(SenseSourceCollectionContinuousSystemId, 57500, RegisterCollectSenseSourcesSystem);
         }
 
-        protected override bool GetOrCreateLightSystem(IServiceResolver serviceResolver, out SenseReceptorSystem<NoiseSense, NoiseSense> ls)
+        protected override bool GetOrCreateLightSystem(IServiceResolver serviceResolver, out SenseReceptorSystemBase<NoiseSense, NoiseSense> ls)
         {
             if (!serviceResolver.TryResolve(out INoiseSenseReceptorPhysicsConfiguration physics))
             {

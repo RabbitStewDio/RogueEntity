@@ -3,20 +3,19 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Sensing.Common;
-using RogueEntity.Core.Sensing.Common.Blitter;
 using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.Maps;
 
-namespace RogueEntity.Core.Sensing.Receptors
+namespace RogueEntity.Core.Sensing.Map
 {
-    public class OmniDirectionalSenseDataMapServices
+    public class SenseMapBlitterService
     {
         static readonly Action<ProcessData> ProcessDataDelegate = ProcessTile;
         
         readonly List<ProcessData> parameterBuffer;
         List<Rectangle> partitionsBuffer;
         
-        public OmniDirectionalSenseDataMapServices()
+        public SenseMapBlitterService()
         {
             this.parameterBuffer = new List<ProcessData>();
         }
@@ -24,13 +23,13 @@ namespace RogueEntity.Core.Sensing.Receptors
         readonly struct ProcessData
         {
             public readonly List<(Position2D pos, SenseSourceData sense)> Senses;
-            public readonly ISenseDataBlitter Blitter;
+            public readonly ISenseMapDataBlitter Blitter;
             public readonly Rectangle Bounds;
             public readonly BoundedDataView<float> Tile;
             public readonly BoundedDataView<byte> Dir;
 
             public ProcessData(List<(Position2D, SenseSourceData)> senses,
-                               ISenseDataBlitter blitter,
+                               ISenseMapDataBlitter blitter,
                                Rectangle bounds,
                                BoundedDataView<float> tile,
                                BoundedDataView<byte> dir)
@@ -45,7 +44,7 @@ namespace RogueEntity.Core.Sensing.Receptors
 
         void QuerySenseDataTiles(SenseDataMap m,
                                  Rectangle targetBounds, 
-                                 ISenseDataBlitter blitter,
+                                 ISenseMapDataBlitter blitter,
                                  List<(Position2D, SenseSourceData)> senses)
         {
             var affectedBounds = GetSenseBounds(senses).GetIntersection(targetBounds);
@@ -88,7 +87,7 @@ namespace RogueEntity.Core.Sensing.Receptors
 
         public void ProcessSenseSources(SenseDataMap m,
                                         in Rectangle targetBounds, 
-                                        ISenseDataBlitter blitter,
+                                        ISenseMapDataBlitter blitter,
                                         List<(Position2D pos, SenseSourceData sense)> senses)
         {
             if (senses.Count == 0)
