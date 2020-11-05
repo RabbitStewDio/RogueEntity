@@ -2,23 +2,19 @@ using System;
 using EnTTSharp.Entities.Systems;
 using FluentAssertions;
 using NUnit.Framework;
-using RogueEntity.Core.Infrastructure.Time;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Sensing;
-using RogueEntity.Core.Sensing.Cache;
+using RogueEntity.Core.Sensing.Common;
 using RogueEntity.Core.Sensing.Common.FloodFill;
 using RogueEntity.Core.Sensing.Common.Physics;
 using RogueEntity.Core.Sensing.Receptors;
 using RogueEntity.Core.Sensing.Receptors.Noise;
-using RogueEntity.Core.Sensing.Resistance;
-using RogueEntity.Core.Sensing.Resistance.Maps;
 using RogueEntity.Core.Sensing.Sources.Noise;
-using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.Algorithms;
 
 namespace RogueEntity.Core.Tests.Sensing.Receptor.Noise
 {
-    public class NoiseReceptorSystemTest : SenseReceptorSystemBase<NoiseSense, NoiseSense, NoiseSourceDefinition, NoiseSystem>
+    public class NoiseReceptorSystemTest : SenseReceptorSystemBase<NoiseSense, NoiseSense, NoiseSourceDefinition>
     {
         const string EmptyRoom = @"
 // 11x11; an empty room
@@ -236,11 +232,6 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Noise
             this.physics = new NoiseSenseReceptorPhysicsConfiguration(sourcePhysics, new FloodFillWorkingDataSource());
         }
 
-        protected override SensoryResistance Convert(float f)
-        {
-            return new SensoryResistance(Percentage.Empty, Percentage.Of(f), Percentage.Empty, Percentage.Empty);
-        }
-
         protected override Action<SenseMappingTestContext> CreateCopyAction()
         {
             var builder = context.ItemEntityRegistry.BuildSystem()
@@ -250,14 +241,14 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Noise
             return builder.CreateSystem<SingleLevelSenseDirectionMapData<NoiseSense, NoiseSense>, SensoryReceptorState<NoiseSense, NoiseSense>>(omniSystem.CopySenseSourcesToVisionField);
         }
 
-        protected override NoiseSystem CreateSourceSystem()
+        protected override (ISensePropagationAlgorithm propagationAlgorithm, ISensePhysics sensePhysics) GetOrCreateSourceSensePhysics()
         {
-            return new NoiseSystem(senseProperties.AsLazy<ISensePropertiesSource>(),
-                                   senseCache.AsLazy<IGlobalSenseStateCacheProvider>(),
-                                   timeSource.AsLazy<ITimeSource>(),
-                                   senseCache,
-                                   sourcePhysics.CreateNoisePropagationAlgorithm(), 
-                                   sourcePhysics.NoisePhysics);
+            return (sourcePhysics.CreateNoisePropagationAlgorithm(), sourcePhysics.NoisePhysics);
+        }
+
+        protected override (ISensePropagationAlgorithm, ISensePhysics) GetOrCreateReceptorSensePhysics()
+        {
+            return (physics.CreateNoiseSensorPropagationAlgorithm(), physics.NoisePhysics);
         }
 
         protected override ReferenceItemDeclaration<SenseMappingTestContext, ItemReference> AttachTrait(ReferenceItemDeclaration<SenseMappingTestContext, ItemReference> decl)
@@ -285,16 +276,6 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Noise
                 default:
                     throw new ArgumentException();
             }
-        }
-
-        protected override SenseReceptorSystemBase<NoiseSense, NoiseSense> CreateSystem()
-        {
-            return new NoiseReceptorSystem(senseProperties.AsLazy<ISensePropertiesSource>(),
-                                           senseCache.AsLazy<ISenseStateCacheProvider>(),
-                                           senseCache.AsLazy<IGlobalSenseStateCacheProvider>(),
-                                           timeSource.AsLazy<ITimeSource>(),
-                                           physics.NoisePhysics,
-                                           physics.CreateNoiseSensorPropagationAlgorithm());
         }
 
         protected override void PrepareSourceItems(ItemReference active10, ItemReference active5, ItemReference inactive)

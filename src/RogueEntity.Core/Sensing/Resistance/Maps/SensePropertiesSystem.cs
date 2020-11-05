@@ -3,35 +3,36 @@ using System.Collections.Generic;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Utils;
-using RogueEntity.Core.Utils.Maps;
+using RogueEntity.Core.Utils.DataViews;
 
 namespace RogueEntity.Core.Sensing.Resistance.Maps
 {
-    public class SensePropertiesSystem<TGameContext> : ISensePropertiesSource, ISensePropertiesSystem<TGameContext>
+    public class SensePropertiesSystem<TGameContext, TSense> : IReadOnlyDynamicDataView3D<SensoryResistance<TSense>>, 
+                                                               ISensePropertiesSystem<TGameContext, TSense>
     {
         public event EventHandler<PositionDirtyEventArgs> SenseResistancePositionDirty;
 
-        readonly SensePropertiesLayerStore<TGameContext> propertiesMap;
-        readonly List<ISenseLayerFactory<TGameContext>> layerFactories2;
+        readonly SensePropertiesLayerStore<TGameContext, TSense> propertiesMap;
+        readonly List<ISenseLayerFactory<TGameContext, TSense>> layerFactories2;
 
         public SensePropertiesSystem(int tileWidth, int tileHeight) : this(0, 0, tileWidth, tileHeight)
         {
         }
 
-        public SensePropertiesSystem(int offsetX, int offsetY, int tileWidth, int tileHeight)
+        public SensePropertiesSystem(int offsetX, int offsetY, int tileSizeX, int tileSizeY)
         {
             this.OffsetX = offsetX;
             this.OffsetY = offsetY;
-            this.TileWidth = tileWidth;
-            this.TileHeight = tileHeight;
-            this.propertiesMap = new SensePropertiesLayerStore<TGameContext>();
-            this.layerFactories2 = new List<ISenseLayerFactory<TGameContext>>();
+            this.TileSizeX = tileSizeX;
+            this.TileSizeY = tileSizeY;
+            this.propertiesMap = new SensePropertiesLayerStore<TGameContext, TSense>();
+            this.layerFactories2 = new List<ISenseLayerFactory<TGameContext, TSense>>();
         }
 
         public int OffsetX { get; }
         public int OffsetY { get; }
-        public int TileWidth { get; }
-        public int TileHeight { get; }
+        public int TileSizeX { get; }
+        public int TileSizeY { get; }
 
         public void OnPositionDirty(object source, PositionDirtyEventArgs args)
         {
@@ -62,6 +63,25 @@ namespace RogueEntity.Core.Sensing.Resistance.Maps
             }
         }
 
+        public List<int> GetActiveLayers(List<int> buffer = null)
+        {
+            if (buffer == null)
+            {
+                buffer = new List<int>();
+            }
+            else
+            {
+                buffer.Clear();
+            }
+
+            foreach (var z in propertiesMap.ZLayers)
+            {
+                buffer.Add(z);
+            }
+
+            return buffer;
+        }
+
         public ReadOnlyListWrapper<int> DefinedZLayers => propertiesMap.ZLayers;
 
         public void ProcessSenseProperties(TGameContext context)
@@ -74,7 +94,7 @@ namespace RogueEntity.Core.Sensing.Resistance.Maps
             propertiesMap.Process(context);
         }
 
-        public bool TryGet(int z, out IReadOnlyView2D<SensoryResistance> data)
+        public bool TryGetView(int z, out IReadOnlyDynamicDataView2D<SensoryResistance<TSense>> data)
         {
             if (propertiesMap.TryGetLayer(z, out var layerData))
             {
@@ -91,7 +111,7 @@ namespace RogueEntity.Core.Sensing.Resistance.Maps
             propertiesMap.RemoveLayer(z);
         }
 
-        public bool TryGetData(int z, out ISensePropertiesLayer<TGameContext> data)
+        public bool TryGetData(int z, out ISensePropertiesLayer<TGameContext, TSense> data)
         {
             if (propertiesMap.TryGetLayer(z, out var dataImpl))
             {
@@ -103,19 +123,19 @@ namespace RogueEntity.Core.Sensing.Resistance.Maps
             return false;
         }
 
-        public ISensePropertiesLayer<TGameContext> GetOrCreate(int z)
+        public ISensePropertiesLayer<TGameContext, TSense> GetOrCreate(int z)
         {
             if (propertiesMap.TryGetLayer(z, out var dataImpl))
             {
                 return dataImpl;
             }
 
-            dataImpl = new SensePropertiesMap<TGameContext>(z, OffsetX, OffsetY, TileWidth, TileHeight);
+            dataImpl = new SensePropertiesMap<TGameContext, TSense>(z, OffsetX, OffsetY, TileSizeX, TileSizeY);
             propertiesMap.DefineLayer(z, dataImpl);
             return dataImpl;
         }
 
-        public void AddSenseLayerFactory(ISenseLayerFactory<TGameContext> layerHandler)
+        public void AddSenseLayerFactory(ISenseLayerFactory<TGameContext, TSense> layerHandler)
         {
             layerFactories2.Add(layerHandler);
         }

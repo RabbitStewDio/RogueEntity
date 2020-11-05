@@ -3,10 +3,17 @@ using EnTTSharp.Entities.Systems;
 using RogueEntity.Core.Infrastructure.Commands;
 using RogueEntity.Core.Infrastructure.GameLoops;
 using RogueEntity.Core.Infrastructure.Modules;
+using RogueEntity.Core.Infrastructure.Time;
 using RogueEntity.Core.Positioning.Continuous;
 using RogueEntity.Core.Positioning.Grid;
-using RogueEntity.Core.Sensing.Common.Blitter;
+using RogueEntity.Core.Sensing.Cache;
+using RogueEntity.Core.Sensing.Common;
+using RogueEntity.Core.Sensing.Common.Physics;
+using RogueEntity.Core.Sensing.Resistance;
+using RogueEntity.Core.Sensing.Resistance.Directions;
+using RogueEntity.Core.Sensing.Resistance.Maps;
 using RogueEntity.Core.Sensing.Sources;
+using RogueEntity.Core.Utils.DataViews;
 
 namespace RogueEntity.Core.Sensing.Receptors
 {
@@ -21,11 +28,7 @@ namespace RogueEntity.Core.Sensing.Receptors
                                                                     ICommandHandlerRegistration<TGameContext, TItemId> handler)
             where TItemId : IEntityKey
         {
-            if (!GetOrCreateLightSystem(serviceResolver, out var ls))
-            {
-                return;
-            }
-
+            var ls = GetOrCreateLightSystem<TGameContext, TItemId>(serviceResolver);
             context.AddInitializationStepHandler(ls.EnsureSenseCacheAvailable);
             context.AddInitializationStepHandler(ls.BeginSenseCalculation);
             context.AddFixedStepHandlers(ls.BeginSenseCalculation);
@@ -37,11 +40,7 @@ namespace RogueEntity.Core.Sensing.Receptors
                                                                                  ICommandHandlerRegistration<TGameContext, TItemId> handler)
             where TItemId : IEntityKey
         {
-            if (!GetOrCreateLightSystem(resolver, out var ls))
-            {
-                return;
-            }
-
+            var ls = GetOrCreateLightSystem<TGameContext, TItemId>(resolver);
             var system = registry.BuildSystem()
                                  .WithContext<TGameContext>()
                                  .CreateSystem<SensoryReceptorData<TReceptorSense, TSourceSense>, SensoryReceptorState<TReceptorSense, TSourceSense>, EntityGridPosition>(ls.CollectReceptor);
@@ -55,11 +54,7 @@ namespace RogueEntity.Core.Sensing.Receptors
                                                                                        ICommandHandlerRegistration<TGameContext, TItemId> handler)
             where TItemId : IEntityKey
         {
-            if (!GetOrCreateLightSystem(resolver, out var ls))
-            {
-                return;
-            }
-
+            var ls = GetOrCreateLightSystem<TGameContext, TItemId>(resolver);
             var system = registry.BuildSystem()
                                  .WithContext<TGameContext>()
                                  .CreateSystem<SensoryReceptorData<TReceptorSense, TSourceSense>, SensoryReceptorState<TReceptorSense, TSourceSense>, ContinuousMapPosition>(ls.CollectReceptor);
@@ -67,17 +62,13 @@ namespace RogueEntity.Core.Sensing.Receptors
             context.AddFixedStepHandlers(system);
         }
 
-        protected void RegisterCollectSenseSourcesSystem<TGameContext, TItemId>(IServiceResolver resolver,
+        protected void RegisterCollectSenseSourcesSystem<TGameContext, TItemId>(IServiceResolver serviceResolver,
                                                                                 IGameLoopSystemRegistration<TGameContext> context,
                                                                                 EntityRegistry<TItemId> registry,
                                                                                 ICommandHandlerRegistration<TGameContext, TItemId> handler)
             where TItemId : IEntityKey
         {
-            if (!GetOrCreateLightSystem(resolver, out var ls))
-            {
-                return;
-            }
-
+            var ls = GetOrCreateLightSystem<TGameContext, TItemId>(serviceResolver);
             var system = registry.BuildSystem()
                                  .WithContext<TGameContext>()
                                  .CreateSystem<TSenseSource, SenseSourceState<TSourceSense>>(ls.CollectObservedSenseSource);
@@ -85,16 +76,13 @@ namespace RogueEntity.Core.Sensing.Receptors
             context.AddFixedStepHandlers(system);
         }
 
-        protected void RegisterComputeReceptorFieldOfView<TGameContext, TItemId>(IServiceResolver resolver,
+        protected void RegisterComputeReceptorFieldOfView<TGameContext, TItemId>(IServiceResolver serviceResolver,
                                                                                  IGameLoopSystemRegistration<TGameContext> context,
                                                                                  EntityRegistry<TItemId> registry,
                                                                                  ICommandHandlerRegistration<TGameContext, TItemId> handler)
             where TItemId : IEntityKey
         {
-            if (!GetOrCreateLightSystem(resolver, out var ls))
-            {
-                return;
-            }
+            var ls = GetOrCreateLightSystem<TGameContext, TItemId>(serviceResolver);
 
             var refreshLocalSenseState =
                 registry.BuildSystem()
@@ -106,15 +94,12 @@ namespace RogueEntity.Core.Sensing.Receptors
         }
 
         protected void RegisterCalculateOmniDirectionalSystem<TGameContext, TItemId>(IServiceResolver serviceResolver,
-                                                                      IGameLoopSystemRegistration<TGameContext> context,
-                                                                      EntityRegistry<TItemId> registry,
-                                                                      ICommandHandlerRegistration<TGameContext, TItemId> handler)
+                                                                                     IGameLoopSystemRegistration<TGameContext> context,
+                                                                                     EntityRegistry<TItemId> registry,
+                                                                                     ICommandHandlerRegistration<TGameContext, TItemId> handler)
             where TItemId : IEntityKey
         {
-            if (!GetOrCreateLightSystem(serviceResolver, out var ls))
-            {
-                return;
-            }
+            var ls = GetOrCreateLightSystem<TGameContext, TItemId>(serviceResolver);
 
             if (!serviceResolver.TryResolve(out IRadiationSenseReceptorBlitter senseBlitter))
             {
@@ -132,15 +117,12 @@ namespace RogueEntity.Core.Sensing.Receptors
         }
 
         protected void RegisterCalculateUniDirectionalSystem<TGameContext, TItemId>(IServiceResolver serviceResolver,
-                                                            IGameLoopSystemRegistration<TGameContext> context,
-                                                            EntityRegistry<TItemId> registry,
-                                                            ICommandHandlerRegistration<TGameContext, TItemId> handler)
+                                                                                    IGameLoopSystemRegistration<TGameContext> context,
+                                                                                    EntityRegistry<TItemId> registry,
+                                                                                    ICommandHandlerRegistration<TGameContext, TItemId> handler)
             where TItemId : IEntityKey
         {
-            if (!GetOrCreateLightSystem(serviceResolver, out var ls))
-            {
-                return;
-            }
+            var ls = GetOrCreateLightSystem<TGameContext, TItemId>(serviceResolver);
 
             if (!serviceResolver.TryResolve(out IDirectionalSenseReceptorBlitter senseBlitter))
             {
@@ -151,7 +133,8 @@ namespace RogueEntity.Core.Sensing.Receptors
             var uniSys = new SenseReceptorBlitterSystem<TReceptorSense, TSourceSense>(ls, senseBlitter);
             var system = registry.BuildSystem()
                                  .WithContext<TGameContext>()
-                                 .CreateSystem<SingleLevelSenseDirectionMapData<TReceptorSense,TSourceSense>, SensoryReceptorState<TReceptorSense, TSourceSense>>(uniSys.CopySenseSourcesToVisionField);
+                                 .CreateSystem<SingleLevelSenseDirectionMapData<TReceptorSense, TSourceSense>, SensoryReceptorState<TReceptorSense, TSourceSense>>(
+                                     uniSys.CopySenseSourcesToVisionField);
 
 
             context.AddInitializationStepHandler(system);
@@ -165,15 +148,13 @@ namespace RogueEntity.Core.Sensing.Receptors
                                                                      ICommandHandlerRegistration<TGameContext, TItemId> handler)
             where TItemId : IEntityKey
         {
-            if (!GetOrCreateLightSystem(serviceResolver, out var ls))
-            {
-                return;
-            }
+            var ls = GetOrCreateLightSystem<TGameContext, TItemId>(serviceResolver);
 
             var clearReceptorStateSystem =
                 registry.BuildSystem()
                         .WithContext<TGameContext>()
-                        .CreateSystem<SensoryReceptorData<TReceptorSense, TSourceSense>, SensoryReceptorState<TReceptorSense, TSourceSense>, SenseReceptorDirtyFlag<TReceptorSense, TSourceSense>>(ls.ResetReceptorCacheState);
+                        .CreateSystem<SensoryReceptorData<TReceptorSense, TSourceSense>, SensoryReceptorState<TReceptorSense, TSourceSense>, SenseReceptorDirtyFlag<TReceptorSense, TSourceSense>>(
+                            ls.ResetReceptorCacheState);
 
             context.AddInitializationStepHandler(clearReceptorStateSystem);
             context.AddFixedStepHandlers(clearReceptorStateSystem);
@@ -191,7 +172,59 @@ namespace RogueEntity.Core.Sensing.Receptors
             context.AddFixedStepHandlers(ls.EndSenseCalculation);
         }
 
-        protected abstract bool GetOrCreateLightSystem(IServiceResolver serviceResolver, out SenseReceptorSystemBase<TReceptorSense, TSourceSense> ls);
+        protected virtual SensePropertiesSystem<TGameContext, TReceptorSense> GetOrCreateSensePropertiesSystem<TGameContext, TEntityId>(IServiceResolver serviceResolver)
+        {
+            if (serviceResolver.TryResolve(out SensePropertiesSystem<TGameContext, TReceptorSense> system))
+            {
+                return system;
+            }
+
+            var gridConfig = serviceResolver.Resolve<IGridMapConfiguration<TEntityId>>();
+            system = new SensePropertiesSystem<TGameContext, TReceptorSense>(gridConfig.OffsetX, gridConfig.OffsetY, gridConfig.TileSizeX, gridConfig.TileSizeY);
+
+            serviceResolver.Store(system);
+            serviceResolver.Store<ISensePropertiesSystem<TGameContext, TReceptorSense>>(system);
+            serviceResolver.Store<IReadOnlyDynamicDataView3D<SensoryResistance<TReceptorSense>>>(system);
+            return system;
+        }
+
+        protected virtual SensoryResistanceDirectionalitySystem<TReceptorSense> GetOrCreateDirectionalitySystem<TGameContext, TItemId>(IServiceResolver serviceResolver)
+        {
+            if (serviceResolver.TryResolve(out SensoryResistanceDirectionalitySystem<TReceptorSense> system))
+            {
+                return system;
+            }
+
+            if (!serviceResolver.TryResolve(out IReadOnlyDynamicDataView3D<SensoryResistance<TReceptorSense>> data))
+            {
+                data = GetOrCreateSensePropertiesSystem<TGameContext, TItemId>(serviceResolver);
+            }
+
+            system = new SensoryResistanceDirectionalitySystem<TReceptorSense>(data);
+            serviceResolver.Store(system);
+            serviceResolver.Store<ISensoryResistanceDirectionView<TReceptorSense>>(system);
+            return system;
+        }
+
+
+        protected abstract (ISensePropagationAlgorithm, ISensePhysics) GetOrCreatePhysics(IServiceResolver serviceResolver);
+
+        protected virtual SenseReceptorSystem<TReceptorSense, TSourceSense> GetOrCreateLightSystem<TGameContext, TItemId>(IServiceResolver serviceResolver)
+        {
+            if (!serviceResolver.TryResolve(out SenseReceptorSystem<TReceptorSense, TSourceSense> ls))
+            {
+                var physics = GetOrCreatePhysics(serviceResolver);
+                ls = new SenseReceptorSystem<TReceptorSense, TSourceSense>(serviceResolver.ResolveToReference<IReadOnlyDynamicDataView3D<SensoryResistance<TReceptorSense>>>(),
+                                                                           serviceResolver.ResolveToReference<ISenseStateCacheProvider>(),
+                                                                           serviceResolver.ResolveToReference<IGlobalSenseStateCacheProvider>(),
+                                                                           serviceResolver.ResolveToReference<ITimeSource>(),
+                                                                           GetOrCreateDirectionalitySystem<TGameContext, TItemId>(serviceResolver),
+                                                                           physics.Item2,
+                                                                           physics.Item1);
+            }
+
+            return ls;
+        }
 
         protected void RegisterEntities<TItemId>(IServiceResolver serviceResolver, EntityRegistry<TItemId> registry)
             where TItemId : IEntityKey

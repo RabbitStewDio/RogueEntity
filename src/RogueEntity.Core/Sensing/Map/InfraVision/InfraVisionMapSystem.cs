@@ -2,7 +2,6 @@ using System;
 using JetBrains.Annotations;
 using RogueEntity.Core.Infrastructure.Time;
 using RogueEntity.Core.Meta.ItemTraits;
-using RogueEntity.Core.Sensing.Common.Blitter;
 using RogueEntity.Core.Sensing.Receptors.InfraVision;
 using RogueEntity.Core.Sensing.Sources.Heat;
 

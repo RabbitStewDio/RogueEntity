@@ -1,7 +1,6 @@
 using RogueEntity.Core.Positioning.MapLayers;
 using RogueEntity.Core.Utils;
-using RogueEntity.Core.Utils.Maps;
-using Rectangle = RogueEntity.Core.Utils.Rectangle;
+using RogueEntity.Core.Utils.DataViews;
 
 namespace RogueEntity.Core.Sensing.Resistance.Maps
 {
@@ -10,11 +9,11 @@ namespace RogueEntity.Core.Sensing.Resistance.Maps
     ///   of unrelated kinds.
     /// </summary>
     /// <typeparam name="TGameContext"></typeparam>
-    public interface ISensePropertiesDataProcessor<TGameContext>
+    public interface ISensePropertiesDataProcessor<TGameContext, TSense>
     {
         MapLayer Layer { get; }
         int ZPosition { get; }
-        DynamicDataView<SensoryResistance> Data { get; }
+        DynamicDataView<SensoryResistance<TSense>> Data { get; }
         ReadOnlyListWrapper<Rectangle> ProcessedTiles { get; }
         
         void MarkDirty(int posGridX, int posGridY);

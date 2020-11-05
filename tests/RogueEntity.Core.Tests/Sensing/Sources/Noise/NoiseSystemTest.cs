@@ -1,18 +1,14 @@
 using NUnit.Framework;
-using RogueEntity.Core.Infrastructure.Time;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Sensing;
-using RogueEntity.Core.Sensing.Cache;
+using RogueEntity.Core.Sensing.Common;
 using RogueEntity.Core.Sensing.Common.Physics;
-using RogueEntity.Core.Sensing.Resistance;
-using RogueEntity.Core.Sensing.Resistance.Maps;
 using RogueEntity.Core.Sensing.Sources.Noise;
-using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.Algorithms;
 
 namespace RogueEntity.Core.Tests.Sensing.Sources.Noise
 {
-    public class NoiseSystemTest : SenseSystemTestBase<NoiseSense, NoiseSystem, NoiseSourceDefinition>
+    public class NoiseSystemTest : SenseSystemTestBase<NoiseSense, NoiseSourceDefinition>
     {
         const string EmptyRoom = @"
 // 11x11; an empty room
@@ -55,20 +51,11 @@ namespace RogueEntity.Core.Tests.Sensing.Sources.Noise
    .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   
 ";
 
-        NoisePhysicsConfiguration lightPhysics;
+        NoisePhysicsConfiguration physics;
 
-        protected override SensoryResistance Convert(float f)
+        protected override (ISensePropagationAlgorithm, ISensePhysics) GetOrCreateSensePhysics()
         {
-            return new SensoryResistance(Percentage.Empty, Percentage.Of(f), Percentage.Empty, Percentage.Empty);
-        }
-
-        protected override NoiseSystem CreateSystem()
-        {
-            return new NoiseSystem(senseProperties.AsLazy<ISensePropertiesSource>(),
-                                   senseCache.AsLazy<IGlobalSenseStateCacheProvider>(),
-                                   timeSource.AsLazy<ITimeSource>(),
-                                   senseCache,
-                                   lightPhysics.CreateNoisePropagationAlgorithm(), lightPhysics.NoisePhysics);
+            return (physics.CreateNoisePropagationAlgorithm(), physics.NoisePhysics);
         }
 
         protected override ReferenceItemDeclaration<SenseMappingTestContext, ItemReference> AttachTrait(ReferenceItemDeclaration<SenseMappingTestContext, ItemReference> decl)
@@ -76,13 +63,13 @@ namespace RogueEntity.Core.Tests.Sensing.Sources.Noise
             switch (decl.Id.Id)
             {
                 case "SenseSource-Active-10":
-                    decl.WithTrait(new NoiseSourceTrait<SenseMappingTestContext, ItemReference>(lightPhysics));
+                    decl.WithTrait(new NoiseSourceTrait<SenseMappingTestContext, ItemReference>(physics));
                     break;
                 case "SenseSource-Active-5":
-                    decl.WithTrait(new NoiseSourceTrait<SenseMappingTestContext, ItemReference>(lightPhysics));
+                    decl.WithTrait(new NoiseSourceTrait<SenseMappingTestContext, ItemReference>(physics));
                     break;
                 case "SenseSource-Inactive-5":
-                    decl.WithTrait(new NoiseSourceTrait<SenseMappingTestContext, ItemReference>(lightPhysics));
+                    decl.WithTrait(new NoiseSourceTrait<SenseMappingTestContext, ItemReference>(physics));
                     break;
             }
 
@@ -92,7 +79,7 @@ namespace RogueEntity.Core.Tests.Sensing.Sources.Noise
         [SetUp]
         public override void SetUp()
         {
-            lightPhysics = new NoisePhysicsConfiguration(LinearDecaySensePhysics.For(DistanceCalculation.Chebyshev));
+            physics = new NoisePhysicsConfiguration(LinearDecaySensePhysics.For(DistanceCalculation.Chebyshev));
             base.SetUp();
         }
 

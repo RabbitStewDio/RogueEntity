@@ -54,9 +54,15 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Smell
         protected override IItemComponentTestDataFactory<SensoryReceptorData<SmellSense, SmellSense>> ProduceTestData(EntityRelations<ActorReference> relations)
         {
             return new ItemComponentTestDataFactory<SensoryReceptorData<SmellSense, SmellSense>>(
-                new SensoryReceptorData<SmellSense, SmellSense>(new SenseSourceDefinition(physics.SmellPhysics.DistanceMeasurement, 1.9f), true),
-                new SensoryReceptorData<SmellSense, SmellSense>(new SenseSourceDefinition(physics.SmellPhysics.DistanceMeasurement, 10), true),
-                new SensoryReceptorData<SmellSense, SmellSense>(new SenseSourceDefinition(physics.SmellPhysics.DistanceMeasurement, 12), false)
+                new SensoryReceptorData<SmellSense, SmellSense>(new SenseSourceDefinition(physics.SmellPhysics.DistanceMeasurement, 
+                                                                                          physics.SmellPhysics.AdjacencyRule,
+                                                                                          1.9f), true),
+                new SensoryReceptorData<SmellSense, SmellSense>(new SenseSourceDefinition(physics.SmellPhysics.DistanceMeasurement, 
+                                                                                          physics.SmellPhysics.AdjacencyRule,
+                                                                                          10), true),
+                new SensoryReceptorData<SmellSense, SmellSense>(new SenseSourceDefinition(physics.SmellPhysics.DistanceMeasurement, 
+                                                                                          physics.SmellPhysics.AdjacencyRule,
+                                                                                          12), false)
             ).WithRemoveProhibited();
         }
     }

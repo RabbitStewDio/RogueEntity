@@ -6,18 +6,19 @@ using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Meta.ItemTraits;
 using RogueEntity.Core.Sensing;
 using RogueEntity.Core.Sensing.Cache;
+using RogueEntity.Core.Sensing.Common;
 using RogueEntity.Core.Sensing.Common.Physics;
 using RogueEntity.Core.Sensing.Receptors;
 using RogueEntity.Core.Sensing.Receptors.InfraVision;
 using RogueEntity.Core.Sensing.Resistance;
-using RogueEntity.Core.Sensing.Resistance.Maps;
+using RogueEntity.Core.Sensing.Sources;
 using RogueEntity.Core.Sensing.Sources.Heat;
-using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.Algorithms;
+using RogueEntity.Core.Utils.DataViews;
 
 namespace RogueEntity.Core.Tests.Sensing.Receptor.InfraVision
 {
-    public class InfraVisionReceptorSystemTest : SenseReceptorSystemBase<VisionSense, TemperatureSense, HeatSourceDefinition, HeatSystem>
+    public class InfraVisionReceptorSystemTest : SenseReceptorSystemBase<VisionSense, TemperatureSense, HeatSourceDefinition>
     {
         const string EmptyRoom = @"
 // 11x11; an empty room
@@ -119,7 +120,7 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.InfraVision
   ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ 
   ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~
 ";
-       
+
 
         const string PillarRoom = @"
 // 11x11; an empty room
@@ -221,7 +222,7 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.InfraVision
   ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ 
   ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~
 ";
-        
+
         readonly HeatPhysicsConfiguration sourcePhysics;
         readonly InfraVisionSenseReceptorPhysicsConfiguration phy;
 
@@ -231,11 +232,6 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.InfraVision
             this.phy = new InfraVisionSenseReceptorPhysicsConfiguration(sourcePhysics);
         }
 
-        protected override SensoryResistance Convert(float f)
-        {
-            return new SensoryResistance(Percentage.Of(f), Percentage.Empty, Percentage.Of(f), Percentage.Empty);
-        }
-
         protected override Action<SenseMappingTestContext> CreateCopyAction()
         {
             var builder = context.ItemEntityRegistry.BuildSystem()
@@ -243,6 +239,16 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.InfraVision
 
             var omniSystem = new SenseReceptorBlitterSystem<VisionSense, TemperatureSense>(senseSystem, new DefaultRadiationSenseReceptorBlitter());
             return builder.CreateSystem<SingleLevelSenseDirectionMapData<VisionSense, TemperatureSense>, SensoryReceptorState<VisionSense, TemperatureSense>>(omniSystem.CopySenseSourcesToVisionField);
+        }
+
+        protected override (ISensePropagationAlgorithm propagationAlgorithm, ISensePhysics sensePhysics) GetOrCreateSourceSensePhysics()
+        {
+            return (sourcePhysics.CreateHeatPropagationAlgorithm(), sourcePhysics.HeatPhysics);
+        }
+
+        protected override (ISensePropagationAlgorithm, ISensePhysics) GetOrCreateReceptorSensePhysics()
+        {
+            return (phy.CreateInfraVisionSensorPropagationAlgorithm(), phy.InfraVisionPhysics);
         }
 
         protected override ReferenceItemDeclaration<SenseMappingTestContext, ItemReference> AttachTrait(ReferenceItemDeclaration<SenseMappingTestContext, ItemReference> decl)
@@ -272,23 +278,16 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.InfraVision
             }
         }
 
-        protected override HeatSystem CreateSourceSystem()
-        {
-            return new HeatSystem(senseProperties.AsLazy<ISensePropertiesSource>(),
-                                  senseCache.AsLazy<IGlobalSenseStateCacheProvider>(),
-                                  timeSource.AsLazy<ITimeSource>(),
-                                  senseCache,
-                                  sourcePhysics.CreateHeatPropagationAlgorithm(), 
-                                  sourcePhysics);
-        }
 
-        protected override SenseReceptorSystemBase<VisionSense, TemperatureSense> CreateSystem()
+        protected override SenseSourceSystem<TemperatureSense, HeatSourceDefinition> CreateSourceSystem()
         {
-            return new InfraVisionReceptorSystem(senseProperties.AsLazy<ISensePropertiesSource>(),
-                                                 senseCache.AsLazy<ISenseStateCacheProvider>(),
-                                                 senseCache.AsLazy<IGlobalSenseStateCacheProvider>(),
-                                                 timeSource.AsLazy<ITimeSource>(),
-                                                 phy);
+            return new HeatSourceSystem(senseProperties.AsLazy<IReadOnlyDynamicDataView3D<SensoryResistance<TemperatureSense>>>(),
+                                        senseCache.AsLazy<IGlobalSenseStateCacheProvider>(),
+                                        timeSource.AsLazy<ITimeSource>(),
+                                        directionalitySourceSystem,
+                                        senseCache,
+                                        sourcePhysics.CreateHeatPropagationAlgorithm(),
+                                        sourcePhysics);
         }
 
         [Test]

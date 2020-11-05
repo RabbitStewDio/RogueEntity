@@ -1,7 +1,9 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Utils;
+using RogueEntity.Core.Utils.DataViews;
 using RogueEntity.Core.Utils.Maps;
 
 namespace RogueEntity.Core.Tests.Sensing
@@ -229,5 +231,66 @@ namespace RogueEntity.Core.Tests.Sensing
         }
         
         public static Lazy<T> AsLazy<T>(this T l) => new Lazy<T>(l);
+
+        public static IReadOnlyDynamicDataView3D<T> As3DMap<T>(this IReadOnlyDynamicDataView2D<T> layerData, int z) => new DataViewWrapper3D<T>(z, layerData);
+        
+        class DataViewWrapper3D<T> : IReadOnlyDynamicDataView3D<T>
+        {
+            readonly int z;
+            readonly IReadOnlyDynamicDataView2D<T> backend;
+
+            public DataViewWrapper3D(int z, IReadOnlyDynamicDataView2D<T> backend)
+            {
+                this.z = z;
+                this.backend = backend;
+            }
+
+            public bool TryGetView(int zLevel, out IReadOnlyDynamicDataView2D<T> view)
+            {
+                if (this.z == zLevel)
+                {
+                    view = backend;
+                    return true;
+                }
+
+                view = default;
+                return false;
+            }
+
+            public List<int> GetActiveLayers(List<int> buffer = null)
+            {
+                if (buffer == null)
+                {
+                    buffer = new List<int>();
+                }
+                else
+                {
+                    buffer.Clear();
+                }
+
+                buffer.Add(z);
+                return buffer;
+            }
+
+            public int OffsetX
+            {
+                get { return backend.OffsetX; }
+            }
+
+            public int OffsetY
+            {
+                get { return backend.OffsetY; }
+            }
+
+            public int TileSizeX
+            {
+                get { return backend.TileSizeX; }
+            }
+
+            public int TileSizeY
+            {
+                get { return backend.TileSizeY; }
+            }
+        }
     }
 }

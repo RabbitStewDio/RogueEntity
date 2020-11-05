@@ -1,12 +1,10 @@
 using EnTTSharp.Entities;
 using RogueEntity.Core.Infrastructure.Modules;
-using RogueEntity.Core.Infrastructure.Time;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Sensing.Cache;
+using RogueEntity.Core.Sensing.Common;
 using RogueEntity.Core.Sensing.Common.FloodFill;
 using RogueEntity.Core.Sensing.Common.Physics;
-using RogueEntity.Core.Sensing.Resistance;
-using RogueEntity.Core.Sensing.Resistance.Maps;
 using RogueEntity.Core.Sensing.Sources.Noise;
 
 namespace RogueEntity.Core.Sensing.Receptors.Noise
@@ -36,7 +34,6 @@ namespace RogueEntity.Core.Sensing.Receptors.Noise
             IsFrameworkModule = true;
 
             DeclareDependencies(ModuleDependency.Of(PositionModule.ModuleId),
-                                ModuleDependency.Of(SensoryResistanceModule.ModuleId),
                                 ModuleDependency.Of(NoiseSourceModule.ModuleId),
                                 ModuleDependency.Of(SensoryCacheModule.ModuleId));
 
@@ -88,36 +85,21 @@ namespace RogueEntity.Core.Sensing.Receptors.Noise
             var ctx = initializer.DeclareEntityContext<TItemId>();
             ctx.Register(SenseSourceCollectionContinuousSystemId, 57500, RegisterCollectSenseSourcesSystem);
         }
-
-        protected override bool GetOrCreateLightSystem(IServiceResolver serviceResolver, out SenseReceptorSystemBase<NoiseSense, NoiseSense> ls)
+        
+        protected override (ISensePropagationAlgorithm, ISensePhysics) GetOrCreatePhysics(IServiceResolver serviceResolver)
         {
             if (!serviceResolver.TryResolve(out INoiseSenseReceptorPhysicsConfiguration physics))
             {
-                if (!serviceResolver.TryResolve(out INoisePhysicsConfiguration physicsConfig))
-                {
-                    ls = default;
-                    return false;
-                }
-                
+                var physicsConfig = serviceResolver.Resolve<INoisePhysicsConfiguration>();
                 if (!serviceResolver.TryResolve(out FloodFillWorkingDataSource ds))
                 {
                     ds = new FloodFillWorkingDataSource();
                 }
-                
+
                 physics = new NoiseSenseReceptorPhysicsConfiguration(physicsConfig, ds);
             }
 
-            if (!serviceResolver.TryResolve(out ls))
-            {
-                ls = new NoiseReceptorSystem(serviceResolver.ResolveToReference<ISensePropertiesSource>(),
-                                             serviceResolver.ResolveToReference<ISenseStateCacheProvider>(),
-                                             serviceResolver.ResolveToReference<IGlobalSenseStateCacheProvider>(),
-                                             serviceResolver.ResolveToReference<ITimeSource>(),
-                                             new FullStrengthSensePhysics(physics.NoisePhysics),
-                                             physics.CreateNoiseSensorPropagationAlgorithm());
-            }
-
-            return true;
+            return (physics.CreateNoiseSensorPropagationAlgorithm(), physics.NoisePhysics);
         }
     }
 }

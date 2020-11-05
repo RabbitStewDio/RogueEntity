@@ -6,10 +6,7 @@ using RogueEntity.Core.Infrastructure.Modules;
 using RogueEntity.Core.Infrastructure.Time;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Sensing.Cache;
-using RogueEntity.Core.Sensing.Common.Blitter;
-using RogueEntity.Core.Sensing.Receptors;
 using RogueEntity.Core.Sensing.Receptors.Light;
-using RogueEntity.Core.Sensing.Resistance;
 using RogueEntity.Core.Sensing.Sources;
 using RogueEntity.Core.Sensing.Sources.Light;
 
@@ -36,7 +33,6 @@ namespace RogueEntity.Core.Sensing.Map.Light
             IsFrameworkModule = true;
 
             DeclareDependencies(ModuleDependency.Of(PositionModule.ModuleId),
-                                ModuleDependency.Of(SensoryResistanceModule.ModuleId),
                                 ModuleDependency.Of(LightSourceModule.ModuleId),
                                 ModuleDependency.Of(VisionSenseModule.ModuleId),
                                 ModuleDependency.Of(SensoryCacheModule.ModuleId));

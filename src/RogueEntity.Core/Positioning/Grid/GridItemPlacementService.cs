@@ -4,7 +4,7 @@ using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Meta.ItemTraits;
 using RogueEntity.Core.Positioning.MapLayers;
 using RogueEntity.Core.Utils;
-using RogueEntity.Core.Utils.Maps;
+using RogueEntity.Core.Utils.DataViews;
 using Serilog;
 using Rectangle = RogueEntity.Core.Utils.Rectangle;
 using RectangleRange = RogueEntity.Core.Utils.RectangleRange;
@@ -12,7 +12,7 @@ using RectangleRange = RogueEntity.Core.Utils.RectangleRange;
 namespace RogueEntity.Core.Positioning.Grid
 {
     public class GridItemPlacementService<TGameContext, TItemId> : IItemPlacementService<TGameContext, TItemId>
-        where TGameContext : IGridMapContext<TGameContext, TItemId>, IItemContext<TGameContext, TItemId>
+        where TGameContext : IGridMapContext<TItemId>, IItemContext<TGameContext, TItemId>
         where TItemId : IBulkDataStorageKey<TItemId>
     {
         static readonly EqualityComparer<TItemId> Equality = EqualityComparer<TItemId>.Default;
@@ -42,7 +42,7 @@ namespace RogueEntity.Core.Positioning.Grid
             }
 
             if (!mapData.IsValid(origin) ||
-                !mapData.TryGetMap(origin.GridZ, out var map, MapAccess.ForWriting))
+                !mapData.TryGetWritableView(origin.GridZ, out var map, DataViewCreateMode.CreateMissing))
             {
                 logger.Verbose("Requested grid position for map layer {p.LayerId} is out of range", origin.LayerId, origin);
                 placementPos = default;
@@ -106,7 +106,7 @@ namespace RogueEntity.Core.Positioning.Grid
             }
 
             if (!mapData.IsValid(origin) ||
-                !mapData.TryGetMap(origin.GridZ, out var map, MapAccess.ForWriting))
+                !mapData.TryGetWritableView(origin.GridZ, out var map, DataViewCreateMode.CreateMissing))
             {
                 logger.Verbose("Requested grid position for map layer {p.LayerId} is out of range", origin.LayerId, origin);
                 placementPos = default;
@@ -155,7 +155,7 @@ namespace RogueEntity.Core.Positioning.Grid
             }
 
             if (!mapData.IsValid(placementPos) ||
-                !mapData.TryGetMap(placementPos.GridZ, out var map, MapAccess.ForWriting))
+                !mapData.TryGetWritableView(placementPos.GridZ, out var map, DataViewCreateMode.CreateMissing))
             {
                 logger.Verbose("Requested grid position for map layer {p.LayerId} is out of range", placementPos.LayerId, placementPos);
                 return false;
@@ -206,7 +206,7 @@ namespace RogueEntity.Core.Positioning.Grid
             }
 
             if (!mapData.IsValid(placementPos) ||
-                !mapData.TryGetMap(placementPos.GridZ, out var map, MapAccess.ForWriting))
+                !mapData.TryGetWritableView(placementPos.GridZ, out var map, DataViewCreateMode.CreateMissing))
             {
                 logger.Verbose("Requested grid position for map layer {p.LayerId} is out of range", placementPos.LayerId, placementPos);
                 return false;
@@ -251,7 +251,7 @@ namespace RogueEntity.Core.Positioning.Grid
             }
 
             if (!mapData.IsValid(p) ||
-                !mapData.TryGetMap(p.GridZ, out var map, MapAccess.ForWriting))
+                !mapData.TryGetWritableView(p.GridZ, out var map, DataViewCreateMode.CreateMissing))
             {
                 logger.Verbose("Requested grid position for map layer {p.LayerId} is out of range", p.LayerId, p);
                 return false;
@@ -266,7 +266,7 @@ namespace RogueEntity.Core.Positioning.Grid
                                            Position p,
                                            bool forceMove,
                                            IView2D<TItemId> map,
-                                           IGridMapDataContext<TGameContext, TItemId> mapData)
+                                           IGridMapDataContext<TItemId> mapData)
         {
             if (!Equality.Equals(sourceItem, map[p.GridX, p.GridY]))
             {

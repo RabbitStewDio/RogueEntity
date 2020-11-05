@@ -7,11 +7,11 @@ namespace RogueEntity.Core.Sensing.Resistance.Maps
 {
     public static class SensePropertiesSystemExtensions
     {
-        public static void AddLayer<TGameContext, TItemId>(this ISensePropertiesSystem<TGameContext> system, MapLayer mapLayer)
+        public static void AddLayer<TGameContext, TItemId, TSense>(this ISensePropertiesSystem<TGameContext, TSense> system, MapLayer mapLayer)
             where TItemId : IEntityKey
-            where TGameContext : IItemContext<TGameContext, TItemId>, IGridMapContext<TGameContext, TItemId>
+            where TGameContext : IItemContext<TGameContext, TItemId>, IGridMapContext<TItemId>
         {
-            system.AddSenseLayerFactory(new DynamicSenseLayerFactory<TGameContext, TItemId>(mapLayer));
+            system.AddSenseLayerFactory(new DynamicSenseLayerFactory<TGameContext, TItemId, TSense>(mapLayer));
         }
     }
 }

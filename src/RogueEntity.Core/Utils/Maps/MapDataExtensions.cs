@@ -1,6 +1,7 @@
 using System;
 using System.Text;
 using JetBrains.Annotations;
+using RogueEntity.Core.Utils.DataViews;
 
 namespace RogueEntity.Core.Utils.Maps
 {

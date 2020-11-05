@@ -55,9 +55,14 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Heat
         protected override IItemComponentTestDataFactory<SensoryReceptorData<TemperatureSense, TemperatureSense>> ProduceTestData(EntityRelations<ActorReference> relations)
         {
             return new ItemComponentTestDataFactory<SensoryReceptorData<TemperatureSense, TemperatureSense>>(
-                new SensoryReceptorData<TemperatureSense, TemperatureSense>(new SenseSourceDefinition(physics.HeatPhysics.DistanceMeasurement, 1.9f), true),
-                new SensoryReceptorData<TemperatureSense, TemperatureSense>(new SenseSourceDefinition(physics.HeatPhysics.DistanceMeasurement, 10), true),
-                new SensoryReceptorData<TemperatureSense, TemperatureSense>(new SenseSourceDefinition(physics.HeatPhysics.DistanceMeasurement, 12), false)
+                new SensoryReceptorData<TemperatureSense, TemperatureSense>(new SenseSourceDefinition(physics.HeatPhysics.DistanceMeasurement, 
+                                                                                                      physics.HeatPhysics.AdjacencyRule, 1.9f), true),
+                new SensoryReceptorData<TemperatureSense, TemperatureSense>(new SenseSourceDefinition(physics.HeatPhysics.DistanceMeasurement, 
+                                                                                                      physics.HeatPhysics.AdjacencyRule,
+                                                                                                      10), true),
+                new SensoryReceptorData<TemperatureSense, TemperatureSense>(new SenseSourceDefinition(physics.HeatPhysics.DistanceMeasurement, 
+                                                                                                      physics.HeatPhysics.AdjacencyRule,
+                                                                                                      12), false)
             ).WithRemoveProhibited();
         }
     }

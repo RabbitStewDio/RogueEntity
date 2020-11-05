@@ -2,23 +2,19 @@ using System;
 using EnTTSharp.Entities.Systems;
 using FluentAssertions;
 using NUnit.Framework;
-using RogueEntity.Core.Infrastructure.Time;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Sensing;
-using RogueEntity.Core.Sensing.Cache;
+using RogueEntity.Core.Sensing.Common;
 using RogueEntity.Core.Sensing.Common.FloodFill;
 using RogueEntity.Core.Sensing.Common.Physics;
 using RogueEntity.Core.Sensing.Receptors;
 using RogueEntity.Core.Sensing.Receptors.Smell;
-using RogueEntity.Core.Sensing.Resistance;
-using RogueEntity.Core.Sensing.Resistance.Maps;
 using RogueEntity.Core.Sensing.Sources.Smell;
-using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.Algorithms;
 
 namespace RogueEntity.Core.Tests.Sensing.Receptor.Smell
 {
-    public class SmellReceptorSystemTest : SenseReceptorSystemBase<SmellSense, SmellSense, SmellSourceDefinition, SmellSystem>
+    public class SmellReceptorSystemTest : SenseReceptorSystemBase<SmellSense, SmellSense, SmellSourceDefinition>
     {
         const string EmptyRoom = @"
 // 11x11; an empty room
@@ -239,21 +235,16 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Smell
             );
         }
 
-        protected override SmellSystem CreateSourceSystem()
+        protected override (ISensePropagationAlgorithm propagationAlgorithm, ISensePhysics sensePhysics) GetOrCreateSourceSensePhysics()
         {
-            return new SmellSystem(senseProperties.AsLazy<ISensePropertiesSource>(),
-                                   senseCache.AsLazy<IGlobalSenseStateCacheProvider>(),
-                                   timeSource.AsLazy<ITimeSource>(),
-                                   senseCache,
-                                   sourcePhysics.CreateSmellPropagationAlgorithm(),
-                                   sourcePhysics.SmellPhysics);
+            return (sourcePhysics.CreateSmellPropagationAlgorithm(), sourcePhysics.SmellPhysics);
         }
 
-
-        protected override SensoryResistance Convert(float f)
+        protected override (ISensePropagationAlgorithm, ISensePhysics) GetOrCreateReceptorSensePhysics()
         {
-            return new SensoryResistance(Percentage.Empty, Percentage.Empty, Percentage.Empty, Percentage.Of(f));
+            return (physics.CreateSmellSensorPropagationAlgorithm(), physics.SmellPhysics);
         }
+
 
         protected override Action<SenseMappingTestContext> CreateCopyAction()
         {
@@ -289,16 +280,6 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Smell
                 default:
                     throw new ArgumentException();
             }
-        }
-
-        protected override SenseReceptorSystemBase<SmellSense, SmellSense> CreateSystem()
-        {
-            return new SmellReceptorSystem(senseProperties.AsLazy<ISensePropertiesSource>(),
-                                           senseCache.AsLazy<ISenseStateCacheProvider>(),
-                                           senseCache.AsLazy<IGlobalSenseStateCacheProvider>(),
-                                           timeSource.AsLazy<ITimeSource>(),
-                                           physics.SmellPhysics,
-                                           physics.CreateSmellSensorPropagationAlgorithm());
         }
 
         protected override void PrepareSourceItems(ItemReference active10, ItemReference active5, ItemReference inactive)

@@ -54,7 +54,9 @@ namespace RogueEntity.Core.Sensing.Sources.Smell
 
         public bool TryUpdate(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, in SmellSource t, out TItemId changedK)
         {
-            v.AssignOrReplace(k, new SmellSourceDefinition(new SenseSourceDefinition(physics.SmellPhysics.DistanceMeasurement, t.Intensity), t, true));
+            v.AssignOrReplace(k, new SmellSourceDefinition(new SenseSourceDefinition(physics.SmellPhysics.DistanceMeasurement, 
+                                                                                     physics.SmellPhysics.AdjacencyRule, 
+                                                                                     t.Intensity), t, true));
 
             if (!v.GetComponent(k, out SenseSourceState<SmellSense> s))
             {
@@ -64,7 +66,7 @@ namespace RogueEntity.Core.Sensing.Sources.Smell
             else
             {
                 s = s.WithDirtyState(SenseSourceDirtyState.UnconditionallyDirty);
-                v.AssignComponent(k, in s);
+                v.ReplaceComponent(k, in s);
             }
 
             changedK = k;

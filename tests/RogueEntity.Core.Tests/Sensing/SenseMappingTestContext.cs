@@ -8,13 +8,13 @@ namespace RogueEntity.Core.Tests.Sensing
 {
     public class SenseMappingTestContext : IItemContext<SenseMappingTestContext, ActorReference>,
                                            IItemContext<SenseMappingTestContext, ItemReference>,
-                                           IGridMapContext<SenseMappingTestContext, ItemReference>,
-                                           IGridMapContext<SenseMappingTestContext, ActorReference>
+                                           IGridMapContext<ItemReference>,
+                                           IGridMapContext<ActorReference>
     {
         readonly ItemContextBackend<SenseMappingTestContext, ActorReference> actorBackend;
         readonly ItemContextBackend<SenseMappingTestContext, ItemReference> itemBackend;
-        readonly IGridMapContext<SenseMappingTestContext, ItemReference> itemMap;
-        readonly IGridMapContext<SenseMappingTestContext, ActorReference> actorMap;
+        readonly IGridMapContext<ItemReference> itemMap;
+        readonly IGridMapContext<ActorReference> actorMap;
 
         public SenseMappingTestContext()
         {
@@ -28,44 +28,50 @@ namespace RogueEntity.Core.Tests.Sensing
                 .WithDefaultMapLayer(TestMapLayers.Three);
         }
 
-        ReadOnlyListWrapper<MapLayer> IGridMapContext<SenseMappingTestContext, ActorReference>.GridLayers()
+        int IGridMapConfiguration<ItemReference>.OffsetX => itemMap.OffsetX;
+
+        int IGridMapConfiguration<ItemReference>.OffsetY => itemMap.OffsetY;
+
+        int IGridMapConfiguration<ItemReference>.TileSizeX => itemMap.TileSizeX;
+
+        int IGridMapConfiguration<ItemReference>.TileSizeY => itemMap.TileSizeY;
+
+        int IGridMapConfiguration<ActorReference>.OffsetX =>  actorMap.OffsetX;
+
+        int IGridMapConfiguration<ActorReference>.OffsetY =>  actorMap.OffsetY;
+
+        int IGridMapConfiguration<ActorReference>.TileSizeX =>  actorMap.TileSizeX;
+
+        int IGridMapConfiguration<ActorReference>.TileSizeY => actorMap.TileSizeY;
+
+        ReadOnlyListWrapper<MapLayer> IGridMapContext<ActorReference>.GridLayers()
         {
             return actorMap.GridLayers();
         }
 
-        ReadOnlyListWrapper<MapLayer> IGridMapContext<SenseMappingTestContext, ItemReference>.GridLayers()
+        ReadOnlyListWrapper<MapLayer> IGridMapContext<ItemReference>.GridLayers()
         {
             return itemMap.GridLayers();
         }
 
-        public bool TryGetItemGridDataFor(MapLayer layer, out IGridMapDataContext<SenseMappingTestContext, ItemReference> data)
+        public bool TryGetItemGridDataFor(MapLayer layer, out IGridMapDataContext<ItemReference> data)
         {
             return itemMap.TryGetGridDataFor(layer, out data);
         }
 
-        public bool TryGetActorGridDataFor(MapLayer layer, out IGridMapDataContext<SenseMappingTestContext, ActorReference> data)
+        public bool TryGetActorGridDataFor(MapLayer layer, out IGridMapDataContext<ActorReference> data)
         {
             return actorMap.TryGetGridDataFor(layer, out data);
         }
 
-        bool IGridMapContext<SenseMappingTestContext, ItemReference>.TryGetGridDataFor(MapLayer layer, out IGridMapDataContext<SenseMappingTestContext, ItemReference> data)
+        bool IGridMapContext<ItemReference>.TryGetGridDataFor(MapLayer layer, out IGridMapDataContext<ItemReference> data)
         {
             return itemMap.TryGetGridDataFor(layer, out data);
         }
 
-        bool IGridMapContext<SenseMappingTestContext, ItemReference>.TryGetGridRawDataFor(MapLayer layer, out IGridMapRawDataContext<ItemReference> data)
-        {
-            return itemMap.TryGetGridRawDataFor(layer, out data);
-        }
-
-        bool IGridMapContext<SenseMappingTestContext, ActorReference>.TryGetGridDataFor(MapLayer layer, out IGridMapDataContext<SenseMappingTestContext, ActorReference> data)
+        bool IGridMapContext<ActorReference>.TryGetGridDataFor(MapLayer layer, out IGridMapDataContext<ActorReference> data)
         {
             return actorMap.TryGetGridDataFor(layer, out data);
-        }
-
-        bool IGridMapContext<SenseMappingTestContext, ActorReference>.TryGetGridRawDataFor(MapLayer layer, out IGridMapRawDataContext<ActorReference> data)
-        {
-            return actorMap.TryGetGridRawDataFor(layer, out data);
         }
 
         public ItemRegistry<SenseMappingTestContext, ItemReference> ItemRegistry

@@ -1,11 +1,10 @@
 using EnTTSharp.Entities;
 using RogueEntity.Core.Infrastructure.Modules;
-using RogueEntity.Core.Infrastructure.Time;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Sensing.Cache;
+using RogueEntity.Core.Sensing.Common;
+using RogueEntity.Core.Sensing.Common.Physics;
 using RogueEntity.Core.Sensing.Common.ShadowCast;
-using RogueEntity.Core.Sensing.Resistance;
-using RogueEntity.Core.Sensing.Resistance.Maps;
 using RogueEntity.Core.Sensing.Sources.Light;
 
 namespace RogueEntity.Core.Sensing.Receptors.Light
@@ -35,7 +34,6 @@ namespace RogueEntity.Core.Sensing.Receptors.Light
             IsFrameworkModule = true;
 
             DeclareDependencies(ModuleDependency.Of(PositionModule.ModuleId),
-                                ModuleDependency.Of(SensoryResistanceModule.ModuleId),
                                 ModuleDependency.Of(SensoryCacheModule.ModuleId),
                                 ModuleDependency.Of(LightSourceModule.ModuleId));
 
@@ -88,36 +86,20 @@ namespace RogueEntity.Core.Sensing.Receptors.Light
             ctx.Register(SenseSourceCollectionSystemId, 57500, RegisterCollectSenseSourcesSystem);
         }
 
-        protected override bool GetOrCreateLightSystem(IServiceResolver serviceResolver, out SenseReceptorSystemBase<VisionSense, VisionSense> ls)
+        protected override (ISensePropagationAlgorithm, ISensePhysics) GetOrCreatePhysics(IServiceResolver serviceResolver)
         {
-            if (!serviceResolver.TryResolve(out ls))
+            if (!serviceResolver.TryResolve(out IVisionSenseReceptorPhysicsConfiguration physics))
             {
-                if (!serviceResolver.TryResolve(out IVisionSenseReceptorPhysicsConfiguration receptorPhysics))
+                var physicsConfig = serviceResolver.Resolve<ILightPhysicsConfiguration>();
+                if (!serviceResolver.TryResolve(out ShadowPropagationResistanceDataSource ds))
                 {
-                    if (!serviceResolver.TryResolve(out ILightPhysicsConfiguration physicsConfig))
-                    {
-                        ls = default;
-                        return false;
-                    }
-
-                    if (!serviceResolver.TryResolve(out ShadowPropagationResistanceDataSource ds))
-                    {
-                        ds = new ShadowPropagationResistanceDataSource();
-                    }
-                    
-                    receptorPhysics = new VisionSenseReceptorPhysicsConfiguration(physicsConfig, ds);
+                    ds = new ShadowPropagationResistanceDataSource();
                 }
-                
-                
-                ls = new VisionReceptorSystem(serviceResolver.ResolveToReference<ISensePropertiesSource>(),
-                                              serviceResolver.ResolveToReference<ISenseStateCacheProvider>(),
-                                              serviceResolver.ResolveToReference<IGlobalSenseStateCacheProvider>(),
-                                              serviceResolver.ResolveToReference<ITimeSource>(),
-                                              receptorPhysics.VisionPhysics,
-                                              receptorPhysics.CreateVisionSensorPropagationAlgorithm());
+
+                physics = new VisionSenseReceptorPhysicsConfiguration(physicsConfig, ds);
             }
 
-            return true;
+            return (physics.CreateVisionSensorPropagationAlgorithm(), physics.VisionPhysics);
         }
     }
 }

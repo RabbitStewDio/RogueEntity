@@ -6,7 +6,6 @@ using JetBrains.Annotations;
 using RogueEntity.Core.Infrastructure.Time;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Sensing.Common;
-using RogueEntity.Core.Sensing.Common.Blitter;
 using RogueEntity.Core.Sensing.Sources;
 using RogueEntity.Core.Utils;
 using Serilog;

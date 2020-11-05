@@ -2,6 +2,7 @@ using FluentAssertions;
 using NUnit.Framework;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Positioning.Grid;
+using RogueEntity.Core.Sensing;
 using RogueEntity.Core.Sensing.Resistance;
 using RogueEntity.Core.Sensing.Resistance.Maps;
 using RogueEntity.Core.Utils;
@@ -13,21 +14,19 @@ namespace RogueEntity.Core.Tests.Sensing.Resistance
         SenseMappingTestContext ctx;
         ItemDeclarationId wall;
         ItemDeclarationId ceilingFan;
-        SensePropertiesSystem<SenseMappingTestContext> sps;
+        SensePropertiesSystem<SenseMappingTestContext, VisionSense> sps;
 
         [SetUp]
         public void SetUp()
         {
             ctx = new SenseMappingTestContext();
             wall = ctx.ItemRegistry.Register(new BulkItemDeclaration<SenseMappingTestContext, ItemReference>("Wall", "WallTag")
-                                                 .WithTrait(new SensoryResistanceTrait<SenseMappingTestContext, ItemReference>(
-                                                                Percentage.Full, Percentage.Of(0.5), Percentage.Empty, Percentage.Empty)));
+                                                 .WithTrait(new SensoryResistanceTrait<SenseMappingTestContext, ItemReference, VisionSense>(Percentage.Full)));
             ceilingFan = ctx.ItemRegistry.Register(new BulkItemDeclaration<SenseMappingTestContext, ItemReference>("Fan", "FanTag")
-                                                       .WithTrait(new SensoryResistanceTrait<SenseMappingTestContext, ItemReference>(
-                                                                      Percentage.Empty, Percentage.Of(0.5), Percentage.Of(0.2f), Percentage.Of(0.5f))));
-            sps = new SensePropertiesSystem<SenseMappingTestContext>(0, 0, 64, 64);
-            sps.AddLayer<SenseMappingTestContext, ItemReference>(TestMapLayers.One);
-            sps.AddLayer<SenseMappingTestContext, ItemReference>(TestMapLayers.Two);
+                                                       .WithTrait(new SensoryResistanceTrait<SenseMappingTestContext, ItemReference, VisionSense>(Percentage.Of(0.1f))));
+            sps = new SensePropertiesSystem<SenseMappingTestContext, VisionSense>(0, 0, 64, 64);
+            sps.AddLayer<SenseMappingTestContext, ItemReference, VisionSense>(TestMapLayers.One);
+            sps.AddLayer<SenseMappingTestContext, ItemReference, VisionSense>(TestMapLayers.Two);
         }
 
         [Test]
@@ -35,7 +34,7 @@ namespace RogueEntity.Core.Tests.Sensing.Resistance
         {
             sps.Start(ctx);
             sps.DefinedZLayers.Should().BeEmpty();
-            sps.TryGet(0, out _).Should().BeFalse();
+            sps.TryGetView(0, out _).Should().BeFalse();
 
             ctx.TryGetItemGridDataFor(TestMapLayers.One, out var dataLayer1).Should().BeTrue();
             dataLayer1.TrySet(EntityGridPosition.Of(TestMapLayers.One, 0, 0), ctx.ItemResolver.Instantiate(ctx, wall)).Should().BeTrue();
@@ -45,9 +44,9 @@ namespace RogueEntity.Core.Tests.Sensing.Resistance
 
             sps.ProcessSenseProperties(ctx);
             sps.DefinedZLayers.Should().BeEquivalentTo(0);
-
-            sps.TryGet(0, out var map).Should().BeTrue();
-            map[0, 0].Should().Be(new SensoryResistance(Percentage.Full, Percentage.Full, Percentage.Of(0.2f), Percentage.Of(0.5f)));
+           
+            sps.TryGetView(0, out var map).Should().BeTrue();
+            map[0, 0].Should().Be(new SensoryResistance<VisionSense>(Percentage.Full));
 
 
             sps.Stop(ctx);

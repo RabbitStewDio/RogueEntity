@@ -9,73 +9,55 @@ namespace RogueEntity.Core.Sensing.Resistance
     [EntityComponent(EntityConstructor.NonConstructable)]
     [MessagePackObject]
     [DataContract]
-    public readonly struct SensoryResistance : IEquatable<SensoryResistance>
+    public readonly struct SensoryResistance<TSense> : IEquatable<SensoryResistance<TSense>>
     {
         [DataMember(Order = 0)]
-        public readonly Percentage BlocksLight;
-        [DataMember(Order = 1)]
-        public readonly Percentage BlocksSound;
-        [DataMember(Order = 2)]
-        public readonly Percentage BlocksHeat;
-        [DataMember(Order = 3)]
-        public readonly Percentage BlocksSmell;
+        public readonly Percentage BlocksSense;
 
         [SerializationConstructor]
-        public SensoryResistance(Percentage blocksLight, 
-                                 Percentage blocksSound, 
-                                 Percentage blocksHeat, 
-                                 Percentage blocksSmell)
+        public SensoryResistance(Percentage blocksSense)
         {
-            BlocksLight = blocksLight;
-            BlocksSound = blocksSound;
-            BlocksHeat = blocksHeat;
-            BlocksSmell = blocksSmell;
+            BlocksSense = blocksSense;
+        }
+
+        public SensoryResistance(float blocksSense)
+        {
+            BlocksSense = Percentage.Of(blocksSense);
         }
 
         public override string ToString()
         {
-            return $"{nameof(BlocksLight)}: {BlocksLight}, {nameof(BlocksSound)}: {BlocksSound}, {nameof(BlocksHeat)}: {BlocksHeat}, {nameof(BlocksSmell)}: {BlocksSmell}";
+            return $"{nameof(BlocksSense)}: {BlocksSense}";
         }
 
-        public bool Equals(SensoryResistance other)
+        public bool Equals(SensoryResistance<TSense> other)
         {
-            return BlocksLight.Equals(other.BlocksLight) && BlocksSound.Equals(other.BlocksSound) && BlocksHeat.Equals(other.BlocksHeat) && BlocksSmell.Equals(other.BlocksSmell);
+            return BlocksSense.Equals(other.BlocksSense);
         }
 
         public override bool Equals(object obj)
         {
-            return obj is SensoryResistance other && Equals(other);
+            return obj is SensoryResistance<TSense> other && Equals(other);
         }
 
         public override int GetHashCode()
         {
-            unchecked
-            {
-                var hashCode = BlocksLight.GetHashCode();
-                hashCode = (hashCode * 397) ^ BlocksSound.GetHashCode();
-                hashCode = (hashCode * 397) ^ BlocksHeat.GetHashCode();
-                hashCode = (hashCode * 397) ^ BlocksSmell.GetHashCode();
-                return hashCode;
-            }
+            return BlocksSense.GetHashCode();
         }
 
-        public static bool operator ==(SensoryResistance left, SensoryResistance right)
+        public static bool operator ==(SensoryResistance<TSense> left, SensoryResistance<TSense> right)
         {
             return left.Equals(right);
         }
 
-        public static bool operator !=(SensoryResistance left, SensoryResistance right)
+        public static bool operator !=(SensoryResistance<TSense> left, SensoryResistance<TSense> right)
         {
             return !left.Equals(right);
         }
         
-        public static SensoryResistance operator +(SensoryResistance left, SensoryResistance right)
+        public static SensoryResistance<TSense> operator +(SensoryResistance<TSense> left, SensoryResistance<TSense> right)
         {
-            return new SensoryResistance(left.BlocksLight + right.BlocksLight, 
-                                         left.BlocksSound + right.BlocksSound,
-                                         left.BlocksHeat + right.BlocksHeat,
-                                         left.BlocksSmell + right.BlocksSmell
-            );
+            return new SensoryResistance<TSense>(left.BlocksSense + right.BlocksSense);
         }
 
 

@@ -32,7 +32,7 @@ namespace RogueEntity.Core.Tests.Positioning
 
         protected override TestGridPositionContext CreateContext()
         {
-            return new TestGridPositionContext().WithMapLayer(itemLayer, new DefaultGridMapDataContext<TestGridPositionContext, ItemReference>(itemLayer, 100, 100));
+            return new TestGridPositionContext().WithMapLayer(itemLayer, new DefaultGridMapDataContext<ItemReference>(itemLayer, 100, 100));
         }
 
         protected override BulkItemGridPositionTrait<TestGridPositionContext, ItemReference> CreateTrait()
@@ -83,7 +83,7 @@ namespace RogueEntity.Core.Tests.Positioning
             if (pos.IsInvalid) return default;
             
             Context.TryGetGridDataFor(itemLayer, out var mapLayerData).Should().BeTrue();
-            mapLayerData.TryGetMap(pos.GridZ, out var mapData).Should().BeTrue();
+            mapLayerData.TryGetView(pos.GridZ, out var mapData).Should().BeTrue();
             return mapData[pos.GridX, pos.GridY];
         }
     }

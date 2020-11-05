@@ -1,20 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using RogueEntity.Core.Utils.Maps;
+using RogueEntity.Core.Utils.DataViews;
 
 namespace RogueEntity.Core.Positioning.Grid
 {
     [SuppressMessage("ReSharper", "UnusedTypeParameter")]
-    public interface IGridMapDataContext<TGameContext, TItemId>
+    public interface IGridMapDataContext<TItemId>: IDynamicDataView3D<TItemId>
     {
         public event EventHandler<PositionDirtyEventArgs> PositionDirty;
-
-        [SuppressMessage("ReSharper", "UnusedMethodReturnValue.Global")]
-        List<int> QueryActiveZLevels(List<int> cachedResults = null);
-        
-        bool TryGetMap(int z, out IView2D<TItemId> data, MapAccess accessMode = MapAccess.ReadOnly);
-        
         void MarkDirty<TPosition>(in TPosition position) where TPosition: IPosition;
     }
 
@@ -25,10 +18,10 @@ namespace RogueEntity.Core.Positioning.Grid
 
     public static class GridMapDataContextExtensions
     {
-        public static bool TryGet<TGameContext, TItemId, TPosition>(this IGridMapDataContext<TGameContext, TItemId> data, in TPosition pos, out TItemId d)
+        public static bool TryGet<TItemId, TPosition>(this IGridMapDataContext<TItemId> data, in TPosition pos, out TItemId d)
             where TPosition: IPosition
         {
-            if (!data.TryGetMap(pos.GridZ, out var map))
+            if (!data.TryGetView(pos.GridZ, out var map))
             {
                 d = default;
                 return false;
@@ -37,10 +30,10 @@ namespace RogueEntity.Core.Positioning.Grid
             return map.TryGet(pos.GridX, pos.GridY, out d);
         }
 
-        public static bool TrySet<TGameContext, TItemId, TPosition>(this IGridMapDataContext<TGameContext, TItemId> data, in TPosition pos, in TItemId d)
+        public static bool TrySet<TItemId, TPosition>(this IGridMapDataContext<TItemId> data, in TPosition pos, in TItemId d)
             where TPosition: IPosition
         {
-            if (!data.TryGetMap(pos.GridZ, out var map, MapAccess.ForWriting))
+            if (!data.TryGetWritableView(pos.GridZ, out var map, DataViewCreateMode.CreateMissing))
             {
                 return false;
             }

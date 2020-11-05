@@ -29,7 +29,7 @@ namespace RogueEntity.Core.Sensing.Receptors
 
         public virtual void Initialize(IEntityViewControl<TActorId> v, TGameContext context, TActorId k, IItemDeclaration item)
         {
-            v.AssignComponent(k, new SensoryReceptorData<TReceptorSense, TSourceSense>(new SenseSourceDefinition(physics.DistanceMeasurement, Intensity), active));
+            v.AssignComponent(k, new SensoryReceptorData<TReceptorSense, TSourceSense>(new SenseSourceDefinition(physics.DistanceMeasurement, physics.AdjacencyRule, Intensity), active));
             v.AssignComponent(k, SensoryReceptorState.Create<TReceptorSense, TSourceSense>());
             v.AssignComponent(k, SingleLevelSenseDirectionMapData.Create<TReceptorSense, TSourceSense>());
         }

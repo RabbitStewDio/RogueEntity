@@ -1,26 +1,21 @@
 using System;
 using FluentAssertions;
 using NUnit.Framework;
-using RogueEntity.Core.Infrastructure.Time;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Sensing;
-using RogueEntity.Core.Sensing.Cache;
 using RogueEntity.Core.Sensing.Common;
 using RogueEntity.Core.Sensing.Common.FloodFill;
 using RogueEntity.Core.Sensing.Common.Physics;
 using RogueEntity.Core.Sensing.Receptors;
 using RogueEntity.Core.Sensing.Receptors.Touch;
-using RogueEntity.Core.Sensing.Resistance;
-using RogueEntity.Core.Sensing.Resistance.Maps;
 using RogueEntity.Core.Sensing.Sources;
 using RogueEntity.Core.Sensing.Sources.Touch;
-using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.Algorithms;
 
 namespace RogueEntity.Core.Tests.Sensing.Sources.Touch
 {
-    public class TouchSystemTest : SenseSystemTestBase<TouchSense, TouchSystem, TouchSourceDefinition>
+    public class TouchSystemTest : SenseSystemTestBase<TouchSense, TouchSourceDefinition>
     {
         const string EmptyRoom = @"
 // 11x11; an empty room
@@ -47,22 +42,6 @@ namespace RogueEntity.Core.Tests.Sensing.Sources.Touch
 
         TouchSenseReceptorPhysicsConfiguration physics;
 
-        protected override SensoryResistance Convert(float f)
-        {
-            return new SensoryResistance(Percentage.Empty, Percentage.Of(f), Percentage.Empty, Percentage.Empty);
-        }
-
-        protected override TouchSystem CreateSystem()
-        {
-            return new TouchSystem(senseProperties.AsLazy<ISensePropertiesSource>(),
-                                   senseCache.AsLazy<IGlobalSenseStateCacheProvider>(),
-                                   timeSource.AsLazy<ITimeSource>(),
-                                   senseCache,
-                                   physics.CreateTouchSensorPropagationAlgorithm(), 
-                                   physics.TouchPhysics);
-        }
-
-
         protected override ReferenceItemDeclaration<SenseMappingTestContext, ItemReference> AttachTrait(ReferenceItemDeclaration<SenseMappingTestContext, ItemReference> decl)
         {
             switch (decl.Id.Id)
@@ -84,16 +63,18 @@ namespace RogueEntity.Core.Tests.Sensing.Sources.Touch
         [SetUp]
         public override void SetUp()
         {
-            physics = new TouchSenseReceptorPhysicsConfiguration(
-                new TouchPhysicsConfiguration(LinearDecaySensePhysics.For(DistanceCalculation.Chebyshev)),
-                new FloodFillWorkingDataSource()
-            );
+            physics = new TouchSenseReceptorPhysicsConfiguration(LinearDecaySensePhysics.For(DistanceCalculation.Chebyshev), new FloodFillWorkingDataSource());
             base.SetUp();
 
             context.ItemEntityRegistry.RegisterNonConstructable<SensoryReceptorData<TouchSense, TouchSense>>();
             context.ItemEntityRegistry.RegisterNonConstructable<SensoryReceptorState<TouchSense, TouchSense>>();
             context.ItemEntityRegistry.RegisterNonConstructable<SingleLevelSenseDirectionMapData<TouchSense, TouchSense>>();
             context.ItemEntityRegistry.RegisterFlag<SenseReceptorDirtyFlag<TouchSense, TouchSense>>();
+        }
+
+        protected override (ISensePropagationAlgorithm, ISensePhysics) GetOrCreateSensePhysics()
+        {
+            return (physics.CreateTouchSensorPropagationAlgorithm(), physics.TouchPhysics);
         }
 
         [Test]

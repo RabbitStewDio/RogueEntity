@@ -3,6 +3,7 @@ using EnTTSharp.Entities;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Positioning.MapLayers;
 using RogueEntity.Core.Utils;
+using RogueEntity.Core.Utils.DataViews;
 using Serilog;
 
 namespace RogueEntity.Core.Positioning.Grid
@@ -14,7 +15,7 @@ namespace RogueEntity.Core.Positioning.Grid
                                                                          IItemComponentInformationTrait<TGameContext, TItemId, MapLayerPreference>,
                                                                          IItemComponentInformationTrait<TGameContext, TItemId, MapContainerEntityMarker>
         where TItemId : IBulkDataStorageKey<TItemId>
-        where TGameContext : IGridMapContext<TGameContext, TItemId>
+        where TGameContext : IGridMapContext<TItemId>
     {
         readonly IItemResolver<TGameContext, TItemId> itemResolver;
         readonly MapLayerPreference layerPreference;
@@ -126,7 +127,7 @@ namespace RogueEntity.Core.Positioning.Grid
                 // was on map before, now no longer on map.
                 if (!layerPreference.IsAcceptable(previousPosition, out var previousLayerId) ||
                     !context.TryGetGridDataFor(previousLayerId, out var previousMapContext) ||
-                    !previousMapContext.TryGetMap(previousPosition.GridZ, out var previousMap, MapAccess.ForWriting))
+                    !previousMapContext.TryGetWritableView(previousPosition.GridZ, out var previousMap, DataViewCreateMode.CreateMissing))
                 {
                     throw new ArgumentException("A previously set position was not accepted as layer target.");
                 }
@@ -145,7 +146,7 @@ namespace RogueEntity.Core.Positioning.Grid
             }
 
             if (!context.TryGetGridDataFor(layerId, out var mapDataContext) ||
-                !mapDataContext.TryGetMap(desiredPosition.GridZ, out var targetMap, MapAccess.ForWriting))
+                !mapDataContext.TryGetWritableView(desiredPosition.GridZ, out var targetMap, DataViewCreateMode.CreateMissing))
             {
                 logger.Warning("Invalid layer {Layer} for unresolvable map data for item {ItemId}", layerId, k);
                 changedK = k;
@@ -166,7 +167,7 @@ namespace RogueEntity.Core.Positioning.Grid
             {
                 if (!layerPreference.IsAcceptable(previousPosition, out var previousLayerId) ||
                     !context.TryGetGridDataFor(previousLayerId, out var previousItemMap) ||
-                    !previousItemMap.TryGetMap(previousPosition.GridZ, out var previousMap, MapAccess.ForWriting))
+                    !previousItemMap.TryGetWritableView(previousPosition.GridZ, out var previousMap, DataViewCreateMode.CreateMissing))
                 {
                     throw new ArgumentException("A previously set position was not accepted as layer target.");
                 }

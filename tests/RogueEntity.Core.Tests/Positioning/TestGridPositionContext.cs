@@ -6,7 +6,7 @@ using RogueEntity.Core.Utils;
 
 namespace RogueEntity.Core.Tests.Positioning
 {
-    public class TestGridPositionContext : IGridMapContext<TestGridPositionContext, ItemReference>,
+    public class TestGridPositionContext : IGridMapContext<ItemReference>,
                                            IItemContext<TestGridPositionContext, ItemReference>
     {
         readonly DefaultGridPositionContextBackend<TestGridPositionContext, ItemReference> mapBackend;
@@ -18,10 +18,30 @@ namespace RogueEntity.Core.Tests.Positioning
             mapBackend = new DefaultGridPositionContextBackend<TestGridPositionContext, ItemReference>();
         }
 
-        public TestGridPositionContext WithMapLayer(MapLayer layer, IGridMapDataContext<TestGridPositionContext, ItemReference> data)
+        public TestGridPositionContext WithMapLayer(MapLayer layer, IGridMapDataContext<ItemReference> data)
         {
             mapBackend.WithMapLayer(layer, data);
             return this;
+        }
+
+        public int OffsetX
+        {
+            get { return mapBackend.OffsetX; }
+        }
+
+        public int OffsetY
+        {
+            get { return mapBackend.OffsetY; }
+        }
+
+        public int TileSizeX
+        {
+            get { return mapBackend.TileSizeX; }
+        }
+
+        public int TileSizeY
+        {
+            get { return mapBackend.TileSizeY; }
         }
 
         public ReadOnlyListWrapper<MapLayer> GridLayers()
@@ -29,14 +49,9 @@ namespace RogueEntity.Core.Tests.Positioning
             return mapBackend.GridLayers();
         }
 
-        public bool TryGetGridDataFor(MapLayer layer, out IGridMapDataContext<TestGridPositionContext, ItemReference> data)
+        public bool TryGetGridDataFor(MapLayer layer, out IGridMapDataContext<ItemReference> data)
         {
             return mapBackend.TryGetGridDataFor(layer, out data);
-        }
-
-        public bool TryGetGridRawDataFor(MapLayer layer, out IGridMapRawDataContext<ItemReference> data)
-        {
-            return mapBackend.TryGetGridRawDataFor(layer, out data);
         }
 
         public ItemRegistry<TestGridPositionContext, ItemReference> ItemRegistry

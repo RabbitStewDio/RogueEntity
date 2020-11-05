@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using RogueEntity.Core.Sensing.Common;
 using RogueEntity.Core.Utils;
-using RogueEntity.Core.Utils.Maps;
+using RogueEntity.Core.Utils.DataViews;
 
 namespace RogueEntity.Core.Tests.Sensing.Common
 {

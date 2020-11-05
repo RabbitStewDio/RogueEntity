@@ -1,22 +1,18 @@
 using System;
 using EnTTSharp.Entities.Systems;
 using NUnit.Framework;
-using RogueEntity.Core.Infrastructure.Time;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Sensing;
-using RogueEntity.Core.Sensing.Cache;
-using RogueEntity.Core.Sensing.Common.FloodFill;
+using RogueEntity.Core.Sensing.Common;
 using RogueEntity.Core.Sensing.Common.Physics;
 using RogueEntity.Core.Sensing.Receptors;
 using RogueEntity.Core.Sensing.Receptors.Touch;
-using RogueEntity.Core.Sensing.Resistance;
-using RogueEntity.Core.Sensing.Resistance.Maps;
 using RogueEntity.Core.Sensing.Sources.Touch;
 using RogueEntity.Core.Utils.Algorithms;
 
 namespace RogueEntity.Core.Tests.Sensing.Receptor.Touch
 {
-    public class TouchReceptorSystemTest : SenseReceptorSystemBase<TouchSense, TouchSense, TouchSourceDefinition, TouchSystem>
+    public class TouchReceptorSystemTest : SenseReceptorSystemBase<TouchSense, TouchSense, TouchSourceDefinition>
     {
         const string EmptyRoom = @"
 // 11x11; an empty room
@@ -119,20 +115,12 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Touch
   ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~
 ";
 
-        readonly TouchPhysicsConfiguration sourcePhysics;
         readonly TouchSenseReceptorPhysicsConfiguration physics;
 
 
         public TouchReceptorSystemTest()
         {
-            this.sourcePhysics = new TouchPhysicsConfiguration(LinearDecaySensePhysics.For(DistanceCalculation.Chebyshev));
-            this.physics = new TouchSenseReceptorPhysicsConfiguration(sourcePhysics, new FloodFillWorkingDataSource());
-        }
-
-        protected override SensoryResistance Convert(float f)
-        {
-            // ignored for touch.
-            return new SensoryResistance();
+            this.physics = new TouchSenseReceptorPhysicsConfiguration(LinearDecaySensePhysics.For(DistanceCalculation.Chebyshev));
         }
 
         protected override Action<SenseMappingTestContext> CreateCopyAction()
@@ -146,17 +134,16 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Touch
 
         protected override ReferenceItemDeclaration<SenseMappingTestContext, ItemReference> AttachTrait(ReferenceItemDeclaration<SenseMappingTestContext, ItemReference> decl)
         {
-            var phy = new TouchSenseReceptorPhysicsConfiguration(sourcePhysics, new FloodFillWorkingDataSource());
             switch (decl.Id.Id)
             {
                 case "SenseReceptor-Active-10":
-                    decl.WithTrait(new TouchReceptorTrait<SenseMappingTestContext, ItemReference>(phy));
+                    decl.WithTrait(new TouchReceptorTrait<SenseMappingTestContext, ItemReference>(physics));
                     return decl;
                 case "SenseReceptor-Active-5":
-                    decl.WithTrait(new TouchReceptorTrait<SenseMappingTestContext, ItemReference>(phy));
+                    decl.WithTrait(new TouchReceptorTrait<SenseMappingTestContext, ItemReference>(physics));
                     return decl;
                 case "SenseReceptor-Inactive-5":
-                    decl.WithTrait(new TouchReceptorTrait<SenseMappingTestContext, ItemReference>(phy, false));
+                    decl.WithTrait(new TouchReceptorTrait<SenseMappingTestContext, ItemReference>(physics, false));
                     return decl;
                 case "SenseSource-Active-10":
                     return decl;
@@ -169,24 +156,14 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Touch
             }
         }
 
-        protected override SenseReceptorSystemBase<TouchSense, TouchSense> CreateSystem()
+        protected override (ISensePropagationAlgorithm propagationAlgorithm, ISensePhysics sensePhysics) GetOrCreateSourceSensePhysics()
         {
-            return new TouchReceptorSystem(senseProperties.AsLazy<ISensePropertiesSource>(),
-                                           senseCache.AsLazy<ISenseStateCacheProvider>(),
-                                           senseCache.AsLazy<IGlobalSenseStateCacheProvider>(),
-                                           timeSource.AsLazy<ITimeSource>(),
-                                           physics.TouchPhysics,
-                                           physics.CreateTouchSensorPropagationAlgorithm());
+            return (physics.CreateTouchSensorPropagationAlgorithm(), physics.TouchPhysics);
         }
 
-        protected override TouchSystem CreateSourceSystem()
+        protected override (ISensePropagationAlgorithm, ISensePhysics) GetOrCreateReceptorSensePhysics()
         {
-            return new TouchSystem(senseProperties.AsLazy<ISensePropertiesSource>(),
-                                   senseCache.AsLazy<IGlobalSenseStateCacheProvider>(),
-                                   timeSource.AsLazy<ITimeSource>(),
-                                   senseCache,
-                                   physics.CreateTouchSensorPropagationAlgorithm(), 
-                                   physics.TouchPhysics);
+            return (physics.CreateTouchSensorPropagationAlgorithm(), physics.TouchPhysics);
         }
 
         protected override void PrepareSourceItems(ItemReference active10, ItemReference active5, ItemReference inactive)

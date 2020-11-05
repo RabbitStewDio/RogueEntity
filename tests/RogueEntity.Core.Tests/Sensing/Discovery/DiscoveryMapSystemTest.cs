@@ -8,7 +8,6 @@ using RogueEntity.Core.Meta.ItemTraits;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Sensing;
-using RogueEntity.Core.Sensing.Cache;
 using RogueEntity.Core.Sensing.Common;
 using RogueEntity.Core.Sensing.Common.FloodFill;
 using RogueEntity.Core.Sensing.Common.Physics;
@@ -21,6 +20,7 @@ using RogueEntity.Core.Sensing.Sources.Heat;
 using RogueEntity.Core.Sensing.Sources.Noise;
 using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.Algorithms;
+using RogueEntity.Core.Utils.DataViews;
 
 namespace RogueEntity.Core.Tests.Sensing.Discovery
 {
@@ -130,9 +130,6 @@ namespace RogueEntity.Core.Tests.Sensing.Discovery
         ItemDeclarationId senseReceptorActive5;
 
         protected SenseMappingTestContext context;
-        protected TestTimeSource timeSource;
-        protected SensePropertiesSourceFixture senseProperties;
-        protected SenseStateCache senseCache;
         List<Action<SenseMappingTestContext>> senseSystemActions;
         DiscoveryMapSystem senseSystem;
 
@@ -182,16 +179,12 @@ namespace RogueEntity.Core.Tests.Sensing.Discovery
                                                                  .WithTrait(new NoiseDirectionSenseTrait<SenseMappingTestContext, ItemReference>(noiseSensePhysics, 10))
             );
 
-            timeSource = new TestTimeSource();
-            senseProperties = new SensePropertiesSourceFixture();
-            senseCache = new SenseStateCache(2, 64, 64);
-
             senseSystem = new DiscoveryMapSystem();
 
             senseSystemActions = CreateSystemActions();
 
             context.TryGetItemGridDataFor(TestMapLayers.One, out var mapData).Should().BeTrue();
-            mapData.TryGetMap(0, out _, MapAccess.ForWriting).Should().BeTrue();
+            mapData.TryGetWritableView(0, out _, DataViewCreateMode.CreateMissing).Should().BeTrue();
         }
 
         protected virtual List<Action<SenseMappingTestContext>> CreateSystemActions()

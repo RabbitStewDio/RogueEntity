@@ -5,7 +5,7 @@ using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Sensing.Common.Physics;
 using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.Algorithms;
-using RogueEntity.Core.Utils.Maps;
+using RogueEntity.Core.Utils.DataViews;
 using Rectangle = RogueEntity.Core.Utils.Rectangle;
 
 namespace RogueEntity.Core.Sensing.Common.FloodFill
@@ -61,7 +61,7 @@ namespace RogueEntity.Core.Sensing.Common.FloodFill
             this.ResistanceMap = resistanceMap ?? throw new ArgumentNullException(nameof(resistanceMap));
             var radiusInt = (int)Math.Ceiling(radius);
             this.Resize(new Rectangle(origin.X - radiusInt, origin.Y - radiusInt, 2 * radiusInt + 1, 2 * radiusInt + 1));
-            this.directions = Sense.DistanceCalculation.AsAdjacencyRule().DirectionsOfNeighbors();
+            this.directions = Sense.AdjacencyRule.DirectionsOfNeighbors();
             this.valid = true;
         }
 

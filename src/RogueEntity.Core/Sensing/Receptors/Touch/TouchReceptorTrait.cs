@@ -31,8 +31,9 @@ namespace RogueEntity.Core.Sensing.Receptors.Touch
         {
             base.Initialize(v, context, k, item);
             
-            var distanceCalculation = touchPhysics.TouchPhysics.DistanceMeasurement;
-            v.AssignComponent(k, new TouchSourceDefinition(new SenseSourceDefinition(distanceCalculation, Intensity), true));
+            v.AssignComponent(k, new TouchSourceDefinition(new SenseSourceDefinition(touchPhysics.TouchPhysics.DistanceMeasurement,
+                                                                                     touchPhysics.TouchPhysics.AdjacencyRule,
+                                                                                     Intensity), true));
             v.AssignComponent(k, new SenseSourceState<TouchSense>(Optional.Empty<SenseSourceData>(), SenseSourceDirtyState.UnconditionallyDirty, Position.Invalid));
         }
 
@@ -53,6 +54,17 @@ namespace RogueEntity.Core.Sensing.Receptors.Touch
         {
             v.AssignOrReplace(k, in t);
             changedK = k;
+            
+            if (!v.GetComponent(k, out SenseSourceState<TouchSense> s))
+            {
+                s = new SenseSourceState<TouchSense>(Optional.Empty<SenseSourceData>(), SenseSourceDirtyState.UnconditionallyDirty, Position.Invalid);
+                v.AssignComponent(k, in s);
+            }
+            else
+            {
+                s = s.WithDirtyState(SenseSourceDirtyState.UnconditionallyDirty);
+                v.ReplaceComponent(k, in s);
+            }
             return true;
         }
 

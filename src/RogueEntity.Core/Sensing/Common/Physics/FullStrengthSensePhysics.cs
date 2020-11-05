@@ -5,7 +5,7 @@ using RogueEntity.Core.Utils.Algorithms;
 
 namespace RogueEntity.Core.Sensing.Common.Physics
 {
-    public class FullStrengthSensePhysics: ISensePhysics
+    public class FullStrengthSensePhysics : ISensePhysics
     {
         readonly ISensePhysics physics;
 
@@ -14,10 +14,9 @@ namespace RogueEntity.Core.Sensing.Common.Physics
             this.physics = physics ?? throw new ArgumentNullException(nameof(physics));
         }
 
-        public DistanceCalculation DistanceMeasurement
-        {
-            get { return physics.DistanceMeasurement; }
-        }
+        public AdjacencyRule AdjacencyRule => physics.AdjacencyRule;
+
+        public DistanceCalculation DistanceMeasurement => physics.DistanceMeasurement;
 
         public float SignalRadiusForIntensity(float intensity)
         {
@@ -27,7 +26,7 @@ namespace RogueEntity.Core.Sensing.Common.Physics
         public float SignalStrengthAtDistance(float distance, float maxRadius)
         {
             var pct = distance / maxRadius;
-            var v = (float) Math.Ceiling(pct);
+            var v = (float)Math.Ceiling(pct);
             return v.Clamp(0, 1);
         }
     }

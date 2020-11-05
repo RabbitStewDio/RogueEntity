@@ -2,7 +2,6 @@ using System;
 using EnTTSharp.Entities;
 using JetBrains.Annotations;
 using RogueEntity.Core.Positioning;
-using RogueEntity.Core.Sensing.Common.Blitter;
 
 namespace RogueEntity.Core.Sensing.Receptors
 {
@@ -11,9 +10,9 @@ namespace RogueEntity.Core.Sensing.Receptors
         where TSourceSense : ISense
     {
         readonly ISenseReceptorBlitter receptorBlitter;
-        readonly SenseReceptorSystemBase<TTargetSense, TSourceSense> receptorSystem;
+        readonly SenseReceptorSystem<TTargetSense, TSourceSense> receptorSystem;
 
-        public SenseReceptorBlitterSystem(SenseReceptorSystemBase<TTargetSense, TSourceSense> receptorSystem,
+        public SenseReceptorBlitterSystem(SenseReceptorSystem<TTargetSense, TSourceSense> receptorSystem,
                                           [NotNull] ISenseReceptorBlitter receptorBlitter)
         {
             this.receptorSystem = receptorSystem;

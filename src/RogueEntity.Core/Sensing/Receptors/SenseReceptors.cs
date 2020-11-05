@@ -30,7 +30,7 @@ namespace RogueEntity.Core.Sensing.Receptors
                 var mapY = y + lastPosition.GridY;
                 
                 if (receptorSenseMap.TryQuery(mapX, mapY, out var intensity, out var senseDirection) &&
-                    receptorFieldOfView.TryQuery(x, y, out var perceptionStr, out var perceptionDir) &&
+                    receptorFieldOfView.TryQuery(x, y, out var perceptionStr, out _) &&
                     perceptionStr > 0)
                 {
                     var targetIntensity = intensity * (perceptionStr / maxPerception);

@@ -1,11 +1,10 @@
 using EnTTSharp.Entities;
 using RogueEntity.Core.Infrastructure.Modules;
-using RogueEntity.Core.Infrastructure.Time;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Sensing.Cache;
+using RogueEntity.Core.Sensing.Common;
 using RogueEntity.Core.Sensing.Common.FloodFill;
-using RogueEntity.Core.Sensing.Resistance;
-using RogueEntity.Core.Sensing.Resistance.Maps;
+using RogueEntity.Core.Sensing.Common.Physics;
 using RogueEntity.Core.Sensing.Sources.Smell;
 
 namespace RogueEntity.Core.Sensing.Receptors.Smell
@@ -35,7 +34,6 @@ namespace RogueEntity.Core.Sensing.Receptors.Smell
             IsFrameworkModule = true;
 
             DeclareDependencies(ModuleDependency.Of(PositionModule.ModuleId),
-                                ModuleDependency.Of(SensoryResistanceModule.ModuleId),
                                 ModuleDependency.Of(SmellSourceModule.ModuleId),
                                 ModuleDependency.Of(SensoryCacheModule.ModuleId));
 
@@ -88,35 +86,20 @@ namespace RogueEntity.Core.Sensing.Receptors.Smell
             ctx.Register(SenseSourceCollectionContinuousSystemId, 57500, RegisterCollectSenseSourcesSystem);
         }
 
-        protected override bool GetOrCreateLightSystem(IServiceResolver serviceResolver, out SenseReceptorSystemBase<SmellSense, SmellSense> ls)
+        protected override (ISensePropagationAlgorithm, ISensePhysics) GetOrCreatePhysics(IServiceResolver serviceResolver)
         {
             if (!serviceResolver.TryResolve(out ISmellSenseReceptorPhysicsConfiguration physics))
             {
-                if (!serviceResolver.TryResolve(out ISmellPhysicsConfiguration physicsConfig))
-                {
-                    ls = default;
-                    return false;
-                }
-
+                var physicsConfig = serviceResolver.Resolve<ISmellPhysicsConfiguration>();
                 if (!serviceResolver.TryResolve(out FloodFillWorkingDataSource ds))
                 {
                     ds = new FloodFillWorkingDataSource();
                 }
-                
+
                 physics = new SmellSenseReceptorPhysicsConfiguration(physicsConfig, ds);
             }
 
-            if (!serviceResolver.TryResolve(out ls))
-            {
-                ls = new SmellReceptorSystem(serviceResolver.ResolveToReference<ISensePropertiesSource>(),
-                                             serviceResolver.ResolveToReference<ISenseStateCacheProvider>(),
-                                             serviceResolver.ResolveToReference<IGlobalSenseStateCacheProvider>(),
-                                             serviceResolver.ResolveToReference<ITimeSource>(),
-                                             physics.SmellPhysics,
-                                             physics.CreateSmellSensorPropagationAlgorithm());
-            }
-
-            return true;
+            return (physics.CreateSmellSensorPropagationAlgorithm(), physics.SmellPhysics);
         }
     }
 }

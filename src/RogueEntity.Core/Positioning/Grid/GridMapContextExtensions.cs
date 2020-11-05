@@ -2,16 +2,15 @@ namespace RogueEntity.Core.Positioning.Grid
 {
     public static class GridMapContextExtensions
     {
-        public static bool IsValid<TGameContext, TItemId, TPosition>(this IGridMapDataContext<TGameContext, TItemId> context,
-                                                                     TPosition p)
+        public static bool IsValid<TItemId, TPosition>(this IGridMapDataContext<TItemId> context, TPosition p)
             where TPosition : IPosition
         {
             if (p.IsInvalid) return false;
-            if (!context.TryGetMap(p.GridZ, out _))
+            if (!context.TryGetView(p.GridZ, out _))
             {
                 return false;
             }
-            
+
             return true;
         }
     }

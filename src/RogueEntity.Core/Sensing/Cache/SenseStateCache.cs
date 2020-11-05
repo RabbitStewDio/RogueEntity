@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using RogueEntity.Core.Positioning;
+using RogueEntity.Core.Positioning.Caching;
 using RogueEntity.Core.Positioning.MapLayers;
 
 namespace RogueEntity.Core.Sensing.Cache
@@ -30,8 +31,8 @@ namespace RogueEntity.Core.Sensing.Cache
         readonly int tileSizeY;
         readonly int resolution;
         int globalLayerMask;
-        readonly Dictionary<Type, SenseStateCacheView> senseCaches;
-        readonly SenseStateCacheView globalSenseRecord;
+        readonly Dictionary<Type, GridCacheStateView> senseCaches;
+        readonly GridCacheStateView globalGridCacheRecord;
 
         public SenseStateCache(int resolution, int tileSizeX, int tileSizeY): this(resolution, 0, 0, tileSizeX, tileSizeY)
         {
@@ -57,17 +58,17 @@ namespace RogueEntity.Core.Sensing.Cache
             this.resolution = resolution;
             this.offsetX = offsetX;
             this.offsetY = offsetY;
-            senseCaches = new Dictionary<Type, SenseStateCacheView>();
-            globalSenseRecord = new SenseStateCacheView(resolution, offsetX, offsetY, tileSizeX, tileSizeY);
+            senseCaches = new Dictionary<Type, GridCacheStateView>();
+            globalGridCacheRecord = new GridCacheStateView(resolution, offsetX, offsetY, tileSizeX, tileSizeY);
         }
 
-        public bool TryGetGlobalSenseCache(out ISenseStateCacheView senseCache)
+        public bool TryGetGlobalSenseCache(out IGridStateCache senseCache)
         {
-            senseCache = globalSenseRecord;
+            senseCache = globalGridCacheRecord;
             return true;
         }
 
-        public bool TryGetSenseCache<TSense>(out ISenseStateCacheView senseCache)
+        public bool TryGetSenseCache<TSense>(out IGridStateCache senseCache)
         {
             if (senseCaches.TryGetValue(typeof(TSense), out var raw))
             {
@@ -95,14 +96,14 @@ namespace RogueEntity.Core.Sensing.Cache
         {
             if (!senseCaches.TryGetValue(senseType, out var record))
             {
-                record = new SenseStateCacheView(resolution, offsetX, offsetY, tileSizeX, tileSizeY);
+                record = new GridCacheStateView(resolution, offsetX, offsetY, tileSizeX, tileSizeY);
                 senseCaches[senseType] = record;
             }
         }
 
         public void MarkClean()
         {
-            globalSenseRecord.MarkClean();
+            globalGridCacheRecord.MarkClean();
             foreach (var record in senseCaches.Values)
             {
                 record.MarkClean();
@@ -133,7 +134,7 @@ namespace RogueEntity.Core.Sensing.Cache
             var lm = 1 << p.LayerId;
             if (p.LayerId == 0 || (globalLayerMask & lm) == lm)
             {
-                globalSenseRecord.MarkDirty(in p);
+                globalGridCacheRecord.MarkDirty(in p);
             }
         }
     }

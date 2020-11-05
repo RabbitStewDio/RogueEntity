@@ -1,11 +1,15 @@
 using System;
 using NUnit.Framework;
 using RogueEntity.Core.Positioning;
+using RogueEntity.Core.Sensing;
 using RogueEntity.Core.Sensing.Common;
 using RogueEntity.Core.Sensing.Common.Physics;
 using RogueEntity.Core.Sensing.Common.ShadowCast;
+using RogueEntity.Core.Sensing.Resistance;
+using RogueEntity.Core.Sensing.Resistance.Directions;
 using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.Algorithms;
+using RogueEntity.Core.Utils.DataViews;
 using static RogueEntity.Core.Tests.Sensing.SenseTestHelpers;
 
 namespace RogueEntity.Core.Tests.Sensing.Common
@@ -198,22 +202,26 @@ namespace RogueEntity.Core.Tests.Sensing.Common
 ";
 
         [Test]
-        [TestCase(nameof(PartialBlockedRoom), 9, 9, PartialBlockedRoom, PartialBlockedResult, PartialBlockedDirections)]
-        [TestCase(nameof(EmptyRoom), 9, 9, EmptyRoom, EmptyRoomResult, EmptyRoomDirections)]
-        [TestCase(nameof(RoomWithPillars), 9, 9, RoomWithPillars, RoomWithPillarsResult, RoomWithPillarsDirection)]
-        [TestCase(nameof(RoomDoorNear), 9, 9, RoomDoorNear, RoomDoorNearResult, RoomDoorNearDirection)]
-        [TestCase(nameof(RoomDoorFar), 9, 9, RoomDoorFar, RoomDoorFarResult, RoomDoorFarDirections)]
-        public void ValidateMap(string name, int width, int height, string resistanceMapText, string brightnessResultText, string directionResultText)
+        [TestCase(nameof(PartialBlockedRoom), 9, 9, DistanceCalculation.Euclid, AdjacencyRule.EightWay, PartialBlockedRoom, PartialBlockedResult, PartialBlockedDirections)]
+        [TestCase(nameof(EmptyRoom), 9, 9, DistanceCalculation.Euclid, AdjacencyRule.EightWay, EmptyRoom, EmptyRoomResult, EmptyRoomDirections)]
+        [TestCase(nameof(RoomWithPillars), 9, 9, DistanceCalculation.Euclid, AdjacencyRule.EightWay, RoomWithPillars, RoomWithPillarsResult, RoomWithPillarsDirection)]
+        [TestCase(nameof(RoomDoorNear), 9, 9, DistanceCalculation.Euclid, AdjacencyRule.EightWay, RoomDoorNear, RoomDoorNearResult, RoomDoorNearDirection)]
+        [TestCase(nameof(RoomDoorFar), 9, 9, DistanceCalculation.Euclid, AdjacencyRule.EightWay, RoomDoorFar, RoomDoorFarResult, RoomDoorFarDirections)]
+        public void ValidateMap(string name, int width, int height, DistanceCalculation dc, AdjacencyRule ar, string resistanceMapText, string brightnessResultText, string directionResultText)
         {
             var radius = width / 2;
-            var source = new SenseSourceDefinition(DistanceCalculation.Euclid, radius + 1);
+            var source = new SenseSourceDefinition(dc, ar,  radius + 1);
             var pos = new Position2D(width / 2, height / 2);
 
             var resistanceMap = Parse(resistanceMapText, out var roomArea);
             Console.WriteLine("Using room layout \n" + PrintMap(resistanceMap));
 
+            var directionalityMapSystem = new SensoryResistanceDirectionalitySystem<VisionSense>(resistanceMap.As3DMap(0).Transform(e => new SensoryResistance<VisionSense>(e)));
+            directionalityMapSystem.Process();
+            directionalityMapSystem.TryGetView(0, out var directionalityMap);
+
             var algo = new ShadowPropagationAlgorithm(LinearDecaySensePhysics.For(DistanceCalculation.Euclid), new ShadowPropagationResistanceDataSource());
-            var calculatedBrightnessMap = algo.Calculate(source, source.Intensity, pos, resistanceMap);
+            var calculatedBrightnessMap = algo.Calculate(source, source.Intensity, pos, resistanceMap, directionalityMap);
             Console.WriteLine(PrintMap(calculatedBrightnessMap, new Rectangle(new Position2D(0, 0), radius, radius)));
             Console.WriteLine(PrintMap(new SenseMapDirectionTestView(calculatedBrightnessMap), new Rectangle(new Position2D(0, 0), radius, radius)));
 

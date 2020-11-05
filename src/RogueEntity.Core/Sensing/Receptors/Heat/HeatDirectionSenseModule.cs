@@ -1,11 +1,10 @@
 using EnTTSharp.Entities;
 using RogueEntity.Core.Infrastructure.Modules;
-using RogueEntity.Core.Infrastructure.Time;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Sensing.Cache;
+using RogueEntity.Core.Sensing.Common;
 using RogueEntity.Core.Sensing.Common.FloodFill;
-using RogueEntity.Core.Sensing.Resistance;
-using RogueEntity.Core.Sensing.Resistance.Maps;
+using RogueEntity.Core.Sensing.Common.Physics;
 using RogueEntity.Core.Sensing.Sources.Heat;
 
 namespace RogueEntity.Core.Sensing.Receptors.Heat
@@ -35,7 +34,6 @@ namespace RogueEntity.Core.Sensing.Receptors.Heat
             IsFrameworkModule = true;
 
             DeclareDependencies(ModuleDependency.Of(PositionModule.ModuleId),
-                                ModuleDependency.Of(SensoryResistanceModule.ModuleId),
                                 ModuleDependency.Of(HeatSourceModule.ModuleId),
                                 ModuleDependency.Of(SensoryCacheModule.ModuleId));
 
@@ -87,35 +85,21 @@ namespace RogueEntity.Core.Sensing.Receptors.Heat
             var ctx = initializer.DeclareEntityContext<TItemId>();
             ctx.Register(SenseSourceCollectionContinuousSystemId, 57500, RegisterCollectSenseSourcesSystem);
         }
-
-        protected override bool GetOrCreateLightSystem(IServiceResolver serviceResolver, out SenseReceptorSystemBase<TemperatureSense, TemperatureSense> ls)
+        
+        protected override (ISensePropagationAlgorithm, ISensePhysics) GetOrCreatePhysics(IServiceResolver serviceResolver)
         {
-            if (!serviceResolver.TryResolve(out IHeatSenseReceptorPhysicsConfiguration physicsConfig))
+            if (!serviceResolver.TryResolve(out IHeatSenseReceptorPhysicsConfiguration physics))
             {
-                if (!serviceResolver.TryResolve(out IHeatPhysicsConfiguration heatPhysics))
-                {
-                    ls = default;
-                    return false;
-                }
-
+                var physicsConfig = serviceResolver.Resolve<IHeatPhysicsConfiguration>();
                 if (!serviceResolver.TryResolve(out FloodFillWorkingDataSource ds))
                 {
                     ds = new FloodFillWorkingDataSource();
                 }
-                
-                physicsConfig = new HeatSenseReceptorPhysicsConfiguration(heatPhysics, ds);
+
+                physics = new HeatSenseReceptorPhysicsConfiguration(physicsConfig, ds);
             }
 
-            if (!serviceResolver.TryResolve(out ls))
-            {
-                ls = new HeatReceptorSystem(serviceResolver.ResolveToReference<ISensePropertiesSource>(),
-                                            serviceResolver.ResolveToReference<ISenseStateCacheProvider>(),
-                                            serviceResolver.ResolveToReference<IGlobalSenseStateCacheProvider>(),
-                                            serviceResolver.ResolveToReference<ITimeSource>(),
-                                            physicsConfig);
-            }
-
-            return true;
+            return (physics.CreateHeatSensorPropagationAlgorithm(), physics.HeatPhysics);
         }
     }
 }

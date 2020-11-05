@@ -1,11 +1,15 @@
 using System;
 using NUnit.Framework;
 using RogueEntity.Core.Positioning;
+using RogueEntity.Core.Sensing;
 using RogueEntity.Core.Sensing.Common;
 using RogueEntity.Core.Sensing.Common.FloodFill;
 using RogueEntity.Core.Sensing.Common.Physics;
+using RogueEntity.Core.Sensing.Resistance;
+using RogueEntity.Core.Sensing.Resistance.Directions;
 using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.Algorithms;
+using RogueEntity.Core.Utils.DataViews;
 using static RogueEntity.Core.Tests.Sensing.SenseTestHelpers;
 
 namespace RogueEntity.Core.Tests.Sensing.Common
@@ -185,22 +189,63 @@ namespace RogueEntity.Core.Tests.Sensing.Common
   ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~
 ";
 
+        const string RoomWithPartialBlockResultCard = @"
+   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   
+   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   
+   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   
+   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   
+   .   ,   .   ,   .   ,   .   ,  2.000,  1.000,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   
+   .   ,   .   ,   .   ,   .   ,  3.000,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   
+   .   ,   .   ,   .   ,   .   ,  4.000,  5.000,  6.000,  7.000,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   
+   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,  8.000,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   
+   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,  3.500,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   
+   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,  2.500,  1.500,   .   ,   .   ,   .   ,   .   ,   .   ,   .   
+   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,  0.500,  1.500,  0.500,   .   ,   .   ,   .   ,   .   ,   .   ,   .   
+   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   
+   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   
+   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   
+   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   
+";
+
+        const string RoomWithPartialBlockDirectionsCard = @"
+  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ 
+  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ 
+  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ 
+  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ 
+  ~ ,  ~ ,  ~ ,  ~ , ┬  , ┤  ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ 
+  ~ ,  ~ ,  ~ ,  ~ , ┬  ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ 
+  ~ ,  ~ ,  ~ ,  ~ , ├  , ├  , ├  , ┬  ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ 
+  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ , ┼ *,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ 
+  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ , ┴  ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ 
+  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ , ┴  , ┤  ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ 
+  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ , ├  , ┴  , ┴  ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ 
+  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ 
+  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ 
+  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ 
+  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~
+";
+
         [Test]
-        [TestCase(nameof(EmptyRoom), 9, 9, DistanceCalculation.Euclid, EmptyRoom, EmptyRoomResult, EmptyRoomDirections)]
-        [TestCase(nameof(EmptyRoom), 9, 9, DistanceCalculation.Chebyshev, EmptyRoom, EmptyRoomResultCheb, EmptyRoomDirectionsCheb)]
-        [TestCase(nameof(RoomWithPillars), 15, 15, DistanceCalculation.Euclid, RoomWithPillars, RoomWithPillarsResult, RoomWithPillarDirections)]
-        [TestCase(nameof(RoomWithPartialBlock), 15, 15, DistanceCalculation.Euclid, RoomWithPartialBlock, RoomWithPartialBlockResult, RoomWithPartialBlockDirections)]
-        public void ValidateMap(string name, int width, int height, DistanceCalculation dc, string sourceText, string intensityResultText, string directionResultText)
+        [TestCase(nameof(EmptyRoom), 9, 9, DistanceCalculation.Euclid, AdjacencyRule.EightWay, EmptyRoom, EmptyRoomResult, EmptyRoomDirections)]
+        [TestCase(nameof(EmptyRoom), 9, 9, DistanceCalculation.Chebyshev, AdjacencyRule.EightWay, EmptyRoom, EmptyRoomResultCheb, EmptyRoomDirectionsCheb)]
+        [TestCase(nameof(RoomWithPillars), 15, 15, DistanceCalculation.Euclid, AdjacencyRule.EightWay, RoomWithPillars, RoomWithPillarsResult, RoomWithPillarDirections)]
+        [TestCase(nameof(RoomWithPartialBlock), 15, 15, DistanceCalculation.Euclid, AdjacencyRule.EightWay, RoomWithPartialBlock, RoomWithPartialBlockResult, RoomWithPartialBlockDirections)]
+        [TestCase(nameof(RoomWithPartialBlock), 15, 15, DistanceCalculation.Euclid, AdjacencyRule.Cardinals, RoomWithPartialBlock, RoomWithPartialBlockResultCard, RoomWithPartialBlockDirectionsCard)]
+        public void ValidateMap(string name, int width, int height, DistanceCalculation dc, AdjacencyRule ar, string sourceText, string intensityResultText, string directionResultText)
         {
             var radius = width / 2;
-            var source = new SenseSourceDefinition(dc, radius + 1);
+            var source = new SenseSourceDefinition(dc, ar, radius + 1);
             var pos = new Position2D(width / 2, height / 2);
 
             var resistanceMap = Parse(sourceText);
             Console.WriteLine("Using room layout \n" + PrintMap(resistanceMap, new Rectangle(0, 0, width, height)));
-
+            
+            var directionalityMapSystem = new SensoryResistanceDirectionalitySystem<VisionSense>(resistanceMap.As3DMap(0).Transform(e => new SensoryResistance<VisionSense>(e)));
+            directionalityMapSystem.Process();
+            directionalityMapSystem.TryGetView(0, out var directionalityMap);
+            
             var algo = new FloodFillPropagationAlgorithm(LinearDecaySensePhysics.For(dc), new FloodFillWorkingDataSource());
-            var calculatedResult = algo.Calculate(source, source.Intensity, pos, resistanceMap);
+            var calculatedResult = algo.Calculate(source, source.Intensity, pos, resistanceMap, directionalityMap);
             Console.WriteLine(PrintMap(calculatedResult, new Rectangle(new Position2D(0, 0), radius, radius)));
             Console.WriteLine(PrintMap(new SenseMapDirectionTestView(calculatedResult), new Rectangle(new Position2D(0, 0), radius, radius)));
 

@@ -2,11 +2,11 @@
 using FluentAssertions;
 using NUnit.Framework;
 using RogueEntity.Core.Meta.Items;
-using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Positioning.MapLayers;
 using RogueEntity.Core.Tests.Meta.Items;
 using RogueEntity.Core.Utils;
+using RogueEntity.Core.Utils.DataViews;
 
 namespace RogueEntity.Core.Tests.Positioning
 {
@@ -38,7 +38,7 @@ namespace RogueEntity.Core.Tests.Positioning
 
         protected override TestGridPositionContext CreateContext()
         {
-            return new TestGridPositionContext().WithMapLayer(itemLayer, new DefaultGridMapDataContext<TestGridPositionContext, ItemReference>(itemLayer, 100, 100));
+            return new TestGridPositionContext().WithMapLayer(itemLayer, new DefaultGridMapDataContext<ItemReference>(itemLayer, 100, 100));
         }
 
         protected override ReferenceItemGridPositionTrait<TestGridPositionContext, ItemReference> CreateTrait()
@@ -78,7 +78,7 @@ namespace RogueEntity.Core.Tests.Positioning
             var testData = ProduceTestData(ProduceItemRelations(item));
 
             Context.TryGetGridDataFor(itemLayer, out var mapLayerData).Should().BeTrue();
-            mapLayerData.TryGetMap(10, out var mapData, MapAccess.ForWriting).Should().BeTrue();
+            mapLayerData.TryGetWritableView(10, out var mapData, DataViewCreateMode.CreateMissing).Should().BeTrue();
             mapData[testData.ChangedValue.GridX, testData.ChangedValue.GridY] = ItemReference.FromBulkItem(1, 1); // write a dummy item into the map
 
             Context.ItemResolver.TryUpdateData(item, Context, testData.ChangedValue, out item).Should().BeFalse();
@@ -90,7 +90,7 @@ namespace RogueEntity.Core.Tests.Positioning
             if (pos.IsInvalid) return default;
             
             Context.TryGetGridDataFor(itemLayer, out var mapLayerData).Should().BeTrue();
-            mapLayerData.TryGetMap(pos.GridZ, out var mapData).Should().BeTrue();
+            mapLayerData.TryGetWritableView(pos.GridZ, out var mapData).Should().BeTrue();
             return mapData[pos.GridX, pos.GridY];
         }
 

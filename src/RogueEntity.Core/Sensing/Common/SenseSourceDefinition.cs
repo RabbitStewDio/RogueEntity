@@ -17,24 +17,29 @@ namespace RogueEntity.Core.Sensing.Common
         readonly DistanceCalculation distanceCalculation;
         [Key(1)]
         [DataMember(Order = 1)]
-        readonly float intensity;
+        readonly AdjacencyRule adjacencyRule;
         [Key(2)]
         [DataMember(Order = 2)]
-        readonly float angle;
+        readonly float intensity;
         [Key(3)]
         [DataMember(Order = 3)]
-        readonly float span;
+        readonly float angle;
         [Key(4)]
         [DataMember(Order = 4)]
+        readonly float span;
+        [Key(5)]
+        [DataMember(Order = 5)]
         readonly bool enabled;
 
         [SerializationConstructor]
         public SenseSourceDefinition(DistanceCalculation distanceCalculation,
+                                     AdjacencyRule adjacencyRule,
                                      float intensity,
                                      float angle = 0,
                                      float span = 360, 
                                      bool enabled = true)
         {
+            this.adjacencyRule = adjacencyRule;
             this.distanceCalculation = distanceCalculation;
             this.angle = (float)((angle > 360.0 || angle < 0) ? Math.IEEERemainder(angle, 360.0) : angle);
             this.span = span.Clamp(0, 360);
@@ -49,6 +54,10 @@ namespace RogueEntity.Core.Sensing.Common
         [IgnoreMember]
         [IgnoreDataMember]
         public DistanceCalculation DistanceCalculation => distanceCalculation;
+
+        [IgnoreMember]
+        [IgnoreDataMember]
+        public AdjacencyRule AdjacencyRule => adjacencyRule;
 
         /// <summary>
         /// Whether or not this source is enabled. If a source is disabled, the source does not calculate values and is effectively assumed to be "off".
@@ -90,9 +99,10 @@ namespace RogueEntity.Core.Sensing.Common
 
         public SenseSourceDefinition WithIntensity(float newIntensity)
         {
-            return new SenseSourceDefinition(distanceCalculation, newIntensity, angle, span);
+            return new SenseSourceDefinition(distanceCalculation, adjacencyRule, newIntensity, angle, span);
         }
-        
+
+
         public bool Equals(SenseSourceDefinition other)
         {
             return distanceCalculation == other.distanceCalculation && intensity.Equals(other.intensity) && angle.Equals(other.angle) && span.Equals(other.span) && enabled == other.enabled;

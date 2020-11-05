@@ -5,20 +5,35 @@ using RogueEntity.Core.Utils;
 
 namespace RogueEntity.Core.Positioning.Grid
 {
-    public class DefaultGridPositionContextBackend<TGameContext, TItemId> : IGridMapContext<TGameContext, TItemId>
+    public class DefaultGridPositionContextBackend<TGameContext, TItemId> : IGridMapContext<TItemId>
     {
-        readonly Dictionary<MapLayer, IGridMapDataContext<TGameContext, TItemId>> mapLayerData;
-        readonly Dictionary<MapLayer, IGridMapRawDataContext<TItemId>> mapLayerDataRaw;
+        readonly Dictionary<MapLayer, IGridMapDataContext<TItemId>> mapLayerData;
         readonly List<MapLayer> mapLayers;
 
-        public DefaultGridPositionContextBackend()
+        public DefaultGridPositionContextBackend(): this(0, 0, 64, 64)
         {
+        }
+
+        public DefaultGridPositionContextBackend(int tileSizeX, int tileSizeY): this(0, 0, tileSizeX, tileSizeY)
+        {
+        }
+
+        public DefaultGridPositionContextBackend(int offsetX, int offsetY, int tileSizeX, int tileSizeY)
+        {
+            OffsetX = offsetX;
+            OffsetY = offsetY;
+            TileSizeX = tileSizeX;
+            TileSizeY = tileSizeY;
             mapLayers = new List<MapLayer>();
-            mapLayerData = new Dictionary<MapLayer, IGridMapDataContext<TGameContext, TItemId>>();
-            mapLayerDataRaw = new Dictionary<MapLayer,IGridMapRawDataContext<TItemId>>();
+            mapLayerData = new Dictionary<MapLayer, IGridMapDataContext<TItemId>>();
         }
 
-        public DefaultGridPositionContextBackend<TGameContext, TItemId> WithMapLayer(MapLayer layer, IGridMapDataContext<TGameContext, TItemId> data)
+        public int OffsetX { get; }
+        public int OffsetY { get; }
+        public int TileSizeX { get; }
+        public int TileSizeY { get; }
+
+        public DefaultGridPositionContextBackend<TGameContext, TItemId> WithMapLayer(MapLayer layer, IGridMapDataContext<TItemId> data)
         {
             if (mapLayerData.ContainsKey(layer))
             {
@@ -27,31 +42,17 @@ namespace RogueEntity.Core.Positioning.Grid
 
             mapLayers.Add(layer);
             mapLayerData[layer] = data;
-            return this;
-        }
-
-        public DefaultGridPositionContextBackend<TGameContext, TItemId> WithRawMapLayer<TGridMapDataContext>(MapLayer layer, TGridMapDataContext data)
-            where TGridMapDataContext: IGridMapDataContext<TGameContext, TItemId>, IGridMapRawDataContext<TItemId>
-        {
-            if (mapLayerData.ContainsKey(layer))
-            {
-                throw new ArgumentException($"Layer {layer} has already been declared.");
-            }
-
-            mapLayers.Add(layer);
-            mapLayerData[layer] = data;
-            mapLayerDataRaw[layer] = data;
             return this;
         }
 
         public DefaultGridPositionContextBackend<TGameContext, TItemId> WithDefaultMapLayer(MapLayer layer, int offsetX, int offsetY, int tileWidth, int tileHeight)
         {
-            return WithRawMapLayer(layer, new DefaultGridMapDataContext<TGameContext, TItemId>(layer, offsetX, offsetY, tileWidth, tileHeight));
+            return WithMapLayer(layer, new DefaultGridMapDataContext<TItemId>(layer, offsetX, offsetY, tileWidth, tileHeight));
         }
         
         public DefaultGridPositionContextBackend<TGameContext, TItemId> WithDefaultMapLayer(MapLayer layer, int tileWidth = 64, int tileHeight = 64)
         {
-            return WithRawMapLayer(layer, new DefaultGridMapDataContext<TGameContext, TItemId>(layer, tileWidth, tileHeight));
+            return WithMapLayer(layer, new DefaultGridMapDataContext<TItemId>(layer, tileWidth, tileHeight));
         }
 
         public ReadOnlyListWrapper<MapLayer> GridLayers()
@@ -59,15 +60,9 @@ namespace RogueEntity.Core.Positioning.Grid
             return mapLayers;
         }
 
-        public bool TryGetGridDataFor(MapLayer layer, out IGridMapDataContext<TGameContext, TItemId> data)
+        public bool TryGetGridDataFor(MapLayer layer, out IGridMapDataContext<TItemId> data)
         {
             return mapLayerData.TryGetValue(layer, out data);
         }
-
-        public bool TryGetGridRawDataFor(MapLayer layer, out IGridMapRawDataContext<TItemId> data)
-        {
-            return mapLayerDataRaw.TryGetValue(layer, out data);
-        }
-
     }
 }

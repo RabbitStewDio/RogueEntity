@@ -1,5 +1,6 @@
+using RogueEntity.Core.Directionality;
 using RogueEntity.Core.Positioning;
-using RogueEntity.Core.Utils.Maps;
+using RogueEntity.Core.Utils.DataViews;
 
 namespace RogueEntity.Core.Sensing.Common
 {
@@ -7,8 +8,9 @@ namespace RogueEntity.Core.Sensing.Common
     {
         SenseSourceData Calculate<TResistanceMap>(in SenseSourceDefinition sense,
                                                   float intensity,
-                                                  in Position2D position, 
+                                                  in Position2D position,
                                                   in TResistanceMap resistanceMap,
+                                                  IReadOnlyView2D<DirectionalityInformation> directionView,
                                                   SenseSourceData data = null)
             where TResistanceMap : IReadOnlyView2D<float>;
     }

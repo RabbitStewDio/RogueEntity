@@ -1,5 +1,6 @@
 ﻿using System.Runtime.Serialization;
 using MessagePack;
+using RogueEntity.Core.Utils.DataViews;
 
 namespace RogueEntity.Core.Utils.Maps
 {

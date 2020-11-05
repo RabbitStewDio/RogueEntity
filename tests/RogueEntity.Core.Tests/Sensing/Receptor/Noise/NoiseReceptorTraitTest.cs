@@ -54,9 +54,15 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Noise
         protected override IItemComponentTestDataFactory<SensoryReceptorData<NoiseSense, NoiseSense>> ProduceTestData(EntityRelations<ActorReference> relations)
         {
             return new ItemComponentTestDataFactory<SensoryReceptorData<NoiseSense, NoiseSense>>(
-                new SensoryReceptorData<NoiseSense, NoiseSense>(new SenseSourceDefinition(physics.NoisePhysics.DistanceMeasurement, 1.9f), true),
-                new SensoryReceptorData<NoiseSense, NoiseSense>(new SenseSourceDefinition(physics.NoisePhysics.DistanceMeasurement, 10), true),
-                new SensoryReceptorData<NoiseSense, NoiseSense>(new SenseSourceDefinition(physics.NoisePhysics.DistanceMeasurement, 12), false)
+                new SensoryReceptorData<NoiseSense, NoiseSense>(new SenseSourceDefinition(physics.NoisePhysics.DistanceMeasurement,
+                                                                                          physics.NoisePhysics.AdjacencyRule,
+                                                                                          1.9f), true),
+                new SensoryReceptorData<NoiseSense, NoiseSense>(new SenseSourceDefinition(physics.NoisePhysics.DistanceMeasurement, 
+                                                                                          physics.NoisePhysics.AdjacencyRule,
+                                                                                          10), true),
+                new SensoryReceptorData<NoiseSense, NoiseSense>(new SenseSourceDefinition(physics.NoisePhysics.DistanceMeasurement, 
+                                                                                          physics.NoisePhysics.AdjacencyRule,
+                                                                                          12), false)
             ).WithRemoveProhibited();
         }
     }

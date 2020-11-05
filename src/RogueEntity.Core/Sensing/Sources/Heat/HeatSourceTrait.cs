@@ -30,7 +30,9 @@ namespace RogueEntity.Core.Sensing.Sources.Heat
         {
             if (baseTemperature.TryGetValue(out var value))
             {
-                v.AssignComponent(k, new HeatSourceDefinition(new SenseSourceDefinition(physicsConfiguration.HeatPhysics.DistanceMeasurement, value.ToKelvin()), true));
+                v.AssignComponent(k, new HeatSourceDefinition(new SenseSourceDefinition(physicsConfiguration.HeatPhysics.DistanceMeasurement, 
+                                                                                        physicsConfiguration.HeatPhysics.AdjacencyRule, 
+                                                                                        value.ToKelvin()), true));
                 v.AssignComponent(k, new SenseSourceState<TemperatureSense>(Optional.Empty<SenseSourceData>(), SenseSourceDirtyState.UnconditionallyDirty, Position.Invalid));
             }
         }
@@ -73,7 +75,9 @@ namespace RogueEntity.Core.Sensing.Sources.Heat
                 return TryUpdate(v, context, k, h.WithSenseSource(h.SenseDefinition.WithIntensity(t.ToKelvin())), out changedK);
             }
 
-            var val = new HeatSourceDefinition(new SenseSourceDefinition(physicsConfiguration.HeatPhysics.DistanceMeasurement, t.ToKelvin()), true);
+            var val = new HeatSourceDefinition(new SenseSourceDefinition(physicsConfiguration.HeatPhysics.DistanceMeasurement,
+                                                                         physicsConfiguration.HeatPhysics.AdjacencyRule,
+                                                                         t.ToKelvin()), true);
             return TryUpdate(v, context, k, in val, out changedK);
         }
 
@@ -89,7 +93,7 @@ namespace RogueEntity.Core.Sensing.Sources.Heat
             else
             {
                 s = s.WithDirtyState(SenseSourceDirtyState.UnconditionallyDirty);
-                v.AssignComponent(k, in s);
+                v.ReplaceComponent(k, in s);
             }
 
             changedK = k;

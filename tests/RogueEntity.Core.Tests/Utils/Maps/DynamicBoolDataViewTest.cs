@@ -1,7 +1,7 @@
 using FluentAssertions;
 using NUnit.Framework;
 using RogueEntity.Core.Utils;
-using RogueEntity.Core.Utils.Maps;
+using RogueEntity.Core.Utils.DataViews;
 
 namespace RogueEntity.Core.Tests.Utils.Maps
 {

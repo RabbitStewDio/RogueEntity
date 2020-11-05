@@ -5,12 +5,12 @@ using RogueEntity.Core.Sensing.Resistance.Maps;
 
 namespace RogueEntity.Core.Sensing.Cache
 {
-    public class SensePropertiesConnectorSystem<TGameContext>
+    public class SensePropertiesConnectorSystem<TGameContext, TSense>
     {
-        readonly SensePropertiesSystem<TGameContext> sensePropertiesSystem;
+        readonly SensePropertiesSystem<TGameContext, TSense> sensePropertiesSystem;
         readonly SenseStateCache cache;
 
-        public SensePropertiesConnectorSystem([NotNull] SensePropertiesSystem<TGameContext> sensePropertiesSystem,
+        public SensePropertiesConnectorSystem([NotNull] SensePropertiesSystem<TGameContext, TSense> sensePropertiesSystem,
                                               [NotNull] SenseStateCache cache)
         {
             this.sensePropertiesSystem = sensePropertiesSystem ?? throw new ArgumentNullException(nameof(sensePropertiesSystem));

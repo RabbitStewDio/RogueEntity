@@ -15,7 +15,7 @@ using RogueEntity.Core.Sensing.Resistance;
 using RogueEntity.Core.Sensing.Sources;
 using RogueEntity.Core.Tests.Sensing.Sources;
 using RogueEntity.Core.Utils.Algorithms;
-using RogueEntity.Core.Utils.Maps;
+using RogueEntity.Core.Utils.DataViews;
 
 namespace RogueEntity.Core.Tests.Sensing.Map
 {
@@ -29,13 +29,9 @@ namespace RogueEntity.Core.Tests.Sensing.Map
         ItemDeclarationId senseSourceActive5;
         ItemDeclarationId senseSourceInactive5;
 
-        ItemDeclarationId senseReceptorActive10;
-        ItemDeclarationId senseReceptorActive5;
-        ItemDeclarationId senseReceptorInactive5;
-
         protected SenseMappingTestContext context;
         protected TestTimeSource timeSource;
-        protected SensePropertiesSourceFixture senseProperties;
+        protected SensePropertiesSourceFixture<TSourceSense> senseProperties;
         protected SenseStateCache senseCache;
         List<Action<SenseMappingTestContext>> senseSystemActions;
         SenseMappingSystemBase<TReceptorSense, TSourceSense, TSenseSourceDefinition> senseSystem;
@@ -67,18 +63,8 @@ namespace RogueEntity.Core.Tests.Sensing.Map
                                                                  .WithTrait(new ReferenceItemGridPositionTrait<SenseMappingTestContext, ItemReference>(context.ItemResolver, TestMapLayers.One))
                                                                  .DoWith(x => AttachTrait(x)));
 
-            senseReceptorActive10 = context.ItemRegistry.Register(new ReferenceItemDeclaration<SenseMappingTestContext, ItemReference>("SenseReceptor-Active-10")
-                                                                  .WithTrait(new ReferenceItemGridPositionTrait<SenseMappingTestContext, ItemReference>(context.ItemResolver, TestMapLayers.One))
-                                                                  .DoWith(x => AttachTrait(x)));
-            senseReceptorActive5 = context.ItemRegistry.Register(new ReferenceItemDeclaration<SenseMappingTestContext, ItemReference>("SenseReceptor-Active-5")
-                                                                 .WithTrait(new ReferenceItemGridPositionTrait<SenseMappingTestContext, ItemReference>(context.ItemResolver, TestMapLayers.One))
-                                                                 .DoWith(x => AttachTrait(x)));
-            senseReceptorInactive5 = context.ItemRegistry.Register(new ReferenceItemDeclaration<SenseMappingTestContext, ItemReference>("SenseReceptor-Inactive-5")
-                                                                   .WithTrait(new ReferenceItemGridPositionTrait<SenseMappingTestContext, ItemReference>(context.ItemResolver, TestMapLayers.One))
-                                                                   .DoWith(x => AttachTrait(x)));
-
             timeSource = new TestTimeSource();
-            senseProperties = new SensePropertiesSourceFixture();
+            senseProperties = new SensePropertiesSourceFixture<TSourceSense>();
             senseCache = new SenseStateCache(2, 64, 64);
 
             senseSystem = CreateSystem();
@@ -86,10 +72,10 @@ namespace RogueEntity.Core.Tests.Sensing.Map
             senseSystemActions = CreateSystemActions();
 
             context.TryGetItemGridDataFor(TestMapLayers.One, out var mapData).Should().BeTrue();
-            mapData.TryGetMap(0, out _, MapAccess.ForWriting).Should().BeTrue();
+            mapData.TryGetWritableView(0, out _, DataViewCreateMode.CreateMissing).Should().BeTrue();
         }
         
-        protected abstract SensoryResistance Convert(float f);
+        protected abstract SensoryResistance<TSourceSense> Convert(float f);
 
         protected abstract ReferenceItemDeclaration<SenseMappingTestContext, ItemReference> AttachTrait(ReferenceItemDeclaration<SenseMappingTestContext, ItemReference> decl);
 

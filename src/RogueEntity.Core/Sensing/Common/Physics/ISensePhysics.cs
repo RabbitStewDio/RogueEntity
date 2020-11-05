@@ -4,6 +4,7 @@ namespace RogueEntity.Core.Sensing.Common.Physics
 {
     public interface ISensePhysics
     {
+        AdjacencyRule AdjacencyRule { get; }
         DistanceCalculation DistanceMeasurement { get; }
         
         /// <summary>

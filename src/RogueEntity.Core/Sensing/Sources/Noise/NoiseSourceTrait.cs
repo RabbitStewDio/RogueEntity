@@ -54,7 +54,9 @@ namespace RogueEntity.Core.Sensing.Sources.Noise
 
         public bool TryUpdate(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, in NoiseClip t, out TItemId changedK)
         {
-            v.AssignOrReplace(k, new NoiseSourceDefinition(new SenseSourceDefinition(physics.NoisePhysics.DistanceMeasurement, t.Intensity), t, true));
+            v.AssignOrReplace(k, new NoiseSourceDefinition(new SenseSourceDefinition(physics.NoisePhysics.DistanceMeasurement,
+                                                                                     physics.NoisePhysics.AdjacencyRule, 
+                                                                                     t.Intensity), t, true));
 
             if (!v.GetComponent(k, out SenseSourceState<NoiseSense> s))
             {
@@ -64,7 +66,7 @@ namespace RogueEntity.Core.Sensing.Sources.Noise
             else
             {
                 s = s.WithDirtyState(SenseSourceDirtyState.UnconditionallyDirty);
-                v.AssignComponent(k, in s);
+                v.ReplaceComponent(k, in s);
             }
 
             changedK = k;

@@ -2,7 +2,7 @@ using System.Runtime.Serialization;
 using EnTTSharp.Entities.Attributes;
 using MessagePack;
 using RogueEntity.Core.Sensing.Common;
-using RogueEntity.Core.Utils.Maps;
+using RogueEntity.Core.Utils.DataViews;
 using Rectangle = RogueEntity.Core.Utils.Rectangle;
 
 namespace RogueEntity.Core.Sensing.Receptors.Light

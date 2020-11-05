@@ -42,9 +42,16 @@ namespace RogueEntity.Core.Tests.Sensing.Sources.Light
 
         protected override IItemComponentTestDataFactory<LightSourceDefinition> ProduceTestData(EntityRelations<ActorReference> relations)
         {
-            return new ItemComponentTestDataFactory<LightSourceDefinition>(new LightSourceDefinition(new SenseSourceDefinition(physics.LightPhysics.DistanceMeasurement, 1.9f), 0.5f, 0.3f),
-                                                                           new LightSourceDefinition(new SenseSourceDefinition(physics.LightPhysics.DistanceMeasurement, 10), 0.1f, 1f),
-                                                                           new LightSourceDefinition(new SenseSourceDefinition(physics.LightPhysics.DistanceMeasurement, 12), 0.25f, 0.33f, false)
+            return new ItemComponentTestDataFactory<LightSourceDefinition>(
+                new LightSourceDefinition(new SenseSourceDefinition(physics.LightPhysics.DistanceMeasurement, 
+                                                                    physics.LightPhysics.AdjacencyRule,
+                                                                    1.9f), 0.5f, 0.3f),
+                new LightSourceDefinition(new SenseSourceDefinition(physics.LightPhysics.DistanceMeasurement, 
+                                                                    physics.LightPhysics.AdjacencyRule,
+                                                                    10), 0.1f, 1f),
+                new LightSourceDefinition(new SenseSourceDefinition(physics.LightPhysics.DistanceMeasurement, 
+                                                                    physics.LightPhysics.AdjacencyRule,
+                                                                    12), 0.25f, 0.33f, false)
             );
         }
     }

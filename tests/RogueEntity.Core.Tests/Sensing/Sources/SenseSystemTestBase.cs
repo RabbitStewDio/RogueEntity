@@ -3,16 +3,20 @@ using System.Collections.Generic;
 using EnTTSharp.Entities.Systems;
 using FluentAssertions;
 using NUnit.Framework;
+using RogueEntity.Core.Infrastructure.Time;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Sensing;
 using RogueEntity.Core.Sensing.Cache;
 using RogueEntity.Core.Sensing.Common;
+using RogueEntity.Core.Sensing.Common.Physics;
 using RogueEntity.Core.Sensing.Resistance;
+using RogueEntity.Core.Sensing.Resistance.Directions;
 using RogueEntity.Core.Sensing.Sources;
 using RogueEntity.Core.Tests.Sensing.Common;
-using RogueEntity.Core.Utils.Maps;
+using RogueEntity.Core.Utils;
+using RogueEntity.Core.Utils.DataViews;
 
 namespace RogueEntity.Core.Tests.Sensing.Sources
 {
@@ -26,28 +30,38 @@ namespace RogueEntity.Core.Tests.Sensing.Sources
     }
     
     public abstract class SenseSystemTestBase<TSense, 
-                                              TSenseSystem, 
                                               TSenseSourceDefinition>
         where TSense : ISense
-        where TSenseSystem : SenseSystemBase<TSense, TSenseSourceDefinition>
         where TSenseSourceDefinition : ISenseDefinition
     {
         protected TestTimeSource timeSource;
-        protected SensePropertiesSourceFixture senseProperties;
+        protected SensePropertiesSourceFixture<TSense> senseProperties;
         protected SenseStateCache senseCache;
         protected SenseMappingTestContext context;
-        protected TSenseSystem senseSystem;
+        protected SenseSourceSystem<TSense, TSenseSourceDefinition> senseSystem;
         protected List<Action<SenseMappingTestContext>> senseSystemActions;
         protected ItemDeclarationId senseActive10;
         protected ItemDeclarationId senseActive5;
         protected ItemDeclarationId senseInactive5;
-
-        protected abstract SensoryResistance Convert(float f);
+        protected SensoryResistanceDirectionalitySystem<TSense> directionalitySystem; 
+        protected virtual SensoryResistance<TSense> Convert(float f) => new SensoryResistance<TSense>(Percentage.Of(f));
 
         protected abstract ReferenceItemDeclaration<SenseMappingTestContext, ItemReference> AttachTrait(ReferenceItemDeclaration<SenseMappingTestContext, ItemReference> decl);
 
-        protected abstract TSenseSystem CreateSystem();
+        protected virtual SenseSourceSystem<TSense, TSenseSourceDefinition> CreateSystem()
+        {
+            var physics = GetOrCreateSensePhysics();
+            return new SenseSourceSystem<TSense, TSenseSourceDefinition>(senseProperties.AsLazy<IReadOnlyDynamicDataView3D<SensoryResistance<TSense>>>(),
+                                                                       senseCache.AsLazy<IGlobalSenseStateCacheProvider>(),
+                                                                       timeSource.AsLazy<ITimeSource>(),
+                                                                       directionalitySystem,
+                                                                       senseCache,
+                                                                       physics.Item1,
+                                                                       physics.Item2);
+        }
 
+        protected abstract (ISensePropagationAlgorithm, ISensePhysics) GetOrCreateSensePhysics();
+        
         protected virtual List<Action<SenseMappingTestContext>> CreateSystemActions()
         {
             var ls = senseSystem;
@@ -56,6 +70,8 @@ namespace RogueEntity.Core.Tests.Sensing.Sources
             return new List<Action<SenseMappingTestContext>>
             {
                 ls.BeginSenseCalculation,
+                
+                directionalitySystem.ProcessSystem,
 
                 builder.CreateSystem<TSenseSourceDefinition, SenseSourceState<TSense>, EntityGridPosition>(ls.FindDirtySenseSources),
                 Guard(builder.CreateSystem<TSenseSourceDefinition, SenseSourceState<TSense>, SenseDirtyFlag<TSense>, ObservedSenseSource<TSense>>(ls.RefreshLocalSenseState)),
@@ -91,7 +107,8 @@ namespace RogueEntity.Core.Tests.Sensing.Sources
                                                            .DoWith(x => AttachTrait(x)));
 
             timeSource = new TestTimeSource();
-            senseProperties = new SensePropertiesSourceFixture();
+            senseProperties = new SensePropertiesSourceFixture<TSense>();
+            directionalitySystem = new SensoryResistanceDirectionalitySystem<TSense>(senseProperties);
             
             senseCache = new SenseStateCache(2, 64, 64);
 
@@ -101,7 +118,7 @@ namespace RogueEntity.Core.Tests.Sensing.Sources
             senseSystemActions = CreateSystemActions();
 
             context.TryGetItemGridDataFor(TestMapLayers.One, out var mapData).Should().BeTrue();
-            mapData.TryGetMap(0, out _, MapAccess.ForWriting).Should().BeTrue();
+            mapData.TryGetWritableView(0, out _, DataViewCreateMode.CreateMissing).Should().BeTrue();
         }
 
         [TearDown]

@@ -43,9 +43,14 @@ namespace RogueEntity.Core.Tests.Sensing.Sources.Heat
 
         protected override IItemComponentTestDataFactory<HeatSourceDefinition> ProduceTestData(EntityRelations<ActorReference> relations)
         {
-            return new ItemComponentTestDataFactory<HeatSourceDefinition>(default,
-                                                                          new HeatSourceDefinition(new SenseSourceDefinition(physics.HeatPhysics.DistanceMeasurement, 10), true),
-                                                                          new HeatSourceDefinition(new SenseSourceDefinition(physics.HeatPhysics.DistanceMeasurement, 12), false)
+            return new ItemComponentTestDataFactory<HeatSourceDefinition>(
+                default,
+                new HeatSourceDefinition(new SenseSourceDefinition(physics.HeatPhysics.DistanceMeasurement,
+                                                                   physics.HeatPhysics.AdjacencyRule,
+                                                                   10), true),
+                new HeatSourceDefinition(new SenseSourceDefinition(physics.HeatPhysics.DistanceMeasurement,
+                                                                   physics.HeatPhysics.AdjacencyRule,
+                                                                   12), false)
             );
         }
     }

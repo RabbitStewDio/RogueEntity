@@ -5,7 +5,7 @@ using System.Runtime.Serialization;
 using EnTTSharp.Entities.Attributes;
 using JetBrains.Annotations;
 using MessagePack;
-using RogueEntity.Core.Utils.Maps;
+using RogueEntity.Core.Utils.DataViews;
 
 namespace RogueEntity.Core.Sensing.Discovery
 {

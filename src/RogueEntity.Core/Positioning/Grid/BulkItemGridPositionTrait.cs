@@ -4,6 +4,7 @@ using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Meta.ItemTraits;
 using RogueEntity.Core.Positioning.MapLayers;
 using RogueEntity.Core.Utils;
+using RogueEntity.Core.Utils.DataViews;
 using Serilog;
 
 namespace RogueEntity.Core.Positioning.Grid
@@ -11,7 +12,7 @@ namespace RogueEntity.Core.Positioning.Grid
     public class BulkItemGridPositionTrait<TGameContext, TItemId> : IBulkItemTrait<TGameContext, TItemId>,
                                                                     IItemComponentTrait<TGameContext, TItemId, EntityGridPosition>,
                                                                     IItemComponentTrait<TGameContext, TItemId, MapLayerPreference>
-        where TGameContext : IGridMapContext<TGameContext, TItemId>
+        where TGameContext : IGridMapContext<TItemId>
         where TItemId : IBulkDataStorageKey<TItemId>
     {
         readonly IItemResolver<TGameContext, TItemId> itemResolver;
@@ -85,9 +86,9 @@ namespace RogueEntity.Core.Positioning.Grid
             }
 
             if (!context.TryGetGridDataFor(layerId, out var mapDataContext) ||
-                !mapDataContext.TryGetMap(p.GridZ, out var map, MapAccess.ForWriting))
+                !mapDataContext.TryGetWritableView(p.GridZ, out var map, DataViewCreateMode.CreateMissing))
             {
-                logger.Warning("Invalid layer {Layer} for unresolvabled map data for item {ItemId}", p.LayerId, targetItem);
+                logger.Warning("Invalid layer {Layer} for unresolvable map data for item {ItemId}", p.LayerId, targetItem);
                 return false;
             }
 

@@ -3,7 +3,6 @@ using NUnit.Framework;
 using RogueEntity.Core.Infrastructure.Time;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Sensing;
-using RogueEntity.Core.Sensing.Common.Blitter;
 using RogueEntity.Core.Sensing.Common.Physics;
 using RogueEntity.Core.Sensing.Map;
 using RogueEntity.Core.Sensing.Map.Light;
@@ -84,24 +83,15 @@ namespace RogueEntity.Core.Tests.Sensing.Map.Light
             base.PerformTest(id, sourceText, expectedGlobalSenseMap);
         }
 
-        protected override SensoryResistance Convert(float f)
+        protected override SensoryResistance<VisionSense> Convert(float f)
         {
-            return new SensoryResistance(Percentage.Of(f), Percentage.Empty, Percentage.Empty, Percentage.Empty);
+            return new SensoryResistance<VisionSense>(Percentage.Of(f));
         }
 
         protected override ReferenceItemDeclaration<SenseMappingTestContext, ItemReference> AttachTrait(ReferenceItemDeclaration<SenseMappingTestContext, ItemReference> decl)
         {
             switch (decl.Id.Id)
             {
-                case "SenseReceptor-Active-10":
-                    decl.WithTrait(new VisionSenseTrait<SenseMappingTestContext, ItemReference>(physics, 10));
-                    return decl;
-                case "SenseReceptor-Active-5":
-                    decl.WithTrait(new VisionSenseTrait<SenseMappingTestContext, ItemReference>(physics, 5));
-                    return decl;
-                case "SenseReceptor-Inactive-5":
-                    decl.WithTrait(new VisionSenseTrait<SenseMappingTestContext, ItemReference>(physics, 5, false));
-                    return decl;
                 case "SenseSource-Active-10":
                     decl.WithTrait(new LightSourceTrait<SenseMappingTestContext, ItemReference>(sourcePhysics, 10));
                     return decl;

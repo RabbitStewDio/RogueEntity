@@ -4,17 +4,18 @@ using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Meta.ItemTraits;
 using RogueEntity.Core.Sensing;
 using RogueEntity.Core.Sensing.Cache;
+using RogueEntity.Core.Sensing.Common;
 using RogueEntity.Core.Sensing.Common.Physics;
 using RogueEntity.Core.Sensing.Resistance;
-using RogueEntity.Core.Sensing.Resistance.Maps;
+using RogueEntity.Core.Sensing.Sources;
 using RogueEntity.Core.Sensing.Sources.Heat;
-using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.Algorithms;
+using RogueEntity.Core.Utils.DataViews;
 
 namespace RogueEntity.Core.Tests.Sensing.Sources.Heat
 {
     [TestFixture]
-    public class HeatSystemTest : SenseSystemTestBase<TemperatureSense, HeatSystem, HeatSourceDefinition>
+    public class HeatSystemTest : SenseSystemTestBase<TemperatureSense, HeatSourceDefinition>
     {
         const string EmptyRoom = @"
 // 11x11; an empty room
@@ -57,20 +58,22 @@ namespace RogueEntity.Core.Tests.Sensing.Sources.Heat
    .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   
 ";
 
-        HeatPhysicsConfiguration lightPhysics;
+        HeatPhysicsConfiguration physics;
 
-        protected override SensoryResistance Convert(float f)
+        protected override (ISensePropagationAlgorithm, ISensePhysics) GetOrCreateSensePhysics()
         {
-            return new SensoryResistance(Percentage.Empty, Percentage.Empty, Percentage.Of(f), Percentage.Empty);
+            return (physics.CreateHeatPropagationAlgorithm(), physics.HeatPhysics);
         }
 
-        protected override HeatSystem CreateSystem()
+        protected override SenseSourceSystem<TemperatureSense, HeatSourceDefinition> CreateSystem()
         {
-            return new HeatSystem(senseProperties.AsLazy<ISensePropertiesSource>(),
-                                   senseCache.AsLazy<IGlobalSenseStateCacheProvider>(),
-                                   timeSource.AsLazy<ITimeSource>(),
-                                   senseCache,
-                                   lightPhysics.CreateHeatPropagationAlgorithm(), lightPhysics);
+            return new HeatSourceSystem(senseProperties.AsLazy<IReadOnlyDynamicDataView3D<SensoryResistance<TemperatureSense>>>(),
+                                  senseCache.AsLazy<IGlobalSenseStateCacheProvider>(),
+                                  timeSource.AsLazy<ITimeSource>(),
+                                  directionalitySystem,
+                                  senseCache,
+                                  physics.CreateHeatPropagationAlgorithm(),
+                                  physics);
         }
 
         protected override ReferenceItemDeclaration<SenseMappingTestContext, ItemReference> AttachTrait(ReferenceItemDeclaration<SenseMappingTestContext, ItemReference> decl)
@@ -78,13 +81,13 @@ namespace RogueEntity.Core.Tests.Sensing.Sources.Heat
             switch (decl.Id.Id)
             {
                 case "SenseSource-Active-10":
-                    decl.WithTrait(new HeatSourceTrait<SenseMappingTestContext, ItemReference>(lightPhysics, Temperature.FromCelsius(10)));
+                    decl.WithTrait(new HeatSourceTrait<SenseMappingTestContext, ItemReference>(physics, Temperature.FromCelsius(10)));
                     break;
                 case "SenseSource-Active-5":
-                    decl.WithTrait(new HeatSourceTrait<SenseMappingTestContext, ItemReference>(lightPhysics, Temperature.FromCelsius(5)));
+                    decl.WithTrait(new HeatSourceTrait<SenseMappingTestContext, ItemReference>(physics, Temperature.FromCelsius(5)));
                     break;
                 case "SenseSource-Inactive-5":
-                    decl.WithTrait(new HeatSourceTrait<SenseMappingTestContext, ItemReference>(lightPhysics));
+                    decl.WithTrait(new HeatSourceTrait<SenseMappingTestContext, ItemReference>(physics));
                     break;
             }
 
@@ -94,7 +97,7 @@ namespace RogueEntity.Core.Tests.Sensing.Sources.Heat
         [SetUp]
         public override void SetUp()
         {
-            lightPhysics = new HeatPhysicsConfiguration(LinearDecaySensePhysics.For(DistanceCalculation.Chebyshev), Temperature.FromCelsius(0));
+            physics = new HeatPhysicsConfiguration(LinearDecaySensePhysics.For(DistanceCalculation.Chebyshev), Temperature.FromCelsius(0));
             base.SetUp();
         }
 

@@ -1,19 +1,15 @@
 using NUnit.Framework;
-using RogueEntity.Core.Infrastructure.Time;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Sensing;
-using RogueEntity.Core.Sensing.Cache;
+using RogueEntity.Core.Sensing.Common;
 using RogueEntity.Core.Sensing.Common.Physics;
-using RogueEntity.Core.Sensing.Resistance;
-using RogueEntity.Core.Sensing.Resistance.Maps;
 using RogueEntity.Core.Sensing.Sources.Light;
-using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.Algorithms;
 
 namespace RogueEntity.Core.Tests.Sensing.Sources.Light
 {
     [TestFixture]
-    public class LightSystemTest : SenseSystemTestBase<VisionSense, LightSystem, LightSourceDefinition>
+    public class LightSystemTest : SenseSystemTestBase<VisionSense, LightSourceDefinition>
     {
         const string EmptyRoom = @"
 // 11x11; an empty room
@@ -56,20 +52,11 @@ namespace RogueEntity.Core.Tests.Sensing.Sources.Light
    .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   
 ";
 
-        LightPhysicsConfiguration lightPhysics;
+        LightPhysicsConfiguration physics;
 
-        protected override SensoryResistance Convert(float f)
+        protected override (ISensePropagationAlgorithm, ISensePhysics) GetOrCreateSensePhysics()
         {
-            return new SensoryResistance(Percentage.Of(f), Percentage.Empty, Percentage.Empty, Percentage.Empty);
-        }
-
-        protected override LightSystem CreateSystem()
-        {
-            return new LightSystem(senseProperties.AsLazy<ISensePropertiesSource>(),
-                                   senseCache.AsLazy<IGlobalSenseStateCacheProvider>(),
-                                   timeSource.AsLazy<ITimeSource>(),
-                                   senseCache,
-                                   lightPhysics.CreateLightPropagationAlgorithm(), lightPhysics);
+            return (physics.CreateLightPropagationAlgorithm(), physics.LightPhysics);
         }
 
         protected override ReferenceItemDeclaration<SenseMappingTestContext, ItemReference> AttachTrait(ReferenceItemDeclaration<SenseMappingTestContext, ItemReference> decl)
@@ -77,13 +64,13 @@ namespace RogueEntity.Core.Tests.Sensing.Sources.Light
             switch (decl.Id.Id)
             {
                 case "SenseSource-Active-10":
-                    decl.WithTrait(new LightSourceTrait<SenseMappingTestContext, ItemReference>(lightPhysics, 10));
+                    decl.WithTrait(new LightSourceTrait<SenseMappingTestContext, ItemReference>(physics, 10));
                     break;
                 case "SenseSource-Active-5":
-                    decl.WithTrait(new LightSourceTrait<SenseMappingTestContext, ItemReference>(lightPhysics, 5));
+                    decl.WithTrait(new LightSourceTrait<SenseMappingTestContext, ItemReference>(physics, 5));
                     break;
                 case "SenseSource-Inactive-5":
-                    decl.WithTrait(new LightSourceTrait<SenseMappingTestContext, ItemReference>(lightPhysics, 5, false));
+                    decl.WithTrait(new LightSourceTrait<SenseMappingTestContext, ItemReference>(physics, 5, false));
                     break;
             }
 
@@ -93,7 +80,7 @@ namespace RogueEntity.Core.Tests.Sensing.Sources.Light
         [SetUp]
         public override void SetUp()
         {
-            lightPhysics = new LightPhysicsConfiguration(LinearDecaySensePhysics.For(DistanceCalculation.Chebyshev));
+            physics = new LightPhysicsConfiguration(LinearDecaySensePhysics.For(DistanceCalculation.Chebyshev));
             base.SetUp();
         }
 

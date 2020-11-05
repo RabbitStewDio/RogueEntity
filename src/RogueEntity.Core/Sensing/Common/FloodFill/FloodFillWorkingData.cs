@@ -1,7 +1,7 @@
 using JetBrains.Annotations;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Sensing.Common.Physics;
-using RogueEntity.Core.Utils.Maps;
+using RogueEntity.Core.Utils.DataViews;
 
 namespace RogueEntity.Core.Sensing.Common.FloodFill
 {

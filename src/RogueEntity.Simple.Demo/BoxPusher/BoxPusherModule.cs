@@ -8,11 +8,12 @@ using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Positioning.MapLayers;
+using RogueEntity.Core.Sensing;
 using RogueEntity.Core.Sensing.Cache;
 using RogueEntity.Core.Sensing.Discovery;
 using RogueEntity.Core.Sensing.Receptors.Light;
-using RogueEntity.Core.Sensing.Resistance;
 using RogueEntity.Core.Sensing.Resistance.Maps;
+using RogueEntity.Core.Sensing.Sources.Light;
 
 namespace RogueEntity.Simple.Demo.BoxPusher
 {
@@ -29,7 +30,6 @@ namespace RogueEntity.Simple.Demo.BoxPusher
             Id = "Game.BoxPusher";
 
             DeclareDependencies(ModuleDependency.Of(InventoryModule.ModuleId),
-                                ModuleDependency.Of(SensoryResistanceModule.ModuleId),
                                 ModuleDependency.Of(SensoryCacheModule.ModuleId),
                                 ModuleDependency.Of(PositionModule.ModuleId),
                                 ModuleDependency.Of(CoreModule.ModuleId));
@@ -38,12 +38,12 @@ namespace RogueEntity.Simple.Demo.BoxPusher
                 .WithImpliedRole(CoreModule.ItemRole)
                 .WithImpliedRole(PositionModule.GridPositionedRole)
                 .WithImpliedRole(InventoryModule.ContainedItemRole)
-                .WithImpliedRole(SensoryResistanceModule.ResistanceDataProviderRole);
+                .WithImpliedRole(LightSourceModule.ResistanceDataProviderRole);
 
             DeclareEntity<ItemReference>(FloorRole)
                 .WithImpliedRole(CoreModule.ItemRole)
                 .WithImpliedRole(PositionModule.GridPositionedRole)
-                .WithImpliedRole(SensoryResistanceModule.ResistanceDataProviderRole);
+                .WithImpliedRole(LightSourceModule.ResistanceDataProviderRole);
 
             DeclareEntity<ActorReference>(ActorRole)
                 .WithImpliedRole(CoreModule.ItemRole)
@@ -66,7 +66,7 @@ namespace RogueEntity.Simple.Demo.BoxPusher
         [EntityRoleInitializer("Role.Core.Senses.Resistance.ResistanceDataProvider")]
         protected void InitializeRole<TGameContext, TItemId>(IModuleInitializer<TGameContext> initializer, EntityRole role)
             where TItemId : IEntityKey
-            where TGameContext : IItemContext<TGameContext, TItemId>, IGridMapContext<TGameContext, TItemId>, IGridMapRawDataContext<TItemId>
+            where TGameContext : IItemContext<TGameContext, TItemId>, IGridMapContext<TItemId>, IGridMapRawDataContext<TItemId>
         {
             var ctx = initializer.DeclareEntityContext<TItemId>();
             if (role == MovableItemRole)
@@ -81,15 +81,15 @@ namespace RogueEntity.Simple.Demo.BoxPusher
 
         ModuleEntityContext.EntitySystemRegistrationDelegate<TGameContext, TItemId> RegisterLayerConfiguration<TGameContext, TItemId>(MapLayer layer)
             where TItemId : IEntityKey
-            where TGameContext : IItemContext<TGameContext, TItemId>, IGridMapContext<TGameContext, TItemId>, IGridMapRawDataContext<TItemId>
+            where TGameContext : IItemContext<TGameContext, TItemId>, IGridMapContext<TItemId>, IGridMapRawDataContext<TItemId>
         {
             void RegisterFloorItemResistanceSystemConfiguration(IServiceResolver serviceResolver,
                                                                 IGameLoopSystemRegistration<TGameContext> context,
                                                                 EntityRegistry<TItemId> registry,
                                                                 ICommandHandlerRegistration<TGameContext, TItemId> handler)
             {
-                var factory = serviceResolver.Resolve<ISensePropertiesSystem<TGameContext>>();
-                factory.AddLayer<TGameContext, TItemId>(layer);
+                var factory = serviceResolver.Resolve<ISensePropertiesSystem<TGameContext, VisionSense>>();
+                factory.AddLayer<TGameContext, TItemId, VisionSense>(layer);
 
                 var cache = serviceResolver.Resolve<ISenseCacheSetupSystem>();
                 cache.RegisterCacheLayer(layer);

@@ -1,12 +1,9 @@
 using EnTTSharp.Entities;
 using RogueEntity.Core.Infrastructure.Modules;
-using RogueEntity.Core.Infrastructure.Time;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Sensing.Cache;
-using RogueEntity.Core.Sensing.Common.FloodFill;
+using RogueEntity.Core.Sensing.Common;
 using RogueEntity.Core.Sensing.Common.Physics;
-using RogueEntity.Core.Sensing.Resistance;
-using RogueEntity.Core.Sensing.Resistance.Maps;
 using RogueEntity.Core.Sensing.Sources.Touch;
 
 namespace RogueEntity.Core.Sensing.Receptors.Touch
@@ -36,7 +33,6 @@ namespace RogueEntity.Core.Sensing.Receptors.Touch
             IsFrameworkModule = true;
 
             DeclareDependencies(ModuleDependency.Of(PositionModule.ModuleId),
-                                ModuleDependency.Of(SensoryResistanceModule.ModuleId),
                                 ModuleDependency.Of(SensoryCacheModule.ModuleId),
                                 ModuleDependency.Of(TouchSourceModule.ModuleId));
 
@@ -89,35 +85,10 @@ namespace RogueEntity.Core.Sensing.Receptors.Touch
             ctx.Register(SenseSourceCollectionContinuousSystemId, 57500, RegisterCollectSenseSourcesSystem);
         }
 
-        protected override bool GetOrCreateLightSystem(IServiceResolver serviceResolver, out SenseReceptorSystemBase<TouchSense, TouchSense> ls)
+        protected override (ISensePropagationAlgorithm, ISensePhysics) GetOrCreatePhysics(IServiceResolver serviceResolver)
         {
-            if (!serviceResolver.TryResolve(out ITouchReceptorPhysicsConfiguration physics))
-            {
-                if (!serviceResolver.TryResolve(out ITouchPhysicsConfiguration physicsConfig))
-                {
-                    ls = default;
-                    return false;
-                }
-                
-                if (!serviceResolver.TryResolve(out FloodFillWorkingDataSource ds))
-                {
-                    ds = new FloodFillWorkingDataSource();
-                }
-
-                physics = new TouchSenseReceptorPhysicsConfiguration(physicsConfig, ds);
-            }
-
-            if (!serviceResolver.TryResolve(out ls))
-            {
-                ls = new TouchReceptorSystem(serviceResolver.ResolveToReference<ISensePropertiesSource>(),
-                                             serviceResolver.ResolveToReference<ISenseStateCacheProvider>(),
-                                             serviceResolver.ResolveToReference<IGlobalSenseStateCacheProvider>(),
-                                             serviceResolver.ResolveToReference<ITimeSource>(),
-                                             new FullStrengthSensePhysics(physics.TouchPhysics),
-                                             physics.CreateTouchSensorPropagationAlgorithm());
-            }
-
-            return true;
+            var physics = serviceResolver.Resolve<ITouchReceptorPhysicsConfiguration>();
+            return (physics.CreateTouchSensorPropagationAlgorithm(), physics.TouchPhysics);
         }
     }
 }

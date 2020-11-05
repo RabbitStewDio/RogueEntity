@@ -77,11 +77,11 @@ namespace RogueEntity.Core.Tests.Sensing.Cache
         [Test]
         public void ValidateMapConnection()
         {
-            var sps = new SensePropertiesSystem<SenseMappingTestContext>(4, 4);
+            var sps = new SensePropertiesSystem<SenseMappingTestContext, VisionSense>(4, 4);
             
             var ctx = new SenseMappingTestContext();
             var cache = new SenseStateCache(2, 4, 4);    
-            var conn = new SensePropertiesConnectorSystem<SenseMappingTestContext>(sps, cache);
+            var conn = new SensePropertiesConnectorSystem<SenseMappingTestContext, VisionSense>(sps, cache);
             
             cache.ActivateGlobalCacheLayer(TestMapLayers.One);
             cache.ActivateGlobalCacheLayer(TestMapLayers.Two);

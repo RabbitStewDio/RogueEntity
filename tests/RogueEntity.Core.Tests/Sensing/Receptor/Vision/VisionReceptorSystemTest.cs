@@ -1,22 +1,18 @@
 using System;
 using EnTTSharp.Entities.Systems;
 using NUnit.Framework;
-using RogueEntity.Core.Infrastructure.Time;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Sensing;
-using RogueEntity.Core.Sensing.Cache;
+using RogueEntity.Core.Sensing.Common;
 using RogueEntity.Core.Sensing.Common.Physics;
 using RogueEntity.Core.Sensing.Receptors;
 using RogueEntity.Core.Sensing.Receptors.Light;
-using RogueEntity.Core.Sensing.Resistance;
-using RogueEntity.Core.Sensing.Resistance.Maps;
 using RogueEntity.Core.Sensing.Sources.Light;
-using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.Algorithms;
 
 namespace RogueEntity.Core.Tests.Sensing.Receptor.Vision
 {
-    public class VisionReceptorSystemTest : SenseReceptorSystemBase<VisionSense, VisionSense, LightSourceDefinition, LightSystem>
+    public class VisionReceptorSystemTest : SenseReceptorSystemBase<VisionSense, VisionSense, LightSourceDefinition>
     {
         const string EmptyRoom = @"
 // 11x11; an empty room
@@ -229,11 +225,6 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Vision
             this.physics = new VisionSenseReceptorPhysicsConfiguration(sourcePhysics);
         }
 
-        protected override SensoryResistance Convert(float f)
-        {
-            return new SensoryResistance(Percentage.Of(f), Percentage.Empty, Percentage.Empty, Percentage.Empty);
-        }
-
         protected override Action<SenseMappingTestContext> CreateCopyAction()
         {
             var builder = context.ItemEntityRegistry.BuildSystem()
@@ -243,14 +234,9 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Vision
             return builder.CreateSystem<SingleLevelSenseDirectionMapData<VisionSense, VisionSense>, SensoryReceptorState<VisionSense, VisionSense>>(omniSystem.CopySenseSourcesToVisionField);
         }
 
-        protected override LightSystem CreateSourceSystem()
+        protected override (ISensePropagationAlgorithm propagationAlgorithm, ISensePhysics sensePhysics) GetOrCreateSourceSensePhysics()
         {
-            return new LightSystem(senseProperties.AsLazy<ISensePropertiesSource>(),
-                                   senseCache.AsLazy<IGlobalSenseStateCacheProvider>(),
-                                   timeSource.AsLazy<ITimeSource>(),
-                                   senseCache,
-                                   sourcePhysics.CreateLightPropagationAlgorithm(), 
-                                   sourcePhysics);
+            return (sourcePhysics.CreateLightPropagationAlgorithm(), sourcePhysics.LightPhysics);
         }
 
         protected override ReferenceItemDeclaration<SenseMappingTestContext, ItemReference> AttachTrait(ReferenceItemDeclaration<SenseMappingTestContext, ItemReference> decl)
@@ -280,14 +266,9 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Vision
             }
         }
 
-        protected override SenseReceptorSystemBase<VisionSense, VisionSense> CreateSystem()
+        protected override (ISensePropagationAlgorithm, ISensePhysics) GetOrCreateReceptorSensePhysics()
         {
-            return new VisionReceptorSystem(senseProperties.AsLazy<ISensePropertiesSource>(),
-                                            senseCache.AsLazy<ISenseStateCacheProvider>(),
-                                            senseCache.AsLazy<IGlobalSenseStateCacheProvider>(),
-                                            timeSource.AsLazy<ITimeSource>(),
-                                            physics.VisionPhysics,
-                                            physics.CreateVisionSensorPropagationAlgorithm());
+            return (physics.CreateVisionSensorPropagationAlgorithm(), physics.VisionPhysics);
         }
 
         [Test]

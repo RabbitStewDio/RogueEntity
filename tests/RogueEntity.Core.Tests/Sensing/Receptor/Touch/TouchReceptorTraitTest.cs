@@ -1,8 +1,8 @@
 using EnTTSharp.Entities;
+using NUnit.Framework;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Sensing;
 using RogueEntity.Core.Sensing.Common;
-using RogueEntity.Core.Sensing.Common.FloodFill;
 using RogueEntity.Core.Sensing.Common.Physics;
 using RogueEntity.Core.Sensing.Receptors;
 using RogueEntity.Core.Sensing.Receptors.Touch;
@@ -13,6 +13,7 @@ using RogueEntity.Core.Utils.Algorithms;
 
 namespace RogueEntity.Core.Tests.Sensing.Receptor.Touch
 {
+    [TestFixture]
     public class TouchReceptorTraitTest : ItemComponentTraitTestBase<SenseMappingTestContext, ActorReference, SensoryReceptorData<TouchSense, TouchSense>,
         TouchReceptorTrait<SenseMappingTestContext, ActorReference>>
     {
@@ -20,10 +21,7 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Touch
 
         public TouchReceptorTraitTest()
         {
-            physics = new TouchSenseReceptorPhysicsConfiguration(
-                new TouchPhysicsConfiguration(new LinearDecaySensePhysics(DistanceCalculation.Chebyshev)),
-                new FloodFillWorkingDataSource()
-            );
+            physics = new TouchSenseReceptorPhysicsConfiguration(new LinearDecaySensePhysics(DistanceCalculation.Chebyshev));
         }
 
         protected override SenseMappingTestContext CreateContext()
@@ -56,9 +54,15 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Touch
             var distanceCalculation = physics.TouchPhysics.DistanceMeasurement;
             var intensity = distanceCalculation.MaximumStepDistance();
             return new ItemComponentTestDataFactory<SensoryReceptorData<TouchSense, TouchSense>>(
-                new SensoryReceptorData<TouchSense, TouchSense>(new SenseSourceDefinition(physics.TouchPhysics.DistanceMeasurement, intensity), true),
-                new SensoryReceptorData<TouchSense, TouchSense>(new SenseSourceDefinition(physics.TouchPhysics.DistanceMeasurement, intensity), true),
-                new SensoryReceptorData<TouchSense, TouchSense>(new SenseSourceDefinition(physics.TouchPhysics.DistanceMeasurement, intensity), false)
+                new SensoryReceptorData<TouchSense, TouchSense>(new SenseSourceDefinition(physics.TouchPhysics.DistanceMeasurement, 
+                                                                                          physics.TouchPhysics.AdjacencyRule,
+                                                                                          intensity), true),
+                new SensoryReceptorData<TouchSense, TouchSense>(new SenseSourceDefinition(physics.TouchPhysics.DistanceMeasurement, 
+                                                                                          physics.TouchPhysics.AdjacencyRule,
+                                                                                          intensity), true),
+                new SensoryReceptorData<TouchSense, TouchSense>(new SenseSourceDefinition(physics.TouchPhysics.DistanceMeasurement, 
+                                                                                          physics.TouchPhysics.AdjacencyRule,
+                                                                                          intensity), false)
             ).WithRemoveProhibited();
         }
     }

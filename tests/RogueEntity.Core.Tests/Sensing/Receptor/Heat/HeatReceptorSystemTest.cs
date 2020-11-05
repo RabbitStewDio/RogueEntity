@@ -6,19 +6,20 @@ using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Meta.ItemTraits;
 using RogueEntity.Core.Sensing;
 using RogueEntity.Core.Sensing.Cache;
+using RogueEntity.Core.Sensing.Common;
 using RogueEntity.Core.Sensing.Common.FloodFill;
 using RogueEntity.Core.Sensing.Common.Physics;
 using RogueEntity.Core.Sensing.Receptors;
 using RogueEntity.Core.Sensing.Receptors.Heat;
 using RogueEntity.Core.Sensing.Resistance;
-using RogueEntity.Core.Sensing.Resistance.Maps;
+using RogueEntity.Core.Sensing.Sources;
 using RogueEntity.Core.Sensing.Sources.Heat;
-using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.Algorithms;
+using RogueEntity.Core.Utils.DataViews;
 
 namespace RogueEntity.Core.Tests.Sensing.Receptor.Heat
 {
-    public class HeatReceptorSystemTest : SenseReceptorSystemBase<TemperatureSense, TemperatureSense, HeatSourceDefinition, HeatSystem>
+    public class HeatReceptorSystemTest : SenseReceptorSystemBase<TemperatureSense, TemperatureSense, HeatSourceDefinition>
     {
         const string EmptyRoom = @"
 // 11x11; an empty room
@@ -120,21 +121,19 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Heat
   ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ 
   ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~
 ";
-        
-/// <summary>
-///  Heat is radiation, and thus travels in a straight line from the source outwards, just
-///  like light. A heat direction sense on the other hand only triggers if the
-///   receptor is hit by heat radiation.
-///
-///  In this example, the heat source is behind a fully-blocking wall. Unlike vision,
-///  heat direction does not scan the area for traces of signals, either a signal
-///  reaches the receptor or the signal is not detected.
-///
-///  Thus there is no signal detected, even though some heat radiation is within the
-///  sensors external range. 
-/// </summary>
-        
-        
+
+        /// <summary>
+        ///  Heat is radiation, and thus travels in a straight line from the source outwards, just
+        ///  like light. A heat direction sense on the other hand only triggers if the
+        ///   receptor is hit by heat radiation.
+        ///
+        ///  In this example, the heat source is behind a fully-blocking wall. Unlike vision,
+        ///  heat direction does not scan the area for traces of signals, either a signal
+        ///  reaches the receptor or the signal is not detected.
+        ///
+        ///  Thus there is no signal detected, even though some heat radiation is within the
+        ///  sensors external range. 
+        /// </summary>
         const string PillarRoom = @"
 // 11x11; an empty room
 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1
@@ -246,9 +245,14 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Heat
             this.physics = new HeatSenseReceptorPhysicsConfiguration(sourcePhysics, new FloodFillWorkingDataSource());
         }
 
-        protected override SensoryResistance Convert(float f)
+        protected override (ISensePropagationAlgorithm propagationAlgorithm, ISensePhysics sensePhysics) GetOrCreateSourceSensePhysics()
         {
-            return new SensoryResistance(Percentage.Empty, Percentage.Empty, Percentage.Of(f), Percentage.Empty);
+            return (sourcePhysics.CreateHeatPropagationAlgorithm(), sourcePhysics.HeatPhysics);
+        }
+
+        protected override (ISensePropagationAlgorithm, ISensePhysics) GetOrCreateReceptorSensePhysics()
+        {
+            return (physics.CreateHeatSensorPropagationAlgorithm(), physics.HeatPhysics);
         }
 
         protected override Action<SenseMappingTestContext> CreateCopyAction()
@@ -257,17 +261,19 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Heat
                                  .WithContext<SenseMappingTestContext>();
 
             var omniSystem = new SenseReceptorBlitterSystem<TemperatureSense, TemperatureSense>(senseSystem, new DefaultDirectionalSenseReceptorBlitter());
-            return builder.CreateSystem<SingleLevelSenseDirectionMapData<TemperatureSense, TemperatureSense>, SensoryReceptorState<TemperatureSense, TemperatureSense>>(omniSystem.CopySenseSourcesToVisionField);
+            return builder.CreateSystem<SingleLevelSenseDirectionMapData<TemperatureSense, TemperatureSense>, SensoryReceptorState<TemperatureSense, TemperatureSense>>(
+                omniSystem.CopySenseSourcesToVisionField);
         }
 
-        protected override HeatSystem CreateSourceSystem()
+        protected override SenseSourceSystem<TemperatureSense, HeatSourceDefinition> CreateSourceSystem()
         {
-            return new HeatSystem(senseProperties.AsLazy<ISensePropertiesSource>(),
-                                  senseCache.AsLazy<IGlobalSenseStateCacheProvider>(),
-                                  timeSource.AsLazy<ITimeSource>(),
-                                  senseCache,
-                                  sourcePhysics.CreateHeatPropagationAlgorithm(), 
-                                  sourcePhysics);
+            return new HeatSourceSystem(senseProperties.AsLazy<IReadOnlyDynamicDataView3D<SensoryResistance<TemperatureSense>>>(),
+                                        senseCache.AsLazy<IGlobalSenseStateCacheProvider>(),
+                                        timeSource.AsLazy<ITimeSource>(),
+                                        directionalitySourceSystem,
+                                        senseCache,
+                                        sourcePhysics.CreateHeatPropagationAlgorithm(),
+                                        sourcePhysics);
         }
 
         protected override ReferenceItemDeclaration<SenseMappingTestContext, ItemReference> AttachTrait(ReferenceItemDeclaration<SenseMappingTestContext, ItemReference> decl)
@@ -295,15 +301,6 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Heat
                 default:
                     throw new ArgumentException();
             }
-        }
-
-        protected override SenseReceptorSystemBase<TemperatureSense, TemperatureSense> CreateSystem()
-        {
-            return new HeatReceptorSystem(senseProperties.AsLazy<ISensePropertiesSource>(),
-                                          senseCache.AsLazy<ISenseStateCacheProvider>(),
-                                          senseCache.AsLazy<IGlobalSenseStateCacheProvider>(),
-                                          timeSource.AsLazy<ITimeSource>(),
-                                          physics);
         }
 
         [Test]

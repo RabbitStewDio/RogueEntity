@@ -4,8 +4,6 @@ using RogueEntity.Core.Infrastructure.GameLoops;
 using RogueEntity.Core.Infrastructure.Modules;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Grid;
-using RogueEntity.Core.Sensing.Resistance;
-using RogueEntity.Core.Sensing.Resistance.Maps;
 
 namespace RogueEntity.Core.Sensing.Cache
 {
@@ -26,8 +24,7 @@ namespace RogueEntity.Core.Sensing.Cache
             Description = "Tracks map changes that require sense sources to recompute their effects.";
             IsFrameworkModule = true;
 
-            DeclareDependencies(ModuleDependency.Of(PositionModule.ModuleId),
-                                ModuleDependency.Of(SensoryResistanceModule.ModuleId));
+            DeclareDependencies(ModuleDependency.Of(PositionModule.ModuleId));
 
             RequireRole(SenseCacheSourceRole);
         }
@@ -36,7 +33,7 @@ namespace RogueEntity.Core.Sensing.Cache
         protected void InitializeSenseCacheSystem<TGameContext>(IServiceResolver resolver,
                                                                 IModuleInitializer<TGameContext> moduleInitializer)
         {
-            moduleInitializer.Register(SenseCacheResetId, 1, RegisterSenseCacheSystem);
+            moduleInitializer.Register(SenseCacheResetId, 100, RegisterSenseCacheSystem);
         }
 
         [EntityRoleInitializer("Role.Core.Senses.Cache.InvalidationSource",
@@ -45,58 +42,17 @@ namespace RogueEntity.Core.Sensing.Cache
                                                              IModuleInitializer<TGameContext> initializer,
                                                              EntityRole role)
             where TItemId : IEntityKey
-            where TGameContext : IGridMapContext<TGameContext, TItemId>
+            where TGameContext : IGridMapContext<TItemId>
         {
             var ctx = initializer.DeclareEntityContext<TItemId>();
             ctx.Register(SenseCacheLifecycleId, 0, RegisterSenseCacheLifeCycle);
-        }
-
-        /// <summary>
-        ///   Any entity that can invalidate the sense-resistance map implicitly also invalidates the sense cache at
-        ///   the same position.
-        /// </summary>
-        /// <param name="serviceResolver"></param>
-        /// <param name="initializer"></param>
-        /// <param name="role"></param>
-        /// <typeparam name="TGameContext"></typeparam>
-        /// <typeparam name="TItemId"></typeparam>
-        [EntityRoleInitializer("Role.Core.Senses.Resistance.ResistanceDataProvider")]
-        protected void InitializeResistanceProviderCacheSources<TGameContext, TItemId>(IServiceResolver serviceResolver,
-                                                                                       IModuleInitializer<TGameContext> initializer,
-                                                                                       EntityRole role)
-            where TItemId : IEntityKey
-        {
-            var ctx = initializer.DeclareEntityContext<TItemId>();
-            ctx.Register(SenseCacheLifecycleId, 0, RegisterSenseResistanceCacheLifeCycle);
-        }
-
-        void RegisterSenseResistanceCacheLifeCycle<TGameContext, TItemId>(IServiceResolver resolver,
-                                                                          IGameLoopSystemRegistration<TGameContext> context,
-                                                                          EntityRegistry<TItemId> registry,
-                                                                          ICommandHandlerRegistration<TGameContext, TItemId> handler)
-            where TItemId : IEntityKey
-        {
-            
-            // Ensure that the connection is only made once. The sense properties system will
-            // forward all invalidation events to the sense cache.
-            if (!resolver.TryResolve(out SensePropertiesConnectorSystem<TGameContext> system))
-            {
-                var sensePropertiesSystem = resolver.Resolve<SensePropertiesSystem<TGameContext>>();
-                var cacheProvider = resolver.Resolve<SenseStateCache>();
-                system = new SensePropertiesConnectorSystem<TGameContext>(sensePropertiesSystem, cacheProvider);
-                resolver.Store(system);
-                
-                context.AddInitializationStepHandler(system.Start);
-                context.AddDisposeStepHandler(system.Stop);
-            }
-            
         }
 
         void RegisterSenseCacheLifeCycle<TGameContext, TItemId>(IServiceResolver resolver,
                                                                 IGameLoopSystemRegistration<TGameContext> context,
                                                                 EntityRegistry<TItemId> registry,
                                                                 ICommandHandlerRegistration<TGameContext, TItemId> handler)
-            where TGameContext : IGridMapContext<TGameContext, TItemId>
+            where TGameContext : IGridMapContext<TItemId>
             where TItemId : IEntityKey
         {
             if (!resolver.TryResolve(out SenseCacheSetUpSystem<TGameContext> system))

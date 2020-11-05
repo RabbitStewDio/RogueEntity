@@ -1,7 +1,7 @@
 using FluentAssertions;
 using NUnit.Framework;
 using RogueEntity.Core.Positioning;
-using RogueEntity.Core.Sensing.Cache;
+using RogueEntity.Core.Positioning.Caching;
 using RogueEntity.Core.Utils;
 
 namespace RogueEntity.Core.Tests.Sensing.Cache
@@ -11,7 +11,7 @@ namespace RogueEntity.Core.Tests.Sensing.Cache
         [Test]
         public void ValidateInitialState()
         {
-            var sv = new SenseStateCacheView(64, 64, 2);
+            var sv = new GridCacheStateView(64, 64, 2);
             sv.IsDirty(new Position(10, 10, 5, 1)).Should().Be(false);
             sv.IsDirty(new Position(10, 10, 5, 1), 5).Should().Be(false);
             sv.IsDirty(5, new Rectangle(1, 1, 50, 50)).Should().Be(false);
@@ -20,7 +20,7 @@ namespace RogueEntity.Core.Tests.Sensing.Cache
         [Test]
         public void ValidateGloballyDirtyTests()
         {
-            var sv = new SenseStateCacheView(64, 64, 2);
+            var sv = new GridCacheStateView(64, 64, 2);
 
             sv.MarkGloballyDirty();
             sv.IsDirty(new Position(10, 10, 5, 1)).Should().Be(true);
@@ -36,7 +36,7 @@ namespace RogueEntity.Core.Tests.Sensing.Cache
         [Test]
         public void ValidateDirtyTest()
         {
-            var sv = new SenseStateCacheView(64, 64, 2);
+            var sv = new GridCacheStateView(64, 64, 2);
 
             sv.MarkDirty(new Position(10, 10, 5, 1));
             sv.IsDirty(new Position(10, 10, 5, 1)).Should().Be(true);

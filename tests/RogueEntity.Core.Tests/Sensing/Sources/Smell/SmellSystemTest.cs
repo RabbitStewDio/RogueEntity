@@ -1,18 +1,14 @@
 using NUnit.Framework;
-using RogueEntity.Core.Infrastructure.Time;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Sensing;
-using RogueEntity.Core.Sensing.Cache;
+using RogueEntity.Core.Sensing.Common;
 using RogueEntity.Core.Sensing.Common.Physics;
-using RogueEntity.Core.Sensing.Resistance;
-using RogueEntity.Core.Sensing.Resistance.Maps;
 using RogueEntity.Core.Sensing.Sources.Smell;
-using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.Algorithms;
 
 namespace RogueEntity.Core.Tests.Sensing.Sources.Smell
 {
-    public class SmellSystemTest : SenseSystemTestBase<SmellSense, SmellSystem, SmellSourceDefinition>
+    public class SmellSystemTest : SenseSystemTestBase<SmellSense, SmellSourceDefinition>
     {
         const string EmptyRoom = @"
 // 11x11; an empty room
@@ -55,44 +51,35 @@ namespace RogueEntity.Core.Tests.Sensing.Sources.Smell
    .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   
 ";
 
-        SmellPhysicsConfiguration lightPhysics;
-
-        protected override SensoryResistance Convert(float f)
-        {
-            return new SensoryResistance(Percentage.Empty,  Percentage.Empty, Percentage.Empty, Percentage.Of(f));
-        }
-
-        protected override SmellSystem CreateSystem()
-        {
-            return new SmellSystem(senseProperties.AsLazy<ISensePropertiesSource>(),
-                                   senseCache.AsLazy<IGlobalSenseStateCacheProvider>(),
-                                   timeSource.AsLazy<ITimeSource>(),
-                                   senseCache,
-                                   lightPhysics.CreateSmellPropagationAlgorithm(), lightPhysics.SmellPhysics);
-        }
+        SmellPhysicsConfiguration physics;
 
         protected override ReferenceItemDeclaration<SenseMappingTestContext, ItemReference> AttachTrait(ReferenceItemDeclaration<SenseMappingTestContext, ItemReference> decl)
         {
             switch (decl.Id.Id)
             {
                 case "SenseSource-Active-10":
-                    decl.WithTrait(new SmellSourceTrait<SenseMappingTestContext, ItemReference>(lightPhysics));
+                    decl.WithTrait(new SmellSourceTrait<SenseMappingTestContext, ItemReference>(physics));
                     break;
                 case "SenseSource-Active-5":
-                    decl.WithTrait(new SmellSourceTrait<SenseMappingTestContext, ItemReference>(lightPhysics));
+                    decl.WithTrait(new SmellSourceTrait<SenseMappingTestContext, ItemReference>(physics));
                     break;
                 case "SenseSource-Inactive-5":
-                    decl.WithTrait(new SmellSourceTrait<SenseMappingTestContext, ItemReference>(lightPhysics));
+                    decl.WithTrait(new SmellSourceTrait<SenseMappingTestContext, ItemReference>(physics));
                     break;
             }
 
             return decl;
         }
 
+        protected override (ISensePropagationAlgorithm, ISensePhysics) GetOrCreateSensePhysics()
+        {
+            return (physics.CreateSmellPropagationAlgorithm(), physics.SmellPhysics);
+        }
+
         [SetUp]
         public override void SetUp()
         {
-            lightPhysics = new SmellPhysicsConfiguration(LinearDecaySensePhysics.For(DistanceCalculation.Chebyshev));
+            physics = new SmellPhysicsConfiguration(LinearDecaySensePhysics.For(DistanceCalculation.Chebyshev));
             base.SetUp();
         }
 

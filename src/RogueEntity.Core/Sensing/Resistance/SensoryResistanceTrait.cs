@@ -4,20 +4,17 @@ using RogueEntity.Core.Utils;
 
 namespace RogueEntity.Core.Sensing.Resistance
 {
-    public class SensoryResistanceTrait<TContext, TItemId>: StatelessItemComponentTraitBase<TContext, TItemId, SensoryResistance>
+    public class SensoryResistanceTrait<TContext, TItemId, TSense>: StatelessItemComponentTraitBase<TContext, TItemId, SensoryResistance<TSense>>
         where TItemId : IEntityKey
     {
-        readonly SensoryResistance sensoryResistance;
+        readonly SensoryResistance<TSense> sensoryResistance;
 
-        public SensoryResistanceTrait(Percentage blocksLight, 
-                                      Percentage blocksSound = default, 
-                                      Percentage blocksHeat = default,
-                                      Percentage blocksSmell = default) : base("Core.Item.SensoryResistance", 100)
+        public SensoryResistanceTrait(Percentage blocksSense) : base("Core.Item.SensoryResistance+" + typeof(TSense).Name, 100)
         {
-            this.sensoryResistance = new SensoryResistance(blocksLight, blocksSound, blocksHeat, blocksSmell);
+            this.sensoryResistance = new SensoryResistance<TSense>(blocksSense);
         }
 
-        protected override SensoryResistance GetData(TContext context, TItemId k)
+        protected override SensoryResistance<TSense> GetData(TContext context, TItemId k)
         {
             return sensoryResistance;
         }

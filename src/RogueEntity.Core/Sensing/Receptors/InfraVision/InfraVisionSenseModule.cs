@@ -1,11 +1,11 @@
 using EnTTSharp.Entities;
 using RogueEntity.Core.Infrastructure.Modules;
-using RogueEntity.Core.Infrastructure.Time;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Sensing.Cache;
+using RogueEntity.Core.Sensing.Common;
+using RogueEntity.Core.Sensing.Common.Physics;
+using RogueEntity.Core.Sensing.Common.ShadowCast;
 using RogueEntity.Core.Sensing.Receptors.Light;
-using RogueEntity.Core.Sensing.Resistance;
-using RogueEntity.Core.Sensing.Resistance.Maps;
 using RogueEntity.Core.Sensing.Sources.Heat;
 
 namespace RogueEntity.Core.Sensing.Receptors.InfraVision
@@ -35,7 +35,6 @@ namespace RogueEntity.Core.Sensing.Receptors.InfraVision
             IsFrameworkModule = true;
 
             DeclareDependencies(ModuleDependency.Of(PositionModule.ModuleId),
-                                ModuleDependency.Of(SensoryResistanceModule.ModuleId),
                                 ModuleDependency.Of(HeatSourceModule.ModuleId),
                                 ModuleDependency.Of(SensoryCacheModule.ModuleId));
 
@@ -87,31 +86,21 @@ namespace RogueEntity.Core.Sensing.Receptors.InfraVision
             var ctx = initializer.DeclareEntityContext<TItemId>();
             ctx.Register(SenseSourceCollectionContinuousSystemId, 57500, RegisterCollectSenseSourcesSystem);
         }
-        
-        protected override bool GetOrCreateLightSystem(IServiceResolver serviceResolver, out SenseReceptorSystemBase<VisionSense, TemperatureSense> ls)
+
+        protected override (ISensePropagationAlgorithm, ISensePhysics) GetOrCreatePhysics(IServiceResolver serviceResolver)
         {
             if (!serviceResolver.TryResolve(out IInfraVisionSenseReceptorPhysicsConfiguration physics))
             {
-                if (!serviceResolver.TryResolve(out IHeatPhysicsConfiguration physicsConfig))
+                var physicsConfig = serviceResolver.Resolve<IHeatPhysicsConfiguration>();
+                if (!serviceResolver.TryResolve(out ShadowPropagationResistanceDataSource ds))
                 {
-                    ls = default;
-                    return false;
+                    ds = new ShadowPropagationResistanceDataSource();
                 }
-                
-                physics = new InfraVisionSenseReceptorPhysicsConfiguration(physicsConfig);
+
+                physics = new InfraVisionSenseReceptorPhysicsConfiguration(physicsConfig, ds);
             }
 
-            if (!serviceResolver.TryResolve(out ls))
-            {
-                ls = new InfraVisionReceptorSystem(serviceResolver.ResolveToReference<ISensePropertiesSource>(),
-                                                   serviceResolver.ResolveToReference<ISenseStateCacheProvider>(),
-                                                   serviceResolver.ResolveToReference<IGlobalSenseStateCacheProvider>(),
-                                                   serviceResolver.ResolveToReference<ITimeSource>(),
-                                                   physics);
-            }
-
-            return true;
+            return (physics.CreateInfraVisionSensorPropagationAlgorithm(), physics.InfraVisionPhysics);
         }
-
     }
 }

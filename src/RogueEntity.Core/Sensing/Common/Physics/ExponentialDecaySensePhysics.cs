@@ -17,8 +17,17 @@ namespace RogueEntity.Core.Sensing.Common.Physics
         public ExponentialDecaySensePhysics(DistanceCalculation distanceMeasurement)
         {
             DistanceMeasurement = distanceMeasurement;
+            AdjacencyRule = distanceMeasurement.AsAdjacencyRule();
         }
 
+        public ExponentialDecaySensePhysics(DistanceCalculation distanceMeasurement, AdjacencyRule adjacencyRule)
+        {
+            AdjacencyRule = adjacencyRule;
+            DistanceMeasurement = distanceMeasurement;
+        }
+
+        public AdjacencyRule AdjacencyRule { get; }
+        
         public DistanceCalculation DistanceMeasurement { get; }
 
         public float SignalRadiusForIntensity(float intensity)

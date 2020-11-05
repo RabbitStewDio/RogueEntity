@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using RogueEntity.Core.Positioning;
-using RogueEntity.Core.Utils.Maps;
+using RogueEntity.Core.Utils.DataViews;
 using Serilog;
 
 namespace RogueEntity.Core.Utils.Algorithms

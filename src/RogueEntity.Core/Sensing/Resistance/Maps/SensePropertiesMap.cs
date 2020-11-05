@@ -4,37 +4,65 @@ using System.Threading.Tasks;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Positioning.MapLayers;
 using RogueEntity.Core.Utils;
-using RogueEntity.Core.Utils.Maps;
+using RogueEntity.Core.Utils.DataViews;
 using Serilog;
-using Rectangle = RogueEntity.Core.Utils.Rectangle;
 
 namespace RogueEntity.Core.Sensing.Resistance.Maps
 {
-    public interface ISensePropertiesLayer<TGameContext>
+    public interface ISensePropertiesLayer<TGameContext, TSense>
     {
         bool IsDefined(MapLayer layer);
-        void AddProcess(MapLayer layer, ISensePropertiesDataProcessor<TGameContext> p);
+        void AddProcess(MapLayer layer, ISensePropertiesDataProcessor<TGameContext, TSense> p);
         void RemoveLayer(MapLayer layer);
     }
     
-    public class SensePropertiesMap<TGameContext> : IReadOnlyView2D<SensoryResistance>, ISensePropertiesLayer<TGameContext>
+    public class SensePropertiesMap<TGameContext, TSense> : IReadOnlyDynamicDataView2D<SensoryResistance<TSense>>, 
+                                                            ISensePropertiesLayer<TGameContext, TSense>
     {
-        static readonly ILogger Logger = SLog.ForContext<SensePropertiesMap<TGameContext>>();
+        static readonly ILogger Logger = SLog.ForContext<SensePropertiesMap<TGameContext, TSense>>();
         
         readonly int z;
-        readonly Dictionary<byte, ISensePropertiesDataProcessor<TGameContext>> dependencies;
-        readonly DynamicDataView<SensoryResistance> data;
-        readonly DynamicBoolDataView dataDirty;
-        readonly List<ISensePropertiesDataProcessor<TGameContext>> dependenciesAsList;
+        readonly Dictionary<byte, ISensePropertiesDataProcessor<TGameContext, TSense>> dependencies;
+        readonly DynamicDataView<SensoryResistance<TSense>> resistanceData;
+        readonly List<ISensePropertiesDataProcessor<TGameContext, TSense>> dependenciesAsList;
         bool combinerDirty;
 
         public SensePropertiesMap(int z, int offsetX, int offsetY, int tileWidth, int tileHeight)
         {
             this.z = z;
-            this.dependencies = new Dictionary<byte, ISensePropertiesDataProcessor<TGameContext>>();
-            this.data = new DynamicDataView<SensoryResistance>(offsetX, offsetY, tileWidth, tileHeight);
-            this.dataDirty = new DynamicBoolDataView(offsetX, offsetY, tileWidth, tileHeight);
-            this.dependenciesAsList = new List<ISensePropertiesDataProcessor<TGameContext>>();
+            this.dependencies = new Dictionary<byte, ISensePropertiesDataProcessor<TGameContext, TSense>>();
+            this.resistanceData = new DynamicDataView<SensoryResistance<TSense>>(offsetX, offsetY, tileWidth, tileHeight);
+            this.dependenciesAsList = new List<ISensePropertiesDataProcessor<TGameContext, TSense>>();
+        }
+
+        public int TileSizeX
+        {
+            get { return resistanceData.TileSizeX; }
+        }
+
+        public int TileSizeY
+        {
+            get { return resistanceData.TileSizeY; }
+        }
+
+        public int OffsetX
+        {
+            get { return resistanceData.OffsetX; }
+        }
+
+        public int OffsetY
+        {
+            get { return resistanceData.OffsetY; }
+        }
+
+        public Rectangle GetActiveBounds()
+        {
+            return resistanceData.GetActiveBounds();
+        }
+
+        public List<Rectangle> GetActiveTiles(List<Rectangle> data = null)
+        {
+            return this.resistanceData.GetActiveTiles(data);
         }
 
         public bool IsDefined(MapLayer layer)
@@ -42,7 +70,7 @@ namespace RogueEntity.Core.Sensing.Resistance.Maps
             return dependencies.TryGetValue(layer.LayerId, out _);
         }
 
-        public void AddProcess(MapLayer layer, ISensePropertiesDataProcessor<TGameContext> p)
+        public void AddProcess(MapLayer layer, ISensePropertiesDataProcessor<TGameContext, TSense> p)
         {
             dependencies.Add(layer.LayerId, p);
             combinerDirty = true;
@@ -57,16 +85,21 @@ namespace RogueEntity.Core.Sensing.Resistance.Maps
             }
         }
 
-        public bool TryGet(int x, int y, out SensoryResistance result)
+        public bool TryGetData(int x, int y, out IReadOnlyBoundedDataView<SensoryResistance<TSense>> raw)
         {
-            return data.TryGet(x, y, out result);
+            return resistanceData.TryGetData(x, y, out raw);
         }
 
-        public SensoryResistance this[int x, int y]
+        public bool TryGet(int x, int y, out SensoryResistance<TSense> result)
+        {
+            return resistanceData.TryGet(x, y, out result);
+        }
+
+        public SensoryResistance<TSense> this[int x, int y]
         {
             get
             {
-                return data[x, y];
+                return resistanceData[x, y];
             }
         }
 
@@ -83,7 +116,6 @@ namespace RogueEntity.Core.Sensing.Resistance.Maps
             var mapLayer = pos.LayerId;
             if (mapLayer == MapLayer.Indeterminate.LayerId)
             {
-                dataDirty.TrySet(x, y, true);
                 foreach (var p in dependencies.Values)
                 {
                     p.MarkDirty(x, y);
@@ -91,7 +123,6 @@ namespace RogueEntity.Core.Sensing.Resistance.Maps
             }
             else if (dependencies.TryGetValue(mapLayer, out var processorsByLayer))
             {
-                dataDirty.TrySet(x, y, true);
                 processorsByLayer.MarkDirty(x, y);
             }
         }
@@ -143,7 +174,7 @@ namespace RogueEntity.Core.Sensing.Resistance.Maps
         {
             foreach (var (x, y) in bounds.Contents)
             {
-                var sp = new SensoryResistance();
+                var sp = new SensoryResistance<TSense>();
                 foreach (var p in dependenciesAsList)
                 {
                     if (p.Data.TryGet(x, y, out var d))
@@ -152,7 +183,7 @@ namespace RogueEntity.Core.Sensing.Resistance.Maps
                     }
                 }
 
-                data.TrySet(x, y, sp);
+                resistanceData.TrySet(x, y, sp);
             }
         }
     }

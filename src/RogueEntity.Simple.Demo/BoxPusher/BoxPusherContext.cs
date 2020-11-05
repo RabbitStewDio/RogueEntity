@@ -8,8 +8,8 @@ namespace RogueEntity.Simple.Demo.BoxPusher
 {
     public class BoxPusherContext: IItemContext<BoxPusherContext, ItemReference>, 
                                    IItemContext<BoxPusherContext, ActorReference>,
-                                   IGridMapContext<BoxPusherContext, ItemReference>,
-                                   IGridMapContext<BoxPusherContext, ActorReference>
+                                   IGridMapContext<ItemReference>,
+                                   IGridMapContext<ActorReference>
     {
         ItemContextBackend<BoxPusherContext, ItemReference> itemContext;
         ItemContextBackend<BoxPusherContext, ActorReference> actorContext;
@@ -23,36 +23,46 @@ namespace RogueEntity.Simple.Demo.BoxPusher
             actorContext = new ItemContextBackend<BoxPusherContext, ActorReference>(new ActorReferenceMetaData());
             
             itemMap = new DefaultGridPositionContextBackend<BoxPusherContext, ItemReference>()
-                .WithRawMapLayer(BoxPusherMapLayers.Floor, new DefaultGridMapDataContext<BoxPusherContext, ItemReference>(BoxPusherMapLayers.Floor, tileWidth, tileHeight))
-                .WithRawMapLayer(BoxPusherMapLayers.Items, new DefaultGridMapDataContext<BoxPusherContext, ItemReference>(BoxPusherMapLayers.Items, tileWidth, tileHeight));
+                .WithMapLayer(BoxPusherMapLayers.Floor, new DefaultGridMapDataContext<ItemReference>(BoxPusherMapLayers.Floor, tileWidth, tileHeight))
+                .WithMapLayer(BoxPusherMapLayers.Items, new DefaultGridMapDataContext<ItemReference>(BoxPusherMapLayers.Items, tileWidth, tileHeight));
             actorMap = new DefaultGridPositionContextBackend<BoxPusherContext, ActorReference>()
-                .WithRawMapLayer(BoxPusherMapLayers.Actors, new DefaultGridMapDataContext<BoxPusherContext, ActorReference>(BoxPusherMapLayers.Actors, tileWidth, tileHeight));
+                .WithMapLayer(BoxPusherMapLayers.Actors, new DefaultGridMapDataContext<ActorReference>(BoxPusherMapLayers.Actors, tileWidth, tileHeight));
         }
 
         IItemResolver<BoxPusherContext, ItemReference> IItemContext<BoxPusherContext, ItemReference>.ItemResolver => itemContext.ItemResolver;
         IItemResolver<BoxPusherContext, ActorReference> IItemContext<BoxPusherContext, ActorReference>.ItemResolver => actorContext.ItemResolver;
 
-        ReadOnlyListWrapper<MapLayer> IGridMapContext<BoxPusherContext, ItemReference>.GridLayers() => itemMap.GridLayers();
-        ReadOnlyListWrapper<MapLayer> IGridMapContext<BoxPusherContext, ActorReference>.GridLayers() => actorMap.GridLayers();
+        ReadOnlyListWrapper<MapLayer> IGridMapContext<ItemReference>.GridLayers() => itemMap.GridLayers();
+        ReadOnlyListWrapper<MapLayer> IGridMapContext<ActorReference>.GridLayers() => actorMap.GridLayers();
 
-        public bool TryGetGridDataFor(MapLayer layer, out IGridMapDataContext<BoxPusherContext, ItemReference> data)
+        public bool TryGetGridDataFor(MapLayer layer, out IGridMapDataContext<ItemReference> data)
         {
             return itemMap.TryGetGridDataFor(layer, out data);
         }
 
-        public bool TryGetGridDataFor(MapLayer layer, out IGridMapDataContext<BoxPusherContext, ActorReference> data)
+        public bool TryGetGridDataFor(MapLayer layer, out IGridMapDataContext<ActorReference> data)
         {
             return actorMap.TryGetGridDataFor(layer, out data);
         }
 
-        public bool TryGetGridRawDataFor(MapLayer layer, out IGridMapRawDataContext<ItemReference> data)
+        public int OffsetX
         {
-            return itemMap.TryGetGridRawDataFor(layer, out data);
+            get { return itemMap.OffsetX; }
         }
 
-        public bool TryGetGridRawDataFor(MapLayer layer, out IGridMapRawDataContext<ActorReference> data)
+        public int OffsetY
         {
-            return actorMap.TryGetGridRawDataFor(layer, out data);
+            get { return itemMap.OffsetY; }
+        }
+
+        public int TileSizeX
+        {
+            get { return itemMap.TileSizeX; }
+        }
+
+        public int TileSizeY
+        {
+            get { return itemMap.TileSizeY; }
         }
 
         public ItemRegistry<BoxPusherContext, ActorReference> ActorRegistry

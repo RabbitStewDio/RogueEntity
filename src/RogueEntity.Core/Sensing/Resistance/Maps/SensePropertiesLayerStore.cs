@@ -7,13 +7,13 @@ using RogueEntity.Core.Utils;
 
 namespace RogueEntity.Core.Sensing.Resistance.Maps
 {
-    public class SensePropertiesLayerStore<TGameContext>
+    public class SensePropertiesLayerStore<TGameContext, TSense>
     {
-        readonly Dictionary<int, SensePropertiesMap<TGameContext>> layers;
+        readonly Dictionary<int, SensePropertiesMap<TGameContext, TSense>> layers;
 
         public SensePropertiesLayerStore()
         {
-            this.layers = new Dictionary<int, SensePropertiesMap<TGameContext>>();
+            this.layers = new Dictionary<int, SensePropertiesMap<TGameContext, TSense>>();
         }
 
         public ReadOnlyListWrapper<int> ZLayers => layers.Keys.ToList();
@@ -23,7 +23,7 @@ namespace RogueEntity.Core.Sensing.Resistance.Maps
             layers.Remove(z);
         }
 
-        public void DefineLayer(int z, [NotNull] SensePropertiesMap<TGameContext> layerData)
+        public void DefineLayer(int z, [NotNull] SensePropertiesMap<TGameContext, TSense> layerData)
         {
             if (z < 0)
             {
@@ -33,7 +33,7 @@ namespace RogueEntity.Core.Sensing.Resistance.Maps
             layers[z] = layerData ?? throw new ArgumentNullException(nameof(layerData));
         }
 
-        public bool TryGetLayer(int z, out SensePropertiesMap<TGameContext> layerData)
+        public bool TryGetLayer(int z, out SensePropertiesMap<TGameContext, TSense> layerData)
         {
             return layers.TryGetValue(z, out layerData);
         }

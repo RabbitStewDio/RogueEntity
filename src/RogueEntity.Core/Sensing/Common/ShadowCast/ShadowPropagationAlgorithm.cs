@@ -1,9 +1,10 @@
 using System;
 using JetBrains.Annotations;
+using RogueEntity.Core.Directionality;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Sensing.Common.Physics;
 using RogueEntity.Core.Utils.Algorithms;
-using RogueEntity.Core.Utils.Maps;
+using RogueEntity.Core.Utils.DataViews;
 using static RogueEntity.Core.Sensing.Common.ShadowCast.ShadowPropagationAlgorithmHelpers;
 
 namespace RogueEntity.Core.Sensing.Common.ShadowCast
@@ -41,6 +42,7 @@ namespace RogueEntity.Core.Sensing.Common.ShadowCast
                                                          float intensity,
                                                          in Position2D position,
                                                          in TResistanceMap resistanceMap,
+                                                         IReadOnlyView2D<DirectionalityInformation> readOnlyView2D,
                                                          SenseSourceData data = null)
             where TResistanceMap : IReadOnlyView2D<float>
         {
