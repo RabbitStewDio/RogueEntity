@@ -52,10 +52,7 @@ namespace RogueEntity.Core.Utils.DataViews
                                                string endRow = "",
                                                string end = "")
         {
-            if (elementStringifier == null)
-            {
-                elementStringifier = obj => obj.ToString();
-            }
+            elementStringifier ??= obj => obj.ToString();
 
             var result = new StringBuilder(begin);
             for (var y = bounds.MinExtentY; y <= bounds.MaxExtentY; y++)
@@ -63,7 +60,8 @@ namespace RogueEntity.Core.Utils.DataViews
                 result.Append(beginRow);
                 for (var x = bounds.MinExtentX; x <= bounds.MaxExtentX; x++)
                 {
-                    result.Append(elementStringifier(map[x, y]));
+                    var val = map[x, y];
+                    result.Append(elementStringifier(val));
                     if (x != bounds.MaxExtentX)
                     {
                         result.Append(elementSeparator);

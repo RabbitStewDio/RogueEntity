@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using JetBrains.Annotations;
+using RogueEntity.Core.Directionality;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Sensing.Common.Physics;
 using RogueEntity.Core.Utils;
@@ -20,7 +22,8 @@ namespace RogueEntity.Core.Sensing.Common.FloodFill
         Position2D origin;
         float radius;
         float intensity;
-        
+        IReadOnlyView2D<DirectionalityInformation> directionalityView;
+
         FloodFillDijkstraMap(in Rectangle bounds) : base(in bounds)
         {
             this.directions = ReadOnlyListWrapper<Direction>.Empty;
@@ -31,7 +34,8 @@ namespace RogueEntity.Core.Sensing.Common.FloodFill
                                                   float intensity,
                                                   in Position2D origin, 
                                                   [NotNull] ISensePhysics sensePhysics,
-                                                  [NotNull] IReadOnlyView2D<float> resistanceMap)
+                                                  [NotNull] IReadOnlyView2D<float> resistanceMap,
+                                                  [NotNull] IReadOnlyView2D<DirectionalityInformation> directionalityView)
         {
             var radius = sensePhysics.SignalRadiusForIntensity(intensity);
             Console.WriteLine("Using Origin: " + origin + " Radius: " + radius);
@@ -39,7 +43,7 @@ namespace RogueEntity.Core.Sensing.Common.FloodFill
             var radiusInt = (int)Math.Ceiling(radius);
             var bounds = new Rectangle(origin.X - radiusInt, origin.Y - radiusInt, 2 * radiusInt + 1, 2 * radiusInt + 1);
             var result = new FloodFillDijkstraMap(in bounds);
-            result.Configure(in sense, intensity, in origin, sensePhysics, resistanceMap);
+            result.Configure(in sense, intensity, in origin, sensePhysics, resistanceMap, directionalityView);
             
             Console.WriteLine("Using bounds " + bounds);
             
@@ -51,10 +55,12 @@ namespace RogueEntity.Core.Sensing.Common.FloodFill
                               float intensity,
                               in Position2D origin, 
                               [NotNull] ISensePhysics sensePhysics,
-                              [NotNull] IReadOnlyView2D<float> resistanceMap)
+                              [NotNull] IReadOnlyView2D<float> resistanceMap,
+                              [NotNull] IReadOnlyView2D<DirectionalityInformation> directionalityView)
         {
             this.intensity = intensity;
             this.radius = sensePhysics.SignalRadiusForIntensity(intensity);
+            this.directionalityView = directionalityView ?? throw new ArgumentNullException(nameof(directionalityView));
             this.origin = origin;
             this.Sense = sense;
             this.SensePhysics = sensePhysics ?? throw new ArgumentNullException(nameof(sensePhysics));
@@ -105,7 +111,22 @@ namespace RogueEntity.Core.Sensing.Common.FloodFill
             }
         }
 
-        protected override ReadOnlyListWrapper<Direction> AdjacencyRule => directions;
+        protected override void PopulateDirections(Position2D basePosition, List<Direction> buffer)
+        {
+            buffer.Clear();
+            if (!directionalityView.TryGet(basePosition.X, basePosition.Y, out var dir))
+            {
+                dir = DirectionalityInformation.All;
+            }
+            
+            foreach (var d in directions)
+            {
+                if (dir.IsMovementAllowed(d))
+                {
+                    buffer.Add(d);
+                }
+            }
+        }
 
         protected override bool EdgeCostInformation(in Position2D stepOrigin, in Direction d, float stepOriginCost, out float cost)
         {

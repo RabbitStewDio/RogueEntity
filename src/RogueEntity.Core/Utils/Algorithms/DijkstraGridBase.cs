@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using RogueEntity.Core.Directionality;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Utils.DataViews;
 using Serilog;
@@ -93,19 +94,19 @@ namespace RogueEntity.Core.Utils.Algorithms
         readonly BoundedDataView<int> resultMapCoords;
         readonly BoundedDataView<float> resultMapDistanceCost;
         readonly IntPriorityQueue<WeightedEuclid> openNodes;
+        readonly List<Direction> directions;
 
         protected DijkstraGridBase(in Rectangle bounds)
         {
             this.bounds = bounds;
 
+            this.directions = new List<Direction>();
             this.openNodes = new IntPriorityQueue<WeightedEuclid>(bounds.Width * bounds.Height);
             this.resultMapCoords = new BoundedDataView<int>(in bounds);
             this.resultMapDistanceCost = new BoundedDataView<float>(in bounds);
         }
 
         public Rectangle Bounds => bounds;
-
-        protected abstract ReadOnlyListWrapper<Direction> AdjacencyRule { get; }
 
         protected virtual void Resize(in Rectangle newBounds)
         {
@@ -144,6 +145,8 @@ namespace RogueEntity.Core.Utils.Algorithms
             return resultMapDistanceCost.TryGet(in pos, out result);
         }
 
+        protected abstract void PopulateDirections(Position2D basePosition, List<Direction> buffer);
+
         protected bool RescanMap(out Position2D lowestNode,
                                  int maxSteps = int.MaxValue)
         {
@@ -164,7 +167,8 @@ namespace RogueEntity.Core.Utils.Algorithms
 
                 nodeCount += 1;
 
-                foreach (var d in AdjacencyRule)
+                PopulateDirections(openNodePosition, directions);
+                foreach (var d in directions)
                 {
                     var nextNodePos = openNodePosition + d;
 

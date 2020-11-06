@@ -1,5 +1,7 @@
 using System;
+using FluentAssertions;
 using NUnit.Framework;
+using RogueEntity.Core.Directionality;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Sensing;
 using RogueEntity.Core.Sensing.Common;
@@ -162,7 +164,7 @@ namespace RogueEntity.Core.Tests.Sensing.Common
    .   ,   .   ,   .   ,   .   ,  4.172,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   
    .   ,   .   ,   .   ,   .   ,  4.586,  5.586,  6.586,  7.000,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   
    .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,  8.000,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   
-   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,  3.500,   .   ,  0.672,   .   ,   .   ,   .   ,   .   ,   .   
+   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,  3.500,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   
    .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,  2.500,  2.086,   .   ,   .   ,   .   ,   .   ,   .   ,   .   
    .   ,   .   ,   .   ,   .   ,   .   ,  0.086,  1.086,  1.500,  1.086,  0.672,   .   ,   .   ,   .   ,   .   ,   .   
    .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   
@@ -180,7 +182,7 @@ namespace RogueEntity.Core.Tests.Sensing.Common
   ~ ,  ~ ,  ~ ,  ~ , ┌  ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ 
   ~ ,  ~ ,  ~ ,  ~ , ├  , ├  , ┌  , ┬  ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ 
   ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ , ┼ *,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ 
-  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ , ┴  ,  ~ , ┐  ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ 
+  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ , ┴  ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ 
   ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ , ┴  , ┘  ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ 
   ~ ,  ~ ,  ~ ,  ~ ,  ~ , ├  , └  , ┴  , ┘  , ┘  ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ 
   ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ 
@@ -241,13 +243,15 @@ namespace RogueEntity.Core.Tests.Sensing.Common
             Console.WriteLine("Using room layout \n" + PrintMap(resistanceMap, new Rectangle(0, 0, width, height)));
             
             var directionalityMapSystem = new SensoryResistanceDirectionalitySystem<VisionSense>(resistanceMap.As3DMap(0).Transform(e => new SensoryResistance<VisionSense>(e)));
+            directionalityMapSystem.MarkGloballyDirty();
             directionalityMapSystem.Process();
-            directionalityMapSystem.TryGetView(0, out var directionalityMap);
+            directionalityMapSystem.TryGetView(0, out var directionalityMap).Should().BeTrue();
             
             var algo = new FloodFillPropagationAlgorithm(LinearDecaySensePhysics.For(dc), new FloodFillWorkingDataSource());
             var calculatedResult = algo.Calculate(source, source.Intensity, pos, resistanceMap, directionalityMap);
             Console.WriteLine(PrintMap(calculatedResult, new Rectangle(new Position2D(0, 0), radius, radius)));
             Console.WriteLine(PrintMap(new SenseMapDirectionTestView(calculatedResult), new Rectangle(new Position2D(0, 0), radius, radius)));
+            Console.WriteLine(PrintMap(directionalityMap.Transform(x => $" [{x.ToFormattedString()}]"), new Rectangle(0, 0, width, height)));
 
             var expectedResult = Parse(intensityResultText);
             AssertEquals(calculatedResult, expectedResult, new Rectangle(0, 0, width, height), pos);

@@ -10,7 +10,7 @@ namespace RogueEntity.Core.Sensing.Common
                                                   float intensity,
                                                   in Position2D position,
                                                   in TResistanceMap resistanceMap,
-                                                  IReadOnlyView2D<DirectionalityInformation> directionView,
+                                                  IReadOnlyView2D<DirectionalityInformation> directionalityView,
                                                   SenseSourceData data = null)
             where TResistanceMap : IReadOnlyView2D<float>;
     }

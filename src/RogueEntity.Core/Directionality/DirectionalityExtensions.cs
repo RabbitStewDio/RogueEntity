@@ -41,5 +41,19 @@ namespace RogueEntity.Core.Directionality
             var mask = Masks[idx.Clamp(0, 9)];
             return d & ~mask;
         }
+
+        public static string ToFormattedString(this DirectionalityInformation d)
+        {
+            var s = "";
+            s += (d.IsMovementAllowed(Direction.Up)) ? "Up" : "__";
+            s += (d.IsMovementAllowed(Direction.UpRight)) ? ",UR" : ",__";
+            s += (d.IsMovementAllowed(Direction.Right)) ? ",Ri" : ",__";
+            s += (d.IsMovementAllowed(Direction.DownRight)) ? ",DR" : ",__";
+            s += (d.IsMovementAllowed(Direction.Down)) ? ",Dw" : ",__";
+            s += (d.IsMovementAllowed(Direction.DownLeft)) ? ",DL" : ",__";
+            s += (d.IsMovementAllowed(Direction.Left)) ? ",Le" : ",__";
+            s += (d.IsMovementAllowed(Direction.UpLeft)) ? ",UL" : ",__";
+            return s;
+        }
     }
 }

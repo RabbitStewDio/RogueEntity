@@ -206,19 +206,18 @@ namespace RogueEntity.Core.Utils.DataViews
         {
             var dx = DataViewPartitions.TileSplit(x, offsetX, tileSizeX);
             var dy = DataViewPartitions.TileSplit(y, offsetY, tileSizeY);
-            if (!index.TryGetValue(new Position2D(dx, dy), out var data))
-            {
-                data = new TrackedDataView(new Rectangle(dx * tileSizeX + offsetX, dy * tileSizeY + offsetY, tileSizeX, tileSizeY), currentTime);
-                index[new Position2D(dx, dy)] = data;
-                ViewCreated?.Invoke(this, new DynamicBoolDataViewEventArgs(data));
-                activeBounds = default;
-            }
-            else
+            if (index.TryGetValue(new Position2D(dx, dy), out var data))
             {
                 data.MarkUsedForWriting();
+                return data;
             }
 
+            data = new TrackedDataView(new Rectangle(dx * tileSizeX + offsetX, dy * tileSizeY + offsetY, tileSizeX, tileSizeY), currentTime);
+            index[new Position2D(dx, dy)] = data;
+            ViewCreated?.Invoke(this, new DynamicBoolDataViewEventArgs(data));
+            activeBounds = default;
             return data;
+
         }
 
         public bool TrySet(int x, int y, in bool value)
@@ -251,7 +250,7 @@ namespace RogueEntity.Core.Utils.DataViews
             return false;
         }
 
-        public bool TryGetWriteAccess(int x, int y, out IBoundedDataView<bool> data)
+        public bool TryGetWriteAccess(int x, int y, out IBoundedDataView<bool> data, DataViewCreateMode mode = DataViewCreateMode.Nothing)
         {
             if (TryGetDataInternal(x, y, out TrackedDataView v))
             {
@@ -259,8 +258,21 @@ namespace RogueEntity.Core.Utils.DataViews
                 return true;
             }
 
-            data = default;
-            return false;
+            if (mode == DataViewCreateMode.Nothing)
+            {
+                data = default;
+                return false;
+            }
+            
+            var dx = DataViewPartitions.TileSplit(x, offsetX, tileSizeX);
+            var dy = DataViewPartitions.TileSplit(y, offsetY, tileSizeY);
+            var dataRaw = new TrackedDataView(new Rectangle(dx * tileSizeX + offsetX, dy * tileSizeY + offsetY, tileSizeX, tileSizeY), currentTime);
+            index[new Position2D(dx, dy)] = dataRaw;
+            ViewCreated?.Invoke(this, new DynamicBoolDataViewEventArgs(dataRaw));
+            activeBounds = default;
+            
+            data = dataRaw;
+            return true;
         }
 
         public bool TryGetRawAccess(int x, int y, out IBoundedDataViewRawAccess<bool> raw)

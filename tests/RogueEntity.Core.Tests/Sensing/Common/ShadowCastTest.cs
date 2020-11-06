@@ -69,7 +69,7 @@ namespace RogueEntity.Core.Tests.Sensing.Common
         const string RoomWithPillarsResult = @"
    .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   
    .   ,  0.757,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   
-  0.528,  1.394,  2.172,  2.764,  3.000,  2.764,   .   ,   .   ,   .   
+  0.528,  1.394,  2.172,  2.764,  3.000,   .   ,   .   ,   .   ,   .   
   0.877,  1.838,  2.764,  3.586,  4.000,  3.586,  2.764,  1.838,  0.877
   1.000,  2.000,  3.000,  4.000,  5.000,  4.000,  3.000,  2.000,  1.000
   0.877,  1.838,  2.764,  3.586,  4.000,  3.586,  2.764,  1.838,  0.877
@@ -81,7 +81,7 @@ namespace RogueEntity.Core.Tests.Sensing.Common
         const string RoomWithPillarsDirection = @"
   ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ 
   ~ , ┌  ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ 
- ┌# , ┌  , ┌  , ┌# , ┬# , ┐  ,  ~ ,  ~ ,  ~ 
+ ┌# , ┌  , ┌  , ┌# , ┬# ,  ~ ,  ~ ,  ~ ,  ~ 
  ┌# , ┌  , ┌  , ┌  , ┬  , ┐# , ┐# , ┐  , ┐# 
  ├# , ├  , ├  , ├  , ┼ *, ┤  , ┤  , ┤  , ┤# 
  └# , └  , └  , └  , ┴  , ┘  , ┘  , ┘  , ┘# 
@@ -201,12 +201,51 @@ namespace RogueEntity.Core.Tests.Sensing.Common
   ~ ,  ~ , └# , └# , ┴# , ┘# , ┘# ,  ~ ,  ~
 ";
 
+        const string DiagonalWallTestRoom = @"
+// 11x11; an empty room
+1, 1, 1, 1, 1, 1, 1, 1, 1
+1, 0, 0, 0, 1, 0, 0, 0, 1 
+1, 0, 0, 0, 0, 1, 0, 0, 1 
+1, 0, 0, 0, 0, 0, 1, 0, 1 
+1, 1, 0, 0, ., 0, 0, 0, 1 
+1, 1, 1, 0, 0, 0, 0, 0, 1 
+1, 0, 1, 1, 0, 0, 1, 1, 1 
+1, 0, 0, 1, 1, 0, 0, 0, 1 
+1, 1, 1, 1, 1, 1, 1, 1, 1 
+";
+
+        const string DiagonalWallTestResult = @"
+   .   ,   .   ,  0.528,   .   ,   .   ,   .   ,   .   ,   .   ,   .   
+   .   ,  0.757,  1.394,  1.838,  2.000,   .   ,   .   ,   .   ,   .   
+  0.528,  1.394,  2.172,  2.764,  3.000,  2.764,   .   ,   .   ,   .   
+   .   ,  1.838,  2.764,  3.586,  4.000,  3.586,  2.764,  1.838,  0.877
+   .   ,  2.000,  3.000,  4.000,  5.000,  4.000,  3.000,  2.000,  1.000
+   .   ,  1.838,  2.764,  3.586,  4.000,  3.586,  2.764,  1.838,  0.877
+   .   ,   .   ,  2.172,  2.764,  3.000,  2.764,  2.172,  1.394,  0.528
+   .   ,   .   ,   .   ,  1.838,  2.000,  1.838,  1.394,   .   ,   .   
+   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,  0.528,   .   ,   .   
+";
+
+        const string DiagonalWallTestDirections = @"
+  ~ ,  ~ , ┌# ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ 
+  ~ , ┌  , ┌  , ┌  , ┬# ,  ~ ,  ~ ,  ~ ,  ~ 
+ ┌# , ┌  , ┌  , ┌  , ┬  , ┐# ,  ~ ,  ~ ,  ~ 
+  ~ , ┌  , ┌  , ┌  , ┬  , ┐  , ┐# , ┐  , ┐# 
+  ~ , ├# , ├  , ├  , ┼ *, ┤  , ┤  , ┤  , ┤# 
+  ~ , └# , └# , └  , ┴  , ┘  , ┘  , ┘  , ┘# 
+  ~ ,  ~ , └# , └# , ┴  , ┘  , ┘# , ┘# , ┘# 
+  ~ ,  ~ ,  ~ , └# , ┴# , ┘  , ┘  ,  ~ ,  ~ 
+  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ , ┘# ,  ~ ,  ~
+";
+
+        
         [Test]
         [TestCase(nameof(PartialBlockedRoom), 9, 9, DistanceCalculation.Euclid, AdjacencyRule.EightWay, PartialBlockedRoom, PartialBlockedResult, PartialBlockedDirections)]
         [TestCase(nameof(EmptyRoom), 9, 9, DistanceCalculation.Euclid, AdjacencyRule.EightWay, EmptyRoom, EmptyRoomResult, EmptyRoomDirections)]
         [TestCase(nameof(RoomWithPillars), 9, 9, DistanceCalculation.Euclid, AdjacencyRule.EightWay, RoomWithPillars, RoomWithPillarsResult, RoomWithPillarsDirection)]
         [TestCase(nameof(RoomDoorNear), 9, 9, DistanceCalculation.Euclid, AdjacencyRule.EightWay, RoomDoorNear, RoomDoorNearResult, RoomDoorNearDirection)]
         [TestCase(nameof(RoomDoorFar), 9, 9, DistanceCalculation.Euclid, AdjacencyRule.EightWay, RoomDoorFar, RoomDoorFarResult, RoomDoorFarDirections)]
+        [TestCase(nameof(DiagonalWallTestRoom), 9, 9, DistanceCalculation.Euclid, AdjacencyRule.EightWay, DiagonalWallTestRoom, DiagonalWallTestResult, DiagonalWallTestDirections)]
         public void ValidateMap(string name, int width, int height, DistanceCalculation dc, AdjacencyRule ar, string resistanceMapText, string brightnessResultText, string directionResultText)
         {
             var radius = width / 2;
@@ -214,7 +253,7 @@ namespace RogueEntity.Core.Tests.Sensing.Common
             var pos = new Position2D(width / 2, height / 2);
 
             var resistanceMap = Parse(resistanceMapText, out var roomArea);
-            Console.WriteLine("Using room layout \n" + PrintMap(resistanceMap));
+            Console.WriteLine("Using room layout \n" + PrintMap(resistanceMap, roomArea));
 
             var directionalityMapSystem = new SensoryResistanceDirectionalitySystem<VisionSense>(resistanceMap.As3DMap(0).Transform(e => new SensoryResistance<VisionSense>(e)));
             directionalityMapSystem.Process();

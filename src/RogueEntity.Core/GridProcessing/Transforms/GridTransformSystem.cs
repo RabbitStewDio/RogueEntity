@@ -8,7 +8,7 @@ using RogueEntity.Core.Utils.DataViews;
 
 namespace RogueEntity.Core.GridProcessing.Transforms
 {
-    public abstract class GridTransformSystem<TSourceData, TTargetData>: IReadOnlyDynamicDataView3D<TTargetData>
+    public abstract class GridTransformSystem<TSourceData, TTargetData> : IReadOnlyDynamicDataView3D<TTargetData>
     {
         readonly IReadOnlyDynamicDataView3D<TSourceData> sourceData;
         readonly Dictionary<int, DynamicDataView<TTargetData>> targetData;
@@ -53,7 +53,7 @@ namespace RogueEntity.Core.GridProcessing.Transforms
         {
             if (buffer == null)
             {
-                buffer= new List<int>();
+                buffer = new List<int>();
             }
             else
             {
@@ -121,12 +121,12 @@ namespace RogueEntity.Core.GridProcessing.Transforms
             {
                 return m;
             }
-            
+
             m = new DynamicDataView<TTargetData>(sourceData.OffsetX, sourceData.OffsetY, sourceData.TileSizeX, sourceData.TileSizeY);
             targetData[z] = m;
             return m;
         }
-        
+
         public void Process()
         {
             processingParameterCache.Clear();
@@ -141,9 +141,13 @@ namespace RogueEntity.Core.GridProcessing.Transforms
                 var directionMap = GetWritableMap(zPosition);
                 foreach (var tile in sourceView.GetActiveTiles(activeTileBuffer))
                 {
-                    if (!dirtyMap.IsDirty(tile.X, tile.Y, zPosition) ||
-                        !sourceView.TryGetData(tile.X, tile.Y, out var sourceTile) ||
-                        !directionMap.TryGetWriteAccess(tile.X, tile.Y, out var resultTile))
+                    if (!dirtyMap.IsDirty(tile.X, tile.Y, zPosition))
+                    {
+                        continue;
+                    }
+
+                    if (!sourceView.TryGetData(tile.X, tile.Y, out var sourceTile) ||
+                        !directionMap.TryGetWriteAccess(tile.X, tile.Y, out var resultTile, DataViewCreateMode.CreateMissing))
                     {
                         continue;
                     }
@@ -161,7 +165,7 @@ namespace RogueEntity.Core.GridProcessing.Transforms
         {
             dirtyMap.MarkGloballyDirty();
         }
-        
+
         public void MarkDirty(PositionDirtyEventArgs args)
         {
             dirtyMap.MarkDirty(args.Position);
@@ -176,12 +180,10 @@ namespace RogueEntity.Core.GridProcessing.Transforms
         {
             dirtyMap.MarkClean();
         }
-        
+
         public void MarkCleanSystem<TGameContext>(TGameContext ctx)
         {
             dirtyMap.MarkClean();
         }
-
-
     }
 }

@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using JetBrains.Annotations;
+using RogueEntity.Core.Directionality;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Sensing.Common.Physics;
 using RogueEntity.Core.Utils.DataViews;
@@ -25,20 +26,19 @@ namespace RogueEntity.Core.Sensing.Common.FloodFill
                                            float intensity,
                                            in Position2D origin,
                                            [NotNull] ISensePhysics sensePhysics,
-                                           [NotNull] IReadOnlyView2D<float> resistanceMap)
+                                           [NotNull] IReadOnlyView2D<float> resistanceMap,
+                                           [NotNull] IReadOnlyView2D<DirectionalityInformation> directionalityView)
         {
             if (dataStore.IsValueCreated)
             {
                 var value = dataStore.Value;
-                value.Configure(in sense, intensity, in origin, sensePhysics, resistanceMap);
+                value.Configure(in sense, intensity, in origin, sensePhysics, resistanceMap, directionalityView);
                 return value;
             }
-            else
-            {
-                var v = new FloodFillWorkingData(in sense, intensity, in origin, sensePhysics, resistanceMap);
-                dataStore.Value = v;
-                return v;
-            }
+
+            var v = new FloodFillWorkingData(in sense, intensity, in origin, sensePhysics, resistanceMap, directionalityView);
+            dataStore.Value = v;
+            return v;
         }
     }
 }

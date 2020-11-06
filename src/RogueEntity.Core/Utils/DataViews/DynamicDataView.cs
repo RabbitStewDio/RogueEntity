@@ -222,16 +222,33 @@ namespace RogueEntity.Core.Utils.DataViews
             return false;
         }
 
-        public bool TryGetWriteAccess(int x, int y, out IBoundedDataView<T> raw)
+        public bool TryGetWriteAccess(int x, int y, out IBoundedDataView<T> raw, DataViewCreateMode mode = DataViewCreateMode.Nothing)
         {
             if (TryGetDataInternal(x, y, out TrackedDataView t))
             {
                 raw = t;
+                t.MarkUsedForReading();
+                t.MarkUsedForWriting();
                 return true;
             }
 
-            raw = default;
-            return false;
+            if (mode == DataViewCreateMode.Nothing)
+            {
+                raw = default;
+                return false;
+            }
+            
+            var dx = DataViewPartitions.TileSplit(x, offsetX, tileSizeX);
+            var dy = DataViewPartitions.TileSplit(y, offsetY, tileSizeY);
+            var data = new TrackedDataView(new Rectangle(dx * tileSizeX + offsetX, dy * tileSizeY + offsetY, tileSizeX, tileSizeY), currentTime);
+            data.MarkUsedForReading();
+            data.MarkUsedForWriting();
+
+            index[new Position2D(dx, dy)] = data;
+            ViewCreated?.Invoke(this, new DynamicDataViewEventArgs<T>(data));
+            activeBounds = default;
+            raw = data;
+            return true;
         }
 
         public bool TryGetRawAccess(int x, int y, out IBoundedDataViewRawAccess<T> raw)

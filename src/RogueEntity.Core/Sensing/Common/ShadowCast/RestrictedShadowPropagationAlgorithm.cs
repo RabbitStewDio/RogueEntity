@@ -23,7 +23,7 @@ namespace RogueEntity.Core.Sensing.Common.ShadowCast
                                                          float intensity,
                                                          in Position2D position,
                                                          in TResistanceMap resistanceMap,
-                                                         IReadOnlyView2D<DirectionalityInformation> readOnlyView2D,
+                                                         IReadOnlyView2D<DirectionalityInformation> directionalityView,
                                                          SenseSourceData data = null)
             where TResistanceMap : IReadOnlyView2D<float>
         {
