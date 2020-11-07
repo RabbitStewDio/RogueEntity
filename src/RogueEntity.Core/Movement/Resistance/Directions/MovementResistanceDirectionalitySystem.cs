@@ -1,22 +1,20 @@
-using System;
-using System.Diagnostics;
 using RogueEntity.Core.Directionality;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Utils.Algorithms;
 using RogueEntity.Core.Utils.DataViews;
 
-namespace RogueEntity.Core.Sensing.Resistance.Directions
+namespace RogueEntity.Core.Movement.Resistance.Directions
 {
-    public class SensoryResistanceDirectionalitySystem<TSense> : AdjacencyGridTransformSystem<SensoryResistance<TSense>>, ISensoryResistanceDirectionView<TSense>
+    public class MovementResistanceDirectionalitySystem<TMovementMode> : AdjacencyGridTransformSystem<MovementResistance<TMovementMode>>, IMovementResistanceDirectionView<TMovementMode>
     {
-        public SensoryResistanceDirectionalitySystem(IReadOnlyDynamicDataView3D<SensoryResistance<TSense>> sourceData) : base(sourceData)
+        public MovementResistanceDirectionalitySystem(IReadOnlyDynamicDataView3D<MovementResistance<TMovementMode>> sourceData) : base(sourceData)
         {
         }
 
         public void ProcessSystem<TGameContext>(TGameContext x) => Process();
 
-        protected override bool IsMoveAllowed(in (IReadOnlyDynamicDataView2D<SensoryResistance<TSense>> sourceData,
-                                                  IReadOnlyBoundedDataView<SensoryResistance<TSense>> sourceTile, int z) parameterData,
+        protected override bool IsMoveAllowed(in (IReadOnlyDynamicDataView2D<MovementResistance<TMovementMode>> sourceData,
+                                                  IReadOnlyBoundedDataView<MovementResistance<TMovementMode>> sourceTile, int z) parameterData,
                                               in Position2D pos,
                                               Direction d)
         {
