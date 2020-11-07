@@ -3,23 +3,24 @@ using EnTTSharp.Entities;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Positioning.MapLayers;
+using RogueEntity.Core.Utils.DataViews;
 
-namespace RogueEntity.Core.Sensing.Resistance.Maps
+namespace RogueEntity.Core.GridProcessing.LayerAggregation
 {
-    public class DynamicSenseLayerFactory<TGameContext, TItemId, TSense> : ISenseLayerFactory<TGameContext, TSense>
+    public abstract class DynamicGridAggregateLayerFactoryBase<TGameContext, TItemId, TAggregateType> : IAggregationLayerController<TGameContext, TAggregateType>
         where TItemId : IEntityKey
         where TGameContext : IItemContext<TGameContext, TItemId>, IGridMapContext<TItemId>
     {
         readonly MapLayer layer;
         readonly List<int> cachedZLevels;
 
-        public DynamicSenseLayerFactory(MapLayer layer)
+        public DynamicGridAggregateLayerFactoryBase(MapLayer layer)
         {
             this.layer = layer;
             this.cachedZLevels = new List<int>();
         }
 
-        public void Start(TGameContext context, ISensePropertiesSystem<TGameContext, TSense> system)
+        public void Start(TGameContext context, IAggregationLayerSystem<TGameContext, TAggregateType> system)
         {
             if (!context.TryGetGridDataFor(layer, out var gdc))
             {
@@ -29,7 +30,7 @@ namespace RogueEntity.Core.Sensing.Resistance.Maps
             gdc.PositionDirty += system.OnPositionDirty;
         }
 
-        public void PrepareLayers(TGameContext context, ISensePropertiesSystem<TGameContext, TSense> system)
+        public void PrepareLayers(TGameContext context, IAggregationLayerSystem<TGameContext, TAggregateType> system)
         {
             if (!context.TryGetGridDataFor(layer, out var gridMapDataContext))
             {
@@ -55,18 +56,15 @@ namespace RogueEntity.Core.Sensing.Resistance.Maps
                 var ml = system.GetOrCreate(z);
                 if (!ml.IsDefined(layer))
                 {
-                    var proc = new SensePropertiesDataProcessor<TGameContext, TItemId, TSense>(layer,
-                                                                                               z,
-                                                                                               system.OffsetX,
-                                                                                               system.OffsetY,
-                                                                                               system.TileSizeX,
-                                                                                               system.TileSizeY);
+                    var proc = CreateDataProcessor(layer, z, system.ViewConfiguration);
                     ml.AddProcess(layer, proc);
                 }
             }
         }
 
-        public void Stop(TGameContext context, ISensePropertiesSystem<TGameContext, TSense> system)
+        protected abstract IAggregationPropertiesDataProcessor<TGameContext, TAggregateType> CreateDataProcessor(MapLayer layer, int zLayer, DynamicDataViewConfiguration config);
+
+        public void Stop(TGameContext context, IAggregationLayerSystem<TGameContext, TAggregateType> system)
         {
             if (!context.TryGetGridDataFor(layer, out var gdc))
             {

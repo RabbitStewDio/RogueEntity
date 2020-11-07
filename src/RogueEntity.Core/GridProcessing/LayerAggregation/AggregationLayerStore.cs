@@ -1,29 +1,29 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Utils;
 
-namespace RogueEntity.Core.Sensing.Resistance.Maps
+namespace RogueEntity.Core.GridProcessing.LayerAggregation
 {
-    public class SensePropertiesLayerStore<TGameContext, TSense>
+    public class AggregationLayerStore<TGameContext, TSense>
     {
-        readonly Dictionary<int, SensePropertiesLayer<TGameContext, TSense>> layers;
+        readonly Dictionary<int, AggregatePropertiesLayer<TGameContext, TSense>> layers;
 
-        public SensePropertiesLayerStore()
+        public AggregationLayerStore()
         {
-            this.layers = new Dictionary<int, SensePropertiesLayer<TGameContext, TSense>>();
+            this.layers = new Dictionary<int, AggregatePropertiesLayer<TGameContext, TSense>>();
         }
 
         public ReadOnlyListWrapper<int> ZLayers => layers.Keys.ToList();
-        
+
         public void RemoveLayer(int z)
         {
             layers.Remove(z);
         }
 
-        public void DefineLayer(int z, [NotNull] SensePropertiesLayer<TGameContext, TSense> layerData)
+        public void DefineLayer(int z, [NotNull] AggregatePropertiesLayer<TGameContext, TSense> layerData)
         {
             if (z < 0)
             {
@@ -33,7 +33,7 @@ namespace RogueEntity.Core.Sensing.Resistance.Maps
             layers[z] = layerData ?? throw new ArgumentNullException(nameof(layerData));
         }
 
-        public bool TryGetLayer(int z, out SensePropertiesLayer<TGameContext, TSense> layerData)
+        public bool TryGetLayer(int z, out AggregatePropertiesLayer<TGameContext, TSense> layerData)
         {
             return layers.TryGetValue(z, out layerData);
         }

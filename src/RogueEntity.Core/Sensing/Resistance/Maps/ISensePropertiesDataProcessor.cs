@@ -9,11 +9,12 @@ namespace RogueEntity.Core.Sensing.Resistance.Maps
     ///   of unrelated kinds.
     /// </summary>
     /// <typeparam name="TGameContext"></typeparam>
+    /// <typeparam name="TSense"></typeparam>
     public interface ISensePropertiesDataProcessor<TGameContext, TSense>
     {
         MapLayer Layer { get; }
         int ZPosition { get; }
-        DynamicDataView<SensoryResistance<TSense>> Data { get; }
+        IReadOnlyDynamicDataView2D<SensoryResistance<TSense>> Data { get; }
         ReadOnlyListWrapper<Rectangle> ProcessedTiles { get; }
         
         void MarkDirty(int posGridX, int posGridY);

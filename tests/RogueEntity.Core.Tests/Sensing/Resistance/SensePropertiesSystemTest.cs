@@ -33,7 +33,7 @@ namespace RogueEntity.Core.Tests.Sensing.Resistance
         public void Do()
         {
             sps.Start(ctx);
-            sps.DefinedZLayers.Should().BeEmpty();
+            sps.GetActiveLayers().Should().BeEmpty();
             sps.TryGetView(0, out _).Should().BeFalse();
 
             ctx.TryGetItemGridDataFor(TestMapLayers.One, out var dataLayer1).Should().BeTrue();
@@ -43,7 +43,7 @@ namespace RogueEntity.Core.Tests.Sensing.Resistance
             dataLayer2.TrySet(EntityGridPosition.Of(TestMapLayers.Two, 0, 0), ctx.ItemResolver.Instantiate(ctx, ceilingFan)).Should().BeTrue();
 
             sps.ProcessSenseProperties(ctx);
-            sps.DefinedZLayers.Should().BeEquivalentTo(0);
+            sps.GetActiveLayers().Should().BeEquivalentTo(0);
            
             sps.TryGetView(0, out var map).Should().BeTrue();
             map[0, 0].Should().Be(new SensoryResistance<VisionSense>(Percentage.Full));

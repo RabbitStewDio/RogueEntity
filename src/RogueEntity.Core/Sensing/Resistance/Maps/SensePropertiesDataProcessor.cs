@@ -46,7 +46,7 @@ namespace RogueEntity.Core.Sensing.Resistance.Maps
             this.dirtyAfterCreation = true;
         }
 
-        public DynamicDataView<SensoryResistance<TSense>> Data => data;
+        public IReadOnlyDynamicDataView2D<SensoryResistance<TSense>> Data => data;
 
         public ReadOnlyListWrapper<Rectangle> ProcessedTiles => activeTilesCache;
 
@@ -145,11 +145,11 @@ namespace RogueEntity.Core.Sensing.Resistance.Maps
                 var groundItemRef = groundData[x, y];
                 if (itemResolver.TryQueryData(groundItemRef, context, out SensoryResistance<TSense> groundItem))
                 {
-                    Data.TrySet(x, y, in groundItem);
+                    data.TrySet(x, y, in groundItem);
                 }
                 else
                 {
-                    Data.TrySet(x, y, default);
+                    data.TrySet(x, y, default);
                 }
             }
         }
@@ -164,11 +164,11 @@ namespace RogueEntity.Core.Sensing.Resistance.Maps
                 var groundItemRef = groundData[x, y];
                 if (itemResolver.TryQueryData(groundItemRef, context, out SensoryResistance<TSense> groundItem))
                 {
-                    Data.TrySet(x, y, in groundItem);
+                    data.TrySet(x, y, in groundItem);
                 }
                 else
                 {
-                    Data.TrySet(x, y, default);
+                    data.TrySet(x, y, default);
                 }
             }
         }
