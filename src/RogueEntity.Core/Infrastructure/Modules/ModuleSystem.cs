@@ -12,71 +12,21 @@ namespace RogueEntity.Core.Infrastructure.Modules
         static readonly ILogger Logger = SLog.ForContext<ModuleSystem<TGameContext>>();
 
         readonly IServiceResolver serviceResolver;
-        readonly List<ModuleRecord> modulePool;
+        readonly List<ModuleRecord> contentModulePool;
         readonly Dictionary<string, ModuleRecord> modulesById;
-        readonly Dictionary<Type, Dictionary<EntityRole, ModuleRecord>> rolesPerType;
-        readonly Dictionary<Type, Dictionary<EntityRelation, HashSet<Type>>> relationsPerType;
+        readonly Dictionary<Type, EntityRoleRecord> rolesPerType;
+        readonly Dictionary<Type, EntityRelationRecord> relationsPerType;
         bool initialized;
 
         public ModuleSystem(IServiceResolver serviceResolver = null)
         {
             modulesById = new Dictionary<string, ModuleRecord>();
-            modulePool = new List<ModuleRecord>();
+            contentModulePool = new List<ModuleRecord>();
 
             this.serviceResolver = serviceResolver ?? new DefaultServiceResolver();
 
-            rolesPerType = new Dictionary<Type, Dictionary<EntityRole, ModuleRecord>>();
-            relationsPerType = new Dictionary<Type, Dictionary<EntityRelation, HashSet<Type>>>();
-        }
-
-        public void AddModule(ModuleBase module)
-        {
-            if (initialized)
-            {
-                throw new InvalidOperationException("Cannot add modules to an already initialized system");
-            }
-
-            if (modulesById.ContainsKey(module.Id))
-            {
-                return;
-            }
-
-            Logger.Debug("Registered module {ModuleId}", module.Id);
-
-            var moduleRecord = new ModuleRecord(module);
-            modulesById[module.Id] = moduleRecord;
-            
-            modulePool.Add(moduleRecord);
-        }
-
-        public void ScanForModules()
-        {
-            var assemblies = AppDomain.CurrentDomain.GetAssemblies().ToList();
-            foreach (var assembly in assemblies)
-            {
-                ScanForModules(assembly);
-            }
-        }
-
-        public void ScanForModules(Assembly assembly)
-        {
-            foreach (var typeInfo in assembly.DefinedTypes)
-            {
-                if (!typeof(ModuleBase).IsAssignableFrom(typeInfo))
-                {
-                    continue;
-                }
-
-                if (typeInfo.IsAbstract || typeInfo.IsGenericType)
-                {
-                    continue;
-                }
-
-                if (Activator.CreateInstance(typeInfo) is ModuleBase module)
-                {
-                    AddModule(module);
-                }
-            }
+            rolesPerType = new Dictionary<Type, EntityRoleRecord>();
+            relationsPerType = new Dictionary<Type, EntityRelationRecord>();
         }
 
         public void Initialize(TGameContext context,
@@ -91,33 +41,64 @@ namespace RogueEntity.Core.Infrastructure.Modules
 
             initialized = true;
 
-            if (modulePool.Count == 0)
+            // Collect all content modules. Skips pure framework modules, as 
+            // those should be pulled in as dependency later if their provided features are needed.
+            foreach (var m in modulesById.Values)
             {
-                // No modules declared. Its OK if you dont want to use the module system.
+                if (m.Module.IsFrameworkModule)
+                {
+                    continue;
+                }
+
+                contentModulePool.Add(m);
+            }
+
+            if (contentModulePool.Count == 0)
+            {
+                // No content modules declared. Its OK, you apparently dont want to use the module system.
                 return;
             }
 
             PopulateModuleDependencies();
 
             var openModules = CollectRootLevelModules();
-
-            CollectDeclaredRoles(openModules);
-            ResolveEquivalenceRoles(openModules);
-
             var orderedModules = ComputeModuleOrder(openModules);
             Logger.Debug("Processing Modules in order: \n{Modules}", PrintModuleDependencyList(orderedModules));
 
+            // 1. Setup global functions. Those provide global services or configurations etc, and only depend on the context object. 
+            InitializeModule(initializer, orderedModules);
+
+            // 2. Initialize content. This sets up EntityDeclarations and thus tells the system which roles are used by each entity key
+            //    encountered by the code.
+            InitializeModuleContent(initializer, orderedModules);
+
+            // 3. Based on the module information gathered, we can now resolve all roles and relations. First, some sorting. 
+            CollectDeclaredRoles(orderedModules);
+            ResolveEquivalenceRoles(orderedModules);
+
+            // 4. Now start initializing trait systems for each entity role.
+            InitializeModuleRoles(initializer, orderedModules);
+        }
+
+        void InitializeModule(IModuleInitializer<TGameContext> initializer, List<ModuleRecord> orderedModules)
+        {
             foreach (var mod in orderedModules)
             {
-                if (mod.InitializedEntities)
+                if (mod.InitializedModule)
                 {
                     continue;
                 }
 
-                mod.InitializedEntities = true;
-                InitializeModuleEntities(mod.Module, initializer);
+                mod.InitializedModule = true;
+                foreach (var mi in mod.ModuleInitializers)
+                {
+                    mi(serviceResolver, initializer);
+                }
             }
+        }
 
+        void InitializeModuleContent(IModuleInitializer<TGameContext> initializer, List<ModuleRecord> orderedModules)
+        {
             foreach (var mod in orderedModules)
             {
                 if (mod.InitializedContent)
@@ -126,113 +107,48 @@ namespace RogueEntity.Core.Infrastructure.Modules
                 }
 
                 mod.InitializedContent = true;
-                InitializeModuleSystems(mod.Module);
-            }
-        }
-
-        void InitializeModuleEntities(ModuleBase module,
-                                      IModuleInitializer<TGameContext> initializer)
-        {
-            CallModuleInitializer(module, initializer);
-
-            foreach (var e in rolesPerType)
-            {
-                var entityType = e.Key;
-                var roles = e.Value;
-                foreach (var role in roles.Keys)
+                foreach (var mi in mod.ContentInitializers)
                 {
-                    if (!module.RequiredRoles.Contains(role))
-                    {
-                        continue;
-                    }
-
-                    CallRoleInitializer(entityType, module, initializer, role);
-                }
-            }
-
-            foreach (var e in relationsPerType)
-            {
-                var entityType = e.Key;
-                var relations = e.Value;
-                foreach (var relation in relations)
-                {
-                    if (!module.RequiredRelations.Contains(relation.Key))
-                    {
-                        continue;
-                    }
-
-                    foreach (var targetType in relation.Value)
-                    {
-                        CallRelationInitializer(entityType, targetType, module, initializer, relation.Key);
-                    }
+                    mi(serviceResolver, initializer);
                 }
             }
         }
 
-        void CallModuleInitializer(ModuleBase module, IModuleInitializer<TGameContext> initializer)
+        void InitializeModuleRoles(IModuleInitializer<TGameContext> initializer,
+                                   List<ModuleRecord> orderedModules)
         {
-            foreach (var m in module.GetType().GetMethods(BindingFlags.Instance | BindingFlags.NonPublic))
+            foreach (var mod in orderedModules)
             {
-                var attr = m.GetCustomAttribute<ModuleInitializerAttribute>();
-                if (attr == null)
+                if (mod.InitializedRoles)
                 {
                     continue;
                 }
 
-                if (m.IsSameAction(typeof(IServiceResolver), typeof(IModuleInitializer<TGameContext>)))
+                mod.InitializedRoles = true;
+
+                foreach (var e in rolesPerType)
                 {
-                    m.Invoke(module, new object[] {serviceResolver, initializer});
-                    Logger.Verbose("Invoking module initializer {Method}", m);
-                    continue;
+                    InitializeModuleRoleForType(initializer, e.Key, e.Value, mod);
                 }
-
-                if (!m.IsSameGenericAction(new[] {typeof(TGameContext)},
-                                           out var genericMethod, out var errorHint,
-                                           typeof(IServiceResolver), typeof(IModuleInitializer<TGameContext>)))
-                {
-                    if (!string.IsNullOrEmpty(errorHint))
-                    {
-                        throw new ArgumentException(errorHint);
-                    }
-
-                    throw new ArgumentException($"Expected a method with signature 'void XXX(IServiceResolver, IModuleInitializer<TGameContext>), but found {m} in module {module.Id}");
-                }
-
-                Logger.Verbose("Invoking module initializer {Method}", genericMethod);
-                genericMethod.Invoke(module, new object[] {serviceResolver, initializer});
             }
         }
 
-        void CallRoleInitializer(Type entityType, ModuleBase module, IModuleInitializer<TGameContext> initializer, EntityRole role)
+        void InitializeModuleRelations(IModuleInitializer<TGameContext> initializer,
+                                       List<ModuleRecord> orderedModules)
         {
-            foreach (var m in module.GetType().GetMethods(BindingFlags.Instance | BindingFlags.NonPublic))
+            foreach (var mod in orderedModules)
             {
-                var attr = m.GetCustomAttribute<EntityRoleInitializerAttribute>();
-                if (attr == null)
+                if (mod.InitializedRelations)
                 {
                     continue;
                 }
 
-                if (attr.RoleName != role.Id)
-                {
-                    continue;
-                }
+                mod.InitializedRelations = true;
 
-                if (!m.IsSameGenericAction(new []{typeof(TGameContext), entityType}, 
-                                           out var genericMethod, out var errorHint,
-                                           typeof(IServiceResolver), typeof(IModuleInitializer<TGameContext>), typeof(EntityRole)))
+                foreach (var e in relationsPerType)
                 {
-                    if (!string.IsNullOrEmpty(errorHint))
-                    {
-                        throw new ArgumentException(errorHint);
-                    }
-                    
-                    throw new ArgumentException(
-                        $"Expected a generic method with signature 'void XXX<TGameContext, TEntityId>(IServiceResolver, IModuleInitializer<TGameContext>, EntityRole), but found {m} in module {module.Id}");
+                    InitializeModuleRelationForType(initializer, e.Key, e.Value, mod);
                 }
-
-                Logger.Verbose("Invoking role initializer {Method}", genericMethod);
-                genericMethod.Invoke(module, new object[] {serviceResolver, initializer, role});
             }
         }
 
@@ -270,25 +186,84 @@ namespace RogueEntity.Core.Infrastructure.Modules
         }
 
 
-        void InitializeModuleSystems(ModuleBase module)
+        class EntityRelationRecord
         {
-            
+            readonly Type entitySubject;
+            readonly Dictionary<EntityRelation, HashSet<Type>> relations;
+
+            public EntityRelationRecord(Type entitySubject)
+            {
+                this.entitySubject = entitySubject;
+                this.relations = new Dictionary<EntityRelation, HashSet<Type>>();
+            }
+
+            public void Record(EntityRelation r, Type target)
+            {
+                if (!relations.TryGetValue(r, out var rs))
+                {
+                    rs = new HashSet<Type>();
+                    relations[r] = rs;
+                }
+
+                rs.Add(target);
+            }
+
+            public IEnumerable<EntityRelation> Relations => relations.Keys;
+
+            public bool TryQueryTarget(EntityRelation r, out IReadOnlyCollection<Type> result)
+            {
+                if (relations.TryGetValue(r, out var resultRaw))
+                {
+                    result = resultRaw;
+                    return true;
+                }
+
+                result = default;
+                return false;
+            }
         }
 
-        void PopulateModuleDependencies()
+        class EntityRoleRecord
         {
-            foreach (var m in modulePool)
+            readonly Type entityType;
+            readonly HashSet<EntityRole> rolesPerType;
+
+            public EntityRoleRecord(Type entityType)
             {
-                foreach (var md in m.Module.ModuleDependencies)
+                this.entityType = entityType;
+                this.rolesPerType = new HashSet<EntityRole>();
+            }
+
+            public void Record(EntityRole s)
+            {
+                if (!rolesPerType.Contains(s))
                 {
-                    if (!modulesById.TryGetValue(md.ModuleId, out var mr))
+                    rolesPerType.Add(s);
+                }
+            }
+
+            public bool RecordRelation(EntityRole s, EntityRole t)
+            {
+                if (rolesPerType.Contains(s))
+                {
+                    if (!rolesPerType.Contains(t))
                     {
-                        throw new ModuleInitializationException($"Module '{m.ModuleId}' declared a missing dependency to module '{md.ModuleId}'");
+                        rolesPerType.Add(t);
                     }
 
-                    m.Dependencies.Add(mr);
-                    mr.HasDependentModules = true;
+                    return true;
                 }
+
+                return false;
+            }
+
+            public IEnumerable<EntityRole> Roles => rolesPerType;
+
+            public bool HasRole(EntityRole role) => rolesPerType.Contains(role);
+
+            public bool HasRole(EntityRole role, EntityRole requiredRole)
+            {
+                return rolesPerType.Contains(role) && rolesPerType.Contains(requiredRole);
             }
         }
 
@@ -297,12 +272,16 @@ namespace RogueEntity.Core.Infrastructure.Modules
             public readonly string ModuleId;
             public readonly ModuleBase Module;
             public readonly List<ModuleRecord> Dependencies;
-            public bool HasDependentModules { get; set; }
+            public readonly List<ModuleInitializerDelegate<TGameContext>> ModuleInitializers;
+            public readonly List<ModuleContentInitializerDelegate<TGameContext>> ContentInitializers;
+            public bool IsUsedAsDependency { get; set; }
             public bool ResolvedRoles { get; set; }
             public bool ResolvedEquivalence { get; set; }
             public bool ResolvedOrder { get; set; }
-            public bool InitializedEntities { get; set; }
+            public bool InitializedModule { get; set; }
             public bool InitializedContent { get; set; }
+            public bool InitializedRoles { get; set; }
+            public bool InitializedRelations { get; set; }
 
             public int DependencyDepth
             {
@@ -322,11 +301,27 @@ namespace RogueEntity.Core.Infrastructure.Modules
                 Module = module;
                 ModuleId = module.Id;
                 Dependencies = new List<ModuleRecord>();
+                ModuleInitializers = new List<ModuleInitializerDelegate<TGameContext>>();
+                ContentInitializers = new List<ModuleContentInitializerDelegate<TGameContext>>();
             }
 
             public override string ToString()
             {
                 return $"{nameof(ModuleId)}: {ModuleId}";
+            }
+
+            public void AddDependency(ModuleRecord value)
+            {
+                foreach (var d in Dependencies)
+                {
+                    if (d.ModuleId == value.ModuleId)
+                    {
+                        return;
+                    }
+                }
+
+                Dependencies.Add(value);
+                Logger.Debug("Added Module dependency. " + ModuleId + " -> " + value.ModuleId);
             }
         }
     }

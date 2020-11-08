@@ -11,7 +11,7 @@ namespace RogueEntity.Core.Sensing.Receptors.Heat
 {
     public class HeatDirectionSenseModule : SenseReceptorModuleBase<TemperatureSense, TemperatureSense, HeatSourceDefinition>
     {
-        public const string ModuleId = "Core.Sense.Receptor.Noise";
+        public const string ModuleId = "Core.Sense.Receptor.Temperature";
 
         public static readonly EntitySystemId RegisterEntityId = "Entities.Core.Senses.Receptor.Temperature";
 

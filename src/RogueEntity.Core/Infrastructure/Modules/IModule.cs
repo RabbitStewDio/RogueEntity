@@ -10,7 +10,7 @@ namespace RogueEntity.Core.Infrastructure.Modules
         
         void Register(EntitySystemId id,
                       int priority,
-                      ModuleEntityContext.GlobalSystemRegistrationDelegate<TGameContext> entityRegistration);
+                      GlobalSystemRegistrationDelegate<TGameContext> entityRegistration);
     }
 
     public interface IModuleEntityContext<TGameContext, TEntityId> where TEntityId : IEntityKey
@@ -24,16 +24,16 @@ namespace RogueEntity.Core.Infrastructure.Modules
 
         void Register(EntitySystemId id,
                       int priority,
-                      ModuleEntityContext.EntityRegistrationDelegate<TEntityId> entityRegistration);
+                      EntityRegistrationDelegate<TEntityId> entityRegistration);
 
         void Register(EntitySystemId id,
                       int priority,
-                      ModuleEntityContext.EntitySystemRegistrationDelegate<TGameContext, TEntityId> entitySystemRegistration = null);
+                      EntitySystemRegistrationDelegate<TGameContext, TEntityId> entitySystemRegistration = null);
     }
     
     public static class ModuleEntityContextExtensions 
     {
-        public static ModuleEntityContext.EntitySystemRegistrationDelegate<TGameContext, TEntityId> Empty<TGameContext, TEntityId>(this IModuleEntityContext<TGameContext, TEntityId> ctx)
+        public static EntitySystemRegistrationDelegate<TGameContext, TEntityId> Empty<TGameContext, TEntityId>(this IModuleEntityContext<TGameContext, TEntityId> ctx)
             where TEntityId : IEntityKey
         {
             return (a, b, c, d) =>

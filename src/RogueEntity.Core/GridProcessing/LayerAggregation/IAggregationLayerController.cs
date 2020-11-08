@@ -16,7 +16,7 @@ namespace RogueEntity.Core.GridProcessing.LayerAggregation
     {
         MapLayer Layer { get; }
         int ZPosition { get; }
-        DynamicDataView<TAggregateType> Data { get; }
+        IReadOnlyDynamicDataView2D<TAggregateType> Data { get; }
         ReadOnlyListWrapper<Rectangle> ProcessedTiles { get; }
 
         void MarkDirty(int posGridX, int posGridY);

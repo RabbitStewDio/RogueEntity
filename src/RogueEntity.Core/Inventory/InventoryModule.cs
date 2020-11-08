@@ -1,4 +1,5 @@
-﻿using EnTTSharp.Entities;
+﻿using System.Collections.Generic;
+using EnTTSharp.Entities;
 using RogueEntity.Core.Equipment;
 using RogueEntity.Core.Infrastructure.Modules;
 using RogueEntity.Core.Meta;
@@ -9,8 +10,8 @@ namespace RogueEntity.Core.Inventory
     [Module]
     public class InventoryModule : ModuleBase
     {
-        public static readonly string ModuleId = "Core.Inventory"; 
-        
+        public static readonly string ModuleId = "Core.Inventory";
+
         public static readonly EntitySystemId ContainedItemsComponentId = new EntitySystemId("Entities.Core.Inventory.ContainedItem");
         public static readonly EntitySystemId ContainerComponentId = new EntitySystemId("Entities.Core.Inventory.Container");
 
@@ -25,14 +26,27 @@ namespace RogueEntity.Core.Inventory
             Name = "RogueEntity Core Module - Inventory";
             Description = "Provides base classes and behaviours for carrying items in a list-based inventory";
             IsFrameworkModule = true;
+            
+            RequireRole(ContainerRole).WithDependencyOn(CoreModule.ModuleId);
+            RequireRole(ContainedItemRole).WithImpliedRole(CoreModule.ContainedItemRole).WithDependencyOn(CoreModule.ModuleId);
+            
+            RequireRelation(ContainsRelation);
+        }
 
-            RequireRole(InventoryModule.ContainerRole).WithDependencyOn(CoreModule.ModuleId);
-            RequireRole(InventoryModule.ContainedItemRole).WithImpliedRole(CoreModule.ContainedItemRole).WithDependencyOn(CoreModule.ModuleId);
-            RequireRelation(InventoryModule.ContainsRelation);
+        public List<ModuleEntityRelationInitializerDelegate<TGameContext>> CollectEntityRelationInitializers<TGameContext, TActorId, TItemId>(EntityRole role,
+                                                                                                                                              IServiceResolver resolver,
+                                                                                                                                              IModuleEntityInformation info)
+            where TActorId : IEntityKey
+            where TItemId : IBulkDataStorageKey<TItemId>
+        {
+            return new List<ModuleEntityRelationInitializerDelegate<TGameContext>>
+            {
+                InitializeContainerEntities<TGameContext, TActorId, TItemId>
+            };
         }
 
         [EntityRelationInitializer("Relation.Core.Inventory")]
-        protected void InitializeContainerEntities<TGameContext, TActorId, TItemId>(IServiceResolver serviceResolver, 
+        protected void InitializeContainerEntities<TGameContext, TActorId, TItemId>(IServiceResolver serviceResolver,
                                                                                     IModuleInitializer<TGameContext> initializer,
                                                                                     EntityRelation r)
             where TActorId : IEntityKey

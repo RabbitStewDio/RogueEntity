@@ -9,13 +9,13 @@ namespace RogueEntity.Core.Infrastructure.Modules
     {
         public const string ImpliedRoleRelationId = "Relation.System.Implies";
     }
-    
+
     public abstract class ModuleBase
     {
         readonly List<ModuleDependency> moduleDependencies;
         readonly Dictionary<Type, DeclaredEntityRoleRecord> declaredRoles;
         readonly Dictionary<Type, DeclaredEntityRelationRecord> declaredRelations;
-        
+
         readonly List<EntityRelation> requiredRelations;
         readonly List<EntityRole> requiredRoles;
 
@@ -50,12 +50,35 @@ namespace RogueEntity.Core.Infrastructure.Modules
         {
             return declaredRoles.TryGetValue(subject, out r);
         }
-        
+
         public bool TryGetRelationRecord(Type subject, out DeclaredEntityRelationRecord r)
         {
             return declaredRelations.TryGetValue(subject, out r);
         }
-        
+
+        public bool TryGetRelationById(string id, out EntityRelation relation)
+        {
+            foreach (var r in requiredRelations)
+            {
+                if (r.Id == id)
+                {
+                    relation = r;
+                    return true;
+                }
+            }
+
+            foreach (var r in declaredRelations.Values)
+            {
+                if (r.TryGetRelationById(id, out relation))
+                {
+                    return true;
+                }
+            }
+
+            relation = default;
+            return false;
+        }
+
         protected DeclareDependencyBuilder DeclareEntity<TEntityId>(EntityRole r)
         {
             if (declaredRoles.TryGetValue(typeof(TEntityId), out var rr))
@@ -83,7 +106,7 @@ namespace RogueEntity.Core.Infrastructure.Modules
             declaredRelations[typeof(TSubject)] = record;
             return new DeclareDependencyBuilder(this, r.Subject);
         }
-       
+
         protected RequireDependencyBuilder RequireRole(EntityRole r)
         {
             if (!requiredRoles.Contains(r))

@@ -48,7 +48,6 @@ namespace RogueEntity.Core.Sensing.Sources.Heat
                                                              IModuleInitializer<TGameContext> initializer,
                                                              EntityRole role)
             where TItemId : IEntityKey
-            where TGameContext : ITimeContext
         {
             var ctx = initializer.DeclareEntityContext<TItemId>();
             ctx.Register(RegisterEntityId, 0, RegisterEntities);
@@ -89,7 +88,6 @@ namespace RogueEntity.Core.Sensing.Sources.Heat
                                                                         IModuleInitializer<TGameContext> initializer,
                                                                         EntityRole role)
             where TItemId : IEntityKey
-            where TGameContext : IGridMapContext<TItemId>
         {
             if (serviceResolver.TryResolve(out SenseCacheSetUpSystem<TGameContext> o))
             {

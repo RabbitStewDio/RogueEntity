@@ -1,5 +1,6 @@
 using EnTTSharp.Entities;
 using EnTTSharp.Entities.Systems;
+using RogueEntity.Core.GridProcessing.LayerAggregation;
 using RogueEntity.Core.Infrastructure.Commands;
 using RogueEntity.Core.Infrastructure.GameLoops;
 using RogueEntity.Core.Infrastructure.Modules;
@@ -53,7 +54,6 @@ namespace RogueEntity.Core.Sensing.Sources
                                                                     EntityRegistry<TItemId> registry,
                                                                     ICommandHandlerRegistration<TGameContext, TItemId> handler)
             where TItemId : IEntityKey
-            where TGameContext : ITimeContext
         {
             var ls = GetOrCreateSenseSystem<TGameContext, TItemId>(serviceResolver);
             context.AddInitializationStepHandler(ls.EnsureSenseCacheAvailable);
@@ -134,7 +134,6 @@ namespace RogueEntity.Core.Sensing.Sources
             }
         }
 
-
         protected void RegisterSenseResistanceCacheLifeCycle<TGameContext, TItemId, TSense>(IServiceResolver resolver,
                                                                                             IGameLoopSystemRegistration<TGameContext> context,
                                                                                             EntityRegistry<TItemId> registry,
@@ -179,7 +178,7 @@ namespace RogueEntity.Core.Sensing.Sources
             system = new SensePropertiesSystem<TGameContext, TSense>(gridConfig.OffsetX, gridConfig.OffsetY, gridConfig.TileSizeX, gridConfig.TileSizeY);
 
             serviceResolver.Store(system);
-            serviceResolver.Store<ISensePropertiesSystem<TGameContext, TSense>>(system);
+            serviceResolver.Store<IAggregationLayerSystem<TGameContext, SensoryResistance<TSense>>>(system);
             serviceResolver.Store<IReadOnlyDynamicDataView3D<SensoryResistance<TSense>>>(system);
             return system;
         }

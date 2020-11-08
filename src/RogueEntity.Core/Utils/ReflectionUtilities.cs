@@ -36,8 +36,8 @@ namespace RogueEntity.Core.Utils
             return IsSameFunction(m, typeof(void), parameter);
         }
 
-        public static bool IsSameGenericAction(this MethodInfo m, 
-                                               Type[] generics, 
+        public static bool IsSameGenericAction(this MethodInfo m,
+                                               Type[] generics,
                                                out MethodInfo genericMethod,
                                                out string errorHint,
                                                params Type[] parameter)
@@ -51,6 +51,30 @@ namespace RogueEntity.Core.Utils
             {
                 genericMethod = m.MakeGenericMethod(generics);
                 return genericMethod.IsSameAction(parameter);
+            }
+            catch (ArgumentException e)
+            {
+                errorHint = BuildErrorMessage(m, generics, e);
+                return false;
+            }
+        }
+
+        public static bool IsSameGenericFunction(this MethodInfo m,
+                                                 Type[] generics,
+                                                 out MethodInfo genericMethod,
+                                                 out string errorHint,
+                                                 Type returnValue,
+                                                 params Type[] parameter)
+        {
+            errorHint = default;
+            genericMethod = default;
+            if (!m.IsGenericMethod) return false;
+            if (m.GetGenericArguments().Length != generics.Length) return false;
+
+            try
+            {
+                genericMethod = m.MakeGenericMethod(generics);
+                return genericMethod.IsSameFunction(returnValue, parameter);
             }
             catch (ArgumentException e)
             {

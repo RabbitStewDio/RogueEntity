@@ -1,5 +1,6 @@
 using EnTTSharp.Entities;
 using EnTTSharp.Entities.Systems;
+using RogueEntity.Core.GridProcessing.LayerAggregation;
 using RogueEntity.Core.Infrastructure.Commands;
 using RogueEntity.Core.Infrastructure.GameLoops;
 using RogueEntity.Core.Infrastructure.Modules;
@@ -183,7 +184,7 @@ namespace RogueEntity.Core.Sensing.Receptors
             system = new SensePropertiesSystem<TGameContext, TReceptorSense>(gridConfig.OffsetX, gridConfig.OffsetY, gridConfig.TileSizeX, gridConfig.TileSizeY);
 
             serviceResolver.Store(system);
-            serviceResolver.Store<ISensePropertiesSystem<TGameContext, TReceptorSense>>(system);
+            serviceResolver.Store<IAggregationLayerSystem<TGameContext, SensoryResistance<TReceptorSense>>>(system);
             serviceResolver.Store<IReadOnlyDynamicDataView3D<SensoryResistance<TReceptorSense>>>(system);
             return system;
         }

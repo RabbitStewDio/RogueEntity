@@ -1,79 +1,36 @@
-using System.Collections.Generic;
+using System;
 using EnTTSharp.Entities;
+using JetBrains.Annotations;
+using RogueEntity.Core.GridProcessing.LayerAggregation;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Positioning.MapLayers;
+using RogueEntity.Core.Utils.DataViews;
 
 namespace RogueEntity.Core.Sensing.Resistance.Maps
 {
-    public class DynamicSenseLayerFactory<TGameContext, TItemId, TSense> : ISenseLayerFactory<TGameContext, TSense>
+    public class DynamicSenseLayerFactory<TGameContext, TItemId, TSense> : DynamicGridAggregateLayerFactoryBase<TGameContext,TItemId, SensoryResistance<TSense>>
         where TItemId : IEntityKey
-        where TGameContext : IItemContext<TGameContext, TItemId>, IGridMapContext<TItemId>
     {
-        readonly MapLayer layer;
-        readonly List<int> cachedZLevels;
+        readonly IItemContext<TGameContext, TItemId> itemContext;
 
-        public DynamicSenseLayerFactory(MapLayer layer)
+        public DynamicSenseLayerFactory(MapLayer layer, 
+                                        [NotNull] IGridMapContext<TItemId> mapContext,
+                                        [NotNull] IItemContext<TGameContext, TItemId> itemContext): base(layer, mapContext)
         {
-            this.layer = layer;
-            this.cachedZLevels = new List<int>();
+            this.itemContext = itemContext ?? throw new ArgumentNullException(nameof(itemContext));
         }
 
-        public void Start(TGameContext context, ISensePropertiesSystem<TGameContext, TSense> system)
+        protected override IAggregationPropertiesDataProcessor<TGameContext, SensoryResistance<TSense>> CreateDataProcessor(MapLayer layer, int zLayer, DynamicDataViewConfiguration config)
         {
-            if (!context.TryGetGridDataFor(layer, out var gdc))
-            {
-                return;
-            }
-
-            gdc.PositionDirty += system.OnPositionDirty;
-        }
-
-        public void PrepareLayers(TGameContext context, ISensePropertiesSystem<TGameContext, TSense> system)
-        {
-            if (!context.TryGetGridDataFor(layer, out var gridMapDataContext))
-            {
-                return;
-            }
-
-            gridMapDataContext.GetActiveLayers(cachedZLevels);
-
-            foreach (var z in cachedZLevels)
-            {
-                if (!gridMapDataContext.TryGetView(z, out _))
-                {
-                    // If the map no longer contains the z-layer we previously seen,
-                    // kick it out from the system for good.
-                    if (system.TryGetSenseLayer(z, out var mlx))
-                    {
-                        mlx.RemoveLayer(layer);
-                    }
-
-                    continue;
-                }
-
-                var ml = system.GetOrCreate(z);
-                if (!ml.IsDefined(layer))
-                {
-                    var proc = new SensePropertiesDataProcessor<TGameContext, TItemId, TSense>(layer,
-                                                                                               z,
-                                                                                               system.OffsetX,
-                                                                                               system.OffsetY,
-                                                                                               system.TileSizeX,
-                                                                                               system.TileSizeY);
-                    ml.AddProcess(layer, proc);
-                }
-            }
-        }
-
-        public void Stop(TGameContext context, ISensePropertiesSystem<TGameContext, TSense> system)
-        {
-            if (!context.TryGetGridDataFor(layer, out var gdc))
-            {
-                return;
-            }
-
-            gdc.PositionDirty -= system.OnPositionDirty;
+            return new SensePropertiesDataProcessor<TGameContext, TItemId, TSense>(layer,
+                                                                                   MapContext,
+                                                                                   itemContext,
+                                                                                   zLayer,
+                                                                                   config.OffsetX,
+                                                                                   config.OffsetY,
+                                                                                   config.TileSizeX,
+                                                                                   config.TileSizeY);
         }
     }
 }

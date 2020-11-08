@@ -140,7 +140,7 @@ namespace RogueEntity.Core.GridProcessing.LayerAggregation
                 return dataImpl;
             }
 
-            dataImpl = new AggregatePropertiesLayer<TGameContext, TAggregationType>(z, OffsetX, OffsetY, TileSizeX, TileSizeY, aggregatorFunction);
+            dataImpl = new AggregatePropertiesLayer<TGameContext, TAggregationType>(z, aggregatorFunction, OffsetX, OffsetY, TileSizeX, TileSizeY);
             propertiesMap.DefineLayer(z, dataImpl);
             return dataImpl;
         }

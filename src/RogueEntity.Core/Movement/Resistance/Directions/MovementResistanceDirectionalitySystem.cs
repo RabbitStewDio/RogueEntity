@@ -21,12 +21,16 @@ namespace RogueEntity.Core.Movement.Resistance.Directions
             var c = d.ToCoordinates();
             if (d.IsCardinal())
             {
-                var isMoveAllowed = parameterData.sourceData[pos.X + c.X, pos.Y + c.Y].BlocksSense < 1;
+                var moveData = Query(in parameterData, pos.X + c.X, pos.Y + c.Y);
+                var isMoveAllowed = moveData.BlocksSense < 1;
                 return isMoveAllowed;
             }
 
-            var canMoveHorizontal = parameterData.sourceData[pos.X + c.X, pos.Y].BlocksSense < 1;
-            var canMoveVertical = parameterData.sourceData[pos.X, pos.Y + c.Y].BlocksSense < 1;
+            var moveDataHorizontal = Query(in parameterData, pos.X + c.X, pos.Y);
+            var canMoveHorizontal = moveDataHorizontal.BlocksSense < 1;
+            
+            var moveDataVertical = Query(in parameterData, pos.X, pos.Y + c.Y);
+            var canMoveVertical = moveDataVertical.BlocksSense < 1;
 
             // if both cardinal directions are blocked, we cannot walk diagonally.
             if (!canMoveHorizontal && !canMoveVertical)
@@ -35,6 +39,19 @@ namespace RogueEntity.Core.Movement.Resistance.Directions
             }
             
             return true;
+        }
+
+        static MovementResistance<TMovementMode> Query(in (IReadOnlyDynamicDataView2D<MovementResistance<TMovementMode>> sourceData,
+                                                           IReadOnlyBoundedDataView<MovementResistance<TMovementMode>> sourceTile, int z) parameterData,
+                                                       int x,
+                                                       int y)
+        {
+            if (!parameterData.sourceTile.TryGet(x, y, out var moveData))
+            {
+                moveData = parameterData.sourceData[x, y];
+            }
+
+            return moveData;
         }
     }
 }

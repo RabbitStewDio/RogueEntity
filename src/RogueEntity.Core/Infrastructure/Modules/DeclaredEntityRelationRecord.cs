@@ -28,6 +28,24 @@ namespace RogueEntity.Core.Infrastructure.Modules
             return records.Keys.GetEnumerator();
         }
 
+        public bool TryGetRelationById(string id, out EntityRelation r)
+        {
+            foreach (var l in records.Values)
+            {
+                foreach (var ll in l)
+                {
+                    if (ll.Id == id)
+                    {
+                        r = ll;
+                        return true;
+                    }
+                }
+            }
+
+            r = default;
+            return false;
+        }
+        
         public ReadOnlyListWrapper<EntityRelation> this[Type t]
         {
             get

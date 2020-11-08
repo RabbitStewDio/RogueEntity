@@ -28,7 +28,7 @@ namespace RogueEntity.Core.Infrastructure.Modules
             return retval;
         }
 
-        public void Register(EntitySystemId id, int priority, ModuleEntityContext.GlobalSystemRegistrationDelegate<TGameContext> entityRegistration)
+        public void Register(EntitySystemId id, int priority, GlobalSystemRegistrationDelegate<TGameContext> entityRegistration)
         {
             globalSystems.Add(new GlobalRegistrationRecord()
             {
@@ -44,7 +44,7 @@ namespace RogueEntity.Core.Infrastructure.Modules
             public string DeclaringModule { get; set; }
             public EntitySystemId Id { get; set; }
             public int Priority { get; set; }
-            public ModuleEntityContext.GlobalSystemRegistrationDelegate<TGameContext> SystemRegistration;
+            public GlobalSystemRegistrationDelegate<TGameContext> SystemRegistration;
         }
     }
 }

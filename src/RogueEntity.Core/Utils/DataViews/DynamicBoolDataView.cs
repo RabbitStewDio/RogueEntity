@@ -323,6 +323,15 @@ namespace RogueEntity.Core.Utils.DataViews
             }
         }
 
+        public bool AnyValueSetInTile(int x, int y)
+        {
+            if (!TryGetDataInternal(x, y, out var tile))
+            {
+                return false;
+            }
+
+            return tile.AnyValueSet();
+        }
 
         [DataContract]
         [MessagePackObject]

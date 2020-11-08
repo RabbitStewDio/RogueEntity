@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using JetBrains.Annotations;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Positioning.MapLayers;
-using RogueEntity.Core.Sensing.Resistance.Maps;
 using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.DataViews;
 using Serilog;
@@ -13,7 +12,7 @@ namespace RogueEntity.Core.GridProcessing.LayerAggregation
 {
     public class AggregatePropertiesLayer<TGameContext, TAggregateData> : IAggregationPropertiesLayer<TGameContext, TAggregateData>
     {
-        static readonly ILogger Logger = SLog.ForContext<SensePropertiesLayer<TGameContext, TAggregateData>>();
+        static readonly ILogger Logger = SLog.ForContext<AggregatePropertiesLayer<TGameContext, TAggregateData>>();
 
         readonly int z;
         readonly Action<AggregationProcessingParameter<TAggregateData>> processor;
@@ -24,12 +23,13 @@ namespace RogueEntity.Core.GridProcessing.LayerAggregation
         readonly Dictionary<Rectangle, AggregationProcessingParameter<TAggregateData>> processingParameterCollector;
         bool combinerDirty;
 
-        public AggregatePropertiesLayer(int z, int offsetX, int offsetY, int tileWidth, int tileHeight, [NotNull] Action<AggregationProcessingParameter<TAggregateData>> processor)
+        public AggregatePropertiesLayer(int z, [NotNull] Action<AggregationProcessingParameter<TAggregateData>> processor, 
+                                        int offsetX, int offsetY, int tileSizeX, int tileSizeY)
         {
             this.z = z;
             this.processor = processor ?? throw new ArgumentNullException(nameof(processor));
             this.dependencies = new Dictionary<byte, IAggregationPropertiesDataProcessor<TGameContext, TAggregateData>>();
-            this.resistanceData = new DynamicDataView<TAggregateData>(offsetX, offsetY, tileWidth, tileHeight);
+            this.resistanceData = new DynamicDataView<TAggregateData>(offsetX, offsetY, tileSizeX, tileSizeY);
             this.dependenciesAsList = new List<IAggregationPropertiesDataProcessor<TGameContext, TAggregateData>>();
             this.dataViewsAsList = new List<IReadOnlyDynamicDataView2D<TAggregateData>>();
             this.processingParameterCollector = new Dictionary<Rectangle, AggregationProcessingParameter<TAggregateData>>();
