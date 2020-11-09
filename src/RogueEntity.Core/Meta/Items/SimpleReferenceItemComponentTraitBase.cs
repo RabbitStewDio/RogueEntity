@@ -17,6 +17,11 @@ namespace RogueEntity.Core.Meta.Items
         public string Id { get; }
         public int Priority { get; }
 
+        public virtual IReferenceItemTrait<TGameContext, TItemId> CreateInstance()
+        {
+            return this;
+        }
+
         public bool TryQuery(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, out TData t)
         {
             if (v.IsValid(k) &&

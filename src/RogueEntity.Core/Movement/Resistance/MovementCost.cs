@@ -9,18 +9,18 @@ namespace RogueEntity.Core.Movement.Resistance
     [EntityComponent(EntityConstructor.NonConstructable)]
     [MessagePackObject]
     [DataContract]
-    public readonly struct MovementResistance<TSense> : IEquatable<MovementResistance<TSense>>
+    public readonly struct MovementCost<TSense> : IEquatable<MovementCost<TSense>>
     {
         [DataMember(Order = 0)]
         public readonly Percentage BlocksSense;
 
         [SerializationConstructor]
-        public MovementResistance(Percentage blocksSense)
+        public MovementCost(Percentage blocksSense)
         {
             BlocksSense = blocksSense;
         }
 
-        public MovementResistance(float blocksSense)
+        public MovementCost(float blocksSense)
         {
             BlocksSense = Percentage.Of(blocksSense);
         }
@@ -30,14 +30,14 @@ namespace RogueEntity.Core.Movement.Resistance
             return $"{nameof(BlocksSense)}: {BlocksSense}";
         }
 
-        public bool Equals(MovementResistance<TSense> other)
+        public bool Equals(MovementCost<TSense> other)
         {
             return BlocksSense.Equals(other.BlocksSense);
         }
 
         public override bool Equals(object obj)
         {
-            return obj is MovementResistance<TSense> other && Equals(other);
+            return obj is MovementCost<TSense> other && Equals(other);
         }
 
         public override int GetHashCode()
@@ -45,19 +45,19 @@ namespace RogueEntity.Core.Movement.Resistance
             return BlocksSense.GetHashCode();
         }
 
-        public static bool operator ==(MovementResistance<TSense> left, MovementResistance<TSense> right)
+        public static bool operator ==(MovementCost<TSense> left, MovementCost<TSense> right)
         {
             return left.Equals(right);
         }
 
-        public static bool operator !=(MovementResistance<TSense> left, MovementResistance<TSense> right)
+        public static bool operator !=(MovementCost<TSense> left, MovementCost<TSense> right)
         {
             return !left.Equals(right);
         }
         
-        public static MovementResistance<TSense> operator +(MovementResistance<TSense> left, MovementResistance<TSense> right)
+        public static MovementCost<TSense> operator +(MovementCost<TSense> left, MovementCost<TSense> right)
         {
-            return new MovementResistance<TSense>(left.BlocksSense + right.BlocksSense);
+            return new MovementCost<TSense>(left.BlocksSense + right.BlocksSense);
         }
 
 

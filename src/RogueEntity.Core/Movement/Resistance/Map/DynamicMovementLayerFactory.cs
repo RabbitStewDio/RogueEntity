@@ -9,7 +9,7 @@ using RogueEntity.Core.Utils.DataViews;
 
 namespace RogueEntity.Core.Movement.Resistance.Map
 {
-    public class DynamicMovementLayerFactory<TGameContext, TItemId, TSense> : DynamicGridAggregateLayerFactoryBase<TGameContext, TItemId, MovementResistance<TSense>>
+    public class DynamicMovementLayerFactory<TGameContext, TItemId, TSense> : DynamicGridAggregateLayerFactoryBase<TGameContext, TItemId, MovementCost<TSense>>
         where TItemId : IEntityKey
     {
         readonly IItemContext<TGameContext, TItemId> itemContext;
@@ -21,7 +21,7 @@ namespace RogueEntity.Core.Movement.Resistance.Map
             this.itemContext = itemContext ?? throw new ArgumentNullException(nameof(itemContext));
         }
 
-        protected override IAggregationPropertiesDataProcessor<TGameContext, MovementResistance<TSense>> CreateDataProcessor(MapLayer layer, int zLayer, DynamicDataViewConfiguration config)
+        protected override IAggregationPropertiesDataProcessor<TGameContext, MovementCost<TSense>> CreateDataProcessor(MapLayer layer, int zLayer, DynamicDataViewConfiguration config)
         {
             return new MovementPropertiesDataProcessor<TGameContext, TItemId, TSense>(layer,
                                                                                       MapContext,

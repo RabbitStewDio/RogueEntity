@@ -1,6 +1,6 @@
 using System;
 
-namespace RogueEntity.Core.Infrastructure.Modules
+namespace RogueEntity.Core.Infrastructure.Modules.Attributes
 {
     /// <summary>
     ///   Marks general module initializers. Those methods must have the signature

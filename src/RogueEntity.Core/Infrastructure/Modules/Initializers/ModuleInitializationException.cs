@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.Serialization;
 
-namespace RogueEntity.Core.Infrastructure.Modules
+namespace RogueEntity.Core.Infrastructure.Modules.Initializers
 {
     public class ModuleInitializationException: Exception
     {

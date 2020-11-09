@@ -37,7 +37,7 @@ namespace RogueEntity.Core.Tests.Positioning
 
         protected override BulkItemGridPositionTrait<TestGridPositionContext, ItemReference> CreateTrait()
         {
-            return new BulkItemGridPositionTrait<TestGridPositionContext, ItemReference>(Context.ItemResolver, itemLayer);
+            return new BulkItemGridPositionTrait<TestGridPositionContext, ItemReference>(Context.ItemResolver, Context, itemLayer);
         }
 
         protected override void Validate_Apply(ItemDeclarationId itemId)

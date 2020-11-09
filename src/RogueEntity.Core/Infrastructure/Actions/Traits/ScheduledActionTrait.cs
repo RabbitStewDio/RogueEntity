@@ -11,6 +11,11 @@ namespace RogueEntity.Core.Infrastructure.Actions.Traits
         public string Id => "Core.Action.ScheduleActionQuery";
         public int Priority => 0;
 
+        public IReferenceItemTrait<TGameContext, TActorId> CreateInstance()
+        {
+            return this;
+        }
+
         public void Initialize(IEntityViewControl<TActorId> v, TGameContext context, TActorId k, IItemDeclaration item)
         {
         }

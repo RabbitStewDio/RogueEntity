@@ -2,6 +2,8 @@
 using EnTTSharp.Entities;
 using RogueEntity.Core.Equipment;
 using RogueEntity.Core.Infrastructure.Modules;
+using RogueEntity.Core.Infrastructure.Modules.Attributes;
+using RogueEntity.Core.Infrastructure.Modules.Services;
 using RogueEntity.Core.Meta;
 using RogueEntity.Core.Meta.Items;
 

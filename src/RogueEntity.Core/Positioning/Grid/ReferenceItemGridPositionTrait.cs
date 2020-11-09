@@ -1,5 +1,6 @@
 ﻿using System;
 using EnTTSharp.Entities;
+using JetBrains.Annotations;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Positioning.MapLayers;
 using RogueEntity.Core.Utils;
@@ -15,16 +16,18 @@ namespace RogueEntity.Core.Positioning.Grid
                                                                          IItemComponentInformationTrait<TGameContext, TItemId, MapLayerPreference>,
                                                                          IItemComponentInformationTrait<TGameContext, TItemId, MapContainerEntityMarker>
         where TItemId : IBulkDataStorageKey<TItemId>
-        where TGameContext : IGridMapContext<TItemId>
     {
         readonly IItemResolver<TGameContext, TItemId> itemResolver;
         readonly MapLayerPreference layerPreference;
         readonly ILogger logger = SLog.ForContext<ReferenceItemGridPositionTrait<TGameContext, TItemId>>();
+        readonly IGridMapContext<TItemId> gridContext;
 
-        public ReferenceItemGridPositionTrait(IItemResolver<TGameContext, TItemId> itemResolver, 
+        public ReferenceItemGridPositionTrait([NotNull] IItemResolver<TGameContext, TItemId> itemResolver,
+                                              [NotNull] IGridMapContext<TItemId> gridContext, 
                                               MapLayer layer, params MapLayer[] layers)
         {
-            this.itemResolver = itemResolver;
+            this.itemResolver = itemResolver ?? throw new ArgumentNullException(nameof(itemResolver));
+            this.gridContext = gridContext ?? throw new ArgumentNullException(nameof(gridContext));
             Id = "ReferenceItem.Generic.Position.Grid";
             Priority = 100;
 
@@ -33,6 +36,11 @@ namespace RogueEntity.Core.Positioning.Grid
 
         public string Id { get; }
         public int Priority { get; }
+
+        public IReferenceItemTrait<TGameContext, TItemId> CreateInstance()
+        {
+            return this;
+        }
 
         public void Initialize(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, IItemDeclaration item)
         {
@@ -126,7 +134,7 @@ namespace RogueEntity.Core.Positioning.Grid
             {
                 // was on map before, now no longer on map.
                 if (!layerPreference.IsAcceptable(previousPosition, out var previousLayerId) ||
-                    !context.TryGetGridDataFor(previousLayerId, out var previousMapContext) ||
+                    !gridContext.TryGetGridDataFor(previousLayerId, out var previousMapContext) ||
                     !previousMapContext.TryGetWritableView(previousPosition.GridZ, out var previousMap, DataViewCreateMode.CreateMissing))
                 {
                     throw new ArgumentException("A previously set position was not accepted as layer target.");
@@ -145,7 +153,7 @@ namespace RogueEntity.Core.Positioning.Grid
                 return false;
             }
 
-            if (!context.TryGetGridDataFor(layerId, out var mapDataContext) ||
+            if (!gridContext.TryGetGridDataFor(layerId, out var mapDataContext) ||
                 !mapDataContext.TryGetWritableView(desiredPosition.GridZ, out var targetMap, DataViewCreateMode.CreateMissing))
             {
                 logger.Warning("Invalid layer {Layer} for unresolvable map data for item {ItemId}", layerId, k);
@@ -166,7 +174,7 @@ namespace RogueEntity.Core.Positioning.Grid
             if (previousPosition != EntityGridPosition.Invalid)
             {
                 if (!layerPreference.IsAcceptable(previousPosition, out var previousLayerId) ||
-                    !context.TryGetGridDataFor(previousLayerId, out var previousItemMap) ||
+                    !gridContext.TryGetGridDataFor(previousLayerId, out var previousItemMap) ||
                     !previousItemMap.TryGetWritableView(previousPosition.GridZ, out var previousMap, DataViewCreateMode.CreateMissing))
                 {
                     throw new ArgumentException("A previously set position was not accepted as layer target.");

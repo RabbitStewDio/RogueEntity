@@ -3,12 +3,17 @@ using RogueEntity.Core.Meta.Items;
 
 namespace RogueEntity.Core.Sensing.Discovery
 {
-    public class DiscoveryMapTrait<TGameContext, TActorId> : IReferenceItemTrait<TGameContext, TActorId>,
+    public sealed class DiscoveryMapTrait<TGameContext, TActorId> : IReferenceItemTrait<TGameContext, TActorId>,
                                                              IItemComponentInformationTrait<TGameContext, TActorId, IDiscoveryMap>
         where TActorId : IEntityKey
     {
         public string Id => "Actor.Generic.DiscoveryMap";
         public int Priority => 100;
+
+        public IReferenceItemTrait<TGameContext, TActorId> CreateInstance()
+        {
+            return this;
+        }
 
         public void Initialize(IEntityViewControl<TActorId> v, TGameContext context, TActorId k, IItemDeclaration item)
         {

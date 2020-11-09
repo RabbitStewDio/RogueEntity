@@ -2,16 +2,21 @@
 using EnTTSharp.Entities;
 using RogueEntity.Core.Infrastructure.Commands;
 using RogueEntity.Core.Infrastructure.GameLoops;
+using RogueEntity.Core.Infrastructure.Modules.Services;
 using RogueEntity.Core.Meta.Items;
 
-namespace RogueEntity.Core.Infrastructure.Modules
+namespace RogueEntity.Core.Infrastructure.Modules.Initializers
 {
-    public class ModuleEntityContext<TGameContext, TEntityId> : IModuleEntityContext<TGameContext, TEntityId>
+    public class ModuleEntityContext<TGameContext, TEntityId> : IModuleEntityContext<TGameContext, TEntityId>, IModuleInitializationData<TGameContext, TEntityId>
         where TEntityId : IEntityKey
     {
         readonly Dictionary<ItemDeclarationId, IBulkItemDeclaration<TGameContext, TEntityId>> declaredBulkItems;
         readonly Dictionary<ItemDeclarationId, IReferenceItemDeclaration<TGameContext, TEntityId>> declaredReferenceItems;
-        readonly List<IEntitySystemFactory<TGameContext, TEntityId>> systemFactories;
+        
+        readonly Dictionary<ItemDeclarationId, IBulkItemDeclaration<TGameContext, TEntityId>> activeBulkItems;
+        readonly Dictionary<ItemDeclarationId, IReferenceItemDeclaration<TGameContext, TEntityId>> activeReferenceItems;
+        
+        readonly List<EntitySystemFactory> systemFactories;
         readonly string moduleId;
 
         public ModuleEntityContext(string moduleId)
@@ -19,35 +24,65 @@ namespace RogueEntity.Core.Infrastructure.Modules
             this.moduleId = moduleId;
             this.declaredBulkItems = new Dictionary<ItemDeclarationId, IBulkItemDeclaration<TGameContext, TEntityId>>();
             this.declaredReferenceItems = new Dictionary<ItemDeclarationId, IReferenceItemDeclaration<TGameContext, TEntityId>>();
-            this.systemFactories = new List<IEntitySystemFactory<TGameContext, TEntityId>>();
+            this.activeBulkItems = new Dictionary<ItemDeclarationId, IBulkItemDeclaration<TGameContext, TEntityId>>();
+            this.activeReferenceItems = new Dictionary<ItemDeclarationId, IReferenceItemDeclaration<TGameContext, TEntityId>>();
+            this.systemFactories = new List<EntitySystemFactory>();
         }
 
         public IEnumerable<IBulkItemDeclaration<TGameContext, TEntityId>> DeclaredBulkItems
         {
-            get { return declaredBulkItems.Values; }
+            get { return activeBulkItems.Values; }
         }
 
         public IEnumerable<IReferenceItemDeclaration<TGameContext, TEntityId>> DeclaredReferenceItems
         {
-            get { return declaredReferenceItems.Values; }
+            get { return activeReferenceItems.Values; }
         }
 
-        public IEnumerable<IEntitySystemFactory<TGameContext, TEntityId>> EntitySystems
+        public IEnumerable<IEntitySystemDeclaration<TGameContext, TEntityId>> EntitySystems
         {
             get { return systemFactories; }
         }
 
-        public ItemDeclarationId Declare(IBulkItemDeclaration<TGameContext, TEntityId> item)
+        public void DeclareTraitRoles<TItemTrait>(params EntityRole[] roles)
         {
-            declaredReferenceItems.Remove(item.Id);
+        }
+
+        public void DeclareTraitRelations<TItemTrait>(params EntityRelation[] relations)
+        {
+        }
+
+        public bool TryGetDefinedBulkItem(ItemDeclarationId id, out IBulkItemDeclaration<TGameContext, TEntityId> item)
+        {
+            return declaredBulkItems.TryGetValue(id, out item);
+        }
+
+        public bool TryGetDefinedReferenceItem(ItemDeclarationId id, out IReferenceItemDeclaration<TGameContext, TEntityId> item)
+        {
+            return declaredReferenceItems.TryGetValue(id, out item);
+        }
+
+        public void DefineReferenceItemTemplate(IReferenceItemDeclaration<TGameContext, TEntityId> item)
+        {
+            declaredReferenceItems[item.Id] = item;
+        }
+
+        public void DefineBulkItemTemplate(IBulkItemDeclaration<TGameContext, TEntityId> item)
+        {
             declaredBulkItems[item.Id] = item;
+        }
+
+        public ItemDeclarationId Activate(IBulkItemDeclaration<TGameContext, TEntityId> item)
+        {
+            declaredBulkItems[item.Id] = item;
+            activeBulkItems[item.Id] = item;
             return item.Id;
         }
 
-        public ItemDeclarationId Declare(IReferenceItemDeclaration<TGameContext, TEntityId> item)
+        public ItemDeclarationId Activate(IReferenceItemDeclaration<TGameContext, TEntityId> item)
         {
-            declaredBulkItems.Remove(item.Id);
             declaredReferenceItems[item.Id] = item;
+            activeReferenceItems[item.Id] = item;
             return item.Id;
         }
 
@@ -81,7 +116,7 @@ namespace RogueEntity.Core.Infrastructure.Modules
             });
         }
 
-        class EntitySystemFactory : IEntitySystemFactory<TGameContext, TEntityId>
+        class EntitySystemFactory : IEntitySystemFactory<TGameContext, TEntityId>, IEntitySystemDeclaration<TGameContext, TEntityId>
         {
             public string DeclaringModule { get; set; }
             public EntitySystemId Id { get; set; }

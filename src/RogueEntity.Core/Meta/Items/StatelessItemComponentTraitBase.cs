@@ -49,5 +49,20 @@ namespace RogueEntity.Core.Meta.Items
             changedItem = k;
             return false;
         }
+
+        protected virtual StatelessItemComponentTraitBase<TGameContext, TItemId, TData> CreateInstance()
+        {
+            return this;
+        }
+
+        IBulkItemTrait<TGameContext, TItemId> IBulkItemTrait<TGameContext, TItemId>.CreateInstance()
+        {
+            return CreateInstance();
+        }
+
+        IReferenceItemTrait<TGameContext, TItemId> IReferenceItemTrait<TGameContext, TItemId>.CreateInstance()
+        {
+            return CreateInstance();
+        }
     }
 }

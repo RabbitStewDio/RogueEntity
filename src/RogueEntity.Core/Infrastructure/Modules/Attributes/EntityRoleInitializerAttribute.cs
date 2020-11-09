@@ -1,7 +1,7 @@
 using System;
 using JetBrains.Annotations;
 
-namespace RogueEntity.Core.Infrastructure.Modules
+namespace RogueEntity.Core.Infrastructure.Modules.Attributes
 {
     /// <summary>
     ///   Used to set up aspects of an entity role. Entity roles are bound to an entity registry.

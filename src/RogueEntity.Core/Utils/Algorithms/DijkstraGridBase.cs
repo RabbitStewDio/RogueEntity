@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using RogueEntity.Core.Directionality;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Utils.DataViews;
 using Serilog;

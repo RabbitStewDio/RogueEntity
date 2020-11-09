@@ -1,7 +1,7 @@
 using System;
 using JetBrains.Annotations;
 
-namespace RogueEntity.Core.Infrastructure.Modules
+namespace RogueEntity.Core.Infrastructure.Modules.Attributes
 {
     /// <summary>
     ///    Used to mark methods that set up relations between two entity systems.

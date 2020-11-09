@@ -46,6 +46,11 @@ namespace RogueEntity.Core.Equipment
 
         public int Priority => 300;
 
+        public IReferenceItemTrait<TGameContext, TActorId> CreateInstance()
+        {
+            return this;
+        }
+
         public void Initialize(IEntityViewControl<TActorId> v, TGameContext context, TActorId k, IItemDeclaration item)
         {
             v.AssignOrReplace(k, SlottedEquipmentData<TItemId>.Create());

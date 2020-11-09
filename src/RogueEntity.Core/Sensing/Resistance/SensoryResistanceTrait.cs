@@ -9,9 +9,13 @@ namespace RogueEntity.Core.Sensing.Resistance
     {
         readonly SensoryResistance<TSense> sensoryResistance;
 
-        public SensoryResistanceTrait(Percentage blocksSense) : base("Core.Item.SensoryResistance+" + typeof(TSense).Name, 100)
+        public SensoryResistanceTrait(SensoryResistance<TSense> sensoryResistance) : base("Core.Item.SensoryResistance+" + typeof(TSense).Name, 100)
         {
-            this.sensoryResistance = new SensoryResistance<TSense>(blocksSense);
+            this.sensoryResistance = sensoryResistance;
+        }
+
+        public SensoryResistanceTrait(Percentage blocksSense) : this(new SensoryResistance<TSense>(blocksSense))
+        {
         }
 
         protected override SensoryResistance<TSense> GetData(TContext context, TItemId k)

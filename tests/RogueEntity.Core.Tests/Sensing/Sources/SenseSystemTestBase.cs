@@ -28,8 +28,8 @@ namespace RogueEntity.Core.Tests.Sensing.Sources
             return o;
         }
     }
-    
-    public abstract class SenseSystemTestBase<TSense, 
+
+    public abstract class SenseSystemTestBase<TSense,
                                               TSenseSourceDefinition>
         where TSense : ISense
         where TSenseSourceDefinition : ISenseDefinition
@@ -43,7 +43,7 @@ namespace RogueEntity.Core.Tests.Sensing.Sources
         protected ItemDeclarationId senseActive10;
         protected ItemDeclarationId senseActive5;
         protected ItemDeclarationId senseInactive5;
-        protected SensoryResistanceDirectionalitySystem<TSense> directionalitySystem; 
+        protected SensoryResistanceDirectionalitySystem<TSense> directionalitySystem;
         protected virtual SensoryResistance<TSense> Convert(float f) => new SensoryResistance<TSense>(Percentage.Of(f));
 
         protected abstract ReferenceItemDeclaration<SenseMappingTestContext, ItemReference> AttachTrait(ReferenceItemDeclaration<SenseMappingTestContext, ItemReference> decl);
@@ -52,16 +52,16 @@ namespace RogueEntity.Core.Tests.Sensing.Sources
         {
             var physics = GetOrCreateSensePhysics();
             return new SenseSourceSystem<TSense, TSenseSourceDefinition>(senseProperties.AsLazy<IReadOnlyDynamicDataView3D<SensoryResistance<TSense>>>(),
-                                                                       senseCache.AsLazy<IGlobalSenseStateCacheProvider>(),
-                                                                       timeSource.AsLazy<ITimeSource>(),
-                                                                       directionalitySystem,
-                                                                       senseCache,
-                                                                       physics.Item1,
-                                                                       physics.Item2);
+                                                                         senseCache.AsLazy<IGlobalSenseStateCacheProvider>(),
+                                                                         timeSource.AsLazy<ITimeSource>(),
+                                                                         directionalitySystem,
+                                                                         senseCache,
+                                                                         physics.Item1,
+                                                                         physics.Item2);
         }
 
         protected abstract (ISensePropagationAlgorithm, ISensePhysics) GetOrCreateSensePhysics();
-        
+
         protected virtual List<Action<SenseMappingTestContext>> CreateSystemActions()
         {
             var ls = senseSystem;
@@ -70,7 +70,7 @@ namespace RogueEntity.Core.Tests.Sensing.Sources
             return new List<Action<SenseMappingTestContext>>
             {
                 ls.BeginSenseCalculation,
-                
+
                 directionalitySystem.ProcessSystem,
 
                 builder.CreateSystem<TSenseSourceDefinition, SenseSourceState<TSense>, EntityGridPosition>(ls.FindDirtySenseSources),
@@ -80,7 +80,7 @@ namespace RogueEntity.Core.Tests.Sensing.Sources
                 ls.EndSenseCalculation
             };
         }
-        
+
         [SetUp]
         public virtual void SetUp()
         {
@@ -97,19 +97,19 @@ namespace RogueEntity.Core.Tests.Sensing.Sources
             context.ItemEntityRegistry.RegisterFlag<ImmobilityMarker>();
 
             senseActive10 = context.ItemRegistry.Register(new ReferenceItemDeclaration<SenseMappingTestContext, ItemReference>("SenseSource-Active-10")
-                                                          .WithTrait(new ReferenceItemGridPositionTrait<SenseMappingTestContext, ItemReference>(context.ItemResolver, TestMapLayers.One))
+                                                          .WithTrait(new ReferenceItemGridPositionTrait<SenseMappingTestContext, ItemReference>(context.ItemResolver, context, TestMapLayers.One))
                                                           .DoWith(x => AttachTrait(x)));
             senseActive5 = context.ItemRegistry.Register(new ReferenceItemDeclaration<SenseMappingTestContext, ItemReference>("SenseSource-Active-5")
-                                                         .WithTrait(new ReferenceItemGridPositionTrait<SenseMappingTestContext, ItemReference>(context.ItemResolver, TestMapLayers.One))
+                                                         .WithTrait(new ReferenceItemGridPositionTrait<SenseMappingTestContext, ItemReference>(context.ItemResolver, context, TestMapLayers.One))
                                                          .DoWith(x => AttachTrait(x)));
             senseInactive5 = context.ItemRegistry.Register(new ReferenceItemDeclaration<SenseMappingTestContext, ItemReference>("SenseSource-Inactive-5")
-                                                           .WithTrait(new ReferenceItemGridPositionTrait<SenseMappingTestContext, ItemReference>(context.ItemResolver, TestMapLayers.One))
+                                                           .WithTrait(new ReferenceItemGridPositionTrait<SenseMappingTestContext, ItemReference>(context.ItemResolver, context, TestMapLayers.One))
                                                            .DoWith(x => AttachTrait(x)));
 
             timeSource = new TestTimeSource();
             senseProperties = new SensePropertiesSourceFixture<TSense>();
             directionalitySystem = new SensoryResistanceDirectionalitySystem<TSense>(senseProperties);
-            
+
             senseCache = new SenseStateCache(2, 64, 64);
 
             senseSystem = CreateSystem();
@@ -144,7 +144,7 @@ namespace RogueEntity.Core.Tests.Sensing.Sources
             context.ItemResolver.TryUpdateData(active5, context, EntityGridPosition.Of(TestMapLayers.One, 8, 9), out _);
             context.ItemResolver.TryUpdateData(inactive, context, EntityGridPosition.Of(TestMapLayers.One, 5, 5), out _);
         }
-        
+
         protected void PerformTest(string id, string sourceText, string expectedResultText)
         {
             senseProperties.GetOrCreate(0).ImportData(SenseTestHelpers.Parse(sourceText), Convert);
@@ -152,9 +152,9 @@ namespace RogueEntity.Core.Tests.Sensing.Sources
             var active10 = context.ItemResolver.Instantiate(context, senseActive10);
             var active5 = context.ItemResolver.Instantiate(context, senseActive5);
             var inactive = context.ItemResolver.Instantiate(context, senseInactive5);
-            
+
             PrepareItems(active10, active5, inactive);
-            
+
             foreach (var a in senseSystemActions)
             {
                 a(context);

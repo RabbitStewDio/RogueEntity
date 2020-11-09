@@ -4,6 +4,7 @@ using RogueEntity.Core.GridProcessing.LayerAggregation;
 using RogueEntity.Core.Infrastructure.Commands;
 using RogueEntity.Core.Infrastructure.GameLoops;
 using RogueEntity.Core.Infrastructure.Modules;
+using RogueEntity.Core.Infrastructure.Modules.Services;
 using RogueEntity.Core.Infrastructure.Time;
 using RogueEntity.Core.Positioning.Continuous;
 using RogueEntity.Core.Positioning.Grid;
@@ -123,9 +124,9 @@ namespace RogueEntity.Core.Sensing.Sources
         {
             var system = GetOrCreateDirectionalitySystem<TGameContext, TItemId>(serviceResolver);
 
-            if (!serviceResolver.TryResolve(out DirectionalitySystemRegisteredMarker _))
+            if (!serviceResolver.TryResolve(out SenseDirectionalitySystemRegisteredMarker _))
             {
-                serviceResolver.Store(new DirectionalitySystemRegisteredMarker());
+                serviceResolver.Store(new SenseDirectionalitySystemRegisteredMarker());
                 context.AddInitializationStepHandler(c => system.MarkGloballyDirty());
                 context.AddInitializationStepHandler(system.ProcessSystem);
                 context.AddInitializationStepHandler(system.MarkCleanSystem);
@@ -134,7 +135,7 @@ namespace RogueEntity.Core.Sensing.Sources
             }
         }
 
-        protected void RegisterSenseResistanceCacheLifeCycle<TGameContext, TItemId, TSense>(IServiceResolver resolver,
+        protected void RegisterSenseResistanceCacheLifeCycle<TGameContext, TItemId>(IServiceResolver resolver,
                                                                                             IGameLoopSystemRegistration<TGameContext> context,
                                                                                             EntityRegistry<TItemId> registry,
                                                                                             ICommandHandlerRegistration<TGameContext, TItemId> handler)
@@ -163,7 +164,7 @@ namespace RogueEntity.Core.Sensing.Sources
             }
         }
 
-        readonly struct DirectionalitySystemRegisteredMarker
+        readonly struct SenseDirectionalitySystemRegisteredMarker
         {
         }
 

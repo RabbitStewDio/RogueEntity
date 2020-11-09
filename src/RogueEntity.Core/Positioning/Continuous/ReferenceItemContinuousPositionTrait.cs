@@ -33,6 +33,11 @@ namespace RogueEntity.Core.Positioning.Continuous
         public string Id { get; }
         public int Priority { get; }
 
+        public IReferenceItemTrait<TGameContext, TItemId> CreateInstance()
+        {
+            return this;
+        }
+
         public void Initialize(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, IItemDeclaration item)
         {
         }

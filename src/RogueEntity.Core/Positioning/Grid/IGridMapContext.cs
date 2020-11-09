@@ -1,4 +1,5 @@
-﻿using RogueEntity.Core.Positioning.MapLayers;
+﻿using System.Diagnostics.CodeAnalysis;
+using RogueEntity.Core.Positioning.MapLayers;
 using RogueEntity.Core.Utils;
 
 namespace RogueEntity.Core.Positioning.Grid
@@ -14,6 +15,7 @@ namespace RogueEntity.Core.Positioning.Grid
         bool TryGetGridDataFor(MapLayer layer, out IGridMapDataContext<TItemId> data);
     }
 
+    [SuppressMessage("ReSharper", "UnusedTypeParameter", Justification = "Used as discriminator when using dependency injection.")]
     public interface IGridMapConfiguration<TItemId>
     {
         int OffsetX { get; }

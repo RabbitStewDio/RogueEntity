@@ -1,7 +1,9 @@
 ﻿namespace RogueEntity.Core.Meta.Items
 {
-    public interface IBulkItemTrait<TContext, TItemId> : IItemTrait
+    public interface IBulkItemTrait<TGameContext, TItemId> : IItemTrait
     {
-        TItemId Initialize(TContext context, IItemDeclaration item, TItemId reference);
+        TItemId Initialize(TGameContext context, IItemDeclaration item, TItemId reference);
+        
+        IBulkItemTrait<TGameContext, TItemId> CreateInstance();
     }
 }

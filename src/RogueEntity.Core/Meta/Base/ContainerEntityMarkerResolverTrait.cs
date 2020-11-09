@@ -23,6 +23,11 @@ namespace RogueEntity.Core.Meta.Base
             traits = new List<IItemComponentInformationTrait<TGameContext, TItemId, IContainerEntityMarker>>();
         }
 
+        public IReferenceItemTrait<TGameContext, TItemId> CreateInstance()
+        {
+            return new ContainerEntityMarkerResolverTrait<TGameContext, TItemId>();
+        }
+
         public void Initialize(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, IItemDeclaration item)
         {
             item.QueryAll(traits);

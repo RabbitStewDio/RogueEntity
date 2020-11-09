@@ -1,7 +1,7 @@
 using System;
 using JetBrains.Annotations;
 
-namespace RogueEntity.Core.Infrastructure.Modules
+namespace RogueEntity.Core.Infrastructure.Modules.Attributes
 {
     public enum InitializerCollectorType
     {

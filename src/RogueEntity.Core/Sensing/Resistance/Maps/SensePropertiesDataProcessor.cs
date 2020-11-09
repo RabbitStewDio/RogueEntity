@@ -5,15 +5,12 @@ using RogueEntity.Core.GridProcessing.LayerAggregation;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Positioning.MapLayers;
-using RogueEntity.Core.Utils;
-using Serilog;
 
 namespace RogueEntity.Core.Sensing.Resistance.Maps
 {
     public class SensePropertiesDataProcessor<TGameContext, TItemId, TSense> : GridAggregationPropertiesDataProcessor<TGameContext, TItemId, SensoryResistance<TSense>>
         where TItemId : IEntityKey
     {
-        static readonly ILogger Logger = SLog.ForContext<SensePropertiesDataProcessor<TGameContext, TItemId, TSense>>();
         readonly IItemContext<TGameContext, TItemId> itemContext;
 
         public SensePropertiesDataProcessor(MapLayer layer,

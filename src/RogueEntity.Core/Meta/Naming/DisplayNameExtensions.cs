@@ -1,4 +1,5 @@
 ﻿using EnTTSharp.Entities;
+using RogueEntity.Core.Meta.ItemBuilder;
 using RogueEntity.Core.Meta.Items;
 
 namespace RogueEntity.Core.Meta.Naming
@@ -20,6 +21,40 @@ namespace RogueEntity.Core.Meta.Naming
 
             return Something;
         }
+
+        public static BulkItemDeclarationBuilder<TGameContext, TItemId> WithName<TGameContext, TItemId>(this BulkItemDeclarationBuilder<TGameContext, TItemId> builder,
+                                                                                                                 string name)
+            where TItemId : IEntityKey
+        {
+            builder.Declaration.WithTrait(new DefaultItemNameTrait<TGameContext, TItemId>(new CountableNounDisplayName(name)));
+            return builder;
+        }
+
+        public static ReferenceItemDeclarationBuilder<TGameContext, TItemId> WithName<TGameContext, TItemId>(this ReferenceItemDeclarationBuilder<TGameContext, TItemId> builder,
+                                                                                                                      string name)
+            where TItemId : IEntityKey
+        {
+            builder.Declaration.WithTrait(new DefaultItemNameTrait<TGameContext, TItemId>(new CountableNounDisplayName(name)));
+            return builder;
+        }
+
+        public static BulkItemDeclarationBuilder<TGameContext, TItemId> WithUniqueName<TGameContext, TItemId>(this BulkItemDeclarationBuilder<TGameContext, TItemId> builder,
+                                                                                                              string name)
+            where TItemId : IEntityKey
+        {
+            builder.Declaration.WithTrait(new DefaultItemNameTrait<TGameContext, TItemId>(new NonCountableNounDisplayName(name)));
+            return builder;
+        }
+
+        public static ReferenceItemDeclarationBuilder<TGameContext, TItemId> WithUniqueName<TGameContext, TItemId>(this ReferenceItemDeclarationBuilder<TGameContext, TItemId> builder,
+                                                                                                                   string name)
+            where TItemId : IEntityKey
+        {
+            builder.Declaration.WithTrait(new DefaultItemNameTrait<TGameContext, TItemId>(new NonCountableNounDisplayName(name)));
+            return builder;
+        }
+
+
 /*
         public static IDisplayName ToActorName<TGameContext, TActorId>(this TActorId actor,
                                                                        TGameContext context)

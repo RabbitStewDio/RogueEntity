@@ -22,7 +22,7 @@ namespace RogueEntity.Core.GridProcessing.LayerAggregation
         readonly DynamicBoolDataView dirtyMap;
         readonly List<Rectangle> activeTilesCache;
         readonly List<TileProcessingParameters> processingFastParameterCache;
-        protected readonly DynamicDataView<TAggregateType> WritableDataView;
+        readonly DynamicDataView<TAggregateType> writableDataView;
         bool dirtyAfterCreation;
 
         protected GridAggregationPropertiesDataProcessor(MapLayer layer,
@@ -36,7 +36,7 @@ namespace RogueEntity.Core.GridProcessing.LayerAggregation
             this.Layer = layer;
             this.mapContext = mapContext ?? throw new ArgumentNullException(nameof(mapContext));
             this.zPosition = zPosition;
-            this.WritableDataView = new DynamicDataView<TAggregateType>(offsetX, offsetY, tileSizeX, tileSizeY);
+            this.writableDataView = new DynamicDataView<TAggregateType>(offsetX, offsetY, tileSizeX, tileSizeY);
             this.dirtyMap = new DynamicBoolDataView(offsetX, offsetY, tileSizeX, tileSizeY);
             this.activeTilesCache = new List<Rectangle>();
             this.processingFastParameterCache = new List<TileProcessingParameters>();
@@ -44,9 +44,7 @@ namespace RogueEntity.Core.GridProcessing.LayerAggregation
             this.dirtyAfterCreation = true;
         }
 
-        public IReadOnlyDynamicDataView2D<TAggregateType> Data => WritableDataView;
-
-
+        public IReadOnlyDynamicDataView2D<TAggregateType> Data => writableDataView;
         public ReadOnlyListWrapper<Rectangle> ProcessedTiles => activeTilesCache;
 
         public int ZPosition => zPosition;
@@ -92,13 +90,20 @@ namespace RogueEntity.Core.GridProcessing.LayerAggregation
                 }
 
                 if (mapData.TryGetData(bounds.X, bounds.Y, out var tile) &&
-                    WritableDataView.TryGetWriteAccess(bounds.X, bounds.Y, out var resultTile, DataViewCreateMode.CreateMissing))
+                    writableDataView.TryGetWriteAccess(bounds.X, bounds.Y, out var resultTile, DataViewCreateMode.CreateMissing))
                 {
                     processingFastParameterCache.Add(new TileProcessingParameters(bounds, context, mapData, tile, resultTile));
                 }
             }
 
             dirtyAfterCreation = false;
+            
+            if (processingFastParameterCache.Count == 0)
+            {
+                return;
+            }
+
+            Logger.Verbose("Processing {Count} map tiles for z-Layer {ZLayer}", processingFastParameterCache.Count, zPosition);
             Parallel.ForEach(processingFastParameterCache, processFastDelegate);
         }
 

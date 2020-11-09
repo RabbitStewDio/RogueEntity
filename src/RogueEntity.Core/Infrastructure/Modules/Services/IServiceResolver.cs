@@ -1,6 +1,6 @@
 using System;
 
-namespace RogueEntity.Core.Infrastructure.Modules
+namespace RogueEntity.Core.Infrastructure.Modules.Services
 {
     public interface IServiceResolver
     {

@@ -37,6 +37,11 @@ namespace RogueEntity.Core.Sensing.Sources.Light
         {
         }
 
+        public IReferenceItemTrait<TGameContext, TItemId> CreateInstance()
+        {
+            return this;
+        }
+
         public string Id => "Core.Common.LightSource"; 
         public int Priority => 100;
 

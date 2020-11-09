@@ -10,7 +10,17 @@ namespace RogueEntity.Core.Infrastructure.Modules
         public const string ImpliedRoleRelationId = "Relation.System.Implies";
     }
 
-    public abstract class ModuleBase
+    public interface IModuleConfiguration
+    {
+        void DeclareDependency(ModuleDependency dependencies);
+        void DeclareDependencies(params ModuleDependency[] dependencies);
+        RequireDependencyBuilder RequireRelation(EntityRelation r);
+        RequireDependencyBuilder RequireRole(EntityRole r);
+        RequireDependencyBuilder ForRole(EntityRole r);
+        RequireDependencyBuilder ForRelation(EntityRelation r);
+    }
+
+    public abstract class ModuleBase: IModuleConfiguration
     {
         readonly List<ModuleDependency> moduleDependencies;
         readonly Dictionary<Type, DeclaredEntityRoleRecord> declaredRoles;
@@ -107,7 +117,7 @@ namespace RogueEntity.Core.Infrastructure.Modules
             return new DeclareDependencyBuilder(this, r.Subject);
         }
 
-        protected RequireDependencyBuilder RequireRole(EntityRole r)
+        public RequireDependencyBuilder RequireRole(EntityRole r)
         {
             if (!requiredRoles.Contains(r))
             {
@@ -117,12 +127,12 @@ namespace RogueEntity.Core.Infrastructure.Modules
             return new RequireDependencyBuilder(this, r);
         }
 
-        protected RequireDependencyBuilder ForRole(EntityRole r)
+        public RequireDependencyBuilder ForRole(EntityRole r)
         {
             return new RequireDependencyBuilder(this, r);
         }
 
-        protected RequireDependencyBuilder RequireRelation(EntityRelation r)
+        public RequireDependencyBuilder RequireRelation(EntityRelation r)
         {
             if (!requiredRelations.Contains(r))
             {
@@ -132,7 +142,12 @@ namespace RogueEntity.Core.Infrastructure.Modules
             return new RequireDependencyBuilder(this, r.Subject);
         }
 
-        protected void DeclareDependency(ModuleDependency dependencies)
+        public RequireDependencyBuilder ForRelation(EntityRelation r)
+        {
+            return new RequireDependencyBuilder(this, r.Subject);
+        }
+
+        public void DeclareDependency(ModuleDependency dependencies)
         {
             if (!moduleDependencies.Contains(dependencies))
             {
@@ -140,67 +155,67 @@ namespace RogueEntity.Core.Infrastructure.Modules
             }
         }
 
-        protected void DeclareDependencies(params ModuleDependency[] dependencies)
+        public void DeclareDependencies(params ModuleDependency[] dependencies)
         {
             moduleDependencies.AddRange(dependencies);
         }
+    }
 
-        public readonly struct RequireDependencyBuilder
+    public readonly struct RequireDependencyBuilder
+    {
+        readonly ModuleBase module;
+        readonly EntityRole role;
+
+        public RequireDependencyBuilder(ModuleBase module, EntityRole role)
         {
-            readonly ModuleBase module;
-            readonly EntityRole role;
-
-            public RequireDependencyBuilder(ModuleBase module, EntityRole role)
-            {
-                this.module = module;
-                this.role = role;
-            }
-
-            public RequireDependencyBuilder WithImpliedRole(EntityRole r)
-            {
-                this.module.RequireRelation(new EntityRelation(ModuleRelationNames.ImpliedRoleRelationId, role, r, true));
-                return this;
-            }
-
-            public RequireDependencyBuilder WithDependencyOn(string moduleId)
-            {
-                module.DeclareDependency(ModuleDependency.Of(moduleId));
-                return this;
-            }
+            this.module = module;
+            this.role = role;
         }
 
-        public readonly struct DeclareDependencyBuilder
+        public RequireDependencyBuilder WithImpliedRole(EntityRole r)
         {
-            readonly ModuleBase module;
-            readonly EntityRole role;
+            this.module.RequireRelation(new EntityRelation(ModuleRelationNames.ImpliedRoleRelationId, role, r, true));
+            return this;
+        }
 
-            public DeclareDependencyBuilder(ModuleBase module, EntityRole role)
-            {
-                this.module = module;
-                this.role = role;
-            }
+        public RequireDependencyBuilder WithDependencyOn(string moduleId)
+        {
+            module.DeclareDependency(ModuleDependency.Of(moduleId));
+            return this;
+        }
+    }
 
-            public DeclareDependencyBuilder WithImpliedRole(EntityRole r)
-            {
-                // dont register dependency roles so that we can check the module setup later.
-                this.module.RequireRelation(new EntityRelation(ModuleRelationNames.ImpliedRoleRelationId, role, r));
-                return this;
-            }
+    public readonly struct DeclareDependencyBuilder
+    {
+        readonly IModuleConfiguration module;
+        readonly EntityRole role;
 
-            public DeclareDependencyBuilder WithImpliedRole(EntityRole r, ModuleDependency moduleId)
-            {
-                // dont register dependency roles so that we can check the module setup later.
-                this.module.RequireRelation(new EntityRelation(ModuleRelationNames.ImpliedRoleRelationId, role, r));
-                this.module.DeclareDependency(moduleId);
+        public DeclareDependencyBuilder(IModuleConfiguration module, EntityRole role)
+        {
+            this.module = module;
+            this.role = role;
+        }
 
-                return this;
-            }
+        public DeclareDependencyBuilder WithImpliedRole(EntityRole r)
+        {
+            // dont register dependency roles so that we can check the module setup later.
+            this.module.RequireRelation(new EntityRelation(ModuleRelationNames.ImpliedRoleRelationId, role, r));
+            return this;
+        }
 
-            public DeclareDependencyBuilder WithDependencyOn(string moduleId)
-            {
-                module.DeclareDependency(ModuleDependency.Of(moduleId));
-                return this;
-            }
+        public DeclareDependencyBuilder WithImpliedRole(EntityRole r, ModuleDependency moduleId)
+        {
+            // dont register dependency roles so that we can check the module setup later.
+            this.module.RequireRelation(new EntityRelation(ModuleRelationNames.ImpliedRoleRelationId, role, r));
+            this.module.DeclareDependency(moduleId);
+
+            return this;
+        }
+
+        public DeclareDependencyBuilder WithDependencyOn(string moduleId)
+        {
+            module.DeclareDependency(ModuleDependency.Of(moduleId));
+            return this;
         }
     }
 }

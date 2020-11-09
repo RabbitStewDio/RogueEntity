@@ -6,7 +6,6 @@ using RogueEntity.Core.Sensing;
 using RogueEntity.Core.Sensing.Common.Physics;
 using RogueEntity.Core.Sensing.Map;
 using RogueEntity.Core.Sensing.Map.Light;
-using RogueEntity.Core.Sensing.Receptors.Light;
 using RogueEntity.Core.Sensing.Resistance;
 using RogueEntity.Core.Sensing.Sources.Light;
 using RogueEntity.Core.Utils;
@@ -68,12 +67,10 @@ namespace RogueEntity.Core.Tests.Sensing.Map.Light
 ";
 
         readonly LightPhysicsConfiguration sourcePhysics;
-        readonly VisionSenseReceptorPhysicsConfiguration physics;
 
         public LightMapSystemTest()
         {
             this.sourcePhysics = new LightPhysicsConfiguration(LinearDecaySensePhysics.For(DistanceCalculation.Chebyshev));
-            this.physics = new VisionSenseReceptorPhysicsConfiguration(sourcePhysics);
         }
 
         [Test]

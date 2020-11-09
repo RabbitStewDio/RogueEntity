@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using RogueEntity.Core.Infrastructure.Modules.Initializers;
 
-namespace RogueEntity.Core.Infrastructure.Modules
+namespace RogueEntity.Core.Infrastructure.Modules.Services
 {
     public class DefaultServiceResolver: IServiceResolver, IDisposable
     {

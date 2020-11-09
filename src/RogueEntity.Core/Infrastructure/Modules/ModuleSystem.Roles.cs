@@ -2,6 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using JetBrains.Annotations;
+using RogueEntity.Core.Infrastructure.Modules.Attributes;
+using RogueEntity.Core.Infrastructure.Modules.Services;
 using RogueEntity.Core.Utils;
 
 namespace RogueEntity.Core.Infrastructure.Modules
@@ -218,7 +221,7 @@ namespace RogueEntity.Core.Infrastructure.Modules
 
         class ModuleEntityInformation: IModuleEntityInformation
         {
-            readonly Type entitySubject;
+            [UsedImplicitly] readonly Type entitySubject;
             readonly EntityRoleRecord rolesPerType;
             readonly EntityRelationRecord relationRecord;
 

@@ -29,6 +29,21 @@ namespace RogueEntity.Core.Meta.Items
             return reference;
         }
 
+        IReferenceItemTrait<TGameContext, TItemId> IReferenceItemTrait<TGameContext, TItemId>.CreateInstance()
+        {
+            return CreateInstance();
+        }
+
+        IBulkItemTrait<TGameContext, TItemId> IBulkItemTrait<TGameContext, TItemId>.CreateInstance()
+        {
+            return CreateInstance();
+        }
+
+        protected virtual SimpleItemComponentTraitBase<TGameContext, TItemId, TData> CreateInstance()
+        {
+            return this;
+        }
+
         public virtual void Initialize(IEntityViewControl<TItemId> v,
                                        TGameContext context,
                                        TItemId k,

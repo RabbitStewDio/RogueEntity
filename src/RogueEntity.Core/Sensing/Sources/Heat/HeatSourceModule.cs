@@ -1,8 +1,10 @@
+using System.Diagnostics.CodeAnalysis;
 using EnTTSharp.Entities;
 using RogueEntity.Core.Infrastructure.Modules;
+using RogueEntity.Core.Infrastructure.Modules.Attributes;
+using RogueEntity.Core.Infrastructure.Modules.Services;
 using RogueEntity.Core.Infrastructure.Time;
 using RogueEntity.Core.Positioning;
-using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Sensing.Cache;
 using RogueEntity.Core.Sensing.Common;
 using RogueEntity.Core.Sensing.Common.Physics;
@@ -84,6 +86,7 @@ namespace RogueEntity.Core.Sensing.Sources.Heat
                                    "Role.Core.Position.GridPositioned",
                                    "Role.Core.Senses.Cache.InvalidationSource"
                                })]
+        [SuppressMessage("ReSharper", "UnusedTypeParameter")]
         protected void InitializeLightSenseCache<TGameContext, TItemId>(IServiceResolver serviceResolver,
                                                                         IModuleInitializer<TGameContext> initializer,
                                                                         EntityRole role)
@@ -111,7 +114,7 @@ namespace RogueEntity.Core.Sensing.Sources.Heat
             ctx.Register(ExecuteResistanceSystem, 52000, RegisterProcessSenseDirectionalitySystem);
             ctx.Register(RegisterResistanceSystem, 500, RegisterResistanceSystemLifecycle);
             
-            ctx.Register(SenseCacheLifecycleId, 500, RegisterSenseResistanceCacheLifeCycle<TGameContext, TItemId, TemperatureSense>);
+            ctx.Register(SenseCacheLifecycleId, 500, RegisterSenseResistanceCacheLifeCycle);
         }
 
         protected override SenseSourceSystem<TemperatureSense, HeatSourceDefinition> GetOrCreateSenseSystem<TGameContext, TItemId>(IServiceResolver serviceResolver)

@@ -3,14 +3,14 @@ using RogueEntity.Core.Meta.Items;
 
 namespace RogueEntity.Core.Meta.ItemTraits
 {
-    public class DurabilityTrait<TContext, TItemId> : IItemComponentTrait<TContext, TItemId, Durability>, 
-                                                      IBulkDataTrait<TContext, TItemId>,
-                                                      IReferenceItemTrait<TContext, TItemId> 
+    public sealed class DurabilityTrait<TContext, TItemId> : IItemComponentTrait<TContext, TItemId, Durability>,
+                                                             IBulkDataTrait<TContext, TItemId>,
+                                                             IReferenceItemTrait<TContext, TItemId>
         where TItemId : IBulkDataStorageKey<TItemId>
     {
         readonly Durability baseValue;
 
-        public DurabilityTrait(ushort maxDurability): this(maxDurability, maxDurability)
+        public DurabilityTrait(ushort maxDurability) : this(maxDurability, maxDurability)
         {
         }
 
@@ -24,6 +24,7 @@ namespace RogueEntity.Core.Meta.ItemTraits
         public string Id { get; }
         public int Priority { get; }
 
+
         public void Initialize(IEntityViewControl<TItemId> v, TContext context, TItemId k, IItemDeclaration item)
         {
             v.AssignOrReplace(k, in baseValue);
@@ -33,7 +34,7 @@ namespace RogueEntity.Core.Meta.ItemTraits
         {
         }
 
-        public virtual TItemId Initialize(TContext context, IItemDeclaration item, TItemId reference)
+        public TItemId Initialize(TContext context, IItemDeclaration item, TItemId reference)
         {
             return reference.WithData(baseValue.HitPoints);
         }
@@ -49,8 +50,11 @@ namespace RogueEntity.Core.Meta.ItemTraits
             return true;
         }
 
-        public bool TryUpdate(IEntityViewControl<TItemId> v, TContext context, TItemId k, 
-                              in Durability t, out TItemId changedK)
+        public bool TryUpdate(IEntityViewControl<TItemId> v,
+                              TContext context,
+                              TItemId k,
+                              in Durability t,
+                              out TItemId changedK)
         {
             if (k.IsReference)
             {
@@ -67,6 +71,16 @@ namespace RogueEntity.Core.Meta.ItemTraits
         {
             changedItem = k;
             return false;
+        }
+
+        IBulkItemTrait<TContext, TItemId> IBulkItemTrait<TContext, TItemId>.CreateInstance()
+        {
+            return this;
+        }
+
+        IReferenceItemTrait<TContext, TItemId> IReferenceItemTrait<TContext, TItemId>.CreateInstance()
+        {
+            return this;
         }
     }
 }

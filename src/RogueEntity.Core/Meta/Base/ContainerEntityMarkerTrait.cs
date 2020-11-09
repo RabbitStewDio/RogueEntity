@@ -26,6 +26,11 @@ namespace RogueEntity.Core.Meta.Base
         {
         }
 
+        public IReferenceItemTrait<TGameContext, TItemId> CreateInstance()
+        {
+            return this;
+        }
+
         public bool TryQuery(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, out IContainerEntityMarker t)
         {
             t = default;

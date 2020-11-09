@@ -77,9 +77,11 @@ namespace RogueEntity.Core.Sensing.Map
         public void ProcessSenseMap<TItemId>(EntityRegistry<TItemId> v)
             where TItemId : IEntityKey
         {
-            Parallel.ForEach(activeLightsPerLevel.Values, ProcessSenseMapInstance);
-
-            v.ResetComponent<SenseDirtyFlag<TSourceSense>>();
+            if (activeLightsPerLevel.Count > 0)
+            {
+                Parallel.ForEach(activeLightsPerLevel.Values, ProcessSenseMapInstance);
+                v.ResetComponent<SenseDirtyFlag<TSourceSense>>();
+            }
         }
         
         /// <summary>

@@ -15,6 +15,10 @@ namespace RogueEntity.Core.Meta.ItemTraits
         public string Id { get; }
         public int Priority { get; }
 
+        public IReferenceItemTrait<TGameContext, TActorId> CreateInstance()
+        {
+            return this;
+        }
 
         public void Initialize(IEntityViewControl<TActorId> v, TGameContext context, TActorId k, IItemDeclaration item)
         {

@@ -173,6 +173,10 @@ namespace RogueEntity.Core.Tests.Meta.Items
                 ApplyCallCount += 1;
             }
 
+            public IReferenceItemTrait<BasicItemContext, ItemReference> CreateInstance()
+            {
+                return new CallTracerReferenceTrait(Id, Priority);
+            }
         }
 
         class CallTracerBulkTrait : IBulkItemTrait<BasicItemContext, ItemReference>
@@ -191,6 +195,11 @@ namespace RogueEntity.Core.Tests.Meta.Items
             {
                 InitCallCount += 1;
                 return reference.WithData(Priority);
+            }
+
+            public IBulkItemTrait<BasicItemContext, ItemReference> CreateInstance()
+            {
+                return new CallTracerBulkTrait(Id, Priority);
             }
         }
     }

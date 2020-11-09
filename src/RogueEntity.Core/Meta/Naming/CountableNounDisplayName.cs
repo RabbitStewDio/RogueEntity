@@ -40,10 +40,10 @@ namespace RogueEntity.Core.Meta.Naming
 
             if (number == 0)
             {
-                return $"{EnglishPluralGrammarRules.NumberToString(number)} {singular}";
+                return $"{number.NumberToString()} {singular}";
             }
 
-            return $"{EnglishPluralGrammarRules.NumberToString(number)} {plural}";
+            return $"{number.NumberToString()} {plural}";
         }
 
         public string GetDefiniteFormName(int number)

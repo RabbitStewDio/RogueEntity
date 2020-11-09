@@ -22,6 +22,12 @@ namespace RogueEntity.Core.Sensing.Sources.Noise
             this.physics = physics ?? throw new ArgumentNullException(nameof(physics));
         }
 
+
+        public IReferenceItemTrait<TGameContext, TItemId> CreateInstance()
+        {
+            return this;
+        }
+        
         public void Initialize(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, IItemDeclaration item)
         {
         }

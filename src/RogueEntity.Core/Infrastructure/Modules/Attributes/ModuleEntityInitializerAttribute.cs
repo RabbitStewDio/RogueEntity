@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace RogueEntity.Core.Infrastructure.Modules
+namespace RogueEntity.Core.Infrastructure.Modules.Attributes
 {
     [Obsolete]
     [AttributeUsage(AttributeTargets.Method)]

@@ -28,6 +28,11 @@ namespace RogueEntity.Core.Inventory
             this.defaultCarryWeight = defaultCarryWeight;
         }
 
+        public IReferenceItemTrait<TGameContext, TOwnerId> CreateInstance()
+        {
+            return this;
+        }
+
         protected virtual ListInventoryData<TOwnerId, TItemId> CreateInitialValue(TGameContext c, TOwnerId actor)
         {
             return new ListInventoryData<TOwnerId, TItemId>(actor, defaultCarryWeight);

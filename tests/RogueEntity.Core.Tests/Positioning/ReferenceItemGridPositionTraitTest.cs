@@ -43,7 +43,7 @@ namespace RogueEntity.Core.Tests.Positioning
 
         protected override ReferenceItemGridPositionTrait<TestGridPositionContext, ItemReference> CreateTrait()
         {
-            return new ReferenceItemGridPositionTrait<TestGridPositionContext, ItemReference>(Context.ItemResolver, itemLayer);
+            return new ReferenceItemGridPositionTrait<TestGridPositionContext, ItemReference>(Context.ItemResolver, Context, itemLayer);
         }
 
         protected override void Validate_Update(ItemDeclarationId itemId)

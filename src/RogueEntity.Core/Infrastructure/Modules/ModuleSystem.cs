@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
+using JetBrains.Annotations;
+using RogueEntity.Core.Infrastructure.Modules.Initializers;
+using RogueEntity.Core.Infrastructure.Modules.Services;
 using RogueEntity.Core.Utils;
 using Serilog;
 
@@ -78,6 +80,7 @@ namespace RogueEntity.Core.Infrastructure.Modules
 
             // 4. Now start initializing trait systems for each entity role.
             InitializeModuleRoles(initializer, orderedModules);
+            InitializeModuleRelations(initializer, orderedModules);
         }
 
         void InitializeModule(IModuleInitializer<TGameContext> initializer, List<ModuleRecord> orderedModules)
@@ -152,43 +155,9 @@ namespace RogueEntity.Core.Infrastructure.Modules
             }
         }
 
-        void CallRelationInitializer(Type subjectType, Type entityType, ModuleBase module, IModuleInitializer<TGameContext> initializer, EntityRelation relation)
-        {
-            foreach (var m in module.GetType().GetMethods(BindingFlags.Instance | BindingFlags.NonPublic))
-            {
-                var attr = m.GetCustomAttribute<EntityRelationInitializerAttribute>();
-                if (attr == null)
-                {
-                    continue;
-                }
-
-                if (attr.RelationName != relation.Id)
-                {
-                    continue;
-                }
-
-                if (!m.IsSameGenericAction(new[] {typeof(TGameContext), subjectType, entityType},
-                                           out var genericMethod, out var errorHint,
-                                           typeof(IServiceResolver), typeof(IModuleInitializer<TGameContext>), typeof(EntityRelation)))
-                {
-                    if (!string.IsNullOrEmpty(errorHint))
-                    {
-                        throw new ArgumentException(errorHint);
-                    }
-
-                    throw new ArgumentException(
-                        $"Expected a generic method with signature 'void XXX<TGameContext, TSubjectEntityId, TEntityId>(IServiceResolver, IModuleInitializer<TGameContext>, EntityRelation), but found {m} in module {module.Id}");
-                }
-
-                Logger.Verbose("Invoking relation initializer {Method}", genericMethod);
-                genericMethod.Invoke(module, new object[] {serviceResolver, initializer, relation});
-            }
-        }
-
-
         class EntityRelationRecord
         {
-            readonly Type entitySubject;
+            [UsedImplicitly] readonly Type entitySubject;
             readonly Dictionary<EntityRelation, HashSet<Type>> relations;
 
             public EntityRelationRecord(Type entitySubject)
@@ -225,7 +194,7 @@ namespace RogueEntity.Core.Infrastructure.Modules
 
         class EntityRoleRecord
         {
-            readonly Type entityType;
+            [UsedImplicitly] readonly Type entityType;
             readonly HashSet<EntityRole> rolesPerType;
 
             public EntityRoleRecord(Type entityType)

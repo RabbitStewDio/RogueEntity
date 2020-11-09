@@ -1,5 +1,6 @@
 ﻿using System;
 using EnTTSharp.Entities;
+using JetBrains.Annotations;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Meta.ItemTraits;
 using RogueEntity.Core.Positioning.MapLayers;
@@ -12,17 +13,19 @@ namespace RogueEntity.Core.Positioning.Grid
     public class BulkItemGridPositionTrait<TGameContext, TItemId> : IBulkItemTrait<TGameContext, TItemId>,
                                                                     IItemComponentTrait<TGameContext, TItemId, EntityGridPosition>,
                                                                     IItemComponentTrait<TGameContext, TItemId, MapLayerPreference>
-        where TGameContext : IGridMapContext<TItemId>
         where TItemId : IBulkDataStorageKey<TItemId>
     {
         readonly IItemResolver<TGameContext, TItemId> itemResolver;
         readonly ILogger logger = SLog.ForContext<BulkItemGridPositionTrait<TGameContext, TItemId>>();
         readonly MapLayerPreference layerPreference;
+        readonly IGridMapContext<TItemId> gridMapContext;
 
-        public BulkItemGridPositionTrait(IItemResolver<TGameContext, TItemId> itemResolver, 
+        public BulkItemGridPositionTrait([NotNull] IItemResolver<TGameContext, TItemId> itemResolver,
+                                         [NotNull] IGridMapContext<TItemId> gridMapContext,
                                          MapLayer layer, params MapLayer[] layers)
         {
-            this.itemResolver = itemResolver;
+            this.itemResolver = itemResolver ?? throw new ArgumentNullException(nameof(itemResolver));
+            this.gridMapContext = gridMapContext ?? throw new ArgumentNullException(nameof(gridMapContext));
             Id = "ReferenceItem.Generic.Positional";
             Priority = 100;
 
@@ -31,6 +34,11 @@ namespace RogueEntity.Core.Positioning.Grid
 
         public string Id { get; }
         public int Priority { get; }
+
+        public IBulkItemTrait<TGameContext, TItemId> CreateInstance()
+        {
+            return this;
+        }
 
         public bool TryQuery(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, out MapLayerPreference t)
         {
@@ -85,7 +93,7 @@ namespace RogueEntity.Core.Positioning.Grid
                 return false;
             }
 
-            if (!context.TryGetGridDataFor(layerId, out var mapDataContext) ||
+            if (!gridMapContext.TryGetGridDataFor(layerId, out var mapDataContext) ||
                 !mapDataContext.TryGetWritableView(p.GridZ, out var map, DataViewCreateMode.CreateMissing))
             {
                 logger.Warning("Invalid layer {Layer} for unresolvable map data for item {ItemId}", p.LayerId, targetItem);

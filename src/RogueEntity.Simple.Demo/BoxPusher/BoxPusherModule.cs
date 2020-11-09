@@ -3,9 +3,13 @@ using RogueEntity.Core.GridProcessing.LayerAggregation;
 using RogueEntity.Core.Infrastructure.Commands;
 using RogueEntity.Core.Infrastructure.GameLoops;
 using RogueEntity.Core.Infrastructure.Modules;
+using RogueEntity.Core.Infrastructure.Modules.Attributes;
+using RogueEntity.Core.Infrastructure.Modules.Services;
 using RogueEntity.Core.Inventory;
 using RogueEntity.Core.Meta;
+using RogueEntity.Core.Meta.ItemBuilder;
 using RogueEntity.Core.Meta.Items;
+using RogueEntity.Core.Meta.Naming;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Positioning.MapLayers;
@@ -16,6 +20,7 @@ using RogueEntity.Core.Sensing.Receptors.Light;
 using RogueEntity.Core.Sensing.Resistance;
 using RogueEntity.Core.Sensing.Resistance.Maps;
 using RogueEntity.Core.Sensing.Sources.Light;
+using RogueEntity.Core.Utils;
 
 namespace RogueEntity.Simple.Demo.BoxPusher
 {
@@ -62,6 +67,22 @@ namespace RogueEntity.Simple.Demo.BoxPusher
             DeclareRelation<ActorReference, ItemReference>(InventoryModule.ContainsRelation);
 
             RequireRole(MovableItemRole);
+        }
+
+        [ContentInitializer]
+        void InitializeContent<TGameContext>(IServiceResolver serviceResolver, IModuleInitializer<TGameContext> initializer)
+
+        {
+            var ctx = initializer.DeclareEntityContext<ItemReference>();
+            ctx.CreateBulkEntityBuilder(serviceResolver)
+               .Define("Items.Wall")
+               .WithGridPosition(MapLayer.Indeterminate)
+               .AsImmobile()
+               .WithLightResistance(100.Percent())
+               .WithName("wall");
+
+            ctx.CreateBulkEntityBuilder(serviceResolver)
+               .RedefineAs("Items.Wall", "Item.Wall.Stone");
         }
 
         /// <summary>

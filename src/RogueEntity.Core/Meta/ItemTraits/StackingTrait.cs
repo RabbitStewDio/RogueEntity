@@ -8,7 +8,7 @@ namespace RogueEntity.Core.Meta.ItemTraits
                                                     IBulkDataTrait<TContext, TItemId> 
         where TItemId : IBulkDataStorageKey<TItemId>
     {
-        protected readonly ushort StackSize;
+        readonly ushort stackSize;
         readonly ushort initialCount;
 
         public StackingTrait(ushort stackSize): this(stackSize, stackSize)
@@ -19,12 +19,17 @@ namespace RogueEntity.Core.Meta.ItemTraits
         {
             Id = "ItemTrait.Bulk.Generic.Stacking";
             Priority = 100;
-            this.StackSize = stackSize;
+            this.stackSize = stackSize;
             this.initialCount = initialCount;
         }
 
         public string Id { get; }
         public int Priority { get; }
+
+        public IBulkItemTrait<TContext, TItemId> CreateInstance()
+        {
+            return this;
+        }
 
         public virtual TItemId Initialize(TContext context, IItemDeclaration item, TItemId reference)
         {
@@ -39,13 +44,13 @@ namespace RogueEntity.Core.Meta.ItemTraits
                 return true;
             }
 
-            t = StackCount.Of(StackSize).WithCount(k.Data);
+            t = StackCount.Of(stackSize).WithCount(k.Data);
             return true;
         }
 
         public bool TryUpdate(IEntityViewControl<TItemId> v, TContext context, TItemId k, in StackCount t, out TItemId changedK)
         {
-            if (t.MaximumStackSize > StackSize || t.Count > t.MaximumStackSize)
+            if (t.MaximumStackSize > stackSize || t.Count > t.MaximumStackSize)
             {
                 throw new ArgumentOutOfRangeException();
             }

@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using EnTTSharp.Entities;
 
-namespace RogueEntity.Core.Infrastructure.Modules
+namespace RogueEntity.Core.Infrastructure.Modules.Initializers
 {
-    public class ModuleInitializer<TGameContext> : IModuleInitializer<TGameContext>
+    public class ModuleInitializer<TGameContext> : IModuleInitializer<TGameContext>, IModuleInitializationData<TGameContext>
     {
         readonly List<GlobalRegistrationRecord> globalSystems;
         readonly Dictionary<Type, object> moduleInitializers;
@@ -35,16 +35,20 @@ namespace RogueEntity.Core.Infrastructure.Modules
                 DeclaringModule = CurrentModuleId,
                 Id = id,
                 Priority = priority,
-                SystemRegistration = entityRegistration
+                SystemRegistration = entityRegistration,
+                InsertionOrder = globalSystems.Count
             });
         }
 
-        class GlobalRegistrationRecord
+        public IEnumerable<IGlobalSystemRegistration<TGameContext>> GlobalSystems => globalSystems;
+
+        class GlobalRegistrationRecord: IGlobalSystemRegistration<TGameContext>
         {
             public string DeclaringModule { get; set; }
             public EntitySystemId Id { get; set; }
             public int Priority { get; set; }
-            public GlobalSystemRegistrationDelegate<TGameContext> SystemRegistration;
+            public int InsertionOrder { get; set; }
+            public GlobalSystemRegistrationDelegate<TGameContext> SystemRegistration { get; set; }
         }
     }
 }

@@ -27,6 +27,11 @@ namespace RogueEntity.Core.Sensing.Receptors
         public abstract string Id { get; }
         public abstract int Priority { get; }
 
+        public IReferenceItemTrait<TGameContext, TActorId> CreateInstance()
+        {
+            return this;
+        }
+
         public virtual void Initialize(IEntityViewControl<TActorId> v, TGameContext context, TActorId k, IItemDeclaration item)
         {
             v.AssignComponent(k, new SensoryReceptorData<TReceptorSense, TSourceSense>(new SenseSourceDefinition(physics.DistanceMeasurement, physics.AdjacencyRule, Intensity), active));

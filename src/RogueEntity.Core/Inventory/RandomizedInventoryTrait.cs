@@ -3,6 +3,7 @@ using EnTTSharp.Entities;
 using RogueEntity.Core.Infrastructure.Randomness;
 using RogueEntity.Core.Meta.ItemBuilder;
 using RogueEntity.Core.Meta.Items;
+using RogueEntity.Core.Utils;
 
 namespace RogueEntity.Core.Inventory
 {
@@ -13,8 +14,8 @@ namespace RogueEntity.Core.Inventory
     {
         readonly IItemResolver<TGameContext, TOwnerId> ownerResolver;
         readonly IItemResolver<TGameContext, TItemId> itemResolver;
-        readonly List<ItemEntry> itemPool;
-
+        readonly ReadOnlyListWrapper<ItemEntry> itemPool;
+        
         public RandomizedInventoryTrait(IItemResolver<TGameContext, TOwnerId> ownerResolver,
                                         IItemResolver<TGameContext, TItemId> itemResolver,
                                         params ItemEntry[] items)
@@ -23,9 +24,14 @@ namespace RogueEntity.Core.Inventory
             this.itemResolver = itemResolver;
             this.itemPool = new List<ItemEntry>(items);
         }
-
+        
         public string Id => "Core.Inventory.RandomContent";
         public int Priority => 10000;
+
+        public IReferenceItemTrait<TGameContext, TOwnerId> CreateInstance()
+        {
+            return this;
+        }
 
         public void Initialize(IEntityViewControl<TOwnerId> v, TGameContext context, TOwnerId k, IItemDeclaration actor)
         {

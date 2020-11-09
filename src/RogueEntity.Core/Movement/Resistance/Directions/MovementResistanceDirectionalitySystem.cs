@@ -5,16 +5,16 @@ using RogueEntity.Core.Utils.DataViews;
 
 namespace RogueEntity.Core.Movement.Resistance.Directions
 {
-    public class MovementResistanceDirectionalitySystem<TMovementMode> : AdjacencyGridTransformSystem<MovementResistance<TMovementMode>>, IMovementResistanceDirectionView<TMovementMode>
+    public class MovementResistanceDirectionalitySystem<TMovementMode> : AdjacencyGridTransformSystem<MovementCost<TMovementMode>>, IMovementResistanceDirectionView<TMovementMode>
     {
-        public MovementResistanceDirectionalitySystem(IReadOnlyDynamicDataView3D<MovementResistance<TMovementMode>> sourceData) : base(sourceData)
+        public MovementResistanceDirectionalitySystem(IReadOnlyDynamicDataView3D<MovementCost<TMovementMode>> sourceData) : base(sourceData)
         {
         }
 
         public void ProcessSystem<TGameContext>(TGameContext x) => Process();
 
-        protected override bool IsMoveAllowed(in (IReadOnlyDynamicDataView2D<MovementResistance<TMovementMode>> sourceData,
-                                                  IReadOnlyBoundedDataView<MovementResistance<TMovementMode>> sourceTile, int z) parameterData,
+        protected override bool IsMoveAllowed(in (IReadOnlyDynamicDataView2D<MovementCost<TMovementMode>> sourceData,
+                                                  IReadOnlyBoundedDataView<MovementCost<TMovementMode>> sourceTile, int z) parameterData,
                                               in Position2D pos,
                                               Direction d)
         {
@@ -41,8 +41,8 @@ namespace RogueEntity.Core.Movement.Resistance.Directions
             return true;
         }
 
-        static MovementResistance<TMovementMode> Query(in (IReadOnlyDynamicDataView2D<MovementResistance<TMovementMode>> sourceData,
-                                                           IReadOnlyBoundedDataView<MovementResistance<TMovementMode>> sourceTile, int z) parameterData,
+        static MovementCost<TMovementMode> Query(in (IReadOnlyDynamicDataView2D<MovementCost<TMovementMode>> sourceData,
+                                                           IReadOnlyBoundedDataView<MovementCost<TMovementMode>> sourceTile, int z) parameterData,
                                                        int x,
                                                        int y)
         {
