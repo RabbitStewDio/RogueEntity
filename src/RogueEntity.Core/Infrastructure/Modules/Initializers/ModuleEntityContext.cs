@@ -2,6 +2,7 @@
 using EnTTSharp.Entities;
 using RogueEntity.Core.Infrastructure.Commands;
 using RogueEntity.Core.Infrastructure.GameLoops;
+using RogueEntity.Core.Infrastructure.ItemTraits;
 using RogueEntity.Core.Infrastructure.Modules.Services;
 using RogueEntity.Core.Meta.Items;
 

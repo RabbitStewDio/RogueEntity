@@ -1,5 +1,7 @@
+using System.Collections.Generic;
 using EnTTSharp.Entities;
 using JetBrains.Annotations;
+using RogueEntity.Core.Infrastructure.ItemTraits;
 using RogueEntity.Core.Meta.Items;
 
 namespace RogueEntity.Core.Sensing.Receptors.Noise
@@ -26,6 +28,11 @@ namespace RogueEntity.Core.Sensing.Receptors.Noise
 
             t = default;
             return false;
+        }
+
+        public override IEnumerable<EntityRoleInstance> GetEntityRoles()
+        {
+            yield return NoiseDirectionSenseModule.SenseReceptorActorRole.Instantiate<TActorId>();
         }
     }
 }

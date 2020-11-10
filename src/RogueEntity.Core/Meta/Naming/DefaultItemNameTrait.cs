@@ -1,4 +1,6 @@
-﻿using EnTTSharp.Entities;
+﻿using System.Collections.Generic;
+using EnTTSharp.Entities;
+using RogueEntity.Core.Infrastructure.ItemTraits;
 using RogueEntity.Core.Meta.Items;
 
 namespace RogueEntity.Core.Meta.Naming
@@ -17,5 +19,10 @@ namespace RogueEntity.Core.Meta.Naming
         }
 
         public IDisplayName BaseValue { get; }
+
+        public override IEnumerable<EntityRoleInstance> GetEntityRoles()
+        {
+            yield return CoreModule.EntityRole.Instantiate<TItemId>();
+        }
     }
 }

@@ -1,19 +1,19 @@
 using System;
+using System.Collections.Generic;
 using EnTTSharp.Entities;
 using JetBrains.Annotations;
+using RogueEntity.Core.Infrastructure.ItemTraits;
 using RogueEntity.Core.Meta.Items;
-using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Sensing.Common;
-using RogueEntity.Core.Utils;
 
 namespace RogueEntity.Core.Sensing.Sources.Noise
 {
-    public class NoiseSourceTrait<TGameContext, TItemId>: IReferenceItemTrait<TGameContext, TItemId>,
-                                                          IItemComponentTrait<TGameContext, TItemId, NoiseClip>
+    public class NoiseSourceTrait<TGameContext, TItemId> : SenseSourceTraitBase<TGameContext, TItemId, NoiseSense, NoiseSourceDefinition>,
+                                                           IItemComponentTrait<TGameContext, TItemId, NoiseClip>
         where TItemId : IEntityKey
     {
-        public string Id => "Core.Item.NoiseSource";
-        public int Priority => 100;
+        public override string Id => "Core.Item.NoiseSource";
+        public override int Priority => 100;
 
         readonly INoisePhysicsConfiguration physics;
 
@@ -22,28 +22,10 @@ namespace RogueEntity.Core.Sensing.Sources.Noise
             this.physics = physics ?? throw new ArgumentNullException(nameof(physics));
         }
 
-
-        public IReferenceItemTrait<TGameContext, TItemId> CreateInstance()
+        protected override bool TryGetInitialValue(out NoiseSourceDefinition senseDefinition)
         {
-            return this;
-        }
-        
-        public void Initialize(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, IItemDeclaration item)
-        {
-        }
-
-        public void Apply(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, IItemDeclaration item)
-        {
-            if (!v.GetComponent(k, out NoiseSourceDefinition _))
-            {
-                return;
-            }
-
-            if (!v.GetComponent(k, out SenseSourceState<NoiseSense> s))
-            {
-                s = new SenseSourceState<NoiseSense>(Optional.Empty<SenseSourceData>(), SenseSourceDirtyState.UnconditionallyDirty, Position.Invalid);
-                v.AssignComponent(k, in s);
-            }
+            senseDefinition = default;
+            return false;
         }
 
         public bool TryQuery(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, out NoiseClip t)
@@ -60,30 +42,14 @@ namespace RogueEntity.Core.Sensing.Sources.Noise
 
         public bool TryUpdate(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, in NoiseClip t, out TItemId changedK)
         {
-            v.AssignOrReplace(k, new NoiseSourceDefinition(new SenseSourceDefinition(physics.NoisePhysics.DistanceMeasurement,
-                                                                                     physics.NoisePhysics.AdjacencyRule, 
-                                                                                     t.Intensity), t, true));
-
-            if (!v.GetComponent(k, out SenseSourceState<NoiseSense> s))
-            {
-                s = new SenseSourceState<NoiseSense>(Optional.Empty<SenseSourceData>(), SenseSourceDirtyState.UnconditionallyDirty, Position.Invalid);
-                v.AssignComponent(k, in s);
-            }
-            else
-            {
-                s = s.WithDirtyState(SenseSourceDirtyState.UnconditionallyDirty);
-                v.ReplaceComponent(k, in s);
-            }
-
-            changedK = k;
-            return true;
+            return TryUpdate(v, context, k, new NoiseSourceDefinition(new SenseSourceDefinition(physics.NoisePhysics.DistanceMeasurement,
+                                                                                                physics.NoisePhysics.AdjacencyRule,
+                                                                                                t.Intensity), t, true), out changedK);
         }
 
-        public bool TryRemove(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, out TItemId changedK)
+        public override IEnumerable<EntityRoleInstance> GetEntityRoles()
         {
-            v.RemoveComponent<NoiseSourceDefinition>(k);
-            changedK = k;
-            return true;
+            yield return SenseSourceModules.GetSourceRole<NoiseSense>().Instantiate<TItemId>();
         }
     }
 }

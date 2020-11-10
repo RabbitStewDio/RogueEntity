@@ -1,4 +1,7 @@
+using System.Collections.Generic;
+using System.Linq;
 using EnTTSharp.Entities;
+using RogueEntity.Core.Infrastructure.ItemTraits;
 using RogueEntity.Core.Meta.Items;
 
 namespace RogueEntity.Core.Meta.ItemTraits
@@ -27,6 +30,16 @@ namespace RogueEntity.Core.Meta.ItemTraits
 
         public void Apply(IEntityViewControl<TActorId> v, TGameContext context, TActorId k, IItemDeclaration item)
         {
+        }
+
+        public IEnumerable<EntityRoleInstance> GetEntityRoles()
+        {
+            yield return CoreModule.PlayerRole.Instantiate<TActorId>();
+        }
+
+        public IEnumerable<EntityRelationInstance> GetEntityRelations()
+        {
+            return Enumerable.Empty<EntityRelationInstance>();
         }
     }
 }

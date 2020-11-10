@@ -1,4 +1,7 @@
-﻿using EnTTSharp.Entities;
+﻿using System.Collections.Generic;
+using System.Linq;
+using EnTTSharp.Entities;
+using RogueEntity.Core.Infrastructure.ItemTraits;
 
 namespace RogueEntity.Core.Meta.Items
 {
@@ -75,10 +78,19 @@ namespace RogueEntity.Core.Meta.Items
             return true;
         }
 
-        protected virtual bool ValidateData(IEntityViewControl<TItemId> entityViewControl, TGameContext context,
-                                            in TItemId itemReference, in TData data)
+        protected virtual bool ValidateData(IEntityViewControl<TItemId> entityViewControl, 
+                                            TGameContext context,
+                                            in TItemId itemReference, 
+                                            in TData data)
         {
             return true;
+        }
+
+        public abstract IEnumerable<EntityRoleInstance> GetEntityRoles();
+
+        public virtual IEnumerable<EntityRelationInstance> GetEntityRelations()
+        {
+            return Enumerable.Empty<EntityRelationInstance>();
         }
     }
 }

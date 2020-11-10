@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using EnTTSharp.Entities;
+using RogueEntity.Core.Infrastructure.ItemTraits;
 using RogueEntity.Core.Meta.Items;
 
 namespace RogueEntity.Core.Sensing.Receptors.Light
@@ -24,6 +26,11 @@ namespace RogueEntity.Core.Sensing.Receptors.Light
 
             t = default;
             return false;
+        }
+
+        public override IEnumerable<EntityRoleInstance> GetEntityRoles()
+        {
+            yield return VisionSenseModule.SenseReceptorActorRole.Instantiate<TActorId>();
         }
     }
 }

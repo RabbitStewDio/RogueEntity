@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace RogueEntity.Core.Meta.Items
+namespace RogueEntity.Core.Infrastructure.ItemTraits
 {
     public abstract class ItemDeclaration<TGameContext> : IEquatable<ItemDeclaration<TGameContext>>, IItemDeclaration
     {
@@ -67,6 +67,28 @@ namespace RogueEntity.Core.Meta.Items
         public static bool operator !=(ItemDeclaration<TGameContext> left, ItemDeclaration<TGameContext> right)
         {
             return !Equals(left, right);
+        }
+
+        public IEnumerable<EntityRoleInstance> GetEntityRoles()
+        {
+            var roles = new List<EntityRoleInstance>();
+            foreach (var t in QueryAll<IItemTrait>())
+            {
+                roles.AddRange(t.GetEntityRoles());
+            }
+
+            return roles;
+        }
+
+        public IEnumerable<EntityRelationInstance> GetEntityRelations()
+        {
+            var roles = new List<EntityRelationInstance>();
+            foreach (var t in QueryAll<IItemTrait>())
+            {
+                roles.AddRange(t.GetEntityRelations());
+            }
+
+            return roles;
         }
     }
 }

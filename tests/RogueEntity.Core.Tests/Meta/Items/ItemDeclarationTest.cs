@@ -1,7 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using EnTTSharp.Entities;
 using FluentAssertions;
 using NUnit.Framework;
+using RogueEntity.Core.Infrastructure.ItemTraits;
 using RogueEntity.Core.Meta.Items;
 
 namespace RogueEntity.Core.Tests.Meta.Items
@@ -177,6 +180,16 @@ namespace RogueEntity.Core.Tests.Meta.Items
             {
                 return new CallTracerReferenceTrait(Id, Priority);
             }
+
+            public IEnumerable<EntityRoleInstance> GetEntityRoles()
+            {
+                return Enumerable.Empty<EntityRoleInstance>();
+            }
+
+            public IEnumerable<EntityRelationInstance> GetEntityRelations()
+            {
+                return Enumerable.Empty<EntityRelationInstance>();
+            }
         }
 
         class CallTracerBulkTrait : IBulkItemTrait<BasicItemContext, ItemReference>
@@ -200,6 +213,16 @@ namespace RogueEntity.Core.Tests.Meta.Items
             public IBulkItemTrait<BasicItemContext, ItemReference> CreateInstance()
             {
                 return new CallTracerBulkTrait(Id, Priority);
+            }
+
+            public IEnumerable<EntityRoleInstance> GetEntityRoles()
+            {
+                return Enumerable.Empty<EntityRoleInstance>();
+            }
+
+            public IEnumerable<EntityRelationInstance> GetEntityRelations()
+            {
+                return Enumerable.Empty<EntityRelationInstance>();
             }
         }
     }

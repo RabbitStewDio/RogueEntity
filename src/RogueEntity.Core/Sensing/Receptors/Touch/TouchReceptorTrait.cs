@@ -1,5 +1,7 @@
+using System.Collections.Generic;
 using EnTTSharp.Entities;
 using JetBrains.Annotations;
+using RogueEntity.Core.Infrastructure.ItemTraits;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Sensing.Common;
@@ -10,7 +12,7 @@ using RogueEntity.Core.Utils.Algorithms;
 
 namespace RogueEntity.Core.Sensing.Receptors.Touch
 {
-    public class TouchReceptorTrait<TGameContext, TActorId>: SenseReceptorTraitBase<TGameContext, TActorId, TouchSense, TouchSense>,
+    public sealed class TouchReceptorTrait<TGameContext, TActorId>: SenseReceptorTraitBase<TGameContext, TActorId, TouchSense, TouchSense>,
                                                              IItemComponentInformationTrait<TGameContext, TActorId, ITouchDirectionMap>,
                                                              IItemComponentTrait<TGameContext, TActorId, TouchSourceDefinition>
         where TActorId : IEntityKey
@@ -79,6 +81,11 @@ namespace RogueEntity.Core.Sensing.Receptors.Touch
             t = default;
             return false;
         }
-        
+
+        public override IEnumerable<EntityRoleInstance> GetEntityRoles()
+        {
+            yield return TouchSenseModule.SenseReceptorActorRole.Instantiate<TActorId>();
+            yield return SenseSourceModules.GetSourceRole<TouchSense>().Instantiate<TActorId>();
+        }
     }
 }

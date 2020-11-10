@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
+using RogueEntity.Core.Infrastructure.ItemTraits;
 using RogueEntity.Core.Infrastructure.Modules.Initializers;
 
 namespace RogueEntity.Core.Infrastructure.Modules
@@ -207,23 +208,23 @@ namespace RogueEntity.Core.Infrastructure.Modules
                         }
                     }
 
-                    if (m.Module.TryGetRelationRecord(subject, out var relationRecord))
+                    foreach (var relation in m.Module.RequiredRelations)
                     {
-                        foreach (var relationTarget in relationRecord)
-                        {
-                            if (!relationRecord.TryGet(relationTarget, out var relationsInRecord))
-                            {
-                                continue;
-                            }
+                        var subjectRole = relation.Subject;
+                        var targetRole = relation.Object;
 
-                            foreach (var r in relationsInRecord)
-                            {
-                                RecordRelation(subject, r, relationTarget);
-                            }
+                        if (!rolesPerType.TryGetValue(subject, out var roles) ||
+                            !roles.HasRole(subjectRole))
+                        {
+                            continue;
+                        }
+
+                        foreach (var relationTarget in FindEntityTypeForRole(targetRole))
+                        {
+                            RecordRelation(subject, relation, relationTarget);
                         }
                     }
                 }
-
 
                 diagnostics.Push(m.ModuleId);
                 CollectDeclaredRoles(m.Dependencies, diagnostics);
@@ -231,6 +232,20 @@ namespace RogueEntity.Core.Infrastructure.Modules
             }
         }
 
+        List<Type> FindEntityTypeForRole(EntityRole role)
+        {
+            List<Type> types = new List<Type>();
+            foreach (var e in rolesPerType)
+            {
+                if (e.Value.HasRole(role))
+                {
+                    types.Add(e.Key);
+                }
+            }
+
+            return types;
+        }
+        
         void ResolveEquivalenceRoles(List<ModuleRecord> open,
                                      Stack<string> diagnostics = null)
         {

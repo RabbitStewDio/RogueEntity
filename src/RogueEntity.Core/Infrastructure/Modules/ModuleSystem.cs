@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
+using RogueEntity.Core.Infrastructure.ItemTraits;
 using RogueEntity.Core.Infrastructure.Modules.Initializers;
 using RogueEntity.Core.Infrastructure.Modules.Services;
 using RogueEntity.Core.Utils;

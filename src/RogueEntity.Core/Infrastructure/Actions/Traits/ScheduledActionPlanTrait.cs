@@ -1,5 +1,7 @@
-﻿using EnTTSharp.Entities;
+﻿using System.Collections.Generic;
+using EnTTSharp.Entities;
 using RogueEntity.Core.Infrastructure.Actions.Schedule;
+using RogueEntity.Core.Infrastructure.ItemTraits;
 using RogueEntity.Core.Meta.Items;
 
 namespace RogueEntity.Core.Infrastructure.Actions.Traits
@@ -14,6 +16,11 @@ namespace RogueEntity.Core.Infrastructure.Actions.Traits
         protected override ScheduledActionPlan<TGameContext, TActorId> CreateInitialValue(TGameContext c, TActorId actor)
         {
             return new ScheduledActionPlan<TGameContext, TActorId>();
+        }
+
+        public override IEnumerable<EntityRoleInstance> GetEntityRoles()
+        {
+            throw new System.NotImplementedException();
         }
     }
 }

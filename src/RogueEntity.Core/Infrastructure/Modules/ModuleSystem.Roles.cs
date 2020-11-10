@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using JetBrains.Annotations;
+using RogueEntity.Core.Infrastructure.ItemTraits;
 using RogueEntity.Core.Infrastructure.Modules.Attributes;
 using RogueEntity.Core.Infrastructure.Modules.Services;
 using RogueEntity.Core.Utils;
@@ -44,7 +45,7 @@ namespace RogueEntity.Core.Infrastructure.Modules
 
                 if (!m.IsSameGenericFunction(new[] {typeof(TGameContext), entityType},
                                              out var genericMethod, out var errorHint,
-                                             typeof(List<ModuleEntityRoleInitializerInfo<TGameContext>>),
+                                             typeof(IEnumerable<ModuleEntityRoleInitializerInfo<TGameContext>>),
                                              typeof(IServiceResolver), typeof(IModuleEntityInformation), typeof(EntityRole)))
                 {
                     if (string.IsNullOrEmpty(errorHint))
@@ -57,7 +58,7 @@ namespace RogueEntity.Core.Infrastructure.Modules
                     continue;
                 }
 
-                if (genericMethod.Invoke(module, new object[] {serviceResolver, mi, role}) is List<ModuleEntityRoleInitializerInfo<TGameContext>> list)
+                if (genericMethod.Invoke(module, new object[] {serviceResolver, mi, role}) is IEnumerable<ModuleEntityRoleInitializerInfo<TGameContext>> list)
                 {
                     retval.AddRange(list);
                 }
@@ -95,7 +96,7 @@ namespace RogueEntity.Core.Infrastructure.Modules
                     Delegate.CreateDelegate(typeof(ModuleEntityRoleInitializerDelegate<TGameContext>), module, genericMethod);
                 retval.Add(ModuleEntityRoleInitializerInfo.CreateFor(role, initializer)
                                                           .WithRequiredRoles(attr.ConditionalRoles.Select(e => new EntityRole(e)).ToArray())
-                                                          .WithRequiredRelations(FromAttribute(module, attr.ConditionalRelations))
+                                                          .WithRequiredRelations(ResolveRelationsById(module, attr.ConditionalRelations))
                 );
             }
 
@@ -142,8 +143,8 @@ namespace RogueEntity.Core.Infrastructure.Modules
 
                 if (!m.IsSameGenericFunction(new[] {typeof(TGameContext), subjectType, entityType},
                                              out var genericMethod, out var errorHint,
-                                             typeof(List<ModuleEntityRelationInitializerInfo<TGameContext>>),
-                                             typeof(IServiceResolver), typeof(IModuleEntityInformation), typeof(EntityRole)))
+                                             typeof(IEnumerable<ModuleEntityRelationInitializerInfo<TGameContext>>),
+                                             typeof(IServiceResolver), typeof(IModuleEntityInformation), typeof(EntityRelation)))
                 {
                     if (string.IsNullOrEmpty(errorHint))
                     {
@@ -155,7 +156,7 @@ namespace RogueEntity.Core.Infrastructure.Modules
                     continue;
                 }
 
-                if (genericMethod.Invoke(module, new object[] {serviceResolver, mi, relation}) is List<ModuleEntityRelationInitializerInfo<TGameContext>> list)
+                if (genericMethod.Invoke(module, new object[] {serviceResolver, mi, relation}) is IEnumerable<ModuleEntityRelationInitializerInfo<TGameContext>> list)
                 {
                     retval.AddRange(list);
                 }
@@ -200,7 +201,7 @@ namespace RogueEntity.Core.Infrastructure.Modules
             return retval;
         }
 
-        EntityRelation[] FromAttribute(ModuleBase module, string[] relationNames)
+        EntityRelation[] ResolveRelationsById(ModuleBase module, string[] relationNames)
         {
             if (relationNames == null || relationNames.Length == 0)
             {

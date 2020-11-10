@@ -1,5 +1,7 @@
+using System.Collections.Generic;
 using EnTTSharp.Entities;
 using JetBrains.Annotations;
+using RogueEntity.Core.Infrastructure.ItemTraits;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Sensing.Receptors.InfraVision;
 
@@ -31,6 +33,11 @@ namespace RogueEntity.Core.Sensing.Receptors.Heat
 
             t = default;
             return false;
+        }
+
+        public override IEnumerable<EntityRoleInstance> GetEntityRoles()
+        {
+            yield return HeatDirectionSenseModule.SenseReceptorActorRole.Instantiate<TActorId>();
         }
     }
 }

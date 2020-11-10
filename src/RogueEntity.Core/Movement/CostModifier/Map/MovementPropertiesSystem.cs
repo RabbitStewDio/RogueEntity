@@ -4,9 +4,9 @@ using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Positioning.MapLayers;
 
-namespace RogueEntity.Core.Movement.Resistance.Map
+namespace RogueEntity.Core.Movement.CostModifier.Map
 {
-    public class MovementPropertiesSystem<TGameContext, TMovementType> : LayeredAggregationSystem<TGameContext, MovementCost<TMovementType>>
+    public class MovementPropertiesSystem<TGameContext, TMovementType> : LayeredAggregationSystem<TGameContext, MovementCostModifier<TMovementType>>
     {
         public MovementPropertiesSystem(int tileWidth, int tileHeight) : base(MovementPropertiesSystem.ProcessTile, tileWidth, tileHeight)
         {
@@ -19,13 +19,13 @@ namespace RogueEntity.Core.Movement.Resistance.Map
 
     public static class MovementPropertiesSystem
     {
-        public static void ProcessTile<TMovementType>(AggregationProcessingParameter<MovementCost<TMovementType>> p)
+        public static void ProcessTile<TMovementType>(AggregationProcessingParameter<MovementCostModifier<TMovementType>> p)
         {
             var bounds = p.Bounds;
             var resistanceData = p.WritableTile;
             foreach (var (x, y) in bounds.Contents)
             {
-                var sp = new MovementCost<TMovementType>();
+                var sp = new MovementCostModifier<TMovementType>();
                 foreach (var dv in p.DataViews)
                 {
                     if (dv.TryGet(x, y, out var d))
@@ -38,7 +38,7 @@ namespace RogueEntity.Core.Movement.Resistance.Map
             }
         }
 
-        public static void AddLayer<TGameContext, TItemId, TSense>(this IAggregationLayerSystem<TGameContext, MovementCost<TSense>> system, 
+        public static void AddLayer<TGameContext, TItemId, TSense>(this IAggregationLayerSystem<TGameContext, MovementCostModifier<TSense>> system, 
                                                                    IGridMapContext<TItemId> mapContext,
                                                                    IItemContext<TGameContext, TItemId> itemContext,
                                                                    MapLayer mapLayer)

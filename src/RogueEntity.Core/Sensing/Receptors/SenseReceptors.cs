@@ -1,4 +1,4 @@
-using RogueEntity.Core.Infrastructure.Modules;
+using RogueEntity.Core.Infrastructure.ItemTraits;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Sensing.Common;
 

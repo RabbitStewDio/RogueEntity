@@ -1,6 +1,9 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using EnTTSharp.Entities;
 using JetBrains.Annotations;
+using RogueEntity.Core.Infrastructure.ItemTraits;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Sensing.Common;
 using RogueEntity.Core.Sensing.Common.Physics;
@@ -91,6 +94,13 @@ namespace RogueEntity.Core.Sensing.Receptors
         {
             changedK = k;
             return false;
+        }
+
+        public abstract IEnumerable<EntityRoleInstance> GetEntityRoles();
+
+        public virtual IEnumerable<EntityRelationInstance> GetEntityRelations()
+        {
+            return Enumerable.Empty<EntityRelationInstance>();
         }
     }
 }

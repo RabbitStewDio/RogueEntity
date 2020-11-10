@@ -1,16 +1,14 @@
 using System;
+using System.Collections.Generic;
 using EnTTSharp.Entities;
 using JetBrains.Annotations;
-using RogueEntity.Core.Meta.Items;
-using RogueEntity.Core.Positioning;
+using RogueEntity.Core.Infrastructure.ItemTraits;
 using RogueEntity.Core.Sensing.Common;
 using RogueEntity.Core.Utils;
 
 namespace RogueEntity.Core.Sensing.Sources.Light
 {
-    public class LightSourceTrait<TGameContext, TItemId> : IItemComponentTrait<TGameContext, TItemId, LightSourceDefinition>,
-                                                           IReferenceItemTrait<TGameContext, TItemId>
-        where TGameContext : IItemContext<TGameContext, TItemId>
+    public class LightSourceTrait<TGameContext, TItemId> : SenseSourceTraitBase<TGameContext, TItemId, VisionSense, LightSourceDefinition>
         where TItemId : IEntityKey
     {
         readonly ILightPhysicsConfiguration lightPhysics;
@@ -31,81 +29,26 @@ namespace RogueEntity.Core.Sensing.Sources.Light
         /// <summary>
         ///   Creates a white light.
         /// </summary>
-        public LightSourceTrait(ILightPhysicsConfiguration lightPhysics, 
-                                float intensity, 
-                                bool enabled = true): this(lightPhysics, 0, 0, intensity, enabled)
+        public LightSourceTrait(ILightPhysicsConfiguration lightPhysics,
+                                float intensity,
+                                bool enabled = true) : this(lightPhysics, 0, 0, intensity, enabled)
         {
         }
 
-        public IReferenceItemTrait<TGameContext, TItemId> CreateInstance()
+        public override string Id => "Core.Common.LightSource";
+        public override int Priority => 100;
+
+        protected override bool TryGetInitialValue(out LightSourceDefinition senseDefinition)
         {
-            return this;
-        }
-
-        public string Id => "Core.Common.LightSource"; 
-        public int Priority => 100;
-
-        public void Initialize(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, IItemDeclaration item)
-        {
-            var l = new LightSourceDefinition(new SenseSourceDefinition(lightPhysics.LightPhysics.DistanceMeasurement,
-                                                                        lightPhysics.LightPhysics.AdjacencyRule,
-                                                                        Intensity), Hue, Saturation, Enabled);
-            var s = new SenseSourceState<VisionSense>(Optional.Empty<SenseSourceData>(), SenseSourceDirtyState.UnconditionallyDirty, Position.Invalid);
-
-            v.AssignOrReplace(k, l);
-            v.AssignComponent(k, s);
-        }
-
-        public void Apply(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, IItemDeclaration item)
-        {
-            if (!v.GetComponent(k, out LightSourceDefinition _))
-            {
-                return;
-            }
-
-            if (!v.GetComponent(k, out SenseSourceState<VisionSense> s))
-            {
-                s = new SenseSourceState<VisionSense>(Optional.Empty<SenseSourceData>(), SenseSourceDirtyState.UnconditionallyDirty, Position.Invalid);
-                v.AssignComponent(k, in s);
-            }
-        }
-
-        public bool TryQuery(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, out LightSourceDefinition t)
-        {
-            return v.GetComponent(k, out t);
-        }
-
-        public bool TryUpdate(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, in LightSourceDefinition t, out TItemId changedK)
-        {
-            changedK = k;
-            if (v.GetComponent(k, out LightSourceDefinition existing))
-            {
-                if (existing == t)
-                {
-                    return true;
-                }
-            }
-            
-            v.AssignOrReplace(k, t);
-            if (!v.GetComponent(k, out SenseSourceState<VisionSense> s))
-            {
-                s = new SenseSourceState<VisionSense>(Optional.Empty<SenseSourceData>(), SenseSourceDirtyState.UnconditionallyDirty, Position.Invalid);
-                v.AssignComponent(k, in s);
-            }
-            else
-            {
-                s = s.WithDirtyState(SenseSourceDirtyState.UnconditionallyDirty);
-                v.ReplaceComponent(k, in s);
-            }
+            senseDefinition = new LightSourceDefinition(new SenseSourceDefinition(lightPhysics.LightPhysics.DistanceMeasurement,
+                                                                                  lightPhysics.LightPhysics.AdjacencyRule,
+                                                                                  Intensity), Hue, Saturation, Enabled);
             return true;
         }
 
-        public bool TryRemove(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, out TItemId changedItem)
+        public override IEnumerable<EntityRoleInstance> GetEntityRoles()
         {
-            v.RemoveComponent<LightSourceDefinition>(k);
-            v.RemoveComponent<SenseSourceState<VisionSense>>(k);
-            changedItem = k;
-            return true;
+            yield return SenseSourceModules.GetSourceRole<VisionSense>().Instantiate<TItemId>();
         }
     }
 }

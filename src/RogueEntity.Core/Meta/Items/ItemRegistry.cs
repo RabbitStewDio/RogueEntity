@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using RogueEntity.Core.Infrastructure.ItemTraits;
 using RogueEntity.Core.Utils;
 using Serilog;
 

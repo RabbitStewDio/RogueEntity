@@ -1,4 +1,5 @@
 ﻿using EnTTSharp.Entities;
+using RogueEntity.Core.Infrastructure.ItemTraits;
 
 namespace RogueEntity.Core.Meta.Items
 {

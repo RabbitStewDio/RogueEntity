@@ -1,5 +1,6 @@
 using FluentAssertions;
 using NUnit.Framework;
+using RogueEntity.Core.Infrastructure.ItemTraits;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Sensing;

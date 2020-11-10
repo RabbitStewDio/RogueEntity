@@ -1,19 +1,19 @@
 using System;
+using System.Collections.Generic;
 using EnTTSharp.Entities;
 using JetBrains.Annotations;
+using RogueEntity.Core.Infrastructure.ItemTraits;
 using RogueEntity.Core.Meta.Items;
-using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Sensing.Common;
-using RogueEntity.Core.Utils;
 
 namespace RogueEntity.Core.Sensing.Sources.Smell
 {
-    public class SmellSourceTrait<TGameContext, TItemId>: IReferenceItemTrait<TGameContext, TItemId>,
+    public class SmellSourceTrait<TGameContext, TItemId>: SenseSourceTraitBase<TGameContext, TItemId, SmellSense, SmellSourceDefinition>,
                                                           IItemComponentTrait<TGameContext, TItemId, SmellSource>
         where TItemId : IEntityKey
     {
-        public string Id => "Core.Item.SmellSource";
-        public int Priority => 100;
+        public override string Id => "Core.Item.SmellSource";
+        public override int Priority => 100;
 
         readonly ISmellPhysicsConfiguration physics;
 
@@ -22,27 +22,10 @@ namespace RogueEntity.Core.Sensing.Sources.Smell
             this.physics = physics ?? throw new ArgumentNullException(nameof(physics));
         }
 
-        public IReferenceItemTrait<TGameContext, TItemId> CreateInstance()
+        protected override bool TryGetInitialValue(out SmellSourceDefinition senseDefinition)
         {
-            return this;
-        }
-
-        public void Initialize(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, IItemDeclaration item)
-        {
-        }
-
-        public void Apply(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, IItemDeclaration item)
-        {
-            if (!v.GetComponent(k, out SmellSourceDefinition _))
-            {
-                return;
-            }
-
-            if (!v.GetComponent(k, out SenseSourceState<SmellSense> s))
-            {
-                s = new SenseSourceState<SmellSense>(Optional.Empty<SenseSourceData>(), SenseSourceDirtyState.UnconditionallyDirty, Position.Invalid);
-                v.AssignComponent(k, in s);
-            }
+            senseDefinition = default;
+            return false;
         }
 
         public bool TryQuery(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, out SmellSource t)
@@ -59,30 +42,15 @@ namespace RogueEntity.Core.Sensing.Sources.Smell
 
         public bool TryUpdate(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, in SmellSource t, out TItemId changedK)
         {
-            v.AssignOrReplace(k, new SmellSourceDefinition(new SenseSourceDefinition(physics.SmellPhysics.DistanceMeasurement, 
+            return TryUpdate(v, context, k, 
+                             new SmellSourceDefinition(new SenseSourceDefinition(physics.SmellPhysics.DistanceMeasurement, 
                                                                                      physics.SmellPhysics.AdjacencyRule, 
-                                                                                     t.Intensity), t, true));
-
-            if (!v.GetComponent(k, out SenseSourceState<SmellSense> s))
-            {
-                s = new SenseSourceState<SmellSense>(Optional.Empty<SenseSourceData>(), SenseSourceDirtyState.UnconditionallyDirty, Position.Invalid);
-                v.AssignComponent(k, in s);
-            }
-            else
-            {
-                s = s.WithDirtyState(SenseSourceDirtyState.UnconditionallyDirty);
-                v.ReplaceComponent(k, in s);
-            }
-
-            changedK = k;
-            return true;
+                                                                                     t.Intensity), t, true), out changedK);
         }
 
-        public bool TryRemove(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, out TItemId changedK)
+        public override IEnumerable<EntityRoleInstance> GetEntityRoles()
         {
-            v.RemoveComponent<SmellSourceDefinition>(k);
-            changedK = k;
-            return true;
+            yield return SenseSourceModules.GetSourceRole<SmellSense>().Instantiate<TItemId>();
         }
     }
 }

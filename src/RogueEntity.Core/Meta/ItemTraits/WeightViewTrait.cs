@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using EnTTSharp.Entities;
+using RogueEntity.Core.Infrastructure.ItemTraits;
 using RogueEntity.Core.Meta.Items;
 
 namespace RogueEntity.Core.Meta.ItemTraits
@@ -38,7 +40,12 @@ namespace RogueEntity.Core.Meta.ItemTraits
 
         protected override WeightView GetData(TGameContext context, TItemId k)
         {
-            throw new InvalidOperationException();
+            throw new InvalidOperationException("This should never be callable.");
+        }
+        
+        public override IEnumerable<EntityRoleInstance> GetEntityRoles()
+        {
+            yield return CoreModule.ItemRole.Instantiate<TItemId>();
         }
     }
 }

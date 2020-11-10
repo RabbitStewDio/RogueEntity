@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using EnTTSharp.Entities;
+using RogueEntity.Core.Infrastructure.ItemTraits;
 using RogueEntity.Core.Meta.Base;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Meta.ItemTraits;
@@ -155,6 +156,17 @@ namespace RogueEntity.Core.Inventory
             }
 
             return false;
+        }
+
+        public IEnumerable<EntityRoleInstance> GetEntityRoles()
+        {
+            yield return InventoryModule.ContainerRole.Instantiate<TOwnerId>();
+            yield return InventoryModule.ContainedItemRole.Instantiate<TItemId>();
+        }
+
+        public IEnumerable<EntityRelationInstance> GetEntityRelations()
+        {
+            yield return InventoryModule.ContainsRelation.Instantiate<TOwnerId, TItemId>();
         }
     }
 }

@@ -1,4 +1,4 @@
-using RogueEntity.Core.Infrastructure.Modules;
+using RogueEntity.Core.Infrastructure.ItemTraits;
 
 namespace RogueEntity.Core.Sensing.Sources
 {

@@ -1,4 +1,7 @@
-﻿using EnTTSharp.Entities;
+﻿using System.Collections.Generic;
+using System.Linq;
+using EnTTSharp.Entities;
+using RogueEntity.Core.Infrastructure.ItemTraits;
 using RogueEntity.Core.Meta.Items;
 
 namespace RogueEntity.Core.Meta.ItemTraits
@@ -81,6 +84,16 @@ namespace RogueEntity.Core.Meta.ItemTraits
         IReferenceItemTrait<TContext, TItemId> IReferenceItemTrait<TContext, TItemId>.CreateInstance()
         {
             return this;
+        }
+
+        public IEnumerable<EntityRoleInstance> GetEntityRoles()
+        {
+            yield return CoreModule.ItemRole.Instantiate<TItemId>();
+        }
+
+        public IEnumerable<EntityRelationInstance> GetEntityRelations()
+        {
+            return Enumerable.Empty<EntityRelationInstance>();
         }
     }
 }

@@ -1,5 +1,7 @@
 using System.Collections.Generic;
+using System.Linq;
 using EnTTSharp.Entities;
+using RogueEntity.Core.Infrastructure.ItemTraits;
 using RogueEntity.Core.Meta.Items;
 
 namespace RogueEntity.Core.Meta.Base
@@ -10,8 +12,8 @@ namespace RogueEntity.Core.Meta.Base
     /// </summary>
     /// <typeparam name="TGameContext"></typeparam>
     /// <typeparam name="TItemId"></typeparam>
-    public class ContainerEntityMarkerResolverTrait<TGameContext, TItemId> : IReferenceItemTrait<TGameContext, TItemId>,
-                                                                             IItemComponentInformationTrait<TGameContext, TItemId, IContainerEntityMarker>
+    public sealed class ContainerEntityMarkerResolverTrait<TGameContext, TItemId> : IReferenceItemTrait<TGameContext, TItemId>,
+                                                                                    IItemComponentInformationTrait<TGameContext, TItemId, IContainerEntityMarker>
         where TItemId : IEntityKey
     {
         readonly List<IItemComponentInformationTrait<TGameContext, TItemId, IContainerEntityMarker>> traits;
@@ -54,6 +56,16 @@ namespace RogueEntity.Core.Meta.Base
 
             t = default;
             return false;
+        }
+
+        public IEnumerable<EntityRoleInstance> GetEntityRoles()
+        {
+            return Enumerable.Empty<EntityRoleInstance>();
+        }
+
+        public IEnumerable<EntityRelationInstance> GetEntityRelations()
+        {
+            return Enumerable.Empty<EntityRelationInstance>();
         }
     }
 }

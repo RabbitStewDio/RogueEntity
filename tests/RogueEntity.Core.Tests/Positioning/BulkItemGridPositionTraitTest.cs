@@ -1,5 +1,6 @@
 ﻿using EnTTSharp.Entities;
 using FluentAssertions;
+using RogueEntity.Core.Infrastructure.ItemTraits;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Positioning.MapLayers;

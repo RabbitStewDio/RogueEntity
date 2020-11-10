@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using EnTTSharp.Entities.Systems;
 using FluentAssertions;
 using NUnit.Framework;
+using RogueEntity.Core.Infrastructure.ItemTraits;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Meta.ItemTraits;
 using RogueEntity.Core.Positioning;

@@ -2,6 +2,7 @@ using EnTTSharp.Entities;
 using EnTTSharp.Entities.Systems;
 using RogueEntity.Core.Infrastructure.Commands;
 using RogueEntity.Core.Infrastructure.GameLoops;
+using RogueEntity.Core.Infrastructure.ItemTraits;
 using RogueEntity.Core.Infrastructure.Modules;
 using RogueEntity.Core.Infrastructure.Modules.Attributes;
 using RogueEntity.Core.Infrastructure.Modules.Services;
@@ -22,6 +23,7 @@ namespace RogueEntity.Core.Sensing.Discovery
         public static readonly EntitySystemId RegisterVisionSystem = "Systems.Core.Senses.DiscoveredArea.Vision";
         public static readonly EntitySystemId RegisterInfraVisionSystem = "Systems.Core.Senses.DiscoveredArea.InfraVision";
         public static readonly EntitySystemId RegisterTouchSystem = "Systems.Core.Senses.DiscoveredArea.Touch";
+        
         public static readonly EntityRole DiscoveryActorRole = new EntityRole("Role.Core.Senses.DiscoveredArea");
 
         public SenseDiscoveryModule()

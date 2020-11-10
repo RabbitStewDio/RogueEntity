@@ -1,4 +1,6 @@
-﻿using EnTTSharp.Entities;
+﻿using System.Collections.Generic;
+using EnTTSharp.Entities;
+using RogueEntity.Core.Infrastructure.ItemTraits;
 using RogueEntity.Core.Meta.Items;
 
 namespace RogueEntity.Core.Meta.Base
@@ -7,13 +9,11 @@ namespace RogueEntity.Core.Meta.Base
     ///   This trait places a marker on whether an item has been placed in an inventory or container.
     ///   This can be used to look up the container that holds this particular item.
     /// </summary>
-    public class ContainerEntityMarkerTrait<TGameContext, TItemId, TOwnerId> :
-        IReferenceItemTrait<TGameContext, TItemId>,
-        IItemComponentTrait<TGameContext, TItemId, ContainerEntityMarker<TOwnerId>>,
-        IItemComponentInformationTrait<TGameContext, TItemId, IContainerEntityMarker>
+    public class ContainerEntityMarkerTrait<TGameContext, TItemId, TOwnerId> : IReferenceItemTrait<TGameContext, TItemId>,
+                                                                               IItemComponentTrait<TGameContext, TItemId, ContainerEntityMarker<TOwnerId>>,
+                                                                               IItemComponentInformationTrait<TGameContext, TItemId, IContainerEntityMarker>
         where TItemId : IBulkDataStorageKey<TItemId>
     {
-
         public string Id { get; } = $"Core.Item.ParentContainerMarker[{typeof(TOwnerId)}]";
 
         public int Priority => 100;
@@ -67,6 +67,16 @@ namespace RogueEntity.Core.Meta.Base
             changedK = k;
             v.RemoveComponent<ContainerEntityMarker<TOwnerId>>(k);
             return true;
+        }
+
+        public IEnumerable<EntityRoleInstance> GetEntityRoles()
+        {
+            yield return CoreModule.ContainedItemRole.Instantiate<TItemId>();
+        }
+
+        public IEnumerable<EntityRelationInstance> GetEntityRelations()
+        {
+            throw new System.NotImplementedException();
         }
     }
 }

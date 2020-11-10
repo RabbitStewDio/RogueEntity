@@ -1,4 +1,5 @@
 using EnTTSharp.Entities;
+using RogueEntity.Core.Infrastructure.ItemTraits;
 using RogueEntity.Core.Infrastructure.Modules;
 using RogueEntity.Core.Infrastructure.Modules.Services;
 using RogueEntity.Core.Meta.Items;

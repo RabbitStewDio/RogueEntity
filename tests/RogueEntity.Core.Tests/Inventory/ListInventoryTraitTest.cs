@@ -3,6 +3,7 @@ using EnTTSharp.Annotations;
 using EnTTSharp.Entities;
 using EnTTSharp.Serialization;
 using NUnit.Framework;
+using RogueEntity.Core.Infrastructure.ItemTraits;
 using RogueEntity.Core.Infrastructure.Serialization;
 using RogueEntity.Core.Inventory;
 using RogueEntity.Core.Meta.Base;

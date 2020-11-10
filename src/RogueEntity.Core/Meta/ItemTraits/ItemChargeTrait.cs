@@ -1,9 +1,11 @@
-﻿using EnTTSharp.Entities;
+﻿using System.Collections.Generic;
+using EnTTSharp.Entities;
+using RogueEntity.Core.Infrastructure.ItemTraits;
 using RogueEntity.Core.Meta.Items;
 
 namespace RogueEntity.Core.Meta.ItemTraits
 {
-    public class ItemChargeTrait<TGameContext, TItemId> : SimpleItemComponentTraitBase<TGameContext, TItemId, ItemCharge>,
+    public sealed class ItemChargeTrait<TGameContext, TItemId> : SimpleItemComponentTraitBase<TGameContext, TItemId, ItemCharge>,
                                                           IBulkDataTrait<TGameContext, TItemId>
         where TItemId : IBulkDataStorageKey<TItemId>
     {
@@ -57,6 +59,11 @@ namespace RogueEntity.Core.Meta.ItemTraits
 
         public override void Apply(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, IItemDeclaration item)
         {
+        }
+
+        public override IEnumerable<EntityRoleInstance> GetEntityRoles()
+        {
+            yield return CoreModule.ItemRole.Instantiate<TItemId>();
         }
     }
 }

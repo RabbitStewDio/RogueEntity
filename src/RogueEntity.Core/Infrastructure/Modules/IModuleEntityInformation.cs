@@ -1,3 +1,5 @@
+using RogueEntity.Core.Infrastructure.ItemTraits;
+
 namespace RogueEntity.Core.Infrastructure.Modules
 {
     public interface IModuleEntityInformation

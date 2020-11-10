@@ -1,4 +1,5 @@
-﻿using RogueEntity.Core.Utils;
+﻿using RogueEntity.Core.Infrastructure.ItemTraits;
+using RogueEntity.Core.Utils;
 
 namespace RogueEntity.Core.Meta.Items
 {

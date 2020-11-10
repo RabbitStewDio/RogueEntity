@@ -2,6 +2,7 @@
 using EnTTSharp.Entities.Systems;
 using RogueEntity.Core.Infrastructure.Commands;
 using RogueEntity.Core.Infrastructure.GameLoops;
+using RogueEntity.Core.Infrastructure.ItemTraits;
 using RogueEntity.Core.Infrastructure.Modules;
 using RogueEntity.Core.Infrastructure.Modules.Attributes;
 using RogueEntity.Core.Infrastructure.Modules.Services;
@@ -32,15 +33,16 @@ namespace RogueEntity.Core.Meta
 
         public CoreModule()
         {
-            Id = CoreModule.ModuleId;
+            Id = ModuleId;
             Author = "RogueEntity.Core";
             Name = "RogueEntity Core Module - Metaverse";
             Description = "Provides common item traits and system behaviours";
             IsFrameworkModule = true;
 
-            RequireRole(CoreModule.EntityRole);
-            RequireRole(CoreModule.PlayerRole).WithImpliedRole(CoreModule.EntityRole);
-            RequireRole(CoreModule.ItemRole).WithImpliedRole(CoreModule.EntityRole);
+            RequireRole(EntityRole);
+            RequireRole(PlayerRole).WithImpliedRole(EntityRole);
+            RequireRole(ItemRole).WithImpliedRole(EntityRole);
+            RequireRole(ContainedItemRole).WithImpliedRole(EntityRole);
         }
 
         [EntityRoleInitializer("Role.Core.Item")]
@@ -50,7 +52,7 @@ namespace RogueEntity.Core.Meta
             where TItemId : IBulkDataStorageKey<TItemId>
         {
             var entityContext = initializer.DeclareEntityContext<TItemId>();
-            entityContext.Register(CoreModule.WorldItemComponentsId, -19_999, RegisterSharedItemComponents<TGameContext, TItemId>);
+            entityContext.Register(WorldItemComponentsId, -19_999, RegisterSharedItemComponents<TGameContext, TItemId>);
         }
 
         [EntityRoleInitializer("Role.Core.Entity")]
@@ -60,9 +62,9 @@ namespace RogueEntity.Core.Meta
             where TItemId : IBulkDataStorageKey<TItemId>
         {
             var entityContext = initializer.DeclareEntityContext<TItemId>();
-            entityContext.Register(CoreModule.CommonComponentsId, -20_000, RegisterCoreComponents);
-            entityContext.Register(CoreModule.DestroyCascadingItemsSystemId, 0, RegisterCascadingDestructionSystems);
-            entityContext.Register(CoreModule.DestroyItemsSystemId, int.MaxValue, RegisterEntityCleanupSystems);
+            entityContext.Register(CommonComponentsId, -20_000, RegisterCoreComponents);
+            entityContext.Register(DestroyCascadingItemsSystemId, 0, RegisterCascadingDestructionSystems);
+            entityContext.Register(DestroyItemsSystemId, int.MaxValue, RegisterEntityCleanupSystems);
         }
 
         [EntityRoleInitializer("Role.Core.Player")]
@@ -72,7 +74,7 @@ namespace RogueEntity.Core.Meta
             where TItemId : IBulkDataStorageKey<TItemId>
         {
             var entityContext = initializer.DeclareEntityContext<TItemId>();
-            entityContext.Register(CoreModule.PlayerComponentsId, -20_000, RegisterPlayerComponents);
+            entityContext.Register(PlayerComponentsId, -20_000, RegisterPlayerComponents);
         }
 
         [EntityRoleInitializer("Role.Core.ContainedItem")]
@@ -82,7 +84,7 @@ namespace RogueEntity.Core.Meta
             where TItemId : IBulkDataStorageKey<TItemId>
         {
             var entityContext = initializer.DeclareEntityContext<TItemId>();
-            entityContext.Register(CoreModule.ContainedComponentsId, -20_000, RegisterContainedItemComponents);
+            entityContext.Register(ContainedComponentsId, -20_000, RegisterContainedItemComponents);
         }
 
         void RegisterCascadingDestructionSystems<TGameContext, TItemId>(IServiceResolver serviceResolver,

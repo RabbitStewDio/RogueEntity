@@ -1,5 +1,8 @@
-﻿using EnTTSharp.Entities;
+﻿using System.Collections.Generic;
+using EnTTSharp.Entities;
+using RogueEntity.Core.Infrastructure.ItemTraits;
 using RogueEntity.Core.Meta.Items;
+using RogueEntity.Core.Sensing.Sources;
 using RogueEntity.Core.Utils;
 
 namespace RogueEntity.Core.Sensing.Resistance
@@ -9,7 +12,7 @@ namespace RogueEntity.Core.Sensing.Resistance
     {
         readonly SensoryResistance<TSense> sensoryResistance;
 
-        public SensoryResistanceTrait(SensoryResistance<TSense> sensoryResistance) : base("Core.Item.SensoryResistance+" + typeof(TSense).Name, 100)
+        public SensoryResistanceTrait(SensoryResistance<TSense> sensoryResistance) : base("Core.Item.SensoryResistance." + typeof(TSense).Name, 100)
         {
             this.sensoryResistance = sensoryResistance;
         }
@@ -21,6 +24,11 @@ namespace RogueEntity.Core.Sensing.Resistance
         protected override SensoryResistance<TSense> GetData(TContext context, TItemId k)
         {
             return sensoryResistance;
+        }
+
+        public override IEnumerable<EntityRoleInstance> GetEntityRoles()
+        {
+            yield return SenseSourceModules.GetResistanceRole<TSense>().Instantiate<TItemId>();
         }
     }
 }

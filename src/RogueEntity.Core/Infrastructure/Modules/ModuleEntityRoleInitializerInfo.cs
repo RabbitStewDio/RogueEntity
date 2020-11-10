@@ -1,4 +1,5 @@
 using System.Linq;
+using RogueEntity.Core.Infrastructure.ItemTraits;
 
 namespace RogueEntity.Core.Infrastructure.Modules
 {
@@ -11,13 +12,13 @@ namespace RogueEntity.Core.Infrastructure.Modules
 
         internal ModuleEntityRoleInitializerInfo(EntityRole role,
                                                  ModuleEntityRoleInitializerDelegate<TGameContext> initializer,
-                                                 EntityRole[] requiredRoles,
-                                                 EntityRelation[] requiredRelations)
+                                                 EntityRole[] requiredRoles = null,
+                                                 EntityRelation[] requiredRelations = null)
         {
             Initializer = initializer;
             Role = role;
-            RequiredRoles = requiredRoles;
-            RequiredRelations = requiredRelations;
+            RequiredRoles = requiredRoles ?? new EntityRole[0];
+            RequiredRelations = requiredRelations ?? new EntityRelation[0];
         }
 
         public ModuleEntityRoleInitializerInfo<TGameContext> WithRequiredRoles(params EntityRole[] roles)

@@ -1,4 +1,6 @@
-﻿namespace RogueEntity.Core.Meta.Items
+﻿using RogueEntity.Core.Infrastructure.ItemTraits;
+
+namespace RogueEntity.Core.Meta.Items
 {
     public interface IBulkItemTrait<TGameContext, TItemId> : IItemTrait
     {

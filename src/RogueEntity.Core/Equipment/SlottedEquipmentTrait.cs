@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using EnTTSharp.Entities;
+using RogueEntity.Core.Infrastructure.ItemTraits;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Meta.ItemTraits;
 using RogueEntity.Core.Utils;
@@ -104,6 +105,17 @@ namespace RogueEntity.Core.Equipment
         {
             changedItem = k;
             return false;
+        }
+
+        public IEnumerable<EntityRoleInstance> GetEntityRoles()
+        {
+            yield return EquipmentModule.EquipmentContainerRole.Instantiate<TActorId>();
+            yield return EquipmentModule.EquipmentContainedItemRole.Instantiate<TItemId>();
+        }
+
+        public IEnumerable<EntityRelationInstance> GetEntityRelations()
+        {
+            yield return EquipmentModule.CanEquipRelation.Instantiate<TActorId, TItemId>();
         }
 
         /* TODO Move to a status effects module.

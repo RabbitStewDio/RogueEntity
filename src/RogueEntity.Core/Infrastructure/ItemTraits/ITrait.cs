@@ -1,4 +1,4 @@
-﻿namespace RogueEntity.Core.Meta.Base
+﻿namespace RogueEntity.Core.Infrastructure.ItemTraits
 {
     public interface ITrait
     {

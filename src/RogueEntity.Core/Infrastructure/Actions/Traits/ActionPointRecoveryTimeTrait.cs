@@ -1,4 +1,6 @@
-﻿using EnTTSharp.Entities;
+﻿using System.Collections.Generic;
+using EnTTSharp.Entities;
+using RogueEntity.Core.Infrastructure.ItemTraits;
 using RogueEntity.Core.Meta.Items;
 
 namespace RogueEntity.Core.Infrastructure.Actions.Traits
@@ -20,6 +22,11 @@ namespace RogueEntity.Core.Infrastructure.Actions.Traits
 
         public override void Apply(IEntityViewControl<TActorId> v, TGameContext context, TActorId k, IItemDeclaration item)
         {
+        }
+
+        public override IEnumerable<EntityRoleInstance> GetEntityRoles()
+        {
+            throw new System.NotImplementedException();
         }
     }
 }

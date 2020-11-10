@@ -1,21 +1,21 @@
 using System;
+using System.Collections.Generic;
 using EnTTSharp.Entities;
 using JetBrains.Annotations;
+using RogueEntity.Core.Infrastructure.ItemTraits;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Meta.ItemTraits;
-using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Sensing.Common;
 using RogueEntity.Core.Utils;
 
 namespace RogueEntity.Core.Sensing.Sources.Heat
 {
-    public class HeatSourceTrait<TGameContext, TItemId> : IReferenceItemTrait<TGameContext, TItemId>,
-                                                          IItemComponentTrait<TGameContext, TItemId, Temperature>,
-                                                          IItemComponentTrait<TGameContext, TItemId, HeatSourceDefinition>
+    public class HeatSourceTrait<TGameContext, TItemId> : SenseSourceTraitBase<TGameContext, TItemId, TemperatureSense, HeatSourceDefinition>,
+                                                          IItemComponentTrait<TGameContext, TItemId, Temperature>
         where TItemId : IEntityKey
     {
-        public string Id => "Core.Item.Temperature";
-        public int Priority => 100;
+        public override string Id => "Core.Item.Temperature";
+        public override int Priority => 100;
 
         readonly IHeatPhysicsConfiguration physicsConfiguration;
         readonly Optional<Temperature> baseTemperature;
@@ -25,35 +25,19 @@ namespace RogueEntity.Core.Sensing.Sources.Heat
             this.physicsConfiguration = physicsConfiguration ?? throw new ArgumentNullException(nameof(physicsConfiguration));
             this.baseTemperature = baseTemperature;
         }
-
-        public IReferenceItemTrait<TGameContext, TItemId> CreateInstance()
-        {
-            return this;
-        }
-
-        public void Initialize(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, IItemDeclaration item)
+        
+        protected override bool TryGetInitialValue(out HeatSourceDefinition senseDefinition)
         {
             if (baseTemperature.TryGetValue(out var value))
             {
-                v.AssignComponent(k, new HeatSourceDefinition(new SenseSourceDefinition(physicsConfiguration.HeatPhysics.DistanceMeasurement, 
-                                                                                        physicsConfiguration.HeatPhysics.AdjacencyRule, 
-                                                                                        value.ToKelvin()), true));
-                v.AssignComponent(k, new SenseSourceState<TemperatureSense>(Optional.Empty<SenseSourceData>(), SenseSourceDirtyState.UnconditionallyDirty, Position.Invalid));
-            }
-        }
-
-        public void Apply(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, IItemDeclaration item)
-        {
-            if (!v.GetComponent(k, out HeatSourceDefinition _))
-            {
-                return;
+                senseDefinition = new HeatSourceDefinition(new SenseSourceDefinition(physicsConfiguration.HeatPhysics.DistanceMeasurement,
+                                                                                     physicsConfiguration.HeatPhysics.AdjacencyRule,
+                                                                                     value.ToKelvin()), true);                
+                return true;
             }
 
-            if (!v.GetComponent(k, out SenseSourceState<TemperatureSense> s))
-            {
-                s = new SenseSourceState<TemperatureSense>(Optional.Empty<SenseSourceData>(), SenseSourceDirtyState.UnconditionallyDirty, Position.Invalid);
-                v.AssignComponent(k, in s);
-            }
+            senseDefinition = default;
+            return false;
         }
 
         public bool TryQuery(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, out Temperature t)
@@ -66,11 +50,6 @@ namespace RogueEntity.Core.Sensing.Sources.Heat
 
             t = default;
             return false;
-        }
-
-        public bool TryQuery(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, out HeatSourceDefinition t)
-        {
-            return v.GetComponent(k, out t);
         }
 
         public bool TryUpdate(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, in Temperature t, out TItemId changedK)
@@ -86,31 +65,9 @@ namespace RogueEntity.Core.Sensing.Sources.Heat
             return TryUpdate(v, context, k, in val, out changedK);
         }
 
-        public bool TryUpdate(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, in HeatSourceDefinition t, out TItemId changedK)
+        public override IEnumerable<EntityRoleInstance> GetEntityRoles()
         {
-            v.AssignOrReplace(k, t);
-            
-            if (!v.GetComponent(k, out SenseSourceState<TemperatureSense> s))
-            {
-                s = new SenseSourceState<TemperatureSense>(Optional.Empty<SenseSourceData>(), SenseSourceDirtyState.UnconditionallyDirty, Position.Invalid);
-                v.AssignComponent(k, in s);
-            }
-            else
-            {
-                s = s.WithDirtyState(SenseSourceDirtyState.UnconditionallyDirty);
-                v.ReplaceComponent(k, in s);
-            }
-
-            changedK = k;
-            return true;
-        }
-
-        public bool TryRemove(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, out TItemId changedK)
-        {
-            v.RemoveComponent<HeatSourceDefinition>(k);
-            v.RemoveComponent<SenseSourceState<TemperatureSense>>(k);
-            changedK = k;
-            return true;
+            yield return SenseSourceModules.GetSourceRole<TemperatureSense>().Instantiate<TItemId>();
         }
     }
 }

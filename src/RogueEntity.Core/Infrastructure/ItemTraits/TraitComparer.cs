@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace RogueEntity.Core.Meta.Base
+namespace RogueEntity.Core.Infrastructure.ItemTraits
 {
     public class TraitComparer : IComparer<ITrait>
     {

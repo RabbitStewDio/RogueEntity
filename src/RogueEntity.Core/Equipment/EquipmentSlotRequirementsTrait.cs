@@ -1,4 +1,6 @@
-﻿using EnTTSharp.Entities;
+﻿using System.Collections.Generic;
+using EnTTSharp.Entities;
+using RogueEntity.Core.Infrastructure.ItemTraits;
 using RogueEntity.Core.Meta.Items;
 
 namespace RogueEntity.Core.Equipment
@@ -16,6 +18,11 @@ namespace RogueEntity.Core.Equipment
         protected override EquipmentSlotRequirements GetData(TGameContext context, TItemId k)
         {
             return r;
+        }
+
+        public override IEnumerable<EntityRoleInstance> GetEntityRoles()
+        {
+            yield return EquipmentModule.EquipmentContainedItemRole.Instantiate<TItemId>();
         }
     }
 }

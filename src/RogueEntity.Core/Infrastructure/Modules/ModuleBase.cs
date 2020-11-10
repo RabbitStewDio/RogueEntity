@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
+using RogueEntity.Core.Infrastructure.ItemTraits;
 using RogueEntity.Core.Utils;
 
 namespace RogueEntity.Core.Infrastructure.Modules
@@ -54,16 +54,11 @@ namespace RogueEntity.Core.Infrastructure.Modules
         public ReadOnlyListWrapper<EntityRelation> RequiredRelations => requiredRelations;
         public ReadOnlyListWrapper<EntityRole> RequiredRoles => requiredRoles;
 
-        public IEnumerable<Type> DeclaredEntityTypes => declaredRoles.Keys.Concat(declaredRelations.Keys).Distinct();
+        public IEnumerable<Type> DeclaredEntityTypes => declaredRoles.Keys;
 
         public bool TryGetEntityRecord(Type subject, out DeclaredEntityRoleRecord r)
         {
             return declaredRoles.TryGetValue(subject, out r);
-        }
-
-        public bool TryGetRelationRecord(Type subject, out DeclaredEntityRelationRecord r)
-        {
-            return declaredRelations.TryGetValue(subject, out r);
         }
 
         public bool TryGetRelationById(string id, out EntityRelation relation)
@@ -93,7 +88,7 @@ namespace RogueEntity.Core.Infrastructure.Modules
         {
             if (declaredRoles.TryGetValue(typeof(TEntityId), out var rr))
             {
-                rr = rr.With(r);
+                rr.With(r);
             }
             else
             {
@@ -104,6 +99,7 @@ namespace RogueEntity.Core.Infrastructure.Modules
             return new DeclareDependencyBuilder(this, r);
         }
 
+        [Obsolete]
         protected DeclareDependencyBuilder DeclareRelation<TSubject, TObject>(EntityRelation r)
         {
             if (!declaredRelations.TryGetValue(typeof(TSubject), out var record))

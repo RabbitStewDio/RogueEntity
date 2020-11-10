@@ -1,4 +1,6 @@
-﻿using EnTTSharp.Entities;
+﻿using System.Collections.Generic;
+using EnTTSharp.Entities;
+using RogueEntity.Core.Infrastructure.ItemTraits;
 using RogueEntity.Core.Meta.Items;
 
 namespace RogueEntity.Core.Meta.UseEffects
@@ -17,6 +19,11 @@ namespace RogueEntity.Core.Meta.UseEffects
         protected override IUsableItemEffect<TGameContext, TActorId, TItemId> GetData(TGameContext context, TItemId k)
         {
             return effect;
+        }
+
+        public override IEnumerable<EntityRoleInstance> GetEntityRoles()
+        {
+            throw new System.NotImplementedException();
         }
     }
 }

@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
-using RogueEntity.Core.Meta.Base;
 
-namespace RogueEntity.Core.Meta.Items
+namespace RogueEntity.Core.Infrastructure.ItemTraits
 {
     /// <summary>
     ///   The behaviour for an item in the world. Implementations of this class
@@ -12,5 +11,8 @@ namespace RogueEntity.Core.Meta.Items
         ItemDeclarationId Id { get; }
         bool TryQuery<TTrait>(out TTrait t) where TTrait : IItemTrait;
         List<TTrait> QueryAll<TTrait>(List<TTrait> cache = null) where TTrait : IItemTrait;
+        
+        public IEnumerable<EntityRoleInstance> GetEntityRoles();
+        public IEnumerable<EntityRelationInstance> GetEntityRelations();
     }
 }

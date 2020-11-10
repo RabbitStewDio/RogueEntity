@@ -2,7 +2,7 @@
 using System.Runtime.Serialization;
 using MessagePack;
 
-namespace RogueEntity.Core.Meta.Items
+namespace RogueEntity.Core.Infrastructure.ItemTraits
 {
     [MessagePackObject]
     [DataContract]

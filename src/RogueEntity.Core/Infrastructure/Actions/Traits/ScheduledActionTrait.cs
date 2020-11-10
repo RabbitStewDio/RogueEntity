@@ -1,5 +1,8 @@
-﻿using EnTTSharp.Entities;
+﻿using System.Collections.Generic;
+using System.Linq;
+using EnTTSharp.Entities;
 using RogueEntity.Core.Infrastructure.Actions.Schedule;
+using RogueEntity.Core.Infrastructure.ItemTraits;
 using RogueEntity.Core.Meta.Items;
 
 namespace RogueEntity.Core.Infrastructure.Actions.Traits
@@ -47,6 +50,16 @@ namespace RogueEntity.Core.Infrastructure.Actions.Traits
         {
             changedItem = k;
             return false;
+        }
+
+        public IEnumerable<EntityRoleInstance> GetEntityRoles()
+        {
+            return Enumerable.Empty<EntityRoleInstance>();
+        }
+
+        public IEnumerable<EntityRelationInstance> GetEntityRelations()
+        {
+            return Enumerable.Empty<EntityRelationInstance>();
         }
     }
 }

@@ -2,6 +2,7 @@ using EnTTSharp.Entities;
 using RogueEntity.Core.GridProcessing.LayerAggregation;
 using RogueEntity.Core.Infrastructure.Commands;
 using RogueEntity.Core.Infrastructure.GameLoops;
+using RogueEntity.Core.Infrastructure.ItemTraits;
 using RogueEntity.Core.Infrastructure.Modules;
 using RogueEntity.Core.Infrastructure.Modules.Attributes;
 using RogueEntity.Core.Infrastructure.Modules.Services;
@@ -47,7 +48,7 @@ namespace RogueEntity.Simple.Demo.BoxPusher
                 .WithImpliedRole(CoreModule.ItemRole)
                 .WithImpliedRole(PositionModule.GridPositionedRole)
                 .WithImpliedRole(InventoryModule.ContainedItemRole)
-                .WithImpliedRole(LightSourceModule.LightSourceRole)
+                .WithImpliedRole(LightSourceModule.SenseSourceRole)
                 .WithImpliedRole(LightSourceModule.ResistanceDataProviderRole);
 
             DeclareEntity<ItemReference>(FloorRole)
@@ -63,8 +64,6 @@ namespace RogueEntity.Simple.Demo.BoxPusher
                 .WithImpliedRole(VisionSenseModule.SenseReceptorActorRole)
                 .WithImpliedRole(SensoryCacheModule.SenseCacheSourceRole)
                 .WithImpliedRole(SenseDiscoveryModule.DiscoveryActorRole);
-
-            DeclareRelation<ActorReference, ItemReference>(InventoryModule.ContainsRelation);
 
             RequireRole(MovableItemRole);
         }

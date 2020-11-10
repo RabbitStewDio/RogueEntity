@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 
-namespace RogueEntity.Core.Meta.Base
+namespace RogueEntity.Core.Infrastructure.ItemTraits
 {
     /// <summary>
     ///   Encapsulates a cached lookup of traits for actors and items. 

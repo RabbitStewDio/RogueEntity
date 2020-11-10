@@ -1,4 +1,5 @@
 using System.Linq;
+using RogueEntity.Core.Infrastructure.ItemTraits;
 
 namespace RogueEntity.Core.Infrastructure.Modules
 {

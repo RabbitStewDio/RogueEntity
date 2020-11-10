@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using EnTTSharp.Entities;
-using RogueEntity.Core.Meta.Base;
+using RogueEntity.Core.Infrastructure.ItemTraits;
 
 namespace RogueEntity.Core.Meta.Items
 {

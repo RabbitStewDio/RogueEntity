@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using EnTTSharp.Entities;
+using RogueEntity.Core.Infrastructure.ItemTraits;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Positioning.MapLayers;
 using RogueEntity.Core.Utils;
@@ -212,5 +215,16 @@ namespace RogueEntity.Core.Positioning.Continuous
                 logger.Warning("Invalid layer {Layer} for unresolvable item {ItemId}", p.LayerId, targetItem);
             }
         }
+
+        public IEnumerable<EntityRoleInstance> GetEntityRoles()
+        {
+            yield return PositionModule.ContinuousPositionedRole.Instantiate<TItemId>();
+        }
+
+        public IEnumerable<EntityRelationInstance> GetEntityRelations()
+        {
+            return Enumerable.Empty<EntityRelationInstance>();
+        }
+        
     }
 }

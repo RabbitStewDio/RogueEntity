@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using EnTTSharp.Entities;
+using RogueEntity.Core.Infrastructure.ItemTraits;
 using RogueEntity.Core.Meta.Items;
 
 namespace RogueEntity.Core.Sensing.Receptors.InfraVision
@@ -27,6 +29,11 @@ namespace RogueEntity.Core.Sensing.Receptors.InfraVision
 
             t = default;
             return false;
+        }
+
+        public override IEnumerable<EntityRoleInstance> GetEntityRoles()
+        {
+            yield return InfraVisionSenseModule.SenseReceptorActorRole.Instantiate<TActorId>();
         }
     }
 }
