@@ -21,12 +21,12 @@ namespace RogueEntity.Core.Infrastructure.Modules
         readonly Dictionary<Type, EntityRelationRecord> relationsPerType;
         bool initialized;
 
-        public ModuleSystem(IServiceResolver serviceResolver = null)
+        public ModuleSystem([NotNull] IServiceResolver serviceResolver)
         {
             modulesById = new Dictionary<string, ModuleRecord>();
             contentModulePool = new List<ModuleRecord>();
 
-            this.serviceResolver = serviceResolver ?? new DefaultServiceResolver();
+            this.serviceResolver = serviceResolver ?? throw new ArgumentNullException(nameof(serviceResolver));
 
             rolesPerType = new Dictionary<Type, EntityRoleRecord>();
             relationsPerType = new Dictionary<Type, EntityRelationRecord>();

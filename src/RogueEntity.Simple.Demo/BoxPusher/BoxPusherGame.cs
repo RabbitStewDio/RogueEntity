@@ -1,4 +1,7 @@
 using RogueEntity.Core.Infrastructure.Modules;
+using RogueEntity.Core.Infrastructure.Modules.Services;
+using RogueEntity.Core.Meta.Items;
+using RogueEntity.Core.Positioning.Grid;
 using Serilog;
 
 namespace RogueEntity.Simple.Demo.BoxPusher
@@ -8,12 +11,17 @@ namespace RogueEntity.Simple.Demo.BoxPusher
         public static void BoxMain()
         {
             Log.Debug("Starting");
-            
-            var ms = new ModuleSystem<BoxPusherContext>();
-            ms.ScanForModules();
 
             var context = new BoxPusherContext(128, 128);
+
+            var ms = new ModuleSystem<BoxPusherContext>(new DefaultServiceResolver().WithService(context,
+                                                                                                 typeof(IItemContext<BoxPusherContext, ItemReference>),
+                                                                                                 typeof(IItemContext<BoxPusherContext, ActorReference>),
+                                                                                                 typeof(IGridMapContext<ItemReference>),
+                                                                                                 typeof(IGridMapContext<ActorReference>)
+                                                        ));
+            ms.ScanForModules();
             ms.Initialize(context);
-        }    
+        }
     }
 }

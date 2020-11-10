@@ -5,7 +5,7 @@ using RogueEntity.Core.Infrastructure.Modules.Initializers;
 
 namespace RogueEntity.Core.Infrastructure.Modules.Services
 {
-    public class DefaultServiceResolver: IServiceResolver, IDisposable
+    public class DefaultServiceResolver : IServiceResolver, IDisposable
     {
         readonly Dictionary<Type, object> backend;
         readonly HashSet<Type> promisedReferences;
@@ -37,8 +37,30 @@ namespace RogueEntity.Core.Infrastructure.Modules.Services
             {
                 return o;
             }
-            
-            throw new ArgumentException();
+
+            throw new ArgumentException("Unable to resolve service of type " + typeof(TServiceObject));
+        }
+
+        public DefaultServiceResolver WithService<TServiceObject>(in TServiceObject service)
+        {
+            backend[typeof(TServiceObject)] = service;
+            return this;
+        }
+
+        public DefaultServiceResolver WithService<TServiceObject>(in TServiceObject service, params Type[] alternativeTypes)
+        {
+            backend[typeof(TServiceObject)] = service;
+            foreach (var t in alternativeTypes)
+            {
+                if (!t.IsAssignableFrom(typeof(TServiceObject)))
+                {
+                    throw new ArgumentException();
+                }
+                
+                backend[t] = service;
+            }
+
+            return this;
         }
 
         public void Store<TServiceObject>(in TServiceObject service)
@@ -69,7 +91,7 @@ namespace RogueEntity.Core.Infrastructure.Modules.Services
             {
                 return;
             }
-            
+
             throw new ModuleInitializationException("Unable to fulfil promises made during module initialization. \n" +
                                                     "The following unregistered services were requested: \n" +
                                                     b);
@@ -84,7 +106,7 @@ namespace RogueEntity.Core.Infrastructure.Modules.Services
                     disposable.Dispose();
                 }
             }
-            
+
             promisedReferences.Clear();
             backend.Clear();
         }
