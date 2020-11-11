@@ -19,6 +19,7 @@ namespace RogueEntity.Core.Infrastructure.Modules
         readonly Dictionary<string, ModuleRecord> modulesById;
         readonly Dictionary<Type, EntityRoleRecord> rolesPerType;
         readonly Dictionary<Type, EntityRelationRecord> relationsPerType;
+        readonly ModuleInitializer<TGameContext> moduleInitializer;
         bool initialized;
 
         public ModuleSystem([NotNull] IServiceResolver serviceResolver)
@@ -30,17 +31,16 @@ namespace RogueEntity.Core.Infrastructure.Modules
 
             rolesPerType = new Dictionary<Type, EntityRoleRecord>();
             relationsPerType = new Dictionary<Type, EntityRelationRecord>();
+            moduleInitializer = new ModuleInitializer<TGameContext>();
+
         }
 
-        public void Initialize(TGameContext context,
-                               IModuleInitializer<TGameContext> initializer = null)
+        public IModuleInitializationData<TGameContext> Initialize(TGameContext context)
         {
             if (initialized)
             {
-                return;
+                return moduleInitializer;
             }
-
-            initializer ??= new ModuleInitializer<TGameContext>();
 
             initialized = true;
 
@@ -59,7 +59,7 @@ namespace RogueEntity.Core.Infrastructure.Modules
             if (contentModulePool.Count == 0)
             {
                 // No content modules declared. Its OK, you apparently dont want to use the module system.
-                return;
+                return moduleInitializer;
             }
 
             PopulateModuleDependencies();
@@ -69,23 +69,26 @@ namespace RogueEntity.Core.Infrastructure.Modules
             Logger.Debug("Processing Modules in order: \n{Modules}", PrintModuleDependencyList(orderedModules));
 
             // 1. Setup global functions. Those provide global services or configurations etc, and only depend on the context object. 
-            InitializeModule(initializer, orderedModules);
+            InitializeModule(moduleInitializer, orderedModules);
 
             // 2. Initialize content. This sets up EntityDeclarations and thus tells the system which roles are used by each entity key
             //    encountered by the code.
-            InitializeModuleContent(initializer, orderedModules);
+            InitializeModuleContent(moduleInitializer, orderedModules);
 
             // 3. Based on the module information gathered, we can now resolve all roles and relations. First, some sorting. 
             CollectDeclaredRoles(orderedModules);
             ResolveEquivalenceRoles(orderedModules);
 
             // 4. Now start initializing trait systems for each entity role.
-            InitializeModuleRoles(initializer, orderedModules);
-            InitializeModuleRelations(initializer, orderedModules);
+            InitializeModuleRoles(moduleInitializer, orderedModules);
+            InitializeModuleRelations(moduleInitializer, orderedModules);
+
+            return moduleInitializer;
         }
 
         void InitializeModule(IModuleInitializer<TGameContext> initializer, List<ModuleRecord> orderedModules)
         {
+            var mip = new ModuleInitializationParameter(new GlobalModuleEntityInformation(rolesPerType, relationsPerType), serviceResolver);
             foreach (var mod in orderedModules)
             {
                 if (mod.InitializedModule)
@@ -96,13 +99,14 @@ namespace RogueEntity.Core.Infrastructure.Modules
                 mod.InitializedModule = true;
                 foreach (var mi in mod.ModuleInitializers)
                 {
-                    mi(serviceResolver, initializer);
+                    mi(in mip, initializer);
                 }
             }
         }
 
         void InitializeModuleContent(IModuleInitializer<TGameContext> initializer, List<ModuleRecord> orderedModules)
         {
+            var mip = new ModuleInitializationParameter(new GlobalModuleEntityInformation(rolesPerType, relationsPerType), serviceResolver);
             foreach (var mod in orderedModules)
             {
                 if (mod.InitializedContent)
@@ -113,7 +117,7 @@ namespace RogueEntity.Core.Infrastructure.Modules
                 mod.InitializedContent = true;
                 foreach (var mi in mod.ContentInitializers)
                 {
-                    mi(serviceResolver, initializer);
+                    mi(in mip, initializer);
                 }
             }
         }

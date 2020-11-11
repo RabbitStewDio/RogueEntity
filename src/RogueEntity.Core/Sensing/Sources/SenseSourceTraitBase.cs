@@ -29,7 +29,7 @@ namespace RogueEntity.Core.Sensing.Sources
             if (TryGetInitialValue(out var senseDefinition))
             {
                 v.AssignComponent(k, senseDefinition);
-                v.AssignComponent(k, new SenseSourceState<TemperatureSense>(Optional.Empty<SenseSourceData>(), SenseSourceDirtyState.UnconditionallyDirty, Position.Invalid));
+                v.AssignComponent(k, new SenseSourceState<TSense>(Optional.Empty<SenseSourceData>(), SenseSourceDirtyState.UnconditionallyDirty, Position.Invalid));
             }
         }
 

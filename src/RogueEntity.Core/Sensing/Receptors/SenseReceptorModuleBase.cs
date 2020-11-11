@@ -80,11 +80,12 @@ namespace RogueEntity.Core.Sensing.Receptors
         }
 
         [SuppressMessage("ReSharper", "UnusedTypeParameter")]
-        protected void InitializeSenseCache<TGameContext, TItemId>(IServiceResolver serviceResolver,
+        protected void InitializeSenseCache<TGameContext, TItemId>(in ModuleInitializationParameter initParameter,
                                                                    IModuleInitializer<TGameContext> initializer,
                                                                    EntityRole role)
             where TItemId : IEntityKey
         {
+            var serviceResolver = initParameter.ServiceResolver;
             if (serviceResolver.TryResolve(out SenseCacheSetUpSystem<TGameContext> o))
             {
                 o.RegisterSense<TReceptorSense>();
@@ -92,7 +93,7 @@ namespace RogueEntity.Core.Sensing.Receptors
             }
         }
 
-        protected void InitializeRole<TGameContext, TItemId>(IServiceResolver serviceResolver,
+        protected void InitializeRole<TGameContext, TItemId>(in ModuleInitializationParameter initParameter,
                                                              IModuleInitializer<TGameContext> initializer,
                                                              EntityRole role)
             where TItemId : IEntityKey
@@ -105,7 +106,7 @@ namespace RogueEntity.Core.Sensing.Receptors
             ctx.Register(ReceptorFinalizeSystemId, 59500, RegisterFinalizeSystem);
         }
 
-        protected void InitializeCollectReceptorsGrid<TGameContext, TItemId>(IServiceResolver serviceResolver,
+        protected void InitializeCollectReceptorsGrid<TGameContext, TItemId>(in ModuleInitializationParameter initParameter,
                                                                              IModuleInitializer<TGameContext> initializer,
                                                                              EntityRole role)
             where TItemId : IEntityKey
@@ -114,7 +115,7 @@ namespace RogueEntity.Core.Sensing.Receptors
             ctx.Register(ReceptorCollectionGridSystemId, 55500, RegisterCollectReceptorsGridSystem);
         }
 
-        protected void InitializeCollectReceptorsContinuous<TGameContext, TItemId>(IServiceResolver serviceResolver,
+        protected void InitializeCollectReceptorsContinuous<TGameContext, TItemId>(in ModuleInitializationParameter initParameter,
                                                                                    IModuleInitializer<TGameContext> initializer,
                                                                                    EntityRole role)
             where TItemId : IEntityKey
@@ -123,7 +124,7 @@ namespace RogueEntity.Core.Sensing.Receptors
             ctx.Register(ReceptorCollectionContinuousSystemId, 55500, RegisterCollectReceptorsContinuousSystem);
         }
 
-        protected void InitializeCollectSenseSources<TGameContext, TItemId>(IServiceResolver serviceResolver,
+        protected void InitializeCollectSenseSources<TGameContext, TItemId>(in ModuleInitializationParameter initParameter,
                                                                             IModuleInitializer<TGameContext> initializer,
                                                                             EntityRole role)
             where TItemId : IEntityKey
@@ -132,25 +133,27 @@ namespace RogueEntity.Core.Sensing.Receptors
             ctx.Register(SenseSourceCollectionSystemId, 57500, RegisterCollectSenseSourcesSystem);
         }
 
-        protected void RegisterPrepareSystem<TGameContext, TItemId>(IServiceResolver serviceResolver,
+        protected void RegisterPrepareSystem<TGameContext, TItemId>(in ModuleInitializationParameter initParameter,
                                                                     IGameLoopSystemRegistration<TGameContext> context,
                                                                     EntityRegistry<TItemId> registry,
                                                                     ICommandHandlerRegistration<TGameContext, TItemId> handler)
             where TItemId : IEntityKey
         {
+            var serviceResolver = initParameter.ServiceResolver;
             var ls = GetOrCreateLightSystem<TGameContext, TItemId>(serviceResolver);
             context.AddInitializationStepHandler(ls.EnsureSenseCacheAvailable);
             context.AddInitializationStepHandler(ls.BeginSenseCalculation);
             context.AddFixedStepHandlers(ls.BeginSenseCalculation);
         }
 
-        protected void RegisterCollectReceptorsGridSystem<TGameContext, TItemId>(IServiceResolver resolver,
+        protected void RegisterCollectReceptorsGridSystem<TGameContext, TItemId>(in ModuleInitializationParameter initParameter,
                                                                                  IGameLoopSystemRegistration<TGameContext> context,
                                                                                  EntityRegistry<TItemId> registry,
                                                                                  ICommandHandlerRegistration<TGameContext, TItemId> handler)
             where TItemId : IEntityKey
         {
-            var ls = GetOrCreateLightSystem<TGameContext, TItemId>(resolver);
+            var serviceResolver = initParameter.ServiceResolver;
+            var ls = GetOrCreateLightSystem<TGameContext, TItemId>(serviceResolver);
             var system = registry.BuildSystem()
                                  .WithContext<TGameContext>()
                                  .CreateSystem<SensoryReceptorData<TReceptorSense, TSourceSense>, SensoryReceptorState<TReceptorSense, TSourceSense>, EntityGridPosition>(ls.CollectReceptor);
@@ -158,13 +161,14 @@ namespace RogueEntity.Core.Sensing.Receptors
             context.AddFixedStepHandlers(system);
         }
 
-        protected void RegisterCollectReceptorsContinuousSystem<TGameContext, TItemId>(IServiceResolver resolver,
+        protected void RegisterCollectReceptorsContinuousSystem<TGameContext, TItemId>(in ModuleInitializationParameter initParameter,
                                                                                        IGameLoopSystemRegistration<TGameContext> context,
                                                                                        EntityRegistry<TItemId> registry,
                                                                                        ICommandHandlerRegistration<TGameContext, TItemId> handler)
             where TItemId : IEntityKey
         {
-            var ls = GetOrCreateLightSystem<TGameContext, TItemId>(resolver);
+            var serviceResolver = initParameter.ServiceResolver;
+            var ls = GetOrCreateLightSystem<TGameContext, TItemId>(serviceResolver);
             var system = registry.BuildSystem()
                                  .WithContext<TGameContext>()
                                  .CreateSystem<SensoryReceptorData<TReceptorSense, TSourceSense>, SensoryReceptorState<TReceptorSense, TSourceSense>, ContinuousMapPosition>(ls.CollectReceptor);
@@ -172,12 +176,13 @@ namespace RogueEntity.Core.Sensing.Receptors
             context.AddFixedStepHandlers(system);
         }
 
-        protected void RegisterCollectSenseSourcesSystem<TGameContext, TItemId>(IServiceResolver serviceResolver,
+        protected void RegisterCollectSenseSourcesSystem<TGameContext, TItemId>(in ModuleInitializationParameter initParameter,
                                                                                 IGameLoopSystemRegistration<TGameContext> context,
                                                                                 EntityRegistry<TItemId> registry,
                                                                                 ICommandHandlerRegistration<TGameContext, TItemId> handler)
             where TItemId : IEntityKey
         {
+            var serviceResolver = initParameter.ServiceResolver;
             var ls = GetOrCreateLightSystem<TGameContext, TItemId>(serviceResolver);
             var system = registry.BuildSystem()
                                  .WithContext<TGameContext>()
@@ -186,12 +191,13 @@ namespace RogueEntity.Core.Sensing.Receptors
             context.AddFixedStepHandlers(system);
         }
 
-        protected void RegisterComputeReceptorFieldOfView<TGameContext, TItemId>(IServiceResolver serviceResolver,
+        protected void RegisterComputeReceptorFieldOfView<TGameContext, TItemId>(in ModuleInitializationParameter initParameter,
                                                                                  IGameLoopSystemRegistration<TGameContext> context,
                                                                                  EntityRegistry<TItemId> registry,
                                                                                  ICommandHandlerRegistration<TGameContext, TItemId> handler)
             where TItemId : IEntityKey
         {
+            var serviceResolver = initParameter.ServiceResolver;
             var ls = GetOrCreateLightSystem<TGameContext, TItemId>(serviceResolver);
 
             var refreshLocalSenseState =
@@ -203,12 +209,13 @@ namespace RogueEntity.Core.Sensing.Receptors
             context.AddFixedStepHandlers(refreshLocalSenseState);
         }
 
-        protected void RegisterCalculateOmniDirectionalSystem<TGameContext, TItemId>(IServiceResolver serviceResolver,
+        protected void RegisterCalculateOmniDirectionalSystem<TGameContext, TItemId>(in ModuleInitializationParameter initParameter,
                                                                                      IGameLoopSystemRegistration<TGameContext> context,
                                                                                      EntityRegistry<TItemId> registry,
                                                                                      ICommandHandlerRegistration<TGameContext, TItemId> handler)
             where TItemId : IEntityKey
         {
+            var serviceResolver = initParameter.ServiceResolver;
             var ls = GetOrCreateLightSystem<TGameContext, TItemId>(serviceResolver);
 
             if (!serviceResolver.TryResolve(out IRadiationSenseReceptorBlitter senseBlitter))
@@ -226,12 +233,13 @@ namespace RogueEntity.Core.Sensing.Receptors
             context.AddFixedStepHandlers(system);
         }
 
-        protected void RegisterCalculateUniDirectionalSystem<TGameContext, TItemId>(IServiceResolver serviceResolver,
+        protected void RegisterCalculateUniDirectionalSystem<TGameContext, TItemId>(in ModuleInitializationParameter initParameter,
                                                                                     IGameLoopSystemRegistration<TGameContext> context,
                                                                                     EntityRegistry<TItemId> registry,
                                                                                     ICommandHandlerRegistration<TGameContext, TItemId> handler)
             where TItemId : IEntityKey
         {
+            var serviceResolver = initParameter.ServiceResolver;
             var ls = GetOrCreateLightSystem<TGameContext, TItemId>(serviceResolver);
 
             if (!serviceResolver.TryResolve(out IDirectionalSenseReceptorBlitter senseBlitter))
@@ -252,12 +260,13 @@ namespace RogueEntity.Core.Sensing.Receptors
         }
 
 
-        protected void RegisterFinalizeSystem<TGameContext, TItemId>(IServiceResolver serviceResolver,
+        protected void RegisterFinalizeSystem<TGameContext, TItemId>(in ModuleInitializationParameter initParameter,
                                                                      IGameLoopSystemRegistration<TGameContext> context,
                                                                      EntityRegistry<TItemId> registry,
                                                                      ICommandHandlerRegistration<TGameContext, TItemId> handler)
             where TItemId : IEntityKey
         {
+            var serviceResolver = initParameter.ServiceResolver;
             var ls = GetOrCreateLightSystem<TGameContext, TItemId>(serviceResolver);
 
             var clearReceptorStateSystem =
@@ -336,7 +345,8 @@ namespace RogueEntity.Core.Sensing.Receptors
             return ls;
         }
 
-        protected void RegisterEntities<TItemId>(IServiceResolver serviceResolver, EntityRegistry<TItemId> registry)
+        protected void RegisterEntities<TItemId>(in ModuleInitializationParameter initParameter,
+                                                 EntityRegistry<TItemId> registry)
             where TItemId : IEntityKey
         {
             registry.RegisterNonConstructable<SensoryReceptorData<TReceptorSense, TSourceSense>>();
@@ -344,16 +354,5 @@ namespace RogueEntity.Core.Sensing.Receptors
             registry.RegisterNonConstructable<SingleLevelSenseDirectionMapData<TReceptorSense, TSourceSense>>();
             registry.RegisterFlag<SenseReceptorDirtyFlag<TReceptorSense, TSourceSense>>();
         }
-    }
-
-    public static class SenseReceptorModules
-    {
-        public static EntityRole GetReceptorRole<TReceptorSense, TSourceSense>() => new EntityRole($"Role.Core.Senses.Receptor.{typeof(TReceptorSense).Name}.{typeof(TSourceSense).Name}.SenseSource");
-
-        public static EntitySystemId CreateSystemId<TReceptorSense, TSourceSense>(string job) =>
-            new EntitySystemId($"Core.Systems.Senses.{typeof(TReceptorSense).Name}.{typeof(TSourceSense).Name}.{job}");
-
-        public static EntitySystemId CreateEntityId<TReceptorSense, TSourceSense>(string job) =>
-            new EntitySystemId($"Entities.Systems.Senses.{typeof(TReceptorSense).Name}.{typeof(TSourceSense).Name}.{job}");
     }
 }

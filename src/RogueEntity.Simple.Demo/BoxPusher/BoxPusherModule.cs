@@ -114,11 +114,12 @@ namespace RogueEntity.Simple.Demo.BoxPusher
             where TItemId : IEntityKey
             where TGameContext : IItemContext<TGameContext, TItemId>, IGridMapContext<TItemId>
         {
-            void RegisterItemResistanceSystemConfiguration(IServiceResolver serviceResolver,
+            void RegisterItemResistanceSystemConfiguration(in ModuleInitializationParameter initParameter,
                                                            IGameLoopSystemRegistration<TGameContext> context,
                                                            EntityRegistry<TItemId> registry,
                                                            ICommandHandlerRegistration<TGameContext, TItemId> handler)
             {
+                var serviceResolver = initParameter.ServiceResolver;
                 var itemContext = serviceResolver.Resolve<IItemContext<TGameContext, TItemId>>();
                 var mapContext = serviceResolver.Resolve<IGridMapContext<TItemId>>();
                 var factory = serviceResolver.Resolve<IAggregationLayerSystem<TGameContext, SensoryResistance<VisionSense>>>();

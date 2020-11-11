@@ -16,19 +16,19 @@ namespace RogueEntity.Core.Infrastructure.Modules
         {
             relationsPerType.TryGetValue(entityType, out var relationRecord);
             var mi = new ModuleEntityInformation(entityType, roles, relationRecord);
-
+            var moduleInitializerParams = new ModuleInitializationParameter(mi, serviceResolver);
             foreach (var role in roles.Roles)
             {
                 foreach (var roleInitializer in CollectRoleInitializers(entityType, mod.Module, mi, role))
                 {
                     if (mi.IsValidRole(roleInitializer, role))
                     {
-                        roleInitializer.Initializer(serviceResolver, initializer, role);
+                        roleInitializer.Initializer(in moduleInitializerParams, initializer, role);
                     }
                 }
             }
         }
-        
+
         List<ModuleEntityRoleInitializerInfo<TGameContext>> CollectRoleInitializers(Type entityType, ModuleBase module, IModuleEntityInformation mi, EntityRole role)
         {
             var retval = new List<ModuleEntityRoleInitializerInfo<TGameContext>>();
@@ -79,12 +79,12 @@ namespace RogueEntity.Core.Infrastructure.Modules
 
                 if (!m.IsSameGenericAction(new[] {typeof(TGameContext), entityType},
                                            out var genericMethod, out var errorHint,
-                                           typeof(IServiceResolver), typeof(IModuleInitializer<TGameContext>), typeof(EntityRole)))
+                                           typeof(ModuleInitializationParameter), typeof(IModuleInitializer<TGameContext>), typeof(EntityRole)))
                 {
                     if (string.IsNullOrEmpty(errorHint))
                     {
                         throw new ArgumentException(
-                            $"Expected a generic method with signature 'void XXX<TGameContext, TEntityId>(IServiceResolver, IModuleInitializer<TGameContext>, EntityRole), but found {m} in module {module.Id}");
+                            $"Expected a generic method with signature 'void XXX<TGameContext, TEntityId>(ModuleInitializationParameter, IModuleInitializer<TGameContext>, EntityRole), but found {m} in module {module.Id}");
                     }
 
                     Logger.Information("Generic constraints on module {Module} with method {Method} do not match. {errorHint}", module.Id, m, errorHint);
@@ -107,6 +107,7 @@ namespace RogueEntity.Core.Infrastructure.Modules
         {
             rolesPerType.TryGetValue(entityType, out var roles);
             var mi = new ModuleEntityInformation(entityType, roles, relations);
+            var moduleInitializerParams = new ModuleInitializationParameter(mi, serviceResolver);
 
             foreach (var relation in relations.Relations)
             {
@@ -121,7 +122,7 @@ namespace RogueEntity.Core.Infrastructure.Modules
                 {
                     if (mi.IsValidRelation(roleInitializer, relation))
                     {
-                        roleInitializer.Initializer(serviceResolver, initializer, relation);
+                        roleInitializer.Initializer(in moduleInitializerParams, initializer, relation);
                     }
                 }
             }
@@ -177,12 +178,12 @@ namespace RogueEntity.Core.Infrastructure.Modules
 
                 if (!m.IsSameGenericAction(new[] {typeof(TGameContext), subjectType, entityType},
                                            out var genericMethod, out var errorHint,
-                                           typeof(IServiceResolver), typeof(IModuleInitializer<TGameContext>), typeof(EntityRelation)))
+                                           typeof(ModuleInitializationParameter), typeof(IModuleInitializer<TGameContext>), typeof(EntityRelation)))
                 {
                     if (string.IsNullOrEmpty(errorHint))
                     {
                         throw new ArgumentException(
-                            $"Expected a generic method with signature 'void XXX<TGameContext, TEntityId>(IServiceResolver, IModuleInitializer<TGameContext>, EntityRole), but found {m} in module {module.Id}");
+                            $"Expected a generic method with signature 'void XXX<TGameContext, TEntityId>(ModuleInitializationParameter, IModuleInitializer<TGameContext>, EntityRole), but found {m} in module {module.Id}");
                     }
 
                     Logger.Information("Generic constraints on module {Module} with method {Method} do not match. {errorHint}", module.Id, m, errorHint);
@@ -207,7 +208,7 @@ namespace RogueEntity.Core.Infrastructure.Modules
             {
                 return new EntityRelation[0];
             }
-            
+
             var l = new List<EntityRelation>();
             foreach (var r in relationNames)
             {
@@ -220,7 +221,61 @@ namespace RogueEntity.Core.Infrastructure.Modules
             return l.ToArray();
         }
 
-        class ModuleEntityInformation: IModuleEntityInformation
+        class GlobalModuleEntityInformation : IModuleEntityInformation
+        {
+            readonly Dictionary<Type, EntityRoleRecord> rolesPerType;
+            readonly Dictionary<Type, EntityRelationRecord> relationsPerType;
+
+            public GlobalModuleEntityInformation(Dictionary<Type, EntityRoleRecord> rolesPerType, 
+                                                 Dictionary<Type, EntityRelationRecord> relationsPerType)
+            {
+                this.rolesPerType = rolesPerType;
+                this.relationsPerType = relationsPerType;
+            }
+
+            public bool HasRole(EntityRole role, EntityRole requiredRole)
+            {
+                foreach (var r in rolesPerType.Values)
+                {
+                    if (r.HasRole(role, requiredRole))
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+            
+            public bool HasRole(EntityRole role)
+            {
+                foreach (var r in rolesPerType.Values)
+                {
+                    if (r.HasRole(role))
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+
+            public bool HasRelation(EntityRole role, EntityRelation requiredRelation)
+            {
+                if (!HasRole(role)) return false;
+
+                foreach (var r in relationsPerType.Values)
+                {
+                    if (r.TryQueryTarget(requiredRelation, out _))
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+        }
+
+        class ModuleEntityInformation : IModuleEntityInformation
         {
             [UsedImplicitly] readonly Type entitySubject;
             readonly EntityRoleRecord rolesPerType;
@@ -238,6 +293,11 @@ namespace RogueEntity.Core.Infrastructure.Modules
                 return rolesPerType.HasRole(role, requiredRole);
             }
 
+            public bool HasRole(EntityRole role)
+            {
+                return rolesPerType.HasRole(role);
+            }
+
             public bool HasRelation(EntityRole role, EntityRelation requiredRelation)
             {
                 if (!rolesPerType.HasRole(role))
@@ -247,7 +307,7 @@ namespace RogueEntity.Core.Infrastructure.Modules
 
                 return relationRecord.TryQueryTarget(requiredRelation, out _);
             }
-            
+
             public bool IsValidRole(ModuleEntityRoleInitializerInfo<TGameContext> r, EntityRole role)
             {
                 if (r.Role != role)
@@ -273,7 +333,7 @@ namespace RogueEntity.Core.Infrastructure.Modules
 
                 return true;
             }
-            
+
             public bool IsValidRelation(ModuleEntityRelationInitializerInfo<TGameContext> r, EntityRelation role)
             {
                 if (r.Relation != role)
@@ -300,6 +360,5 @@ namespace RogueEntity.Core.Infrastructure.Modules
                 return true;
             }
         }
-
     }
 }

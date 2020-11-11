@@ -32,7 +32,7 @@ namespace RogueEntity.Core.Equipment
         }
 
         [EntityRoleInitializer("Role.Core.Equipment.ContainedItem")]
-        protected void InitializeContainedItemRole<TGameContext, TItemId>(IServiceResolver serviceResolver, 
+        protected void InitializeContainedItemRole<TGameContext, TItemId>(in ModuleInitializationParameter initParameter,
                                                                           IModuleInitializer<TGameContext> initializer,
                                                                           EntityRole r)
             where TItemId : IBulkDataStorageKey<TItemId>
@@ -42,7 +42,7 @@ namespace RogueEntity.Core.Equipment
         }
 
         [EntityRelationInitializer("Relation.Core.Equipment")]
-        protected void InitializeContainerEntities<TGameContext, TActorId, TItemId>(IServiceResolver serviceResolver, 
+        protected void InitializeContainerEntities<TGameContext, TActorId, TItemId>(in ModuleInitializationParameter initParameter,
                                                                                     IModuleInitializer<TGameContext> initializer,
                                                                                     EntityRelation r)
             where TActorId : IEntityKey
@@ -52,14 +52,14 @@ namespace RogueEntity.Core.Equipment
             entityContext.Register(ContainerComponentId, -19000, RegisterContainerEntities<TActorId, TItemId>);
         }
 
-        void RegisterContainedItemEntities<TItemId>(IServiceResolver serviceResolver,
+        void RegisterContainedItemEntities<TItemId>(in ModuleInitializationParameter initParameter,
                                                     EntityRegistry<TItemId> registry)
             where TItemId : IBulkDataStorageKey<TItemId>
         {
             registry.RegisterNonConstructable<SlottedEquipmentData<TItemId>>();
         }
 
-        void RegisterContainerEntities<TActorId, TItemId>(IServiceResolver serviceResolver,
+        void RegisterContainerEntities<TActorId, TItemId>(in ModuleInitializationParameter initParameter,
                                                           EntityRegistry<TActorId> registry)
             where TActorId : IEntityKey
             where TItemId : IBulkDataStorageKey<TItemId>

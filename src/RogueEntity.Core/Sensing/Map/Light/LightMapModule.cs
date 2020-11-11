@@ -15,7 +15,7 @@ using RogueEntity.Core.Sensing.Sources.Light;
 
 namespace RogueEntity.Core.Sensing.Map.Light
 {
-    public class LightMapModule: ModuleBase
+    public class LightMapModule : ModuleBase
     {
         public const string ModuleId = "Core.Sense.Map.Light";
 
@@ -42,14 +42,14 @@ namespace RogueEntity.Core.Sensing.Map.Light
         }
 
         [ModuleInitializer]
-        protected void InitializeSenseCacheSystem<TGameContext>(IServiceResolver resolver,
+        protected void InitializeSenseCacheSystem<TGameContext>(in ModuleInitializationParameter initParameter,
                                                                 IModuleInitializer<TGameContext> moduleInitializer)
         {
             moduleInitializer.Register(ReceptorPreparationSystemId, 1, RegisterPrepareSystem);
         }
 
         [EntityRoleInitializer("Role.Core.Senses.Source.Light")]
-        protected void InitializeSenseCollection<TGameContext, TItemId>(IServiceResolver serviceResolver,
+        protected void InitializeSenseCollection<TGameContext, TItemId>(in ModuleInitializationParameter initParameter,
                                                                         IModuleInitializer<TGameContext> initializer,
                                                                         EntityRole role)
             where TItemId : IEntityKey
@@ -59,37 +59,41 @@ namespace RogueEntity.Core.Sensing.Map.Light
             ctx.Register(ReceptorComputeSystemId, 58500, RegisterComputeSenseMapSystem);
         }
 
-        void RegisterCollectSenseSourcesSystem<TGameContext, TItemId>(IServiceResolver resolver,
+        void RegisterCollectSenseSourcesSystem<TGameContext, TItemId>(in ModuleInitializationParameter initParameter,
                                                                       IGameLoopSystemRegistration<TGameContext> context,
                                                                       EntityRegistry<TItemId> registry,
                                                                       ICommandHandlerRegistration<TGameContext, TItemId> handler)
             where TItemId : IEntityKey
         {
+            var resolver = initParameter.ServiceResolver;
             var hs = GetOrCreate(resolver);
 
             var system =
                 registry.BuildSystem()
                         .WithContext<TGameContext>()
                         .CreateSystem<LightSourceDefinition, SenseSourceState<VisionSense>>(hs.CollectSenseSources);
-            
+
             context.AddInitializationStepHandler(system);
             context.AddFixedStepHandlers(system);
         }
 
-        void RegisterComputeSenseMapSystem<TGameContext, TItemId>(IServiceResolver resolver,
-                                                                      IGameLoopSystemRegistration<TGameContext> context,
-                                                                      EntityRegistry<TItemId> registry,
-                                                                      ICommandHandlerRegistration<TGameContext, TItemId> handler)
+        void RegisterComputeSenseMapSystem<TGameContext, TItemId>(in ModuleInitializationParameter initParameter,
+                                                                  IGameLoopSystemRegistration<TGameContext> context,
+                                                                  EntityRegistry<TItemId> registry,
+                                                                  ICommandHandlerRegistration<TGameContext, TItemId> handler)
             where TItemId : IEntityKey
         {
+            var resolver = initParameter.ServiceResolver;
             var hs = GetOrCreate(resolver);
 
             context.AddInitializationStepHandler(c => hs.ProcessSenseMap(registry));
             context.AddFixedStepHandlers(c => hs.ProcessSenseMap(registry));
         }
 
-        void RegisterPrepareSystem<TGameContext>(IServiceResolver resolver, IGameLoopSystemRegistration<TGameContext> context)
+        void RegisterPrepareSystem<TGameContext>(in ModuleInitializationParameter initParameter,
+                                                 IGameLoopSystemRegistration<TGameContext> context)
         {
+            var resolver = initParameter.ServiceResolver;
             var hs = GetOrCreate(resolver);
 
             context.AddDisposeStepHandler(hs.ShutDown);

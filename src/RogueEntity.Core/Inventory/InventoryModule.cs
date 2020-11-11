@@ -1,10 +1,8 @@
-﻿using System.Collections.Generic;
-using EnTTSharp.Entities;
+﻿using EnTTSharp.Entities;
 using RogueEntity.Core.Equipment;
 using RogueEntity.Core.Infrastructure.ItemTraits;
 using RogueEntity.Core.Infrastructure.Modules;
 using RogueEntity.Core.Infrastructure.Modules.Attributes;
-using RogueEntity.Core.Infrastructure.Modules.Services;
 using RogueEntity.Core.Meta;
 using RogueEntity.Core.Meta.Items;
 
@@ -36,20 +34,8 @@ namespace RogueEntity.Core.Inventory
             RequireRelation(ContainsRelation);
         }
 
-        public List<ModuleEntityRelationInitializerDelegate<TGameContext>> CollectEntityRelationInitializers<TGameContext, TActorId, TItemId>(EntityRole role,
-                                                                                                                                              IServiceResolver resolver,
-                                                                                                                                              IModuleEntityInformation info)
-            where TActorId : IEntityKey
-            where TItemId : IBulkDataStorageKey<TItemId>
-        {
-            return new List<ModuleEntityRelationInitializerDelegate<TGameContext>>
-            {
-                InitializeContainerEntities<TGameContext, TActorId, TItemId>
-            };
-        }
-
         [EntityRelationInitializer("Relation.Core.Inventory")]
-        protected void InitializeContainerEntities<TGameContext, TActorId, TItemId>(IServiceResolver serviceResolver,
+        protected void InitializeContainerEntities<TGameContext, TActorId, TItemId>(in ModuleInitializationParameter initParameter,
                                                                                     IModuleInitializer<TGameContext> initializer,
                                                                                     EntityRelation r)
             where TActorId : IEntityKey
@@ -59,7 +45,7 @@ namespace RogueEntity.Core.Inventory
             entityContext.Register(EquipmentModule.ContainerComponentId, -19000, RegisterEntities<TActorId, TItemId>);
         }
 
-        void RegisterEntities<TActorId, TItemId>(IServiceResolver serviceResolver,
+        void RegisterEntities<TActorId, TItemId>(in ModuleInitializationParameter initParameter,
                                                  EntityRegistry<TActorId> registry)
             where TActorId : IEntityKey
             where TItemId : IEntityKey

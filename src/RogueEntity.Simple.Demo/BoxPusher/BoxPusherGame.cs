@@ -14,14 +14,19 @@ namespace RogueEntity.Simple.Demo.BoxPusher
 
             var context = new BoxPusherContext(128, 128);
 
-            var ms = new ModuleSystem<BoxPusherContext>(new DefaultServiceResolver().WithService(context,
-                                                                                                 typeof(IItemContext<BoxPusherContext, ItemReference>),
-                                                                                                 typeof(IItemContext<BoxPusherContext, ActorReference>),
-                                                                                                 typeof(IGridMapContext<ItemReference>),
-                                                                                                 typeof(IGridMapContext<ActorReference>)
-                                                        ));
+            var serviceResolver = new DefaultServiceResolver().WithService(context,
+                                                                                  typeof(IItemContext<BoxPusherContext, ItemReference>),
+                                                                                  typeof(IItemContext<BoxPusherContext, ActorReference>),
+                                                                                  typeof(IGridMapContext<ItemReference>),
+                                                                                  typeof(IGridMapContext<ActorReference>)
+            );
+            
+            var ms = new ModuleSystem<BoxPusherContext>(serviceResolver);
             ms.ScanForModules();
-            ms.Initialize(context);
+            var data = ms.Initialize(context);
+            // 
+            
+            serviceResolver.ValidatePromisesCanResolve();
         }
     }
 }

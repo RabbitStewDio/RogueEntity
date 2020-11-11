@@ -48,7 +48,7 @@ namespace RogueEntity.Core.Movement.CostModifier
             }
         }
 
-        protected void InitializeResistanceRole<TGameContext, TItemId>(IServiceResolver serviceResolver,
+        protected void InitializeResistanceRole<TGameContext, TItemId>(in ModuleInitializationParameter initParameter,
                                                                        IModuleInitializer<TGameContext> initializer,
                                                                        EntityRole role)
             where TItemId : IEntityKey
@@ -61,35 +61,38 @@ namespace RogueEntity.Core.Movement.CostModifier
         }
 
 
-        protected void RegisterResistanceSystemLifecycle<TGameContext, TItemId>(IServiceResolver resolver,
+        protected void RegisterResistanceSystemLifecycle<TGameContext, TItemId>(in ModuleInitializationParameter initParameter,
                                                                                 IGameLoopSystemRegistration<TGameContext> context,
                                                                                 EntityRegistry<TItemId> registry,
                                                                                 ICommandHandlerRegistration<TGameContext, TItemId> handler)
             where TItemId : IEntityKey
         {
-            var system = GetOrCreateSensePropertiesSystem<TGameContext, TItemId>(resolver);
+            var serviceResolver = initParameter.ServiceResolver;
+            var system = GetOrCreateSensePropertiesSystem<TGameContext, TItemId>(serviceResolver);
             context.AddInitializationStepHandler(system.Start);
             context.AddDisposeStepHandler(system.Stop);
         }
 
-        protected void RegisterResistanceSystemExecution<TGameContext, TItemId>(IServiceResolver serviceResolver,
+        protected void RegisterResistanceSystemExecution<TGameContext, TItemId>(in ModuleInitializationParameter initParameter,
                                                                                 IGameLoopSystemRegistration<TGameContext> context,
                                                                                 EntityRegistry<TItemId> registry,
                                                                                 ICommandHandlerRegistration<TGameContext, TItemId> handler)
             where TItemId : IEntityKey
         {
+            var serviceResolver = initParameter.ServiceResolver;
             var system = GetOrCreateSensePropertiesSystem<TGameContext, TItemId>(serviceResolver);
 
             context.AddInitializationStepHandler(system.ProcessSenseProperties);
             context.AddFixedStepHandlers(system.ProcessSenseProperties);
         }
 
-        protected void RegisterProcessSenseDirectionalitySystem<TGameContext, TItemId>(IServiceResolver serviceResolver,
+        protected void RegisterProcessSenseDirectionalitySystem<TGameContext, TItemId>(in ModuleInitializationParameter initParameter,
                                                                                        IGameLoopSystemRegistration<TGameContext> context,
                                                                                        EntityRegistry<TItemId> registry,
                                                                                        ICommandHandlerRegistration<TGameContext, TItemId> handler)
             where TItemId : IEntityKey
         {
+            var serviceResolver = initParameter.ServiceResolver;
             var system = GetOrCreateDirectionalitySystem<TGameContext, TItemId>(serviceResolver);
 
             if (!serviceResolver.TryResolve(out MovementDirectionalitySystemRegisteredMarker _))
@@ -137,7 +140,8 @@ namespace RogueEntity.Core.Movement.CostModifier
             return system;
         }
 
-        protected void RegisterEntities<TItemId>(IServiceResolver serviceResolver, EntityRegistry<TItemId> registry)
+        protected void RegisterEntities<TItemId>(in ModuleInitializationParameter initParameter,
+                                                 EntityRegistry<TItemId> registry)
             where TItemId : IEntityKey
         {
             registry.RegisterNonConstructable<MovementCostModifier<TMovementMode>>();

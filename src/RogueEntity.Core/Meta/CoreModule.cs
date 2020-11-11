@@ -46,7 +46,7 @@ namespace RogueEntity.Core.Meta
         }
 
         [EntityRoleInitializer("Role.Core.Item")]
-        protected void InitializeItemRole<TGameContext, TItemId>(IServiceResolver serviceResolver,
+        protected void InitializeItemRole<TGameContext, TItemId>(in ModuleInitializationParameter initParameter,
                                                                  IModuleInitializer<TGameContext> initializer,
                                                                  EntityRole r)
             where TItemId : IBulkDataStorageKey<TItemId>
@@ -56,7 +56,7 @@ namespace RogueEntity.Core.Meta
         }
 
         [EntityRoleInitializer("Role.Core.Entity")]
-        protected void InitializeEntityRole<TGameContext, TItemId>(IServiceResolver serviceResolver,
+        protected void InitializeEntityRole<TGameContext, TItemId>(in ModuleInitializationParameter initParameter,
                                                                    IModuleInitializer<TGameContext> initializer,
                                                                    EntityRole r)
             where TItemId : IBulkDataStorageKey<TItemId>
@@ -68,7 +68,7 @@ namespace RogueEntity.Core.Meta
         }
 
         [EntityRoleInitializer("Role.Core.Player")]
-        protected void InitializePlayerRole<TGameContext, TItemId>(IServiceResolver serviceResolver,
+        protected void InitializePlayerRole<TGameContext, TItemId>(in ModuleInitializationParameter initParameter,
                                                                    IModuleInitializer<TGameContext> initializer,
                                                                    EntityRole r)
             where TItemId : IBulkDataStorageKey<TItemId>
@@ -78,7 +78,7 @@ namespace RogueEntity.Core.Meta
         }
 
         [EntityRoleInitializer("Role.Core.ContainedItem")]
-        protected void InitializeContainedItemRole<TGameContext, TItemId>(IServiceResolver serviceResolver,
+        protected void InitializeContainedItemRole<TGameContext, TItemId>(in ModuleInitializationParameter initParameter,
                                                                           IModuleInitializer<TGameContext> initializer,
                                                                           EntityRole r)
             where TItemId : IBulkDataStorageKey<TItemId>
@@ -87,7 +87,7 @@ namespace RogueEntity.Core.Meta
             entityContext.Register(ContainedComponentsId, -20_000, RegisterContainedItemComponents);
         }
 
-        void RegisterCascadingDestructionSystems<TGameContext, TItemId>(IServiceResolver serviceResolver,
+        void RegisterCascadingDestructionSystems<TGameContext, TItemId>(in ModuleInitializationParameter initParameter,
                                                                         IGameLoopSystemRegistration<TGameContext> context,
                                                                         EntityRegistry<TItemId> registry,
                                                                         ICommandHandlerRegistration<TGameContext, TItemId> handler)
@@ -99,7 +99,7 @@ namespace RogueEntity.Core.Meta
             context.AddFixedStepHandlers(markCascades);
         }
 
-        void RegisterEntityCleanupSystems<TGameContext, TItemId>(IServiceResolver serviceResolver,
+        void RegisterEntityCleanupSystems<TGameContext, TItemId>(in ModuleInitializationParameter initParameter,
                                                                  IGameLoopSystemRegistration<TGameContext> context,
                                                                  EntityRegistry<TItemId> registry,
                                                                  ICommandHandlerRegistration<TGameContext, TItemId> handler)
@@ -109,8 +109,8 @@ namespace RogueEntity.Core.Meta
             context.AddFixedStepHandlers(deleteMarkedEntitiesSystem.DeleteMarkedEntities);
         }
 
-        void RegisterCoreComponents<TItemId>(IServiceResolver serviceResolver,
-                                                           EntityRegistry<TItemId> registry)
+        void RegisterCoreComponents<TItemId>(in ModuleInitializationParameter initParameter,
+                                             EntityRegistry<TItemId> registry)
             where TItemId : IEntityKey
         {
             // Entites are not destroyed immediately, instead we wait until the end of the turn to prune them.
@@ -118,7 +118,7 @@ namespace RogueEntity.Core.Meta
             registry.RegisterFlag<CascadingDestroyedMarker>();
         }
 
-        void RegisterSharedItemComponents<TGameContext, TItemId>(IServiceResolver serviceResolver,
+        void RegisterSharedItemComponents<TGameContext, TItemId>(in ModuleInitializationParameter initParameter,
                                                                  EntityRegistry<TItemId> registry)
             where TItemId : IEntityKey
         {
@@ -133,14 +133,14 @@ namespace RogueEntity.Core.Meta
             registry.RegisterNonConstructable<ItemCharge>();
         }
 
-        void RegisterPlayerComponents<TItemId>(IServiceResolver serviceResolver,
+        void RegisterPlayerComponents<TItemId>(in ModuleInitializationParameter initParameter,
                                                EntityRegistry<TItemId> registry)
             where TItemId : IEntityKey
         {
             registry.RegisterFlag<PlayerTag>();
         }
 
-        void RegisterContainedItemComponents<TItemId>(IServiceResolver serviceResolver,
+        void RegisterContainedItemComponents<TItemId>(in ModuleInitializationParameter initParameter,
                                                       EntityRegistry<TItemId> registry)
             where TItemId : IEntityKey
         {

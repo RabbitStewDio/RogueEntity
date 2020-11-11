@@ -3,7 +3,6 @@ using EnTTSharp.Entities;
 using RogueEntity.Core.Infrastructure.Commands;
 using RogueEntity.Core.Infrastructure.GameLoops;
 using RogueEntity.Core.Infrastructure.ItemTraits;
-using RogueEntity.Core.Infrastructure.Modules.Services;
 using RogueEntity.Core.Meta.Items;
 
 namespace RogueEntity.Core.Infrastructure.Modules.Initializers
@@ -128,13 +127,13 @@ namespace RogueEntity.Core.Infrastructure.Modules.Initializers
 
             public EntitySystemRegistrationDelegate<TGameContext, TEntityId> EntitySystemRegistration { get; set; }
 
-            public void Register(IServiceResolver serviceResolver,
+            public void Register(in ModuleInitializationParameter initParams,
                                  IGameLoopSystemRegistration<TGameContext> context,
                                  EntityRegistry<TEntityId> entityRegistry,
                                  ICommandHandlerRegistration<TGameContext, TEntityId> commandRegistration)
             {
-                EntityRegistration?.Invoke(serviceResolver, entityRegistry);
-                EntitySystemRegistration?.Invoke(serviceResolver, context, entityRegistry, commandRegistration);
+                EntityRegistration?.Invoke(in initParams, entityRegistry);
+                EntitySystemRegistration?.Invoke(in initParams, context, entityRegistry, commandRegistration);
             }
         }
     }
