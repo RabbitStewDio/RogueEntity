@@ -12,14 +12,14 @@ namespace RogueEntity.Core.Inventory
                                                                        IItemComponentTrait<TGameContext, TOwnerId, IInventory<TGameContext, TItemId>>,
                                                                        IItemComponentTrait<TGameContext, TOwnerId, IContainerView<TItemId>>,
                                                                        IItemComponentInformationTrait<TGameContext, TOwnerId, InventoryWeight>
+        where TOwnerId : IEntityKey
         where TItemId : IBulkDataStorageKey<TItemId>
-        where TOwnerId : IBulkDataStorageKey<TOwnerId>
     {
         static readonly EqualityComparer<TOwnerId> Comparer = EqualityComparer<TOwnerId>.Default;
         readonly IItemResolver<TGameContext, TItemId> itemResolver;
         readonly Weight defaultCarryWeight;
 
-        public string Id => "Core.Inventory.ListInventory";
+        public ItemTraitId Id => "Core.Inventory.ListInventory";
         public int Priority => 100;
 
         public ListInventoryTrait(IItemResolver<TGameContext, TItemId> itemResolver,
@@ -50,12 +50,6 @@ namespace RogueEntity.Core.Inventory
 
         protected bool TryQueryData(IEntityViewControl<TOwnerId> v, TOwnerId k, out ListInventoryData<TOwnerId, TItemId> t)
         {
-            if (!k.IsReference)
-            {
-                t = default;
-                return false;
-            }
-
             if (!v.IsValid(k) ||
                 !v.GetComponent(k, out t))
             {

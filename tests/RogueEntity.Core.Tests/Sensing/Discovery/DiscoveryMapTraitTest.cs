@@ -12,7 +12,7 @@ namespace RogueEntity.Core.Tests.Sensing.Discovery
     public class DiscoveryMapTraitTest: ItemComponentInformationTraitTestBase<SenseMappingTestContext, ActorReference, IDiscoveryMap, DiscoveryMapTrait<SenseMappingTestContext, ActorReference>>
     {
         protected override EntityRegistry<ActorReference> EntityRegistry => Context.ActorEntityRegistry;
-        protected override ItemRegistry<SenseMappingTestContext, ActorReference> ItemRegistry => Context.ActorRegistry;
+        protected override IItemRegistryBackend<SenseMappingTestContext, ActorReference> ItemRegistry => Context.ActorRegistry;
         protected override IBulkDataStorageMetaData<ActorReference> ItemIdMetaData => new ActorReferenceMetaData();
         
         protected override SenseMappingTestContext CreateContext()

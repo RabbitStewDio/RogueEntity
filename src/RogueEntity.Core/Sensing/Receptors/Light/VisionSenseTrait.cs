@@ -13,7 +13,7 @@ namespace RogueEntity.Core.Sensing.Receptors.Light
         {
         }
 
-        public override string Id => "Core.Sense.Receptor.Vision";
+        public override ItemTraitId Id => "Core.Sense.Receptor.Vision";
         public override int Priority => 100;
 
         public bool TryQuery(IEntityViewControl<TActorId> v, TGameContext context, TActorId k, out IBrightnessMap t)

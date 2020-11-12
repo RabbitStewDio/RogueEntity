@@ -40,5 +40,10 @@ namespace RogueEntity.Core.Infrastructure.Modules
         {
             return new EntitySystemId(s);
         }
+
+        public override string ToString()
+        {
+            return Id;
+        }
     }
 }

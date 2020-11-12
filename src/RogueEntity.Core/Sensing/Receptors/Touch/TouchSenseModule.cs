@@ -1,3 +1,5 @@
+using EnTTSharp.Entities;
+using RogueEntity.Core.Infrastructure.GameLoops;
 using RogueEntity.Core.Infrastructure.Modules;
 using RogueEntity.Core.Infrastructure.Modules.Attributes;
 using RogueEntity.Core.Infrastructure.Modules.Services;
@@ -24,9 +26,17 @@ namespace RogueEntity.Core.Sensing.Receptors.Touch
 
             RequireRole(SenseReceptorActorRole).WithImpliedRole(TouchSourceModule.SenseSourceRole);
         }
+        
+        protected override void RegisterCalculateDirectionalSystem<TGameContext, TItemId>(in ModuleInitializationParameter initParameter,
+                                                                                          IGameLoopSystemRegistration<TGameContext> context,
+                                                                                          EntityRegistry<TItemId> registry)
+        {
+            RegisterCalculateUniDirectionalSystem(in initParameter, context, registry);
+        }
+
         protected override (ISensePropagationAlgorithm, ISensePhysics) GetOrCreatePhysics(IServiceResolver serviceResolver)
         {
-            var physics = serviceResolver.Resolve<ITouchReceptorPhysicsConfiguration>();
+            var physics = serviceResolver.GetOrCreateTouchPhysics();
             return (physics.CreateTouchSensorPropagationAlgorithm(), physics.TouchPhysics);
         }
     }

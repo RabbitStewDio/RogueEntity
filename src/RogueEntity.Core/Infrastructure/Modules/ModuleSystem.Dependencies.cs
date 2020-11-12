@@ -32,6 +32,8 @@ namespace RogueEntity.Core.Infrastructure.Modules
         {
             foreach (var m in modulesById.Values)
             {
+                m.ResolvedOrder = false;
+
                 foreach (var md in m.Module.ModuleDependencies)
                 {
                     if (!modulesById.TryGetValue(md.ModuleId, out var mr))
@@ -39,11 +41,11 @@ namespace RogueEntity.Core.Infrastructure.Modules
                         throw new ModuleInitializationException($"Module '{m.ModuleId}' declared a missing dependency to module '{md.ModuleId}'");
                     }
 
-                    m.AddDependency(mr);
+                    m.AddDependency(mr, "Explicit Dependency");
                     mr.IsUsedAsDependency = true;
                 }
             }
-            
+
             foreach (var m in modulesById.Values)
             {
                 foreach (var r in m.Module.RequiredRelations)
@@ -63,27 +65,44 @@ namespace RogueEntity.Core.Infrastructure.Modules
 
                             if (dep.Module.RequiredRoles.Contains(subject))
                             {
-                                m.AddDependency(dep);
+                                m.AddDependency(dep, "Implied Relation Subject Dependency");
                             }
                         }
                     }
-                    if (!m.Module.RequiredRoles.Contains(obj))
-                    {
-                        // find module that declared this 
-                        foreach (var dep in modulesById.Values)
-                        {
-                            if (dep == m)
-                            {
-                                continue;
-                            }
 
-                            if (dep.Module.RequiredRoles.Contains(obj))
-                            {
-                                m.AddDependency(dep);
-                            }
-                        }
+                    AddModuleDependencyFromRoleUsage(m, obj);
+                }
+            }
+        }
+
+        void AddModuleDependencyFromRoleUsage(ModuleRecord requestingModule, EntityRole role)
+        {
+            if (!requestingModule.Module.RequiredRoles.Contains(role))
+            {
+                // find module that declared this 
+                foreach (var dep in modulesById.Values)
+                {
+                    if (dep == requestingModule)
+                    {
+                        continue;
                     }
-                    
+
+                    if (dep.Module.RequiredRoles.Contains(role))
+                    {
+                        requestingModule.AddDependency(dep, "Implied Role Dependency");
+                    }
+                }
+            }
+        }
+
+        IEnumerable<ModuleRecord> FindDeclaringModule(EntityRole role)
+        {
+            // find module that declared this 
+            foreach (var dep in modulesById.Values)
+            {
+                if (dep.Module.RequiredRoles.Contains(role))
+                {
+                    yield return dep;
                 }
             }
         }
@@ -110,7 +129,7 @@ namespace RogueEntity.Core.Infrastructure.Modules
 
             return openModules;
         }
-        
+
         /// <summary>
         ///   Returns the modules as a flat list in depth first traversal order.
         ///   Higher level modules are listed before their lower level dependencies.
@@ -119,11 +138,11 @@ namespace RogueEntity.Core.Infrastructure.Modules
         /// <param name="open"></param>
         /// <param name="diagnostics"></param>
         /// <returns></returns>
-        List<ModuleRecord> ComputeModuleOrder(List<ModuleRecord> open, Stack<string> diagnostics = null)
+        List<ModuleRecord> ComputeModuleOrder(List<ModuleRecord> open, Stack<ModuleId> diagnostics = null)
         {
             if (diagnostics == null)
             {
-                diagnostics = new Stack<string>();
+                diagnostics = new Stack<ModuleId>();
             }
 
             var result = new List<ModuleRecord>();
@@ -157,7 +176,7 @@ namespace RogueEntity.Core.Infrastructure.Modules
 
             return result;
         }
-        
+
         void RecordRelation(Type subject, EntityRelation relation, Type target)
         {
             if (!relationsPerType.TryGetValue(subject, out var relationsAndTargets))
@@ -166,15 +185,15 @@ namespace RogueEntity.Core.Infrastructure.Modules
                 relationsPerType[subject] = relationsAndTargets;
             }
 
-            relationsAndTargets.Record(relation, target);
+            relationsAndTargets.RecordRelation(relation, target);
         }
 
         void CollectDeclaredRoles(List<ModuleRecord> open,
-                                  Stack<string> diagnostics = null)
+                                  Stack<ModuleId> diagnostics = null)
         {
             if (diagnostics == null)
             {
-                diagnostics = new Stack<string>();
+                diagnostics = new Stack<ModuleId>();
             }
 
             foreach (var m in open)
@@ -194,17 +213,18 @@ namespace RogueEntity.Core.Infrastructure.Modules
                 // Collect all active entities for this module.
                 foreach (var subject in m.Module.DeclaredEntityTypes)
                 {
+                    if (!rolesPerType.TryGetValue(subject, out var roleSet))
+                    {
+                        roleSet = new EntityRoleRecord(subject);
+                        rolesPerType[subject] = roleSet;
+                        entityTypeMetaData[subject] = m.Module;
+                    }
+
                     if (m.Module.TryGetEntityRecord(subject, out var roleRecord))
                     {
-                        if (!rolesPerType.TryGetValue(subject, out var roleSet))
-                        {
-                            roleSet = new EntityRoleRecord(subject);
-                            rolesPerType[subject] = roleSet;
-                        }
-
                         foreach (var role in roleRecord.Roles)
                         {
-                            roleSet.Record(role);
+                            roleSet.RecordRole(role, " as explicit declaration in module {Module}", m.ModuleId);
                         }
                     }
 
@@ -213,14 +233,21 @@ namespace RogueEntity.Core.Infrastructure.Modules
                         var subjectRole = relation.Subject;
                         var targetRole = relation.Object;
 
-                        if (!rolesPerType.TryGetValue(subject, out var roles) ||
-                            !roles.HasRole(subjectRole))
+                        if (!roleSet.HasRole(subjectRole))
                         {
+                            continue;
+                        }
+
+                        if (relation.Id == ModuleRelationNames.ImpliedRoleRelationId)
+                        {
+                            // those are special and handled elsewhere.
                             continue;
                         }
 
                         foreach (var relationTarget in FindEntityTypeForRole(targetRole))
                         {
+                            Logger.Debug("Entity {EntityType} requires relation {Relation} with target {Target} as explicit declaration in module {Module}",
+                                         subject, relation.Id, relationTarget, m.ModuleId);
                             RecordRelation(subject, relation, relationTarget);
                         }
                     }
@@ -245,13 +272,13 @@ namespace RogueEntity.Core.Infrastructure.Modules
 
             return types;
         }
-        
+
         void ResolveEquivalenceRoles(List<ModuleRecord> open,
-                                     Stack<string> diagnostics = null)
+                                     Stack<ModuleId> diagnostics = null)
         {
             if (diagnostics == null)
             {
-                diagnostics = new Stack<string>();
+                diagnostics = new Stack<ModuleId>();
             }
 
             for (var index = open.Count - 1; index >= 0; index--)
@@ -281,7 +308,7 @@ namespace RogueEntity.Core.Infrastructure.Modules
                     var handled = false;
                     foreach (var knownRoles in rolesPerType.Values)
                     {
-                        if (knownRoles.RecordRelation(s, t))
+                        if (knownRoles.RecordImpliedRelation(s, t, m.ModuleId))
                         {
                             handled = true;
                         }
@@ -294,11 +321,10 @@ namespace RogueEntity.Core.Infrastructure.Modules
                             throw new Exception($"Unable to resolve equivalence relation {r} for module {m.ModuleId} while resolving equivalence roles [{string.Join("], [", diagnostics)}]");
                         }
 
-                        Logger.Debug("Module {Module} declares implicit dependency of subject role {Subject} to role {Target}, but no entity requires this role.", m.ModuleId, s.Id, t.Id);
+                        Logger.Verbose("Role {Subject} is unused. Originally declared in module {Module} as alias to role {Target}, but no entity requires this role.", s.Id, m.ModuleId, t.Id);
                     }
                 }
             }
         }
-
     }
 }

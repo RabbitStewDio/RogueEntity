@@ -1,6 +1,5 @@
 using EnTTSharp.Entities;
 using EnTTSharp.Entities.Systems;
-using RogueEntity.Core.Infrastructure.Commands;
 using RogueEntity.Core.Infrastructure.GameLoops;
 using RogueEntity.Core.Infrastructure.ItemTraits;
 using RogueEntity.Core.Infrastructure.Modules;
@@ -88,8 +87,7 @@ namespace RogueEntity.Core.Sensing.Discovery
 
         void RegisterDiscoveryActionsVision<TGameContext, TActorId>(in ModuleInitializationParameter initParameter,
                                                                     IGameLoopSystemRegistration<TGameContext> context,
-                                                                    EntityRegistry<TActorId> registry,
-                                                                    ICommandHandlerRegistration<TGameContext, TActorId> handler)
+                                                                    EntityRegistry<TActorId> registry)
             where TActorId : IEntityKey
         {
             var serviceResolver = initParameter.ServiceResolver;
@@ -108,8 +106,7 @@ namespace RogueEntity.Core.Sensing.Discovery
 
         void RegisterDiscoveryActionsInfraVision<TGameContext, TActorId>(in ModuleInitializationParameter initParameter,
                                                                          IGameLoopSystemRegistration<TGameContext> context,
-                                                                         EntityRegistry<TActorId> registry,
-                                                                         ICommandHandlerRegistration<TGameContext, TActorId> handler)
+                                                                         EntityRegistry<TActorId> registry)
             where TActorId : IEntityKey
         {
             var serviceResolver = initParameter.ServiceResolver;
@@ -128,8 +125,7 @@ namespace RogueEntity.Core.Sensing.Discovery
 
         void RegisterDiscoveryActionsTouch<TGameContext, TActorId>(in ModuleInitializationParameter initParameter,
                                                                    IGameLoopSystemRegistration<TGameContext> context,
-                                                                   EntityRegistry<TActorId> registry,
-                                                                   ICommandHandlerRegistration<TGameContext, TActorId> handler)
+                                                                   EntityRegistry<TActorId> registry)
             where TActorId : IEntityKey
         {
             var serviceResolver = initParameter.ServiceResolver;

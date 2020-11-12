@@ -29,7 +29,7 @@ namespace RogueEntity.Core.Tests.Positioning
         }
 
         protected override EntityRegistry<ItemReference> EntityRegistry => Context.EntityRegistry;
-        protected override ItemRegistry<TestGridPositionContext, ItemReference> ItemRegistry => Context.ItemRegistry;
+        protected override IItemRegistryBackend<TestGridPositionContext, ItemReference> ItemRegistry => Context.ItemRegistry;
 
         protected override TestGridPositionContext CreateContext()
         {

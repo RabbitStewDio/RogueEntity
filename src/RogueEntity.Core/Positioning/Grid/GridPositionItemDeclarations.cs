@@ -23,22 +23,5 @@ namespace RogueEntity.Core.Positioning.Grid
             builder.Declaration.WithTrait(new ReferenceItemGridPositionTrait<TGameContext, TItemId>(itemCtx.ItemResolver, gridCtx, layer, layers));
             return builder;
         }
-        
-        public static BulkItemDeclarationBuilder<TGameContext, TItemId> AsImmobile<TGameContext, TItemId>(this BulkItemDeclarationBuilder<TGameContext, TItemId> builder)
-            where TItemId : IBulkDataStorageKey<TItemId>
-        {
-            builder.Declaration.WithTrait(new ImmobilityMarkerTrait<TGameContext, TItemId>());
-            return builder;
-        }
-
-        public static ReferenceItemDeclarationBuilder<TGameContext, TItemId> AsImmobile<TGameContext, TItemId>(this ReferenceItemDeclarationBuilder<TGameContext, TItemId> builder)
-            where TItemId : IBulkDataStorageKey<TItemId>
-        {
-            builder.Declaration.WithTrait(new ImmobilityMarkerTrait<TGameContext, TItemId>());
-            return builder;
-        }
-        
-        
-
     }
 }

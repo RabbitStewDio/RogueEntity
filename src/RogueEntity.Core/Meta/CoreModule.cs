@@ -1,11 +1,9 @@
 ﻿using EnTTSharp.Entities;
 using EnTTSharp.Entities.Systems;
-using RogueEntity.Core.Infrastructure.Commands;
 using RogueEntity.Core.Infrastructure.GameLoops;
 using RogueEntity.Core.Infrastructure.ItemTraits;
 using RogueEntity.Core.Infrastructure.Modules;
 using RogueEntity.Core.Infrastructure.Modules.Attributes;
-using RogueEntity.Core.Infrastructure.Modules.Services;
 using RogueEntity.Core.Meta.Base;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Meta.ItemTraits;
@@ -89,23 +87,22 @@ namespace RogueEntity.Core.Meta
 
         void RegisterCascadingDestructionSystems<TGameContext, TItemId>(in ModuleInitializationParameter initParameter,
                                                                         IGameLoopSystemRegistration<TGameContext> context,
-                                                                        EntityRegistry<TItemId> registry,
-                                                                        ICommandHandlerRegistration<TGameContext, TItemId> handler)
+                                                                        EntityRegistry<TItemId> registry)
             where TItemId : IEntityKey
         {
             var markCascades = registry.BuildSystem()
                                        .WithContext<TGameContext>()
-                                       .CreateSystem<CascadingDestroyedMarker>(DestroyedEntitiesSystem.SchedulePreviouslyMarkedItemsForDestruction);
+                                       .CreateSystem<CascadingDestroyedMarker>(DestroyedEntitiesSystem<TItemId>.SchedulePreviouslyMarkedItemsForDestruction);
             context.AddFixedStepHandlers(markCascades);
         }
 
         void RegisterEntityCleanupSystems<TGameContext, TItemId>(in ModuleInitializationParameter initParameter,
                                                                  IGameLoopSystemRegistration<TGameContext> context,
-                                                                 EntityRegistry<TItemId> registry,
-                                                                 ICommandHandlerRegistration<TGameContext, TItemId> handler)
+                                                                 EntityRegistry<TItemId> registry)
             where TItemId : IEntityKey
         {
             var deleteMarkedEntitiesSystem = new DestroyedEntitiesSystem<TItemId>(registry);
+            context.AddInitializationStepHandler(deleteMarkedEntitiesSystem.DeleteMarkedEntities);
             context.AddFixedStepHandlers(deleteMarkedEntitiesSystem.DeleteMarkedEntities);
         }
 

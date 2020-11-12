@@ -7,4 +7,11 @@ namespace RogueEntity.Core.Meta.Items
     {
         IItemResolver<TGameContext, TItemId> ItemResolver { get; }
     }
+    
+    public interface IItemContextBackend<TGameContext, TItemId>: IItemContext<TGameContext, TItemId>
+        where TItemId : IEntityKey
+    {
+        IItemRegistryBackend<TGameContext, TItemId> ItemRegistry { get; }
+        EntityRegistry<TItemId> EntityRegistry { get; }
+    }
 }

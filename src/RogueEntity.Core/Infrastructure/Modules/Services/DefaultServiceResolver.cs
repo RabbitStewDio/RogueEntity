@@ -41,6 +41,12 @@ namespace RogueEntity.Core.Infrastructure.Modules.Services
             throw new ArgumentException("Unable to resolve service of type " + typeof(TServiceObject));
         }
 
+        public DefaultServiceResolver WithService<TServiceObject>() where TServiceObject: new() 
+        {
+            backend[typeof(TServiceObject)] = new TServiceObject();
+            return this;
+        }
+
         public DefaultServiceResolver WithService<TServiceObject>(in TServiceObject service)
         {
             backend[typeof(TServiceObject)] = service;

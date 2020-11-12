@@ -15,7 +15,7 @@ namespace RogueEntity.Core.Infrastructure.Commands
             Priority = 1;
         }
 
-        public string Id { get; }
+        public ItemTraitId Id { get; }
         public int Priority { get; }
 
         public IReferenceItemTrait<TGameContext, TActorId> CreateInstance()

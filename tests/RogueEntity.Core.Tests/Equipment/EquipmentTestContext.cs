@@ -17,11 +17,11 @@ namespace RogueEntity.Core.Tests.Equipment
 
         public EntityRegistry<ItemReference> ItemEntities => items.EntityRegistry;
         public IItemResolver<EquipmentTestContext, ItemReference> ItemResolver => items.ItemResolver;
-        public ItemRegistry<EquipmentTestContext, ItemReference> ItemRegistry => items.ItemRegistry;
+        public IItemRegistryBackend<EquipmentTestContext, ItemReference> ItemRegistry => items.ItemRegistry;
 
         public EntityRegistry<ActorReference> ActorEntities => actors.EntityRegistry;
         public IItemResolver<EquipmentTestContext, ActorReference> ActorResolver => actors.ItemResolver;
-        public ItemRegistry<EquipmentTestContext, ActorReference> ActorRegistry => actors.ItemRegistry;
+        public IItemRegistryBackend<EquipmentTestContext, ActorReference> ActorRegistry => actors.ItemRegistry;
 
         IItemResolver<EquipmentTestContext, ItemReference> IItemContext<EquipmentTestContext, ItemReference>.ItemResolver => ItemResolver;
         IItemResolver<EquipmentTestContext, ActorReference> IItemContext<EquipmentTestContext, ActorReference>.ItemResolver => ActorResolver;

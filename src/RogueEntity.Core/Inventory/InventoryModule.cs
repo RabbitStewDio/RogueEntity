@@ -1,9 +1,11 @@
 ﻿using EnTTSharp.Entities;
-using RogueEntity.Core.Equipment;
+using EnTTSharp.Entities.Systems;
+using RogueEntity.Core.Infrastructure.GameLoops;
 using RogueEntity.Core.Infrastructure.ItemTraits;
 using RogueEntity.Core.Infrastructure.Modules;
 using RogueEntity.Core.Infrastructure.Modules.Attributes;
 using RogueEntity.Core.Meta;
+using RogueEntity.Core.Meta.Base;
 using RogueEntity.Core.Meta.Items;
 
 namespace RogueEntity.Core.Inventory
@@ -15,6 +17,7 @@ namespace RogueEntity.Core.Inventory
 
         public static readonly EntitySystemId ContainedItemsComponentId = new EntitySystemId("Entities.Core.Inventory.ContainedItem");
         public static readonly EntitySystemId ContainerComponentId = new EntitySystemId("Entities.Core.Inventory.Container");
+        public static readonly EntitySystemId CascadingDestructionSystemId = new EntitySystemId("System.Core.Inventory.CascadingDestruction");
 
         public static readonly EntityRole ContainerRole = new EntityRole("Role.Core.Inventory.Container");
         public static readonly EntityRole ContainedItemRole = new EntityRole("Role.Core.Inventory.ContainedItem");
@@ -27,10 +30,10 @@ namespace RogueEntity.Core.Inventory
             Name = "RogueEntity Core Module - Inventory";
             Description = "Provides base classes and behaviours for carrying items in a list-based inventory";
             IsFrameworkModule = true;
-            
+
             RequireRole(ContainerRole).WithDependencyOn(CoreModule.ModuleId);
             RequireRole(ContainedItemRole).WithImpliedRole(CoreModule.ContainedItemRole).WithDependencyOn(CoreModule.ModuleId);
-            
+
             RequireRelation(ContainsRelation);
         }
 
@@ -42,7 +45,8 @@ namespace RogueEntity.Core.Inventory
             where TItemId : IBulkDataStorageKey<TItemId>
         {
             var entityContext = initializer.DeclareEntityContext<TActorId>();
-            entityContext.Register(EquipmentModule.ContainerComponentId, -19000, RegisterEntities<TActorId, TItemId>);
+            entityContext.Register(ContainerComponentId, -19000, RegisterEntities<TActorId, TItemId>);
+            entityContext.Register(CascadingDestructionSystemId, 100_000_000, RegisterCascadingDestruction<TGameContext, TActorId, TItemId>);
         }
 
         void RegisterEntities<TActorId, TItemId>(in ModuleInitializationParameter initParameter,
@@ -51,6 +55,19 @@ namespace RogueEntity.Core.Inventory
             where TItemId : IEntityKey
         {
             registry.RegisterNonConstructable<ListInventoryData<TActorId, TItemId>>();
+        }
+
+        void RegisterCascadingDestruction<TGameContext, TActorId, TItemId>(in ModuleInitializationParameter initParameter,
+                                                                           IGameLoopSystemRegistration<TGameContext> context,
+                                                                           EntityRegistry<TActorId> registry)
+            where TActorId : IEntityKey
+            where TItemId : IEntityKey
+        {
+            var itemResolver = initParameter.ServiceResolver.Resolve<IItemResolver<TGameContext, TItemId>>();
+            var system = new DestroyContainerContentsSystem<TGameContext, TActorId, TItemId>(itemResolver);
+            var action = registry.BuildSystem().WithContext<TGameContext>().CreateSystem<DestroyedMarker, ListInventoryData<TActorId, TItemId>>(system.MarkDestroyedContainerEntities);
+            context.AddInitializationStepHandler(action);
+            context.AddFixedStepHandlers(action);
         }
     }
 }

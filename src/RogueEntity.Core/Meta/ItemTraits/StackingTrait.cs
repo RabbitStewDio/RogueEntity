@@ -26,7 +26,7 @@ namespace RogueEntity.Core.Meta.ItemTraits
             this.initialCount = initialCount;
         }
 
-        public string Id { get; }
+        public ItemTraitId Id { get; }
         public int Priority { get; }
 
         public IBulkItemTrait<TContext, TItemId> CreateInstance()

@@ -1,4 +1,5 @@
 using System;
+using JetBrains.Annotations;
 
 namespace RogueEntity.Core.Infrastructure.Modules.Attributes
 {
@@ -8,6 +9,7 @@ namespace RogueEntity.Core.Infrastructure.Modules.Attributes
     ///      void YourInitializerName<TGameContext>(IServiceResolver serviceResolver, IModuleInitializer<TGameContext> initializer);
     ///  ]]>
     /// </summary>
+    [MeansImplicitUse]
     [AttributeUsage(AttributeTargets.Method)]
     public class ModuleInitializerAttribute: Attribute
     {

@@ -41,7 +41,7 @@ namespace RogueEntity.Core.Tests.Equipment
         }
 
         protected override EntityRegistry<ActorReference> EntityRegistry => Context.ActorEntities;
-        protected override ItemRegistry<EquipmentTestContext, ActorReference> ItemRegistry => Context.ActorRegistry;
+        protected override IItemRegistryBackend<EquipmentTestContext, ActorReference> ItemRegistry => Context.ActorRegistry;
         protected override IBulkDataStorageMetaData<ActorReference> ItemIdMetaData => new ActorReferenceMetaData();
 
         protected override EquipmentTestContext CreateContext()
@@ -61,7 +61,7 @@ namespace RogueEntity.Core.Tests.Equipment
 
         protected override SlottedEquipmentTrait<EquipmentTestContext, ActorReference, ItemReference> CreateTrait()
         {
-            return new SlottedEquipmentTrait<EquipmentTestContext, ActorReference, ItemReference>(Context.ItemResolver, Weight.Unlimited, slotHead, slotLeftHand, slotRightHand);
+            return new SlottedEquipmentTrait<EquipmentTestContext, ActorReference, ItemReference>(Context.ActorResolver, Context.ItemResolver, Weight.Unlimited, slotHead, slotLeftHand, slotRightHand);
         }
 
         protected override EntityComponentRegistration PerformEntityComponentRegistration(EntityRegistrationScanner scn)

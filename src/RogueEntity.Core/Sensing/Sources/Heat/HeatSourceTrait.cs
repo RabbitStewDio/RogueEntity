@@ -14,7 +14,7 @@ namespace RogueEntity.Core.Sensing.Sources.Heat
                                                           IItemComponentTrait<TGameContext, TItemId, Temperature>
         where TItemId : IEntityKey
     {
-        public override string Id => "Core.Item.Temperature";
+        public override ItemTraitId Id => "Core.Item.Temperature";
         public override int Priority => 100;
 
         readonly IHeatPhysicsConfiguration physicsConfiguration;

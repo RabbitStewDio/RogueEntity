@@ -10,7 +10,7 @@ namespace RogueEntity.Core.Meta.Items
                                                                                        IReferenceItemTrait<TGameContext, TItemId>
         where TItemId : IBulkDataStorageKey<TItemId>
     {
-        protected SimpleItemComponentTraitBase(string id, int priority)
+        protected SimpleItemComponentTraitBase(ItemTraitId id, int priority)
         {
             Id = id;
             Priority = priority;
@@ -18,7 +18,7 @@ namespace RogueEntity.Core.Meta.Items
 
         protected abstract TData CreateInitialValue(TGameContext c, TItemId reference);
 
-        public string Id { get; }
+        public ItemTraitId Id { get; }
         public int Priority { get; }
 
         public TItemId Initialize(TGameContext context, IItemDeclaration item, TItemId reference)

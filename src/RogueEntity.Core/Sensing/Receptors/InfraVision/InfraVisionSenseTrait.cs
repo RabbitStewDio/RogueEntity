@@ -16,7 +16,7 @@ namespace RogueEntity.Core.Sensing.Receptors.InfraVision
             this.physics = physics;
         }
 
-        public override string Id => "Core.Sense.Receptor.InfraVision";
+        public override ItemTraitId Id => "Core.Sense.Receptor.InfraVision";
         public override int Priority => 200;
 
         public bool TryQuery(IEntityViewControl<TActorId> v, TGameContext context, TActorId k, out IHeatMap t)

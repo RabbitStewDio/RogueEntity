@@ -8,14 +8,14 @@ namespace RogueEntity.Core.Sensing.Receptors.Noise
 {
     public class NoiseDirectionSenseTrait<TGameContext, TActorId> : SenseReceptorTraitBase<TGameContext, TActorId, NoiseSense, NoiseSense>,
                                                                     IItemComponentInformationTrait<TGameContext, TActorId, INoiseDirectionMap>
-        where TActorId : IBulkDataStorageKey<TActorId>
+        where TActorId : IEntityKey
     {
         public NoiseDirectionSenseTrait([NotNull] INoiseSenseReceptorPhysicsConfiguration physicsConfiguration,
                                         float intensity, bool active = true): base(physicsConfiguration.NoisePhysics, intensity, active)
         {
         }
 
-        public override string Id => "Core.Sense.Receptor.Noise";
+        public override ItemTraitId Id => "Core.Sense.Receptor.Noise";
         public override int Priority => 100;
 
         public bool TryQuery(IEntityViewControl<TActorId> v, TGameContext context, TActorId k, out INoiseDirectionMap t)

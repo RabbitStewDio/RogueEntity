@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using EnTTSharp.Entities;
 using RogueEntity.Core.Infrastructure.ItemTraits;
 using RogueEntity.Core.Meta.Items;
@@ -12,9 +13,9 @@ namespace RogueEntity.Core.Meta.Base
     public class ContainerEntityMarkerTrait<TGameContext, TItemId, TOwnerId> : IReferenceItemTrait<TGameContext, TItemId>,
                                                                                IItemComponentTrait<TGameContext, TItemId, ContainerEntityMarker<TOwnerId>>,
                                                                                IItemComponentInformationTrait<TGameContext, TItemId, IContainerEntityMarker>
-        where TItemId : IBulkDataStorageKey<TItemId>
+        where TItemId : IEntityKey
     {
-        public string Id { get; } = $"Core.Item.ParentContainerMarker[{typeof(TOwnerId)}]";
+        public ItemTraitId Id { get; } = $"Core.Item.ParentContainerMarker[{typeof(TOwnerId)}]";
 
         public int Priority => 100;
 
@@ -76,7 +77,7 @@ namespace RogueEntity.Core.Meta.Base
 
         public IEnumerable<EntityRelationInstance> GetEntityRelations()
         {
-            throw new System.NotImplementedException();
+            return Enumerable.Empty<EntityRelationInstance>();
         }
     }
 }

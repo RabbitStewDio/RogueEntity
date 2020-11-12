@@ -31,7 +31,7 @@ namespace RogueEntity.Core.Tests.Equipment
         }
 
         protected override EntityRegistry<ItemReference> EntityRegistry => Context.ItemEntities;
-        protected override ItemRegistry<BasicItemContext, ItemReference> ItemRegistry => Context.ItemRegistry;
+        protected override IItemRegistryBackend<BasicItemContext, ItemReference> ItemRegistry => Context.ItemRegistry;
         protected override IBulkDataStorageMetaData<ItemReference> ItemIdMetaData => new ItemReferenceMetaData();
 
         protected override BasicItemContext CreateContext()

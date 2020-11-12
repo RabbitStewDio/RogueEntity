@@ -35,7 +35,7 @@ namespace RogueEntity.Core.Sensing.Sources.Light
         {
         }
 
-        public override string Id => "Core.Common.LightSource";
+        public override ItemTraitId Id => "Core.Common.LightSource";
         public override int Priority => 100;
 
         protected override bool TryGetInitialValue(out LightSourceDefinition senseDefinition)

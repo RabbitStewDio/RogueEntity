@@ -27,7 +27,7 @@ namespace RogueEntity.Core.Tests.Meta.Items
         protected abstract List<ItemDeclarationId> ActiveItems { get; }
         protected abstract TGameContext Context { get; }
         protected abstract EntityRegistry<TItemId> EntityRegistry { get; }
-        protected abstract ItemRegistry<TGameContext, TItemId> ItemRegistry { get; }
+        protected abstract IItemRegistryBackend<TGameContext, TItemId> ItemRegistry { get; }
         protected abstract IBulkDataStorageMetaData<TItemId> ItemIdMetaData { get; }
         protected virtual EntityRelations<TItemId> ProduceItemRelations(TItemId self) => new EntityRelations<TItemId>(self);
         protected abstract IItemComponentTestDataFactory<TData> ProduceTestData(EntityRelations<TItemId> relations);

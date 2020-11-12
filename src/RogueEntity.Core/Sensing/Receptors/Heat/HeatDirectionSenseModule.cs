@@ -1,8 +1,9 @@
+using EnTTSharp.Entities;
+using RogueEntity.Core.Infrastructure.GameLoops;
 using RogueEntity.Core.Infrastructure.Modules;
 using RogueEntity.Core.Infrastructure.Modules.Attributes;
 using RogueEntity.Core.Infrastructure.Modules.Services;
 using RogueEntity.Core.Sensing.Common;
-using RogueEntity.Core.Sensing.Common.FloodFill;
 using RogueEntity.Core.Sensing.Common.Physics;
 using RogueEntity.Core.Sensing.Sources.Heat;
 
@@ -24,19 +25,16 @@ namespace RogueEntity.Core.Sensing.Receptors.Heat
             DeclareDependencies(ModuleDependency.Of(HeatSourceModule.ModuleId));
         }
 
+        protected override void RegisterCalculateDirectionalSystem<TGameContext, TItemId>(in ModuleInitializationParameter initParameter,
+                                                                                          IGameLoopSystemRegistration<TGameContext> context,
+                                                                                          EntityRegistry<TItemId> registry)
+        {
+            RegisterCalculateUniDirectionalSystem(in initParameter, context, registry);
+        }
+
         protected override (ISensePropagationAlgorithm, ISensePhysics) GetOrCreatePhysics(IServiceResolver serviceResolver)
         {
-            if (!serviceResolver.TryResolve(out IHeatSenseReceptorPhysicsConfiguration physics))
-            {
-                var physicsConfig = serviceResolver.Resolve<IHeatPhysicsConfiguration>();
-                if (!serviceResolver.TryResolve(out FloodFillWorkingDataSource ds))
-                {
-                    ds = new FloodFillWorkingDataSource();
-                }
-
-                physics = new HeatSenseReceptorPhysicsConfiguration(physicsConfig, ds);
-            }
-
+            var physics = serviceResolver.GetOrCreateHeatSensorPhysics();
             return (physics.CreateHeatSensorPropagationAlgorithm(), physics.HeatPhysics);
         }
     }

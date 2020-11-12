@@ -64,7 +64,7 @@ namespace RogueEntity.Core.Tests.Inventory
         }
 
         protected override EntityRegistry<ActorReference> EntityRegistry => Context.ActorEntities;
-        protected override ItemRegistry<InventoryTestContext, ActorReference> ItemRegistry => Context.ActorRegistry;
+        protected override IItemRegistryBackend<InventoryTestContext, ActorReference> ItemRegistry => Context.ActorRegistry;
         protected override IBulkDataStorageMetaData<ActorReference> ItemIdMetaData => new ActorReferenceMetaData();
 
         protected override ListInventoryTrait<InventoryTestContext, ActorReference, ItemReference> CreateTrait()

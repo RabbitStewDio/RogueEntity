@@ -1,5 +1,4 @@
 using EnTTSharp.Entities;
-using RogueEntity.Core.Infrastructure.Commands;
 using RogueEntity.Core.Infrastructure.GameLoops;
 using RogueEntity.Core.Infrastructure.ItemTraits;
 using RogueEntity.Core.Infrastructure.Modules.Services;
@@ -29,8 +28,7 @@ namespace RogueEntity.Core.Infrastructure.Modules
 
     public delegate void EntitySystemRegistrationDelegate<TGameContext, TEntityId>(in ModuleInitializationParameter initParameter,
                                                                                    IGameLoopSystemRegistration<TGameContext> context,
-                                                                                   EntityRegistry<TEntityId> registry,
-                                                                                   ICommandHandlerRegistration<TGameContext, TEntityId> handler)
+                                                                                   EntityRegistry<TEntityId> registry)
         where TEntityId : IEntityKey;
 
     public delegate void GlobalSystemRegistrationDelegate<TGameContext>(in ModuleInitializationParameter initParameter,

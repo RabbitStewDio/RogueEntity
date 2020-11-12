@@ -11,7 +11,7 @@ namespace RogueEntity.Core.Infrastructure.Actions.Traits
                                                                 IItemComponentTrait<TGameContext, TActorId, ScheduledAction<TGameContext, TActorId>> 
         where TActorId : IEntityKey
     {
-        public string Id => "Core.Action.ScheduleActionQuery";
+        public ItemTraitId Id => "Core.Action.ScheduleActionQuery";
         public int Priority => 0;
 
         public IReferenceItemTrait<TGameContext, TActorId> CreateInstance()

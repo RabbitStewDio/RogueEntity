@@ -74,7 +74,7 @@ namespace RogueEntity.Core.Tests.Sensing
             return actorMap.TryGetGridDataFor(layer, out data);
         }
 
-        public ItemRegistry<SenseMappingTestContext, ItemReference> ItemRegistry
+        public IItemRegistryBackend<SenseMappingTestContext, ItemReference> ItemRegistry
         {
             get { return itemBackend.ItemRegistry; }
         }
@@ -89,7 +89,7 @@ namespace RogueEntity.Core.Tests.Sensing
             get { return itemBackend.ItemResolver; }
         }
 
-        public ItemRegistry<SenseMappingTestContext, ActorReference> ActorRegistry
+        public IItemRegistryBackend<SenseMappingTestContext, ActorReference> ActorRegistry
         {
             get { return actorBackend.ItemRegistry; }
         }

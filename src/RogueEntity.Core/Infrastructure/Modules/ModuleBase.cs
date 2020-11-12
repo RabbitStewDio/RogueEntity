@@ -1,25 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using EnTTSharp.Entities;
 using RogueEntity.Core.Infrastructure.ItemTraits;
 using RogueEntity.Core.Utils;
 
 namespace RogueEntity.Core.Infrastructure.Modules
 {
-    public static class ModuleRelationNames
-    {
-        public const string ImpliedRoleRelationId = "Relation.System.Implies";
-    }
-
-    public interface IModuleConfiguration
-    {
-        void DeclareDependency(ModuleDependency dependencies);
-        void DeclareDependencies(params ModuleDependency[] dependencies);
-        RequireDependencyBuilder RequireRelation(EntityRelation r);
-        RequireDependencyBuilder RequireRole(EntityRole r);
-        RequireDependencyBuilder ForRole(EntityRole r);
-        RequireDependencyBuilder ForRelation(EntityRelation r);
-    }
-
     public abstract class ModuleBase: IModuleConfiguration
     {
         readonly List<ModuleDependency> moduleDependencies;
@@ -41,7 +27,7 @@ namespace RogueEntity.Core.Infrastructure.Modules
         }
 
         public bool IsFrameworkModule { get; protected set; }
-        public string Id { get; protected set; }
+        public ModuleId Id { get; protected set; }
         public string Name { get; protected set; }
         public string Author { get; protected set; }
         public string Description { get; protected set; }
@@ -83,8 +69,9 @@ namespace RogueEntity.Core.Infrastructure.Modules
             relation = default;
             return false;
         }
-
+        
         protected DeclareDependencyBuilder DeclareEntity<TEntityId>(EntityRole r)
+            where TEntityId : IEntityKey
         {
             if (declaredRoles.TryGetValue(typeof(TEntityId), out var rr))
             {

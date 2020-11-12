@@ -6,8 +6,8 @@ using RogueEntity.Core.Utils;
 
 namespace RogueEntity.Simple.Demo.BoxPusher
 {
-    public class BoxPusherContext: IItemContext<BoxPusherContext, ItemReference>, 
-                                   IItemContext<BoxPusherContext, ActorReference>,
+    public class BoxPusherContext: IItemContextBackend<BoxPusherContext, ItemReference>, 
+                                   IItemContextBackend<BoxPusherContext, ActorReference>,
                                    IGridMapContext<ItemReference>,
                                    IGridMapContext<ActorReference>
     {
@@ -16,7 +16,7 @@ namespace RogueEntity.Simple.Demo.BoxPusher
 
         DefaultGridPositionContextBackend<BoxPusherContext, ItemReference> itemMap;
         DefaultGridPositionContextBackend<BoxPusherContext, ActorReference> actorMap;
-
+        
         public BoxPusherContext(int tileWidth, int tileHeight)
         {
             itemContext = new ItemContextBackend<BoxPusherContext, ItemReference>(new ItemReferenceMetaData());
@@ -65,7 +65,7 @@ namespace RogueEntity.Simple.Demo.BoxPusher
             get { return itemMap.TileSizeY; }
         }
 
-        public ItemRegistry<BoxPusherContext, ActorReference> ActorRegistry
+        public IItemRegistryBackend<BoxPusherContext, ActorReference> ActorRegistry
         {
             get { return actorContext.ItemRegistry; }
         }
@@ -75,12 +75,27 @@ namespace RogueEntity.Simple.Demo.BoxPusher
             get { return actorContext.EntityRegistry; }
         }
 
+        EntityRegistry<ItemReference> IItemContextBackend<BoxPusherContext, ItemReference>.EntityRegistry
+        {
+            get { return ItemEntities; }
+        }
+
+        EntityRegistry<ActorReference> IItemContextBackend<BoxPusherContext, ActorReference>.EntityRegistry
+        {
+            get { return ActorEntities; }
+        }
+
+        IItemRegistryBackend<BoxPusherContext, ActorReference> IItemContextBackend<BoxPusherContext, ActorReference>.ItemRegistry
+        {
+            get { return ActorRegistry; }
+        }
+
         public IItemResolver<BoxPusherContext, ActorReference> ActorResolver
         {
             get { return actorContext.ItemResolver; }
         }
         
-        public ItemRegistry<BoxPusherContext, ItemReference> ItemRegistry
+        public IItemRegistryBackend<BoxPusherContext, ItemReference> ItemRegistry
         {
             get { return itemContext.ItemRegistry; }
         }

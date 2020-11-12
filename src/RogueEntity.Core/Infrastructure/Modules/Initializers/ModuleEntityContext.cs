@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using EnTTSharp.Entities;
-using RogueEntity.Core.Infrastructure.Commands;
 using RogueEntity.Core.Infrastructure.GameLoops;
 using RogueEntity.Core.Infrastructure.ItemTraits;
 using RogueEntity.Core.Meta.Items;
@@ -10,31 +9,32 @@ namespace RogueEntity.Core.Infrastructure.Modules.Initializers
     public class ModuleEntityContext<TGameContext, TEntityId> : IModuleEntityContext<TGameContext, TEntityId>, IModuleInitializationData<TGameContext, TEntityId>
         where TEntityId : IEntityKey
     {
-        readonly Dictionary<ItemDeclarationId, IBulkItemDeclaration<TGameContext, TEntityId>> declaredBulkItems;
-        readonly Dictionary<ItemDeclarationId, IReferenceItemDeclaration<TGameContext, TEntityId>> declaredReferenceItems;
+        readonly Dictionary<ItemDeclarationId, (ModuleId, IBulkItemDeclaration<TGameContext, TEntityId>)> declaredBulkItems;
+        readonly Dictionary<ItemDeclarationId, (ModuleId, IReferenceItemDeclaration<TGameContext, TEntityId>)> declaredReferenceItems;
         
-        readonly Dictionary<ItemDeclarationId, IBulkItemDeclaration<TGameContext, TEntityId>> activeBulkItems;
-        readonly Dictionary<ItemDeclarationId, IReferenceItemDeclaration<TGameContext, TEntityId>> activeReferenceItems;
+        readonly Dictionary<ItemDeclarationId, (ModuleId, IBulkItemDeclaration<TGameContext, TEntityId>)> activeBulkItems;
+        readonly Dictionary<ItemDeclarationId, (ModuleId, IReferenceItemDeclaration<TGameContext, TEntityId>)> activeReferenceItems;
         
         readonly List<EntitySystemFactory> systemFactories;
-        readonly string moduleId;
 
-        public ModuleEntityContext(string moduleId)
+        public ModuleEntityContext(ModuleId moduleId)
         {
-            this.moduleId = moduleId;
-            this.declaredBulkItems = new Dictionary<ItemDeclarationId, IBulkItemDeclaration<TGameContext, TEntityId>>();
-            this.declaredReferenceItems = new Dictionary<ItemDeclarationId, IReferenceItemDeclaration<TGameContext, TEntityId>>();
-            this.activeBulkItems = new Dictionary<ItemDeclarationId, IBulkItemDeclaration<TGameContext, TEntityId>>();
-            this.activeReferenceItems = new Dictionary<ItemDeclarationId, IReferenceItemDeclaration<TGameContext, TEntityId>>();
+            this.CurrentModuleId = moduleId;
+            this.declaredBulkItems = new Dictionary<ItemDeclarationId, (ModuleId, IBulkItemDeclaration<TGameContext, TEntityId>)>();
+            this.declaredReferenceItems = new Dictionary<ItemDeclarationId, (ModuleId, IReferenceItemDeclaration<TGameContext, TEntityId>)>();
+            this.activeBulkItems = new Dictionary<ItemDeclarationId, (ModuleId, IBulkItemDeclaration<TGameContext, TEntityId>)>();
+            this.activeReferenceItems = new Dictionary<ItemDeclarationId, (ModuleId, IReferenceItemDeclaration<TGameContext, TEntityId>)>();
             this.systemFactories = new List<EntitySystemFactory>();
         }
 
-        public IEnumerable<IBulkItemDeclaration<TGameContext, TEntityId>> DeclaredBulkItems
+        public ModuleId CurrentModuleId { get; set; }
+        
+        public IEnumerable<(ModuleId, IBulkItemDeclaration<TGameContext, TEntityId>)> DeclaredBulkItems
         {
             get { return activeBulkItems.Values; }
         }
 
-        public IEnumerable<IReferenceItemDeclaration<TGameContext, TEntityId>> DeclaredReferenceItems
+        public IEnumerable<(ModuleId, IReferenceItemDeclaration<TGameContext, TEntityId>)> DeclaredReferenceItems
         {
             get { return activeReferenceItems.Values; }
         }
@@ -54,35 +54,49 @@ namespace RogueEntity.Core.Infrastructure.Modules.Initializers
 
         public bool TryGetDefinedBulkItem(ItemDeclarationId id, out IBulkItemDeclaration<TGameContext, TEntityId> item)
         {
-            return declaredBulkItems.TryGetValue(id, out item);
+            if ( declaredBulkItems.TryGetValue(id, out var raw))
+            {
+                item = raw.Item2;
+                return true;
+            }
+
+            item = default;
+            return false;
         }
 
         public bool TryGetDefinedReferenceItem(ItemDeclarationId id, out IReferenceItemDeclaration<TGameContext, TEntityId> item)
         {
-            return declaredReferenceItems.TryGetValue(id, out item);
+            if (declaredReferenceItems.TryGetValue(id, out var raw))
+            {
+                item = raw.Item2;
+                return true;
+            }
+
+            item = default;
+            return false;
         }
 
         public void DefineReferenceItemTemplate(IReferenceItemDeclaration<TGameContext, TEntityId> item)
         {
-            declaredReferenceItems[item.Id] = item;
+            declaredReferenceItems[item.Id] = (CurrentModuleId, item);
         }
 
         public void DefineBulkItemTemplate(IBulkItemDeclaration<TGameContext, TEntityId> item)
         {
-            declaredBulkItems[item.Id] = item;
+            declaredBulkItems[item.Id] = (CurrentModuleId, item);
         }
 
         public ItemDeclarationId Activate(IBulkItemDeclaration<TGameContext, TEntityId> item)
         {
-            declaredBulkItems[item.Id] = item;
-            activeBulkItems[item.Id] = item;
+            declaredBulkItems[item.Id] = (CurrentModuleId, item);
+            activeBulkItems[item.Id] = (CurrentModuleId, item);
             return item.Id;
         }
 
         public ItemDeclarationId Activate(IReferenceItemDeclaration<TGameContext, TEntityId> item)
         {
-            declaredReferenceItems[item.Id] = item;
-            activeReferenceItems[item.Id] = item;
+            declaredReferenceItems[item.Id] = (CurrentModuleId, item);
+            activeReferenceItems[item.Id] = (CurrentModuleId, item);
             return item.Id;
         }
 
@@ -92,7 +106,7 @@ namespace RogueEntity.Core.Infrastructure.Modules.Initializers
         {
             systemFactories.Add(new EntitySystemFactory
             {
-                DeclaringModule = this.moduleId,
+                DeclaringModule = this.CurrentModuleId,
                 Id = id,
                 Priority = priority,
                 EntityRegistration = entityRegistration,
@@ -107,7 +121,7 @@ namespace RogueEntity.Core.Infrastructure.Modules.Initializers
         {
             systemFactories.Add(new EntitySystemFactory
             {
-                DeclaringModule = this.moduleId,
+                DeclaringModule = this.CurrentModuleId,
                 Id = id,
                 Priority = priority,
                 EntityRegistration = null,
@@ -118,7 +132,7 @@ namespace RogueEntity.Core.Infrastructure.Modules.Initializers
 
         class EntitySystemFactory : IEntitySystemFactory<TGameContext, TEntityId>, IEntitySystemDeclaration<TGameContext, TEntityId>
         {
-            public string DeclaringModule { get; set; }
+            public ModuleId DeclaringModule { get; set; }
             public EntitySystemId Id { get; set; }
             public int Priority { get; set; }
             public int InsertionOrder { get; set; }
@@ -129,11 +143,10 @@ namespace RogueEntity.Core.Infrastructure.Modules.Initializers
 
             public void Register(in ModuleInitializationParameter initParams,
                                  IGameLoopSystemRegistration<TGameContext> context,
-                                 EntityRegistry<TEntityId> entityRegistry,
-                                 ICommandHandlerRegistration<TGameContext, TEntityId> commandRegistration)
+                                 EntityRegistry<TEntityId> entityRegistry)
             {
                 EntityRegistration?.Invoke(in initParams, entityRegistry);
-                EntitySystemRegistration?.Invoke(in initParams, context, entityRegistry, commandRegistration);
+                EntitySystemRegistration?.Invoke(in initParams, context, entityRegistry);
             }
         }
     }

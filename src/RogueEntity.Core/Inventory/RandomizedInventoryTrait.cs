@@ -26,7 +26,7 @@ namespace RogueEntity.Core.Inventory
             this.itemPool = new List<InventoryLootEntry>(items);
         }
 
-        public string Id => "Core.Inventory.RandomContent";
+        public ItemTraitId Id => "Core.Inventory.RandomContent";
         public int Priority => 10000;
 
         public IReferenceItemTrait<TGameContext, TOwnerId> CreateInstance()

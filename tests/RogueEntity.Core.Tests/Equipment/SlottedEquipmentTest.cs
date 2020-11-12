@@ -59,9 +59,11 @@ namespace RogueEntity.Core.Tests.Equipment
 
             Context.ActorRegistry.Register(new ReferenceItemDeclaration<EquipmentTestContext, ActorReference>(ActorDeclaration)
                                            .WithTrait(new WeightViewTrait<EquipmentTestContext, ActorReference>(Context.ActorResolver))
-                                           .WithTrait(new SlottedEquipmentTrait<EquipmentTestContext, ActorReference, ItemReference>(Context.ItemResolver,
-                                                              Weight.OfKiloGram(100),
-                                                              slotHead, slotLeftHand, slotRightHand
+                                           .WithTrait(new SlottedEquipmentTrait<EquipmentTestContext, ActorReference, ItemReference>(
+                                                          Context.ActorResolver,
+                                                          Context.ItemResolver,
+                                                          Weight.OfKiloGram(100),
+                                                          slotHead, slotLeftHand, slotRightHand
                                                       )));
 
             Context.ItemRegistry.Register(new ReferenceItemDeclaration<EquipmentTestContext, ItemReference>(ContainerDeclaration)
@@ -93,15 +95,17 @@ namespace RogueEntity.Core.Tests.Equipment
 
             Context.ItemRegistry.Register(new BulkItemDeclaration<EquipmentTestContext, ItemReference>(BulkContentDeclaration)
                                           .WithTrait(new EquipmentSlotRequirementsTrait<EquipmentTestContext, ItemReference>(EquipmentSlotRequirements.Create()
-                                                                                                                                 .WithAcceptableSlots(slotLeftHand, slotRightHand)))
+                                                                                                                                                      .WithAcceptableSlots(
+                                                                                                                                                          slotLeftHand, slotRightHand)))
                                           .WithTrait(new WeightViewTrait<EquipmentTestContext, ItemReference>(Context.ItemResolver))
                                           .WithTrait(new WeightTrait<EquipmentTestContext, ItemReference>(Weight.OfKiloGram(1f))));
 
             Context.ItemRegistry.Register(new BulkItemDeclaration<EquipmentTestContext, ItemReference>(BulkCombinedItemDeclaration)
                                           .WithTrait(new StackingTrait<EquipmentTestContext, ItemReference>(60))
                                           .WithTrait(new EquipmentSlotRequirementsTrait<EquipmentTestContext, ItemReference>(EquipmentSlotRequirements.Create()
-                                                                                                                                 .WithRequiredSlots(slotHead)
-                                                                                                                                 .WithAcceptableSlots(slotLeftHand, slotRightHand)))
+                                                                                                                                                      .WithRequiredSlots(slotHead)
+                                                                                                                                                      .WithAcceptableSlots(
+                                                                                                                                                          slotLeftHand, slotRightHand)))
                                           .WithTrait(new WeightViewTrait<EquipmentTestContext, ItemReference>(Context.ItemResolver))
                                           .WithTrait(new WeightTrait<EquipmentTestContext, ItemReference>(Weight.OfKiloGram(1f))));
 
@@ -127,7 +131,7 @@ namespace RogueEntity.Core.Tests.Equipment
             Equipment.AvailableSlots.Should().ContainInOrder(slotHead, slotLeftHand, slotRightHand);
             Equipment.QueryItems().Should().BeEmpty();
         }
-        
+
         [Test]
         public void Validate_Equip_ReferenceItem()
         {
@@ -148,7 +152,7 @@ namespace RogueEntity.Core.Tests.Equipment
             Equipment.TryEquipItem(Context, item, out _, Optional.Empty<EquipmentSlot>(), out _).Should().BeTrue();
 
             // Attempting to add an item that is heavier than the total allowed weight should fail.
-            
+
             var actor2 = Context.ActorResolver.Instantiate(Context, ActorDeclaration);
             Context.ActorResolver.TryQueryData(actor2, Context, out ISlottedEquipment<EquipmentTestContext, ItemReference> _).Should().BeTrue();
             Equipment.TryEquipItem(Context, item, out var modItemOther, Optional.Empty<EquipmentSlot>(), out var actualSlotOther).Should().BeFalse();
@@ -161,7 +165,7 @@ namespace RogueEntity.Core.Tests.Equipment
         {
             var item = Context.ItemResolver.Instantiate(Context, HeavyContentDeclaration);
             Context.ItemResolver.TryUpdateData(item, Context, new ContainerEntityMarker<ActorReference>(), out _).Should().BeTrue();
-            
+
             Equipment.TryEquipItem(Context, item, out var modItem, Optional.Empty<EquipmentSlot>(), out var actualSlot).Should().BeFalse();
             actualSlot.Should().Be(default(EquipmentSlot));
             modItem.Should().Be(ItemReference.Empty);
@@ -193,7 +197,7 @@ namespace RogueEntity.Core.Tests.Equipment
             // Requesting to be placed on an already occupied spot should fail.
             var bulkItem = Context.ItemResolver.Instantiate(Context, BulkCombinedItemDeclaration);
             Equipment.TryEquipItem(Context, bulkItem, out _, Optional.ValueOf(slotLeftHand), out _).Should().BeFalse();
-            
+
             // Requesting to be placed on an empty slot when the item shares a common required slot (slotHead!) should fail too.
             Equipment.TryEquipItem(Context, bulkItem, out _, Optional.ValueOf(slotRightHand), out _).Should().BeFalse();
         }
@@ -249,7 +253,7 @@ namespace RogueEntity.Core.Tests.Equipment
             slot.Should().Be(slotHead);
             Equipment.QueryItems().Should().BeEmpty();
         }
-        
+
         [Test]
         public void Validate_Unequip_MultipleItems()
         {
@@ -260,7 +264,7 @@ namespace RogueEntity.Core.Tests.Equipment
             actualSlot2.Should().Be(slotRightHand);
 
             Equipment.QueryItems().Should().ContainInOrder(new EquippedItem<ItemReference>(item, slotLeftHand), new EquippedItem<ItemReference>(item, slotRightHand));
-            
+
             Equipment.TryUnequipItem(Context, item, out var slot).Should().BeTrue();
             slot.Should().Be(slotLeftHand);
             Equipment.QueryItems().Should().Contain(new EquippedItem<ItemReference>(item, slotRightHand));

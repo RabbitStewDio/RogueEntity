@@ -22,11 +22,11 @@ namespace RogueEntity.Core.Infrastructure.ItemTraits
             cachedByType = new ConcurrentDictionary<Type, object>();
         }
 
-        bool FindById(string id, out TTrait trait)
+        bool FindById(ItemTraitId id, out TTrait trait)
         {
             foreach (var x in traits)
             {
-                if (string.Equals(x.Id, id, StringComparison.Ordinal))
+                if (x.Id == id)
                 {
                     trait = x;
                     return true;

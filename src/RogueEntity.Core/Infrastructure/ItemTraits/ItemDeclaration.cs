@@ -69,26 +69,26 @@ namespace RogueEntity.Core.Infrastructure.ItemTraits
             return !Equals(left, right);
         }
 
-        public IEnumerable<EntityRoleInstance> GetEntityRoles()
+        public IEnumerable<(ItemTraitId traitId, EntityRoleInstance role)> GetEntityRoles()
         {
-            var roles = new List<EntityRoleInstance>();
             foreach (var t in QueryAll<IItemTrait>())
             {
-                roles.AddRange(t.GetEntityRoles());
+                foreach (var r in t.GetEntityRoles())
+                {
+                    yield return ((t.Id, r));
+                }
             }
-
-            return roles;
         }
 
-        public IEnumerable<EntityRelationInstance> GetEntityRelations()
+        public IEnumerable<(ItemTraitId traitId, EntityRelationInstance relation)> GetEntityRelations()
         {
-            var roles = new List<EntityRelationInstance>();
             foreach (var t in QueryAll<IItemTrait>())
             {
-                roles.AddRange(t.GetEntityRelations());
+                foreach (var r in t.GetEntityRelations())
+                {
+                    yield return ((t.Id, r));
+                }
             }
-
-            return roles;
         }
     }
 }

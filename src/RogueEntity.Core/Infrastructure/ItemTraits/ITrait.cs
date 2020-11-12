@@ -2,7 +2,7 @@
 {
     public interface ITrait
     {
-        string Id { get; }
+        ItemTraitId Id { get; }
         int Priority { get; }
     }
 }

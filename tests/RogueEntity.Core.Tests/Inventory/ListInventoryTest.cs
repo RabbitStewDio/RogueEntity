@@ -279,26 +279,29 @@ namespace RogueEntity.Core.Tests.Inventory
 
         List<Action<InventoryTestContext>> CreateActionSystem()
         {
+            var dsa = new DestroyContainerContentsSystem<InventoryTestContext, ActorReference, ItemReference>(Context.ItemResolver); 
+            var dsi = new DestroyContainerContentsSystem<InventoryTestContext, ItemReference, ItemReference>(Context.ItemResolver); 
+
+            
             return new List<Action<InventoryTestContext>>
             {
                 // Any inventory item that had been marked for delayed destruction is now marked as destroyable.
                 Context.ActorEntities.BuildSystem()
                        .WithContext<InventoryTestContext>()
-                       .CreateSystem<CascadingDestroyedMarker>(DestroyedEntitiesSystem.SchedulePreviouslyMarkedItemsForDestruction),
+                       .CreateSystem<CascadingDestroyedMarker>(DestroyedEntitiesSystem<ActorReference>.SchedulePreviouslyMarkedItemsForDestruction),
                 Context.ItemEntities.BuildSystem()
                        .WithContext<InventoryTestContext>()
-                       .CreateSystem<CascadingDestroyedMarker>(DestroyedEntitiesSystem.SchedulePreviouslyMarkedItemsForDestruction),
+                       .CreateSystem<CascadingDestroyedMarker>(DestroyedEntitiesSystem<ItemReference>.SchedulePreviouslyMarkedItemsForDestruction),
 
+                
                 // any destroyed item that is a container must mark its remaining container contents as scheduled for destruction at the 
                 // next turn.
                 Context.ActorEntities.BuildSystem()
                        .WithContext<InventoryTestContext>()
-                       .CreateSystem<DestroyedMarker, ListInventoryData<ActorReference, ItemReference>>
-                           (DestroyedEntitiesSystem.MarkDestroyedContainerEntities<ActorReference, InventoryTestContext, ItemReference, ListInventoryData<ActorReference, ItemReference>>),
+                       .CreateSystem<DestroyedMarker, ListInventoryData<ActorReference, ItemReference>>(dsa.MarkDestroyedContainerEntities),
                 Context.ItemEntities.BuildSystem()
                        .WithContext<InventoryTestContext>()
-                       .CreateSystem<DestroyedMarker, ListInventoryData<ItemReference, ItemReference>>
-                           (DestroyedEntitiesSystem.MarkDestroyedContainerEntities<ItemReference, InventoryTestContext, ItemReference, ListInventoryData<ItemReference, ItemReference>>),
+                       .CreateSystem<DestroyedMarker, ListInventoryData<ItemReference, ItemReference>>(dsi.MarkDestroyedContainerEntities),
 
                 // Finally clean up any item marked as destroyed.
                 new DestroyedEntitiesSystem<ItemReference>(Context.ItemEntities).DeleteMarkedEntities,

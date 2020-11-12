@@ -2,10 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using EnTTSharp.Entities;
 using JetBrains.Annotations;
 using RogueEntity.Core.Infrastructure.ItemTraits;
 using RogueEntity.Core.Infrastructure.Modules.Attributes;
 using RogueEntity.Core.Infrastructure.Modules.Services;
+using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Utils;
 
 namespace RogueEntity.Core.Infrastructure.Modules
@@ -79,12 +81,12 @@ namespace RogueEntity.Core.Infrastructure.Modules
 
                 if (!m.IsSameGenericAction(new[] {typeof(TGameContext), entityType},
                                            out var genericMethod, out var errorHint,
-                                           typeof(ModuleInitializationParameter), typeof(IModuleInitializer<TGameContext>), typeof(EntityRole)))
+                                           typeof(ModuleInitializationParameter).MakeByRefType(), typeof(IModuleInitializer<TGameContext>), typeof(EntityRole)))
                 {
                     if (string.IsNullOrEmpty(errorHint))
                     {
                         throw new ArgumentException(
-                            $"Expected a generic method with signature 'void XXX<TGameContext, TEntityId>(ModuleInitializationParameter, IModuleInitializer<TGameContext>, EntityRole), but found {m} in module {module.Id}");
+                            $"Expected a generic method with signature 'void XXX<TGameContext, TEntityId>(ModuleInitializationParameter ByRef, IModuleInitializer<TGameContext>, EntityRole), but found {m} in module {module.Id}");
                     }
 
                     Logger.Information("Generic constraints on module {Module} with method {Method} do not match. {errorHint}", module.Id, m, errorHint);
@@ -178,12 +180,12 @@ namespace RogueEntity.Core.Infrastructure.Modules
 
                 if (!m.IsSameGenericAction(new[] {typeof(TGameContext), subjectType, entityType},
                                            out var genericMethod, out var errorHint,
-                                           typeof(ModuleInitializationParameter), typeof(IModuleInitializer<TGameContext>), typeof(EntityRelation)))
+                                           typeof(ModuleInitializationParameter).MakeByRefType(), typeof(IModuleInitializer<TGameContext>), typeof(EntityRelation)))
                 {
                     if (string.IsNullOrEmpty(errorHint))
                     {
                         throw new ArgumentException(
-                            $"Expected a generic method with signature 'void XXX<TGameContext, TEntityId>(ModuleInitializationParameter, IModuleInitializer<TGameContext>, EntityRole), but found {m} in module {module.Id}");
+                            $"Expected a generic method with signature 'void XXX<TGameContext, TEntityId>(ModuleInitializationParameter ByRef, IModuleInitializer<TGameContext>, EntityRole), but found {m} in module {module.Id}");
                     }
 
                     Logger.Information("Generic constraints on module {Module} with method {Method} do not match. {errorHint}", module.Id, m, errorHint);
@@ -219,6 +221,67 @@ namespace RogueEntity.Core.Infrastructure.Modules
             }
 
             return l.ToArray();
+        }
+
+        
+        class ItemTypeRegistrationHandler : IModuleEntityInitializationCallback<TGameContext>
+        {
+            readonly IServiceResolver serviceResolver;
+            public readonly Dictionary<EntityRoleInstance, Dictionary<ItemDeclarationId, (ModuleId, List<ItemTraitId>)>> Roles;
+            public readonly Dictionary<EntityRelationInstance, Dictionary<ItemDeclarationId, (ModuleId, List<ItemTraitId>)>> Relations;
+
+
+            public ItemTypeRegistrationHandler(IServiceResolver serviceResolver)
+            {
+                this.serviceResolver = serviceResolver;
+                this.Roles = new Dictionary<EntityRoleInstance, Dictionary<ItemDeclarationId, (ModuleId, List<ItemTraitId>)>>();
+                this.Relations = new Dictionary<EntityRelationInstance, Dictionary<ItemDeclarationId, (ModuleId, List<ItemTraitId>)>>();
+            }
+
+            public void PerformInitialization<TEntityId>(IModuleInitializationData<TGameContext, TEntityId> moduleContext)
+                where TEntityId : IEntityKey
+            {
+                var ctx = serviceResolver.Resolve<IItemContextBackend<TGameContext, TEntityId>>();
+                var items = new Dictionary<ItemDeclarationId, (ModuleId, IItemDeclaration)>();
+                foreach (var (mod, b) in moduleContext.DeclaredBulkItems)
+                {
+                    items[b.Id] = (mod, b);
+                }
+
+                foreach (var r in moduleContext.DeclaredReferenceItems)
+                {
+                    items[r.Item2.Id] = r;
+                }
+
+                foreach (var (m, i) in items.Values)
+                {
+                    RegisterTraitDependencies(Roles, i.GetEntityRoles(), i.Id, m);
+                    RegisterTraitDependencies(Relations, i.GetEntityRelations(), i.Id, m);
+                    ctx.ItemRegistry.Register(i);
+                }
+            }
+
+            void RegisterTraitDependencies<TKey>(Dictionary<TKey, Dictionary<ItemDeclarationId, (ModuleId, List<ItemTraitId>)>> dataStore, 
+                                                 IEnumerable<(ItemTraitId, TKey)> entries, 
+                                                 ItemDeclarationId sourceRef,
+                                                 ModuleId moduleId)
+            {
+                foreach (var (traitId, role) in entries)
+                {
+                    if (!dataStore.TryGetValue(role, out var data))
+                    {
+                        data = new Dictionary<ItemDeclarationId, (ModuleId, List<ItemTraitId>)>();
+                        dataStore[role] = data;
+                    }
+
+                    if (!data.TryGetValue(sourceRef, out var evidence))
+                    {
+                        evidence = (moduleId, new List<ItemTraitId>());
+                        data[sourceRef] = evidence;
+                    }
+                    evidence.Item2.Add(traitId);
+                }
+            }
         }
 
         class GlobalModuleEntityInformation : IModuleEntityInformation
@@ -359,6 +422,17 @@ namespace RogueEntity.Core.Infrastructure.Modules
 
                 return true;
             }
+        }
+
+        public static List<(string, List<string>)> CreateTraitEvidence(Dictionary<ItemDeclarationId, (ModuleId, List<ItemTraitId>)> backend)
+        {
+            var data = new List<(string, List<string>)>();
+            foreach (var b in backend)
+            {
+                data.Add((b.Key.Id, b.Value.Item2.Select(e => e.Id).ToList()));
+            }
+
+            return data;
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 
@@ -37,8 +38,9 @@ namespace RogueEntity.Core.Utils
         }
     }
 
+    
     [DataContract]
-    public readonly struct Optional<T> : IEquatable<Optional<T>>
+    public readonly struct Optional<T> : IEquatable<Optional<T>>, IEnumerable<T>
     {
         [DataMember(Order=1)]
         readonly T value;
@@ -57,6 +59,19 @@ namespace RogueEntity.Core.Utils
 
         [DataMember(Order = 0)]
         public bool HasValue { get; }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        public IEnumerator<T> GetEnumerator()
+        {
+            if (HasValue)
+            {
+                yield return value;
+            }
+        }
 
         public override string ToString()
         {

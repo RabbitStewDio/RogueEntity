@@ -14,7 +14,7 @@ using RogueEntity.Core.Utils.Algorithms;
 namespace RogueEntity.Core.Tests.Sensing.Sources.Touch
 {
     [TestFixture]
-    public class TouchSourceTraitTest : ItemComponentTraitTestBase<SenseMappingTestContext, ActorReference, TouchSourceDefinition, TouchReceptorTrait<SenseMappingTestContext, ActorReference>>
+    public class TouchSourceTraitTest : ItemComponentTraitTestBase<SenseMappingTestContext, ActorReference, TouchSourceDefinition, TouchSenseTrait<SenseMappingTestContext, ActorReference>>
     {
         readonly TouchSenseReceptorPhysicsConfiguration physics;
 
@@ -39,12 +39,12 @@ namespace RogueEntity.Core.Tests.Sensing.Sources.Touch
         }
 
         protected override EntityRegistry<ActorReference> EntityRegistry => Context.ActorEntityRegistry;
-        protected override ItemRegistry<SenseMappingTestContext, ActorReference> ItemRegistry => Context.ActorRegistry;
+        protected override IItemRegistryBackend<SenseMappingTestContext, ActorReference> ItemRegistry => Context.ActorRegistry;
         protected override IBulkDataStorageMetaData<ActorReference> ItemIdMetaData => new ActorReferenceMetaData();
 
-        protected override TouchReceptorTrait<SenseMappingTestContext, ActorReference> CreateTrait()
+        protected override TouchSenseTrait<SenseMappingTestContext, ActorReference> CreateTrait()
         {
-            return new TouchReceptorTrait<SenseMappingTestContext, ActorReference>(physics);
+            return new TouchSenseTrait<SenseMappingTestContext, ActorReference>(physics);
         }
 
         protected override IItemComponentTestDataFactory<TouchSourceDefinition> ProduceTestData(EntityRelations<ActorReference> relations)

@@ -14,7 +14,7 @@ namespace RogueEntity.Core.Sensing.Sources
         where TItemId : IEntityKey
         where TSenseDefinition : ISenseDefinition
     {
-        public abstract string Id { get; }
+        public abstract ItemTraitId Id { get; }
         public abstract int Priority { get; }
 
         public IReferenceItemTrait<TGameContext, TItemId> CreateInstance()

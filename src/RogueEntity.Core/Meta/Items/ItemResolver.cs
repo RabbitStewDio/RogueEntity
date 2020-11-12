@@ -10,7 +10,8 @@ namespace RogueEntity.Core.Meta.Items
         readonly ItemRegistry<TGameContext, TItemId> registry;
         readonly EntityRegistry<TItemId> entityRegistry;
 
-        public ItemResolver(ItemRegistry<TGameContext, TItemId> registry, EntityRegistry<TItemId> entityRegistry)
+        public ItemResolver(ItemRegistry<TGameContext, TItemId> registry, 
+                            EntityRegistry<TItemId> entityRegistry)
         {
             this.registry = registry;
             this.entityRegistry = entityRegistry;

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using JetBrains.Annotations;
 using RogueEntity.Core.Infrastructure.Time;
 using RogueEntity.Core.Utils;
 using Serilog;
@@ -13,7 +14,7 @@ namespace RogueEntity.Core.Infrastructure.GameLoops
     ///   actions. This behaviour is similar to Unity and other game engines.
     /// </summary>
     /// <typeparam name="TGameContext"></typeparam>
-    public class RealTimeGameLoop<TGameContext> : ITimeSource, IGameLoop<TGameContext>, ISystemGameLoop<TGameContext>
+    public class RealTimeGameLoop<TGameContext> : ITimeSource, IGameLoop<TGameContext>, IDisposable
     {
         /// <summary>
         ///   An optional time span defining how much simulated time passes on each fixed step.
@@ -23,19 +24,21 @@ namespace RogueEntity.Core.Infrastructure.GameLoops
         readonly ILogger logger = SLog.ForContext<RealTimeGameLoop<TGameContext>>();
 
         readonly GameTimeProcessor timeProcessor;
-        readonly Queue<Action<TGameContext>> commands;
+        // readonly Queue<Action<TGameContext>> commands;
 
         public RealTimeGameLoop(int fps = 60, Optional<TimeSpan> gameFixedTimeStep = default)
         {
             this.gameFixedTimeStep = gameFixedTimeStep;
             timeProcessor = GameTimeProcessor.WithFramesPerSecond(fps);
 
-            commands = new Queue<Action<TGameContext>>();
+            // commands = new Queue<Action<TGameContext>>();
             PreFixedStepHandlers = new List<ActionSystemEntry<TGameContext>>();
             FixedStepHandlers = new List<ActionSystemEntry<TGameContext>>();
+            LateFixedStepHandlers = new List<ActionSystemEntry<TGameContext>>();
             VariableStepHandlers = new List<ActionSystemEntry<TGameContext>>();
-            LateStepHandlers = new List<ActionSystemEntry<TGameContext>>();
+            LateVariableStepHandlers = new List<ActionSystemEntry<TGameContext>>();
             InitializationStepHandlers = new List<ActionSystemEntry<TGameContext>>();
+            DisposeStepHandlers = new List<ActionSystemEntry<TGameContext>>();
         }
 
         public ITimeSource TimeSource
@@ -53,30 +56,34 @@ namespace RogueEntity.Core.Infrastructure.GameLoops
         /// </summary>
         public List<ActionSystemEntry<TGameContext>> InitializationStepHandlers { get; }
 
+        public List<ActionSystemEntry<TGameContext>> DisposeStepHandlers { get; }
+
         public List<ActionSystemEntry<TGameContext>> FixedStepHandlers { get; }
 
         public List<ActionSystemEntry<TGameContext>> PreFixedStepHandlers { get; }
 
+        public List<ActionSystemEntry<TGameContext>> LateFixedStepHandlers { get; }
+        
         public List<ActionSystemEntry<TGameContext>> VariableStepHandlers { get; }
 
-        /// <summary>
-        ///   Those handlers are system handlers and are called after each fixed or variable
-        ///   time step.
-        /// </summary>
-        public List<ActionSystemEntry<TGameContext>> LateStepHandlers { get; }
-
-        public ContextForTimeStepProvider<TGameContext> ContextProvider { get; set; }
-        public WorldStepDelegate<TGameContext> WorldStepFunction { get; set; }
+        public List<ActionSystemEntry<TGameContext>> LateVariableStepHandlers { get; }
 
         public Func<bool> IsWaitingForInputDelegate { get; set; }
+        public ContextForTimeStepProvider<TGameContext> ContextProvider { get; set; }
+
+        public event EventHandler<WorldStepEventArgs<TGameContext>> FixStepProgress;
+        public event EventHandler<WorldStepEventArgs<TGameContext>> VariableStepProgress;
 
         bool IsWaitingForInput()
         {
             return IsWaitingForInputDelegate?.Invoke() ?? true;
         }
 
-        public void Initialize()
+        public void Initialize([NotNull] ContextForTimeStepProvider<TGameContext> contextProvider, Func<bool> isWaitingForInputDelegate = null)
         {
+            ContextProvider = contextProvider ?? throw new ArgumentNullException(nameof(contextProvider));
+            IsWaitingForInputDelegate = isWaitingForInputDelegate;
+            
             if (gameFixedTimeStep.TryGetValue(out var ts))
             {
                 TimeState = new GameTimeState(ts);
@@ -92,8 +99,26 @@ namespace RogueEntity.Core.Infrastructure.GameLoops
             var context = ContextProvider(TimeSpan.Zero, TimeState.FixedGameTimeElapsed);
             foreach (var step in InitializationStepHandlers)
             {
-                step.PerformAction(context);
+                step.PerformAction(context, ActionSystemExecutionContext.Initialization);
             }
+        }
+
+        public void Dispose()
+        {
+            if (ContextProvider == null)
+            {
+                return;
+            }
+            
+            var context = ContextProvider(TimeState.FrameDeltaTime, TimeState.FixedGameTimeElapsed);
+            for (var i = DisposeStepHandlers.Count - 1; i >= 0; i--)
+            {
+                var handler = DisposeStepHandlers[i];
+                handler.PerformAction(context, ActionSystemExecutionContext.ShutDown);
+            }
+            
+            ContextProvider = null;
+            IsWaitingForInputDelegate = null;
         }
 
         TimeSpan fixedTimeUpdateTargetTime;
@@ -103,19 +128,19 @@ namespace RogueEntity.Core.Infrastructure.GameLoops
         {
             var w = Stopwatch.StartNew();
             logger.Verbose("Enter Update: {Time}", absoluteTime);
-            if (commands.Count > 0)
-            {
-                var cmdGameContext = ContextProvider(TimeState.FrameDeltaTime, TimeState.TotalGameTimeElapsed);
-                using (LogContext.PushProperty("GameLoop.Activity", "CommandProcessing"))
-                {
-                    logger.Debug("Processing {CommandCount} commands.", commands.Count);
-                    while (commands.TryDequeue(out var command))
-                    {
-                        command(cmdGameContext);
-                    }
-                }
-            }
-
+            // if (commands.Count > 0)
+            // {
+            //     var cmdGameContext = ContextProvider(TimeState.FrameDeltaTime, TimeState.TotalGameTimeElapsed);
+            //     using (LogContext.PushProperty("GameLoop.Activity", "CommandProcessing"))
+            //     {
+            //         logger.Debug("Processing {CommandCount} commands.", commands.Count);
+            //         while (commands.TryDequeue(out var command))
+            //         {
+            //             command(cmdGameContext);
+            //         }
+            //     }
+            // }
+            //
 
             if (!IsWaitingForInput())
             {
@@ -134,25 +159,25 @@ namespace RogueEntity.Core.Infrastructure.GameLoops
                         {
                             using (LogContext.PushProperty("GameLoop.Time", w2.Elapsed.TotalMilliseconds))
                             {
-                                handler.PerformAction(fixedStepContext, "PrepareFixedStep");
+                                handler.PerformAction(fixedStepContext, ActionSystemExecutionContext.PrepareFixedStep);
                             }
                         }
 
-                        WorldStepFunction?.Invoke(fixedStepContext, TimeState);
+                        FixStepProgress?.Invoke(this, new WorldStepEventArgs<TGameContext>(fixedStepContext, TimeState));
 
                         foreach (var handler in FixedStepHandlers)
                         {
                             using (LogContext.PushProperty("GameLoop.Time", w2.Elapsed.TotalMilliseconds))
                             {
-                                handler.PerformAction(fixedStepContext, "FixedStep");
+                                handler.PerformAction(fixedStepContext, ActionSystemExecutionContext.FixedStep);
                             }
                         }
 
-                        foreach (var stepHandler in LateStepHandlers)
+                        foreach (var stepHandler in LateFixedStepHandlers)
                         {
                             using (LogContext.PushProperty("GameLoop.Time", w2.Elapsed.TotalMilliseconds))
                             {
-                                stepHandler.PerformAction(fixedStepContext, "LateFixedStep");
+                                stepHandler.PerformAction(fixedStepContext, ActionSystemExecutionContext.LateFixedStep);
                             }
                         }
 
@@ -170,15 +195,17 @@ namespace RogueEntity.Core.Infrastructure.GameLoops
                 {
                     using (LogContext.PushProperty("GameLoop.Time", w.Elapsed.TotalMilliseconds))
                     {
-                        stepHandler.PerformAction(gameContext, "VariableStep");
+                        stepHandler.PerformAction(gameContext, ActionSystemExecutionContext.VariableStep);
                     }
                 }
 
-                foreach (var stepHandler in LateStepHandlers)
+                VariableStepProgress?.Invoke(this, new WorldStepEventArgs<TGameContext>(gameContext, TimeState));
+                
+                foreach (var stepHandler in LateVariableStepHandlers)
                 {
                     using (LogContext.PushProperty("GameLoop.Time", w.Elapsed.TotalMilliseconds))
                     {
-                        stepHandler.PerformAction(gameContext, "Variable-LateStep");
+                        stepHandler.PerformAction(gameContext, ActionSystemExecutionContext.LateVariableStep);
                     }
                 }
             }
@@ -187,10 +214,5 @@ namespace RogueEntity.Core.Infrastructure.GameLoops
         }
 
         public GameTimeState TimeState { get; private set; }
-
-        public void Enqueue(Action<TGameContext> command)
-        {
-            commands.Enqueue(command);
-        }
     }
 }

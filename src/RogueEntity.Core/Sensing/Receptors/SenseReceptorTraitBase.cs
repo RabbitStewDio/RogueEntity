@@ -27,7 +27,7 @@ namespace RogueEntity.Core.Sensing.Receptors
             this.active = active;
         }
 
-        public abstract string Id { get; }
+        public abstract ItemTraitId Id { get; }
         public abstract int Priority { get; }
 
         public IReferenceItemTrait<TGameContext, TActorId> CreateInstance()

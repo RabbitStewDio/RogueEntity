@@ -15,7 +15,7 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Touch
 {
     [TestFixture]
     public class TouchReceptorTraitTest : ItemComponentTraitTestBase<SenseMappingTestContext, ActorReference, SensoryReceptorData<TouchSense, TouchSense>,
-        TouchReceptorTrait<SenseMappingTestContext, ActorReference>>
+        TouchSenseTrait<SenseMappingTestContext, ActorReference>>
     {
         readonly TouchSenseReceptorPhysicsConfiguration physics;
 
@@ -41,12 +41,12 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Touch
         }
 
         protected override EntityRegistry<ActorReference> EntityRegistry => Context.ActorEntityRegistry;
-        protected override ItemRegistry<SenseMappingTestContext, ActorReference> ItemRegistry => Context.ActorRegistry;
+        protected override IItemRegistryBackend<SenseMappingTestContext, ActorReference> ItemRegistry => Context.ActorRegistry;
         protected override IBulkDataStorageMetaData<ActorReference> ItemIdMetaData => new ActorReferenceMetaData();
 
-        protected override TouchReceptorTrait<SenseMappingTestContext, ActorReference> CreateTrait()
+        protected override TouchSenseTrait<SenseMappingTestContext, ActorReference> CreateTrait()
         {
-            return new TouchReceptorTrait<SenseMappingTestContext, ActorReference>(physics);
+            return new TouchSenseTrait<SenseMappingTestContext, ActorReference>(physics);
         }
 
         protected override IItemComponentTestDataFactory<SensoryReceptorData<TouchSense, TouchSense>> ProduceTestData(EntityRelations<ActorReference> relations)

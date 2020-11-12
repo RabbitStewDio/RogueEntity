@@ -1,9 +1,10 @@
+using EnTTSharp.Entities;
+using RogueEntity.Core.Infrastructure.GameLoops;
 using RogueEntity.Core.Infrastructure.Modules;
 using RogueEntity.Core.Infrastructure.Modules.Attributes;
 using RogueEntity.Core.Infrastructure.Modules.Services;
 using RogueEntity.Core.Sensing.Common;
 using RogueEntity.Core.Sensing.Common.Physics;
-using RogueEntity.Core.Sensing.Common.ShadowCast;
 using RogueEntity.Core.Sensing.Sources.Light;
 
 namespace RogueEntity.Core.Sensing.Receptors.Light
@@ -24,19 +25,16 @@ namespace RogueEntity.Core.Sensing.Receptors.Light
             DeclareDependencies(ModuleDependency.Of(LightSourceModule.ModuleId));
         }
 
+        protected override void RegisterCalculateDirectionalSystem<TGameContext, TItemId>(in ModuleInitializationParameter initParameter,
+                                                                                          IGameLoopSystemRegistration<TGameContext> context,
+                                                                                          EntityRegistry<TItemId> registry)
+        {
+            RegisterCalculateOmniDirectionalSystem(in initParameter, context, registry);
+        }
+
         protected override (ISensePropagationAlgorithm, ISensePhysics) GetOrCreatePhysics(IServiceResolver serviceResolver)
         {
-            if (!serviceResolver.TryResolve(out IVisionSenseReceptorPhysicsConfiguration physics))
-            {
-                var physicsConfig = serviceResolver.Resolve<ILightPhysicsConfiguration>();
-                if (!serviceResolver.TryResolve(out ShadowPropagationResistanceDataSource ds))
-                {
-                    ds = new ShadowPropagationResistanceDataSource();
-                }
-
-                physics = new VisionSenseReceptorPhysicsConfiguration(physicsConfig, ds);
-            }
-
+            var physics = serviceResolver.GetOrCreateVisionSensorPhysics();
             return (physics.CreateVisionSensorPropagationAlgorithm(), physics.VisionPhysics);
         }
     }

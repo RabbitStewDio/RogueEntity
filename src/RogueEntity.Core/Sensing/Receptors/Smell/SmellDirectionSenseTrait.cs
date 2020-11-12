@@ -8,14 +8,14 @@ namespace RogueEntity.Core.Sensing.Receptors.Smell
 {
     public class SmellDirectionSenseTrait<TGameContext, TActorId> : SenseReceptorTraitBase<TGameContext, TActorId, SmellSense, SmellSense>,
                                                                     IItemComponentInformationTrait<TGameContext, TActorId, ISmellDirectionMap>
-        where TActorId : IBulkDataStorageKey<TActorId>
+        where TActorId : IEntityKey
     {
         public SmellDirectionSenseTrait([NotNull] ISmellSenseReceptorPhysicsConfiguration physicsConfiguration,
                                         float intensity, bool active = true) : base(physicsConfiguration.SmellPhysics, intensity, active)
         {
         }
 
-        public override string Id => "Core.Sense.Receptor.Smell";
+        public override ItemTraitId Id => "Core.Sense.Receptor.Smell";
         public override int Priority => 100;
 
         public bool TryQuery(IEntityViewControl<TActorId> v, TGameContext context, TActorId k, out ISmellDirectionMap t)

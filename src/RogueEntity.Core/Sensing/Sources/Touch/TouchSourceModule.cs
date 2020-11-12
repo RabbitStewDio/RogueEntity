@@ -20,9 +20,9 @@ namespace RogueEntity.Core.Sensing.Sources.Touch
             IsFrameworkModule = true;
         }
 
-        protected override (ISensePropagationAlgorithm, ISensePhysics) GetOrCreateSensePhysics(IServiceResolver resolver)
+        protected override (ISensePropagationAlgorithm, ISensePhysics) GetOrCreateSensePhysics(IServiceResolver serviceResolver)
         {
-            var physics = resolver.Resolve<ITouchReceptorPhysicsConfiguration>();
+            var physics = serviceResolver.GetOrCreateTouchPhysics();
             return (physics.CreateTouchSensorPropagationAlgorithm(), physics.TouchPhysics);
         }
 

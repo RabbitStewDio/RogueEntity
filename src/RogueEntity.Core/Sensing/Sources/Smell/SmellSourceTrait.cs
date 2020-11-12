@@ -12,7 +12,7 @@ namespace RogueEntity.Core.Sensing.Sources.Smell
                                                           IItemComponentTrait<TGameContext, TItemId, SmellSource>
         where TItemId : IEntityKey
     {
-        public override string Id => "Core.Item.SmellSource";
+        public override ItemTraitId Id => "Core.Item.SmellSource";
         public override int Priority => 100;
 
         readonly ISmellPhysicsConfiguration physics;

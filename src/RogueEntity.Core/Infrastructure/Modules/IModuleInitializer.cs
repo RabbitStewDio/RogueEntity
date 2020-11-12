@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using EnTTSharp.Entities;
 using RogueEntity.Core.Meta.Items;
 
@@ -16,37 +17,35 @@ namespace RogueEntity.Core.Infrastructure.Modules
 
     public interface IModuleInitializationData<TGameContext>
     {
-        IEnumerable<IGlobalSystemRegistration<TGameContext>> GlobalSystems { get; }
+        IEnumerable<IGlobalSystemDeclaration<TGameContext>> GlobalSystems { get; }
+        IEnumerable<(Type entityType, Action<IModuleEntityInitializationCallback<TGameContext>> callback)> EntityInitializers { get; }
     }
 
     public interface IModuleInitializationData<TGameContext, TEntityId>
         where TEntityId : IEntityKey
     {
-        IEnumerable<IBulkItemDeclaration<TGameContext, TEntityId>> DeclaredBulkItems { get; }
-        IEnumerable<IReferenceItemDeclaration<TGameContext, TEntityId>> DeclaredReferenceItems { get; }
+        IEnumerable<(ModuleId, IBulkItemDeclaration<TGameContext, TEntityId>)> DeclaredBulkItems { get; }
+        IEnumerable<(ModuleId, IReferenceItemDeclaration<TGameContext, TEntityId>)> DeclaredReferenceItems { get; }
         IEnumerable<IEntitySystemDeclaration<TGameContext, TEntityId>> EntitySystems { get; }
     }
-    
-    public interface IEntitySystemDeclaration<TGameContext, TEntityId>
-        where TEntityId : IEntityKey
+
+    public interface ISystemDeclaration
     {
-        string DeclaringModule { get; }
+        ModuleId DeclaringModule { get; }
         EntitySystemId Id { get; }
         int Priority { get; }
         int InsertionOrder { get; }
-
-        public EntityRegistrationDelegate<TEntityId> EntityRegistration { get;  }
-        public EntitySystemRegistrationDelegate<TGameContext, TEntityId> EntitySystemRegistration { get; }
-
     }
     
-    public interface IGlobalSystemRegistration<TGameContext>
+    public interface IEntitySystemDeclaration<TGameContext, TEntityId>: ISystemDeclaration
+        where TEntityId : IEntityKey
     {
-        string DeclaringModule { get; }
-        EntitySystemId Id { get; }
-        int Priority { get; }
-        int InsertionOrder { get; }
-        
+        public EntityRegistrationDelegate<TEntityId> EntityRegistration { get;  }
+        public EntitySystemRegistrationDelegate<TGameContext, TEntityId> EntitySystemRegistration { get; }
+    }
+    
+    public interface IGlobalSystemDeclaration<TGameContext>: ISystemDeclaration
+    {
         GlobalSystemRegistrationDelegate<TGameContext> SystemRegistration { get; }
     }
 }

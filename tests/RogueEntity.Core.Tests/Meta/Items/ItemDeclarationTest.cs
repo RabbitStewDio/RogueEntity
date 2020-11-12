@@ -155,13 +155,13 @@ namespace RogueEntity.Core.Tests.Meta.Items
 
         class CallTracerReferenceTrait : IReferenceItemTrait<BasicItemContext, ItemReference>
         {
-            public CallTracerReferenceTrait(string id, int priority)
+            public CallTracerReferenceTrait(ItemTraitId id, int priority)
             {
                 Id = id;
                 Priority = priority;
             }
 
-            public string Id { get; }
+            public ItemTraitId Id { get; }
             public int Priority { get; }
             public int InitCallCount { get; private set; }
             public int ApplyCallCount { get; private set; }
@@ -194,13 +194,13 @@ namespace RogueEntity.Core.Tests.Meta.Items
 
         class CallTracerBulkTrait : IBulkItemTrait<BasicItemContext, ItemReference>
         {
-            public CallTracerBulkTrait(string id, int priority)
+            public CallTracerBulkTrait(ItemTraitId id, int priority)
             {
                 Id = id;
                 Priority = priority;
             }
 
-            public string Id { get; }
+            public ItemTraitId Id { get; }
             public int Priority { get; }
             public int InitCallCount { get; private set; }
 

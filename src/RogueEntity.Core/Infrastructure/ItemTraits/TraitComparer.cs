@@ -30,7 +30,7 @@ namespace RogueEntity.Core.Infrastructure.ItemTraits
                 return p;
             }
 
-            return string.Compare(x.Id, y.Id, StringComparison.Ordinal);
+            return string.Compare(x.Id.Id, y.Id.Id, StringComparison.Ordinal);
         }
     }
 }

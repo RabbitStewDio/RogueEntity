@@ -24,7 +24,7 @@ namespace RogueEntity.Core.Meta.ItemTraits
             this.baseValue = new Durability(initialCount, maxDurability);
         }
 
-        public string Id { get; }
+        public ItemTraitId Id { get; }
         public int Priority { get; }
 
 

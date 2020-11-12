@@ -14,7 +14,7 @@ namespace RogueEntity.Core.Tests.Sensing.Resistance
     {
         protected override IBulkDataStorageMetaData<ItemReference> ItemIdMetaData => new ItemReferenceMetaData();
         protected override EntityRegistry<ItemReference> EntityRegistry => Context.ItemEntities;
-        protected override ItemRegistry<BasicItemContext, ItemReference> ItemRegistry => Context.ItemRegistry;
+        protected override IItemRegistryBackend<BasicItemContext, ItemReference> ItemRegistry => Context.ItemRegistry;
 
         public SensoryResistanceTraitTest()
         {

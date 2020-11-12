@@ -12,21 +12,21 @@ using RogueEntity.Core.Utils.Algorithms;
 
 namespace RogueEntity.Core.Sensing.Receptors.Touch
 {
-    public sealed class TouchReceptorTrait<TGameContext, TActorId>: SenseReceptorTraitBase<TGameContext, TActorId, TouchSense, TouchSense>,
+    public sealed class TouchSenseTrait<TGameContext, TActorId>: SenseReceptorTraitBase<TGameContext, TActorId, TouchSense, TouchSense>,
                                                              IItemComponentInformationTrait<TGameContext, TActorId, ITouchDirectionMap>,
                                                              IItemComponentTrait<TGameContext, TActorId, TouchSourceDefinition>
         where TActorId : IEntityKey
     {
         readonly ITouchReceptorPhysicsConfiguration touchPhysics;
 
-        public TouchReceptorTrait([NotNull] ITouchReceptorPhysicsConfiguration touchPhysics, bool active = true) : base(touchPhysics.TouchPhysics, GetStandardIntensity(touchPhysics), active)
+        public TouchSenseTrait([NotNull] ITouchReceptorPhysicsConfiguration touchPhysics, bool active = true) : base(touchPhysics.TouchPhysics, GetStandardIntensity(touchPhysics), active)
         {
             this.touchPhysics = touchPhysics;
         }
 
         static float GetStandardIntensity(ITouchReceptorPhysicsConfiguration p) => p.TouchPhysics.DistanceMeasurement.MaximumStepDistance();
         
-        public override string Id => "Core.Sense.Receptor.Touch";
+        public override ItemTraitId Id => "Core.Sense.Receptor.Touch";
         public override int Priority => 100;
 
         public override void Initialize(IEntityViewControl<TActorId> v, TGameContext context, TActorId k, IItemDeclaration item)

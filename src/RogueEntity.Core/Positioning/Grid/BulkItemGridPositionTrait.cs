@@ -35,7 +35,7 @@ namespace RogueEntity.Core.Positioning.Grid
             layerPreference = new MapLayerPreference(layer, layers);
         }
 
-        public string Id { get; }
+        public ItemTraitId Id { get; }
         public int Priority { get; }
 
         public IBulkItemTrait<TGameContext, TItemId> CreateInstance()

@@ -53,5 +53,10 @@ namespace RogueEntity.Core.Infrastructure.ItemTraits
         {
             return !left.Equals(right);
         }
+
+        public override string ToString()
+        {
+            return $"{nameof(Relation)}(\'{Relation.Id}\', Subject: ({SubjectEntityType}, {Relation.Subject.Id}), Target: ({ObjectEntityType}, {Relation.Object.Id}))";
+        }
     }
 }

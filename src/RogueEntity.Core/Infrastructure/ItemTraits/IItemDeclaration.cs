@@ -12,7 +12,7 @@ namespace RogueEntity.Core.Infrastructure.ItemTraits
         bool TryQuery<TTrait>(out TTrait t) where TTrait : IItemTrait;
         List<TTrait> QueryAll<TTrait>(List<TTrait> cache = null) where TTrait : IItemTrait;
         
-        public IEnumerable<EntityRoleInstance> GetEntityRoles();
-        public IEnumerable<EntityRelationInstance> GetEntityRelations();
+        public IEnumerable<(ItemTraitId traitId, EntityRoleInstance role)> GetEntityRoles();
+        public IEnumerable<(ItemTraitId traitId, EntityRelationInstance relation)> GetEntityRelations();
     }
 }

@@ -1,7 +1,6 @@
 using System;
 using EnTTSharp.Entities;
 using EnTTSharp.Entities.Systems;
-using RogueEntity.Core.Infrastructure.Commands;
 using RogueEntity.Core.Infrastructure.GameLoops;
 using RogueEntity.Core.Infrastructure.ItemTraits;
 using RogueEntity.Core.Infrastructure.Modules;
@@ -62,8 +61,7 @@ namespace RogueEntity.Core.Sensing.Map.InfraVision
 
         void RegisterCollectSenseSourcesSystem<TGameContext, TItemId>(in ModuleInitializationParameter initParameter,
                                                                       IGameLoopSystemRegistration<TGameContext> context,
-                                                                      EntityRegistry<TItemId> registry,
-                                                                      ICommandHandlerRegistration<TGameContext, TItemId> handler)
+                                                                      EntityRegistry<TItemId> registry)
             where TItemId : IEntityKey
         {
             var resolver = initParameter.ServiceResolver;
@@ -80,8 +78,7 @@ namespace RogueEntity.Core.Sensing.Map.InfraVision
 
         void RegisterComputeSenseMapSystem<TGameContext, TItemId>(in ModuleInitializationParameter initParameter,
                                                                   IGameLoopSystemRegistration<TGameContext> context,
-                                                                  EntityRegistry<TItemId> registry,
-                                                                  ICommandHandlerRegistration<TGameContext, TItemId> handler)
+                                                                  EntityRegistry<TItemId> registry)
             where TItemId : IEntityKey
         {
             var resolver = initParameter.ServiceResolver;

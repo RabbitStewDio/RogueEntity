@@ -13,16 +13,16 @@ namespace RogueEntity.Core.Tests.Modules
 {
     public class ModuleContext
     {
-        public readonly List<(string, Type)> RegisteredStuff;
-        public readonly List<string> RegisteredContent;
+        public readonly List<(ModuleId, Type)> RegisteredStuff;
+        public readonly List<ModuleId> RegisteredContent;
 
         public ModuleContext()
         {
-            RegisteredContent = new List<string>();
-            RegisteredStuff = new List<(string, Type)>();
+            RegisteredContent = new List<ModuleId>();
+            RegisteredStuff = new List<(ModuleId, Type)>();
         }
 
-        public void RegisterContent(string module)
+        public void RegisterContent(ModuleId module)
         {
             if (RegisteredContent.Contains(module))
             {
@@ -32,7 +32,7 @@ namespace RogueEntity.Core.Tests.Modules
             RegisteredContent.Add(module);
         }
 
-        public void RegisterEntity(string module, Type entity)
+        public void RegisterEntity(ModuleId module, Type entity)
         {
             if (RegisteredStuff.Contains((module, entity)))
             {

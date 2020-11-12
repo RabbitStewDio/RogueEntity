@@ -54,7 +54,7 @@ namespace RogueEntity.Core.Tests.Positioning
             return mapBackend.TryGetGridDataFor(layer, out data);
         }
 
-        public ItemRegistry<TestGridPositionContext, ItemReference> ItemRegistry
+        public IItemRegistryBackend<TestGridPositionContext, ItemReference> ItemRegistry
         {
             get { return itemContextBackend.ItemRegistry; }
         }

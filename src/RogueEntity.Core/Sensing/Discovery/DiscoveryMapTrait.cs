@@ -10,7 +10,7 @@ namespace RogueEntity.Core.Sensing.Discovery
                                                              IItemComponentInformationTrait<TGameContext, TActorId, IDiscoveryMap>
         where TActorId : IEntityKey
     {
-        public string Id => "Actor.Generic.DiscoveryMap";
+        public ItemTraitId Id => "Actor.Generic.DiscoveryMap";
         public int Priority => 100;
 
         public IReferenceItemTrait<TGameContext, TActorId> CreateInstance()

@@ -11,13 +11,13 @@ namespace RogueEntity.Core.Meta.Items
         where TItemId : IEntityKey
 
     {
-        protected StatelessItemComponentTraitBase(string id, int priority)
+        protected StatelessItemComponentTraitBase(ItemTraitId id, int priority)
         {
             Id = id;
             Priority = priority;
         }
 
-        public string Id { get; }
+        public ItemTraitId Id { get; }
         public int Priority { get; }
 
         protected abstract TData GetData(TGameContext context, TItemId k);

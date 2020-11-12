@@ -1,10 +1,8 @@
 using EnTTSharp.Entities;
-using RogueEntity.Core.Infrastructure.Commands;
 using RogueEntity.Core.Infrastructure.GameLoops;
 using RogueEntity.Core.Infrastructure.ItemTraits;
 using RogueEntity.Core.Infrastructure.Modules;
 using RogueEntity.Core.Infrastructure.Modules.Attributes;
-using RogueEntity.Core.Infrastructure.Modules.Services;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Grid;
 
@@ -53,8 +51,7 @@ namespace RogueEntity.Core.Sensing.Cache
 
         void RegisterSenseCacheLifeCycle<TGameContext, TItemId>(in ModuleInitializationParameter initParameter,
                                                                 IGameLoopSystemRegistration<TGameContext> context,
-                                                                EntityRegistry<TItemId> registry,
-                                                                ICommandHandlerRegistration<TGameContext, TItemId> handler)
+                                                                EntityRegistry<TItemId> registry)
             where TGameContext : IGridMapContext<TItemId>
             where TItemId : IEntityKey
         {
@@ -65,8 +62,8 @@ namespace RogueEntity.Core.Sensing.Cache
                 resolver.Store(system);
                 resolver.Store<ISenseCacheSetupSystem>(system);
 
-                context.AddInitializationStepHandler(system.Start);
-                context.AddDisposeStepHandler(system.Stop);
+                context.AddInitializationStepHandler(system.Start, nameof(system.Start));
+                context.AddDisposeStepHandler(system.Stop, nameof(system.Stop));
             }
         }
 
@@ -78,6 +75,7 @@ namespace RogueEntity.Core.Sensing.Cache
             {
                 cache = new SenseStateCache(4, 64, 64);
                 resolver.Store(cache);
+                resolver.Store<ISenseStateCacheControl>(cache);
                 resolver.Store<ISenseStateCacheProvider>(cache);
                 resolver.Store<IGlobalSenseStateCacheProvider>(cache);
             }

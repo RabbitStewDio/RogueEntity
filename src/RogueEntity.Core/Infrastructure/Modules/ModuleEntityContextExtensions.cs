@@ -1,5 +1,4 @@
 using EnTTSharp.Entities;
-using RogueEntity.Core.Infrastructure.Commands;
 using RogueEntity.Core.Infrastructure.GameLoops;
 
 namespace RogueEntity.Core.Infrastructure.Modules
@@ -8,8 +7,7 @@ namespace RogueEntity.Core.Infrastructure.Modules
     {
         static void EmptyInitializer<TGameContext, TEntityId>(in ModuleInitializationParameter initParameter,
                                                               IGameLoopSystemRegistration<TGameContext> context,
-                                                              EntityRegistry<TEntityId> registry,
-                                                              ICommandHandlerRegistration<TGameContext, TEntityId> handler)
+                                                              EntityRegistry<TEntityId> registry)
             where TEntityId : IEntityKey
         {
         }

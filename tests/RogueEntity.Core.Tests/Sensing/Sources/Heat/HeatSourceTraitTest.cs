@@ -33,7 +33,7 @@ namespace RogueEntity.Core.Tests.Sensing.Sources.Heat
         }
 
         protected override EntityRegistry<ActorReference> EntityRegistry => Context.ActorEntityRegistry;
-        protected override ItemRegistry<SenseMappingTestContext, ActorReference> ItemRegistry => Context.ActorRegistry;
+        protected override IItemRegistryBackend<SenseMappingTestContext, ActorReference> ItemRegistry => Context.ActorRegistry;
         protected override IBulkDataStorageMetaData<ActorReference> ItemIdMetaData => new ActorReferenceMetaData();
 
         protected override HeatSourceTrait<SenseMappingTestContext, ActorReference> CreateTrait()

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using RogueEntity.Core.Infrastructure.Modules.Attributes;
-using RogueEntity.Core.Infrastructure.Modules.Services;
 using RogueEntity.Core.Utils;
 
 namespace RogueEntity.Core.Infrastructure.Modules
@@ -86,7 +85,7 @@ namespace RogueEntity.Core.Infrastructure.Modules
                     continue;
                 }
 
-                if (m.IsSameAction(typeof(IServiceResolver), typeof(IModuleInitializer<TGameContext>)))
+                if (m.IsSameAction(typeof(ModuleInitializationParameter).MakeByRefType(), typeof(IModuleInitializer<TGameContext>)))
                 {
                     actions.Add((ModuleInitializerDelegate<TGameContext>)Delegate.CreateDelegate(typeof(ModuleInitializerDelegate<TGameContext>), module, m));
                     Logger.Verbose("Found plain module initializer {Method}", m);
@@ -95,14 +94,14 @@ namespace RogueEntity.Core.Infrastructure.Modules
 
                 if (!m.IsSameGenericAction(new[] {typeof(TGameContext)},
                                            out var genericMethod, out var errorHint,
-                                           typeof(IServiceResolver), typeof(IModuleInitializer<TGameContext>)))
+                                           typeof(ModuleInitializationParameter).MakeByRefType(), typeof(IModuleInitializer<TGameContext>)))
                 {
                     if (!string.IsNullOrEmpty(errorHint))
                     {
                         throw new ArgumentException(errorHint);
                     }
 
-                    throw new ArgumentException($"Expected a method with signature 'void XXX(IServiceResolver, IModuleInitializer<TGameContext>), but found {m} in module {module.Id}");
+                    throw new ArgumentException($"Expected a method with signature 'void XXX(ModuleInitializationParameter by ref, IModuleInitializer<TGameContext>), but found {m} in module {module.Id}");
                 }
 
                 Logger.Verbose("Found generic module initializer {Method}", genericMethod);
@@ -123,7 +122,7 @@ namespace RogueEntity.Core.Infrastructure.Modules
                     continue;
                 }
 
-                if (m.IsSameAction(typeof(IServiceResolver), typeof(IModuleInitializer<TGameContext>)))
+                if (m.IsSameAction(typeof(ModuleInitializationParameter).MakeByRefType(), typeof(IModuleInitializer<TGameContext>)))
                 {
                     actions.Add((ModuleContentInitializerDelegate<TGameContext>)Delegate.CreateDelegate(typeof(ModuleContentInitializerDelegate<TGameContext>), module, m));
                     Logger.Verbose("Found plain module initializer {Method}", m);
@@ -132,7 +131,7 @@ namespace RogueEntity.Core.Infrastructure.Modules
 
                 if (!m.IsSameGenericAction(new[] {typeof(TGameContext)},
                                            out var genericMethod, out var errorHint,
-                                           typeof(IServiceResolver), typeof(IModuleInitializer<TGameContext>)))
+                                           typeof(ModuleInitializationParameter).MakeByRefType(), typeof(IModuleInitializer<TGameContext>)))
                 {
                     if (!string.IsNullOrEmpty(errorHint))
                     {

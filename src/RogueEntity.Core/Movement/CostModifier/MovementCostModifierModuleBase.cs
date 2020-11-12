@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using EnTTSharp.Entities;
 using RogueEntity.Core.GridProcessing.LayerAggregation;
-using RogueEntity.Core.Infrastructure.Commands;
 using RogueEntity.Core.Infrastructure.GameLoops;
 using RogueEntity.Core.Infrastructure.ItemTraits;
 using RogueEntity.Core.Infrastructure.Modules;
@@ -63,8 +62,7 @@ namespace RogueEntity.Core.Movement.CostModifier
 
         protected void RegisterResistanceSystemLifecycle<TGameContext, TItemId>(in ModuleInitializationParameter initParameter,
                                                                                 IGameLoopSystemRegistration<TGameContext> context,
-                                                                                EntityRegistry<TItemId> registry,
-                                                                                ICommandHandlerRegistration<TGameContext, TItemId> handler)
+                                                                                EntityRegistry<TItemId> registry)
             where TItemId : IEntityKey
         {
             var serviceResolver = initParameter.ServiceResolver;
@@ -75,8 +73,7 @@ namespace RogueEntity.Core.Movement.CostModifier
 
         protected void RegisterResistanceSystemExecution<TGameContext, TItemId>(in ModuleInitializationParameter initParameter,
                                                                                 IGameLoopSystemRegistration<TGameContext> context,
-                                                                                EntityRegistry<TItemId> registry,
-                                                                                ICommandHandlerRegistration<TGameContext, TItemId> handler)
+                                                                                EntityRegistry<TItemId> registry)
             where TItemId : IEntityKey
         {
             var serviceResolver = initParameter.ServiceResolver;
@@ -88,8 +85,7 @@ namespace RogueEntity.Core.Movement.CostModifier
 
         protected void RegisterProcessSenseDirectionalitySystem<TGameContext, TItemId>(in ModuleInitializationParameter initParameter,
                                                                                        IGameLoopSystemRegistration<TGameContext> context,
-                                                                                       EntityRegistry<TItemId> registry,
-                                                                                       ICommandHandlerRegistration<TGameContext, TItemId> handler)
+                                                                                       EntityRegistry<TItemId> registry)
             where TItemId : IEntityKey
         {
             var serviceResolver = initParameter.ServiceResolver;
@@ -98,11 +94,11 @@ namespace RogueEntity.Core.Movement.CostModifier
             if (!serviceResolver.TryResolve(out MovementDirectionalitySystemRegisteredMarker _))
             {
                 serviceResolver.Store(new MovementDirectionalitySystemRegisteredMarker());
-                context.AddInitializationStepHandler(c => system.MarkGloballyDirty());
-                context.AddInitializationStepHandler(system.ProcessSystem);
-                context.AddInitializationStepHandler(system.MarkCleanSystem);
-                context.AddFixedStepHandlers(system.ProcessSystem);
-                context.AddFixedStepHandlers(system.MarkCleanSystem);
+                context.AddInitializationStepHandler(c => system.MarkGloballyDirty(), nameof(system.MarkGloballyDirty));
+                context.AddInitializationStepHandler(system.ProcessSystem, nameof(system.ProcessSystem));
+                context.AddInitializationStepHandler(system.MarkCleanSystem, nameof(system.MarkCleanSystem));
+                context.AddFixedStepHandlers(system.ProcessSystem, nameof(system.ProcessSystem));
+                context.AddFixedStepHandlers(system.MarkCleanSystem, nameof(system.MarkCleanSystem));
             }
         }
 

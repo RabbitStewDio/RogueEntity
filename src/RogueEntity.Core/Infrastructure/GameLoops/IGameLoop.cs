@@ -1,44 +1,42 @@
 ﻿using System;
-using System.Collections.Generic;
 using RogueEntity.Core.Infrastructure.Time;
 
 namespace RogueEntity.Core.Infrastructure.GameLoops
 {
     public delegate TGameContext ContextForTimeStepProvider<out TGameContext>(TimeSpan elapsedTime, TimeSpan totalTime);
 
-    public delegate void WorldStepDelegate<in TGameContext>(TGameContext context, GameTimeState time);
-
-    /// <summary>
-    ///  This interface is intentionally kept separate from the normal game loop interface so that
-    ///  nosy people don't get tempted to use it for their own purposes. The late step handlers contain
-    ///  clean up code that must run each frame.
-    /// </summary>
-    /// <typeparam name="TGameContext"></typeparam>
-    public interface ISystemGameLoop<TGameContext>
+    public readonly struct WorldStepEventArgs<TGameContext>
     {
-        List<ActionSystemEntry<TGameContext>> LateStepHandlers { get; }
-    }
+        public readonly TGameContext Context;
+        public readonly GameTimeState Time;
 
-    public interface ISystemGameLoopRegistration<TGameContext>
-    {
-        void AddLateStepHandlers(Action<TGameContext> c);
-    }
-
+        public WorldStepEventArgs(TGameContext context, GameTimeState time)
+        {
+            Context = context;
+            Time = time;
+        }
+    } 
+    
     public interface IGameLoopSystemRegistration<TGameContext>
     {
-        TGameContext Context { get; }
-        void AddInitializationStepHandler(Action<TGameContext> c);
-        void AddPreFixedStepHandlers(Action<TGameContext> c);
-        void AddFixedStepHandlers(Action<TGameContext> c);
-        void AddVariableStepHandlers(Action<TGameContext> c);
-        void AddDisposeStepHandler(Action<TGameContext> c);
+        // TGameContext Context { get; }
+        void AddInitializationStepHandler(Action<TGameContext> c, string description = null);
+        void AddPreFixedStepHandlers(Action<TGameContext> c, string description = null);
+        void AddFixedStepHandlers(Action<TGameContext> c, string description = null);
+        void AddLateFixedStepHandlers(Action<TGameContext> c, string description = null);
+        void AddVariableStepHandlers(Action<TGameContext> c, string description = null);
+        void AddLateVariableStepHandlers(Action<TGameContext> c, string description = null);
+        void AddDisposeStepHandler(Action<TGameContext> c, string description = null);
     }
 
     public interface IGameLoop<TGameContext>
     {
-        void Enqueue(Action<TGameContext> command);
-        void Initialize();
+        void Initialize(ContextForTimeStepProvider<TGameContext> contextProvider, 
+                        Func<bool> isWaitingForInputDelegate = null);
         void Update(TimeSpan absoluteTime);
         ITimeSource TimeSource { get; }
+
+        event EventHandler<WorldStepEventArgs<TGameContext>> FixStepProgress;
+        event EventHandler<WorldStepEventArgs<TGameContext>> VariableStepProgress;
     }
 }

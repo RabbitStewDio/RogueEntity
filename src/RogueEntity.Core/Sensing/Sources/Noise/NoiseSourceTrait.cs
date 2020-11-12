@@ -12,7 +12,7 @@ namespace RogueEntity.Core.Sensing.Sources.Noise
                                                            IItemComponentTrait<TGameContext, TItemId, NoiseClip>
         where TItemId : IEntityKey
     {
-        public override string Id => "Core.Item.NoiseSource";
+        public override ItemTraitId Id => "Core.Item.NoiseSource";
         public override int Priority => 100;
 
         readonly INoisePhysicsConfiguration physics;

@@ -137,13 +137,13 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Touch
             switch (decl.Id.Id)
             {
                 case "SenseReceptor-Active-10":
-                    decl.WithTrait(new TouchReceptorTrait<SenseMappingTestContext, ItemReference>(physics));
+                    decl.WithTrait(new TouchSenseTrait<SenseMappingTestContext, ItemReference>(physics));
                     return decl;
                 case "SenseReceptor-Active-5":
-                    decl.WithTrait(new TouchReceptorTrait<SenseMappingTestContext, ItemReference>(physics));
+                    decl.WithTrait(new TouchSenseTrait<SenseMappingTestContext, ItemReference>(physics));
                     return decl;
                 case "SenseReceptor-Inactive-5":
-                    decl.WithTrait(new TouchReceptorTrait<SenseMappingTestContext, ItemReference>(physics, false));
+                    decl.WithTrait(new TouchSenseTrait<SenseMappingTestContext, ItemReference>(physics, false));
                     return decl;
                 case "SenseSource-Active-10":
                     return decl;

@@ -2,17 +2,18 @@
 
 namespace RogueEntity.Core.Meta.Items
 {
-    public class ItemContextBackend<TGameContext, TItemId>: IItemContext<TGameContext, TItemId>
+    public class ItemContextBackend<TGameContext, TItemId>: IItemContextBackend<TGameContext, TItemId>
         where TItemId : IBulkDataStorageKey<TItemId>
     {
         public ItemContextBackend(IBulkDataStorageMetaData<TItemId> meta)
         {
+            var itemRegistry = new ItemRegistry<TGameContext, TItemId>(meta.BulkDataFactory);
+            ItemRegistry = itemRegistry;
             EntityRegistry = new EntityRegistry<TItemId>(meta.MaxAge, meta.EntityKeyFactory);
-            ItemRegistry = new ItemRegistry<TGameContext, TItemId>(meta.BulkDataFactory);
-            ItemResolver = new ItemResolver<TGameContext, TItemId>(ItemRegistry, EntityRegistry);
+            ItemResolver = new ItemResolver<TGameContext, TItemId>(itemRegistry, EntityRegistry);
         }
 
-        public ItemRegistry<TGameContext, TItemId> ItemRegistry { get; }
+        public IItemRegistryBackend<TGameContext, TItemId> ItemRegistry { get; }
         public EntityRegistry<TItemId> EntityRegistry { get; }
         public IItemResolver<TGameContext, TItemId> ItemResolver { get; }
 

@@ -1,8 +1,9 @@
+using EnTTSharp.Entities;
+using RogueEntity.Core.Infrastructure.GameLoops;
 using RogueEntity.Core.Infrastructure.Modules;
 using RogueEntity.Core.Infrastructure.Modules.Attributes;
 using RogueEntity.Core.Infrastructure.Modules.Services;
 using RogueEntity.Core.Sensing.Common;
-using RogueEntity.Core.Sensing.Common.FloodFill;
 using RogueEntity.Core.Sensing.Common.Physics;
 using RogueEntity.Core.Sensing.Sources.Noise;
 
@@ -24,19 +25,16 @@ namespace RogueEntity.Core.Sensing.Receptors.Noise
             DeclareDependency(ModuleDependency.Of(NoiseSourceModule.ModuleId));
         }
 
+        protected override void RegisterCalculateDirectionalSystem<TGameContext, TItemId>(in ModuleInitializationParameter initParameter,
+                                                                                          IGameLoopSystemRegistration<TGameContext> context,
+                                                                                          EntityRegistry<TItemId> registry)
+        {
+            RegisterCalculateUniDirectionalSystem(in initParameter, context, registry);
+        }
+
         protected override (ISensePropagationAlgorithm, ISensePhysics) GetOrCreatePhysics(IServiceResolver serviceResolver)
         {
-            if (!serviceResolver.TryResolve(out INoiseSenseReceptorPhysicsConfiguration physics))
-            {
-                var physicsConfig = serviceResolver.Resolve<INoisePhysicsConfiguration>();
-                if (!serviceResolver.TryResolve(out FloodFillWorkingDataSource ds))
-                {
-                    ds = new FloodFillWorkingDataSource();
-                }
-
-                physics = new NoiseSenseReceptorPhysicsConfiguration(physicsConfig, ds);
-            }
-
+            var physics = serviceResolver.GetOrCreateNoiseSensorPhysics();
             return (physics.CreateNoiseSensorPropagationAlgorithm(), physics.NoisePhysics);
         }
     }

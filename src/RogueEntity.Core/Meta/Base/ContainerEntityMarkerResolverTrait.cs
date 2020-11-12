@@ -17,7 +17,7 @@ namespace RogueEntity.Core.Meta.Base
         where TItemId : IEntityKey
     {
         readonly List<IItemComponentInformationTrait<TGameContext, TItemId, IContainerEntityMarker>> traits;
-        public string Id => "Core.Common.ContainerEntityMarkerQuery";
+        public ItemTraitId Id => "Core.Common.ContainerEntityMarkerQuery";
         public int Priority => 0;
 
         public ContainerEntityMarkerResolverTrait()
