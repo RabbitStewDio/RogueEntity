@@ -20,7 +20,7 @@ namespace RogueEntity.Core.Equipment
         public static readonly EntityRole EquipmentContainerRole = new EntityRole("Role.Core.Equipment.Container");
         public static readonly EntityRole EquipmentContainedItemRole = new EntityRole("Role.Core.Equipment.ContainedItem");
         public static readonly EntityRelation CanEquipRelation = new EntityRelation("Relation.Core.Equipment", EquipmentContainerRole, EquipmentContainedItemRole);
-        
+
         public EquipmentModule()
         {
             Id = "Core.Equipment";
@@ -35,7 +35,7 @@ namespace RogueEntity.Core.Equipment
         }
 
         [EntityRoleInitializer("Role.Core.Equipment.ContainedItem")]
-        protected void InitializeContainedItemRole<TGameContext, TItemId>(in ModuleInitializationParameter initParameter,
+        protected void InitializeContainedItemRole<TGameContext, TItemId>(in ModuleEntityInitializationParameter<TGameContext, TItemId> initParameter,
                                                                           IModuleInitializer<TGameContext> initializer,
                                                                           EntityRole r)
             where TItemId : IBulkDataStorageKey<TItemId>
@@ -45,7 +45,7 @@ namespace RogueEntity.Core.Equipment
         }
 
         [EntityRelationInitializer("Relation.Core.Equipment")]
-        protected void InitializeContainerEntities<TGameContext, TActorId, TItemId>(in ModuleInitializationParameter initParameter,
+        protected void InitializeContainerEntities<TGameContext, TActorId, TItemId>(in ModuleEntityInitializationParameter<TGameContext, TActorId> initParameter,
                                                                                     IModuleInitializer<TGameContext> initializer,
                                                                                     EntityRelation r)
             where TActorId : IEntityKey

@@ -25,7 +25,7 @@ namespace RogueEntity.Core.Sensing.Sources.Heat
             IsFrameworkModule = true;
         }
 
-        protected override SenseSourceSystem<TemperatureSense, HeatSourceDefinition> GetOrCreateSenseSystem<TGameContext, TItemId>(IServiceResolver serviceResolver)
+        protected override SenseSourceSystem<TemperatureSense, HeatSourceDefinition> GetOrCreateSenseSourceSystem<TGameContext, TItemId>(IServiceResolver serviceResolver)
         {
             if (!serviceResolver.TryResolve(out SenseSourceSystem<TemperatureSense, HeatSourceDefinition> ls))
             {

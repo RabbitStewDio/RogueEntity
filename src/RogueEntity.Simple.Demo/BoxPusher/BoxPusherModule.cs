@@ -1,6 +1,3 @@
-using EnTTSharp.Entities;
-using RogueEntity.Core.GridProcessing.LayerAggregation;
-using RogueEntity.Core.Infrastructure.GameLoops;
 using RogueEntity.Core.Infrastructure.ItemTraits;
 using RogueEntity.Core.Infrastructure.Modules;
 using RogueEntity.Core.Infrastructure.Modules.Attributes;
@@ -12,13 +9,11 @@ using RogueEntity.Core.Meta.Naming;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Positioning.MapLayers;
-using RogueEntity.Core.Sensing;
 using RogueEntity.Core.Sensing.Cache;
 using RogueEntity.Core.Sensing.Common.Physics;
 using RogueEntity.Core.Sensing.Common.ShadowCast;
 using RogueEntity.Core.Sensing.Receptors.Light;
 using RogueEntity.Core.Sensing.Resistance;
-using RogueEntity.Core.Sensing.Resistance.Maps;
 using RogueEntity.Core.Sensing.Sources.Light;
 using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.Algorithms;
@@ -28,9 +23,6 @@ namespace RogueEntity.Simple.Demo.BoxPusher
     [Module]
     public class BoxPusherModule : ModuleBase
     {
-        public static EntitySystemId SetUpItemSenseResistancesId = "System.Game.BoxPusher.SenseResistanceSystems.Items";
-        public static EntitySystemId SetUpFloorSenseResistancesId = "System.Game.BoxPusher.SenseResistanceSystems.Floor";
-
         public static EntityRole MovableItemRole = new EntityRole("Role.Game.BoxPusher.MovableItem");
         public static EntityRole FloorRole = new EntityRole("Role.Game.BoxPusher.Floor");
         public static EntityRole ActorRole = new EntityRole("Role.Game.BoxPusher.Actors");
@@ -46,25 +38,25 @@ namespace RogueEntity.Simple.Demo.BoxPusher
                                 ModuleDependency.Of(CoreModule.ModuleId));
 
             DeclareEntity<ItemReference>(MovableItemRole);
-                // .WithImpliedRole(CoreModule.ItemRole)
-                // .WithImpliedRole(PositionModule.GridPositionedRole)
-                // .WithImpliedRole(InventoryModule.ContainedItemRole)
-                // .WithImpliedRole(LightSourceModule.SenseSourceRole)
-                // .WithImpliedRole(LightSourceModule.ResistanceDataProviderRole);
+            // .WithImpliedRole(CoreModule.ItemRole)
+            // .WithImpliedRole(PositionModule.GridPositionedRole)
+            // .WithImpliedRole(InventoryModule.ContainedItemRole)
+            // .WithImpliedRole(LightSourceModule.SenseSourceRole)
+            // .WithImpliedRole(LightSourceModule.ResistanceDataProviderRole);
 
             DeclareEntity<ItemReference>(FloorRole);
-                // .WithImpliedRole(CoreModule.ItemRole)
-                // .WithImpliedRole(PositionModule.GridPositionedRole)
-                // .WithImpliedRole(LightSourceModule.ResistanceDataProviderRole);
+            // .WithImpliedRole(CoreModule.ItemRole)
+            // .WithImpliedRole(PositionModule.GridPositionedRole)
+            // .WithImpliedRole(LightSourceModule.ResistanceDataProviderRole);
 
             DeclareEntity<ActorReference>(ActorRole);
-                // .WithImpliedRole(CoreModule.ItemRole)
-                // .WithImpliedRole(CoreModule.PlayerRole)
-                // .WithImpliedRole(PositionModule.GridPositionedRole)
-                // .WithImpliedRole(InventoryModule.ContainerRole)
-                // .WithImpliedRole(VisionSenseModule.SenseReceptorActorRole)
-                // .WithImpliedRole(SensoryCacheModule.SenseCacheSourceRole)
-                // .WithImpliedRole(SenseDiscoveryModule.DiscoveryActorRole);
+            // .WithImpliedRole(CoreModule.ItemRole)
+            // .WithImpliedRole(CoreModule.PlayerRole)
+            // .WithImpliedRole(PositionModule.GridPositionedRole)
+            // .WithImpliedRole(InventoryModule.ContainerRole)
+            // .WithImpliedRole(VisionSenseModule.SenseReceptorActorRole)
+            // .WithImpliedRole(SensoryCacheModule.SenseCacheSourceRole)
+            // .WithImpliedRole(SenseDiscoveryModule.DiscoveryActorRole);
 
             RequireRole(MovableItemRole);
         }
@@ -80,10 +72,11 @@ namespace RogueEntity.Simple.Demo.BoxPusher
                     ds = new ShadowPropagationResistanceDataSource();
                     mip.ServiceResolver.Store(ds);
                 }
+
                 lightPhysics = new LightPhysicsConfiguration(LinearDecaySensePhysics.For(DistanceCalculation.Euclid), ds);
                 mip.ServiceResolver.Store(lightPhysics);
             }
-            
+
             if (!mip.ServiceResolver.TryResolve(out IItemContextBackend<TGameContext, ActorReference> a))
             {
                 a = new ItemContextBackend<TGameContext, ActorReference>(new ActorReferenceMetaData());
@@ -104,7 +97,7 @@ namespace RogueEntity.Simple.Demo.BoxPusher
 
         {
             var serviceResolver = mip.ServiceResolver;
-            var ctx = initializer.DeclareEntityContext<ItemReference>();
+            var ctx = initializer.DeclareContentContext<ItemReference>();
             ctx.Activate(ctx.CreateBulkEntityBuilder(serviceResolver)
                             .Define("Items.Wall")
                             .WithGridPosition(MapLayer.Indeterminate)
@@ -116,16 +109,17 @@ namespace RogueEntity.Simple.Demo.BoxPusher
             ctx.CreateBulkEntityBuilder(serviceResolver)
                .RedefineAs("Items.Wall", "Item.Wall.Stone");
 
-            var actorContext = initializer.DeclareEntityContext<ActorReference>();
+            var actorContext = initializer.DeclareContentContext<ActorReference>();
             actorContext.Activate(actorContext.CreateReferenceEntityBuilder(serviceResolver)
                                               .Define("Player")
                                               .AsPlayer()
-                                              .WithInventory().Of<ItemReference>()
+                                              .WithInventory()
+                                              .Of<ItemReference>()
                                               .WithLightSource(10)
                                               .WithVisionSense(10)
                                               .Declaration);
         }
-
+/*
         /// <summary>
         ///   Changes to either floor or movable item maps should recompute the sense resistance data map.  
         /// </summary>
@@ -135,8 +129,9 @@ namespace RogueEntity.Simple.Demo.BoxPusher
             where TItemId : IEntityKey
             where TGameContext : IItemContext<TGameContext, TItemId>, IGridMapContext<TItemId>
         {
+            var systemId = SenseSourceModules.CreateResistanceSourceSystemId<VisionSense>(nameof(BoxPusherMapLayers.Items));
             var ctx = initializer.DeclareEntityContext<TItemId>();
-            ctx.Register(SetUpItemSenseResistancesId, 1100, RegisterLayerConfiguration<TGameContext, TItemId>(BoxPusherMapLayers.Items));
+            ctx.Register(systemId, 1100, SenseSourceModules.RegisterSenseResistanceSourceLayer<TGameContext, TItemId, VisionSense>(BoxPusherMapLayers.Items));
         }
 
         /// <summary>
@@ -148,29 +143,10 @@ namespace RogueEntity.Simple.Demo.BoxPusher
             where TItemId : IEntityKey
             where TGameContext : IItemContext<TGameContext, TItemId>, IGridMapContext<TItemId>
         {
+            var systemId = SenseSourceModules.CreateResistanceSourceSystemId<VisionSense>(nameof(BoxPusherMapLayers.Floor));
             var ctx = initializer.DeclareEntityContext<TItemId>();
-            ctx.Register(SetUpFloorSenseResistancesId, 1100, RegisterLayerConfiguration<TGameContext, TItemId>(BoxPusherMapLayers.Floor));
+            ctx.Register(systemId, 1100, SenseSourceModules.RegisterSenseResistanceSourceLayer<TGameContext, TItemId, VisionSense>(BoxPusherMapLayers.Floor));
         }
-
-        EntitySystemRegistrationDelegate<TGameContext, TItemId> RegisterLayerConfiguration<TGameContext, TItemId>(MapLayer layer)
-            where TItemId : IEntityKey
-            where TGameContext : IItemContext<TGameContext, TItemId>, IGridMapContext<TItemId>
-        {
-            void RegisterItemResistanceSystemConfiguration(in ModuleInitializationParameter initParameter,
-                                                           IGameLoopSystemRegistration<TGameContext> context,
-                                                           EntityRegistry<TItemId> registry)
-            {
-                var serviceResolver = initParameter.ServiceResolver;
-                var itemContext = serviceResolver.Resolve<IItemContext<TGameContext, TItemId>>();
-                var mapContext = serviceResolver.Resolve<IGridMapContext<TItemId>>();
-                var factory = serviceResolver.Resolve<IAggregationLayerSystem<TGameContext, SensoryResistance<VisionSense>>>();
-                factory.AddLayer(mapContext, itemContext, layer);
-
-                var cache = serviceResolver.Resolve<ISenseCacheSetupSystem>();
-                cache.RegisterCacheLayer(layer);
-            }
-
-            return RegisterItemResistanceSystemConfiguration;
-        }
+        */
     }
 }

@@ -43,7 +43,7 @@ namespace RogueEntity.Core.Sensing.Discovery
         }
 
         [EntityRoleInitializer("Role.Core.Senses.DiscoveredArea")]
-        protected void Initialize<TGameContext, TActorId>(in ModuleInitializationParameter initParameter,
+        protected void Initialize<TGameContext, TActorId>(in ModuleEntityInitializationParameter<TGameContext, TActorId> initParameter,
                                                           IModuleInitializer<TGameContext> initializer,
                                                           EntityRole role)
             where TActorId : IEntityKey
@@ -54,7 +54,7 @@ namespace RogueEntity.Core.Sensing.Discovery
 
         [EntityRoleInitializer("Role.Core.Senses.DiscoveredArea",
                                ConditionalRoles = new[] {"Role.Core.Senses.Receptor.Vision.ActorRole"})]
-        protected void InitializeVision<TGameContext, TActorId>(in ModuleInitializationParameter initParameter,
+        protected void InitializeVision<TGameContext, TActorId>(in ModuleEntityInitializationParameter<TGameContext, TActorId> initParameter,
                                                                 IModuleInitializer<TGameContext> initializer,
                                                                 EntityRole role)
             where TActorId : IEntityKey
@@ -65,7 +65,7 @@ namespace RogueEntity.Core.Sensing.Discovery
 
         [EntityRoleInitializer("Role.Core.Senses.DiscoveredArea",
                                ConditionalRoles = new[] {"Role.Core.Senses.Receptor.InfraVision.ActorRole"})]
-        protected void InitializeInfraVision<TGameContext, TActorId>(in ModuleInitializationParameter initParameter,
+        protected void InitializeInfraVision<TGameContext, TActorId>(in ModuleEntityInitializationParameter<TGameContext, TActorId> initParameter,
                                                                      IModuleInitializer<TGameContext> initializer,
                                                                      EntityRole role)
             where TActorId : IEntityKey
@@ -76,7 +76,7 @@ namespace RogueEntity.Core.Sensing.Discovery
 
         [EntityRoleInitializer("Role.Core.Senses.DiscoveredArea",
                                ConditionalRoles = new[] {"Role.Core.Senses.Receptor.Touch.ActorRole"})]
-        protected void InitializeTouch<TGameContext, TActorId>(in ModuleInitializationParameter initParameter,
+        protected void InitializeTouch<TGameContext, TActorId>(in ModuleEntityInitializationParameter<TGameContext, TActorId> initParameter,
                                                                IModuleInitializer<TGameContext> initializer,
                                                                EntityRole role)
             where TActorId : IEntityKey

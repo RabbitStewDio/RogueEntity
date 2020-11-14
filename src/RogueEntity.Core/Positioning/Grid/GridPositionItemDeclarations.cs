@@ -1,3 +1,4 @@
+using RogueEntity.Core.Infrastructure.ItemTraits;
 using RogueEntity.Core.Meta.ItemBuilder;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Positioning.MapLayers;

@@ -1,6 +1,6 @@
 using EnTTSharp.Entities;
 
-namespace RogueEntity.Core.Infrastructure.Modules
+namespace RogueEntity.Core.Infrastructure.Modules.Helpers
 {
     public interface IModuleEntityInitializationCallback<TGameContext>
     {

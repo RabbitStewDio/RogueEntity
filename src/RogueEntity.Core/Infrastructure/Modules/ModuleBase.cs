@@ -2,11 +2,12 @@
 using System.Collections.Generic;
 using EnTTSharp.Entities;
 using RogueEntity.Core.Infrastructure.ItemTraits;
+using RogueEntity.Core.Infrastructure.Modules.Helpers;
 using RogueEntity.Core.Utils;
 
 namespace RogueEntity.Core.Infrastructure.Modules
 {
-    public abstract class ModuleBase: IModuleConfiguration
+    public abstract class ModuleBase
     {
         readonly List<ModuleDependency> moduleDependencies;
         readonly Dictionary<Type, DeclaredEntityRoleRecord> declaredRoles;
@@ -40,13 +41,14 @@ namespace RogueEntity.Core.Infrastructure.Modules
         public ReadOnlyListWrapper<EntityRelation> RequiredRelations => requiredRelations;
         public ReadOnlyListWrapper<EntityRole> RequiredRoles => requiredRoles;
 
-        public IEnumerable<Type> DeclaredEntityTypes => declaredRoles.Keys;
+        public IEnumerable<DeclaredEntityRoleRecord> DeclaredEntityTypes => declaredRoles.Values;
+        public IEnumerable<DeclaredEntityRelationRecord> DeclaredEntityRelations => declaredRelations.Values;
 
-        public bool TryGetEntityRecord(Type subject, out DeclaredEntityRoleRecord r)
+        public bool TryGetDeclaredRole<TEntityId>(out DeclaredEntityRoleRecord roleRecord)
         {
-            return declaredRoles.TryGetValue(subject, out r);
+            return declaredRoles.TryGetValue(typeof(TEntityId), out roleRecord);
         }
-
+        
         public bool TryGetRelationById(string id, out EntityRelation relation)
         {
             foreach (var r in requiredRelations)
@@ -69,7 +71,7 @@ namespace RogueEntity.Core.Infrastructure.Modules
             relation = default;
             return false;
         }
-        
+
         protected DeclareDependencyBuilder DeclareEntity<TEntityId>(EntityRole r)
             where TEntityId : IEntityKey
         {
@@ -79,7 +81,7 @@ namespace RogueEntity.Core.Infrastructure.Modules
             }
             else
             {
-                rr = new DeclaredEntityRoleRecord(typeof(TEntityId), r);
+                rr = new DeclaredEntityRoleRecord(typeof(TEntityId), r, (cb, m) => cb.ActivateEntity<TEntityId>(m));
                 declaredRoles[rr.EntityType] = rr;
             }
 
@@ -142,7 +144,15 @@ namespace RogueEntity.Core.Infrastructure.Modules
         {
             moduleDependencies.AddRange(dependencies);
         }
+
+        public virtual void ProcessDeclaredSystems<TGameContext, TEntityId>(in ModuleInitializationParameter p,
+                                                                            IModuleInitializationData<TGameContext, TEntityId> moduleContext,
+                                                                            IModuleInitializer<TGameContext> initializer)
+            where TEntityId : IEntityKey
+        {
+        }
     }
+
 
     public readonly struct RequireDependencyBuilder
     {
@@ -170,10 +180,10 @@ namespace RogueEntity.Core.Infrastructure.Modules
 
     public readonly struct DeclareDependencyBuilder
     {
-        readonly IModuleConfiguration module;
+        readonly ModuleBase module;
         readonly EntityRole role;
 
-        public DeclareDependencyBuilder(IModuleConfiguration module, EntityRole role)
+        public DeclareDependencyBuilder(ModuleBase module, EntityRole role)
         {
             this.module = module;
             this.role = role;

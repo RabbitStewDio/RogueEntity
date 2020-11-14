@@ -38,7 +38,7 @@ namespace RogueEntity.Core.Positioning
         }
 
         [EntityRoleInitializer("Role.Core.Position.Positionable")]
-        protected void InitializeCommon<TGameContext, TActorId>(in ModuleInitializationParameter initParameter,
+        protected void InitializeCommon<TGameContext, TActorId>(in ModuleEntityInitializationParameter<TGameContext,TActorId> initParameter,
                                                                 IModuleInitializer<TGameContext> initializer, 
                                                                 EntityRole role)
             where TActorId : IEntityKey
@@ -48,7 +48,7 @@ namespace RogueEntity.Core.Positioning
         }
 
         [EntityRoleInitializer("Role.Core.Position.GridPositioned")]
-        protected void InitializeGridPositioned<TGameContext, TActorId>(in ModuleInitializationParameter initParameter,
+        protected void InitializeGridPositioned<TGameContext, TActorId>(in ModuleEntityInitializationParameter<TGameContext,TActorId> initParameter,
                                                                         IModuleInitializer<TGameContext> initializer,
                                                                         EntityRole role)
             where TActorId : IEntityKey
@@ -59,7 +59,7 @@ namespace RogueEntity.Core.Positioning
         }
 
         [EntityRoleInitializer("Role.Core.Position.ContinuousPositioned")]
-        protected void InitializeContinuousPositioned<TGameContext, TActorId>(in ModuleInitializationParameter initParameter,
+        protected void InitializeContinuousPositioned<TGameContext, TActorId>(in ModuleEntityInitializationParameter<TGameContext,TActorId> initParameter,
                                                                               IModuleInitializer<TGameContext> initializer,
                                                                               EntityRole role)
             where TActorId : IEntityKey

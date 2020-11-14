@@ -7,6 +7,7 @@ using RogueEntity.Core.Infrastructure.GameLoops;
 using RogueEntity.Core.Infrastructure.ItemTraits;
 using RogueEntity.Core.Infrastructure.Modules;
 using RogueEntity.Core.Infrastructure.Modules.Attributes;
+using RogueEntity.Core.Infrastructure.Modules.Helpers;
 using RogueEntity.Core.Infrastructure.Modules.Services;
 using RogueEntity.Core.Infrastructure.Time;
 using RogueEntity.Core.Positioning;
@@ -39,7 +40,7 @@ namespace RogueEntity.Core.Sensing.Receptors
         public static readonly EntitySystemId ReceptorFinalizeSystemId = SenseReceptorModules.CreateSystemId<TReceptorSense, TSourceSense>("Finalize");
 
         public static readonly EntityRole SenseReceptorActorRole = SenseReceptorModules.GetReceptorRole<TReceptorSense, TSourceSense>();
-
+        static readonly EntityRole SenseSourceRole = SenseSourceModules.GetSourceRole<TSourceSense>();
 
         protected SenseReceptorModuleBase()
         {
@@ -52,35 +53,34 @@ namespace RogueEntity.Core.Sensing.Receptors
         }
 
         [InitializerCollectorAttribute(InitializerCollectorType.Roles)]
-        public IEnumerable<ModuleEntityRoleInitializerInfo<TGameContext>> CollectRoleInitializers<TGameContext, TItemId>(IServiceResolver serviceResolver,
+        public IEnumerable<ModuleEntityRoleInitializerInfo<TGameContext, TItemId>> CollectRoleInitializers<TGameContext, TItemId>(IServiceResolver serviceResolver,
                                                                                                                          IModuleEntityInformation entityInformation,
                                                                                                                          EntityRole role)
             where TItemId : IEntityKey
         {
             if (role == SenseReceptorActorRole)
             {
-                yield return new ModuleEntityRoleInitializerInfo<TGameContext>
-                    (role, InitializeSenseReceptorRole<TGameContext, TItemId>);
+                yield return ModuleEntityRoleInitializerInfo.CreateFor<TGameContext, TItemId>
+                    (SenseReceptorActorRole, InitializeSenseReceptorRole);
 
-                yield return new ModuleEntityRoleInitializerInfo<TGameContext>
-                    (role, InitializeCollectReceptorsGrid<TGameContext, TItemId>).WithRequiredRoles(PositionModule.GridPositionedRole);
+                yield return ModuleEntityRoleInitializerInfo.CreateFor<TGameContext, TItemId>
+                    (SenseReceptorActorRole, InitializeCollectReceptorsGrid).WithRequiredRoles(PositionModule.GridPositionedRole);
 
-                yield return new ModuleEntityRoleInitializerInfo<TGameContext>
-                    (role, InitializeCollectReceptorsContinuous<TGameContext, TItemId>).WithRequiredRoles(PositionModule.ContinuousPositionedRole);
+                yield return ModuleEntityRoleInitializerInfo.CreateFor<TGameContext, TItemId>
+                    (SenseReceptorActorRole, InitializeCollectReceptorsContinuous).WithRequiredRoles(PositionModule.ContinuousPositionedRole);
 
-                yield return new ModuleEntityRoleInitializerInfo<TGameContext>
-                    (role, InitializeSenseCache<TGameContext, TItemId>).WithRequiredRoles(PositionModule.GridPositionedRole, SensoryCacheModule.SenseCacheSourceRole);
+                yield return ModuleEntityRoleInitializerInfo.CreateFor<TGameContext, TItemId>
+                    (SenseReceptorActorRole, InitializeSenseCache).WithRequiredRoles(PositionModule.GridPositionedRole);
             }
 
             if (role == SenseSourceModules.GetSourceRole<TSourceSense>())
             {
-                yield return new ModuleEntityRoleInitializerInfo<TGameContext>
-                    (role, InitializeCollectSenseSources<TGameContext, TItemId>);
+                yield return ModuleEntityRoleInitializerInfo.CreateFor<TGameContext, TItemId>(SenseSourceRole, InitializeCollectSenseSources);
             }
         }
 
         [SuppressMessage("ReSharper", "UnusedTypeParameter")]
-        protected void InitializeSenseCache<TGameContext, TItemId>(in ModuleInitializationParameter initParameter,
+        protected void InitializeSenseCache<TGameContext, TItemId>(in ModuleEntityInitializationParameter<TGameContext, TItemId> initParameter,
                                                                    IModuleInitializer<TGameContext> initializer,
                                                                    EntityRole role)
             where TItemId : IEntityKey
@@ -93,7 +93,7 @@ namespace RogueEntity.Core.Sensing.Receptors
             }
         }
 
-        protected void InitializeSenseReceptorRole<TGameContext, TItemId>(in ModuleInitializationParameter initParameter,
+        protected void InitializeSenseReceptorRole<TGameContext, TItemId>(in ModuleEntityInitializationParameter<TGameContext, TItemId> initParameter,
                                                              IModuleInitializer<TGameContext> initializer,
                                                              EntityRole role)
             where TItemId : IEntityKey
@@ -106,7 +106,7 @@ namespace RogueEntity.Core.Sensing.Receptors
             ctx.Register(ReceptorFinalizeSystemId, 59500, RegisterFinalizeSystem);
         }
 
-        protected void InitializeCollectReceptorsGrid<TGameContext, TItemId>(in ModuleInitializationParameter initParameter,
+        protected void InitializeCollectReceptorsGrid<TGameContext, TItemId>(in ModuleEntityInitializationParameter<TGameContext, TItemId> initParameter,
                                                                              IModuleInitializer<TGameContext> initializer,
                                                                              EntityRole role)
             where TItemId : IEntityKey
@@ -115,7 +115,7 @@ namespace RogueEntity.Core.Sensing.Receptors
             ctx.Register(ReceptorCollectionGridSystemId, 55500, RegisterCollectReceptorsGridSystem);
         }
 
-        protected void InitializeCollectReceptorsContinuous<TGameContext, TItemId>(in ModuleInitializationParameter initParameter,
+        protected void InitializeCollectReceptorsContinuous<TGameContext, TItemId>(in ModuleEntityInitializationParameter<TGameContext, TItemId> initParameter,
                                                                                    IModuleInitializer<TGameContext> initializer,
                                                                                    EntityRole role)
             where TItemId : IEntityKey
@@ -124,7 +124,7 @@ namespace RogueEntity.Core.Sensing.Receptors
             ctx.Register(ReceptorCollectionContinuousSystemId, 55500, RegisterCollectReceptorsContinuousSystem);
         }
 
-        protected void InitializeCollectSenseSources<TGameContext, TItemId>(in ModuleInitializationParameter initParameter,
+        protected void InitializeCollectSenseSources<TGameContext, TItemId>(in ModuleEntityInitializationParameter<TGameContext, TItemId> initParameter,
                                                                             IModuleInitializer<TGameContext> initializer,
                                                                             EntityRole role)
             where TItemId : IEntityKey
@@ -139,7 +139,7 @@ namespace RogueEntity.Core.Sensing.Receptors
             where TItemId : IEntityKey
         {
             var serviceResolver = initParameter.ServiceResolver;
-            var ls = GetOrCreateLightSystem<TGameContext, TItemId>(serviceResolver);
+            var ls = GetOrCreateSenseReceptorSystem<TGameContext, TItemId>(serviceResolver);
             context.AddInitializationStepHandler(ls.EnsureSenseCacheAvailable, nameof(ls.EnsureSenseCacheAvailable));
             context.AddInitializationStepHandler(ls.BeginSenseCalculation, nameof(ls.BeginSenseCalculation));
             context.AddFixedStepHandlers(ls.BeginSenseCalculation, nameof(ls.BeginSenseCalculation));
@@ -151,7 +151,7 @@ namespace RogueEntity.Core.Sensing.Receptors
             where TItemId : IEntityKey
         {
             var serviceResolver = initParameter.ServiceResolver;
-            var ls = GetOrCreateLightSystem<TGameContext, TItemId>(serviceResolver);
+            var ls = GetOrCreateSenseReceptorSystem<TGameContext, TItemId>(serviceResolver);
             var system = registry.BuildSystem()
                                  .WithContext<TGameContext>()
                                  .CreateSystem<SensoryReceptorData<TReceptorSense, TSourceSense>, SensoryReceptorState<TReceptorSense, TSourceSense>, EntityGridPosition>(ls.CollectReceptor);
@@ -165,7 +165,7 @@ namespace RogueEntity.Core.Sensing.Receptors
             where TItemId : IEntityKey
         {
             var serviceResolver = initParameter.ServiceResolver;
-            var ls = GetOrCreateLightSystem<TGameContext, TItemId>(serviceResolver);
+            var ls = GetOrCreateSenseReceptorSystem<TGameContext, TItemId>(serviceResolver);
             var system = registry.BuildSystem()
                                  .WithContext<TGameContext>()
                                  .CreateSystem<SensoryReceptorData<TReceptorSense, TSourceSense>, SensoryReceptorState<TReceptorSense, TSourceSense>, ContinuousMapPosition>(ls.CollectReceptor);
@@ -179,7 +179,7 @@ namespace RogueEntity.Core.Sensing.Receptors
             where TItemId : IEntityKey
         {
             var serviceResolver = initParameter.ServiceResolver;
-            var ls = GetOrCreateLightSystem<TGameContext, TItemId>(serviceResolver);
+            var ls = GetOrCreateSenseReceptorSystem<TGameContext, TItemId>(serviceResolver);
             var system = registry.BuildSystem()
                                  .WithContext<TGameContext>()
                                  .CreateSystem<TSenseSource, SenseSourceState<TSourceSense>>(ls.CollectObservedSenseSource);
@@ -193,7 +193,7 @@ namespace RogueEntity.Core.Sensing.Receptors
             where TItemId : IEntityKey
         {
             var serviceResolver = initParameter.ServiceResolver;
-            var ls = GetOrCreateLightSystem<TGameContext, TItemId>(serviceResolver);
+            var ls = GetOrCreateSenseReceptorSystem<TGameContext, TItemId>(serviceResolver);
 
             var refreshLocalSenseState =
                 registry.BuildSystem()
@@ -215,7 +215,7 @@ namespace RogueEntity.Core.Sensing.Receptors
             where TItemId : IEntityKey
         {
             var serviceResolver = initParameter.ServiceResolver;
-            var ls = GetOrCreateLightSystem<TGameContext, TItemId>(serviceResolver);
+            var ls = GetOrCreateSenseReceptorSystem<TGameContext, TItemId>(serviceResolver);
 
             if (!serviceResolver.TryResolve(out IRadiationSenseReceptorBlitter senseBlitter))
             {
@@ -238,7 +238,7 @@ namespace RogueEntity.Core.Sensing.Receptors
             where TItemId : IEntityKey
         {
             var serviceResolver = initParameter.ServiceResolver;
-            var ls = GetOrCreateLightSystem<TGameContext, TItemId>(serviceResolver);
+            var ls = GetOrCreateSenseReceptorSystem<TGameContext, TItemId>(serviceResolver);
 
             if (!serviceResolver.TryResolve(out IDirectionalSenseReceptorBlitter senseBlitter))
             {
@@ -264,7 +264,7 @@ namespace RogueEntity.Core.Sensing.Receptors
             where TItemId : IEntityKey
         {
             var serviceResolver = initParameter.ServiceResolver;
-            var ls = GetOrCreateLightSystem<TGameContext, TItemId>(serviceResolver);
+            var ls = GetOrCreateSenseReceptorSystem<TGameContext, TItemId>(serviceResolver);
 
             var clearReceptorStateSystem =
                 registry.BuildSystem()
@@ -325,7 +325,7 @@ namespace RogueEntity.Core.Sensing.Receptors
 
         protected abstract (ISensePropagationAlgorithm propagationAlgorithm, ISensePhysics sensePhysics) GetOrCreatePhysics(IServiceResolver serviceResolver);
 
-        protected virtual SenseReceptorSystem<TReceptorSense, TSourceSense> GetOrCreateLightSystem<TGameContext, TItemId>(IServiceResolver serviceResolver)
+        protected virtual SenseReceptorSystem<TReceptorSense, TSourceSense> GetOrCreateSenseReceptorSystem<TGameContext, TItemId>(IServiceResolver serviceResolver)
         {
             if (!serviceResolver.TryResolve(out SenseReceptorSystem<TReceptorSense, TSourceSense> ls))
             {

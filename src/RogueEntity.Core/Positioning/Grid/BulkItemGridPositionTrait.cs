@@ -15,7 +15,8 @@ namespace RogueEntity.Core.Positioning.Grid
 {
     public class BulkItemGridPositionTrait<TGameContext, TItemId> : IBulkItemTrait<TGameContext, TItemId>,
                                                                     IItemComponentTrait<TGameContext, TItemId, EntityGridPosition>,
-                                                                    IItemComponentTrait<TGameContext, TItemId, MapLayerPreference>
+                                                                    IItemComponentDesignTimeInformationTrait<MapLayerPreference>,
+                                                                    IItemComponentInformationTrait<TGameContext, TItemId, MapLayerPreference>
         where TItemId : IBulkDataStorageKey<TItemId>
     {
         readonly IItemResolver<TGameContext, TItemId> itemResolver;
@@ -49,13 +50,6 @@ namespace RogueEntity.Core.Positioning.Grid
             return true;
         }
 
-        public bool TryUpdate(IEntityViewControl<TItemId> v, TGameContext context, TItemId k,
-                              in MapLayerPreference t, out TItemId changedK)
-        {
-            changedK = k;
-            return false;
-        }
-
         public bool TryQuery(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, out EntityGridPosition t)
         {
             t = default;
@@ -67,10 +61,10 @@ namespace RogueEntity.Core.Positioning.Grid
             return TryUpdate(entityRegistry, context, k, EntityGridPosition.Invalid, out changedItem);
         }
 
-        bool IItemComponentTrait<TGameContext, TItemId, MapLayerPreference>.TryRemove(IEntityViewControl<TItemId> entityRegistry, TGameContext context, TItemId k, out TItemId changedItem)
+        public bool TryQuery(out MapLayerPreference t)
         {
-            changedItem = k;
-            return false;
+            t = layerPreference;
+            return true;
         }
 
         public bool TryUpdate(IEntityViewControl<TItemId> v, TGameContext context, TItemId targetItem,

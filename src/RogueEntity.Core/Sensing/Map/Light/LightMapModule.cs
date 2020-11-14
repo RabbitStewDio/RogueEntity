@@ -1,5 +1,6 @@
 using EnTTSharp.Entities;
 using EnTTSharp.Entities.Systems;
+using Microsoft.Extensions.Configuration;
 using RogueEntity.Core.Infrastructure.GameLoops;
 using RogueEntity.Core.Infrastructure.ItemTraits;
 using RogueEntity.Core.Infrastructure.Modules;
@@ -44,18 +45,36 @@ namespace RogueEntity.Core.Sensing.Map.Light
         protected void InitializeSenseCacheSystem<TGameContext>(in ModuleInitializationParameter initParameter,
                                                                 IModuleInitializer<TGameContext> moduleInitializer)
         {
-            moduleInitializer.Register(ReceptorPreparationSystemId, 1, RegisterPrepareSystem);
+            if (!IsServiceEnabled(initParameter.ServiceResolver))
+            {
+                return;
+            }
+
+            if (initParameter.EntityInformation.RoleExists(LightSourceModule.SenseSourceRole))
+            {
+                moduleInitializer.Register(ReceptorPreparationSystemId, 1, RegisterPrepareSystem);
+            }
         }
 
         [EntityRoleInitializer("Role.Core.Senses.Source.Light")]
-        protected void InitializeSenseCollection<TGameContext, TItemId>(in ModuleInitializationParameter initParameter,
+        protected void InitializeSenseCollection<TGameContext, TItemId>(in ModuleEntityInitializationParameter<TGameContext,TItemId> initParameter,
                                                                         IModuleInitializer<TGameContext> initializer,
                                                                         EntityRole role)
             where TItemId : IEntityKey
         {
+            if (!IsServiceEnabled(initParameter.ServiceResolver))
+            {
+                return;
+            }
+
             var ctx = initializer.DeclareEntityContext<TItemId>();
             ctx.Register(ReceptorCollectSystemId, 57500, RegisterCollectSenseSourcesSystem);
             ctx.Register(ReceptorComputeSystemId, 58500, RegisterComputeSenseMapSystem);
+        }
+
+        bool IsServiceEnabled(IServiceResolver serviceResolver)
+        {
+            return serviceResolver.TryResolve(out IConfiguration config) && config.GetValue<bool>("RogueEntity:Core:Sensing:Map:InfraVision:Enabled", false);
         }
 
         void RegisterCollectSenseSourcesSystem<TGameContext, TItemId>(in ModuleInitializationParameter initParameter,

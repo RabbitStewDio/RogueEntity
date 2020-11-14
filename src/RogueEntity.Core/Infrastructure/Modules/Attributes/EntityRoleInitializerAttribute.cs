@@ -19,12 +19,14 @@ namespace RogueEntity.Core.Infrastructure.Modules.Attributes
         public string RoleName { get; }
         public string[] ConditionalRoles { get; set; }
         public string[] ConditionalRelations { get; set; }
+        public string[] WithAnyRoles { get; set; }
         
         public EntityRoleInitializerAttribute(string roleName)
         {
             RoleName = roleName;
             ConditionalRoles = new string[0];
             ConditionalRelations = new string[0];
+            WithAnyRoles = new string[0];
         }
     }
 }

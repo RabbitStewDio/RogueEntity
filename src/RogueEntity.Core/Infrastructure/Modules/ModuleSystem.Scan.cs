@@ -1,8 +1,8 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using RogueEntity.Core.Infrastructure.Modules.Attributes;
+using System.Text;
+using RogueEntity.Core.Infrastructure.Modules.Helpers;
 using RogueEntity.Core.Utils;
 
 namespace RogueEntity.Core.Infrastructure.Modules
@@ -38,10 +38,8 @@ namespace RogueEntity.Core.Infrastructure.Modules
 
             Logger.Debug("Registered module {ModuleId}", module.Id);
 
-            var moduleRecord = new ModuleRecord(module);
+            var moduleRecord = new ModuleRecord<TGameContext>(module);
             modulesById[module.Id] = moduleRecord;
-            moduleRecord.ModuleInitializers.AddRange(CollectModuleInitializers(module));
-            moduleRecord.ContentInitializers.AddRange(CollectContentInitializers(module));
         }
 
         public void ScanForModules()
@@ -74,79 +72,22 @@ namespace RogueEntity.Core.Infrastructure.Modules
             }
         }
         
-        List<ModuleInitializerDelegate<TGameContext>> CollectModuleInitializers(ModuleBase module)
+        string PrintModuleDependencyList(ReadOnlyListWrapper<ModuleRecord<TGameContext>> orderedRecords)
         {
-            var actions = new List<ModuleInitializerDelegate<TGameContext>>();
-            foreach (var m in module.GetType().GetMethods(BindingFlags.Instance | BindingFlags.NonPublic))
+            StringBuilder b = new StringBuilder();
+            foreach (var r in orderedRecords)
             {
-                var attr = m.GetCustomAttribute<ModuleInitializerAttribute>();
-                if (attr == null)
-                {
-                    continue;
-                }
-
-                if (m.IsSameAction(typeof(ModuleInitializationParameter).MakeByRefType(), typeof(IModuleInitializer<TGameContext>)))
-                {
-                    actions.Add((ModuleInitializerDelegate<TGameContext>)Delegate.CreateDelegate(typeof(ModuleInitializerDelegate<TGameContext>), module, m));
-                    Logger.Verbose("Found plain module initializer {Method}", m);
-                    continue;
-                }
-
-                if (!m.IsSameGenericAction(new[] {typeof(TGameContext)},
-                                           out var genericMethod, out var errorHint,
-                                           typeof(ModuleInitializationParameter).MakeByRefType(), typeof(IModuleInitializer<TGameContext>)))
-                {
-                    if (!string.IsNullOrEmpty(errorHint))
-                    {
-                        throw new ArgumentException(errorHint);
-                    }
-
-                    throw new ArgumentException($"Expected a method with signature 'void XXX(ModuleInitializationParameter by ref, IModuleInitializer<TGameContext>), but found {m} in module {module.Id}");
-                }
-
-                Logger.Verbose("Found generic module initializer {Method}", genericMethod);
-                actions.Add((ModuleInitializerDelegate<TGameContext>) Delegate.CreateDelegate(typeof(ModuleInitializerDelegate<TGameContext>), module, genericMethod));
+                b.Append(r.ModuleId);
+                b.Append(" [");
+                b.Append(r.DependencyDepth);
+                b.Append(": ");
+                b.Append(string.Join(", ", r.Dependencies.Select(xx => xx.ModuleId)));
+                b.Append(" ]");
+                b.AppendLine();
             }
 
-            return actions;
+            return b.ToString();
         }
 
-        List<ModuleContentInitializerDelegate<TGameContext>> CollectContentInitializers(ModuleBase module)
-        {
-            var actions = new List<ModuleContentInitializerDelegate<TGameContext>>();
-            foreach (var m in module.GetType().GetMethods(BindingFlags.Instance | BindingFlags.NonPublic))
-            {
-                var attr = m.GetCustomAttribute<ContentInitializerAttribute>();
-                if (attr == null)
-                {
-                    continue;
-                }
-
-                if (m.IsSameAction(typeof(ModuleInitializationParameter).MakeByRefType(), typeof(IModuleInitializer<TGameContext>)))
-                {
-                    actions.Add((ModuleContentInitializerDelegate<TGameContext>)Delegate.CreateDelegate(typeof(ModuleContentInitializerDelegate<TGameContext>), module, m));
-                    Logger.Verbose("Found plain module initializer {Method}", m);
-                    continue;
-                }
-
-                if (!m.IsSameGenericAction(new[] {typeof(TGameContext)},
-                                           out var genericMethod, out var errorHint,
-                                           typeof(ModuleInitializationParameter).MakeByRefType(), typeof(IModuleInitializer<TGameContext>)))
-                {
-                    if (!string.IsNullOrEmpty(errorHint))
-                    {
-                        throw new ArgumentException(errorHint);
-                    }
-
-                    throw new ArgumentException($"Expected a method with signature 'void XXX(IServiceResolver, IModuleInitializer<TGameContext>), but found {m} in module {module.Id}");
-                }
-
-                Logger.Verbose("Found generic content initializer {Method}", genericMethod);
-                actions.Add((ModuleContentInitializerDelegate<TGameContext>) Delegate.CreateDelegate(typeof(ModuleContentInitializerDelegate<TGameContext>), module, genericMethod));
-            }
-
-            return actions;
-        }
-        
     }
 }

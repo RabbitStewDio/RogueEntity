@@ -1,7 +1,6 @@
 using System.Collections.Generic;
-using RogueEntity.Core.Infrastructure.ItemTraits;
 
-namespace RogueEntity.Core.Meta.Items
+namespace RogueEntity.Core.Infrastructure.ItemTraits
 {
     /// <summary>
     ///  A small helper interface that allows queries of all declared bulk item declarations.

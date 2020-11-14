@@ -1,6 +1,6 @@
 using EnTTSharp.Entities;
 using RogueEntity.Core.GridProcessing.LayerAggregation;
-using RogueEntity.Core.Meta.Items;
+using RogueEntity.Core.Infrastructure.ItemTraits;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Positioning.MapLayers;
 

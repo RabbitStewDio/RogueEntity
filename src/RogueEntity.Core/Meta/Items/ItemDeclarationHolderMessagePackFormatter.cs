@@ -2,6 +2,7 @@
 using EnTTSharp.Entities;
 using MessagePack;
 using MessagePack.Formatters;
+using RogueEntity.Core.Infrastructure.ItemTraits;
 
 namespace RogueEntity.Core.Meta.Items
 {

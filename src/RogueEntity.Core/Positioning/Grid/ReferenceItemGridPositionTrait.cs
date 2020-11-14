@@ -16,6 +16,7 @@ namespace RogueEntity.Core.Positioning.Grid
                                                                          IItemComponentTrait<TGameContext, TItemId, Position>,
                                                                          IItemComponentTrait<TGameContext, TItemId, EntityGridPosition>,
                                                                          IItemComponentInformationTrait<TGameContext, TItemId, EntityGridPositionChangedMarker>,
+                                                                         IItemComponentDesignTimeInformationTrait<MapLayerPreference>,
                                                                          IItemComponentInformationTrait<TGameContext, TItemId, MapLayerPreference>,
                                                                          IItemComponentInformationTrait<TGameContext, TItemId, MapContainerEntityMarker>
         where TItemId : IBulkDataStorageKey<TItemId>
@@ -43,6 +44,12 @@ namespace RogueEntity.Core.Positioning.Grid
         public IReferenceItemTrait<TGameContext, TItemId> CreateInstance()
         {
             return this;
+        }
+
+        public bool TryQuery(out MapLayerPreference t)
+        {
+            t = layerPreference;
+            return true;
         }
 
         public void Initialize(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, IItemDeclaration item)

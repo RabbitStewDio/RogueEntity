@@ -15,6 +15,7 @@ namespace RogueEntity.Core.Positioning.Continuous
                                                                                IItemComponentTrait<TGameContext, TItemId, ContinuousMapPosition>,
                                                                                IItemComponentInformationTrait<TGameContext, TItemId, ContinuousMapPositionChangedMarker>,
                                                                                IItemComponentInformationTrait<TGameContext, TItemId, MapLayerPreference>,
+                                                                               IItemComponentDesignTimeInformationTrait<MapLayerPreference>,
                                                                                IItemComponentInformationTrait<TGameContext, TItemId, MapContainerEntityMarker>
         where TItemId : IBulkDataStorageKey<TItemId>
         where TGameContext : IContinuousMapContext<TGameContext, TItemId>
@@ -39,6 +40,12 @@ namespace RogueEntity.Core.Positioning.Continuous
         public IReferenceItemTrait<TGameContext, TItemId> CreateInstance()
         {
             return this;
+        }
+
+        public bool TryQuery(out MapLayerPreference t)
+        {
+            t = layerPreference;
+            return true;
         }
 
         public void Initialize(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, IItemDeclaration item)

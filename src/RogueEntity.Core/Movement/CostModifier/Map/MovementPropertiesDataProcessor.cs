@@ -1,7 +1,7 @@
 using EnTTSharp.Entities;
 using JetBrains.Annotations;
 using RogueEntity.Core.GridProcessing.LayerAggregation;
-using RogueEntity.Core.Meta.Items;
+using RogueEntity.Core.Infrastructure.ItemTraits;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Positioning.MapLayers;
 

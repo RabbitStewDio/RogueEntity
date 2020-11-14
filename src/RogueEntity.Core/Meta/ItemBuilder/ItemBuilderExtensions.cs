@@ -1,7 +1,6 @@
 ﻿using System;
 using EnTTSharp.Entities;
 using RogueEntity.Core.Infrastructure.ItemTraits;
-using RogueEntity.Core.Meta.Items;
 
 namespace RogueEntity.Core.Meta.ItemBuilder
 {

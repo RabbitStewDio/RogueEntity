@@ -1,6 +1,7 @@
 ﻿using EnTTSharp.Entities;
 using RogueEntity.Core.Infrastructure.Actions.Schedule;
 using RogueEntity.Core.Infrastructure.Commands;
+using RogueEntity.Core.Infrastructure.ItemTraits;
 using RogueEntity.Core.Meta.Items;
 
 namespace RogueEntity.Core.Infrastructure.Actions.Idle

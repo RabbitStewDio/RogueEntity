@@ -2,7 +2,7 @@
 using EnTTSharp.Entities;
 using EnTTSharp.Entities.Helpers;
 using JetBrains.Annotations;
-using RogueEntity.Core.Meta.Items;
+using RogueEntity.Core.Infrastructure.ItemTraits;
 using RogueEntity.Core.Utils;
 using Serilog;
 

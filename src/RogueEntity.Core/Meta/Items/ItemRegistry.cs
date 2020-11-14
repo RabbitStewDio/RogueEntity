@@ -1,22 +1,13 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using EnTTSharp.Entities;
 using RogueEntity.Core.Infrastructure.ItemTraits;
 using RogueEntity.Core.Utils;
 using Serilog;
 
 namespace RogueEntity.Core.Meta.Items
 {
-    public interface IItemRegistryBackend<TContext, TItemId>: IItemRegistry, IBulkItemIdMapping
-        where TItemId : IEntityKey
-    {
-        ItemDeclarationId Register(IItemDeclaration itemDeclaration);
-    }
-    
-    public class ItemRegistry<TContext, TItemId> : IItemRegistry, 
-                                                   IBulkItemIdMapping,
-                                                   IItemRegistryBackend<TContext, TItemId>
+    public class ItemRegistry<TContext, TItemId> : IItemRegistryBackend<TContext, TItemId>
         where TItemId : IBulkDataStorageKey<TItemId>
     {
         readonly ILogger logger = SLog.ForContext<ItemRegistry<TContext, TItemId>>();

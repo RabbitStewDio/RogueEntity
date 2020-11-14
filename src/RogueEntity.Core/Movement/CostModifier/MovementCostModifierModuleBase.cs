@@ -5,6 +5,7 @@ using RogueEntity.Core.Infrastructure.GameLoops;
 using RogueEntity.Core.Infrastructure.ItemTraits;
 using RogueEntity.Core.Infrastructure.Modules;
 using RogueEntity.Core.Infrastructure.Modules.Attributes;
+using RogueEntity.Core.Infrastructure.Modules.Helpers;
 using RogueEntity.Core.Infrastructure.Modules.Services;
 using RogueEntity.Core.Movement.CostModifier.Directions;
 using RogueEntity.Core.Movement.CostModifier.Map;
@@ -36,18 +37,21 @@ namespace RogueEntity.Core.Movement.CostModifier
         }
 
         [InitializerCollector(InitializerCollectorType.Roles)]
-        public IEnumerable<ModuleEntityRoleInitializerInfo<TGameContext>> CollectRoleInitializers<TGameContext, TItemId>(IServiceResolver serviceResolver,
-                                                                                                                         IModuleEntityInformation entityInformation,
-                                                                                                                         EntityRole role)
+        public IEnumerable<ModuleEntityRoleInitializerInfo<TGameContext, TItemId>> CollectRoleInitializers<TGameContext, TItemId>(IServiceResolver serviceResolver,
+                                                                                                                                  IModuleEntityInformation entityInformation,
+                                                                                                                                  EntityRole role)
             where TItemId : IEntityKey
         {
             if (role == MovementCostModifierSourceRole)
             {
-                yield return new ModuleEntityRoleInitializerInfo<TGameContext>(role, InitializeResistanceRole<TGameContext, TItemId>); 
+                yield return ModuleEntityRoleInitializerInfo.CreateFor<TGameContext, TItemId>(MovementCostModifierSourceRole,
+                                                                                              InitializeResistanceRole,
+                                                                                              GetType().Name + "#" + nameof(InitializeResistanceRole))
+                                                            .WithRequiredRolesAnywhereInSystem(); //todo 
             }
         }
 
-        protected void InitializeResistanceRole<TGameContext, TItemId>(in ModuleInitializationParameter initParameter,
+        protected void InitializeResistanceRole<TGameContext, TItemId>(in ModuleEntityInitializationParameter<TGameContext, TItemId> initParameter,
                                                                        IModuleInitializer<TGameContext> initializer,
                                                                        EntityRole role)
             where TItemId : IEntityKey

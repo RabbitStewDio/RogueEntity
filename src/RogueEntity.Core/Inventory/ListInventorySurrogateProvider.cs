@@ -1,6 +1,7 @@
 ﻿using System;
 using EnTTSharp.Entities;
 using EnTTSharp.Serialization.Xml;
+using RogueEntity.Core.Infrastructure.ItemTraits;
 using RogueEntity.Core.Meta.Items;
 
 namespace RogueEntity.Core.Inventory

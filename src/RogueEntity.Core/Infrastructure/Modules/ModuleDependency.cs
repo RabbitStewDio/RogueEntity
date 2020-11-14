@@ -45,6 +45,11 @@ namespace RogueEntity.Core.Infrastructure.Modules
         {
             return !left.Equals(right);
         }
+
+        public override string ToString()
+        {
+            return ModuleId ?? "";
+        }
     }
 
 

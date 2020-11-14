@@ -2,6 +2,7 @@ using System;
 using EnTTSharp.Annotations;
 using EnTTSharp.Entities;
 using NUnit.Framework;
+using RogueEntity.Core.Infrastructure.ItemTraits;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Sensing.Discovery;
 using RogueEntity.Core.Tests.Meta.Items;

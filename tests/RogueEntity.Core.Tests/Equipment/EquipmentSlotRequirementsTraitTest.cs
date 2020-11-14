@@ -1,6 +1,7 @@
 using EnTTSharp.Entities;
 using NUnit.Framework;
 using RogueEntity.Core.Equipment;
+using RogueEntity.Core.Infrastructure.ItemTraits;
 using RogueEntity.Core.Meta.Base;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Tests.Meta.Items;

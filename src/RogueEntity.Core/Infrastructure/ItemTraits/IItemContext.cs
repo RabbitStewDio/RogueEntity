@@ -1,6 +1,6 @@
 ﻿using EnTTSharp.Entities;
 
-namespace RogueEntity.Core.Meta.Items
+namespace RogueEntity.Core.Infrastructure.ItemTraits
 {
     public interface IItemContext<TGameContext, TItemId> 
         where TItemId : IEntityKey

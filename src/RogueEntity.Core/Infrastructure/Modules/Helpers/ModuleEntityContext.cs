@@ -1,12 +1,13 @@
 ﻿using System.Collections.Generic;
 using EnTTSharp.Entities;
-using RogueEntity.Core.Infrastructure.GameLoops;
 using RogueEntity.Core.Infrastructure.ItemTraits;
 using RogueEntity.Core.Meta.Items;
 
-namespace RogueEntity.Core.Infrastructure.Modules.Initializers
+namespace RogueEntity.Core.Infrastructure.Modules.Helpers
 {
-    public class ModuleEntityContext<TGameContext, TEntityId> : IModuleEntityContext<TGameContext, TEntityId>, IModuleInitializationData<TGameContext, TEntityId>
+    public class ModuleEntityContext<TGameContext, TEntityId> : IModuleEntityContext<TGameContext, TEntityId>, 
+                                                                IModuleInitializationData<TGameContext, TEntityId>,
+                                                                IModuleContentContext<TGameContext, TEntityId>
         where TEntityId : IEntityKey
     {
         readonly Dictionary<ItemDeclarationId, (ModuleId, IBulkItemDeclaration<TGameContext, TEntityId>)> declaredBulkItems;
@@ -130,7 +131,7 @@ namespace RogueEntity.Core.Infrastructure.Modules.Initializers
             });
         }
 
-        class EntitySystemFactory : IEntitySystemFactory<TGameContext, TEntityId>, IEntitySystemDeclaration<TGameContext, TEntityId>
+        class EntitySystemFactory : IEntitySystemDeclaration<TGameContext, TEntityId>
         {
             public ModuleId DeclaringModule { get; set; }
             public EntitySystemId Id { get; set; }
@@ -140,14 +141,6 @@ namespace RogueEntity.Core.Infrastructure.Modules.Initializers
             public EntityRegistrationDelegate<TEntityId> EntityRegistration { get; set; }
 
             public EntitySystemRegistrationDelegate<TGameContext, TEntityId> EntitySystemRegistration { get; set; }
-
-            public void Register(in ModuleInitializationParameter initParams,
-                                 IGameLoopSystemRegistration<TGameContext> context,
-                                 EntityRegistry<TEntityId> entityRegistry)
-            {
-                EntityRegistration?.Invoke(in initParams, entityRegistry);
-                EntitySystemRegistration?.Invoke(in initParams, context, entityRegistry);
-            }
         }
     }
 }

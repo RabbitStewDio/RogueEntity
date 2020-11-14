@@ -6,25 +6,12 @@ using RogueEntity.Core.Infrastructure.GameLoops;
 using RogueEntity.Core.Utils;
 using Serilog;
 
-namespace RogueEntity.Core.Infrastructure.Modules
+namespace RogueEntity.Core.Infrastructure.Modules.Helpers
 {
-    public interface IGameLoopSystemInformation<TGameContext>
+    public class ModuleEntitySystemRegistrations<TGameContext> : IGameLoopSystemRegistration<TGameContext>, 
+                                                                 IGameLoopSystemInformation<TGameContext>
     {
-        public IEnumerable<ActionSystemEntry<TGameContext>> InitializationEntries { get; }
-        public IEnumerable<ActionSystemEntry<TGameContext>> PreFixedStepEntries { get; }
-        public IEnumerable<ActionSystemEntry<TGameContext>> FixedStepEntries { get; }
-        public IEnumerable<ActionSystemEntry<TGameContext>> LateFixedStepEntries { get; }
-
-        public IEnumerable<ActionSystemEntry<TGameContext>> VariableStepEntries { get; }
-
-        public IEnumerable<ActionSystemEntry<TGameContext>> LateVariableStepEntries { get; }
-
-        public IEnumerable<ActionSystemEntry<TGameContext>> DisposeEntries { get; }
-    }
-
-    public class ModuleSystemSystemRegistrations<TGameContext> : IGameLoopSystemRegistration<TGameContext>, IGameLoopSystemInformation<TGameContext>
-    {
-        static readonly ILogger Logger = SLog.ForContext<ModuleSystemSystemRegistrations<TGameContext>>();
+        static readonly ILogger Logger = SLog.ForContext<ModuleEntitySystemRegistrations<TGameContext>>();
         ISystemDeclaration CurrentSystem { get; set; }
         string contextPattern;
 
@@ -36,7 +23,7 @@ namespace RogueEntity.Core.Infrastructure.Modules
         readonly List<ActionSystemEntry<TGameContext>> lateVariableStepEntries;
         readonly List<ActionSystemEntry<TGameContext>> disposeEntries;
 
-        public ModuleSystemSystemRegistrations()
+        public ModuleEntitySystemRegistrations()
         {
             initializationEntries = new List<ActionSystemEntry<TGameContext>>();
             preFixedStepEntries = new List<ActionSystemEntry<TGameContext>>();

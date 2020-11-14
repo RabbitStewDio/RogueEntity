@@ -1,22 +1,32 @@
 using System;
 using System.Collections.Generic;
+using EnTTSharp.Entities;
 using RogueEntity.Core.Infrastructure.ItemTraits;
 using RogueEntity.Core.Utils;
 
 namespace RogueEntity.Core.Infrastructure.Modules
 {
+    public interface IModuleEntityActivatorCallback
+    {
+        public void ActivateEntity<TEntity>(DeclaredEntityRoleRecord record) where TEntity : IEntityKey;
+    }
+
     public readonly struct DeclaredEntityRoleRecord : IEquatable<DeclaredEntityRoleRecord>
     {
         public readonly Type EntityType;
         readonly List<EntityRole> roles;
+        readonly Action<IModuleEntityActivatorCallback, DeclaredEntityRoleRecord> activatorFunction;
 
-        public DeclaredEntityRoleRecord(Type entityType, EntityRole r)
+        public DeclaredEntityRoleRecord(Type entityType, EntityRole r, Action<IModuleEntityActivatorCallback, DeclaredEntityRoleRecord> activatorFunction)
         {
             EntityType = entityType ?? throw new ArgumentNullException(nameof(entityType));
+            this.activatorFunction = activatorFunction;
             this.roles = new List<EntityRole>();
             this.roles.Add(r);
         }
 
+        public void Activate(IModuleEntityActivatorCallback cb) => activatorFunction.Invoke(cb, this);
+        
         public ReadOnlyListWrapper<EntityRole> Roles => roles;
 
         public DeclaredEntityRoleRecord With(EntityRole r)

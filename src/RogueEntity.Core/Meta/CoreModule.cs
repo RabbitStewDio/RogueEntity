@@ -44,7 +44,7 @@ namespace RogueEntity.Core.Meta
         }
 
         [EntityRoleInitializer("Role.Core.Item")]
-        protected void InitializeItemRole<TGameContext, TItemId>(in ModuleInitializationParameter initParameter,
+        protected void InitializeItemRole<TGameContext, TItemId>(in ModuleEntityInitializationParameter<TGameContext,TItemId> initParameter,
                                                                  IModuleInitializer<TGameContext> initializer,
                                                                  EntityRole r)
             where TItemId : IBulkDataStorageKey<TItemId>
@@ -54,7 +54,7 @@ namespace RogueEntity.Core.Meta
         }
 
         [EntityRoleInitializer("Role.Core.Entity")]
-        protected void InitializeEntityRole<TGameContext, TItemId>(in ModuleInitializationParameter initParameter,
+        protected void InitializeEntityRole<TGameContext, TItemId>(in ModuleEntityInitializationParameter<TGameContext,TItemId> initParameter,
                                                                    IModuleInitializer<TGameContext> initializer,
                                                                    EntityRole r)
             where TItemId : IBulkDataStorageKey<TItemId>
@@ -66,7 +66,7 @@ namespace RogueEntity.Core.Meta
         }
 
         [EntityRoleInitializer("Role.Core.Player")]
-        protected void InitializePlayerRole<TGameContext, TItemId>(in ModuleInitializationParameter initParameter,
+        protected void InitializePlayerRole<TGameContext, TItemId>(in ModuleEntityInitializationParameter<TGameContext,TItemId> initParameter,
                                                                    IModuleInitializer<TGameContext> initializer,
                                                                    EntityRole r)
             where TItemId : IBulkDataStorageKey<TItemId>
@@ -76,7 +76,7 @@ namespace RogueEntity.Core.Meta
         }
 
         [EntityRoleInitializer("Role.Core.ContainedItem")]
-        protected void InitializeContainedItemRole<TGameContext, TItemId>(in ModuleInitializationParameter initParameter,
+        protected void InitializeContainedItemRole<TGameContext, TItemId>(in ModuleEntityInitializationParameter<TGameContext,TItemId> initParameter,
                                                                           IModuleInitializer<TGameContext> initializer,
                                                                           EntityRole r)
             where TItemId : IBulkDataStorageKey<TItemId>

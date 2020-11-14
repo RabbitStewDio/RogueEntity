@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using RogueEntity.Core.Infrastructure.Modules.Initializers;
+using RogueEntity.Core.Infrastructure.Modules.Helpers;
 
 namespace RogueEntity.Core.Infrastructure.Modules.Services
 {

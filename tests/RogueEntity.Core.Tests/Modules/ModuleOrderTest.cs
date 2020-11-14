@@ -4,7 +4,7 @@ using EnTTSharp.Entities;
 using FluentAssertions;
 using NUnit.Framework;
 using RogueEntity.Core.Infrastructure.Modules;
-using RogueEntity.Core.Infrastructure.Modules.Initializers;
+using RogueEntity.Core.Infrastructure.Modules.Helpers;
 using RogueEntity.Core.Infrastructure.Modules.Services;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Utils;

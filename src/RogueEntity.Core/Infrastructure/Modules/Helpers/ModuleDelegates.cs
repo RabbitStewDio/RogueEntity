@@ -1,26 +1,22 @@
 using EnTTSharp.Entities;
 using RogueEntity.Core.Infrastructure.GameLoops;
 using RogueEntity.Core.Infrastructure.ItemTraits;
-using RogueEntity.Core.Infrastructure.Modules.Services;
 
-namespace RogueEntity.Core.Infrastructure.Modules
+namespace RogueEntity.Core.Infrastructure.Modules.Helpers
 {
-    public readonly struct ModuleInitializationParameter
-    {
-        public readonly IModuleEntityInformation EntityInformation;
-        public readonly IServiceResolver ServiceResolver;
-
-        public ModuleInitializationParameter(IModuleEntityInformation entityInformation, IServiceResolver serviceResolver)
-        {
-            EntityInformation = entityInformation;
-            ServiceResolver = serviceResolver;
-        }
-    }
-    
     public delegate void ModuleInitializerDelegate<TGameContext>(in ModuleInitializationParameter initParameter, IModuleInitializer<TGameContext> context);
+
     public delegate void ModuleContentInitializerDelegate<TGameContext>(in ModuleInitializationParameter initParameter, IModuleInitializer<TGameContext> context);
-    public delegate void ModuleEntityRoleInitializerDelegate<TGameContext>(in ModuleInitializationParameter initParameter, IModuleInitializer<TGameContext> context, EntityRole role);
-    public delegate void ModuleEntityRelationInitializerDelegate<TGameContext>(in ModuleInitializationParameter initParameter, IModuleInitializer<TGameContext> context, EntityRelation role);
+
+    public delegate void ModuleEntityRoleInitializerDelegate<TGameContext, TEntityId>(in ModuleEntityInitializationParameter<TGameContext, TEntityId> initParameter,
+                                                                                      IModuleInitializer<TGameContext> context,
+                                                                                      EntityRole role)
+        where TEntityId : IEntityKey;
+
+    public delegate void ModuleEntityRelationInitializerDelegate<TGameContext, TEntityId>(in ModuleEntityInitializationParameter<TGameContext, TEntityId> initParameter,
+                                                                                          IModuleInitializer<TGameContext> context,
+                                                                                          EntityRelation role)
+        where TEntityId : IEntityKey;
 
     public delegate void EntityRegistrationDelegate<TEntityId>(in ModuleInitializationParameter initParameter,
                                                                EntityRegistry<TEntityId> registry)
@@ -33,5 +29,4 @@ namespace RogueEntity.Core.Infrastructure.Modules
 
     public delegate void GlobalSystemRegistrationDelegate<TGameContext>(in ModuleInitializationParameter initParameter,
                                                                         IGameLoopSystemRegistration<TGameContext> context);
-
 }

@@ -39,7 +39,7 @@ namespace RogueEntity.Core.Sensing.Cache
 
         [EntityRoleInitializer("Role.Core.Senses.Cache.InvalidationSource",
                                ConditionalRoles = new[] {"Role.Core.Position.GridPositioned"})]
-        protected void InitializeRole<TGameContext, TItemId>(in ModuleInitializationParameter initParameter,
+        protected void InitializeRole<TGameContext, TItemId>(in ModuleEntityInitializationParameter<TGameContext,TItemId> initParameter,
                                                              IModuleInitializer<TGameContext> initializer,
                                                              EntityRole role)
             where TItemId : IEntityKey

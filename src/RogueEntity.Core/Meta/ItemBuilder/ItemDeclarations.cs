@@ -14,14 +14,14 @@ namespace RogueEntity.Core.Meta.ItemBuilder
             return new ItemDeclarationBuilder<TGameContext>(mod, serviceResolver);
         }
 
-        public static ItemDeclarationBuilderWithReferenceContext<TGameContext, TItemId> CreateReferenceEntityBuilder<TGameContext, TItemId>(this IModuleEntityContext<TGameContext, TItemId> ctx,
+        public static ItemDeclarationBuilderWithReferenceContext<TGameContext, TItemId> CreateReferenceEntityBuilder<TGameContext, TItemId>(this IModuleContentContext<TGameContext, TItemId> ctx,
                                                                                                                                             IServiceResolver serviceResolver)
             where TItemId : IEntityKey
         {
             return new ItemDeclarationBuilderWithReferenceContext<TGameContext, TItemId>(ctx, serviceResolver);
         }
 
-        public static ItemDeclarationBuilderWithBulkContext<TGameContext, TItemId> CreateBulkEntityBuilder<TGameContext, TItemId>(this IModuleEntityContext<TGameContext, TItemId> ctx,
+        public static ItemDeclarationBuilderWithBulkContext<TGameContext, TItemId> CreateBulkEntityBuilder<TGameContext, TItemId>(this IModuleContentContext<TGameContext, TItemId> ctx,
                                                                                                                                   IServiceResolver serviceResolver)
             where TItemId : IBulkDataStorageKey<TItemId>
         {
@@ -43,23 +43,23 @@ namespace RogueEntity.Core.Meta.ItemBuilder
         public ItemDeclarationBuilderWithReferenceContext<TGameContext, TItemId> ForEntity<TItemId>()
             where TItemId : IEntityKey
         {
-            return new ItemDeclarationBuilderWithReferenceContext<TGameContext, TItemId>(mod.DeclareEntityContext<TItemId>(), serviceResolver);
+            return new ItemDeclarationBuilderWithReferenceContext<TGameContext, TItemId>(mod.DeclareContentContext<TItemId>(), serviceResolver);
         }
 
         public ItemDeclarationBuilderWithBulkContext<TGameContext, TItemId> ForBulkEntity<TItemId>()
             where TItemId : IBulkDataStorageKey<TItemId>
         {
-            return new ItemDeclarationBuilderWithBulkContext<TGameContext, TItemId>(mod.DeclareEntityContext<TItemId>(), serviceResolver);
+            return new ItemDeclarationBuilderWithBulkContext<TGameContext, TItemId>(mod.DeclareContentContext<TItemId>(), serviceResolver);
         }
     }
 
     public readonly struct ItemDeclarationBuilderWithReferenceContext<TGameContext, TItemId>
         where TItemId : IEntityKey
     {
-        readonly IModuleEntityContext<TGameContext, TItemId> entityContext;
+        readonly IModuleContentContext<TGameContext, TItemId> entityContext;
         readonly IServiceResolver serviceResolver;
 
-        public ItemDeclarationBuilderWithReferenceContext(IModuleEntityContext<TGameContext, TItemId> entityContext,
+        public ItemDeclarationBuilderWithReferenceContext(IModuleContentContext<TGameContext, TItemId> entityContext,
                                                           IServiceResolver serviceResolver)
         {
             this.entityContext = entityContext;
@@ -75,10 +75,10 @@ namespace RogueEntity.Core.Meta.ItemBuilder
     public readonly struct ItemDeclarationBuilderWithBulkContext<TGameContext, TItemId>
         where TItemId : IEntityKey
     {
-        readonly IModuleEntityContext<TGameContext, TItemId> entityContext;
+        readonly IModuleContentContext<TGameContext, TItemId> entityContext;
         readonly IServiceResolver serviceResolver;
 
-        public ItemDeclarationBuilderWithBulkContext(IModuleEntityContext<TGameContext, TItemId> entityContext,
+        public ItemDeclarationBuilderWithBulkContext(IModuleContentContext<TGameContext, TItemId> entityContext,
                                                      IServiceResolver serviceResolver)
         {
             this.entityContext = entityContext;
@@ -107,11 +107,11 @@ namespace RogueEntity.Core.Meta.ItemBuilder
     public readonly struct ReferenceItemDeclarationBuilder<TGameContext, TItemId>
         where TItemId : IEntityKey
     {
-        public readonly IModuleEntityContext<TGameContext, TItemId> EntityContext;
+        public readonly IModuleContentContext<TGameContext, TItemId> EntityContext;
         public readonly IServiceResolver ServiceResolver;
         public readonly ReferenceItemDeclaration<TGameContext, TItemId> Declaration;
 
-        public ReferenceItemDeclarationBuilder(IModuleEntityContext<TGameContext, TItemId> entityContext,
+        public ReferenceItemDeclarationBuilder(IModuleContentContext<TGameContext, TItemId> entityContext,
                                                IServiceResolver serviceResolver,
                                                ReferenceItemDeclaration<TGameContext, TItemId> declaration)
         {
@@ -130,11 +130,11 @@ namespace RogueEntity.Core.Meta.ItemBuilder
     public readonly struct BulkItemDeclarationBuilder<TGameContext, TItemId>
         where TItemId : IEntityKey
     {
-        public readonly IModuleEntityContext<TGameContext, TItemId> EntityContext;
+        public readonly IModuleContentContext<TGameContext, TItemId> EntityContext;
         public readonly IServiceResolver ServiceResolver;
         public readonly BulkItemDeclaration<TGameContext, TItemId> Declaration;
 
-        public BulkItemDeclarationBuilder(IModuleEntityContext<TGameContext, TItemId> entityContext,
+        public BulkItemDeclarationBuilder(IModuleContentContext<TGameContext, TItemId> entityContext,
                                           IServiceResolver serviceResolver,
                                           BulkItemDeclaration<TGameContext, TItemId> declaration)
         {
