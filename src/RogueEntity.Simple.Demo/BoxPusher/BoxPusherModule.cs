@@ -100,14 +100,34 @@ namespace RogueEntity.Simple.Demo.BoxPusher
             var ctx = initializer.DeclareContentContext<ItemReference>();
             ctx.Activate(ctx.CreateBulkEntityBuilder(serviceResolver)
                             .Define("Items.Wall")
-                            .WithGridPosition(MapLayer.Indeterminate)
+                            .WithGridPosition(BoxPusherMapLayers.Items)
                             .AsImmobile()
                             .WithLightResistance(100.Percent())
                             .WithName("wall")
                             .Declaration);
 
-            ctx.CreateBulkEntityBuilder(serviceResolver)
-               .RedefineAs("Items.Wall", "Item.Wall.Stone");
+            ctx.Activate(ctx.CreateBulkEntityBuilder(serviceResolver)
+                            .Define("Items.Floor.Empty")
+                            .WithGridPosition(BoxPusherMapLayers.Floor)
+                            .AsImmobile()
+                            .WithLightResistance(0.Percent())
+                            .WithName("floor")
+                            .Declaration);
+
+            ctx.Activate(ctx.CreateBulkEntityBuilder(serviceResolver)
+                            .Define("Items.Floor.TargetZone")
+                            .WithGridPosition(BoxPusherMapLayers.Floor)
+                            .AsImmobile()
+                            .WithLightResistance(0.Percent())
+                            .WithName("target zone")
+                            .Declaration);
+
+            ctx.Activate(ctx.CreateBulkEntityBuilder(serviceResolver)
+                            .Define("Items.Box")
+                            .WithGridPosition(BoxPusherMapLayers.Items)
+                            .WithLightResistance(0.Percent())
+                            .WithName("box")
+                            .Declaration);
 
             var actorContext = initializer.DeclareContentContext<ActorReference>();
             actorContext.Activate(actorContext.CreateReferenceEntityBuilder(serviceResolver)
@@ -115,6 +135,7 @@ namespace RogueEntity.Simple.Demo.BoxPusher
                                               .AsPlayer()
                                               .WithInventory()
                                               .Of<ItemReference>()
+                                              .WithGridPosition(BoxPusherMapLayers.Actors)
                                               .WithLightSource(10)
                                               .WithVisionSense(10)
                                               .Declaration);

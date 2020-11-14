@@ -4,7 +4,7 @@ using System.Reflection;
 using EnTTSharp.Entities;
 using RogueEntity.Core.Infrastructure.Modules.Attributes;
 using RogueEntity.Core.Infrastructure.Modules.Helpers;
-using RogueEntity.Core.Infrastructure.Modules.Services;
+using RogueEntity.Core.Infrastructure.Services;
 using RogueEntity.Core.Utils;
 using Serilog;
 

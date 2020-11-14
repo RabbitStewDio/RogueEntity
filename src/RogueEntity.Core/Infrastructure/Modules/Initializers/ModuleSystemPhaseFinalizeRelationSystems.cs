@@ -12,7 +12,7 @@ using Serilog;
 
 namespace RogueEntity.Core.Infrastructure.Modules.Initializers
 {
-    public class ModuleSystemPhaseDeclareRelationSystems<TGameContext> : IModuleEntityInitializationCallback<TGameContext>
+    public class ModuleSystemPhaseFinalizeRelationSystems<TGameContext> : IModuleEntityInitializationCallback<TGameContext>
     {
         static readonly ILogger Logger = SLog.ForContext<ModuleSystem<TGameContext>>();
         readonly GlobalModuleEntityInformation<TGameContext> entityInfo;
@@ -20,20 +20,19 @@ namespace RogueEntity.Core.Infrastructure.Modules.Initializers
         readonly ModuleInitializer<TGameContext> moduleInitializer;
         ModuleBase currentModule;
 
-        public ModuleSystemPhaseDeclareRelationSystems(in ModuleSystemPhaseInitModuleResult<TGameContext> p,
-                                                       IServiceResolver serviceResolver)
+        public ModuleSystemPhaseFinalizeRelationSystems(in ModuleSystemPhaseInitModuleResult<TGameContext> p,
+                                                        IServiceResolver serviceResolver)
         {
             this.serviceResolver = serviceResolver;
             this.entityInfo = p.EntityInformation;
             this.moduleInitializer = p.ModuleInitializer;
         }
 
-
         public void InitializeModuleRelations(List<ModuleRecord<TGameContext>> orderedModules)
         {
             foreach (var mod in orderedModules)
             {
-                if (mod.InitializedRelations)
+                if (mod.FinalizedRelations)
                 {
                     continue;
                 }
@@ -41,7 +40,7 @@ namespace RogueEntity.Core.Infrastructure.Modules.Initializers
                 try
                 {
                     moduleInitializer.CurrentModuleId = mod.ModuleId;
-                    mod.InitializedRelations = true;
+                    mod.FinalizedRelations = true;
 
                     foreach (var subject in moduleInitializer.EntityInitializers)
                     {
@@ -132,7 +131,7 @@ namespace RogueEntity.Core.Infrastructure.Modules.Initializers
 
             foreach (var m in methodInfos)
             {
-                var attr = m.GetCustomAttribute<InitializerCollectorAttribute>();
+                var attr = m.GetCustomAttribute<FinalizerCollectorAttribute>();
                 if (attr == null || attr.Type != InitializerCollectorType.Relations)
                 {
                     continue;
@@ -161,7 +160,7 @@ namespace RogueEntity.Core.Infrastructure.Modules.Initializers
 
             foreach (var m in methodInfos)
             {
-                var attr = m.GetCustomAttribute<EntityRelationInitializerAttribute>();
+                var attr = m.GetCustomAttribute<EntityRelationFinalizerAttribute>();
                 if (attr == null)
                 {
                     continue;

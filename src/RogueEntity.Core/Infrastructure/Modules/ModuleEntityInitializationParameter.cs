@@ -1,5 +1,7 @@
+using System;
 using EnTTSharp.Entities;
-using RogueEntity.Core.Infrastructure.Modules.Services;
+using JetBrains.Annotations;
+using RogueEntity.Core.Infrastructure.Services;
 
 namespace RogueEntity.Core.Infrastructure.Modules
 {
@@ -10,13 +12,13 @@ namespace RogueEntity.Core.Infrastructure.Modules
         public readonly IServiceResolver ServiceResolver;
         public readonly IModuleContentDeclarations<TGameContext, TEntityId> ContentDeclarations;
 
-        public ModuleEntityInitializationParameter(IModuleEntityInformation entityInformation,
-                                                   IServiceResolver serviceResolver,
-                                                   IModuleContentDeclarations<TGameContext, TEntityId> contentDeclarations)
+        public ModuleEntityInitializationParameter([NotNull] IModuleEntityInformation entityInformation,
+                                                   [NotNull] IServiceResolver serviceResolver,
+                                                   [NotNull] IModuleContentDeclarations<TGameContext, TEntityId> contentDeclarations)
         {
-            EntityInformation = entityInformation;
-            ServiceResolver = serviceResolver;
-            ContentDeclarations = contentDeclarations;
+            EntityInformation = entityInformation ?? throw new ArgumentNullException(nameof(entityInformation));
+            ServiceResolver = serviceResolver ?? throw new ArgumentNullException(nameof(serviceResolver));
+            ContentDeclarations = contentDeclarations ?? throw new ArgumentNullException(nameof(contentDeclarations));
         }
     }
 }

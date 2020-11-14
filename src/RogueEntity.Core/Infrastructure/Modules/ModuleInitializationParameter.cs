@@ -1,4 +1,4 @@
-using RogueEntity.Core.Infrastructure.Modules.Services;
+using RogueEntity.Core.Infrastructure.Services;
 
 namespace RogueEntity.Core.Infrastructure.Modules
 {

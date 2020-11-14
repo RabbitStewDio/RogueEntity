@@ -3,7 +3,7 @@ using System.Linq;
 using EnTTSharp.Entities;
 using RogueEntity.Core.Infrastructure.ItemTraits;
 using RogueEntity.Core.Infrastructure.Modules.Helpers;
-using RogueEntity.Core.Infrastructure.Modules.Services;
+using RogueEntity.Core.Infrastructure.Services;
 
 namespace RogueEntity.Core.Infrastructure.Modules
 {

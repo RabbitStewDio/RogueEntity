@@ -5,11 +5,11 @@ namespace RogueEntity.Core.Infrastructure.Modules.Attributes
 {
     [MeansImplicitUse]
     [AttributeUsage(AttributeTargets.Method)]
-    public class InitializerCollectorAttribute: Attribute
+    public class FinalizerCollectorAttribute: Attribute
     {
         public InitializerCollectorType Type { get; set; }
 
-        public InitializerCollectorAttribute(InitializerCollectorType type)
+        public FinalizerCollectorAttribute(InitializerCollectorType type)
         {
             Type = type;
         }

@@ -11,8 +11,6 @@ namespace RogueEntity.Core.Infrastructure.Modules.Helpers
         public readonly ModuleId ModuleId;
         public readonly ModuleBase Module;
         public readonly List<ModuleRecord<TGameContext>> Dependencies;
-        public readonly List<ModuleInitializerDelegate<TGameContext>> ModuleInitializers;
-        public readonly List<ModuleContentInitializerDelegate<TGameContext>> ContentInitializers;
         public bool IsUsedAsDependency { get; set; }
         public bool ResolvedRoles { get; set; }
         public bool ResolvedEquivalence { get; set; }
@@ -21,6 +19,8 @@ namespace RogueEntity.Core.Infrastructure.Modules.Helpers
         public bool InitializedContent { get; set; }
         public bool InitializedRoles { get; set; }
         public bool InitializedRelations { get; set; }
+        public bool FinalizedRoles { get; set; }
+        public bool FinalizedRelations { get; set; }
 
         public int DependencyDepth
         {
@@ -40,8 +40,6 @@ namespace RogueEntity.Core.Infrastructure.Modules.Helpers
             Module = module;
             ModuleId = module.Id;
             Dependencies = new List<ModuleRecord<TGameContext>>();
-            ModuleInitializers = new List<ModuleInitializerDelegate<TGameContext>>();
-            ContentInitializers = new List<ModuleContentInitializerDelegate<TGameContext>>();
         }
 
         public override string ToString()

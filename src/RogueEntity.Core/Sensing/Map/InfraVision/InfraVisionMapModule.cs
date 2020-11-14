@@ -6,7 +6,7 @@ using RogueEntity.Core.Infrastructure.GameLoops;
 using RogueEntity.Core.Infrastructure.ItemTraits;
 using RogueEntity.Core.Infrastructure.Modules;
 using RogueEntity.Core.Infrastructure.Modules.Attributes;
-using RogueEntity.Core.Infrastructure.Modules.Services;
+using RogueEntity.Core.Infrastructure.Services;
 using RogueEntity.Core.Infrastructure.Time;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Sensing.Cache;
@@ -75,7 +75,7 @@ namespace RogueEntity.Core.Sensing.Map.InfraVision
 
         bool IsServiceEnabled(IServiceResolver serviceResolver)
         {
-            return serviceResolver.TryResolve(out IConfiguration config) && config.GetValue<bool>("RogueEntity:Core:Sensing:Map:InfraVision:Enabled", false);
+            return serviceResolver.TryResolve(out IConfiguration config) && config.GetValue("RogueEntity:Core:Sensing:Map:InfraVision:Enabled", false);
         }
 
         void RegisterCollectSenseSourcesSystem<TGameContext, TItemId>(in ModuleInitializationParameter initParameter,

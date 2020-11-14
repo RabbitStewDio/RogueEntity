@@ -12,7 +12,7 @@ using Serilog;
 
 namespace RogueEntity.Core.Infrastructure.Modules.Initializers
 {
-    public class ModuleSystemPhaseDeclareRoleSystems<TGameContext> : IModuleEntityInitializationCallback<TGameContext>
+    public class ModuleSystemPhaseFinalizeRoleSystems<TGameContext> : IModuleEntityInitializationCallback<TGameContext>
     {
         static readonly ILogger Logger = SLog.ForContext<ModuleSystem<TGameContext>>();
         readonly GlobalModuleEntityInformation<TGameContext> entityInfo;
@@ -20,8 +20,8 @@ namespace RogueEntity.Core.Infrastructure.Modules.Initializers
         readonly ModuleInitializer<TGameContext> moduleInitializer;
         ModuleBase currentModule;
 
-        public ModuleSystemPhaseDeclareRoleSystems(in ModuleSystemPhaseInitModuleResult<TGameContext> p,
-                                                   IServiceResolver serviceResolver)
+        public ModuleSystemPhaseFinalizeRoleSystems(in ModuleSystemPhaseInitModuleResult<TGameContext> p,
+                                                IServiceResolver serviceResolver)
         {
             this.serviceResolver = serviceResolver;
             this.entityInfo = p.EntityInformation;
@@ -32,7 +32,7 @@ namespace RogueEntity.Core.Infrastructure.Modules.Initializers
         {
             foreach (var mod in orderedModules)
             {
-                if (mod.InitializedRoles)
+                if (mod.FinalizedRoles)
                 {
                     continue;
                 }
@@ -41,7 +41,7 @@ namespace RogueEntity.Core.Infrastructure.Modules.Initializers
                 {
                     moduleInitializer.CurrentModuleId = mod.ModuleId;
 
-                    mod.InitializedRoles = true;
+                    mod.FinalizedRoles = true;
 
                     foreach (var subject in moduleInitializer.EntityInitializers)
                     {
@@ -96,7 +96,7 @@ namespace RogueEntity.Core.Infrastructure.Modules.Initializers
 
             foreach (var m in methodInfos)
             {
-                var attr = m.GetCustomAttribute<InitializerCollectorAttribute>();
+                var attr = m.GetCustomAttribute<FinalizerCollectorAttribute>();
                 if (attr == null || attr.Type != InitializerCollectorType.Roles)
                 {
                     continue;
@@ -125,7 +125,7 @@ namespace RogueEntity.Core.Infrastructure.Modules.Initializers
 
             foreach (var m in methodInfos)
             {
-                var attr = m.GetCustomAttribute<EntityRoleInitializerAttribute>();
+                var attr = m.GetCustomAttribute<EntityRoleFinalizerAttribute>();
                 if (attr == null)
                 {
                     continue;

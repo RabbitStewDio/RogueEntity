@@ -8,7 +8,7 @@ using RogueEntity.Core.Infrastructure.ItemTraits;
 using RogueEntity.Core.Infrastructure.Modules;
 using RogueEntity.Core.Infrastructure.Modules.Attributes;
 using RogueEntity.Core.Infrastructure.Modules.Helpers;
-using RogueEntity.Core.Infrastructure.Modules.Services;
+using RogueEntity.Core.Infrastructure.Services;
 using RogueEntity.Core.Infrastructure.Time;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Continuous;
@@ -73,7 +73,7 @@ namespace RogueEntity.Core.Sensing.Receptors
                     (SenseReceptorActorRole, InitializeSenseCache).WithRequiredRoles(PositionModule.GridPositionedRole);
             }
 
-            if (role == SenseSourceModules.GetSourceRole<TSourceSense>())
+            if (role == SenseSourceRole)
             {
                 yield return ModuleEntityRoleInitializerInfo.CreateFor<TGameContext, TItemId>(SenseSourceRole, InitializeCollectSenseSources);
             }

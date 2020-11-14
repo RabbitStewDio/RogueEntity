@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using EnTTSharp.Entities;
 using EnTTSharp.Entities.Systems;
 using RogueEntity.Core.GridProcessing.LayerAggregation;
@@ -8,7 +9,7 @@ using RogueEntity.Core.Infrastructure.ItemTraits;
 using RogueEntity.Core.Infrastructure.Modules;
 using RogueEntity.Core.Infrastructure.Modules.Attributes;
 using RogueEntity.Core.Infrastructure.Modules.Helpers;
-using RogueEntity.Core.Infrastructure.Modules.Services;
+using RogueEntity.Core.Infrastructure.Services;
 using RogueEntity.Core.Infrastructure.Time;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Positioning;
@@ -61,6 +62,8 @@ namespace RogueEntity.Core.Sensing.Sources
 
         public static readonly EntitySystemId RegisterEntityId = SenseSourceModules.CreateEntityId<TSense>("Sources");
 
+        public static readonly EntityRelation NeedSenseResistanceRelation = SenseSourceModules.GetResistanceRelation<TSense>();
+
         protected SenseSourceModuleBase()
         {
             DeclareDependencies(ModuleDependency.Of(SensoryCacheModule.ModuleId),
@@ -68,6 +71,8 @@ namespace RogueEntity.Core.Sensing.Sources
 
             RequireRole(SenseSourceRole).WithImpliedRole(SenseSources.SenseSourceRole).WithImpliedRole(SensoryCacheModule.SenseCacheSourceRole);
             ForRole(ResistanceDataProviderRole).WithImpliedRole(SensoryCacheModule.SenseCacheSourceRole);
+
+            RequireRelation(NeedSenseResistanceRelation);
         }
 
         [InitializerCollectorAttribute(InitializerCollectorType.Roles)]
@@ -96,26 +101,55 @@ namespace RogueEntity.Core.Sensing.Sources
 
             if (role == ResistanceDataProviderRole)
             {
-                yield return ModuleEntityRoleInitializerInfo.CreateFor<TGameContext, TItemId>(role, InitializeResistanceRole);
+                yield return ModuleEntityRoleInitializerInfo.CreateFor<TGameContext, TItemId>(ResistanceDataProviderRole, InitializeResistanceEntities);
+                yield return ModuleEntityRoleInitializerInfo.CreateFor<TGameContext, TItemId>(ResistanceDataProviderRole, InitializeResistanceRole)
+                                                            .WithRequiredRoles(PositionModule.GridPositionedRole)
+                                                            .WithRequiredRelations(NeedSenseResistanceRelation);
             }
         }
 
-        public override void ProcessDeclaredSystems<TGameContext, TEntityId>(in ModuleInitializationParameter p,
-                                                                             IModuleInitializationData<TGameContext, TEntityId> moduleContext,
-                                                                             IModuleInitializer<TGameContext> initializer)
+        [FinalizerCollectorAttribute(InitializerCollectorType.Roles)]
+        public IEnumerable<ModuleEntityRoleInitializerInfo<TGameContext, TItemId>> CollectRoleFinalizers<TGameContext, TItemId>(IServiceResolver serviceResolver,
+                                                                                                                                IModuleEntityInformation entityInformation,
+                                                                                                                                EntityRole role)
+            where TItemId : IEntityKey
         {
+            if (role != ResistanceDataProviderRole)
+            {
+                yield break;
+            }
+
+            if (entityInformation.HasRelation(ResistanceDataProviderRole, NeedSenseResistanceRelation))
+            {
+                yield return ModuleEntityRoleInitializerInfo.CreateFor<TGameContext, TItemId>(ResistanceDataProviderRole, InitializeResistanceRelation)
+                                                            .WithRequiredRoles(PositionModule.GridPositionedRole);
+            }
+        }
+
+        void InitializeResistanceRelation<TGameContext, TItemId>(in ModuleEntityInitializationParameter<TGameContext, TItemId> initParameter,
+                                                                 IModuleInitializer<TGameContext> initializer,
+                                                                 EntityRole role)
+            where TItemId : IEntityKey
+        {
+            var moduleContext = initParameter.ContentDeclarations;
+            var systemId = SenseSourceModules.CreateResistanceSourceSystemId<TSense>();
+            var layers = new HashSet<MapLayer>();
             foreach (var bi in moduleContext.DeclaredBulkItems)
             {
                 if (bi.itemDeclaration.TryQuery(out IItemComponentDesignTimeInformationTrait<MapLayerPreference> layerPref) &&
-                    layerPref.TryQuery(out var layers) &&
-                    bi.itemDeclaration.HasItemComponent<TGameContext, TEntityId, SensoryResistance<VisionSense>>())
+                    bi.itemDeclaration.HasItemComponent<TGameContext, TItemId, SensoryResistance<TSense>>() &&
+                    layerPref.TryQuery(out var layerPreferences))
                 {
-                    var ctx = initializer.DeclareEntityContext<TEntityId>();
-
-                    var systemId = SenseSourceModules.CreateResistanceSourceSystemId<VisionSense>();
-                    ctx.Register(systemId, 1100, SenseSourceModules.RegisterSenseResistanceSourceLayer<TGameContext, TEntityId, VisionSense>(layers));
+                   layers.UnionWith(layerPreferences.AcceptableLayers);
                 }
             }
+            
+            var ctx = initializer.DeclareEntityContext<TItemId>();
+            
+            var mapLayers = layers.ToList();
+            Logger.Debug("{Sense} will use map layers {Layers} as resistance source for {EntityId}", typeof(TSense), mapLayers, typeof(TItemId));
+            ctx.Register(systemId, 1100, SenseSourceModules.RegisterSenseResistanceSourceLayer<TGameContext, TItemId, TSense>(mapLayers));
+
         }
 
         protected void InitializeSenseSourceRole<TGameContext, TItemId>(in ModuleEntityInitializationParameter<TGameContext, TItemId> initParameter,
@@ -128,11 +162,6 @@ namespace RogueEntity.Core.Sensing.Sources
             ctx.Register(PreparationSystemId, 50000, RegisterPrepareSenseSourceSystem);
             ctx.Register(ComputeSystemId, 58000, RegisterCalculateSenseSourceStateSystem);
             ctx.Register(FinalizeSystemId, 59000, RegisterCleanUpSystem);
-
-            // The sense resistance system is only needed if there is at least one sense source of this type active. 
-            ctx.Register(RegisterResistanceSystem, 500, RegisterResistanceSystemLifecycle);
-            ctx.Register(ExecuteResistanceSystem, 51000, RegisterResistanceSystemExecution);
-            ctx.Register(ExecuteResistanceSystem, 52000, RegisterProcessSenseDirectionalitySystem);
 
             // Sense caching is only required if there is at least one sense source active. 
             ctx.Register(SenseCacheLifecycleId, 500, RegisterSenseResistanceCacheLifeCycle);
@@ -168,13 +197,26 @@ namespace RogueEntity.Core.Sensing.Sources
             }
         }
 
-        protected void InitializeResistanceRole<TGameContext, TItemId>(in ModuleEntityInitializationParameter<TGameContext, TItemId> initParameter,
+        protected void InitializeResistanceEntities<TGameContext, TItemId>(in ModuleEntityInitializationParameter<TGameContext, TItemId> initParameter,
                                                                        IModuleInitializer<TGameContext> initializer,
                                                                        EntityRole role)
             where TItemId : IEntityKey
         {
             var ctx = initializer.DeclareEntityContext<TItemId>();
             ctx.Register(RegisterResistanceEntitiesId, 0, RegisterResistanceEntities);
+        }
+
+        protected void InitializeResistanceRole<TGameContext, TItemId>(in ModuleEntityInitializationParameter<TGameContext, TItemId> initParameter,
+                                                                       IModuleInitializer<TGameContext> initializer,
+                                                                       EntityRole role)
+            where TItemId : IEntityKey
+        {
+            // The sense resistance system is only needed if there is at least one sense source of this type active.
+            
+            var ctx = initializer.DeclareEntityContext<TItemId>();
+            ctx.Register(RegisterResistanceSystem, 500, RegisterResistanceSystemLifecycle);
+            ctx.Register(ExecuteResistanceSystem, 51000, RegisterResistanceSystemExecution);
+            ctx.Register(ExecuteResistanceSystem, 52000, RegisterProcessSenseDirectionalitySystem);
         }
 
         protected void RegisterResistanceSystemLifecycle<TGameContext, TItemId>(in ModuleInitializationParameter initParameter,
@@ -220,7 +262,9 @@ namespace RogueEntity.Core.Sensing.Sources
         {
             var serviceResolver = initParameter.ServiceResolver;
             var ls = GetOrCreateSenseSourceSystem<TGameContext, TItemId>(serviceResolver);
-            var system = registry.BuildSystem().WithContext<TGameContext>().CreateSystem<TSenseSourceDefinition, SenseSourceState<TSense>, EntityGridPosition>(ls.FindDirtySenseSources);
+            var system = registry.BuildSystem()
+                                 .WithContext<TGameContext>()
+                                 .CreateSystem<TSenseSourceDefinition, SenseSourceState<TSense>, EntityGridPosition>(ls.FindDirtySenseSources);
             context.AddInitializationStepHandler(system);
             context.AddFixedStepHandlers(system);
         }

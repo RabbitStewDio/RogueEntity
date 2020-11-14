@@ -38,12 +38,19 @@ namespace RogueEntity.Core.Infrastructure.Modules.Initializers
                     Logger.Debug("[EntityStructure]    Roles: {Count}", entityInfoForType.Roles.Count());
                     foreach (var role in entityInfoForType.Roles)
                     {
-                        Logger.Debug("[EntityStructure]      {Role}", role);
+                        Logger.Debug("[EntityStructure]      - {Role}", role);
                     }
                     Logger.Debug("[EntityStructure]    Relations: {Count}", entityInfoForType.Relations.Count());
                     foreach (var relation in entityInfoForType.Relations)
                     {
-                        Logger.Debug("[EntityStructure]      {Relation}", relation);
+                        Logger.Debug("[EntityStructure]      - {Relation}", relation);
+                        if (entityInfoForType.TryQueryRelationTarget(relation, out var targetCollection))
+                        {
+                            foreach (var target in targetCollection)
+                            {
+                                Logger.Debug("[EntityStructure]          -> {RelationTarget}", target);
+                            }
+                        }
                     }
                 }
             }

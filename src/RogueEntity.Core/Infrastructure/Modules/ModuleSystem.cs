@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using JetBrains.Annotations;
 using RogueEntity.Core.Infrastructure.Modules.Helpers;
 using RogueEntity.Core.Infrastructure.Modules.Initializers;
-using RogueEntity.Core.Infrastructure.Modules.Services;
+using RogueEntity.Core.Infrastructure.Services;
 using RogueEntity.Core.Utils;
 using Serilog;
 
@@ -74,6 +74,13 @@ namespace RogueEntity.Core.Infrastructure.Modules
             
             var phase7 = new ModuleSystemPhaseDeclareRelationSystems<TGameContext>(phase2Result, serviceResolver);
             phase7.InitializeModuleRelations(orderedModules);
+
+            // 6. One more time to let services connect with each other at a higher level.
+            var phase8 = new ModuleSystemPhaseFinalizeRoleSystems<TGameContext>(phase2Result, serviceResolver);
+            phase8.InitializeModuleRoles(orderedModules);
+            
+            var phase9 = new ModuleSystemPhaseFinalizeRelationSystems<TGameContext>(phase2Result, serviceResolver);
+            phase9.InitializeModuleRelations(orderedModules);
 
             return (phase2Result.ModuleInitializer, phase2Result.EntityInformation);
         }
