@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using RogueEntity.Core.Infrastructure.Modules.Attributes;
 using RogueEntity.Core.Infrastructure.Modules.Helpers;
 using RogueEntity.Core.Utils;
 
@@ -42,17 +43,18 @@ namespace RogueEntity.Core.Infrastructure.Modules
             modulesById[module.Id] = moduleRecord;
         }
 
-        public void ScanForModules()
+        public void ScanForModules(params string[] domain)
         {
             var assemblies = AppDomain.CurrentDomain.GetAssemblies().ToList();
             foreach (var assembly in assemblies)
             {
-                ScanForModules(assembly);
+                ScanForModules(assembly, domain);
             }
         }
 
-        public void ScanForModules(Assembly assembly)
+        public void ScanForModules(Assembly assembly, params string[] domain)
         {
+            domain ??= new string[0];
             foreach (var typeInfo in assembly.DefinedTypes)
             {
                 if (!typeof(ModuleBase).IsAssignableFrom(typeInfo))
@@ -65,14 +67,40 @@ namespace RogueEntity.Core.Infrastructure.Modules
                     continue;
                 }
 
-                if (Activator.CreateInstance(typeInfo) is ModuleBase module)
+                if (!(Activator.CreateInstance(typeInfo) is ModuleBase module))
+                {
+                    continue;
+                }
+
+                var attr = typeInfo.GetCustomAttribute<ModuleAttribute>();
+                var moduleDomain = attr?.Domain;
+                    
+                if (DomainMatches(domain, moduleDomain))
                 {
                     AddModule(module);
                 }
             }
         }
-        
-        string PrintModuleDependencyList(ReadOnlyListWrapper<ModuleRecord<TGameContext>> orderedRecords)
+
+        static bool DomainMatches(string[] domainSpec, string moduleDomain)
+        {
+            if (string.IsNullOrEmpty(moduleDomain))
+            {
+                // considered to be a framework module.
+                return true;
+            }
+
+            if (domainSpec.Length == 0)
+            {
+                // we are only looking for framework modules at this point.
+                return false;
+            }
+
+            // check whether you are one of the droids I am looking for.
+            return domainSpec.Contains(moduleDomain);
+        }
+
+        static string PrintModuleDependencyList(ReadOnlyListWrapper<ModuleRecord<TGameContext>> orderedRecords)
         {
             StringBuilder b = new StringBuilder();
             foreach (var r in orderedRecords)

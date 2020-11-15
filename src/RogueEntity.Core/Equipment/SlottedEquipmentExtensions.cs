@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using RogueEntity.Core.Meta.Items;
+using EnTTSharp.Entities;
 using RogueEntity.Core.Utils;
 
 namespace RogueEntity.Core.Equipment
@@ -12,7 +12,7 @@ namespace RogueEntity.Core.Equipment
                                                                out TItemId modifiedItem,
                                                                out EquipmentSlot actualSlot,
                                                                bool ignoreWeight = false)
-            where TItemId : IBulkDataStorageKey<TItemId>
+            where TItemId : IEntityKey
         {
             return equipment.TryEquipItem(context, item, out modifiedItem, Optional.Empty<EquipmentSlot>(), out actualSlot, ignoreWeight);
         }
@@ -20,14 +20,14 @@ namespace RogueEntity.Core.Equipment
         public static bool TryUnequipItem<TGameContext, TItemId>(this ISlottedEquipment<TGameContext, TItemId> equipment,
                                                                  TGameContext context,
                                                                  TItemId item)
-            where TItemId : IBulkDataStorageKey<TItemId>
+            where TItemId : IEntityKey
         {
             return equipment.TryUnequipItem(context, item, out _);
         }
 
         public static List<EquippedItem<TItemId>> QueryItems<TGameContext, TItemId>(this ISlottedEquipment<TGameContext, TItemId> equipment,
                                                                                     List<EquippedItem<TItemId>> data = null)
-            where TItemId : IBulkDataStorageKey<TItemId>
+            where TItemId : IEntityKey
         {
             if (data == null)
             {
@@ -52,7 +52,7 @@ namespace RogueEntity.Core.Equipment
 
         public static List<EquippedItem<TItemId>> QueryEquipmentSlots<TGameContext, TItemId>(this ISlottedEquipment<TGameContext, TItemId> equipment,
                                                                                              List<EquippedItem<TItemId>> data = null)
-            where TItemId : IBulkDataStorageKey<TItemId>
+            where TItemId : IEntityKey
         {
             if (data == null)
             {

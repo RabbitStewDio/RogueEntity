@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
+using EnTTSharp.Entities;
 using EnTTSharp.Entities.Attributes;
 using MessagePack;
 using RogueEntity.Core.Meta.Base;
@@ -15,10 +16,10 @@ namespace RogueEntity.Core.Equipment
     [DataContract]
     [MessagePackObject]
     public readonly struct SlottedEquipmentData<TItemId> : IEquatable<SlottedEquipmentData<TItemId>>, IContainerView<TItemId>
-        where TItemId : IBulkDataStorageKey<TItemId>
+        where TItemId : IEntityKey
     {
         static readonly ILogger Logger = SLog.ForContext<SlottedEquipmentData<TItemId>>();
-        
+
         [DataMember(Name = "EquippedItems", Order = 0)]
         [Key(0)]
         readonly Dictionary<EquipmentSlot, EquippedItem<TItemId>> equippedItems;
@@ -207,7 +208,7 @@ namespace RogueEntity.Core.Equipment
                     !req.RequiredSlots.Contains(desiredSlotValue))
                 {
                     Logger.Verbose("Desired slot {desiredSlotValue} is not valid for the given item.", desiredSlotValue);
-                    return false; 
+                    return false;
                 }
 
                 if (IsSlotOccupied(desiredSlotValue))
@@ -230,7 +231,7 @@ namespace RogueEntity.Core.Equipment
             {
                 return true;
             }
-            
+
             foreach (var r in req.AcceptableSlots)
             {
                 if (!IsSlotOccupied(r))
@@ -259,12 +260,14 @@ namespace RogueEntity.Core.Equipment
         /// </item>
         /// </list>
         /// </remarks>
+        /// <param name="meta"></param>
         /// <param name="req"></param>
         /// <param name="bulkItem"></param>
         /// <param name="desiredSlot"></param>
         /// <param name="acceptedSlot"></param>
         /// <returns></returns>
-        public bool IsBulkEquipmentSpaceAvailable(EquipmentSlotRequirements req,
+        public bool IsBulkEquipmentSpaceAvailable(IBulkDataStorageMetaData<TItemId> meta,
+                                                  EquipmentSlotRequirements req,
                                                   TItemId bulkItem,
                                                   Optional<EquipmentSlot> desiredSlot,
                                                   out EquipmentSlot acceptedSlot)
@@ -281,12 +284,12 @@ namespace RogueEntity.Core.Equipment
             acceptedSlot = default;
             foreach (var r in req.RequiredSlots)
             {
-                if (!IsSlotAvailableForBulkItem(r, bulkItem, out var usedSlot))
+                if (!IsSlotAvailableForBulkItem(meta, r, bulkItem, out var usedSlot))
                 {
                     Logger.Verbose("A required slot {slot} for item {item} is already occupied by an incompatible item.", r, bulkItem);
                     return false;
                 }
-                
+
                 if (!slotRetrieved)
                 {
                     slotRetrieved = true;
@@ -309,7 +312,7 @@ namespace RogueEntity.Core.Equipment
                     return false;
                 }
 
-                if (!IsSlotAvailableForBulkItem(desiredSlotValue, bulkItem, out var usedPrimarySlot))
+                if (!IsSlotAvailableForBulkItem(meta, desiredSlotValue, bulkItem, out var usedPrimarySlot))
                 {
                     Logger.Verbose("A desired slot for item {item} is already occupied by an incompatible item.", bulkItem);
                     return false;
@@ -335,12 +338,12 @@ namespace RogueEntity.Core.Equipment
                         continue;
                     }
 
-                    if (!IsSlotAvailableForBulkItem(a, bulkItem, out var usedSlot))
+                    if (!IsSlotAvailableForBulkItem(meta, a, bulkItem, out var usedSlot))
                     {
                         // ignored. Not a slot we selected. its incompatible with the item.
                         continue;
                     }
-                    
+
                     if (!usedSlot.TryGetValue(out var slotVal))
                     {
                         // ignored. The slot is empty, not not selected via the desired slot value.
@@ -353,7 +356,7 @@ namespace RogueEntity.Core.Equipment
                         return false;
                     }
                 }
-                
+
                 return true;
             }
 
@@ -364,7 +367,7 @@ namespace RogueEntity.Core.Equipment
 
             foreach (var r in req.AcceptableSlots)
             {
-                if (!IsSlotAvailableForBulkItem(r, bulkItem, out var usedSlot))
+                if (!IsSlotAvailableForBulkItem(meta, r, bulkItem, out var usedSlot))
                 {
                     continue;
                 }
@@ -374,7 +377,7 @@ namespace RogueEntity.Core.Equipment
                     acceptedSlot = r;
                     return true;
                 }
-                
+
                 if (!usedSlot.TryGetValue(out var usedSlotValue) || acceptedSlot == usedSlotValue)
                 {
                     return true;
@@ -390,7 +393,10 @@ namespace RogueEntity.Core.Equipment
             return equippedItems.ContainsKey(equipmentSlot);
         }
 
-        bool IsSlotAvailableForBulkItem(EquipmentSlot equipmentSlot, TItemId r, out Optional<EquipmentSlot> primarySlot)
+        bool IsSlotAvailableForBulkItem(IBulkDataStorageMetaData<TItemId> meta,
+                                        EquipmentSlot equipmentSlot,
+                                        TItemId r,
+                                        out Optional<EquipmentSlot> primarySlot)
         {
             if (!equippedItems.TryGetValue(equipmentSlot, out var item))
             {
@@ -398,7 +404,7 @@ namespace RogueEntity.Core.Equipment
                 return true;
             }
 
-            if (item.Reference.IsSameBulkType(r))
+            if (meta.IsSameBulkType(item.Reference, r))
             {
                 primarySlot = item.PrimarySlot;
                 return true;
@@ -406,7 +412,6 @@ namespace RogueEntity.Core.Equipment
 
             primarySlot = default;
             return false;
-
         }
 
         public Dictionary<EquipmentSlot, EquippedItem<TItemId>>.ValueCollection.Enumerator GetEnumerator() => equippedItems.Values.GetEnumerator();

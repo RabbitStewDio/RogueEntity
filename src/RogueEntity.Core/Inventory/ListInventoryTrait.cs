@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using EnTTSharp.Entities;
+using JetBrains.Annotations;
 using RogueEntity.Core.Infrastructure.ItemTraits;
 using RogueEntity.Core.Meta.Base;
 using RogueEntity.Core.Meta.Items;
@@ -13,19 +15,22 @@ namespace RogueEntity.Core.Inventory
                                                                        IItemComponentTrait<TGameContext, TOwnerId, IContainerView<TItemId>>,
                                                                        IItemComponentInformationTrait<TGameContext, TOwnerId, InventoryWeight>
         where TOwnerId : IEntityKey
-        where TItemId : IBulkDataStorageKey<TItemId>
+        where TItemId : IEntityKey
     {
         static readonly EqualityComparer<TOwnerId> Comparer = EqualityComparer<TOwnerId>.Default;
+        readonly IBulkDataStorageMetaData<TItemId> itemIdMetaData;
         readonly IItemResolver<TGameContext, TItemId> itemResolver;
         readonly Weight defaultCarryWeight;
 
         public ItemTraitId Id => "Core.Inventory.ListInventory";
         public int Priority => 100;
 
-        public ListInventoryTrait(IItemResolver<TGameContext, TItemId> itemResolver,
+        public ListInventoryTrait([NotNull] IBulkDataStorageMetaData<TItemId> itemIdMetaData,
+                                  [NotNull] IItemResolver<TGameContext, TItemId> itemResolver,
                                   Weight defaultCarryWeight = default)
         {
-            this.itemResolver = itemResolver;
+            this.itemIdMetaData = itemIdMetaData ?? throw new ArgumentNullException(nameof(itemIdMetaData));
+            this.itemResolver = itemResolver ?? throw new ArgumentNullException(nameof(itemResolver));
             this.defaultCarryWeight = defaultCarryWeight;
         }
 
@@ -110,7 +115,7 @@ namespace RogueEntity.Core.Inventory
         {
             if (TryQueryData(v, k, out ListInventoryData<TOwnerId, TItemId> data))
             {
-                t = new ListInventory<TGameContext, TOwnerId, TItemId>(itemResolver, data);
+                t = new ListInventory<TGameContext, TOwnerId, TItemId>(itemIdMetaData, itemResolver, data);
                 return true;
             }
 
@@ -122,7 +127,7 @@ namespace RogueEntity.Core.Inventory
         {
             if (TryQueryData(v, k, out ListInventoryData<TOwnerId, TItemId> data))
             {
-                t = new ListInventory<TGameContext, TOwnerId, TItemId>(itemResolver, data);
+                t = new ListInventory<TGameContext, TOwnerId, TItemId>(itemIdMetaData, itemResolver, data);
                 return true;
             }
 

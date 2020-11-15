@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using EnTTSharp.Entities;
 using JetBrains.Annotations;
@@ -17,7 +18,9 @@ namespace RogueEntity.Core.Sensing.Map
         where TTargetSense : ISense
         where TSourceSense : ISense
     {
+        [SuppressMessage("ReSharper", "UnusedMember.Local")] 
         static readonly ILogger Logger = SLog.ForContext<SenseMappingSystemBase<TTargetSense, TSourceSense, TSenseSourceDefinition>>();
+        
         static readonly Action<SenseDataLevel> ProcessSenseMapInstance = v => v.ProcessSenseSources();
         const int ZLayerTimeToLive = 50;
 

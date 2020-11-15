@@ -1,7 +1,5 @@
 using EnTTSharp.Annotations;
-using EnTTSharp.Entities;
 using NUnit.Framework;
-using RogueEntity.Core.Infrastructure.ItemTraits;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Sensing;
 using RogueEntity.Core.Sensing.Common;
@@ -18,7 +16,7 @@ namespace RogueEntity.Core.Tests.Sensing.Sources.Smell
     {
         readonly SmellPhysicsConfiguration physics;
 
-        public SmellSourceTraitTest()
+        public SmellSourceTraitTest(): base(new ActorReferenceMetaData())
         {
             physics = new SmellPhysicsConfiguration(new LinearDecaySensePhysics(DistanceCalculation.Chebyshev));
         }
@@ -26,16 +24,12 @@ namespace RogueEntity.Core.Tests.Sensing.Sources.Smell
         protected override SenseMappingTestContext CreateContext()
         {
             var context = new SenseMappingTestContext();
-            context.ActorEntityRegistry.RegisterNonConstructable<SmellSourceDefinition>();
-            context.ActorEntityRegistry.RegisterNonConstructable<SenseSourceState<SmellSense>>();
-            context.ActorEntityRegistry.RegisterFlag<ObservedSenseSource<SmellSense>>();
-            context.ActorEntityRegistry.RegisterFlag<SenseDirtyFlag<SmellSense>>();
+            EntityRegistry.RegisterNonConstructable<SmellSourceDefinition>();
+            EntityRegistry.RegisterNonConstructable<SenseSourceState<SmellSense>>();
+            EntityRegistry.RegisterFlag<ObservedSenseSource<SmellSense>>();
+            EntityRegistry.RegisterFlag<SenseDirtyFlag<SmellSense>>();
             return context;
         }
-
-        protected override EntityRegistry<ActorReference> EntityRegistry => Context.ActorEntityRegistry;
-        protected override IItemRegistryBackend<SenseMappingTestContext, ActorReference> ItemRegistry => Context.ActorRegistry;
-        protected override IBulkDataStorageMetaData<ActorReference> ItemIdMetaData => new ActorReferenceMetaData();
 
         protected override SmellSourceTrait<SenseMappingTestContext, ActorReference> CreateTrait()
         {

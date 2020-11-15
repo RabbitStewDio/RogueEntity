@@ -19,15 +19,18 @@ namespace RogueEntity.Core.Positioning.Grid
                                                                     IItemComponentInformationTrait<TGameContext, TItemId, MapLayerPreference>
         where TItemId : IBulkDataStorageKey<TItemId>
     {
+        readonly IBulkDataStorageMetaData<TItemId> itemIdMetaData;
         readonly IItemResolver<TGameContext, TItemId> itemResolver;
         readonly ILogger logger = SLog.ForContext<BulkItemGridPositionTrait<TGameContext, TItemId>>();
         readonly MapLayerPreference layerPreference;
         readonly IGridMapContext<TItemId> gridMapContext;
 
-        public BulkItemGridPositionTrait([NotNull] IItemResolver<TGameContext, TItemId> itemResolver,
+        public BulkItemGridPositionTrait([NotNull] IBulkDataStorageMetaData<TItemId> itemIdMetaData, 
+                                         [NotNull] IItemResolver<TGameContext, TItemId> itemResolver,
                                          [NotNull] IGridMapContext<TItemId> gridMapContext,
                                          MapLayer layer, params MapLayer[] layers)
         {
+            this.itemIdMetaData = itemIdMetaData ?? throw new ArgumentNullException(nameof(itemIdMetaData));
             this.itemResolver = itemResolver ?? throw new ArgumentNullException(nameof(itemResolver));
             this.gridMapContext = gridMapContext ?? throw new ArgumentNullException(nameof(gridMapContext));
             Id = "ReferenceItem.Generic.Positional";
@@ -105,7 +108,7 @@ namespace RogueEntity.Core.Positioning.Grid
                 return true;
             }
 
-            if (!itemResolver.IsSameBulkDataType(itemAtPos, targetItem))
+            if (itemAtPos.IsReference || !itemIdMetaData.IsSameBulkType(itemAtPos, targetItem))
             {
                 // cannot merge items of different type.
                 changedK = targetItem;

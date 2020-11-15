@@ -4,7 +4,6 @@ using RogueEntity.Core.Infrastructure.ItemTraits;
 using RogueEntity.Core.Infrastructure.Modules;
 using RogueEntity.Core.Infrastructure.Modules.Attributes;
 using RogueEntity.Core.Positioning;
-using RogueEntity.Core.Positioning.Grid;
 
 namespace RogueEntity.Core.Sensing.Cache
 {
@@ -43,7 +42,6 @@ namespace RogueEntity.Core.Sensing.Cache
                                                              IModuleInitializer<TGameContext> initializer,
                                                              EntityRole role)
             where TItemId : IEntityKey
-            where TGameContext : IGridMapContext<TItemId>
         {
             var ctx = initializer.DeclareEntityContext<TItemId>();
             ctx.Register(SenseCacheLifecycleId, 0, RegisterSenseCacheLifeCycle);
@@ -52,7 +50,6 @@ namespace RogueEntity.Core.Sensing.Cache
         void RegisterSenseCacheLifeCycle<TGameContext, TItemId>(in ModuleInitializationParameter initParameter,
                                                                 IGameLoopSystemRegistration<TGameContext> context,
                                                                 EntityRegistry<TItemId> registry)
-            where TGameContext : IGridMapContext<TItemId>
             where TItemId : IEntityKey
         {
             var resolver = initParameter.ServiceResolver;

@@ -40,7 +40,7 @@ namespace RogueEntity.Core.Tests.Sensing.Resistance
             s.IsDefined(TestMapLayers.Two).Should().BeFalse();
             s.ResistanceData[0, 0].Should().Be(new SensoryResistance<VisionSense>());
 
-            s.AddProcess(TestMapLayers.One, new SensePropertiesDataProcessor<SenseMappingTestContext, ItemReference, VisionSense>(TestMapLayers.One, ctx, ctx, 0, 0, 0, 64, 64));
+            s.AddProcess(TestMapLayers.One, new SensePropertiesDataProcessor<SenseMappingTestContext, ItemReference, VisionSense>(TestMapLayers.One, ctx, ctx.ItemResolver, 0, 0, 0, 64, 64));
             s.IsDefined(TestMapLayers.One).Should().BeTrue();
             s.IsDefined(TestMapLayers.Two).Should().BeFalse();
             s.ResistanceData[0, 0].Should().Be(new SensoryResistance<VisionSense>());
@@ -52,7 +52,7 @@ namespace RogueEntity.Core.Tests.Sensing.Resistance
             ctx.TryGetItemGridDataFor(TestMapLayers.One, out var data).Should().BeTrue();
             data.TrySet(EntityGridPosition.Of(TestMapLayers.One, 0, 0), ctx.ItemResolver.Instantiate(ctx, wall)).Should().BeTrue();
 
-            s.AddProcess(TestMapLayers.One, new SensePropertiesDataProcessor<SenseMappingTestContext, ItemReference, VisionSense>(TestMapLayers.One, ctx,ctx, 0, 0, 0, 64, 64));
+            s.AddProcess(TestMapLayers.One, new SensePropertiesDataProcessor<SenseMappingTestContext, ItemReference, VisionSense>(TestMapLayers.One, ctx,ctx.ItemResolver, 0, 0, 0, 64, 64));
 
             s.Process(ctx);
             s.ResetDirtyFlags();
@@ -78,8 +78,8 @@ namespace RogueEntity.Core.Tests.Sensing.Resistance
             ctx.TryGetItemGridDataFor(TestMapLayers.Two, out var dataLayer2).Should().BeTrue();
             dataLayer2.TrySet(EntityGridPosition.Of(TestMapLayers.Two, 0, 0), ctx.ItemResolver.Instantiate(ctx, ceilingFan)).Should().BeTrue();
 
-            s.AddProcess(TestMapLayers.One, new SensePropertiesDataProcessor<SenseMappingTestContext, ItemReference, VisionSense>(TestMapLayers.One, ctx, ctx,0, 0, 0, 64, 64));
-            s.AddProcess(TestMapLayers.Two, new SensePropertiesDataProcessor<SenseMappingTestContext, ItemReference, VisionSense>(TestMapLayers.Two, ctx, ctx, 0, 0, 0, 64, 64));
+            s.AddProcess(TestMapLayers.One, new SensePropertiesDataProcessor<SenseMappingTestContext, ItemReference, VisionSense>(TestMapLayers.One, ctx, ctx.ItemResolver,0, 0, 0, 64, 64));
+            s.AddProcess(TestMapLayers.Two, new SensePropertiesDataProcessor<SenseMappingTestContext, ItemReference, VisionSense>(TestMapLayers.Two, ctx, ctx.ItemResolver, 0, 0, 0, 64, 64));
 
             // After marking the map dirty, the processor should now see the map contents and update accordingly
             s.MarkDirty(EntityGridPosition.Of(TestMapLayers.Indeterminate, 0, 0));

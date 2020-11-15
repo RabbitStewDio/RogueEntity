@@ -1,6 +1,4 @@
-﻿using EnTTSharp.Entities;
-using RogueEntity.Core.Infrastructure.ItemTraits;
-using RogueEntity.Core.Meta.Items;
+﻿using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Meta.ItemTraits;
 using RogueEntity.Core.Tests.Meta.Items;
 
@@ -8,9 +6,9 @@ namespace RogueEntity.Core.Tests.Meta.ItemTraits
 {
     public class ItemChargeDataTraitTest: ItemComponentTraitTestBase<BasicItemContext, ItemReference, ItemCharge, ItemChargeTrait<BasicItemContext, ItemReference>>
     {
-        protected override IBulkDataStorageMetaData<ItemReference> ItemIdMetaData => new ItemReferenceMetaData();
-        protected override EntityRegistry<ItemReference> EntityRegistry => Context.ItemEntities;
-        protected override IItemRegistryBackend<BasicItemContext, ItemReference> ItemRegistry => Context.ItemRegistry;
+        public ItemChargeDataTraitTest() : base(new ItemReferenceMetaData())
+        {
+        }
 
         protected override BasicItemContext CreateContext()
         {

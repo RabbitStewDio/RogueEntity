@@ -7,7 +7,7 @@ namespace RogueEntity.Core.Infrastructure.Services
         public static IServiceResolver WithService<TServiceObject>(this IServiceResolver r)
             where TServiceObject : new()
         {
-            r.Store<TServiceObject>(new TServiceObject());
+            r.Store(new TServiceObject());
             return r;
         }
 

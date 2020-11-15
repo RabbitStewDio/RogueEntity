@@ -1,5 +1,3 @@
-using EnTTSharp.Entities;
-using RogueEntity.Core.Infrastructure.ItemTraits;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Meta.ItemTraits;
 using RogueEntity.Core.Sensing;
@@ -20,7 +18,7 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Heat
     {
         readonly HeatSenseReceptorPhysicsConfiguration physics;
 
-        public HeatReceptorTraitTest()
+        public HeatReceptorTraitTest(): base(new ActorReferenceMetaData())
         {
             physics = new HeatSenseReceptorPhysicsConfiguration(
                 new HeatPhysicsConfiguration(new LinearDecaySensePhysics(DistanceCalculation.Chebyshev), Temperature.FromCelsius(0)),
@@ -31,22 +29,18 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Heat
         protected override SenseMappingTestContext CreateContext()
         {
             var context = new SenseMappingTestContext();
-            context.ActorEntityRegistry.RegisterNonConstructable<HeatSourceDefinition>();
-            context.ActorEntityRegistry.RegisterNonConstructable<SenseSourceState<TemperatureSense>>();
-            context.ActorEntityRegistry.RegisterFlag<ObservedSenseSource<TemperatureSense>>();
-            context.ActorEntityRegistry.RegisterFlag<SenseDirtyFlag<TemperatureSense>>();
+            EntityRegistry.RegisterNonConstructable<HeatSourceDefinition>();
+            EntityRegistry.RegisterNonConstructable<SenseSourceState<TemperatureSense>>();
+            EntityRegistry.RegisterFlag<ObservedSenseSource<TemperatureSense>>();
+            EntityRegistry.RegisterFlag<SenseDirtyFlag<TemperatureSense>>();
 
-            context.ActorEntityRegistry.RegisterNonConstructable<SensoryReceptorData<TemperatureSense, TemperatureSense>>();
-            context.ActorEntityRegistry.RegisterNonConstructable<SensoryReceptorState<TemperatureSense, TemperatureSense>>();
-            context.ActorEntityRegistry.RegisterNonConstructable<SingleLevelSenseDirectionMapData<TemperatureSense, TemperatureSense>>();
-            context.ActorEntityRegistry.RegisterFlag<SenseReceptorDirtyFlag<TemperatureSense, TemperatureSense>>();
+            EntityRegistry.RegisterNonConstructable<SensoryReceptorData<TemperatureSense, TemperatureSense>>();
+            EntityRegistry.RegisterNonConstructable<SensoryReceptorState<TemperatureSense, TemperatureSense>>();
+            EntityRegistry.RegisterNonConstructable<SingleLevelSenseDirectionMapData<TemperatureSense, TemperatureSense>>();
+            EntityRegistry.RegisterFlag<SenseReceptorDirtyFlag<TemperatureSense, TemperatureSense>>();
 
             return context;
         }
-
-        protected override EntityRegistry<ActorReference> EntityRegistry => Context.ActorEntityRegistry;
-        protected override IItemRegistryBackend<SenseMappingTestContext, ActorReference> ItemRegistry => Context.ActorRegistry;
-        protected override IBulkDataStorageMetaData<ActorReference> ItemIdMetaData => new ActorReferenceMetaData();
 
         protected override HeatDirectionSenseTrait<SenseMappingTestContext, ActorReference> CreateTrait()
         {

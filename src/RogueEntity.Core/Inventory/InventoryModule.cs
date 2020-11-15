@@ -6,7 +6,6 @@ using RogueEntity.Core.Infrastructure.Modules;
 using RogueEntity.Core.Infrastructure.Modules.Attributes;
 using RogueEntity.Core.Meta;
 using RogueEntity.Core.Meta.Base;
-using RogueEntity.Core.Meta.Items;
 
 namespace RogueEntity.Core.Inventory
 {
@@ -42,7 +41,7 @@ namespace RogueEntity.Core.Inventory
                                                                                     IModuleInitializer<TGameContext> initializer,
                                                                                     EntityRelation r)
             where TActorId : IEntityKey
-            where TItemId : IBulkDataStorageKey<TItemId>
+            where TItemId : IEntityKey
         {
             var entityContext = initializer.DeclareEntityContext<TActorId>();
             entityContext.Register(ContainerComponentId, -19000, RegisterEntities<TActorId, TItemId>);

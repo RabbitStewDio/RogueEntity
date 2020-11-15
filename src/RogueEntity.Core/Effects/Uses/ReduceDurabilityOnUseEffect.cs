@@ -7,17 +7,24 @@ using RogueEntity.Core.Utils;
 
 namespace RogueEntity.Core.Effects.Uses
 {
-    public class ReduceDurabilityOnUseEffect<TGameContext, TActorId, TItemId> : IUsableItemEffect<TGameContext, TActorId, TItemId> 
-        where TItemId : IEntityKey 
+    public class ReduceDurabilityOnUseEffect<TGameContext, TActorId, TItemId> : IUsableItemEffect<TGameContext, TActorId, TItemId>
+        where TItemId : IEntityKey
         where TActorId : IEntityKey
-        where TGameContext : IItemContext<TGameContext, TItemId>, IRandomContext
     {
+        readonly IRandomContext randomContext;
+        readonly IItemResolver<TGameContext, TItemId> itemResolver;
+
+        public ReduceDurabilityOnUseEffect(IRandomContext randomContext, IItemResolver<TGameContext, TItemId> itemResolver)
+        {
+            this.randomContext = randomContext;
+            this.itemResolver = itemResolver;
+        }
 
         public bool TryActivate(TActorId user, TGameContext context, TItemId itemToBeUsed, out TItemId usedItem)
         {
-            if (context.ItemResolver.TryQueryData(itemToBeUsed, context, out Durability d))
+            if (itemResolver.TryQueryData(itemToBeUsed, context, out Durability d))
             {
-                var rng = context.RandomGenerator(user.ToRandomSeedSource(), itemToBeUsed.ToRandomSeedSource().AsRandomSeed());
+                var rng = randomContext.RandomGenerator(user.ToRandomSeedSource(), itemToBeUsed.ToRandomSeedSource().AsRandomSeed());
                 var roll = 1;
                 var damage = d.WithAppliedDamage(roll.ClampToUnsignedShort());
                 if (damage.HitPoints == 0)
@@ -28,7 +35,7 @@ namespace RogueEntity.Core.Effects.Uses
                     return true;
                 }
 
-                if (context.ItemResolver.TryUpdateData(itemToBeUsed, context, damage, out var changedItem))
+                if (itemResolver.TryUpdateData(itemToBeUsed, context, damage, out var changedItem))
                 {
                     usedItem = changedItem;
                     return true;

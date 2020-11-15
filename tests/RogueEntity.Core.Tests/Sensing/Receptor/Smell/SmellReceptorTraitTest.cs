@@ -1,5 +1,3 @@
-using EnTTSharp.Entities;
-using RogueEntity.Core.Infrastructure.ItemTraits;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Sensing;
 using RogueEntity.Core.Sensing.Common;
@@ -19,7 +17,7 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Smell
     {
         readonly SmellSenseReceptorPhysicsConfiguration physics;
 
-        public SmellReceptorTraitTest()
+        public SmellReceptorTraitTest(): base(new ActorReferenceMetaData())
         {
             physics = new SmellSenseReceptorPhysicsConfiguration(
                 new SmellPhysicsConfiguration(new LinearDecaySensePhysics(DistanceCalculation.Chebyshev)),
@@ -30,22 +28,18 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Smell
         protected override SenseMappingTestContext CreateContext()
         {
             var context = new SenseMappingTestContext();
-            context.ActorEntityRegistry.RegisterNonConstructable<SmellSourceDefinition>();
-            context.ActorEntityRegistry.RegisterNonConstructable<SenseSourceState<SmellSense>>();
-            context.ActorEntityRegistry.RegisterFlag<ObservedSenseSource<SmellSense>>();
-            context.ActorEntityRegistry.RegisterFlag<SenseDirtyFlag<SmellSense>>();
+            EntityRegistry.RegisterNonConstructable<SmellSourceDefinition>();
+            EntityRegistry.RegisterNonConstructable<SenseSourceState<SmellSense>>();
+            EntityRegistry.RegisterFlag<ObservedSenseSource<SmellSense>>();
+            EntityRegistry.RegisterFlag<SenseDirtyFlag<SmellSense>>();
 
-            context.ActorEntityRegistry.RegisterNonConstructable<SensoryReceptorData<SmellSense, SmellSense>>();
-            context.ActorEntityRegistry.RegisterNonConstructable<SensoryReceptorState<SmellSense, SmellSense>>();
-            context.ActorEntityRegistry.RegisterNonConstructable<SingleLevelSenseDirectionMapData<SmellSense, SmellSense>>();
-            context.ActorEntityRegistry.RegisterFlag<SenseReceptorDirtyFlag<SmellSense, SmellSense>>();
+            EntityRegistry.RegisterNonConstructable<SensoryReceptorData<SmellSense, SmellSense>>();
+            EntityRegistry.RegisterNonConstructable<SensoryReceptorState<SmellSense, SmellSense>>();
+            EntityRegistry.RegisterNonConstructable<SingleLevelSenseDirectionMapData<SmellSense, SmellSense>>();
+            EntityRegistry.RegisterFlag<SenseReceptorDirtyFlag<SmellSense, SmellSense>>();
 
             return context;
         }
-
-        protected override EntityRegistry<ActorReference> EntityRegistry => Context.ActorEntityRegistry;
-        protected override IItemRegistryBackend<SenseMappingTestContext, ActorReference> ItemRegistry => Context.ActorRegistry;
-        protected override IBulkDataStorageMetaData<ActorReference> ItemIdMetaData => new ActorReferenceMetaData();
 
         protected override SmellDirectionSenseTrait<SenseMappingTestContext, ActorReference> CreateTrait()
         {

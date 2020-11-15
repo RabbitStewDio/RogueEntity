@@ -20,34 +20,5 @@ namespace RogueEntity.Core.Meta.Items
             var item = resolver.ItemRegistry.ReferenceItemById(id);
             return resolver.Instantiate(context, item);
         }
-
-        public static bool IsSameBulkType<TItemId>(this TItemId a, TItemId b)
-            where TItemId : IBulkDataStorageKey<TItemId>
-        {
-            return !a.IsEmpty && !a.IsReference && !b.IsReference && a.BulkItemId == b.BulkItemId;
-        }
-        
-        public static bool IsSameType<TGameContext, TItemId>(this ItemResolver<TGameContext, TItemId> resolver, TItemId a, TItemId b)
-            where TItemId : IBulkDataStorageKey<TItemId>
-        {
-            if (a.IsReference == false)
-            {
-                if (b.IsReference == false)
-                {
-                    return a.BulkItemId == b.BulkItemId;
-                }
-
-                return false;
-            }
-
-            if (b.IsReference == false)
-            {
-                return false;
-            }
-
-            return resolver.TryResolve(a, out var declA) &&
-                   resolver.TryResolve(b, out var declB) &&
-                   declA.Id == declB.Id;
-        }
     }
 }

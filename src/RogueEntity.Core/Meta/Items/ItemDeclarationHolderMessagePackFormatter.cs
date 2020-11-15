@@ -1,34 +1,34 @@
 ﻿using System;
 using EnTTSharp.Entities;
+using JetBrains.Annotations;
 using MessagePack;
 using MessagePack.Formatters;
 using RogueEntity.Core.Infrastructure.ItemTraits;
 
 namespace RogueEntity.Core.Meta.Items
 {
-    public class ItemDeclarationHolderMessagePackFormatter<TContext, TItemId> : IMessagePackFormatter<ItemDeclarationHolder<TContext, TItemId>> 
+    public class ItemDeclarationHolderMessagePackFormatter<TGameContext, TItemId> : IMessagePackFormatter<ItemDeclarationHolder<TGameContext, TItemId>> 
         where TItemId : IEntityKey
-        where TContext: IItemContext<TContext, TItemId>
     {
-        readonly TContext context;
+        readonly IItemResolver<TGameContext, TItemId> itemResolver;
 
-        public ItemDeclarationHolderMessagePackFormatter(TContext context)
+        public ItemDeclarationHolderMessagePackFormatter([NotNull] IItemResolver<TGameContext, TItemId> itemResolver)
         {
-            this.context = context ?? throw new ArgumentNullException(nameof(context));
+            this.itemResolver = itemResolver ?? throw new ArgumentNullException(nameof(itemResolver));
         }
 
-        public void Serialize(ref MessagePackWriter writer, ItemDeclarationHolder<TContext, TItemId> value, MessagePackSerializerOptions options)
+        public void Serialize(ref MessagePackWriter writer, ItemDeclarationHolder<TGameContext, TItemId> value, MessagePackSerializerOptions options)
         {
             writer.Write(value.Id);
         }
 
-        public ItemDeclarationHolder<TContext, TItemId> Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
+        public ItemDeclarationHolder<TGameContext, TItemId> Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
         {
             var id = reader.ReadString();
-            var itemRaw = context.ItemResolver.ItemRegistry.ReferenceItemById(id);
-            if (itemRaw is IReferenceItemDeclaration<TContext, TItemId> item)
+            var itemRaw = itemResolver.ItemRegistry.ReferenceItemById(id);
+            if (itemRaw is IReferenceItemDeclaration<TGameContext, TItemId> item)
             {
-                return new ItemDeclarationHolder<TContext, TItemId>(item);
+                return new ItemDeclarationHolder<TGameContext, TItemId>(item);
             }
 
             throw new MessagePackSerializationException($"Unable to resolve reference item with id '{id}'");

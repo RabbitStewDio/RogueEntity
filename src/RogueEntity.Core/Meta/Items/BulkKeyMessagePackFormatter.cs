@@ -1,4 +1,5 @@
 ﻿using System;
+using EnTTSharp.Entities;
 using EnTTSharp.Serialization;
 using MessagePack;
 using MessagePack.Formatters;
@@ -6,7 +7,7 @@ using MessagePack.Formatters;
 namespace RogueEntity.Core.Meta.Items
 {
     public class BulkKeyMessagePackFormatter<TItemId> : IMessagePackFormatter<TItemId> 
-        where TItemId: IBulkDataStorageKey<TItemId>
+        where TItemId: IEntityKey
     {
         readonly IBulkDataStorageMetaData<TItemId> metaData;
         readonly EntityKeyMapper<TItemId> entityKeyMapper;
@@ -23,7 +24,7 @@ namespace RogueEntity.Core.Meta.Items
 
         public void Serialize(ref MessagePackWriter writer, TItemId value, MessagePackSerializerOptions options)
         {
-            if (value.IsReference)
+            if (!metaData.TryDeconstructBulkKey(value, out var bulkId, out var bulkData))
             {
                 writer.Write(true);
                 writer.Write(value.Age);
@@ -32,8 +33,8 @@ namespace RogueEntity.Core.Meta.Items
             else
             {
                 writer.Write(false);
-                writer.Write(value.BulkItemId);
-                writer.Write(value.Data);
+                writer.Write(bulkId);
+                writer.Write(bulkData);
             }
         }
 
@@ -48,14 +49,13 @@ namespace RogueEntity.Core.Meta.Items
 
             var itemId = reader.ReadInt32();
             var data = reader.ReadInt32();
-            var tmp = metaData.BulkDataFactory(itemId).WithData(data);
-            if (bulkIdMapper(tmp, out var result))
+            if (metaData.TryCreateBulkKey(itemId, data, out var tmp) &&
+                bulkIdMapper(tmp, out var result))
             {
                 return result;
             }
 
-            Console.WriteLine($"{typeof(TItemId)} - {tmp}");
-            throw new MessagePackSerializationException($"Unable to map ItemReference {tmp} to local bulk item id");
+            throw new MessagePackSerializationException($"Unable to map entity type {typeof(TItemId)} with data {itemId}:{data} to local bulk item id");
         }
     }
 }

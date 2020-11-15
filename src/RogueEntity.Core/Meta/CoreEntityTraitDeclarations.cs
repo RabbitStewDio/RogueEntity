@@ -89,7 +89,7 @@ namespace RogueEntity.Core.Meta
                                                                                                               ushort stackSize)
             where TItemId : IBulkDataStorageKey<TItemId>
         {
-            builder.Declaration.WithTrait(new StackingTrait<TGameContext, TItemId>(initialCount, stackSize));
+            builder.Declaration.WithTrait(new StackingBulkTrait<TGameContext, TItemId>(initialCount, stackSize));
             return builder;
         }
 
@@ -105,13 +105,13 @@ namespace RogueEntity.Core.Meta
                                                                                                               ushort stackSize)
             where TItemId : IBulkDataStorageKey<TItemId>
         {
-            builder.Declaration.WithTrait(new ItemChargeTrait<TGameContext, TItemId>(initialCount, stackSize));
+            builder.Declaration.WithTrait(new ItemChargeBulkTrait<TGameContext, TItemId>(initialCount, stackSize));
             return builder;
         }
 
         public static ReferenceItemDeclarationBuilder<TGameContext, TItemId> WithItemCharge<TGameContext, TItemId>(this ReferenceItemDeclarationBuilder<TGameContext, TItemId> builder,
                                                                                                                    ushort stackSize)
-            where TItemId : IBulkDataStorageKey<TItemId>
+            where TItemId : IEntityKey
         {
             return builder.WithItemCharge(stackSize, stackSize);
         }
@@ -119,7 +119,7 @@ namespace RogueEntity.Core.Meta
         public static ReferenceItemDeclarationBuilder<TGameContext, TItemId> WithItemCharge<TGameContext, TItemId>(this ReferenceItemDeclarationBuilder<TGameContext, TItemId> builder,
                                                                                                                    ushort initialCount,
                                                                                                                    ushort stackSize)
-            where TItemId : IBulkDataStorageKey<TItemId>
+            where TItemId : IEntityKey
         {
             builder.Declaration.WithTrait(new ItemChargeTrait<TGameContext, TItemId>(initialCount, stackSize));
             return builder;
@@ -137,13 +137,13 @@ namespace RogueEntity.Core.Meta
                                                                                                               ushort stackSize)
             where TItemId : IBulkDataStorageKey<TItemId>
         {
-            builder.Declaration.WithTrait(new DurabilityTrait<TGameContext, TItemId>(initialCount, stackSize));
+            builder.Declaration.WithTrait(new DurabilityBulkTrait<TGameContext, TItemId>(initialCount, stackSize));
             return builder;
         }
 
         public static ReferenceItemDeclarationBuilder<TGameContext, TItemId> WithDurability<TGameContext, TItemId>(this ReferenceItemDeclarationBuilder<TGameContext, TItemId> builder,
                                                                                                                    ushort stackSize)
-            where TItemId : IBulkDataStorageKey<TItemId>
+            where TItemId : IEntityKey
         {
             return builder.WithDurability(stackSize, stackSize);
         }
@@ -151,7 +151,7 @@ namespace RogueEntity.Core.Meta
         public static ReferenceItemDeclarationBuilder<TGameContext, TItemId> WithDurability<TGameContext, TItemId>(this ReferenceItemDeclarationBuilder<TGameContext, TItemId> builder,
                                                                                                                    ushort initialCount,
                                                                                                                    ushort stackSize)
-            where TItemId : IBulkDataStorageKey<TItemId>
+            where TItemId : IEntityKey
         {
             builder.Declaration.WithTrait(new DurabilityTrait<TGameContext, TItemId>(initialCount, stackSize));
             return builder;

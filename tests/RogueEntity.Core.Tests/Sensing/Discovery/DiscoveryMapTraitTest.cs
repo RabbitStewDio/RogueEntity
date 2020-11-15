@@ -1,8 +1,6 @@
 using System;
 using EnTTSharp.Annotations;
-using EnTTSharp.Entities;
 using NUnit.Framework;
-using RogueEntity.Core.Infrastructure.ItemTraits;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Sensing.Discovery;
 using RogueEntity.Core.Tests.Meta.Items;
@@ -12,21 +10,21 @@ namespace RogueEntity.Core.Tests.Sensing.Discovery
     [TestFixture]
     public class DiscoveryMapTraitTest: ItemComponentInformationTraitTestBase<SenseMappingTestContext, ActorReference, IDiscoveryMap, DiscoveryMapTrait<SenseMappingTestContext, ActorReference>>
     {
-        protected override EntityRegistry<ActorReference> EntityRegistry => Context.ActorEntityRegistry;
-        protected override IItemRegistryBackend<SenseMappingTestContext, ActorReference> ItemRegistry => Context.ActorRegistry;
-        protected override IBulkDataStorageMetaData<ActorReference> ItemIdMetaData => new ActorReferenceMetaData();
-        
+        public DiscoveryMapTraitTest() : base(new ActorReferenceMetaData())
+        {
+        }
+
         protected override SenseMappingTestContext CreateContext()
         {
             var context = new SenseMappingTestContext();
-            context.ActorEntityRegistry.RegisterNonConstructable<DiscoveryMapData>();
+            EntityRegistry.RegisterNonConstructable<DiscoveryMapData>();
 
             return context;
         }
 
         protected override IItemComponentTestDataFactory<IDiscoveryMap> ProduceTestData(EntityRelations<ActorReference> relations)
         {
-            if (!Context.ActorResolver.TryQueryData(relations.DefaultEntityId, Context, out IDiscoveryMap d))
+            if (!ItemResolver.TryQueryData(relations.DefaultEntityId, Context, out IDiscoveryMap d))
             {
                 throw new ArgumentException();
             }

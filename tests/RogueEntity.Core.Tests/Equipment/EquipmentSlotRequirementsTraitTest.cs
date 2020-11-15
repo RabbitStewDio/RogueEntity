@@ -1,23 +1,19 @@
-using EnTTSharp.Entities;
 using NUnit.Framework;
 using RogueEntity.Core.Equipment;
-using RogueEntity.Core.Infrastructure.ItemTraits;
-using RogueEntity.Core.Meta.Base;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Tests.Meta.Items;
 
 namespace RogueEntity.Core.Tests.Equipment
 {
     [TestFixture]
-    public class EquipmentSlotRequirementsTraitTest : ItemComponentTraitTestBase<BasicItemContext, ItemReference, EquipmentSlotRequirements,
-        EquipmentSlotRequirementsTrait<BasicItemContext, ItemReference>>
+    public class EquipmentSlotRequirementsTraitTest : ItemComponentTraitTestBase<BasicItemContext, ItemReference, EquipmentSlotRequirements, EquipmentSlotRequirementsTrait<BasicItemContext, ItemReference>>
     {
         readonly EquipmentSlotRegistry registry;
         readonly EquipmentSlot slotHead;
         readonly EquipmentSlot slotLeftHand;
         readonly EquipmentSlot slotRightHand;
 
-        public EquipmentSlotRequirementsTraitTest()
+        public EquipmentSlotRequirementsTraitTest(): base(new ItemReferenceMetaData())
         {
             EnableSerializationTest = false;
             
@@ -31,16 +27,9 @@ namespace RogueEntity.Core.Tests.Equipment
             registry.Register(slotLeftHand);
         }
 
-        protected override EntityRegistry<ItemReference> EntityRegistry => Context.ItemEntities;
-        protected override IItemRegistryBackend<BasicItemContext, ItemReference> ItemRegistry => Context.ItemRegistry;
-        protected override IBulkDataStorageMetaData<ItemReference> ItemIdMetaData => new ItemReferenceMetaData();
-
         protected override BasicItemContext CreateContext()
         {
-            var context = new BasicItemContext();
-            context.ItemEntities.RegisterNonConstructable<ItemDeclarationHolder<EquipmentTestContext, ItemReference>>();
-            context.ItemEntities.RegisterNonConstructable<ContainerEntityMarker<ActorReference>>();
-            return context;
+            return new BasicItemContext();
         }
 
         protected override EquipmentSlotRequirementsTrait<BasicItemContext, ItemReference> CreateTrait()

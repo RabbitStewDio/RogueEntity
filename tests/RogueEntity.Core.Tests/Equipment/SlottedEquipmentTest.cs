@@ -62,6 +62,7 @@ namespace RogueEntity.Core.Tests.Equipment
                                            .WithTrait(new SlottedEquipmentTrait<EquipmentTestContext, ActorReference, ItemReference>(
                                                           Context.ActorResolver,
                                                           Context.ItemResolver,
+                                                          new ItemReferenceMetaData(), 
                                                           Weight.OfKiloGram(100),
                                                           slotHead, slotLeftHand, slotRightHand
                                                       )));
@@ -101,7 +102,7 @@ namespace RogueEntity.Core.Tests.Equipment
                                           .WithTrait(new WeightTrait<EquipmentTestContext, ItemReference>(Weight.OfKiloGram(1f))));
 
             Context.ItemRegistry.Register(new BulkItemDeclaration<EquipmentTestContext, ItemReference>(BulkCombinedItemDeclaration)
-                                          .WithTrait(new StackingTrait<EquipmentTestContext, ItemReference>(60))
+                                          .WithTrait(new StackingBulkTrait<EquipmentTestContext, ItemReference>(60))
                                           .WithTrait(new EquipmentSlotRequirementsTrait<EquipmentTestContext, ItemReference>(EquipmentSlotRequirements.Create()
                                                                                                                                                       .WithRequiredSlots(slotHead)
                                                                                                                                                       .WithAcceptableSlots(

@@ -6,9 +6,8 @@ using RogueEntity.Core.Infrastructure.ItemTraits;
 namespace RogueEntity.Core.Meta.Items
 {
     public abstract class SimpleItemComponentTraitBase<TGameContext, TItemId, TData> : IItemComponentTrait<TGameContext, TItemId, TData>,
-                                                                                       IBulkItemTrait<TGameContext, TItemId>,
                                                                                        IReferenceItemTrait<TGameContext, TItemId>
-        where TItemId : IBulkDataStorageKey<TItemId>
+        where TItemId : IEntityKey
     {
         protected SimpleItemComponentTraitBase(ItemTraitId id, int priority)
         {
@@ -21,28 +20,7 @@ namespace RogueEntity.Core.Meta.Items
         public ItemTraitId Id { get; }
         public int Priority { get; }
 
-        public TItemId Initialize(TGameContext context, IItemDeclaration item, TItemId reference)
-        {
-            // bulk items have no component storage.
-            if (TryUpdateBulkData(reference, CreateInitialValue(context, reference), out var k))
-            {
-                return k;
-            }
-
-            return reference;
-        }
-
-        IReferenceItemTrait<TGameContext, TItemId> IReferenceItemTrait<TGameContext, TItemId>.CreateInstance()
-        {
-            return CreateInstance();
-        }
-
-        IBulkItemTrait<TGameContext, TItemId> IBulkItemTrait<TGameContext, TItemId>.CreateInstance()
-        {
-            return CreateInstance();
-        }
-
-        protected virtual SimpleItemComponentTraitBase<TGameContext, TItemId, TData> CreateInstance()
+        public virtual IReferenceItemTrait<TGameContext, TItemId> CreateInstance()
         {
             return this;
         }
@@ -62,25 +40,14 @@ namespace RogueEntity.Core.Meta.Items
 
         public bool TryQuery(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, out TData t)
         {
-            if (k.IsReference)
+            if (v.IsValid(k) &&
+                v.GetComponent(k, out t))
             {
-                if (v.IsValid(k) &&
-                    v.GetComponent(k, out t))
-                {
-                    return true;
-                }
-
-                t = default;
-                return false;
+                return true;
             }
 
-            return TryQueryBulkData(v, context, k, out t);
-        }
-
-        protected virtual bool TryQueryBulkData(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, out TData t)
-        {
-            t = CreateInitialValue(context, k);
-            return true;
+            t = default;
+            return false;
         }
 
         public bool TryUpdate(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, in TData t, out TItemId changedK)
@@ -98,23 +65,12 @@ namespace RogueEntity.Core.Meta.Items
                 return true;
             }
 
-            if (k.IsReference)
-            {
-                changedK = k;
-                return false;
-            }
-
-            return TryUpdateBulkData(k, in t, out changedK);
+            changedK = k;
+            return false;
         }
 
         public virtual bool TryRemove(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, out TItemId changedItem)
         {
-            if (!k.IsReference)
-            {
-                changedItem = k;
-                return false;
-            }
-
             v.RemoveComponent<TData>(k);
             changedItem = k;
             return true;
@@ -124,12 +80,6 @@ namespace RogueEntity.Core.Meta.Items
                                             in TItemId itemReference, in TData data)
         {
             return true;
-        }
-
-        protected virtual bool TryUpdateBulkData(TItemId k, in TData data, out TItemId changedK)
-        {
-            changedK = k;
-            return false;
         }
 
         public abstract IEnumerable<EntityRoleInstance> GetEntityRoles();

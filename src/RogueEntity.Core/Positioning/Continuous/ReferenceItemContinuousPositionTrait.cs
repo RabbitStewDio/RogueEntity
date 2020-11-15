@@ -17,7 +17,7 @@ namespace RogueEntity.Core.Positioning.Continuous
                                                                                IItemComponentInformationTrait<TGameContext, TItemId, MapLayerPreference>,
                                                                                IItemComponentDesignTimeInformationTrait<MapLayerPreference>,
                                                                                IItemComponentInformationTrait<TGameContext, TItemId, MapContainerEntityMarker>
-        where TItemId : IBulkDataStorageKey<TItemId>
+        where TItemId : IEntityKey
         where TGameContext : IContinuousMapContext<TGameContext, TItemId>
     {
         readonly IItemResolver<TGameContext, TItemId> itemResolver;

@@ -1,4 +1,6 @@
-﻿using EnTTSharp.Entities;
+﻿using System;
+using EnTTSharp.Entities;
+using JetBrains.Annotations;
 using RogueEntity.Core.Infrastructure.ItemTraits;
 
 namespace RogueEntity.Core.Meta.Items
@@ -6,15 +8,17 @@ namespace RogueEntity.Core.Meta.Items
     public class ItemContextBackend<TGameContext, TItemId>: IItemContextBackend<TGameContext, TItemId>
         where TItemId : IBulkDataStorageKey<TItemId>
     {
-        public ItemContextBackend(IBulkDataStorageMetaData<TItemId> meta)
+        public ItemContextBackend([NotNull] IBulkDataStorageMetaData<TItemId> meta)
         {
-            var itemRegistry = new ItemRegistry<TGameContext, TItemId>(meta.BulkDataFactory);
-            ItemRegistry = itemRegistry;
-            EntityRegistry = new EntityRegistry<TItemId>(meta.MaxAge, meta.EntityKeyFactory);
-            ItemResolver = new ItemResolver<TGameContext, TItemId>(itemRegistry, EntityRegistry);
+            EntityMetaData = meta ?? throw new ArgumentNullException(nameof(meta));
+            ItemRegistry = new ItemRegistry<TGameContext, TItemId>(meta);
+            EntityRegistry = new EntityRegistry<TItemId>(meta.MaxAge, meta.CreateReferenceKey);
+            ItemResolver = new ItemResolver<TGameContext, TItemId>(ItemRegistry, EntityRegistry);
         }
 
-        public IItemRegistryBackend<TGameContext, TItemId> ItemRegistry { get; }
+        public IBulkDataStorageMetaData<TItemId> EntityMetaData { get; }
+        public ItemRegistry<TGameContext, TItemId> ItemRegistry { get; }
+        IItemRegistryBackend<TGameContext, TItemId> IItemContextBackend<TGameContext, TItemId>.ItemRegistry => ItemRegistry;
         public EntityRegistry<TItemId> EntityRegistry { get; }
         public IItemResolver<TGameContext, TItemId> ItemResolver { get; }
 

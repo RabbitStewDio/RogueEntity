@@ -1,7 +1,5 @@
 using EnTTSharp.Annotations;
-using EnTTSharp.Entities;
 using NUnit.Framework;
-using RogueEntity.Core.Infrastructure.ItemTraits;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Sensing;
 using RogueEntity.Core.Sensing.Common;
@@ -17,7 +15,7 @@ namespace RogueEntity.Core.Tests.Sensing.Sources.Noise
     {
         readonly NoisePhysicsConfiguration physics;
 
-        public NoiseSourceTraitTest()
+        public NoiseSourceTraitTest(): base(new ActorReferenceMetaData())
         {
             physics = new NoisePhysicsConfiguration(new LinearDecaySensePhysics(DistanceCalculation.Chebyshev));
         }
@@ -25,16 +23,12 @@ namespace RogueEntity.Core.Tests.Sensing.Sources.Noise
         protected override SenseMappingTestContext CreateContext()
         {
             var context = new SenseMappingTestContext();
-            context.ActorEntityRegistry.RegisterNonConstructable<NoiseSourceDefinition>();
-            context.ActorEntityRegistry.RegisterNonConstructable<SenseSourceState<NoiseSense>>();
-            context.ActorEntityRegistry.RegisterFlag<ObservedSenseSource<NoiseSense>>();
-            context.ActorEntityRegistry.RegisterFlag<SenseDirtyFlag<NoiseSense>>();
+            EntityRegistry.RegisterNonConstructable<NoiseSourceDefinition>();
+            EntityRegistry.RegisterNonConstructable<SenseSourceState<NoiseSense>>();
+            EntityRegistry.RegisterFlag<ObservedSenseSource<NoiseSense>>();
+            EntityRegistry.RegisterFlag<SenseDirtyFlag<NoiseSense>>();
             return context;
         }
-
-        protected override EntityRegistry<ActorReference> EntityRegistry => Context.ActorEntityRegistry;
-        protected override IItemRegistryBackend<SenseMappingTestContext, ActorReference> ItemRegistry => Context.ActorRegistry;
-        protected override IBulkDataStorageMetaData<ActorReference> ItemIdMetaData => new ActorReferenceMetaData();
 
         protected override NoiseSourceTrait<SenseMappingTestContext, ActorReference> CreateTrait()
         {

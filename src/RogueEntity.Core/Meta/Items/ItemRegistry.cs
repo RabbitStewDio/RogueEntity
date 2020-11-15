@@ -10,9 +10,9 @@ namespace RogueEntity.Core.Meta.Items
     public class ItemRegistry<TContext, TItemId> : IItemRegistryBackend<TContext, TItemId>
         where TItemId : IBulkDataStorageKey<TItemId>
     {
+        readonly IBulkDataStorageMetaData<TItemId> itemIdMetaData;
         readonly ILogger logger = SLog.ForContext<ItemRegistry<TContext, TItemId>>();
 
-        readonly Func<int, TItemId> bulkItemIdFactory;
         readonly Dictionary<ItemDeclarationId, (int index, IBulkItemDeclaration<TContext, TItemId> itemDeclaration)> bulkItems;
         readonly Dictionary<int, IBulkItemDeclaration<TContext, TItemId>> bulkItemReverseIndex;
         readonly Dictionary<ItemDeclarationId, IItemDeclaration> itemsById;
@@ -20,9 +20,9 @@ namespace RogueEntity.Core.Meta.Items
         readonly List<IItemDeclaration> items;
         int bulkItemIdSequence;
 
-        public ItemRegistry(Func<int, TItemId> bulkItemIdFactory)
+        public ItemRegistry(IBulkDataStorageMetaData<TItemId> itemIdMetaData)
         {
-            this.bulkItemIdFactory = bulkItemIdFactory;
+            this.itemIdMetaData = itemIdMetaData;
             bulkItems = new Dictionary<ItemDeclarationId, (int, IBulkItemDeclaration<TContext, TItemId>)>();
             bulkItemReverseIndex = new Dictionary<int, IBulkItemDeclaration<TContext, TItemId>>();
             referenceItemsById = new Dictionary<ItemDeclarationId, IReferenceItemDeclaration<TContext, TItemId>>();
@@ -33,11 +33,17 @@ namespace RogueEntity.Core.Meta.Items
 
         public TItemId GenerateBulkItemId(IBulkItemDeclaration<TContext,TItemId> item)
         {
-            if (TryGetBulkItemId(item, out var id))
+            if (!TryGetBulkItemId(item, out var id))
             {
-                return bulkItemIdFactory(id);
+                throw new ArgumentException($"The given item declaration {item.Id} has not been registered here.");
             }
-            throw new ArgumentException($"The given item declaration {item.Id} has not been registered here.");
+
+            if (itemIdMetaData.TryCreateBulkKey(id, 0, out var result))
+            {
+                return result;
+            }
+
+            throw new ArgumentException($"The given entity type does not support bulk-entities.");
         }
 
         public ReadOnlyListWrapper<IItemDeclaration> Items

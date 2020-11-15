@@ -21,17 +21,28 @@ namespace RogueEntity.Core.Tests.Meta.Items
 {
     public abstract class ItemComponentSerializationTestBase<TGameContext, TItemId, TData>
         where TItemId : IBulkDataStorageKey<TItemId>
-        where TGameContext : IItemContext<TGameContext, TItemId>
     {
         protected bool EnableSerializationTest { get; set; } = true;
         protected abstract List<ItemDeclarationId> ActiveItems { get; }
         protected abstract TGameContext Context { get; }
-        protected abstract EntityRegistry<TItemId> EntityRegistry { get; }
-        protected abstract IItemRegistryBackend<TGameContext, TItemId> ItemRegistry { get; }
-        protected abstract IBulkDataStorageMetaData<TItemId> ItemIdMetaData { get; }
+        protected EntityRegistry<TItemId> EntityRegistry => itemContext.EntityRegistry;
+        protected IItemRegistryBackend<TGameContext, TItemId> ItemRegistry => itemContext.ItemRegistry;
+        protected IItemResolver<TGameContext, TItemId> ItemResolver => itemContext.ItemResolver;
+        protected IBulkDataStorageMetaData<TItemId> ItemIdMetaData { get; }
         protected virtual EntityRelations<TItemId> ProduceItemRelations(TItemId self) => new EntityRelations<TItemId>(self);
         protected abstract IItemComponentTestDataFactory<TData> ProduceTestData(EntityRelations<TItemId> relations);
-        
+        ItemContextBackend<TGameContext, TItemId> itemContext; 
+
+        protected ItemComponentSerializationTestBase(IBulkDataStorageMetaData<TItemId> metaData)
+        {
+            ItemIdMetaData = metaData;
+        }
+
+        protected void SetUpItems()
+        {
+            itemContext = new ItemContextBackend<TGameContext, TItemId>(ItemIdMetaData);
+        }
+
         [Test]
         public void Validate_Serialization_Xml()
         {
@@ -66,8 +77,8 @@ namespace RogueEntity.Core.Tests.Meta.Items
         {
             EntityRegistry.Clear();
 
-            var item = Context.ItemResolver.Instantiate(Context, itemId);
-            if (!item.IsReference)
+            var item = ItemResolver.Instantiate(Context, itemId);
+            if (!this.ItemIdMetaData.IsReferenceEntity(item))
             {
                 return;
             }
@@ -75,7 +86,7 @@ namespace RogueEntity.Core.Tests.Meta.Items
             var testData = ProduceTestData(ProduceItemRelations(item));
             if (testData.UpdateAllowed)
             {
-                Context.ItemResolver.TryUpdateData(item, Context, testData.ChangedValue, out item).Should().BeTrue();
+                ItemResolver.TryUpdateData(item, Context, testData.ChangedValue, out item).Should().BeTrue();
             }
 
             var xml = SerializeToXml();
@@ -86,10 +97,10 @@ namespace RogueEntity.Core.Tests.Meta.Items
             EntityRegistry.Create();
 
             var arg = DeserializeFromXml(xml, item);
-            arg.IsReference.Should().BeTrue();
+            ItemIdMetaData.IsReferenceEntity(arg).Should().BeTrue();
             arg.Should().NotBe(item);
 
-            Context.ItemResolver.TryQueryData(arg, Context, out TData beforeUpdate).Should().BeTrue();
+            ItemResolver.TryQueryData(arg, Context, out TData beforeUpdate).Should().BeTrue();
 
             var testDataAfterSer = ProduceTestData(ProduceItemRelations(arg));
             if (testData.UpdateAllowed)
@@ -107,8 +118,8 @@ namespace RogueEntity.Core.Tests.Meta.Items
         {
             EntityRegistry.Clear();
 
-            var item = Context.ItemResolver.Instantiate(Context, itemId);
-            if (!item.IsReference)
+            var item = ItemResolver.Instantiate(Context, itemId);
+            if (!ItemIdMetaData.IsReferenceEntity(item))
             {
                 return;
             }
@@ -116,7 +127,7 @@ namespace RogueEntity.Core.Tests.Meta.Items
             var testData = ProduceTestData(ProduceItemRelations(item));
             if (testData.UpdateAllowed)
             {
-                Context.ItemResolver.TryUpdateData(item, Context, testData.ChangedValue, out item).Should().BeTrue();
+                ItemResolver.TryUpdateData(item, Context, testData.ChangedValue, out item).Should().BeTrue();
             }
 
             var xml = SerializeToBinary();
@@ -128,7 +139,7 @@ namespace RogueEntity.Core.Tests.Meta.Items
 
             arg.Should().NotBe(item);
 
-            Context.ItemResolver.TryQueryData(arg, Context, out TData beforeUpdate).Should().BeTrue();
+            ItemResolver.TryQueryData(arg, Context, out TData beforeUpdate).Should().BeTrue();
 
             var testDataAfterSer = ProduceTestData(ProduceItemRelations(arg));
             if (testData.UpdateAllowed)
@@ -235,8 +246,8 @@ namespace RogueEntity.Core.Tests.Meta.Items
         {
             var xmlContext = new XmlSerializationContext();
             
-            var bulkIdSerializationMapper = new BulkItemIdSerializationMapper<TItemId>(ItemIdMetaData.BulkDataFactory, ItemRegistry, ItemRegistry);
-            xmlContext.Register(new ItemDeclarationHolderSurrogateProvider<TGameContext, TItemId>(Context));
+            var bulkIdSerializationMapper = new BulkItemIdSerializationMapper<TItemId>(ItemIdMetaData, ItemRegistry, ItemRegistry);
+            xmlContext.Register(new ItemDeclarationHolderSurrogateProvider<TGameContext, TItemId>(ItemResolver));
             xmlContext.Register(new BulkKeySurrogateProvider<TItemId>(ItemIdMetaData, mapper, bulkIdSerializationMapper.TryMap));
             foreach (var c in components)
             {
@@ -281,7 +292,7 @@ namespace RogueEntity.Core.Tests.Meta.Items
             return registration;
         }
 
-        TItemId WriteMapper(EntityKeyData d) => ItemIdMetaData.EntityKeyFactory(d.Age, d.Key);
+        TItemId WriteMapper(EntityKeyData d) => ItemIdMetaData.CreateReferenceKey(d.Age, d.Key);
         
         TItemId DeserializeFromBinary(byte[] data, TItemId originalId)
         {
@@ -316,9 +327,9 @@ namespace RogueEntity.Core.Tests.Meta.Items
         {
             var bs = new BinarySerializationContext();
             
-            var bulkIdSerializationMapper = new BulkItemIdSerializationMapper<TItemId>(ItemIdMetaData.BulkDataFactory, ItemRegistry, ItemRegistry);
+            var bulkIdSerializationMapper = new BulkItemIdSerializationMapper<TItemId>(ItemIdMetaData, ItemRegistry, ItemRegistry);
             bs.Register(new EntityKeyDataFormatter());
-            bs.Register(new ItemDeclarationHolderMessagePackFormatter<TGameContext, TItemId>(Context));
+            bs.Register(new ItemDeclarationHolderMessagePackFormatter<TGameContext, TItemId>(ItemResolver));
             bs.Register(new BulkKeyMessagePackFormatter<TItemId>(ItemIdMetaData, mapper, bulkIdSerializationMapper.TryMap));
             
             foreach (var c in components)

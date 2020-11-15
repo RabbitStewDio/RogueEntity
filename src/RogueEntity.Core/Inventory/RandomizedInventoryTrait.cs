@@ -11,7 +11,7 @@ namespace RogueEntity.Core.Inventory
     public sealed class RandomizedInventoryTrait<TGameContext, TOwnerId, TItemId> : IReferenceItemTrait<TGameContext, TOwnerId>
         where TGameContext : IRandomContext
         where TOwnerId : IEntityKey, IRandomSeedSource
-        where TItemId : IBulkDataStorageKey<TItemId>
+        where TItemId : IEntityKey
     {
         readonly IItemResolver<TGameContext, TOwnerId> ownerResolver;
         readonly IItemResolver<TGameContext, TItemId> itemResolver;

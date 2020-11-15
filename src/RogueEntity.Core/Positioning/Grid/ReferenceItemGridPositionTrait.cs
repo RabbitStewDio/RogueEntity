@@ -19,7 +19,7 @@ namespace RogueEntity.Core.Positioning.Grid
                                                                          IItemComponentDesignTimeInformationTrait<MapLayerPreference>,
                                                                          IItemComponentInformationTrait<TGameContext, TItemId, MapLayerPreference>,
                                                                          IItemComponentInformationTrait<TGameContext, TItemId, MapContainerEntityMarker>
-        where TItemId : IBulkDataStorageKey<TItemId>
+        where TItemId : IEntityKey
     {
         readonly IItemResolver<TGameContext, TItemId> itemResolver;
         readonly MapLayerPreference layerPreference;

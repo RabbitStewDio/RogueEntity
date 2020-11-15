@@ -1,64 +1,29 @@
 using RogueEntity.Core.Infrastructure.ItemTraits;
 using RogueEntity.Core.Infrastructure.Modules;
 using RogueEntity.Core.Infrastructure.Modules.Attributes;
-using RogueEntity.Core.Inventory;
-using RogueEntity.Core.Meta;
 using RogueEntity.Core.Meta.ItemBuilder;
 using RogueEntity.Core.Meta.Items;
-using RogueEntity.Core.Meta.Naming;
 using RogueEntity.Core.Positioning;
-using RogueEntity.Core.Positioning.Grid;
-using RogueEntity.Core.Positioning.MapLayers;
-using RogueEntity.Core.Sensing.Cache;
 using RogueEntity.Core.Sensing.Common.Physics;
 using RogueEntity.Core.Sensing.Common.ShadowCast;
-using RogueEntity.Core.Sensing.Receptors.Light;
-using RogueEntity.Core.Sensing.Resistance;
 using RogueEntity.Core.Sensing.Sources.Light;
-using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.Algorithms;
 
 namespace RogueEntity.Simple.Demo.BoxPusher
 {
-    [Module]
+    [Module("BoxPusher")]
     public class BoxPusherModule : ModuleBase
     {
-        public static EntityRole MovableItemRole = new EntityRole("Role.Game.BoxPusher.MovableItem");
-        public static EntityRole FloorRole = new EntityRole("Role.Game.BoxPusher.Floor");
-        public static EntityRole ActorRole = new EntityRole("Role.Game.BoxPusher.Actors");
 
         public BoxPusherModule()
         {
             Id = "Game.BoxPusher";
 
-            DeclareDependencies(ModuleDependency.Of(InventoryModule.ModuleId),
-                                ModuleDependency.Of(SensoryCacheModule.ModuleId),
-                                ModuleDependency.Of(PositionModule.ModuleId),
-                                ModuleDependency.Of(LightSourceModule.ModuleId),
-                                ModuleDependency.Of(CoreModule.ModuleId));
-
-            DeclareEntity<ItemReference>(MovableItemRole);
-            // .WithImpliedRole(CoreModule.ItemRole)
-            // .WithImpliedRole(PositionModule.GridPositionedRole)
-            // .WithImpliedRole(InventoryModule.ContainedItemRole)
-            // .WithImpliedRole(LightSourceModule.SenseSourceRole)
-            // .WithImpliedRole(LightSourceModule.ResistanceDataProviderRole);
-
-            DeclareEntity<ItemReference>(FloorRole);
-            // .WithImpliedRole(CoreModule.ItemRole)
-            // .WithImpliedRole(PositionModule.GridPositionedRole)
-            // .WithImpliedRole(LightSourceModule.ResistanceDataProviderRole);
-
-            DeclareEntity<ActorReference>(ActorRole);
-            // .WithImpliedRole(CoreModule.ItemRole)
-            // .WithImpliedRole(CoreModule.PlayerRole)
-            // .WithImpliedRole(PositionModule.GridPositionedRole)
-            // .WithImpliedRole(InventoryModule.ContainerRole)
-            // .WithImpliedRole(VisionSenseModule.SenseReceptorActorRole)
-            // .WithImpliedRole(SensoryCacheModule.SenseCacheSourceRole)
-            // .WithImpliedRole(SenseDiscoveryModule.DiscoveryActorRole);
-
-            RequireRole(MovableItemRole);
+            // DeclareDependencies(ModuleDependency.Of(InventoryModule.ModuleId),
+            //                     ModuleDependency.Of(SensoryCacheModule.ModuleId),
+            //                     ModuleDependency.Of(PositionModule.ModuleId),
+            //                     ModuleDependency.Of(LightSourceModule.ModuleId),
+            //                     ModuleDependency.Of(CoreModule.ModuleId));
         }
 
 
@@ -77,19 +42,45 @@ namespace RogueEntity.Simple.Demo.BoxPusher
                 mip.ServiceResolver.Store(lightPhysics);
             }
 
-            if (!mip.ServiceResolver.TryResolve(out IItemContextBackend<TGameContext, ActorReference> a))
+            if (!mip.ServiceResolver.TryResolve(out IItemContextBackend<TGameContext, ActorReference> actorBackend))
             {
-                a = new ItemContextBackend<TGameContext, ActorReference>(new ActorReferenceMetaData());
-                mip.ServiceResolver.Store(a);
-                mip.ServiceResolver.Store(a.ItemResolver);
+                actorBackend = new ItemContextBackend<TGameContext, ActorReference>(new ActorReferenceMetaData());
+                mip.ServiceResolver.Store(actorBackend);
+                mip.ServiceResolver.Store(actorBackend.ItemResolver);
+                mip.ServiceResolver.Store(actorBackend.EntityMetaData);
             }
 
-            if (!mip.ServiceResolver.TryResolve(out IItemContextBackend<TGameContext, ItemReference> i))
+            if (!mip.ServiceResolver.TryResolve(out IItemResolver<TGameContext, ActorReference> _))
             {
-                i = new ItemContextBackend<TGameContext, ItemReference>(new ItemReferenceMetaData());
-                mip.ServiceResolver.Store(i);
-                mip.ServiceResolver.Store(i.ItemResolver);
+                mip.ServiceResolver.Store(actorBackend.ItemResolver);
             }
+            
+            if (!mip.ServiceResolver.TryResolve(out IBulkDataStorageMetaData<ActorReference> _))
+            {
+                mip.ServiceResolver.Store(actorBackend.EntityMetaData);
+            }
+
+            if (!mip.ServiceResolver.TryResolve(out IItemContextBackend<TGameContext, ItemReference> itemBackend))
+            {
+                itemBackend = new ItemContextBackend<TGameContext, ItemReference>(new ItemReferenceMetaData());
+                mip.ServiceResolver.Store(itemBackend);
+                mip.ServiceResolver.Store(itemBackend.ItemResolver);
+                mip.ServiceResolver.Store(itemBackend.EntityMetaData);
+            }
+
+            if (!mip.ServiceResolver.TryResolve(out IItemResolver<TGameContext, ItemReference> _))
+            {
+                mip.ServiceResolver.Store(itemBackend.ItemResolver);
+            }
+
+            if (!mip.ServiceResolver.TryResolve(out IBulkDataStorageMetaData<ItemReference> _))
+            {
+                mip.ServiceResolver.Store(actorBackend.EntityMetaData);
+            }
+
+
+            mip.ServiceResolver.GetOrCreateGridMapContext<ItemReference>();
+            mip.ServiceResolver.GetOrCreateGridMapContext<ActorReference>();
         }
 
         [ContentInitializer]
@@ -99,75 +90,25 @@ namespace RogueEntity.Simple.Demo.BoxPusher
             var serviceResolver = mip.ServiceResolver;
             var ctx = initializer.DeclareContentContext<ItemReference>();
             ctx.Activate(ctx.CreateBulkEntityBuilder(serviceResolver)
-                            .Define("Items.Wall")
-                            .WithGridPosition(BoxPusherMapLayers.Items)
-                            .AsImmobile()
-                            .WithLightResistance(100.Percent())
-                            .WithName("wall")
+                            .DefineWall()
                             .Declaration);
 
             ctx.Activate(ctx.CreateBulkEntityBuilder(serviceResolver)
-                            .Define("Items.Floor.Empty")
-                            .WithGridPosition(BoxPusherMapLayers.Floor)
-                            .AsImmobile()
-                            .WithLightResistance(0.Percent())
-                            .WithName("floor")
+                            .DefineFloor()
                             .Declaration);
 
             ctx.Activate(ctx.CreateBulkEntityBuilder(serviceResolver)
-                            .Define("Items.Floor.TargetZone")
-                            .WithGridPosition(BoxPusherMapLayers.Floor)
-                            .AsImmobile()
-                            .WithLightResistance(0.Percent())
-                            .WithName("target zone")
+                            .DefineFloorTargetZone()
                             .Declaration);
 
-            ctx.Activate(ctx.CreateBulkEntityBuilder(serviceResolver)
-                            .Define("Items.Box")
-                            .WithGridPosition(BoxPusherMapLayers.Items)
-                            .WithLightResistance(0.Percent())
-                            .WithName("box")
+            ctx.Activate(ctx.CreateReferenceEntityBuilder(serviceResolver)
+                            .DefineBox()
                             .Declaration);
 
             var actorContext = initializer.DeclareContentContext<ActorReference>();
             actorContext.Activate(actorContext.CreateReferenceEntityBuilder(serviceResolver)
-                                              .Define("Player")
-                                              .AsPlayer()
-                                              .WithInventory()
-                                              .Of<ItemReference>()
-                                              .WithGridPosition(BoxPusherMapLayers.Actors)
-                                              .WithLightSource(10)
-                                              .WithVisionSense(10)
+                                              .DefinePlayer<TGameContext, ActorReference, ItemReference>()
                                               .Declaration);
         }
-/*
-        /// <summary>
-        ///   Changes to either floor or movable item maps should recompute the sense resistance data map.  
-        /// </summary>
-        [EntityRoleInitializer("Role.Game.BoxPusher.MovableItem",
-                               ConditionalRoles = new[] {"Role.Core.Senses.Resistance.ResistanceDataProvider"})]
-        protected void InitializeItemRole<TGameContext, TItemId>(in ModuleInitializationParameter p, IModuleInitializer<TGameContext> initializer, EntityRole role)
-            where TItemId : IEntityKey
-            where TGameContext : IItemContext<TGameContext, TItemId>, IGridMapContext<TItemId>
-        {
-            var systemId = SenseSourceModules.CreateResistanceSourceSystemId<VisionSense>(nameof(BoxPusherMapLayers.Items));
-            var ctx = initializer.DeclareEntityContext<TItemId>();
-            ctx.Register(systemId, 1100, SenseSourceModules.RegisterSenseResistanceSourceLayer<TGameContext, TItemId, VisionSense>(BoxPusherMapLayers.Items));
-        }
-
-        /// <summary>
-        ///   Changes to either floor or movable item maps should recompute the sense resistance data map.  
-        /// </summary>
-        [EntityRoleInitializer("Role.Game.BoxPusher.Floor",
-                               ConditionalRoles = new[] {"Role.Core.Senses.Resistance.ResistanceDataProvider"})]
-        protected void InitializeFloorRole<TGameContext, TItemId>(in ModuleInitializationParameter p, IModuleInitializer<TGameContext> initializer, EntityRole role)
-            where TItemId : IEntityKey
-            where TGameContext : IItemContext<TGameContext, TItemId>, IGridMapContext<TItemId>
-        {
-            var systemId = SenseSourceModules.CreateResistanceSourceSystemId<VisionSense>(nameof(BoxPusherMapLayers.Floor));
-            var ctx = initializer.DeclareEntityContext<TItemId>();
-            ctx.Register(systemId, 1100, SenseSourceModules.RegisterSenseResistanceSourceLayer<TGameContext, TItemId, VisionSense>(BoxPusherMapLayers.Floor));
-        }
-        */
     }
 }

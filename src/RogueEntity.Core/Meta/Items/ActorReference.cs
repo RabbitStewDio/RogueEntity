@@ -164,7 +164,7 @@ namespace RogueEntity.Core.Meta.Items
         {
             if (declarationIndex < 1 || declarationIndex > short.MaxValue)
             {
-                throw new ArgumentOutOfRangeException(nameof(declarationIndex), declarationIndex, "should be between 0 and 65,535");
+                throw new ArgumentOutOfRangeException(nameof(declarationIndex), declarationIndex, "should be between 1 and 65,535");
             }
 
             return FromBulkItem((short)declarationIndex, 0);

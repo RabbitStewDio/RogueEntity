@@ -6,7 +6,6 @@ using RogueEntity.Core.Infrastructure.Modules;
 using RogueEntity.Core.Infrastructure.Modules.Attributes;
 using RogueEntity.Core.Meta;
 using RogueEntity.Core.Meta.Base;
-using RogueEntity.Core.Meta.Items;
 
 namespace RogueEntity.Core.Equipment
 {
@@ -38,7 +37,7 @@ namespace RogueEntity.Core.Equipment
         protected void InitializeContainedItemRole<TGameContext, TItemId>(in ModuleEntityInitializationParameter<TGameContext, TItemId> initParameter,
                                                                           IModuleInitializer<TGameContext> initializer,
                                                                           EntityRole r)
-            where TItemId : IBulkDataStorageKey<TItemId>
+            where TItemId : IEntityKey
         {
             var entityContext = initializer.DeclareEntityContext<TItemId>();
             entityContext.Register(ContainedItemsComponentId, -19000, RegisterContainedItemEntities);
@@ -49,7 +48,7 @@ namespace RogueEntity.Core.Equipment
                                                                                     IModuleInitializer<TGameContext> initializer,
                                                                                     EntityRelation r)
             where TActorId : IEntityKey
-            where TItemId : IBulkDataStorageKey<TItemId>
+            where TItemId : IEntityKey
         {
             var entityContext = initializer.DeclareEntityContext<TActorId>();
             entityContext.Register(ContainerComponentId, -19000, RegisterContainerEntities<TActorId, TItemId>);
@@ -60,7 +59,7 @@ namespace RogueEntity.Core.Equipment
                                                                            IGameLoopSystemRegistration<TGameContext> context,
                                                                            EntityRegistry<TActorId> registry)
             where TActorId : IEntityKey
-            where TItemId : IBulkDataStorageKey<TItemId>
+            where TItemId : IEntityKey
         {
             var itemResolver = initParameter.ServiceResolver.Resolve<IItemResolver<TGameContext, TItemId>>();
             var system = new DestroyContainerContentsSystem<TGameContext, TActorId, TItemId>(itemResolver);
@@ -71,7 +70,7 @@ namespace RogueEntity.Core.Equipment
 
         void RegisterContainedItemEntities<TItemId>(in ModuleInitializationParameter initParameter,
                                                     EntityRegistry<TItemId> registry)
-            where TItemId : IBulkDataStorageKey<TItemId>
+            where TItemId : IEntityKey
         {
             registry.RegisterNonConstructable<SlottedEquipmentData<TItemId>>();
         }
@@ -79,7 +78,7 @@ namespace RogueEntity.Core.Equipment
         void RegisterContainerEntities<TActorId, TItemId>(in ModuleInitializationParameter initParameter,
                                                           EntityRegistry<TActorId> registry)
             where TActorId : IEntityKey
-            where TItemId : IBulkDataStorageKey<TItemId>
+            where TItemId : IEntityKey
         {
             registry.RegisterNonConstructable<SlottedEquipmentData<TItemId>>();
         }

@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using EnTTSharp.Annotations;
-using EnTTSharp.Entities;
 using EnTTSharp.Serialization;
 using NUnit.Framework;
 using RogueEntity.Core.Infrastructure.ItemTraits;
@@ -20,6 +19,10 @@ namespace RogueEntity.Core.Tests.Inventory
         readonly ItemDeclarationId StackedBulkItem = "inventory.bulk.stacked";
         readonly ItemDeclarationId ReferenceItem = "inventory.reference";
 
+        public ListInventoryTraitTest() : base(new ActorReferenceMetaData())
+        {
+        }
+
         protected override IItemComponentTestDataFactory<IInventory<InventoryTestContext, ItemReference>> ProduceTestData(EntityRelations<ActorReference> relations)
         {
             return new ItemComponentTestDataFactory<IInventory<InventoryTestContext, ItemReference>>(
@@ -36,17 +39,18 @@ namespace RogueEntity.Core.Tests.Inventory
                                                                                            Weight availableWeight,
                                                                                            params ItemReference[] items)
         {
-            return new ListInventory<InventoryTestContext, ActorReference, ItemReference>(Context.ItemResolver,
+            return new ListInventory<InventoryTestContext, ActorReference, ItemReference>(new ItemReferenceMetaData(), Context.ItemResolver,
                                                                                           new ListInventoryData<ActorReference, ItemReference>(
                                                                                               owner, totalWeight, availableWeight, new List<ItemReference>(items)));
         }
 
         protected override InventoryTestContext CreateContext()
         {
+            EntityRegistry.RegisterNonConstructable<ListInventoryData<ActorReference, ItemReference>>();
+            
             var context = new InventoryTestContext();
             context.ItemEntities.RegisterNonConstructable<ItemDeclarationHolder<InventoryTestContext, ItemReference>>();
             context.ItemEntities.RegisterNonConstructable<ContainerEntityMarker<ActorReference>>();
-            context.ActorEntities.RegisterNonConstructable<ListInventoryData<ActorReference, ItemReference>>();
 
             context.ItemRegistry.Register(new BulkItemDeclaration<InventoryTestContext, ItemReference>(StackedBulkItem));
             context.ItemRegistry.Register(new ReferenceItemDeclaration<InventoryTestContext, ItemReference>(ReferenceItem).WithTrait(new ContainerEntityMarkerTrait<InventoryTestContext, ItemReference, ActorReference>()));
@@ -63,13 +67,9 @@ namespace RogueEntity.Core.Tests.Inventory
             return registration;
         }
 
-        protected override EntityRegistry<ActorReference> EntityRegistry => Context.ActorEntities;
-        protected override IItemRegistryBackend<InventoryTestContext, ActorReference> ItemRegistry => Context.ActorRegistry;
-        protected override IBulkDataStorageMetaData<ActorReference> ItemIdMetaData => new ActorReferenceMetaData();
-
         protected override ListInventoryTrait<InventoryTestContext, ActorReference, ItemReference> CreateTrait()
         {
-            return new ListInventoryTrait<InventoryTestContext, ActorReference, ItemReference>(Context.ItemResolver);
+            return new ListInventoryTrait<InventoryTestContext, ActorReference, ItemReference>(new ItemReferenceMetaData(), Context.ItemResolver);
         }
 
         protected override void CustomizeBinarySerializationContext(EntityKeyMapper<ActorReference> mapper, 
@@ -78,8 +78,8 @@ namespace RogueEntity.Core.Tests.Inventory
             ItemReference IdentityMapper(EntityKeyData data) => ItemReference.FromReferencedItem(data.Age, data.Key);
             
             var itemReferenceMetaData = new ItemReferenceMetaData();
-            var bulkIdSerializationMapper = new BulkItemIdSerializationMapper<ItemReference>(itemReferenceMetaData.BulkDataFactory, Context.ItemRegistry, Context.ItemRegistry);
-            bs.Register(new ItemDeclarationHolderMessagePackFormatter<InventoryTestContext, ItemReference>(Context));
+            var bulkIdSerializationMapper = new BulkItemIdSerializationMapper<ItemReference>(itemReferenceMetaData, Context.ItemRegistry, Context.ItemRegistry);
+            bs.Register(new ItemDeclarationHolderMessagePackFormatter<InventoryTestContext, ItemReference>(Context.ItemResolver));
             bs.Register(new BulkKeyMessagePackFormatter<ItemReference>(itemReferenceMetaData, IdentityMapper, bulkIdSerializationMapper.TryMap));
         }
 
@@ -88,8 +88,8 @@ namespace RogueEntity.Core.Tests.Inventory
             ItemReference IdentityMapper(EntityKeyData data) => ItemReference.FromReferencedItem(data.Age, data.Key);
             
             var itemReferenceMetaData = new ItemReferenceMetaData();
-            var bulkIdSerializationMapper = new BulkItemIdSerializationMapper<ItemReference>(itemReferenceMetaData.BulkDataFactory, Context.ItemRegistry, Context.ItemRegistry);
-            bs.Register(new ItemDeclarationHolderSurrogateProvider<InventoryTestContext, ItemReference>(Context));
+            var bulkIdSerializationMapper = new BulkItemIdSerializationMapper<ItemReference>(itemReferenceMetaData, Context.ItemRegistry, Context.ItemRegistry);
+            bs.Register(new ItemDeclarationHolderSurrogateProvider<InventoryTestContext, ItemReference>(Context.ItemResolver));
             bs.Register(new BulkKeySurrogateProvider<ItemReference>(itemReferenceMetaData, IdentityMapper, bulkIdSerializationMapper.TryMap));
         }
     }

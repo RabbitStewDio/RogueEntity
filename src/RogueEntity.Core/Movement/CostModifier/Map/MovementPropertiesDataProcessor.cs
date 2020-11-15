@@ -10,11 +10,11 @@ namespace RogueEntity.Core.Movement.CostModifier.Map
     public class MovementPropertiesDataProcessor<TGameContext, TItemId, TSense> : GridAggregationPropertiesDataProcessor<TGameContext, TItemId, MovementCostModifier<TSense>>
         where TItemId : IEntityKey
     {
-        [NotNull] readonly IItemContext<TGameContext, TItemId> itemContext;
+        [NotNull] readonly IItemResolver<TGameContext, TItemId> itemContext;
 
         public MovementPropertiesDataProcessor(MapLayer layer,
                                                [NotNull] IGridMapContext<TItemId> mapContext,
-                                               [NotNull] IItemContext<TGameContext, TItemId> itemContext,
+                                               [NotNull] IItemResolver<TGameContext, TItemId> itemContext,
                                                int zPosition,
                                                int offsetX,
                                                int offsetY,
@@ -28,7 +28,7 @@ namespace RogueEntity.Core.Movement.CostModifier.Map
         {
             var (bounds, context, _, groundData, resultTile) = p;
 
-            var itemResolver = itemContext.ItemResolver;
+            var itemResolver = itemContext;
             foreach (var (x, y) in bounds.Contents)
             {
                 var groundItemRef = groundData[x, y];

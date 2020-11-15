@@ -1,6 +1,4 @@
-﻿using EnTTSharp.Entities;
-using RogueEntity.Core.Infrastructure.ItemTraits;
-using RogueEntity.Core.Meta.Items;
+﻿using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Meta.ItemTraits;
 using RogueEntity.Core.Tests.Meta.Items;
 
@@ -8,11 +6,8 @@ namespace RogueEntity.Core.Tests.Meta.ItemTraits
 {
     public class TemperatureDataTraitTest : ItemComponentTraitTestBase<BasicItemContext, ItemReference, Temperature, TemperatureTrait<BasicItemContext, ItemReference>>
     {
-        protected override IBulkDataStorageMetaData<ItemReference> ItemIdMetaData => new ItemReferenceMetaData();
-        protected override EntityRegistry<ItemReference> EntityRegistry => Context.ItemEntities;
-        protected override IItemRegistryBackend<BasicItemContext, ItemReference> ItemRegistry => Context.ItemRegistry;
 
-        public TemperatureDataTraitTest()
+        public TemperatureDataTraitTest(): base(new ItemReferenceMetaData())
         {
             EnableSerializationTest = false; // Temperature is currently implemented as purely static data that is not serialized as it is never changing.
         }

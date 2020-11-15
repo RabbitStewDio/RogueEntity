@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using EnTTSharp.Entities;
+using JetBrains.Annotations;
 using RogueEntity.Core.Infrastructure.ItemTraits;
 using RogueEntity.Core.Meta.Base;
 using RogueEntity.Core.Meta.Items;
@@ -20,17 +21,20 @@ namespace RogueEntity.Core.Inventory
     /// <typeparam name="TOwnerId"></typeparam>
     /// <typeparam name="TItemId"></typeparam>
     public class ListInventory<TGameContext, TOwnerId, TItemId> : IInventory<TGameContext, TItemId>, IEquatable<ListInventory<TGameContext, TOwnerId, TItemId>>
-        where TItemId : IBulkDataStorageKey<TItemId>
+        where TItemId : IEntityKey
         where TOwnerId : IEntityKey
     {
         static readonly ILogger Logger = SLog.ForContext<ListInventory<TGameContext, TOwnerId, TItemId>>();
 
         readonly IItemResolver<TGameContext, TItemId> itemResolver;
+        readonly IBulkDataStorageMetaData<TItemId> itemMetaData;
 
-        public ListInventory(IItemResolver<TGameContext, TItemId> itemResolver,
+        public ListInventory([NotNull] IBulkDataStorageMetaData<TItemId> itemMetaData,
+                             [NotNull] IItemResolver<TGameContext, TItemId> itemResolver,
                              ListInventoryData<TOwnerId, TItemId> data)
         {
-            this.itemResolver = itemResolver;
+            this.itemResolver = itemResolver ?? throw new ArgumentNullException(nameof(itemResolver));
+            this.itemMetaData = itemMetaData ?? throw new ArgumentNullException(nameof(itemMetaData));
             this.Data = data;
         }
 
@@ -64,7 +68,7 @@ namespace RogueEntity.Core.Inventory
         {
             var itemWeight = itemResolver.QueryWeight(r, context).TotalWeight;
             var insertSlot = Math.Max(0, Math.Min(slot, Data.Items.Count));
-            if (r.IsReference)
+            if (itemMetaData.IsReferenceEntity(r))
             {
                 if (itemResolver.TryQueryData(r, context, out IContainerEntityMarker _))
                 {
@@ -92,7 +96,7 @@ namespace RogueEntity.Core.Inventory
                                out TItemId remainder,
                                bool ignoreWeight = false)
         {
-            if (r.IsReference)
+            if (itemMetaData.IsReferenceEntity(r))
             {
                 remainder = default;
                 var itemWeight = itemResolver.QueryWeight(r, context).TotalWeight;
@@ -267,12 +271,12 @@ namespace RogueEntity.Core.Inventory
             }
 
             var itemRef = Data.Items[itemPosition];
-            if (!itemResolver.IsSameBulkDataType(itemByType, itemRef))
+            if (!itemMetaData.IsSameBulkType(itemByType, itemRef))
             {
                 return false;
             }
 
-            if (itemRef.IsReference)
+            if (itemMetaData.IsReferenceEntity(itemRef))
             {
                 if (!itemResolver.TryRemoveData<ContainerEntityMarker<TOwnerId>>(itemRef, context, out _))
                 {
@@ -307,7 +311,7 @@ namespace RogueEntity.Core.Inventory
                     continue;
                 }
 
-                if (itemRef.IsReference)
+                if (itemMetaData.IsReferenceEntity(itemRef))
                 {
                     if (itemResolver.TryRemoveData<ContainerEntityMarker<TOwnerId>>(itemRef, context, out _))
                     {
@@ -381,7 +385,7 @@ namespace RogueEntity.Core.Inventory
                     continue;
                 }
 
-                if (itemRef.IsReference)
+                if (itemMetaData.IsReferenceEntity(itemRef))
                 {
                     if (itemResolver.TryRemoveData<ContainerEntityMarker<TOwnerId>>(itemRef, context, out _))
                     {
@@ -447,7 +451,7 @@ namespace RogueEntity.Core.Inventory
                                      TItemId item,
                                      out TItemId removedItem)
         {
-            if (item.IsReference)
+            if (itemMetaData.IsReferenceEntity(item))
             {
                 if (!itemResolver.TryQueryData(item, context, out IContainerEntityMarker _))
                 {

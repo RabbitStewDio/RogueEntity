@@ -26,8 +26,8 @@ namespace RogueEntity.Core.Tests.Sensing.Resistance
             ceilingFan = ctx.ItemRegistry.Register(new BulkItemDeclaration<SenseMappingTestContext, ItemReference>("Fan", "FanTag")
                                                        .WithTrait(new SensoryResistanceTrait<SenseMappingTestContext, ItemReference, VisionSense>(Percentage.Of(0.1f))));
             sps = new SensePropertiesSystem<SenseMappingTestContext, VisionSense>(0, 0, 64, 64);
-            sps.AddLayer<SenseMappingTestContext, ItemReference, VisionSense>(ctx, ctx, TestMapLayers.One);
-            sps.AddLayer<SenseMappingTestContext, ItemReference, VisionSense>(ctx, ctx, TestMapLayers.Two);
+            sps.AddLayer<SenseMappingTestContext, ItemReference, VisionSense>(ctx, ctx.ItemResolver, TestMapLayers.One);
+            sps.AddLayer<SenseMappingTestContext, ItemReference, VisionSense>(ctx, ctx.ItemResolver, TestMapLayers.Two);
         }
 
         [Test]

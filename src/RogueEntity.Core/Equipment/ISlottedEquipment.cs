@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using RogueEntity.Core.Meta.Items;
+using EnTTSharp.Entities;
 using RogueEntity.Core.Meta.ItemTraits;
 using RogueEntity.Core.Utils;
 
@@ -14,7 +14,7 @@ namespace RogueEntity.Core.Equipment
     /// <typeparam name="TItemId"></typeparam>
     public interface ISlottedEquipment<TGameContext, TItemId> : IEnumerable<EquippedItem<TItemId>>,
                                                                 IEquatable<ISlottedEquipment<TGameContext, TItemId>>
-        where TItemId : IBulkDataStorageKey<TItemId>
+        where TItemId : IEntityKey
     {
         ReadOnlyListWrapper<EquipmentSlot> AvailableSlots { get; }
         Weight TotalWeight { get; }

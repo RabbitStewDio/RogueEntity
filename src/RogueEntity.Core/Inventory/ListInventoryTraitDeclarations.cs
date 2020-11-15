@@ -21,10 +21,11 @@ namespace RogueEntity.Core.Inventory
             }
 
             public ReferenceItemDeclarationBuilder<TGameContext, TContainerEntityId> Of<TContentEntityId>()
-                where TContentEntityId : IBulkDataStorageKey<TContentEntityId>
+                where TContentEntityId : IEntityKey
             {
                 var resolver = builder.ServiceResolver.Resolve<IItemResolver<TGameContext, TContentEntityId>>();
-                var trait = new ListInventoryTrait<TGameContext, TContainerEntityId, TContentEntityId>(resolver, defaultCarryWeight);
+                var meta = builder.ServiceResolver.Resolve<IBulkDataStorageMetaData<TContentEntityId>>();
+                var trait = new ListInventoryTrait<TGameContext, TContainerEntityId, TContentEntityId>(meta, resolver, defaultCarryWeight);
                 builder.Declaration.WithTrait(trait);
                 return builder;
             }

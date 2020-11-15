@@ -7,18 +7,18 @@ using RogueEntity.Core.Meta.Items;
 
 namespace RogueEntity.Core.Meta.ItemTraits
 {
-    public class StackingTrait<TContext, TItemId> : IItemComponentTrait<TContext, TItemId, StackCount>, 
-                                                    IBulkDataTrait<TContext, TItemId> 
+    public class StackingBulkTrait<TContext, TItemId> : IItemComponentTrait<TContext, TItemId, StackCount>,
+                                                        IBulkDataTrait<TContext, TItemId>
         where TItemId : IBulkDataStorageKey<TItemId>
     {
         readonly ushort stackSize;
         readonly ushort initialCount;
 
-        public StackingTrait(ushort stackSize): this(stackSize, stackSize)
+        public StackingBulkTrait(ushort stackSize) : this(stackSize, stackSize)
         {
         }
 
-        public StackingTrait(ushort initialCount, ushort stackSize)
+        public StackingBulkTrait(ushort initialCount, ushort stackSize)
         {
             Id = "ItemTrait.Bulk.Generic.Stacking";
             Priority = 100;
@@ -72,6 +72,7 @@ namespace RogueEntity.Core.Meta.ItemTraits
             {
                 changedK = k.WithData(t.Count);
             }
+
             return true;
         }
 
@@ -80,7 +81,7 @@ namespace RogueEntity.Core.Meta.ItemTraits
             changedItem = k;
             return false;
         }
-        
+
         public IEnumerable<EntityRoleInstance> GetEntityRoles()
         {
             yield return CoreModule.ItemRole.Instantiate<TItemId>();

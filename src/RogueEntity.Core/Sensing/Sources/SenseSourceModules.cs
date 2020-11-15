@@ -39,7 +39,7 @@ namespace RogueEntity.Core.Sensing.Sources
                                                            EntityRegistry<TItemId> registry)
             {
                 var serviceResolver = initParameter.ServiceResolver;
-                var itemContext = serviceResolver.Resolve<IItemContext<TGameContext, TItemId>>();
+                var itemContext = serviceResolver.Resolve<IItemResolver<TGameContext, TItemId>>();
                 var mapContext = serviceResolver.Resolve<IGridMapContext<TItemId>>();
                 
                 var factory = serviceResolver.Resolve<IAggregationLayerSystem<TGameContext, SensoryResistance<TSense>>>();

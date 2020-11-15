@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using EnTTSharp.Entities;
 using RogueEntity.Core.Infrastructure.Modules.Helpers;
 using RogueEntity.Core.Utils;
 using Serilog;

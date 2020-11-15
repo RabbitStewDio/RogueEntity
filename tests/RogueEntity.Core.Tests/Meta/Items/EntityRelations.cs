@@ -1,9 +1,9 @@
-﻿using RogueEntity.Core.Meta.Items;
+﻿using EnTTSharp.Entities;
 
 namespace RogueEntity.Core.Tests.Meta.Items
 {
     public readonly struct EntityRelations<TItemId>
-        where TItemId : IBulkDataStorageKey<TItemId>
+        where TItemId : IEntityKey
     {
         public TItemId DefaultEntityId { get; }
         public TItemId AlternativeEntityId1 { get; }

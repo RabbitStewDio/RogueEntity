@@ -1,7 +1,6 @@
 ﻿using EnTTSharp.Entities;
 using RogueEntity.Core.Infrastructure.ItemTraits;
 using RogueEntity.Core.Meta.ItemBuilder;
-using RogueEntity.Core.Meta.Items;
 
 namespace RogueEntity.Core.Meta.Naming
 {
@@ -11,11 +10,11 @@ namespace RogueEntity.Core.Meta.Naming
         public static readonly IDisplayName Somebody = new NonCountableNounDisplayName("somebody");
 
         public static IDisplayName ToItemName<TGameContext, TItemId>(this TItemId actor,
+                                                                     IItemResolver<TGameContext, TItemId> itemResolver,
                                                                      TGameContext context)
-            where TGameContext : IItemContext<TGameContext, TItemId>
             where TItemId : IEntityKey
         {
-            if (context.ItemResolver.TryQueryData(actor, context, out IDisplayName name))
+            if (itemResolver.TryQueryData(actor, context, out IDisplayName name))
             {
                 return name;
             }
@@ -94,11 +93,13 @@ namespace RogueEntity.Core.Meta.Naming
         }
 */
 
-        public static string ToDefiniteItemName<TGameContext, TItemId>(this TItemId actor, TGameContext context, int count = 1)
-            where TGameContext : IItemContext<TGameContext, TItemId>
-            where TItemId : IBulkDataStorageKey<TItemId>
+        public static string ToDefiniteItemName<TGameContext, TItemId>(this TItemId actor, 
+                                                                       IItemResolver<TGameContext, TItemId> itemResolver,
+                                                                       TGameContext context, 
+                                                                       int count = 1)
+            where TItemId : IEntityKey
         {
-            if (context.ItemResolver.TryQueryData(actor, context, out IDisplayName name))
+            if (itemResolver.TryQueryData(actor, context, out IDisplayName name))
             {
                 return name.GetDefiniteFormName(count);
             }
@@ -106,11 +107,13 @@ namespace RogueEntity.Core.Meta.Naming
             return Something.GetDefiniteFormName(count);
         }
 
-        public static string ToIndefiniteItemName<TGameContext, TItemId>(this TItemId actor, TGameContext context, int count = 1)
-            where TGameContext : IItemContext<TGameContext, TItemId>
-            where TItemId : IBulkDataStorageKey<TItemId>
+        public static string ToIndefiniteItemName<TGameContext, TItemId>(this TItemId actor, 
+                                                                         IItemResolver<TGameContext, TItemId> itemResolver,
+                                                                         TGameContext context, 
+                                                                         int count = 1)
+            where TItemId : IEntityKey
         {
-            if (context.ItemResolver.TryQueryData(actor, context, out IDisplayName name))
+            if (itemResolver.TryQueryData(actor, context, out IDisplayName name))
             {
                 return name.GetIndefiniteFormName(count);
             }

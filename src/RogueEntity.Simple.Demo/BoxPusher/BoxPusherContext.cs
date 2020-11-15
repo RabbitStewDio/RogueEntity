@@ -1,17 +1,12 @@
-using EnTTSharp.Entities;
-using RogueEntity.Core.Infrastructure.ItemTraits;
-using RogueEntity.Core.Meta.Items;
-using RogueEntity.Core.Positioning.Grid;
-using RogueEntity.Core.Positioning.MapLayers;
-using RogueEntity.Core.Utils;
-
 namespace RogueEntity.Simple.Demo.BoxPusher
 {
-    public class BoxPusherContext: IItemContextBackend<BoxPusherContext, ItemReference>, 
+    public class BoxPusherContext
+/*        : IItemContextBackend<BoxPusherContext, ItemReference>, 
                                    IItemContextBackend<BoxPusherContext, ActorReference>,
                                    IGridMapContext<ItemReference>,
-                                   IGridMapContext<ActorReference>
+                                   IGridMapContext<ActorReference>*/
     {
+        /*
         ItemContextBackend<BoxPusherContext, ItemReference> itemContext;
         ItemContextBackend<BoxPusherContext, ActorReference> actorContext;
 
@@ -110,5 +105,6 @@ namespace RogueEntity.Simple.Demo.BoxPusher
         {
             get { return itemContext.ItemResolver; }
         }
+        */
     }
 }

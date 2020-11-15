@@ -12,11 +12,11 @@ namespace RogueEntity.Core.Sensing.Resistance.Maps
     public class DynamicSenseLayerFactory<TGameContext, TItemId, TSense> : DynamicGridAggregateLayerFactoryBase<TGameContext,TItemId, SensoryResistance<TSense>>
         where TItemId : IEntityKey
     {
-        readonly IItemContext<TGameContext, TItemId> itemContext;
+        readonly IItemResolver<TGameContext, TItemId> itemContext;
 
         public DynamicSenseLayerFactory(MapLayer layer, 
                                         [NotNull] IGridMapContext<TItemId> mapContext,
-                                        [NotNull] IItemContext<TGameContext, TItemId> itemContext): base(layer, mapContext)
+                                        [NotNull] IItemResolver<TGameContext, TItemId> itemContext): base(layer, mapContext)
         {
             this.itemContext = itemContext ?? throw new ArgumentNullException(nameof(itemContext));
         }

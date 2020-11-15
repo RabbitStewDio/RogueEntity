@@ -119,5 +119,6 @@ namespace RogueEntity.Core.Positioning
             context.AddFixedStepHandlers(ClearContinuousPositionAction);
             ContinuousMapPositionChangedMarker.InstallChangeHandler(registry);
         }
+
     }
 }

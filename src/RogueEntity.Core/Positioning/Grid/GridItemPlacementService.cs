@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using EnTTSharp.Entities;
+using JetBrains.Annotations;
 using RogueEntity.Core.Infrastructure.ItemTraits;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Meta.ItemTraits;
@@ -13,16 +15,24 @@ using RectangleRange = RogueEntity.Core.Utils.RectangleRange;
 namespace RogueEntity.Core.Positioning.Grid
 {
     public class GridItemPlacementService<TGameContext, TItemId> : IItemPlacementService<TGameContext, TItemId>
-        where TGameContext : IGridMapContext<TItemId>, IItemContext<TGameContext, TItemId>
-        where TItemId : IBulkDataStorageKey<TItemId>
+        where TItemId : IEntityKey
     {
         static readonly EqualityComparer<TItemId> Equality = EqualityComparer<TItemId>.Default;
         static readonly ILogger logger = SLog.ForContext<GridItemPlacementService<TGameContext, TItemId>>();
         readonly MapLayerLookupDelegate mapLayerResolver;
+        readonly IBulkDataStorageMetaData<TItemId> itemIdMetaData;
+        readonly IItemResolver<TGameContext, TItemId> itemResolver;
+        readonly IGridMapContext<TItemId> mapContext;
 
-        public GridItemPlacementService(MapLayerLookupDelegate mapLayerResolver)
+        public GridItemPlacementService([NotNull] MapLayerLookupDelegate mapLayerResolver,
+                                        [NotNull] IBulkDataStorageMetaData<TItemId> itemIdMetaData,
+                                        [NotNull] IItemResolver<TGameContext, TItemId> itemResolver,
+                                        [NotNull] IGridMapContext<TItemId> mapContext)
         {
             this.mapLayerResolver = mapLayerResolver ?? throw new ArgumentNullException(nameof(mapLayerResolver));
+            this.itemResolver = itemResolver ?? throw new ArgumentNullException(nameof(itemResolver));
+            this.mapContext = mapContext ?? throw new ArgumentNullException(nameof(mapContext));
+            this.itemIdMetaData = itemIdMetaData ?? throw new ArgumentNullException(nameof(itemIdMetaData));
         }
 
         public bool TryFindAvailableItemSlot(TGameContext context, TItemId itemToBePlaced, in Position origin, out Position placementPos, int searchRadius = 10)
@@ -35,7 +45,7 @@ namespace RogueEntity.Core.Positioning.Grid
             }
 
             if (!mapLayerResolver(origin.LayerId, out var mapLayer) ||
-                !context.TryGetGridDataFor(mapLayer, out var mapData))
+                !mapContext.TryGetGridDataFor(mapLayer, out var mapData))
             {
                 logger.Verbose("Unable to resolve grid data for map layer {p.LayerId} of position {position}", origin.LayerId, origin);
                 placementPos = default;
@@ -50,7 +60,7 @@ namespace RogueEntity.Core.Positioning.Grid
                 return false;
             }
 
-            var itemStack = context.ItemResolver.QueryStackSize(itemToBePlaced, context);
+            var itemStack = itemResolver.QueryStackSize(itemToBePlaced, context);
             var gx = origin.GridX;
             var gy = origin.GridY;
 
@@ -72,12 +82,12 @@ namespace RogueEntity.Core.Positioning.Grid
                         return true;
                     }
 
-                    if (!itemAtPos.IsSameBulkType(itemToBePlaced))
+                    if (!itemIdMetaData.IsSameBulkType(itemAtPos, itemToBePlaced))
                     {
                         continue;
                     }
 
-                    var stackSize = context.ItemResolver.QueryStackSize(itemAtPos, context);
+                    var stackSize = itemResolver.QueryStackSize(itemAtPos, context);
                     if (itemStack.Count + stackSize.Count < stackSize.MaximumStackSize)
                     {
                         return true;
@@ -99,7 +109,7 @@ namespace RogueEntity.Core.Positioning.Grid
             }
 
             if (!mapLayerResolver(origin.LayerId, out var mapLayer) ||
-                !context.TryGetGridDataFor(mapLayer, out var mapData))
+                !mapContext.TryGetGridDataFor(mapLayer, out var mapData))
             {
                 logger.Verbose("Unable to resolve grid data for map layer {p.LayerId} of position {position}", origin.LayerId, origin);
                 placementPos = default;
@@ -149,7 +159,7 @@ namespace RogueEntity.Core.Positioning.Grid
             }
 
             if (!mapLayerResolver(placementPos.LayerId, out var mapLayer) ||
-                !context.TryGetGridDataFor(mapLayer, out var mapData))
+                !mapContext.TryGetGridDataFor(mapLayer, out var mapData))
             {
                 logger.Verbose("Unable to resolve grid data for map layer {p.LayerId} of position {position}", placementPos.LayerId, placementPos);
                 return false;
@@ -163,21 +173,21 @@ namespace RogueEntity.Core.Positioning.Grid
             }
 
             var existingItem = map[placementPos.GridX, placementPos.GridY];
-            if (targetItem.IsReference || !targetItem.IsSameBulkType(existingItem))
+            if (itemIdMetaData.IsReferenceEntity(targetItem) || !itemIdMetaData.IsSameBulkType(targetItem, existingItem))
             {
                 return TryReplaceItemInternal(context, targetItem, default, placementPos, forcePlacement, map, mapData);
             }
 
-            var stackSize = context.ItemResolver.QueryStackSize(targetItem, context);
+            var stackSize = itemResolver.QueryStackSize(targetItem, context);
             if (stackSize.MaximumStackSize == 1)
             {
                 return TryReplaceItemInternal(context, targetItem, default, placementPos, forcePlacement, map, mapData);
             }
 
-            var existingStack = context.ItemResolver.QueryStackSize(existingItem, context);
+            var existingStack = itemResolver.QueryStackSize(existingItem, context);
             existingStack.Take(stackSize.Count, out var resultStack, out var remainToBeTaken);
             if (remainToBeTaken != 0 || 
-                !context.ItemResolver.TryUpdateData(targetItem, context, resultStack, out var changedItem))
+                !itemResolver.TryUpdateData(targetItem, context, resultStack, out var changedItem))
             {
                 // the stack at the map position does not contain enough items 
                 // to satisfy the requested stack size of targetItem' 
@@ -200,7 +210,7 @@ namespace RogueEntity.Core.Positioning.Grid
             }
 
             if (!mapLayerResolver(placementPos.LayerId, out var mapLayer) ||
-                !context.TryGetGridDataFor(mapLayer, out var mapData))
+                !mapContext.TryGetGridDataFor(mapLayer, out var mapData))
             {
                 logger.Verbose("Unable to resolve grid data for map layer {p.LayerId} of position {position}", placementPos.LayerId, placementPos);
                 return false;
@@ -214,20 +224,20 @@ namespace RogueEntity.Core.Positioning.Grid
             }
 
             var existingItem = map[placementPos.GridX, placementPos.GridY];
-            if (targetItem.IsReference || !targetItem.IsSameBulkType(existingItem))
+            if (itemIdMetaData.IsReferenceEntity(targetItem) || !itemIdMetaData.IsSameBulkType(targetItem, existingItem))
             {
                 return TryReplaceItemInternal(context, default, targetItem, placementPos, forcePlacement, map, mapData);
             }
 
-            var stackSize = context.ItemResolver.QueryStackSize(targetItem, context);
+            var stackSize = itemResolver.QueryStackSize(targetItem, context);
             if (stackSize.MaximumStackSize == 1)
             {
                 return TryReplaceItemInternal(context, default, targetItem, placementPos, forcePlacement, map, mapData);
             }
 
-            var existingStack = context.ItemResolver.QueryStackSize(existingItem, context);
+            var existingStack = itemResolver.QueryStackSize(existingItem, context);
             if (!stackSize.Merge(existingStack, out var resultStack) ||
-                !context.ItemResolver.TryUpdateData(targetItem, context, resultStack, out var changedItem))
+                !itemResolver.TryUpdateData(targetItem, context, resultStack, out var changedItem))
             {
                 // cannot merge items
                 return false;
@@ -245,7 +255,7 @@ namespace RogueEntity.Core.Positioning.Grid
             }
 
             if (!mapLayerResolver(p.LayerId, out var mapLayer) ||
-                !context.TryGetGridDataFor(mapLayer, out var mapData))
+                !mapContext.TryGetGridDataFor(mapLayer, out var mapData))
             {
                 logger.Verbose("Unable to resolve grid data for map layer {p.LayerId} of position {position}", p.LayerId, p);
                 return false;
@@ -261,7 +271,7 @@ namespace RogueEntity.Core.Positioning.Grid
             return TryReplaceItemInternal(context, sourceItem, targetItem, p, forceMove, map, mapData);
         }
 
-        static bool TryReplaceItemInternal(TGameContext context,
+        bool TryReplaceItemInternal(TGameContext context,
                                            TItemId sourceItem,
                                            TItemId targetItem,
                                            Position p,
@@ -276,14 +286,14 @@ namespace RogueEntity.Core.Positioning.Grid
                 return false;
             }
 
-            if (context.ItemResolver.TryUpdateData(sourceItem, context, EntityGridPosition.Invalid, out _))
+            if (itemResolver.TryUpdateData(sourceItem, context, EntityGridPosition.Invalid, out _))
             {
                 // ensure that bulk items have been cleared out correctly before attempting 
                 // to write the new data
                 var old = map[p.GridX, p.GridY];
                 map[p.GridX, p.GridY] = default;
 
-                if (context.ItemResolver.TryUpdateData(targetItem, context, p, out _))
+                if (itemResolver.TryUpdateData(targetItem, context, p, out _))
                 {
                     mapData.MarkDirty(p);
                     return true;
@@ -306,7 +316,7 @@ namespace RogueEntity.Core.Positioning.Grid
                 return false;
             }
 
-            if (!context.ItemResolver.TryQueryData(targetItem, context, out ImmobilityMarker _))
+            if (!itemResolver.TryQueryData(targetItem, context, out ImmobilityMarker _))
             {
                 map[p.GridX, p.GridY] = targetItem;
                 mapData.MarkDirty(p);

@@ -12,25 +12,27 @@ namespace RogueEntity.Core.Tests.Meta.Items
     public class ItemDeclarationTest
     {
         BasicItemContext context;
+        ItemContextBackend<BasicItemContext, ItemReference> itemContext;
 
         [SetUp]
         public void SetUp()
         {
             context = new BasicItemContext();
-            context.ItemEntities.RegisterNonConstructable<ItemDeclarationHolder<BasicItemContext, ItemReference>>();
+            itemContext = new ItemContextBackend<BasicItemContext, ItemReference>(new ItemReferenceMetaData());
+            itemContext.EntityRegistry.RegisterNonConstructable<ItemDeclarationHolder<BasicItemContext, ItemReference>>();
         }
 
         [Test]
         public void Declare_Bulk_Item()
         {
-            var reg = context.ItemRegistry;
+            var reg = itemContext.ItemRegistry;
 
             var itemDeclaration = new BulkItemDeclaration<BasicItemContext, ItemReference>("bulkitem", "bulkitem.tag");
             reg.Register(itemDeclaration);
             reg.TryGetBulkItemById("bulkitem", out _).Should().BeTrue();
             reg.TryGetItemById("bulkitem", out _).Should().BeTrue();
 
-            var itemId = context.ItemResolver.Instantiate(context, reg.ReferenceItemById("bulkitem"));
+            var itemId = itemContext.ItemResolver.Instantiate(context, reg.ReferenceItemById("bulkitem"));
             itemId.IsEmpty.Should().BeFalse();
             itemId.IsReference.Should().BeFalse();
             itemId.BulkItemId.Should().Be(1);
@@ -40,14 +42,14 @@ namespace RogueEntity.Core.Tests.Meta.Items
         [Test]
         public void Declare_Reference_Item()
         {
-            var reg = context.ItemRegistry;
+            var reg = itemContext.ItemRegistry;
 
             var itemDeclaration = new ReferenceItemDeclaration<BasicItemContext, ItemReference>("refitem", "refitem.tag");
             reg.Register(itemDeclaration);
             reg.TryGetBulkItemById("refitem", out _).Should().BeFalse();
             reg.TryGetItemById("refitem", out _).Should().BeTrue();
 
-            var itemId = context.ItemResolver.Instantiate(context, reg.ReferenceItemById("refitem"));
+            var itemId = itemContext.ItemResolver.Instantiate(context, reg.ReferenceItemById("refitem"));
             itemId.IsEmpty.Should().BeFalse();
             itemId.IsReference.Should().BeTrue();
             itemId.BulkItemId.Should().Be(0);
@@ -59,9 +61,9 @@ namespace RogueEntity.Core.Tests.Meta.Items
         [Test]
         public void Instantiating_Invalid_Item_Fails()
         {
-            var reg = context.ItemRegistry;
+            var reg = itemContext.ItemRegistry;
 
-            Action act = () => context.ItemResolver.Instantiate(context, reg.ReferenceItemById("refitem"));
+            Action act = () => itemContext.ItemResolver.Instantiate(context, reg.ReferenceItemById("refitem"));
             act.Should().Throw<ArgumentException>();
         }
 
@@ -116,19 +118,20 @@ namespace RogueEntity.Core.Tests.Meta.Items
         [Test]
         public void ReferenceItems_Call_Init_And_Apply()
         {
-            var reg = context.ItemRegistry;
+            var reg = itemContext.ItemRegistry;
+
             var itemTrait = new CallTracerReferenceTrait("reftrait", 10);
 
             var itemDeclaration = new ReferenceItemDeclaration<BasicItemContext, ItemReference>("refitem", "refitem.tag");
             itemDeclaration.WithTrait(itemTrait);
             reg.Register(itemDeclaration);
 
-            var item = context.ItemResolver.Instantiate(context, "refitem");
+            var item = itemContext.ItemResolver.Instantiate(context, "refitem");
 
             itemTrait.InitCallCount.Should().Be(1);
             itemTrait.ApplyCallCount.Should().Be(0);
 
-            context.ItemResolver.Apply(item, context);
+            itemContext.ItemResolver.Apply(item, context);
 
             itemTrait.InitCallCount.Should().Be(1);
             itemTrait.ApplyCallCount.Should().Be(1);
@@ -137,18 +140,18 @@ namespace RogueEntity.Core.Tests.Meta.Items
         [Test]
         public void BulkItems_Call_Init_And_Apply()
         {
-            var reg = context.ItemRegistry;
+            var reg = itemContext.ItemRegistry;
             var itemTrait = new CallTracerBulkTrait("bulktrait", 10);
 
             var itemDeclaration = new BulkItemDeclaration<BasicItemContext, ItemReference>("bulkitem", "bulkitem.tag");
             itemDeclaration.WithTrait(itemTrait);
             reg.Register(itemDeclaration);
 
-            var item = context.ItemResolver.Instantiate(context, "bulkitem");
+            var item = itemContext.ItemResolver.Instantiate(context, "bulkitem");
 
             itemTrait.InitCallCount.Should().Be(1);
 
-            context.ItemResolver.Apply(item, context);
+            itemContext.ItemResolver.Apply(item, context);
 
             itemTrait.InitCallCount.Should().Be(1);
         }

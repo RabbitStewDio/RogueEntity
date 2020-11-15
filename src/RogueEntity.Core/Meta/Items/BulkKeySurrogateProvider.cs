@@ -1,10 +1,11 @@
-﻿using EnTTSharp.Serialization;
+﻿using EnTTSharp.Entities;
+using EnTTSharp.Serialization;
 using EnTTSharp.Serialization.Xml;
 
 namespace RogueEntity.Core.Meta.Items
 {
     public class BulkKeySurrogateProvider<TItemId> : SerializationSurrogateProviderBase<TItemId, BulkKeyData>
-        where TItemId : IBulkDataStorageKey<TItemId>
+        where TItemId : IEntityKey
     {
         readonly EntityKeyMapper<TItemId> mapper;
         readonly IBulkDataStorageMetaData<TItemId> metaData;
@@ -21,7 +22,7 @@ namespace RogueEntity.Core.Meta.Items
 
         TItemId Map(EntityKeyData data)
         {
-            return metaData.EntityKeyFactory(data.Age, data.Key);
+            return metaData.CreateReferenceKey(data.Age, data.Key);
         }
 
         public override TItemId GetDeserializedObject(BulkKeyData surrogate)
@@ -31,8 +32,8 @@ namespace RogueEntity.Core.Meta.Items
                 return mapper(new EntityKeyData(surrogate.Age, surrogate.ItemId));
             }
 
-            var tmp = metaData.BulkDataFactory(surrogate.ItemId).WithData(surrogate.Data);
-            if (bulkMapper(tmp, out var result))
+            if (metaData.TryCreateBulkKey(surrogate.ItemId, surrogate.Data, out var tmp) && 
+                bulkMapper(tmp, out var result))
             {
                 return result;
             }
@@ -42,12 +43,12 @@ namespace RogueEntity.Core.Meta.Items
 
         public override BulkKeyData GetObjectToSerialize(TItemId obj)
         {
-            if (obj.IsReference)
+            if (!metaData.TryDeconstructBulkKey(in obj, out var bulkId, out var bulkData))
             {
                 return new BulkKeyData(true, obj.Key, obj.Age, 0);
             }
 
-            return new BulkKeyData(false, obj.BulkItemId, 0, obj.Data);
+            return new BulkKeyData(false, bulkId, 0, bulkData);
         }
     }
 }

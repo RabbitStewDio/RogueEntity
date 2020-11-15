@@ -1,5 +1,3 @@
-using EnTTSharp.Entities;
-using RogueEntity.Core.Infrastructure.ItemTraits;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Sensing;
 using RogueEntity.Core.Sensing.Common;
@@ -19,7 +17,7 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Noise
     {
         readonly NoiseSenseReceptorPhysicsConfiguration physics;
 
-        public NoiseReceptorTraitTest()
+        public NoiseReceptorTraitTest(): base(new ActorReferenceMetaData())
         {
             physics = new NoiseSenseReceptorPhysicsConfiguration(
                 new NoisePhysicsConfiguration(new LinearDecaySensePhysics(DistanceCalculation.Chebyshev)),
@@ -30,22 +28,18 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Noise
         protected override SenseMappingTestContext CreateContext()
         {
             var context = new SenseMappingTestContext();
-            context.ActorEntityRegistry.RegisterNonConstructable<NoiseSourceDefinition>();
-            context.ActorEntityRegistry.RegisterNonConstructable<SenseSourceState<NoiseSense>>();
-            context.ActorEntityRegistry.RegisterFlag<ObservedSenseSource<NoiseSense>>();
-            context.ActorEntityRegistry.RegisterFlag<SenseDirtyFlag<NoiseSense>>();
+            EntityRegistry.RegisterNonConstructable<NoiseSourceDefinition>();
+            EntityRegistry.RegisterNonConstructable<SenseSourceState<NoiseSense>>();
+            EntityRegistry.RegisterFlag<ObservedSenseSource<NoiseSense>>();
+            EntityRegistry.RegisterFlag<SenseDirtyFlag<NoiseSense>>();
 
-            context.ActorEntityRegistry.RegisterNonConstructable<SensoryReceptorData<NoiseSense, NoiseSense>>();
-            context.ActorEntityRegistry.RegisterNonConstructable<SensoryReceptorState<NoiseSense, NoiseSense>>();
-            context.ActorEntityRegistry.RegisterNonConstructable<SingleLevelSenseDirectionMapData<NoiseSense, NoiseSense>>();
-            context.ActorEntityRegistry.RegisterFlag<SenseReceptorDirtyFlag<NoiseSense, NoiseSense>>();
+            EntityRegistry.RegisterNonConstructable<SensoryReceptorData<NoiseSense, NoiseSense>>();
+            EntityRegistry.RegisterNonConstructable<SensoryReceptorState<NoiseSense, NoiseSense>>();
+            EntityRegistry.RegisterNonConstructable<SingleLevelSenseDirectionMapData<NoiseSense, NoiseSense>>();
+            EntityRegistry.RegisterFlag<SenseReceptorDirtyFlag<NoiseSense, NoiseSense>>();
 
             return context;
         }
-
-        protected override EntityRegistry<ActorReference> EntityRegistry => Context.ActorEntityRegistry;
-        protected override IItemRegistryBackend<SenseMappingTestContext, ActorReference> ItemRegistry => Context.ActorRegistry;
-        protected override IBulkDataStorageMetaData<ActorReference> ItemIdMetaData => new ActorReferenceMetaData();
 
         protected override NoiseDirectionSenseTrait<SenseMappingTestContext, ActorReference> CreateTrait()
         {

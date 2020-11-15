@@ -1,6 +1,4 @@
-using EnTTSharp.Entities;
 using NUnit.Framework;
-using RogueEntity.Core.Infrastructure.ItemTraits;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Sensing;
 using RogueEntity.Core.Sensing.Common;
@@ -20,7 +18,7 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Vision
     {
         readonly VisionSenseReceptorPhysicsConfiguration physics;
 
-        public VisionReceptorTraitTest()
+        public VisionReceptorTraitTest(): base(new ActorReferenceMetaData())
         {
             physics = new VisionSenseReceptorPhysicsConfiguration(new LightPhysicsConfiguration(new LinearDecaySensePhysics(DistanceCalculation.Chebyshev)));
         }
@@ -28,22 +26,18 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Vision
         protected override SenseMappingTestContext CreateContext()
         {
             var context = new SenseMappingTestContext();
-            context.ActorEntityRegistry.RegisterNonConstructable<LightSourceDefinition>();
-            context.ActorEntityRegistry.RegisterNonConstructable<SenseSourceState<VisionSense>>();
-            context.ActorEntityRegistry.RegisterFlag<ObservedSenseSource<VisionSense>>();
-            context.ActorEntityRegistry.RegisterFlag<SenseDirtyFlag<VisionSense>>();
+            EntityRegistry.RegisterNonConstructable<LightSourceDefinition>();
+            EntityRegistry.RegisterNonConstructable<SenseSourceState<VisionSense>>();
+            EntityRegistry.RegisterFlag<ObservedSenseSource<VisionSense>>();
+            EntityRegistry.RegisterFlag<SenseDirtyFlag<VisionSense>>();
 
-            context.ActorEntityRegistry.RegisterNonConstructable<SensoryReceptorData<VisionSense, VisionSense>>();
-            context.ActorEntityRegistry.RegisterNonConstructable<SensoryReceptorState<VisionSense, VisionSense>>();
-            context.ActorEntityRegistry.RegisterNonConstructable<SingleLevelSenseDirectionMapData<VisionSense, VisionSense>>();
-            context.ActorEntityRegistry.RegisterFlag<SenseReceptorDirtyFlag<VisionSense, VisionSense>>();
+            EntityRegistry.RegisterNonConstructable<SensoryReceptorData<VisionSense, VisionSense>>();
+            EntityRegistry.RegisterNonConstructable<SensoryReceptorState<VisionSense, VisionSense>>();
+            EntityRegistry.RegisterNonConstructable<SingleLevelSenseDirectionMapData<VisionSense, VisionSense>>();
+            EntityRegistry.RegisterFlag<SenseReceptorDirtyFlag<VisionSense, VisionSense>>();
 
             return context;
         }
-
-        protected override EntityRegistry<ActorReference> EntityRegistry => Context.ActorEntityRegistry;
-        protected override IItemRegistryBackend<SenseMappingTestContext, ActorReference> ItemRegistry => Context.ActorRegistry;
-        protected override IBulkDataStorageMetaData<ActorReference> ItemIdMetaData => new ActorReferenceMetaData();
 
         protected override VisionSenseTrait<SenseMappingTestContext, ActorReference> CreateTrait()
         {

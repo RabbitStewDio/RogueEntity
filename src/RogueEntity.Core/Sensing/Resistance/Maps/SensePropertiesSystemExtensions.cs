@@ -10,7 +10,7 @@ namespace RogueEntity.Core.Sensing.Resistance.Maps
     {
         public static void AddLayer<TGameContext, TItemId, TSense>(this IAggregationLayerSystem<TGameContext, SensoryResistance<TSense>> system,
                                                                    IGridMapContext<TItemId> mapContext,
-                                                                   IItemContext<TGameContext, TItemId> itemContext,
+                                                                   IItemResolver<TGameContext, TItemId> itemContext,
                                                                    MapLayer mapLayer)
             where TItemId : IEntityKey
         {

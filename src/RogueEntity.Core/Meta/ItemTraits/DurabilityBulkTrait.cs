@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using EnTTSharp.Entities;
 using RogueEntity.Core.Infrastructure.ItemTraits;
@@ -6,17 +6,17 @@ using RogueEntity.Core.Meta.Items;
 
 namespace RogueEntity.Core.Meta.ItemTraits
 {
-    public sealed class DurabilityTrait<TContext, TItemId> : IItemComponentTrait<TContext, TItemId, Durability>,
-                                                             IReferenceItemTrait<TContext, TItemId>
-        where TItemId : IEntityKey
+    public sealed class DurabilityBulkTrait<TContext, TItemId> : IItemComponentTrait<TContext, TItemId, Durability>,
+                                                                 IBulkDataTrait<TContext, TItemId>
+        where TItemId : IBulkDataStorageKey<TItemId>
     {
         readonly Durability baseValue;
 
-        public DurabilityTrait(ushort maxDurability) : this(maxDurability, maxDurability)
+        public DurabilityBulkTrait(ushort maxDurability) : this(maxDurability, maxDurability)
         {
         }
 
-        public DurabilityTrait(ushort initialCount, ushort maxDurability)
+        public DurabilityBulkTrait(ushort initialCount, ushort maxDurability)
         {
             Id = "ItemTrait.Generic.Durability";
             Priority = 100;
@@ -27,19 +27,20 @@ namespace RogueEntity.Core.Meta.ItemTraits
         public ItemTraitId Id { get; }
         public int Priority { get; }
 
-
-        public void Initialize(IEntityViewControl<TItemId> v, TContext context, TItemId k, IItemDeclaration item)
+        public TItemId Initialize(TContext context, IItemDeclaration item, TItemId reference)
         {
-            v.AssignOrReplace(k, in baseValue);
-        }
-
-        public void Apply(IEntityViewControl<TItemId> v, TContext context, TItemId k, IItemDeclaration item)
-        {
+            return reference.WithData(baseValue.HitPoints);
         }
 
         public bool TryQuery(IEntityViewControl<TItemId> v, TContext context, TItemId k, out Durability t)
         {
-            return v.GetComponent(k, out t);
+            if (k.IsReference)
+            {
+                return v.GetComponent(k, out t);
+            }
+
+            t = baseValue.WithHitPoints(k.Data);
+            return true;
         }
 
         public bool TryUpdate(IEntityViewControl<TItemId> v,
@@ -48,8 +49,14 @@ namespace RogueEntity.Core.Meta.ItemTraits
                               in Durability t,
                               out TItemId changedK)
         {
-            v.AssignOrReplace(k, in t);
-            changedK = k;
+            if (k.IsReference)
+            {
+                v.AssignOrReplace(k, in t);
+                changedK = k;
+                return true;
+            }
+
+            changedK = k.WithData(t.HitPoints);
             return true;
         }
 
@@ -59,7 +66,7 @@ namespace RogueEntity.Core.Meta.ItemTraits
             return false;
         }
 
-        IReferenceItemTrait<TContext, TItemId> IReferenceItemTrait<TContext, TItemId>.CreateInstance()
+        IBulkItemTrait<TContext, TItemId> IBulkItemTrait<TContext, TItemId>.CreateInstance()
         {
             return this;
         }

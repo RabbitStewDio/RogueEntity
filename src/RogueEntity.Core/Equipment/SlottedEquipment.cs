@@ -1,5 +1,8 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using EnTTSharp.Entities;
+using JetBrains.Annotations;
 using RogueEntity.Core.Infrastructure.ItemTraits;
 using RogueEntity.Core.Meta.Base;
 using RogueEntity.Core.Meta.Items;
@@ -18,19 +21,23 @@ namespace RogueEntity.Core.Equipment
     /// <typeparam name="TOwnerId"></typeparam>
     /// <typeparam name="TItemId"></typeparam>
     public class SlottedEquipment<TGameContext, TOwnerId, TItemId> : ISlottedEquipment<TGameContext, TItemId>
-        where TItemId : IBulkDataStorageKey<TItemId>
+        where TItemId : IEntityKey
     {
         static readonly ILogger Logger = SLog.ForContext<SlottedEquipment<TGameContext, TOwnerId, TItemId>>();
         static readonly EqualityComparer<TItemId> ItemEquality = EqualityComparer<TItemId>.Default;
         readonly IItemResolver<TGameContext, TItemId> itemResolver;
+        readonly IBulkDataStorageMetaData<TItemId> itemIdMetaData;
         SlottedEquipmentData<TItemId> equippedItems;
 
-        public SlottedEquipment(IItemResolver<TGameContext, TItemId> itemResolver,
+        public SlottedEquipment([NotNull] IBulkDataStorageMetaData<TItemId> itemIdMetaData,
+                                [NotNull] IItemResolver<TGameContext, TItemId> itemResolver,
                                 ReadOnlyListWrapper<EquipmentSlot> availableSlots,
                                 SlottedEquipmentData<TItemId> equippedItems,
                                 Weight maximumCarryWeight)
         {
-            this.itemResolver = itemResolver;
+            this.itemResolver = itemResolver ?? throw new ArgumentNullException(nameof(itemResolver));
+            this.itemIdMetaData = itemIdMetaData ?? throw new ArgumentNullException(nameof(itemIdMetaData));
+            
             this.equippedItems = equippedItems;
             this.MaximumCarryWeight = maximumCarryWeight;
             AvailableSlots = availableSlots;
@@ -142,7 +149,7 @@ namespace RogueEntity.Core.Equipment
                                   out EquipmentSlot actualSlot,
                                   bool ignoreWeightLimits)
         {
-            if (item.IsReference)
+            if (itemIdMetaData.IsReferenceEntity(item))
             {
                 // reference items are always non-stackable, so we can treat it like an atomic unit.
 
@@ -196,7 +203,7 @@ namespace RogueEntity.Core.Equipment
                 return false;
             }
 
-            if (!Data.IsBulkEquipmentSpaceAvailable(req, item, desiredSlot, out actualSlot))
+            if (!Data.IsBulkEquipmentSpaceAvailable(itemIdMetaData, req, item, desiredSlot, out actualSlot))
             {
                 Logger.Verbose("Unable to equip item {item} - Not enough space available.", item);
                 actualSlot = default;
@@ -218,7 +225,7 @@ namespace RogueEntity.Core.Equipment
                 return false;
             }
 
-            if (!equippedItem.Reference.IsSameBulkType(item))
+            if (!itemIdMetaData.IsSameBulkType(equippedItem.Reference, item))
             {
                 // not stackable, the requested slot is occupied by something else.
                 actualSlot = default;
@@ -235,6 +242,7 @@ namespace RogueEntity.Core.Equipment
                 remainderItem = default;
                 return false;
             }
+
             var combinedStack = existingStack.Add(stack.Count, out var remainingItems);
             if (itemResolver.TryUpdateData(item, context, combinedStack, out var resultingItem) &&
                 itemResolver.TryUpdateData(item, context, stack.WithCount(remainingItems), out remainderItem))

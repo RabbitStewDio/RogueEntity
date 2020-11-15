@@ -1,6 +1,4 @@
-using EnTTSharp.Entities;
 using NUnit.Framework;
-using RogueEntity.Core.Infrastructure.ItemTraits;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Sensing;
 using RogueEntity.Core.Sensing.Common;
@@ -17,7 +15,7 @@ namespace RogueEntity.Core.Tests.Sensing.Sources.Light
     {
         readonly LightPhysicsConfiguration physics;
 
-        public LightSourceTraitTest()
+        public LightSourceTraitTest(): base(new ActorReferenceMetaData())
         {
             physics = new LightPhysicsConfiguration(new LinearDecaySensePhysics(DistanceCalculation.Chebyshev));
         }
@@ -25,16 +23,12 @@ namespace RogueEntity.Core.Tests.Sensing.Sources.Light
         protected override SenseMappingTestContext CreateContext()
         {
             var context = new SenseMappingTestContext();
-            context.ActorEntityRegistry.RegisterNonConstructable<LightSourceDefinition>();
-            context.ActorEntityRegistry.RegisterNonConstructable<SenseSourceState<VisionSense>>();
-            context.ActorEntityRegistry.RegisterFlag<ObservedSenseSource<VisionSense>>();
-            context.ActorEntityRegistry.RegisterFlag<SenseDirtyFlag<VisionSense>>();
+            EntityRegistry.RegisterNonConstructable<LightSourceDefinition>();
+            EntityRegistry.RegisterNonConstructable<SenseSourceState<VisionSense>>();
+            EntityRegistry.RegisterFlag<ObservedSenseSource<VisionSense>>();
+            EntityRegistry.RegisterFlag<SenseDirtyFlag<VisionSense>>();
             return context;
         }
-
-        protected override EntityRegistry<ActorReference> EntityRegistry => Context.ActorEntityRegistry;
-        protected override IItemRegistryBackend<SenseMappingTestContext, ActorReference> ItemRegistry => Context.ActorRegistry;
-        protected override IBulkDataStorageMetaData<ActorReference> ItemIdMetaData => new ActorReferenceMetaData();
 
         protected override LightSourceTrait<SenseMappingTestContext, ActorReference> CreateTrait()
         {

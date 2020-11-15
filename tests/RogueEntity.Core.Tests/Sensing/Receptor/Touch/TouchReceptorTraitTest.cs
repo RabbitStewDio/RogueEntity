@@ -1,6 +1,4 @@
-using EnTTSharp.Entities;
 using NUnit.Framework;
-using RogueEntity.Core.Infrastructure.ItemTraits;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Sensing;
 using RogueEntity.Core.Sensing.Common;
@@ -20,7 +18,7 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Touch
     {
         readonly TouchSenseReceptorPhysicsConfiguration physics;
 
-        public TouchReceptorTraitTest()
+        public TouchReceptorTraitTest(): base(new ActorReferenceMetaData())
         {
             physics = new TouchSenseReceptorPhysicsConfiguration(new LinearDecaySensePhysics(DistanceCalculation.Chebyshev));
         }
@@ -28,22 +26,18 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Touch
         protected override SenseMappingTestContext CreateContext()
         {
             var context = new SenseMappingTestContext();
-            context.ActorEntityRegistry.RegisterNonConstructable<TouchSourceDefinition>();
-            context.ActorEntityRegistry.RegisterNonConstructable<SenseSourceState<TouchSense>>();
-            context.ActorEntityRegistry.RegisterFlag<ObservedSenseSource<TouchSense>>();
-            context.ActorEntityRegistry.RegisterFlag<SenseDirtyFlag<TouchSense>>();
+            EntityRegistry.RegisterNonConstructable<TouchSourceDefinition>();
+            EntityRegistry.RegisterNonConstructable<SenseSourceState<TouchSense>>();
+            EntityRegistry.RegisterFlag<ObservedSenseSource<TouchSense>>();
+            EntityRegistry.RegisterFlag<SenseDirtyFlag<TouchSense>>();
 
-            context.ActorEntityRegistry.RegisterNonConstructable<SensoryReceptorData<TouchSense, TouchSense>>();
-            context.ActorEntityRegistry.RegisterNonConstructable<SensoryReceptorState<TouchSense, TouchSense>>();
-            context.ActorEntityRegistry.RegisterNonConstructable<SingleLevelSenseDirectionMapData<TouchSense, TouchSense>>();
-            context.ActorEntityRegistry.RegisterFlag<SenseReceptorDirtyFlag<TouchSense, TouchSense>>();
+            EntityRegistry.RegisterNonConstructable<SensoryReceptorData<TouchSense, TouchSense>>();
+            EntityRegistry.RegisterNonConstructable<SensoryReceptorState<TouchSense, TouchSense>>();
+            EntityRegistry.RegisterNonConstructable<SingleLevelSenseDirectionMapData<TouchSense, TouchSense>>();
+            EntityRegistry.RegisterFlag<SenseReceptorDirtyFlag<TouchSense, TouchSense>>();
 
             return context;
         }
-
-        protected override EntityRegistry<ActorReference> EntityRegistry => Context.ActorEntityRegistry;
-        protected override IItemRegistryBackend<SenseMappingTestContext, ActorReference> ItemRegistry => Context.ActorRegistry;
-        protected override IBulkDataStorageMetaData<ActorReference> ItemIdMetaData => new ActorReferenceMetaData();
 
         protected override TouchSenseTrait<SenseMappingTestContext, ActorReference> CreateTrait()
         {

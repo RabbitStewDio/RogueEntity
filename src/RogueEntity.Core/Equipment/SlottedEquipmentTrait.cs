@@ -12,26 +12,30 @@ namespace RogueEntity.Core.Equipment
     public class SlottedEquipmentTrait<TGameContext, TActorId, TItemId> : IReferenceItemTrait<TGameContext, TActorId>,
                                                                           IItemComponentTrait<TGameContext, TActorId, ISlottedEquipment<TGameContext, TItemId>>,
                                                                           IItemComponentInformationTrait<TGameContext, TActorId, MaximumCarryWeight>
-        where TItemId : IBulkDataStorageKey<TItemId>
-        where TActorId : IBulkDataStorageKey<TActorId>
+        where TItemId : IEntityKey
+        where TActorId : IEntityKey
     {
         readonly Weight maximumCarryWeight;
         readonly ReadOnlyListWrapper<EquipmentSlot> availableSlots;
+        readonly IBulkDataStorageMetaData<TItemId> itemIdMetaData;
         readonly IItemResolver<TGameContext, TItemId> itemResolver;
         readonly IItemResolver<TGameContext, TActorId> actorResolver;
 
         public SlottedEquipmentTrait([NotNull] IItemResolver<TGameContext, TActorId> actorResolver,
                                      [NotNull] IItemResolver<TGameContext, TItemId> itemResolver,
+                                     [NotNull] IBulkDataStorageMetaData<TItemId> itemIdMetaData,
                                      Weight maximumCarryWeight,
-                                     params EquipmentSlot[] availableSlots) : this(actorResolver, itemResolver, maximumCarryWeight, (IEnumerable<EquipmentSlot>)availableSlots)
+                                     params EquipmentSlot[] availableSlots) : this(actorResolver, itemResolver, itemIdMetaData, maximumCarryWeight, (IEnumerable<EquipmentSlot>)availableSlots)
         {
         }
         
         public SlottedEquipmentTrait([NotNull] IItemResolver<TGameContext, TActorId> actorResolver,
                                      [NotNull] IItemResolver<TGameContext, TItemId> itemResolver,
+                                     [NotNull] IBulkDataStorageMetaData<TItemId> itemIdMetaData,
                                      Weight maximumCarryWeight,
                                      IEnumerable<EquipmentSlot> availableSlots)
         {
+            this.itemIdMetaData = itemIdMetaData ?? throw new ArgumentNullException(nameof(itemIdMetaData));
             this.actorResolver = actorResolver ?? throw new ArgumentNullException(nameof(actorResolver));
             this.itemResolver = itemResolver ?? throw new ArgumentNullException(nameof(itemResolver));
             var equipmentSlots = new List<EquipmentSlot>();
@@ -78,11 +82,11 @@ namespace RogueEntity.Core.Equipment
             {
                 if (actorResolver.TryQueryData(k, context, out MaximumCarryWeight weight))
                 {
-                    t = new SlottedEquipment<TGameContext, TActorId, TItemId>(itemResolver, availableSlots, data, weight.CarryWeight).RefreshWeight(context);
+                    t = new SlottedEquipment<TGameContext, TActorId, TItemId>(itemIdMetaData, itemResolver, availableSlots, data, weight.CarryWeight).RefreshWeight(context);
                 }
                 else
                 {
-                    t = new SlottedEquipment<TGameContext, TActorId, TItemId>(itemResolver, availableSlots, data, maximumCarryWeight).RefreshWeight(context);
+                    t = new SlottedEquipment<TGameContext, TActorId, TItemId>(itemIdMetaData, itemResolver, availableSlots, data, maximumCarryWeight).RefreshWeight(context);
                 }
                 
                 return true;

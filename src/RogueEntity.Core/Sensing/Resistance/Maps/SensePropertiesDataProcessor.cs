@@ -11,11 +11,11 @@ namespace RogueEntity.Core.Sensing.Resistance.Maps
     public class SensePropertiesDataProcessor<TGameContext, TItemId, TSense> : GridAggregationPropertiesDataProcessor<TGameContext, TItemId, SensoryResistance<TSense>>
         where TItemId : IEntityKey
     {
-        readonly IItemContext<TGameContext, TItemId> itemContext;
+        readonly IItemResolver<TGameContext, TItemId> itemContext;
 
         public SensePropertiesDataProcessor(MapLayer layer,
                                             [NotNull] IGridMapContext<TItemId> mapContext,
-                                            [NotNull] IItemContext<TGameContext, TItemId> itemContext,
+                                            [NotNull] IItemResolver<TGameContext, TItemId> itemContext,
                                             int zPosition,
                                             int offsetX,
                                             int offsetY,
@@ -29,7 +29,7 @@ namespace RogueEntity.Core.Sensing.Resistance.Maps
         {
             var (bounds, context, _, groundData, resultTile) = p;
 
-            var itemResolver = itemContext.ItemResolver;
+            var itemResolver = itemContext;
             foreach (var (x, y) in bounds.Contents)
             {
                 var groundItemRef = groundData[x, y];

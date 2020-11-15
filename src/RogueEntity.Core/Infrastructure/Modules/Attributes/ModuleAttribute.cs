@@ -7,5 +7,15 @@ namespace RogueEntity.Core.Infrastructure.Modules.Attributes
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct)]
     public class ModuleAttribute : Attribute
     {
+        public string Domain { get; set; }
+
+        public ModuleAttribute()
+        {
+        }
+
+        public ModuleAttribute(string domain)
+        {
+            Domain = domain;
+        }
     }
 }

@@ -8,17 +8,18 @@ using Serilog;
 
 namespace RogueEntity.Core.Effects.Uses
 {
-    public class MorphItemOnUseEffect<TGameContext, TActorId, TItemId> : IUsableItemEffect<TGameContext, TActorId, TItemId> 
-        where TItemId : IEntityKey 
+    public class MorphItemOnUseEffect<TGameContext, TActorId, TItemId> : IUsableItemEffect<TGameContext, TActorId, TItemId>
+        where TItemId : IEntityKey
         where TActorId : IEntityKey
-        where TGameContext: IItemContext<TGameContext, TItemId>
     {
         readonly ItemDeclarationId morphTarget;
         readonly bool preserveDurability;
         readonly bool preserveStackSize;
+        readonly IItemResolver<TGameContext, TItemId> itemResolver;
 
-        public MorphItemOnUseEffect(ItemDeclarationId morphTarget, 
-                                    bool preserveDurability = true, 
+
+        public MorphItemOnUseEffect(ItemDeclarationId morphTarget,
+                                    bool preserveDurability = true,
                                     bool preserveStackSize = true)
         {
             this.morphTarget = morphTarget;
@@ -28,8 +29,6 @@ namespace RogueEntity.Core.Effects.Uses
 
         public bool TryActivate(TActorId user, TGameContext context, TItemId itemToBeUsed, out TItemId usedItem)
         {
-            var itemResolver = context.ItemResolver;
-
             if (!itemResolver.ItemRegistry.TryGetItemById(morphTarget, out var itemDeclaration))
             {
                 usedItem = itemToBeUsed;
@@ -64,15 +63,14 @@ namespace RogueEntity.Core.Effects.Uses
 
             itemResolver.Destroy(itemToBeUsed);
             Log.Debug("Replaced {SourceItem} with {ReplacementItem}",
-                      itemToBeUsed.ToItemName(context),
-                      itemReference.ToItemName(context));
+                      itemToBeUsed.ToItemName(itemResolver, context),
+                      itemReference.ToItemName(itemResolver, context));
             usedItem = itemReference;
             return true;
         }
 
         bool TryPreserveDurability(TItemId itemToBeUsed, TGameContext context, TItemId itemReference, out TItemId changedItem)
         {
-            var itemResolver = context.ItemResolver;
             if (!itemResolver.TryQueryData(itemToBeUsed, context, out Durability durabilityData))
             {
                 changedItem = itemReference;
@@ -84,7 +82,6 @@ namespace RogueEntity.Core.Effects.Uses
 
         bool TryPreserveStackCount(TItemId itemToBeUsed, TGameContext context, TItemId itemReference, out TItemId changedItem)
         {
-            var itemResolver = context.ItemResolver;
             if (!itemResolver.TryQueryData(itemToBeUsed, context, out StackCount durabilityData))
             {
                 changedItem = itemReference;

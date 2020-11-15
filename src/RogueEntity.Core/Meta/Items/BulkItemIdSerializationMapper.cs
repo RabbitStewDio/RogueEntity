@@ -1,23 +1,31 @@
 using System;
 using System.Collections.Generic;
+using EnTTSharp.Entities;
+using JetBrains.Annotations;
 using RogueEntity.Core.Infrastructure.ItemTraits;
 
 namespace RogueEntity.Core.Meta.Items
 {
-    public delegate bool BulkItemSerializationMapperDelegate<TItemId>(TItemId remoteId, out TItemId localId) where TItemId : IBulkDataStorageKey<TItemId>;
+    public delegate bool BulkItemSerializationMapperDelegate<TItemId>(in TItemId remoteId, out TItemId localId)
+        where TItemId : IEntityKey;
     
-    public class BulkItemIdSerializationMapper<TItemId> where TItemId : IBulkDataStorageKey<TItemId>
+    public class BulkItemIdSerializationMapper<TItemId> where TItemId : IEntityKey
     {
-        readonly Func<int, TItemId> bulkKeyFactory;
+        readonly IBulkDataStorageMetaData<TItemId> metaData;
         readonly IBulkItemIdMapping localMapper;
         readonly Dictionary<int, int> remoteMapping;
 
-        public BulkItemIdSerializationMapper(Func<int, TItemId> bulkKeyFactory,
-                                             IBulkItemIdMapping localMapper,
-                                             IBulkItemIdMapping remoteMapper)
+        public BulkItemIdSerializationMapper([NotNull] IBulkDataStorageMetaData<TItemId> metaData,
+                                             [NotNull] IBulkItemIdMapping localMapper,
+                                             [NotNull] IBulkItemIdMapping remoteMapper)
         {
-            this.bulkKeyFactory = bulkKeyFactory;
-            this.localMapper = localMapper;
+            if (remoteMapper == null)
+            {
+                throw new ArgumentNullException(nameof(remoteMapper));
+            }
+
+            this.metaData = metaData ?? throw new ArgumentNullException(nameof(metaData));
+            this.localMapper = localMapper ?? throw new ArgumentNullException(nameof(localMapper));
             this.remoteMapping = BuildRemoteMapping(remoteMapper);
         }
 
@@ -53,11 +61,12 @@ namespace RogueEntity.Core.Meta.Items
             return retval;
         }
 
-        public bool TryMap(TItemId remoteId, out TItemId localId)
+        public bool TryMap(in TItemId remoteId, out TItemId localId)
         {
-            if (remoteMapping.TryGetValue(remoteId.BulkItemId, out var localItemId))
+            if (metaData.TryDeconstructBulkKey(in remoteId, out var bulkItemId, out var payload) &&
+                remoteMapping.TryGetValue(bulkItemId, out var localItemId) &&
+                metaData.TryCreateBulkKey(localItemId, payload, out localId))
             {
-                localId = bulkKeyFactory(localItemId).WithData(remoteId.Data);
                 return true;
             }
 

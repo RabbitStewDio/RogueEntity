@@ -2,10 +2,8 @@
 
 namespace RogueEntity.Core.Meta.Items
 {
-    public interface IBulkDataStorageKey<TSelf>: IEntityKey 
-        where TSelf: IBulkDataStorageKey<TSelf>
+    public interface IBulkDataStorageKey<TSelf>: IEntityKey where TSelf: IBulkDataStorageKey<TSelf>
     {
-        bool IsEmpty { get; }
         bool IsReference { get; }
         int BulkItemId { get; }
 

@@ -7,7 +7,7 @@ using RogueEntity.Core.Utils;
 
 namespace RogueEntity.Core.Tests.Sensing
 {
-    public class SenseMappingTestContext : IItemContext<SenseMappingTestContext, ActorReference>,
+    public class SenseMappingTestContext : //IItemContext<SenseMappingTestContext, ActorReference>,
                                            IItemContext<SenseMappingTestContext, ItemReference>,
                                            IGridMapContext<ItemReference>,
                                            IGridMapContext<ActorReference>
@@ -21,11 +21,11 @@ namespace RogueEntity.Core.Tests.Sensing
         {
             actorBackend = new ItemContextBackend<SenseMappingTestContext, ActorReference>(new ActorReferenceMetaData());
             itemBackend = new ItemContextBackend<SenseMappingTestContext, ItemReference>(new ItemReferenceMetaData());
-            itemMap = new DefaultGridPositionContextBackend<SenseMappingTestContext, ItemReference>()
+            itemMap = new DefaultGridPositionContextBackend<ItemReference>()
                 .WithDefaultMapLayer(TestMapLayers.One)
                 .WithDefaultMapLayer(TestMapLayers.Two);
 
-            actorMap = new DefaultGridPositionContextBackend<SenseMappingTestContext, ActorReference>()
+            actorMap = new DefaultGridPositionContextBackend<ActorReference>()
                 .WithDefaultMapLayer(TestMapLayers.Three);
         }
 
@@ -90,21 +90,21 @@ namespace RogueEntity.Core.Tests.Sensing
             get { return itemBackend.ItemResolver; }
         }
 
-        public IItemRegistryBackend<SenseMappingTestContext, ActorReference> ActorRegistry
-        {
-            get { return actorBackend.ItemRegistry; }
-        }
+        // public IItemRegistryBackend<SenseMappingTestContext, ActorReference> ActorRegistry
+        // {
+        //     get { return actorBackend.ItemRegistry; }
+        // }
+        //
+        // public EntityRegistry<ActorReference> ActorEntityRegistry
+        // {
+        //     get { return actorBackend.EntityRegistry; }
+        // }
+        //
+        // public IItemResolver<SenseMappingTestContext, ActorReference> ActorResolver
+        // {
+        //     get { return actorBackend.ItemResolver; }
+        // }
 
-        public EntityRegistry<ActorReference> ActorEntityRegistry
-        {
-            get { return actorBackend.EntityRegistry; }
-        }
-
-        public IItemResolver<SenseMappingTestContext, ActorReference> ActorResolver
-        {
-            get { return actorBackend.ItemResolver; }
-        }
-
-        IItemResolver<SenseMappingTestContext, ActorReference> IItemContext<SenseMappingTestContext, ActorReference>.ItemResolver => ActorResolver;
+        //IItemResolver<SenseMappingTestContext, ActorReference> IItemContext<SenseMappingTestContext, ActorReference>.ItemResolver => ActorResolver;
     }
 }

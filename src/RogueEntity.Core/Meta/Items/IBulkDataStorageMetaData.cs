@@ -1,12 +1,14 @@
-﻿using System;
-using EnTTSharp.Entities;
+﻿using EnTTSharp.Entities;
 
 namespace RogueEntity.Core.Meta.Items
 {
     public interface IBulkDataStorageMetaData<TItemId> where TItemId : IEntityKey
     {
         public int MaxAge { get; }
-        public Func<byte, int, TItemId> EntityKeyFactory { get; }
-        public Func<int, TItemId> BulkDataFactory { get; }
+        TItemId CreateReferenceKey(byte age, int entityId);
+        bool TryCreateBulkKey(int id, int data, out TItemId key);
+        bool IsSameBulkType(TItemId a, TItemId b);
+        bool IsReferenceEntity(in TItemId targetItem);
+        bool TryDeconstructBulkKey(in TItemId id, out int entityId, out int payload);
     }
 }

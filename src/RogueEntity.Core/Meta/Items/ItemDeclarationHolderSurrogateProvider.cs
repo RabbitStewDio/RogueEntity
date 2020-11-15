@@ -1,25 +1,25 @@
 ﻿using System;
 using EnTTSharp.Entities;
 using EnTTSharp.Serialization.Xml;
+using JetBrains.Annotations;
 using RogueEntity.Core.Infrastructure.ItemTraits;
 
 namespace RogueEntity.Core.Meta.Items
 {
     public class ItemDeclarationHolderSurrogateProvider<TGameContext, TItemId>: SerializationSurrogateProviderBase<ItemDeclarationHolder<TGameContext, TItemId>, SurrogateContainer<string>> 
         where TItemId : IEntityKey
-        where TGameContext: IItemContext<TGameContext, TItemId>
     {
-        readonly TGameContext context;
+        readonly IItemResolver<TGameContext, TItemId> itemResolver;
 
-        public ItemDeclarationHolderSurrogateProvider(TGameContext context)
+        public ItemDeclarationHolderSurrogateProvider([NotNull] IItemResolver<TGameContext, TItemId> itemResolver)
         {
-            this.context = context ?? throw new ArgumentNullException(nameof(context));
+            this.itemResolver = itemResolver ?? throw new ArgumentNullException(nameof(itemResolver));
         }
 
         public override ItemDeclarationHolder<TGameContext, TItemId> GetDeserializedObject(SurrogateContainer<string> surr)
         {
             var id = surr.Content;
-            var itemRaw = context.ItemResolver.ItemRegistry.ReferenceItemById(id);
+            var itemRaw = itemResolver.ItemRegistry.ReferenceItemById(id);
             if (itemRaw is IReferenceItemDeclaration<TGameContext, TItemId> item)
             {
                 return new ItemDeclarationHolder<TGameContext, TItemId>(item);

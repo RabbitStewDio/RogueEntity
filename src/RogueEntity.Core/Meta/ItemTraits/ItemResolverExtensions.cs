@@ -2,30 +2,11 @@
 using System.Collections.Generic;
 using EnTTSharp.Entities;
 using RogueEntity.Core.Infrastructure.ItemTraits;
-using RogueEntity.Core.Meta.Items;
 
 namespace RogueEntity.Core.Meta.ItemTraits
 {
     public static class ItemResolverExtensions
     {
-        public static bool IsSameBulkDataType<TGameContext, TItemId>(this IItemResolver<TGameContext, TItemId> resolver,
-                                                                     TItemId item, TItemId item2)
-            where TItemId : IBulkDataStorageKey<TItemId>
-        {
-            if (!item.IsReference && !item2.IsReference)
-            {
-                return item.BulkItemId == item2.BulkItemId;
-            }
-
-            if (resolver.TryResolve(in item, out var itemDeclA) &&
-                resolver.TryResolve(in item2, out var itemDeclB))
-            {
-                return itemDeclA.Id == itemDeclB.Id;
-            }
-
-            return false;
-        }
-
         public static StackCount QueryStackSize<TGameContext, TItemId>(this IItemResolver<TGameContext, TItemId> resolver,
                                                                        TItemId item, TGameContext context)
             where TItemId : IEntityKey

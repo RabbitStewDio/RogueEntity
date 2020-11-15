@@ -9,15 +9,15 @@ namespace RogueEntity.Core.Effects.Uses
     public class DestroyOnUseEffect<TGameContext, TActorId, TItemId> : IUsableItemEffect<TGameContext, TActorId, TItemId> 
         where TItemId : IEntityKey 
         where TActorId : IEntityKey
-        where TGameContext: IItemContext<TGameContext, TItemId>
     {
         static readonly ILogger Logger = SLog.ForContext<DestroyOnUseEffect<TGameContext, TActorId, TItemId>>();
+        readonly IItemResolver<TGameContext, TItemId> itemResolver;
 
         public bool TryActivate(TActorId user, TGameContext context, TItemId itemToBeUsed, out TItemId usedItem)
         {
             Logger.Debug($"Destroyed item: {itemToBeUsed}");
 
-            context.ItemResolver.Destroy(itemToBeUsed);
+            itemResolver.Destroy(itemToBeUsed);
             usedItem = default;
             return true;
         }

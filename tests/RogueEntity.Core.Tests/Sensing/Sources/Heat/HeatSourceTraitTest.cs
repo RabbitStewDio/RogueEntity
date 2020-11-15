@@ -1,6 +1,4 @@
-using EnTTSharp.Entities;
 using NUnit.Framework;
-using RogueEntity.Core.Infrastructure.ItemTraits;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Meta.ItemTraits;
 using RogueEntity.Core.Sensing;
@@ -18,7 +16,7 @@ namespace RogueEntity.Core.Tests.Sensing.Sources.Heat
     {
         readonly HeatPhysicsConfiguration physics;
 
-        public HeatSourceTraitTest()
+        public HeatSourceTraitTest(): base(new ActorReferenceMetaData())
         {
             physics = new HeatPhysicsConfiguration(new LinearDecaySensePhysics(DistanceCalculation.Chebyshev), Temperature.FromCelsius(20));
         }
@@ -26,16 +24,12 @@ namespace RogueEntity.Core.Tests.Sensing.Sources.Heat
         protected override SenseMappingTestContext CreateContext()
         {
             var context = new SenseMappingTestContext();
-            context.ActorEntityRegistry.RegisterNonConstructable<HeatSourceDefinition>();
-            context.ActorEntityRegistry.RegisterNonConstructable<SenseSourceState<TemperatureSense>>();
-            context.ActorEntityRegistry.RegisterFlag<ObservedSenseSource<TemperatureSense>>();
-            context.ActorEntityRegistry.RegisterFlag<SenseDirtyFlag<TemperatureSense>>();
+            EntityRegistry.RegisterNonConstructable<HeatSourceDefinition>();
+            EntityRegistry.RegisterNonConstructable<SenseSourceState<TemperatureSense>>();
+            EntityRegistry.RegisterFlag<ObservedSenseSource<TemperatureSense>>();
+            EntityRegistry.RegisterFlag<SenseDirtyFlag<TemperatureSense>>();
             return context;
         }
-
-        protected override EntityRegistry<ActorReference> EntityRegistry => Context.ActorEntityRegistry;
-        protected override IItemRegistryBackend<SenseMappingTestContext, ActorReference> ItemRegistry => Context.ActorRegistry;
-        protected override IBulkDataStorageMetaData<ActorReference> ItemIdMetaData => new ActorReferenceMetaData();
 
         protected override HeatSourceTrait<SenseMappingTestContext, ActorReference> CreateTrait()
         {

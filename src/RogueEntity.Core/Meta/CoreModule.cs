@@ -47,7 +47,7 @@ namespace RogueEntity.Core.Meta
         protected void InitializeItemRole<TGameContext, TItemId>(in ModuleEntityInitializationParameter<TGameContext,TItemId> initParameter,
                                                                  IModuleInitializer<TGameContext> initializer,
                                                                  EntityRole r)
-            where TItemId : IBulkDataStorageKey<TItemId>
+            where TItemId : IEntityKey
         {
             var entityContext = initializer.DeclareEntityContext<TItemId>();
             entityContext.Register(WorldItemComponentsId, -19_999, RegisterSharedItemComponents<TGameContext, TItemId>);
@@ -57,7 +57,7 @@ namespace RogueEntity.Core.Meta
         protected void InitializeEntityRole<TGameContext, TItemId>(in ModuleEntityInitializationParameter<TGameContext,TItemId> initParameter,
                                                                    IModuleInitializer<TGameContext> initializer,
                                                                    EntityRole r)
-            where TItemId : IBulkDataStorageKey<TItemId>
+            where TItemId : IEntityKey
         {
             var entityContext = initializer.DeclareEntityContext<TItemId>();
             entityContext.Register(CommonComponentsId, -20_000, RegisterCoreComponents);
@@ -69,7 +69,7 @@ namespace RogueEntity.Core.Meta
         protected void InitializePlayerRole<TGameContext, TItemId>(in ModuleEntityInitializationParameter<TGameContext,TItemId> initParameter,
                                                                    IModuleInitializer<TGameContext> initializer,
                                                                    EntityRole r)
-            where TItemId : IBulkDataStorageKey<TItemId>
+            where TItemId : IEntityKey
         {
             var entityContext = initializer.DeclareEntityContext<TItemId>();
             entityContext.Register(PlayerComponentsId, -20_000, RegisterPlayerComponents);
@@ -79,7 +79,7 @@ namespace RogueEntity.Core.Meta
         protected void InitializeContainedItemRole<TGameContext, TItemId>(in ModuleEntityInitializationParameter<TGameContext,TItemId> initParameter,
                                                                           IModuleInitializer<TGameContext> initializer,
                                                                           EntityRole r)
-            where TItemId : IBulkDataStorageKey<TItemId>
+            where TItemId : IEntityKey
         {
             var entityContext = initializer.DeclareEntityContext<TItemId>();
             entityContext.Register(ContainedComponentsId, -20_000, RegisterContainedItemComponents);

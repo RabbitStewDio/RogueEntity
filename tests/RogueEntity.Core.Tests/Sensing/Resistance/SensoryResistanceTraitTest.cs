@@ -1,6 +1,4 @@
-﻿using EnTTSharp.Entities;
-using NUnit.Framework;
-using RogueEntity.Core.Infrastructure.ItemTraits;
+﻿using NUnit.Framework;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Sensing;
 using RogueEntity.Core.Sensing.Resistance;
@@ -13,11 +11,7 @@ namespace RogueEntity.Core.Tests.Sensing.Resistance
     public class SensoryResistanceTraitTest : ItemComponentTraitTestBase<BasicItemContext, ItemReference, SensoryResistance<VisionSense>,
         SensoryResistanceTrait<BasicItemContext, ItemReference, VisionSense>>
     {
-        protected override IBulkDataStorageMetaData<ItemReference> ItemIdMetaData => new ItemReferenceMetaData();
-        protected override EntityRegistry<ItemReference> EntityRegistry => Context.ItemEntities;
-        protected override IItemRegistryBackend<BasicItemContext, ItemReference> ItemRegistry => Context.ItemRegistry;
-
-        public SensoryResistanceTraitTest()
+        public SensoryResistanceTraitTest(): base(new ItemReferenceMetaData())
         {
             EnableSerializationTest = false; // Temperature is currently implemented as purely static data that is not serialized as it is never changing.
         }

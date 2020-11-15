@@ -7,16 +7,16 @@ using RogueEntity.Core.Utils;
 
 namespace RogueEntity.Core.Tests.Positioning
 {
-    public class TestGridPositionContext : IGridMapContext<ItemReference>,
-                                           IItemContext<TestGridPositionContext, ItemReference>
+    public class TestGridPositionContext : IGridMapContext<ItemReference>
+                                           //, IItemContext<TestGridPositionContext, ItemReference>
     {
-        readonly DefaultGridPositionContextBackend<TestGridPositionContext, ItemReference> mapBackend;
+        readonly DefaultGridPositionContextBackend<ItemReference> mapBackend;
         readonly ItemContextBackend<TestGridPositionContext, ItemReference> itemContextBackend;
 
         public TestGridPositionContext()
         {
             itemContextBackend = new ItemContextBackend<TestGridPositionContext, ItemReference>(new ItemReferenceMetaData());
-            mapBackend = new DefaultGridPositionContextBackend<TestGridPositionContext, ItemReference>();
+            mapBackend = new DefaultGridPositionContextBackend<ItemReference>();
         }
 
         public TestGridPositionContext WithMapLayer(MapLayer layer, IGridMapDataContext<ItemReference> data)
@@ -55,19 +55,19 @@ namespace RogueEntity.Core.Tests.Positioning
             return mapBackend.TryGetGridDataFor(layer, out data);
         }
 
-        public IItemRegistryBackend<TestGridPositionContext, ItemReference> ItemRegistry
-        {
-            get { return itemContextBackend.ItemRegistry; }
-        }
-
-        public EntityRegistry<ItemReference> EntityRegistry
-        {
-            get { return itemContextBackend.EntityRegistry; }
-        }
-
-        public IItemResolver<TestGridPositionContext, ItemReference> ItemResolver
-        {
-            get { return itemContextBackend.ItemResolver; }
-        }
+        // public IItemRegistryBackend<TestGridPositionContext, ItemReference> ItemRegistry
+        // {
+        //     get { return itemContextBackend.ItemRegistry; }
+        // }
+        //
+        // public EntityRegistry<ItemReference> EntityRegistry
+        // {
+        //     get { return itemContextBackend.EntityRegistry; }
+        // }
+        //
+        // public IItemResolver<TestGridPositionContext, ItemReference> ItemResolver
+        // {
+        //     get { return itemContextBackend.ItemResolver; }
+        // }
     }
 }

@@ -43,7 +43,7 @@ namespace RogueEntity.Core.Tests.Inventory
 
             Context.ActorRegistry.Register(new ReferenceItemDeclaration<InventoryTestContext, ActorReference>(ActorDeclaration)
                                            .WithTrait(new WeightViewTrait<InventoryTestContext, ActorReference>(Context.ActorResolver))
-                                           .WithTrait(new ListInventoryTrait<InventoryTestContext, ActorReference, ItemReference>(Context.ItemResolver, Weight.OfKiloGram(100))));
+                                           .WithTrait(new ListInventoryTrait<InventoryTestContext, ActorReference, ItemReference>(new ItemReferenceMetaData(), Context.ItemResolver, Weight.OfKiloGram(100))));
 
             Context.ItemRegistry.Register(new ReferenceItemDeclaration<InventoryTestContext, ItemReference>(ContainerDeclaration)
                                           .WithTrait(new ContainerEntityMarkerResolverTrait<InventoryTestContext, ItemReference>())
@@ -51,7 +51,7 @@ namespace RogueEntity.Core.Tests.Inventory
                                           .WithTrait(new ContainerEntityMarkerTrait<InventoryTestContext, ItemReference, ItemReference>())
                                           .WithTrait(new WeightViewTrait<InventoryTestContext, ItemReference>(Context.ItemResolver))
                                           .WithTrait(new WeightTrait<InventoryTestContext, ItemReference>(Weight.OfKiloGram(5)))
-                                          .WithTrait(new ListInventoryTrait<InventoryTestContext, ItemReference, ItemReference>(Context.ItemResolver, Weight.OfKiloGram(40))));
+                                          .WithTrait(new ListInventoryTrait<InventoryTestContext, ItemReference, ItemReference>(new ItemReferenceMetaData(), Context.ItemResolver, Weight.OfKiloGram(40))));
 
             Context.ItemRegistry.Register(new ReferenceItemDeclaration<InventoryTestContext, ItemReference>(ContentDeclaration)
                                           .WithTrait(new ContainerEntityMarkerResolverTrait<InventoryTestContext, ItemReference>())
@@ -72,7 +72,7 @@ namespace RogueEntity.Core.Tests.Inventory
                                           .WithTrait(new WeightTrait<InventoryTestContext, ItemReference>(Weight.OfKiloGram(97.5f))));
 
             Context.ItemRegistry.Register(new BulkItemDeclaration<InventoryTestContext, ItemReference>(BulkContentDeclaration)
-                                          .WithTrait(new StackingTrait<InventoryTestContext, ItemReference>(60))
+                                          .WithTrait(new StackingBulkTrait<InventoryTestContext, ItemReference>(60))
                                           .WithTrait(new WeightViewTrait<InventoryTestContext, ItemReference>(Context.ItemResolver))
                                           .WithTrait(new WeightTrait<InventoryTestContext, ItemReference>(Weight.OfKiloGram(1f))));
 

@@ -15,10 +15,9 @@ using RogueEntity.Core.Utils;
 namespace RogueEntity.Core.Tests.Equipment
 {
     [TestFixture]
-    public class SlottedEquipmentTraitTest : ItemComponentTraitTestBase<
-        EquipmentTestContext, ActorReference,
-        ISlottedEquipment<EquipmentTestContext, ItemReference>,
-        SlottedEquipmentTrait<EquipmentTestContext, ActorReference, ItemReference>>
+    public class SlottedEquipmentTraitTest :
+        ItemComponentTraitTestBase<EquipmentTestContext, ActorReference, ISlottedEquipment<EquipmentTestContext, ItemReference>,
+            SlottedEquipmentTrait<EquipmentTestContext, ActorReference, ItemReference>>
     {
         readonly ItemDeclarationId StackedBulkItem = "equipment.bulk.stacked";
         readonly ItemDeclarationId ReferenceItem = "equipment.reference";
@@ -28,7 +27,7 @@ namespace RogueEntity.Core.Tests.Equipment
         readonly EquipmentSlot slotLeftHand;
         readonly EquipmentSlot slotRightHand;
 
-        public SlottedEquipmentTraitTest()
+        public SlottedEquipmentTraitTest(): base(new ActorReferenceMetaData())
         {
             slotHead = new EquipmentSlot("slot.head", 0, "Head", "HEAD");
             slotLeftHand = new EquipmentSlot("slot.hand.left", 1, "Left Hand", "LHND");
@@ -40,16 +39,12 @@ namespace RogueEntity.Core.Tests.Equipment
             registry.Register(slotLeftHand);
         }
 
-        protected override EntityRegistry<ActorReference> EntityRegistry => Context.ActorEntities;
-        protected override IItemRegistryBackend<EquipmentTestContext, ActorReference> ItemRegistry => Context.ActorRegistry;
-        protected override IBulkDataStorageMetaData<ActorReference> ItemIdMetaData => new ActorReferenceMetaData();
-
         protected override EquipmentTestContext CreateContext()
         {
             var context = new EquipmentTestContext();
             context.ItemEntities.RegisterNonConstructable<ItemDeclarationHolder<EquipmentTestContext, ItemReference>>();
             context.ItemEntities.RegisterNonConstructable<ContainerEntityMarker<ActorReference>>();
-            context.ActorEntities.RegisterNonConstructable<SlottedEquipmentData<ItemReference>>();
+            EntityRegistry.RegisterNonConstructable<SlottedEquipmentData<ItemReference>>();
 
             context.ItemRegistry.Register(new BulkItemDeclaration<EquipmentTestContext, ItemReference>(StackedBulkItem));
             context.ItemRegistry.Register(
@@ -61,7 +56,9 @@ namespace RogueEntity.Core.Tests.Equipment
 
         protected override SlottedEquipmentTrait<EquipmentTestContext, ActorReference, ItemReference> CreateTrait()
         {
-            return new SlottedEquipmentTrait<EquipmentTestContext, ActorReference, ItemReference>(Context.ActorResolver, Context.ItemResolver, Weight.Unlimited, slotHead, slotLeftHand, slotRightHand);
+            var meta = new ItemReferenceMetaData();
+            return new SlottedEquipmentTrait<EquipmentTestContext, ActorReference, ItemReference>(Context.ActorResolver, Context.ItemResolver, meta, Weight.Unlimited, slotHead, slotLeftHand,
+                                                                                                  slotRightHand);
         }
 
         protected override EntityComponentRegistration PerformEntityComponentRegistration(EntityRegistrationScanner scn)
@@ -79,8 +76,8 @@ namespace RogueEntity.Core.Tests.Equipment
             ItemReference IdentityMapper(EntityKeyData data) => ItemReference.FromReferencedItem(data.Age, data.Key);
 
             var itemReferenceMetaData = new ItemReferenceMetaData();
-            var bulkIdSerializationMapper = new BulkItemIdSerializationMapper<ItemReference>(itemReferenceMetaData.BulkDataFactory, Context.ItemRegistry, Context.ItemRegistry);
-            bs.Register(new ItemDeclarationHolderSurrogateProvider<EquipmentTestContext, ItemReference>(Context));
+            var bulkIdSerializationMapper = new BulkItemIdSerializationMapper<ItemReference>(itemReferenceMetaData, Context.ItemRegistry, Context.ItemRegistry);
+            bs.Register(new ItemDeclarationHolderSurrogateProvider<EquipmentTestContext, ItemReference>(Context.ItemResolver));
             bs.Register(new BulkKeySurrogateProvider<ItemReference>(itemReferenceMetaData, IdentityMapper, bulkIdSerializationMapper.TryMap));
             bs.Register(new EquipmentSlotSurrogateProvider(registry));
         }
@@ -90,8 +87,8 @@ namespace RogueEntity.Core.Tests.Equipment
             ItemReference IdentityMapper(EntityKeyData data) => ItemReference.FromReferencedItem(data.Age, data.Key);
 
             var itemReferenceMetaData = new ItemReferenceMetaData();
-            var bulkIdSerializationMapper = new BulkItemIdSerializationMapper<ItemReference>(itemReferenceMetaData.BulkDataFactory, Context.ItemRegistry, Context.ItemRegistry);
-            bs.Register(new ItemDeclarationHolderMessagePackFormatter<EquipmentTestContext, ItemReference>(Context));
+            var bulkIdSerializationMapper = new BulkItemIdSerializationMapper<ItemReference>(itemReferenceMetaData, Context.ItemRegistry, Context.ItemRegistry);
+            bs.Register(new ItemDeclarationHolderMessagePackFormatter<EquipmentTestContext, ItemReference>(Context.ItemResolver));
             bs.Register(new BulkKeyMessagePackFormatter<ItemReference>(itemReferenceMetaData, IdentityMapper, bulkIdSerializationMapper.TryMap));
             bs.Register(new EquipmentSlotMessagePackFormatter(registry));
         }
@@ -103,16 +100,18 @@ namespace RogueEntity.Core.Tests.Equipment
                 slotHead, slotLeftHand, slotRightHand
             });
 
+            var meta = new ItemReferenceMetaData();
+
             return new ItemComponentTestDataFactory<ISlottedEquipment<EquipmentTestContext, ItemReference>>(
-                       new SlottedEquipment<EquipmentTestContext, ActorReference, ItemReference>(Context.ItemResolver, slots,
+                       new SlottedEquipment<EquipmentTestContext, ActorReference, ItemReference>(meta, Context.ItemResolver, slots,
                                                                                                  SlottedEquipmentData<ItemReference>.Create(), Weight.Unlimited),
-                       new SlottedEquipment<EquipmentTestContext, ActorReference, ItemReference>(Context.ItemResolver, slots,
+                       new SlottedEquipment<EquipmentTestContext, ActorReference, ItemReference>(meta, Context.ItemResolver, slots,
                                                                                                  SlottedEquipmentData<ItemReference>
                                                                                                      .Create()
                                                                                                      .Equip(Context.ItemResolver.Instantiate(Context, StackedBulkItem),
                                                                                                             slotHead, new List<EquipmentSlot> {slotHead}),
                                                                                                  Weight.Unlimited),
-                       new SlottedEquipment<EquipmentTestContext, ActorReference, ItemReference>(Context.ItemResolver, slots,
+                       new SlottedEquipment<EquipmentTestContext, ActorReference, ItemReference>(meta, Context.ItemResolver, slots,
                                                                                                  SlottedEquipmentData<ItemReference>
                                                                                                      .Create()
                                                                                                      .Equip(Context.ItemResolver.Instantiate(Context, ReferenceItem),
@@ -127,7 +126,7 @@ namespace RogueEntity.Core.Tests.Equipment
     public static class SlottedEquipmentExtensions
     {
         public static SlottedEquipmentData<TItemId> Equip<TItemId>(this SlottedEquipmentData<TItemId> data, TItemId item, EquipmentSlot primary, List<EquipmentSlot> slots)
-            where TItemId : IBulkDataStorageKey<TItemId>
+            where TItemId : IEntityKey
         {
             if (data.TryEquip(item, primary, slots, out var result))
             {

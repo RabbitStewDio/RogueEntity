@@ -40,7 +40,7 @@ namespace RogueEntity.Core.Movement.CostModifier.Map
 
         public static void AddLayer<TGameContext, TItemId, TSense>(this IAggregationLayerSystem<TGameContext, MovementCostModifier<TSense>> system, 
                                                                    IGridMapContext<TItemId> mapContext,
-                                                                   IItemContext<TGameContext, TItemId> itemContext,
+                                                                   IItemResolver<TGameContext, TItemId> itemContext,
                                                                    MapLayer mapLayer)
             where TItemId : IEntityKey
         {
