@@ -1,7 +1,6 @@
 using EnTTSharp.Entities;
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Core.Meta.ItemBuilder;
-using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Meta.ItemTraits;
 
 namespace RogueEntity.Core.Inventory

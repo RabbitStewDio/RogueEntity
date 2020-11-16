@@ -4,7 +4,7 @@ using RogueEntity.Api.Utils;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Positioning.MapLayers;
-using RogueEntity.Core.Utils;
+using RogueEntity.Core.Meta.EntityKeys;
 
 namespace RogueEntity.Core.Tests.Sensing
 {
@@ -13,14 +13,12 @@ namespace RogueEntity.Core.Tests.Sensing
                                            IGridMapContext<ItemReference>,
                                            IGridMapContext<ActorReference>
     {
-        readonly ItemContextBackend<SenseMappingTestContext, ActorReference> actorBackend;
         readonly ItemContextBackend<SenseMappingTestContext, ItemReference> itemBackend;
         readonly IGridMapContext<ItemReference> itemMap;
         readonly IGridMapContext<ActorReference> actorMap;
 
         public SenseMappingTestContext()
         {
-            actorBackend = new ItemContextBackend<SenseMappingTestContext, ActorReference>(new ActorReferenceMetaData());
             itemBackend = new ItemContextBackend<SenseMappingTestContext, ItemReference>(new ItemReferenceMetaData());
             itemMap = new DefaultGridPositionContextBackend<ItemReference>()
                 .WithDefaultMapLayer(TestMapLayers.One)
@@ -90,22 +88,5 @@ namespace RogueEntity.Core.Tests.Sensing
         {
             get { return itemBackend.ItemResolver; }
         }
-
-        // public IItemRegistryBackend<SenseMappingTestContext, ActorReference> ActorRegistry
-        // {
-        //     get { return actorBackend.ItemRegistry; }
-        // }
-        //
-        // public EntityRegistry<ActorReference> ActorEntityRegistry
-        // {
-        //     get { return actorBackend.EntityRegistry; }
-        // }
-        //
-        // public IItemResolver<SenseMappingTestContext, ActorReference> ActorResolver
-        // {
-        //     get { return actorBackend.ItemResolver; }
-        // }
-
-        //IItemResolver<SenseMappingTestContext, ActorReference> IItemContext<SenseMappingTestContext, ActorReference>.ItemResolver => ActorResolver;
     }
 }

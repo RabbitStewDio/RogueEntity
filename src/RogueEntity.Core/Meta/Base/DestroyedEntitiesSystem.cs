@@ -4,7 +4,6 @@ using EnTTSharp.Entities.Helpers;
 using JetBrains.Annotations;
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Api.Utils;
-using RogueEntity.Core.Utils;
 using Serilog;
 
 namespace RogueEntity.Core.Meta.Base

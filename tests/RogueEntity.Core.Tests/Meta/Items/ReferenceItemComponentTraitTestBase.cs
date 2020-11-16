@@ -2,6 +2,7 @@
 using NUnit.Framework;
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Core.Meta.Items;
+using RogueEntity.Core.Meta.EntityKeys;
 
 namespace RogueEntity.Core.Tests.Meta.Items
 {

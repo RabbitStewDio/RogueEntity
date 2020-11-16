@@ -1,9 +1,9 @@
 using System;
 using EnTTSharp.Annotations;
 using NUnit.Framework;
-using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Sensing.Discovery;
 using RogueEntity.Core.Tests.Meta.Items;
+using RogueEntity.Core.Meta.EntityKeys;
 
 namespace RogueEntity.Core.Tests.Sensing.Discovery
 {

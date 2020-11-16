@@ -1,9 +1,9 @@
 ﻿using NUnit.Framework;
-using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Sensing;
 using RogueEntity.Core.Sensing.Resistance;
 using RogueEntity.Core.Tests.Meta.Items;
 using RogueEntity.Core.Utils;
+using RogueEntity.Core.Meta.EntityKeys;
 
 namespace RogueEntity.Core.Tests.Sensing.Resistance
 {

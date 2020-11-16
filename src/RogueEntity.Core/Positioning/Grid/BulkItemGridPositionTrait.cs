@@ -8,7 +8,6 @@ using RogueEntity.Api.Utils;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Meta.ItemTraits;
 using RogueEntity.Core.Positioning.MapLayers;
-using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.DataViews;
 using Serilog;
 

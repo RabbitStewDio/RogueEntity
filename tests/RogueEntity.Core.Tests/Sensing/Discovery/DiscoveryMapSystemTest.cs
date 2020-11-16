@@ -22,6 +22,7 @@ using RogueEntity.Core.Sensing.Sources.Noise;
 using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.Algorithms;
 using RogueEntity.Core.Utils.DataViews;
+using RogueEntity.Core.Meta.EntityKeys;
 
 namespace RogueEntity.Core.Tests.Sensing.Discovery
 {

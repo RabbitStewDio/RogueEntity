@@ -6,7 +6,6 @@ using JetBrains.Annotations;
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Api.Utils;
 using RogueEntity.Core.Meta.Base;
-using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Meta.ItemTraits;
 using RogueEntity.Core.Utils;
 using Serilog;

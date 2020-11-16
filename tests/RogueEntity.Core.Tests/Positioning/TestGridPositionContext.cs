@@ -1,9 +1,7 @@
-﻿using EnTTSharp.Entities;
-using RogueEntity.Api.Utils;
-using RogueEntity.Core.Meta.Items;
+﻿using RogueEntity.Api.Utils;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Positioning.MapLayers;
-using RogueEntity.Core.Utils;
+using RogueEntity.Core.Meta.EntityKeys;
 
 namespace RogueEntity.Core.Tests.Positioning
 {
@@ -11,11 +9,9 @@ namespace RogueEntity.Core.Tests.Positioning
                                            //, IItemContext<TestGridPositionContext, ItemReference>
     {
         readonly DefaultGridPositionContextBackend<ItemReference> mapBackend;
-        readonly ItemContextBackend<TestGridPositionContext, ItemReference> itemContextBackend;
 
         public TestGridPositionContext()
         {
-            itemContextBackend = new ItemContextBackend<TestGridPositionContext, ItemReference>(new ItemReferenceMetaData());
             mapBackend = new DefaultGridPositionContextBackend<ItemReference>();
         }
 

@@ -1,5 +1,4 @@
 using NUnit.Framework;
-using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Meta.ItemTraits;
 using RogueEntity.Core.Sensing;
 using RogueEntity.Core.Sensing.Common;
@@ -8,6 +7,7 @@ using RogueEntity.Core.Sensing.Sources;
 using RogueEntity.Core.Sensing.Sources.Heat;
 using RogueEntity.Core.Tests.Meta.Items;
 using RogueEntity.Core.Utils.Algorithms;
+using RogueEntity.Core.Meta.EntityKeys;
 
 namespace RogueEntity.Core.Tests.Sensing.Sources.Heat
 {

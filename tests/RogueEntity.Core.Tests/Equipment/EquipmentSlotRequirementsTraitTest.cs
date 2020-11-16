@@ -1,6 +1,6 @@
 using NUnit.Framework;
 using RogueEntity.Core.Equipment;
-using RogueEntity.Core.Meta.Items;
+using RogueEntity.Core.Meta.EntityKeys;
 using RogueEntity.Core.Tests.Meta.Items;
 
 namespace RogueEntity.Core.Tests.Equipment

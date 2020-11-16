@@ -1,4 +1,3 @@
-using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Sensing;
 using RogueEntity.Core.Sensing.Common;
 using RogueEntity.Core.Sensing.Common.FloodFill;
@@ -9,6 +8,7 @@ using RogueEntity.Core.Sensing.Sources;
 using RogueEntity.Core.Sensing.Sources.Smell;
 using RogueEntity.Core.Tests.Meta.Items;
 using RogueEntity.Core.Utils.Algorithms;
+using RogueEntity.Core.Meta.EntityKeys;
 
 namespace RogueEntity.Core.Tests.Sensing.Receptor.Smell
 {

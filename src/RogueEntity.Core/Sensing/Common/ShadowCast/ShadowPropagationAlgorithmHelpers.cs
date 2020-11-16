@@ -1,7 +1,6 @@
 using System.Linq;
 using System.Runtime.InteropServices;
 using RogueEntity.Api.Utils;
-using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.Algorithms;
 
 namespace RogueEntity.Core.Sensing.Common.ShadowCast

@@ -12,6 +12,7 @@ using RogueEntity.Core.Sensing.Receptors.Touch;
 using RogueEntity.Core.Sensing.Sources;
 using RogueEntity.Core.Sensing.Sources.Touch;
 using RogueEntity.Core.Utils.Algorithms;
+using RogueEntity.Core.Meta.EntityKeys;
 
 namespace RogueEntity.Core.Tests.Sensing.Sources.Touch
 {

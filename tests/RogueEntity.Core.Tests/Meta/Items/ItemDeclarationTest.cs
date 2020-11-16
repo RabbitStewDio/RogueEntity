@@ -5,6 +5,7 @@ using EnTTSharp.Entities;
 using FluentAssertions;
 using NUnit.Framework;
 using RogueEntity.Api.ItemTraits;
+using RogueEntity.Core.Meta.EntityKeys;
 using RogueEntity.Core.Meta.Items;
 
 namespace RogueEntity.Core.Tests.Meta.Items

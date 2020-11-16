@@ -6,7 +6,6 @@ using RogueEntity.Api.ItemTraits;
 using RogueEntity.Api.Utils;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Meta.ItemTraits;
-using RogueEntity.Core.Utils;
 
 namespace RogueEntity.Core.Equipment
 {

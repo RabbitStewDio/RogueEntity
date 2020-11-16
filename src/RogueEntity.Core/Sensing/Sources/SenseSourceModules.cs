@@ -10,7 +10,6 @@ using RogueEntity.Core.Positioning.MapLayers;
 using RogueEntity.Core.Sensing.Cache;
 using RogueEntity.Core.Sensing.Resistance;
 using RogueEntity.Core.Sensing.Resistance.Maps;
-using RogueEntity.Core.Utils;
 
 namespace RogueEntity.Core.Sensing.Sources
 {

@@ -4,7 +4,6 @@ using System.Linq;
 using JetBrains.Annotations;
 using RogueEntity.Api.Utils;
 using RogueEntity.Core.Positioning.Grid;
-using RogueEntity.Core.Utils;
 
 namespace RogueEntity.Core.GridProcessing.LayerAggregation
 {

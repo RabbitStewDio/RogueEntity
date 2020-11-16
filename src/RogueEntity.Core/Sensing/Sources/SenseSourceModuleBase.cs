@@ -23,7 +23,6 @@ using RogueEntity.Core.Sensing.Common.Physics;
 using RogueEntity.Core.Sensing.Resistance;
 using RogueEntity.Core.Sensing.Resistance.Directions;
 using RogueEntity.Core.Sensing.Resistance.Maps;
-using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.DataViews;
 using Serilog;
 

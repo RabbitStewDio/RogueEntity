@@ -9,6 +9,7 @@ using RogueEntity.Core.Sensing.Receptors;
 using RogueEntity.Core.Sensing.Receptors.Light;
 using RogueEntity.Core.Sensing.Sources.Light;
 using RogueEntity.Core.Utils.Algorithms;
+using RogueEntity.Core.Meta.EntityKeys;
 
 namespace RogueEntity.Core.Tests.Sensing.Receptor.Vision
 {

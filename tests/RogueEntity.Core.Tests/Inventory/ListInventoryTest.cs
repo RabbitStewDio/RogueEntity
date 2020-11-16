@@ -7,6 +7,7 @@ using NUnit.Framework;
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Core.Inventory;
 using RogueEntity.Core.Meta.Base;
+using RogueEntity.Core.Meta.EntityKeys;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Meta.ItemTraits;
 

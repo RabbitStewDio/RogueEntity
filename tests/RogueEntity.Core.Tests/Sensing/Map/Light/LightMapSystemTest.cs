@@ -10,6 +10,7 @@ using RogueEntity.Core.Sensing.Resistance;
 using RogueEntity.Core.Sensing.Sources.Light;
 using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.Algorithms;
+using RogueEntity.Core.Meta.EntityKeys;
 
 namespace RogueEntity.Core.Tests.Sensing.Map.Light
 {

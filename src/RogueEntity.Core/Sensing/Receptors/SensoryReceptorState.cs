@@ -4,7 +4,6 @@ using MessagePack;
 using RogueEntity.Api.Utils;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Sensing.Common;
-using RogueEntity.Core.Utils;
 
 namespace RogueEntity.Core.Sensing.Receptors
 {

@@ -19,6 +19,7 @@ using RogueEntity.Core.Sensing.Sources;
 using RogueEntity.Core.Tests.Sensing.Common;
 using RogueEntity.Core.Tests.Sensing.Sources;
 using RogueEntity.Core.Utils.DataViews;
+using RogueEntity.Core.Meta.EntityKeys;
 
 namespace RogueEntity.Core.Tests.Sensing.Receptor
 {

@@ -6,6 +6,7 @@ using RogueEntity.Api.ItemTraits;
 using RogueEntity.Core.Infrastructure.Serialization;
 using RogueEntity.Core.Inventory;
 using RogueEntity.Core.Meta.Base;
+using RogueEntity.Core.Meta.EntityKeys;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Meta.ItemTraits;
 using RogueEntity.Core.Tests.Meta.Items;

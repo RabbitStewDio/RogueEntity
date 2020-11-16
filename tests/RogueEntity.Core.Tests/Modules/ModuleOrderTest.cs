@@ -6,8 +6,8 @@ using NUnit.Framework;
 using RogueEntity.Api.Modules;
 using RogueEntity.Api.Modules.Helpers;
 using RogueEntity.Api.Services;
-using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Utils;
+using RogueEntity.Core.Meta.EntityKeys;
 
 namespace RogueEntity.Core.Tests.Modules
 {

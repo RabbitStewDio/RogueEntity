@@ -1,6 +1,6 @@
-﻿using RogueEntity.Core.Meta.Items;
-using RogueEntity.Core.Meta.ItemTraits;
+﻿using RogueEntity.Core.Meta.ItemTraits;
 using RogueEntity.Core.Tests.Meta.Items;
+using RogueEntity.Core.Meta.EntityKeys;
 
 namespace RogueEntity.Core.Tests.Meta.ItemTraits
 {

@@ -15,6 +15,7 @@ using RogueEntity.Core.Sensing.Sources;
 using RogueEntity.Core.Sensing.Sources.Heat;
 using RogueEntity.Core.Utils.Algorithms;
 using RogueEntity.Core.Utils.DataViews;
+using RogueEntity.Core.Meta.EntityKeys;
 
 namespace RogueEntity.Core.Tests.Sensing.Receptor.InfraVision
 {

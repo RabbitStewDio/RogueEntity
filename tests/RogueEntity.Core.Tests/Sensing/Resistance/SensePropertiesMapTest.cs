@@ -9,6 +9,7 @@ using RogueEntity.Core.Sensing;
 using RogueEntity.Core.Sensing.Resistance;
 using RogueEntity.Core.Sensing.Resistance.Maps;
 using RogueEntity.Core.Utils;
+using RogueEntity.Core.Meta.EntityKeys;
 
 namespace RogueEntity.Core.Tests.Sensing.Resistance
 {
