@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using EnTTSharp.Entities;
 using JetBrains.Annotations;
-using RogueEntity.Core.Infrastructure.ItemTraits;
+using RogueEntity.Api.ItemTraits;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Sensing.Common;
 using RogueEntity.Core.Sensing.Common.Physics;

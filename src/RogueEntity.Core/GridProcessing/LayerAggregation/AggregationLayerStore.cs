@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
+using RogueEntity.Api.Utils;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Utils;
 

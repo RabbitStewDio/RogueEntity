@@ -13,7 +13,7 @@ using EnTTSharp.Serialization.Xml.AutoRegistration;
 using FluentAssertions;
 using MessagePack;
 using NUnit.Framework;
-using RogueEntity.Core.Infrastructure.ItemTraits;
+using RogueEntity.Api.ItemTraits;
 using RogueEntity.Core.Infrastructure.Serialization;
 using RogueEntity.Core.Meta.Items;
 

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using RogueEntity.Api.Utils;
 
 namespace RogueEntity.Core.Utils
 {

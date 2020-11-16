@@ -3,7 +3,7 @@ using EnTTSharp.Entities;
 using JetBrains.Annotations;
 using MessagePack;
 using MessagePack.Formatters;
-using RogueEntity.Core.Infrastructure.ItemTraits;
+using RogueEntity.Api.ItemTraits;
 
 namespace RogueEntity.Core.Meta.Items
 {

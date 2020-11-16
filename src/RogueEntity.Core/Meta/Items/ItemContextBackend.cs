@@ -1,7 +1,7 @@
 ﻿using System;
 using EnTTSharp.Entities;
 using JetBrains.Annotations;
-using RogueEntity.Core.Infrastructure.ItemTraits;
+using RogueEntity.Api.ItemTraits;
 
 namespace RogueEntity.Core.Meta.Items
 {

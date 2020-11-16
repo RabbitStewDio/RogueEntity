@@ -1,6 +1,6 @@
-using RogueEntity.Core.Infrastructure.ItemTraits;
-using RogueEntity.Core.Infrastructure.Modules;
-using RogueEntity.Core.Infrastructure.Modules.Attributes;
+using RogueEntity.Api.ItemTraits;
+using RogueEntity.Api.Modules;
+using RogueEntity.Api.Modules.Attributes;
 using RogueEntity.Core.Meta.ItemBuilder;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Positioning;

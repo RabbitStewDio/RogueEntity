@@ -1,4 +1,4 @@
-using RogueEntity.Core.Infrastructure.Services;
+using RogueEntity.Api.Services;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Utils.DataViews;
 

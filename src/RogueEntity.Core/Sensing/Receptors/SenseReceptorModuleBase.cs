@@ -2,14 +2,14 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using EnTTSharp.Entities;
 using EnTTSharp.Entities.Systems;
+using RogueEntity.Api.GameLoops;
+using RogueEntity.Api.ItemTraits;
+using RogueEntity.Api.Modules;
+using RogueEntity.Api.Modules.Attributes;
+using RogueEntity.Api.Modules.Helpers;
+using RogueEntity.Api.Services;
+using RogueEntity.Api.Time;
 using RogueEntity.Core.GridProcessing.LayerAggregation;
-using RogueEntity.Core.Infrastructure.GameLoops;
-using RogueEntity.Core.Infrastructure.ItemTraits;
-using RogueEntity.Core.Infrastructure.Modules;
-using RogueEntity.Core.Infrastructure.Modules.Attributes;
-using RogueEntity.Core.Infrastructure.Modules.Helpers;
-using RogueEntity.Core.Infrastructure.Services;
-using RogueEntity.Core.Infrastructure.Time;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Continuous;
 using RogueEntity.Core.Positioning.Grid;
@@ -52,7 +52,7 @@ namespace RogueEntity.Core.Sensing.Receptors
                                 ModuleDependency.Of(SensoryCacheModule.ModuleId));
         }
 
-        [InitializerCollectorAttribute(InitializerCollectorType.Roles)]
+        [InitializerCollector(InitializerCollectorType.Roles)]
         public IEnumerable<ModuleEntityRoleInitializerInfo<TGameContext, TItemId>> CollectRoleInitializers<TGameContext, TItemId>(IServiceResolver serviceResolver,
                                                                                                                          IModuleEntityInformation entityInformation,
                                                                                                                          EntityRole role)

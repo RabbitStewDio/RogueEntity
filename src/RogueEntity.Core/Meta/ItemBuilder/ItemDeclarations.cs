@@ -1,7 +1,7 @@
 using EnTTSharp.Entities;
-using RogueEntity.Core.Infrastructure.ItemTraits;
-using RogueEntity.Core.Infrastructure.Modules;
-using RogueEntity.Core.Infrastructure.Services;
+using RogueEntity.Api.ItemTraits;
+using RogueEntity.Api.Modules;
+using RogueEntity.Api.Services;
 using RogueEntity.Core.Meta.Items;
 
 namespace RogueEntity.Core.Meta.ItemBuilder

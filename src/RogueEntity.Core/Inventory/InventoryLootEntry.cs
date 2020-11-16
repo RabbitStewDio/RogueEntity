@@ -1,5 +1,5 @@
 using System;
-using RogueEntity.Core.Infrastructure.ItemTraits;
+using RogueEntity.Api.ItemTraits;
 
 namespace RogueEntity.Core.Inventory
 {

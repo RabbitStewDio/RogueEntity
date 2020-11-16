@@ -1,4 +1,4 @@
-using RogueEntity.Core.Infrastructure.ItemTraits;
+using RogueEntity.Api.ItemTraits;
 
 namespace RogueEntity.Core.Sensing.Sources
 {

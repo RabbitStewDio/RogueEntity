@@ -3,6 +3,7 @@ using EnTTSharp.Entities;
 using EnTTSharp.Serialization;
 using MessagePack;
 using MessagePack.Formatters;
+using RogueEntity.Api.ItemTraits;
 
 namespace RogueEntity.Core.Meta.Items
 {

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using RogueEntity.Api.Utils;
 
 namespace RogueEntity.Core.Utils
 {

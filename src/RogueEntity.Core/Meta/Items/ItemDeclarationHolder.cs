@@ -2,6 +2,7 @@
 using EnTTSharp.Entities;
 using EnTTSharp.Entities.Attributes;
 using EnTTSharp.Serialization.Binary.AutoRegistration;
+using RogueEntity.Api.ItemTraits;
 
 namespace RogueEntity.Core.Meta.Items
 {

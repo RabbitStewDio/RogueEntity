@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using EnTTSharp.Entities;
+using RogueEntity.Api.ItemTraits;
 using RogueEntity.Core.Infrastructure.Actions.Schedule;
-using RogueEntity.Core.Infrastructure.ItemTraits;
 using RogueEntity.Core.Meta.Items;
 
 namespace RogueEntity.Core.Infrastructure.Actions.Traits

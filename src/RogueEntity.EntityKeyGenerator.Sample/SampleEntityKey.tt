@@ -1,0 +1,9 @@
+<#@ template language="C#" hostspecific="True" #>
+<#@ output extension=".cs" #>
+<#@ assembly name="mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" #>
+
+<#@ include file="../RogueEntity.EntityKeyGenerator/build/EntityKey.ttinclude" #>
+
+<#
+    Generate("SampleEntityKey", "RogueEntity.EntityKeyGenerator.Sample");
+#>

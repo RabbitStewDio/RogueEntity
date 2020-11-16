@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using EnTTSharp.Entities;
 using JetBrains.Annotations;
-using RogueEntity.Core.Infrastructure.ItemTraits;
+using RogueEntity.Api.ItemTraits;
 using RogueEntity.Core.Sensing.Common;
 using RogueEntity.Core.Utils;
 

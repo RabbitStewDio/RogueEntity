@@ -4,7 +4,7 @@ using System.Linq;
 using EnTTSharp.Entities;
 using FluentAssertions;
 using NUnit.Framework;
-using RogueEntity.Core.Infrastructure.ItemTraits;
+using RogueEntity.Api.ItemTraits;
 using RogueEntity.Core.Meta.Items;
 
 namespace RogueEntity.Core.Tests.Meta.Items

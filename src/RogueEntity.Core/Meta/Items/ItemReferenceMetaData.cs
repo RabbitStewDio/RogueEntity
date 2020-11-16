@@ -1,4 +1,6 @@
-﻿namespace RogueEntity.Core.Meta.Items
+﻿using RogueEntity.Api.ItemTraits;
+
+namespace RogueEntity.Core.Meta.Items
 {
     public class ItemReferenceMetaData : IBulkDataStorageMetaData<ItemReference>
     {

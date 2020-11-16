@@ -1,5 +1,6 @@
 ﻿using EnTTSharp.Entities;
-using RogueEntity.Core.Infrastructure.Time;
+using RogueEntity.Api.Time;
+using RogueEntity.Api.Utils;
 using RogueEntity.Core.Utils;
 using Serilog;
 

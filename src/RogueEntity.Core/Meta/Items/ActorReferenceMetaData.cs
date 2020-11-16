@@ -1,3 +1,5 @@
+using RogueEntity.Api.ItemTraits;
+
 namespace RogueEntity.Core.Meta.Items
 {
     public class ActorReferenceMetaData : IBulkDataStorageMetaData<ActorReference>

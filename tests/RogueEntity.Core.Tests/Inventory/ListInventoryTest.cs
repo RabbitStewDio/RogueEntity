@@ -4,7 +4,7 @@ using EnTTSharp.Entities.Systems;
 using FluentAssertions;
 using FluentAssertions.Execution;
 using NUnit.Framework;
-using RogueEntity.Core.Infrastructure.ItemTraits;
+using RogueEntity.Api.ItemTraits;
 using RogueEntity.Core.Inventory;
 using RogueEntity.Core.Meta.Base;
 using RogueEntity.Core.Meta.Items;

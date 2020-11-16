@@ -1,9 +1,9 @@
 ﻿using EnTTSharp.Entities;
 using EnTTSharp.Entities.Systems;
-using RogueEntity.Core.Infrastructure.GameLoops;
-using RogueEntity.Core.Infrastructure.ItemTraits;
-using RogueEntity.Core.Infrastructure.Modules;
-using RogueEntity.Core.Infrastructure.Modules.Attributes;
+using RogueEntity.Api.GameLoops;
+using RogueEntity.Api.ItemTraits;
+using RogueEntity.Api.Modules;
+using RogueEntity.Api.Modules.Attributes;
 using RogueEntity.Core.Meta.Base;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Meta.ItemTraits;

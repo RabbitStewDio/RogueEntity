@@ -1,6 +1,7 @@
 ﻿using EnTTSharp.Entities;
 using EnTTSharp.Serialization;
 using EnTTSharp.Serialization.Xml;
+using RogueEntity.Api.ItemTraits;
 
 namespace RogueEntity.Core.Meta.Items
 {

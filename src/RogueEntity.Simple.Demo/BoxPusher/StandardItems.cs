@@ -1,4 +1,5 @@
 using EnTTSharp.Entities;
+using RogueEntity.Api.ItemTraits;
 using RogueEntity.Core.Inventory;
 using RogueEntity.Core.Meta;
 using RogueEntity.Core.Meta.ItemBuilder;

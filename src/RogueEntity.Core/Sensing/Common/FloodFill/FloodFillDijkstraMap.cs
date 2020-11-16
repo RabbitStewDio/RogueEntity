@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using JetBrains.Annotations;
+using RogueEntity.Api.Utils;
 using RogueEntity.Core.Directionality;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Sensing.Common.Physics;

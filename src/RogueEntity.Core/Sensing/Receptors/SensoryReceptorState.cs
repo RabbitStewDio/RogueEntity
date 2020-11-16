@@ -1,6 +1,7 @@
 using System.Runtime.Serialization;
 using EnTTSharp.Entities.Attributes;
 using MessagePack;
+using RogueEntity.Api.Utils;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Sensing.Common;
 using RogueEntity.Core.Utils;

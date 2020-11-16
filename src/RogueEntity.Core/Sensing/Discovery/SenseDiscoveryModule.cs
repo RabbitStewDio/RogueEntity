@@ -1,10 +1,10 @@
 using EnTTSharp.Entities;
 using EnTTSharp.Entities.Systems;
-using RogueEntity.Core.Infrastructure.GameLoops;
-using RogueEntity.Core.Infrastructure.ItemTraits;
-using RogueEntity.Core.Infrastructure.Modules;
-using RogueEntity.Core.Infrastructure.Modules.Attributes;
-using RogueEntity.Core.Infrastructure.Services;
+using RogueEntity.Api.GameLoops;
+using RogueEntity.Api.ItemTraits;
+using RogueEntity.Api.Modules;
+using RogueEntity.Api.Modules.Attributes;
+using RogueEntity.Api.Services;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Sensing.Receptors;
 using RogueEntity.Core.Sensing.Receptors.InfraVision;

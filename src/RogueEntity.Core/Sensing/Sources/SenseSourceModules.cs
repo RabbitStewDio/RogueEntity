@@ -1,9 +1,10 @@
 using EnTTSharp.Entities;
+using RogueEntity.Api.GameLoops;
+using RogueEntity.Api.ItemTraits;
+using RogueEntity.Api.Modules;
+using RogueEntity.Api.Modules.Helpers;
+using RogueEntity.Api.Utils;
 using RogueEntity.Core.GridProcessing.LayerAggregation;
-using RogueEntity.Core.Infrastructure.GameLoops;
-using RogueEntity.Core.Infrastructure.ItemTraits;
-using RogueEntity.Core.Infrastructure.Modules;
-using RogueEntity.Core.Infrastructure.Modules.Helpers;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Positioning.MapLayers;
 using RogueEntity.Core.Sensing.Cache;

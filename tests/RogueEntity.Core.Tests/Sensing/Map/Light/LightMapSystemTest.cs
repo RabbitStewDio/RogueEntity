@@ -1,6 +1,6 @@
 using System;
 using NUnit.Framework;
-using RogueEntity.Core.Infrastructure.Time;
+using RogueEntity.Api.Time;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Sensing;
 using RogueEntity.Core.Sensing.Common.Physics;

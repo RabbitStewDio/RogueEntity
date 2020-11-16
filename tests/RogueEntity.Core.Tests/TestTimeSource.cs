@@ -1,5 +1,5 @@
 using System;
-using RogueEntity.Core.Infrastructure.Time;
+using RogueEntity.Api.Time;
 
 namespace RogueEntity.Core.Tests
 {

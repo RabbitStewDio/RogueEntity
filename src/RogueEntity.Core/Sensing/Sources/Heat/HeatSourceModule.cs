@@ -1,6 +1,6 @@
-using RogueEntity.Core.Infrastructure.Modules.Attributes;
-using RogueEntity.Core.Infrastructure.Services;
-using RogueEntity.Core.Infrastructure.Time;
+using RogueEntity.Api.Modules.Attributes;
+using RogueEntity.Api.Services;
+using RogueEntity.Api.Time;
 using RogueEntity.Core.Sensing.Cache;
 using RogueEntity.Core.Sensing.Common;
 using RogueEntity.Core.Sensing.Common.Physics;

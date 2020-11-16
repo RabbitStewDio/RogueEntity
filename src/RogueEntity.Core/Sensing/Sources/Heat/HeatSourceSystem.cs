@@ -1,7 +1,7 @@
 using System;
 using JetBrains.Annotations;
+using RogueEntity.Api.Time;
 using RogueEntity.Core.Directionality;
-using RogueEntity.Core.Infrastructure.Time;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Sensing.Cache;
 using RogueEntity.Core.Sensing.Common;

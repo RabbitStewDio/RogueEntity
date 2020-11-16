@@ -1,3 +1,4 @@
+using RogueEntity.Api.Utils;
 using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.DataViews;
 

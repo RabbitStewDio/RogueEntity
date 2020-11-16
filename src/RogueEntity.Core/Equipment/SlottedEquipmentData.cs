@@ -4,6 +4,8 @@ using System.Runtime.Serialization;
 using EnTTSharp.Entities;
 using EnTTSharp.Entities.Attributes;
 using MessagePack;
+using RogueEntity.Api.ItemTraits;
+using RogueEntity.Api.Utils;
 using RogueEntity.Core.Meta.Base;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Utils;

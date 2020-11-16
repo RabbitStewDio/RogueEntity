@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.Serialization;
 using EnTTSharp.Entities.Attributes;
 using MessagePack;
+using RogueEntity.Api.Utils;
 using RogueEntity.Core.Utils;
 
 namespace RogueEntity.Core.Equipment

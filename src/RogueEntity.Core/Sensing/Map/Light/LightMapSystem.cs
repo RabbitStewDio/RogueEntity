@@ -1,6 +1,6 @@
 using System;
 using JetBrains.Annotations;
-using RogueEntity.Core.Infrastructure.Time;
+using RogueEntity.Api.Time;
 using RogueEntity.Core.Sensing.Common;
 using RogueEntity.Core.Sensing.Receptors.Light;
 using RogueEntity.Core.Sensing.Sources.Light;

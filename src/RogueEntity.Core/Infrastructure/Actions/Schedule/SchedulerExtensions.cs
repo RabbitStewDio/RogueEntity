@@ -1,5 +1,5 @@
 ﻿using EnTTSharp.Entities;
-using RogueEntity.Core.Infrastructure.ItemTraits;
+using RogueEntity.Api.ItemTraits;
 using Serilog;
 
 namespace RogueEntity.Core.Infrastructure.Actions.Schedule

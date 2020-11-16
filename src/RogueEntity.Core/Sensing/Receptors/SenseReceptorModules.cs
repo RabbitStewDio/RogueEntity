@@ -1,5 +1,5 @@
-using RogueEntity.Core.Infrastructure.ItemTraits;
-using RogueEntity.Core.Infrastructure.Modules;
+using RogueEntity.Api.ItemTraits;
+using RogueEntity.Api.Modules;
 
 namespace RogueEntity.Core.Sensing.Receptors
 {

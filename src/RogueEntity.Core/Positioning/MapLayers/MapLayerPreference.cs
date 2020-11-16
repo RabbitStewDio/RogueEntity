@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using RogueEntity.Api.Utils;
 using RogueEntity.Core.Utils;
 
 namespace RogueEntity.Core.Positioning.MapLayers

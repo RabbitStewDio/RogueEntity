@@ -1,4 +1,4 @@
-using RogueEntity.Core.Infrastructure.Services;
+using RogueEntity.Api.Services;
 using RogueEntity.Core.Sensing.Common.FloodFill;
 using RogueEntity.Core.Sensing.Sources.Noise;
 

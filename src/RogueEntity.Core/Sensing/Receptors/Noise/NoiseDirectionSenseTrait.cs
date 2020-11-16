@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using EnTTSharp.Entities;
 using JetBrains.Annotations;
-using RogueEntity.Core.Infrastructure.ItemTraits;
+using RogueEntity.Api.ItemTraits;
 using RogueEntity.Core.Meta.Items;
 
 namespace RogueEntity.Core.Sensing.Receptors.Noise

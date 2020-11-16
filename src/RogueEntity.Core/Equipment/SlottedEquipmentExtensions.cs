@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using EnTTSharp.Entities;
+using RogueEntity.Api.Utils;
 using RogueEntity.Core.Utils;
 
 namespace RogueEntity.Core.Equipment
