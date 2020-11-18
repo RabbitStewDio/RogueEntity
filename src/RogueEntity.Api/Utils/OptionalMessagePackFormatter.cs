@@ -21,7 +21,7 @@ namespace RogueEntity.Api.Utils
         {
             if (reader.TryReadNil())
             {
-                return Optional.Empty<TValue>();
+                return Optional.Empty();
             }
 
             var v = MessagePackSerializer.Deserialize<TValue>(ref reader, options);

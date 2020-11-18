@@ -7,29 +7,39 @@ using RogueEntity.Api.Modules.Attributes;
 using RogueEntity.Api.Modules.Helpers;
 using RogueEntity.Api.Services;
 using RogueEntity.Core.GridProcessing.LayerAggregation;
+using RogueEntity.Core.Movement.CostModifier;
 using RogueEntity.Core.Movement.CostModifier.Directions;
 using RogueEntity.Core.Movement.CostModifier.Map;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Utils.DataViews;
 
-namespace RogueEntity.Core.Movement.CostModifier
+namespace RogueEntity.Core.Movement.MovementModes
 {
-    public static class MovementResistanceModules
+    public static class MovementModules
     {
-        public static EntityRole GetResistanceRole<TSense>() => new EntityRole($"Role.Core.Movement.CostModifier.{typeof(TSense).Name}.Source");
-        public static EntitySystemId CreateSystemId<TSense>(string job) => new EntitySystemId($"Core.Systems.Movement.CostModifier.{typeof(TSense).Name}.{job}");
-        public static EntitySystemId CreateEntityId<TSense>() => new EntitySystemId($"Entities.Systems.Movement.CostModifier.{typeof(TSense).Name}");
+        public static EntityRole GetMovableActorRole<TMovementMode>() => new EntityRole($"Role.Core.Movement.{typeof(TMovementMode).Name}.MovableActor");
+        public static EntityRole GetResistanceRole<TMovementMode>() => new EntityRole($"Role.Core.Movement.{typeof(TMovementMode).Name}.CostModifierSource");
+
+        public static EntityRelation GetCostModifierRelation<TMovementMode>() => new EntityRelation($"Relation.Core.Movement.Resistance.{typeof(TMovementMode).Name}.ProvidesCostData",
+                                                                                             GetResistanceRole<TMovementMode>(), GetMovableActorRole<TMovementMode>());
+
+        public static EntitySystemId CreateSystemId<TMovementMode>(string job) => new EntitySystemId($"Core.Systems.Movement.CostModifier.{typeof(TMovementMode).Name}.{job}");
+        public static EntitySystemId CreateEntityId<TMovementMode>() => new EntitySystemId($"Entities.Systems.Movement.CostModifier.{typeof(TMovementMode).Name}");
     }
 
-    public abstract class MovementCostModifierModuleBase<TMovementMode> : ModuleBase
+    public abstract class MovementModuleBase<TMovementMode> : ModuleBase
     {
-        public static EntityRole MovementCostModifierSourceRole = MovementResistanceModules.GetResistanceRole<TMovementMode>();
-        public static readonly EntitySystemId RegisterResistanceEntitiesId = MovementResistanceModules.CreateEntityId<TMovementMode>();
-        public static readonly EntitySystemId RegisterResistanceSystem = MovementResistanceModules.CreateSystemId<TMovementMode>("LifeCycle");
-        public static readonly EntitySystemId ExecuteResistanceSystem = MovementResistanceModules.CreateSystemId<TMovementMode>("ProcessChanges");
+        public static EntityRole MovementCostModifierSourceRole = MovementModules.GetMovableActorRole<TMovementMode>();
+        public static EntityRole MovableActorRole = MovementModules.GetResistanceRole<TMovementMode>();
 
-        protected MovementCostModifierModuleBase()
+        public static EntityRelation MovementRelation = MovementModules.GetCostModifierRelation<TMovementMode>();
+
+        public static readonly EntitySystemId RegisterResistanceEntitiesId = MovementModules.CreateEntityId<TMovementMode>();
+        public static readonly EntitySystemId RegisterResistanceSystem = MovementModules.CreateSystemId<TMovementMode>("LifeCycle");
+        public static readonly EntitySystemId ExecuteResistanceSystem = MovementModules.CreateSystemId<TMovementMode>("ProcessChanges");
+
+        protected MovementModuleBase()
         {
             DeclareDependencies(ModuleDependency.Of(PositionModule.ModuleId));
 
@@ -106,19 +116,19 @@ namespace RogueEntity.Core.Movement.CostModifier
             }
         }
 
-        protected virtual MovementPropertiesSystem<TGameContext, TMovementMode> GetOrCreateSensePropertiesSystem<TGameContext, TEntityId>(IServiceResolver serviceResolver)
+        protected virtual RelativeMovementCostSystem<TGameContext, TMovementMode> GetOrCreateSensePropertiesSystem<TGameContext, TEntityId>(IServiceResolver serviceResolver)
         {
-            if (serviceResolver.TryResolve(out MovementPropertiesSystem<TGameContext, TMovementMode> system))
+            if (serviceResolver.TryResolve(out RelativeMovementCostSystem<TGameContext, TMovementMode> system))
             {
                 return system;
             }
 
             var gridConfig = serviceResolver.Resolve<IGridMapConfiguration<TEntityId>>();
-            system = new MovementPropertiesSystem<TGameContext, TMovementMode>(gridConfig.OffsetX, gridConfig.OffsetY, gridConfig.TileSizeX, gridConfig.TileSizeY);
+            system = new RelativeMovementCostSystem<TGameContext, TMovementMode>(gridConfig.OffsetX, gridConfig.OffsetY, gridConfig.TileSizeX, gridConfig.TileSizeY);
 
             serviceResolver.Store(system);
-            serviceResolver.Store<IAggregationLayerSystem<TGameContext, MovementCostModifier<TMovementMode>>>(system);
-            serviceResolver.Store<IReadOnlyDynamicDataView3D<MovementCostModifier<TMovementMode>>>(system);
+            serviceResolver.Store<IAggregationLayerSystem<TGameContext, RelativeMovementCostModifier<TMovementMode>>>(system);
+            serviceResolver.Store<IReadOnlyDynamicDataView3D<RelativeMovementCostModifier<TMovementMode>>>(system);
             return system;
         }
 
@@ -129,7 +139,7 @@ namespace RogueEntity.Core.Movement.CostModifier
                 return system;
             }
 
-            if (!serviceResolver.TryResolve(out IReadOnlyDynamicDataView3D<MovementCostModifier<TMovementMode>> data))
+            if (!serviceResolver.TryResolve(out IReadOnlyDynamicDataView3D<RelativeMovementCostModifier<TMovementMode>> data))
             {
                 data = GetOrCreateSensePropertiesSystem<TGameContext, TItemId>(serviceResolver);
             }
@@ -144,7 +154,7 @@ namespace RogueEntity.Core.Movement.CostModifier
                                                  EntityRegistry<TItemId> registry)
             where TItemId : IEntityKey
         {
-            registry.RegisterNonConstructable<MovementCostModifier<TMovementMode>>();
+            registry.RegisterNonConstructable<RelativeMovementCostModifier<TMovementMode>>();
         }
 
         readonly struct MovementDirectionalitySystemRegisteredMarker

@@ -5,16 +5,16 @@ using RogueEntity.Core.Utils.DataViews;
 
 namespace RogueEntity.Core.Movement.CostModifier.Directions
 {
-    public class MovementResistanceDirectionalitySystem<TMovementMode> : AdjacencyGridTransformSystem<MovementCostModifier<TMovementMode>>, IMovementResistanceDirectionView<TMovementMode>
+    public class MovementResistanceDirectionalitySystem<TMovementMode> : AdjacencyGridTransformSystem<RelativeMovementCostModifier<TMovementMode>>, IMovementResistanceDirectionView<TMovementMode>
     {
-        public MovementResistanceDirectionalitySystem(IReadOnlyDynamicDataView3D<MovementCostModifier<TMovementMode>> sourceData) : base(sourceData)
+        public MovementResistanceDirectionalitySystem(IReadOnlyDynamicDataView3D<RelativeMovementCostModifier<TMovementMode>> sourceData) : base(sourceData)
         {
         }
 
         public void ProcessSystem<TGameContext>(TGameContext x) => Process();
 
-        protected override bool IsMoveAllowed(in (IReadOnlyDynamicDataView2D<MovementCostModifier<TMovementMode>> sourceData,
-                                                  IReadOnlyBoundedDataView<MovementCostModifier<TMovementMode>> sourceTile, int z) parameterData,
+        protected override bool IsMoveAllowed(in (IReadOnlyDynamicDataView2D<RelativeMovementCostModifier<TMovementMode>> sourceData,
+                                                  IReadOnlyBoundedDataView<RelativeMovementCostModifier<TMovementMode>> sourceTile, int z) parameterData,
                                               in Position2D pos,
                                               Direction d)
         {
@@ -41,8 +41,8 @@ namespace RogueEntity.Core.Movement.CostModifier.Directions
             return true;
         }
 
-        static MovementCostModifier<TMovementMode> Query(in (IReadOnlyDynamicDataView2D<MovementCostModifier<TMovementMode>> sourceData,
-                                                           IReadOnlyBoundedDataView<MovementCostModifier<TMovementMode>> sourceTile, int z) parameterData,
+        static RelativeMovementCostModifier<TMovementMode> Query(in (IReadOnlyDynamicDataView2D<RelativeMovementCostModifier<TMovementMode>> sourceData,
+                                                           IReadOnlyBoundedDataView<RelativeMovementCostModifier<TMovementMode>> sourceTile, int z) parameterData,
                                                        int x,
                                                        int y)
         {

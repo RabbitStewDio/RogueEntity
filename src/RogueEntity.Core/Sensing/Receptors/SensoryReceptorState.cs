@@ -80,7 +80,7 @@ namespace RogueEntity.Core.Sensing.Receptors
                 return this;
             }
 
-            SenseSource = Optional.Empty<SenseSourceData>();
+            SenseSource = Optional.Empty();
             return this;
         }
 

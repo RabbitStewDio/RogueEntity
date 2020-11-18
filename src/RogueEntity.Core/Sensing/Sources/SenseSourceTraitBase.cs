@@ -29,7 +29,7 @@ namespace RogueEntity.Core.Sensing.Sources
             if (TryGetInitialValue(out var senseDefinition))
             {
                 v.AssignComponent(k, senseDefinition);
-                v.AssignComponent(k, new SenseSourceState<TSense>(Optional.Empty<SenseSourceData>(), SenseSourceDirtyState.UnconditionallyDirty, Position.Invalid));
+                v.AssignComponent(k, new SenseSourceState<TSense>(Optional.Empty(), SenseSourceDirtyState.UnconditionallyDirty, Position.Invalid));
             }
         }
 
@@ -42,7 +42,7 @@ namespace RogueEntity.Core.Sensing.Sources
 
             if (!v.GetComponent(k, out SenseSourceState<TSense> s))
             {
-                s = new SenseSourceState<TSense>(Optional.Empty<SenseSourceData>(), SenseSourceDirtyState.UnconditionallyDirty, Position.Invalid);
+                s = new SenseSourceState<TSense>(Optional.Empty(), SenseSourceDirtyState.UnconditionallyDirty, Position.Invalid);
                 v.AssignComponent(k, in s);
             }
         }
@@ -58,7 +58,7 @@ namespace RogueEntity.Core.Sensing.Sources
 
             if (!v.GetComponent(k, out SenseSourceState<TSense> s))
             {
-                s = new SenseSourceState<TSense>(Optional.Empty<SenseSourceData>(), SenseSourceDirtyState.UnconditionallyDirty, Position.Invalid);
+                s = new SenseSourceState<TSense>(Optional.Empty(), SenseSourceDirtyState.UnconditionallyDirty, Position.Invalid);
                 v.AssignComponent(k, in s);
             }
             else

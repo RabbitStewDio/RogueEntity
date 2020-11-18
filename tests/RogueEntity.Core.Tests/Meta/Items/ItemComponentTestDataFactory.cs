@@ -53,7 +53,7 @@ namespace RogueEntity.Core.Tests.Meta.Items
         public ItemComponentTestDataFactory<TData> WithRemoveProhibited()
         {
             return new ItemComponentTestDataFactory<TData>(initialValueProvider, UpdateAllowed, ChangedValue, applyValueProvider, OtherChangedValue, invalidValueProvider, false,
-                                                           Optional.Empty<TData>());
+                                                           Optional.Empty());
         }
 
         public ItemComponentTestDataFactory<TData> WithRemovedResultAsDefault()
@@ -73,7 +73,7 @@ namespace RogueEntity.Core.Tests.Meta.Items
 
         public ItemComponentTestDataFactory<TData> WithoutInvalidResult()
         {
-            return new ItemComponentTestDataFactory<TData>(initialValueProvider, UpdateAllowed, ChangedValue, applyValueProvider, OtherChangedValue, Optional.Empty<TData>(), RemoveAllowed,
+            return new ItemComponentTestDataFactory<TData>(initialValueProvider, UpdateAllowed, ChangedValue, applyValueProvider, OtherChangedValue, Optional.Empty(), RemoveAllowed,
                                                            removedValueProvider);
         }
 

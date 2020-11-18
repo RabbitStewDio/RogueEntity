@@ -14,7 +14,7 @@ namespace RogueEntity.Core.Equipment
                                                                bool ignoreWeight = false)
             where TItemId : IEntityKey
         {
-            return equipment.TryEquipItem(context, item, out modifiedItem, Optional.Empty<EquipmentSlot>(), out actualSlot, ignoreWeight);
+            return equipment.TryEquipItem(context, item, out modifiedItem, Optional.Empty(), out actualSlot, ignoreWeight);
         }
 
         public static bool TryUnequipItem<TGameContext, TItemId>(this ISlottedEquipment<TGameContext, TItemId> equipment,

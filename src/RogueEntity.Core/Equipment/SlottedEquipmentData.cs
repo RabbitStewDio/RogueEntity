@@ -401,7 +401,7 @@ namespace RogueEntity.Core.Equipment
         {
             if (!equippedItems.TryGetValue(equipmentSlot, out var item))
             {
-                primarySlot = Optional.Empty<EquipmentSlot>();
+                primarySlot = Optional.Empty();
                 return true;
             }
 

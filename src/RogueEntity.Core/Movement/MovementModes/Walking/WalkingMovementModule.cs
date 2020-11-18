@@ -1,10 +1,13 @@
-namespace RogueEntity.Core.Movement.CostModifier
+using RogueEntity.Api.Modules.Attributes;
+
+namespace RogueEntity.Core.Movement.MovementModes.Walking
 {
-    public class WalkingMovementCostModifierModule : MovementCostModifierModuleBase<WalkingMovement>
+    [Module]
+    public class WalkingMovementModule : MovementModuleBase<WalkingMovement>
     {
         public static readonly string ModuleId = "Core.Movement.Resistance.Walking";
 
-        public WalkingMovementCostModifierModule()
+        public WalkingMovementModule()
         {
             Id = ModuleId;
 

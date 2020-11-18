@@ -1,0 +1,88 @@
+using System;
+
+namespace RogueEntity.Core.Movement.CostModifier
+{
+    /// <summary>
+    ///   Describes a units ability to move as the energy it takes to traverse a unit of distance.
+    ///   The actual interpretation of this value is beyond the scope of this module, but the
+    ///   values given should be consistent across movement modes.
+    ///
+    ///   Pathfinding will attempt to minimize movement costs for a given path.
+    ///
+    ///   Thus if a unit swims twice as fast as it walks, the  unit should define a movement cost
+    ///   for walking as twice the amount given for walking. Movement cost can be directly modelled
+    ///   as action point costs; or inversely as velocity. 
+    /// </summary>
+    public readonly struct MovementCost : IComparable<MovementCost>, IComparable
+    {
+        public readonly IMovementMode MovementMode;
+
+        /// <summary>
+        ///   A movement cost indicator as fixed point number. (16/16 split) 
+        /// </summary>
+        public readonly float Cost;
+
+        /// <summary>
+        ///   A tie-breaker value indicating which movement mode should be preferred if
+        ///   both movement costs are equal. If that does not solve the problem, we fall
+        ///   back to brute-force by sorting by MovementMode classname.
+        /// </summary>
+        public readonly int Preference;
+
+        public MovementCost(IMovementMode movementMode, float cost, int preference)
+        {
+            MovementMode = movementMode;
+            Cost = cost;
+            Preference = preference;
+        }
+
+        public int CompareTo(MovementCost other)
+        {
+            var costComparison = Cost.CompareTo(other.Cost);
+            if (costComparison != 0)
+            {
+                return costComparison;
+            }
+
+            var preferenceComparison = Preference.CompareTo(other.Preference);
+            if (preferenceComparison != 0)
+            {
+                return preferenceComparison;
+            }
+
+            return string.CompareOrdinal(MovementModeAsText, other.MovementModeAsText);
+        }
+
+        string MovementModeAsText => MovementMode == null ? "" : MovementMode.GetType().Name;
+
+        public int CompareTo(object obj)
+        {
+            if (ReferenceEquals(null, obj))
+            {
+                return 1;
+            }
+
+            return obj is MovementCost other ? CompareTo(other) : throw new ArgumentException($"Object must be of type {nameof(MovementCost)}");
+        }
+
+        public static bool operator <(MovementCost left, MovementCost right)
+        {
+            return left.CompareTo(right) < 0;
+        }
+
+        public static bool operator >(MovementCost left, MovementCost right)
+        {
+            return left.CompareTo(right) > 0;
+        }
+
+        public static bool operator <=(MovementCost left, MovementCost right)
+        {
+            return left.CompareTo(right) <= 0;
+        }
+
+        public static bool operator >=(MovementCost left, MovementCost right)
+        {
+            return left.CompareTo(right) >= 0;
+        }
+    }
+}

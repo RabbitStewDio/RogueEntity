@@ -5,11 +5,13 @@ using System.Runtime.Serialization;
 
 namespace RogueEntity.Api.Utils
 {
+    public readonly struct OptionalEmptyPlaceholder {}
+    
     public static class Optional
     {
-        public static Optional<T> Empty<T>()
+        public static OptionalEmptyPlaceholder Empty()
         {
-            return new Optional<T>(false, default);
+            return new OptionalEmptyPlaceholder();
         }
 
         public static Optional<T> ValueOf<T>(T value)
@@ -21,7 +23,7 @@ namespace RogueEntity.Api.Utils
         {
             if (!value.HasValue)
             {
-                return Empty<T>();
+                return Empty();
             }
 
             return new Optional<T>(true, value.Value);
@@ -31,7 +33,7 @@ namespace RogueEntity.Api.Utils
         {
             if (value == null)
             {
-                return Empty<T>();
+                return Empty();
             }
 
             return new Optional<T>(true, value);
@@ -129,6 +131,11 @@ namespace RogueEntity.Api.Utils
         public static bool operator !=(Optional<T> left, Optional<T> right)
         {
             return !left.Equals(right);
+        }
+
+        public static implicit operator Optional<T>(OptionalEmptyPlaceholder p)
+        {
+            return default;
         }
     }
 }

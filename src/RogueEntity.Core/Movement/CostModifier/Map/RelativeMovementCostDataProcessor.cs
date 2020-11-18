@@ -7,12 +7,12 @@ using RogueEntity.Core.Positioning.MapLayers;
 
 namespace RogueEntity.Core.Movement.CostModifier.Map
 {
-    public class MovementPropertiesDataProcessor<TGameContext, TItemId, TSense> : GridAggregationPropertiesDataProcessor<TGameContext, TItemId, MovementCostModifier<TSense>>
+    public class RelativeMovementCostDataProcessor<TGameContext, TItemId, TMovementMode> : GridAggregationPropertiesDataProcessor<TGameContext, TItemId, RelativeMovementCostModifier<TMovementMode>>
         where TItemId : IEntityKey
     {
         [NotNull] readonly IItemResolver<TGameContext, TItemId> itemContext;
 
-        public MovementPropertiesDataProcessor(MapLayer layer,
+        public RelativeMovementCostDataProcessor(MapLayer layer,
                                                [NotNull] IGridMapContext<TItemId> mapContext,
                                                [NotNull] IItemResolver<TGameContext, TItemId> itemContext,
                                                int zPosition,
@@ -32,13 +32,13 @@ namespace RogueEntity.Core.Movement.CostModifier.Map
             foreach (var (x, y) in bounds.Contents)
             {
                 var groundItemRef = groundData[x, y];
-                if (itemResolver.TryQueryData(groundItemRef, context, out MovementCostModifier<TSense> groundItem))
+                if (itemResolver.TryQueryData(groundItemRef, context, out RelativeMovementCostModifier<TMovementMode> groundItem))
                 {
                     resultTile.TrySet(x, y, in groundItem);
                 }
                 else
                 {
-                    resultTile.TrySet(x, y, default);
+                    resultTile.TrySet(x, y, RelativeMovementCostModifier<TMovementMode>.Unchanged);
                 }
             }
         }

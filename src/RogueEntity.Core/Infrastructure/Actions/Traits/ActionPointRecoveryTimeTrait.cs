@@ -5,7 +5,7 @@ using RogueEntity.Core.Meta.Items;
 
 namespace RogueEntity.Core.Infrastructure.Actions.Traits
 {
-    public class ActionPointRecoveryTimeTrait<TGameContext, TActorId>: SimpleItemComponentTraitBase<TGameContext, TActorId, ActionPointRecoveryTime> 
+    public class ActionPointRecoveryTimeTrait<TGameContext, TActorId>: SimpleReferenceItemComponentTraitBase<TGameContext, TActorId, ActionPointRecoveryTime> 
         where TActorId : IBulkDataStorageKey<TActorId>
     {
         readonly ActionPointRecoveryDefinition recoveryDefinition;

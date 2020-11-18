@@ -36,14 +36,14 @@ namespace RogueEntity.Core.Sensing.Receptors.Touch
             v.AssignComponent(k, new TouchSourceDefinition(new SenseSourceDefinition(touchPhysics.TouchPhysics.DistanceMeasurement,
                                                                                      touchPhysics.TouchPhysics.AdjacencyRule,
                                                                                      Intensity), true));
-            v.AssignComponent(k, new SenseSourceState<TouchSense>(Optional.Empty<SenseSourceData>(), SenseSourceDirtyState.UnconditionallyDirty, Position.Invalid));
+            v.AssignComponent(k, new SenseSourceState<TouchSense>(Optional.Empty(), SenseSourceDirtyState.UnconditionallyDirty, Position.Invalid));
         }
 
         public override void Apply(IEntityViewControl<TActorId> v, TGameContext context, TActorId k, IItemDeclaration item)
         {
             if (v.HasComponent<TouchSourceDefinition>(k) && !v.HasComponent<SenseSourceState<TouchSense>>(k))
             {
-                v.AssignComponent(k, new SenseSourceState<TouchSense>(Optional.Empty<SenseSourceData>(), SenseSourceDirtyState.UnconditionallyDirty, Position.Invalid));
+                v.AssignComponent(k, new SenseSourceState<TouchSense>(Optional.Empty(), SenseSourceDirtyState.UnconditionallyDirty, Position.Invalid));
             }
         }
 
@@ -59,7 +59,7 @@ namespace RogueEntity.Core.Sensing.Receptors.Touch
             
             if (!v.GetComponent(k, out SenseSourceState<TouchSense> s))
             {
-                s = new SenseSourceState<TouchSense>(Optional.Empty<SenseSourceData>(), SenseSourceDirtyState.UnconditionallyDirty, Position.Invalid);
+                s = new SenseSourceState<TouchSense>(Optional.Empty(), SenseSourceDirtyState.UnconditionallyDirty, Position.Invalid);
                 v.AssignComponent(k, in s);
             }
             else

@@ -20,10 +20,10 @@ namespace RogueEntity.Core.Tests.Positioning
 
         protected override IItemComponentTestDataFactory<EntityGridPosition> ProduceTestData(EntityRelations<ItemReference> relations)
         {
-            return new ItemComponentTestDataFactory<EntityGridPosition>(Optional.Empty<EntityGridPosition>(),
+            return new ItemComponentTestDataFactory<EntityGridPosition>(Optional.Empty(),
                                                                         EntityGridPosition.Of(itemLayer, 10, 10, 10),
                                                                         EntityGridPosition.Of(itemLayer, 10, 20, 10))
-                   .WithRemovedResult(Optional.Empty<EntityGridPosition>())
+                   .WithRemovedResult(Optional.Empty())
                 ;
         }
 

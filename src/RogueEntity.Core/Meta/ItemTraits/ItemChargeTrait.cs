@@ -5,7 +5,7 @@ using RogueEntity.Core.Meta.Items;
 
 namespace RogueEntity.Core.Meta.ItemTraits
 {
-    public sealed class ItemChargeTrait<TGameContext, TItemId> : SimpleItemComponentTraitBase<TGameContext, TItemId, ItemCharge>
+    public sealed class ItemChargeTrait<TGameContext, TItemId> : SimpleReferenceItemComponentTraitBase<TGameContext, TItemId, ItemCharge>
         where TItemId : IEntityKey
     {
         readonly ItemCharge initialCharge;
@@ -49,7 +49,7 @@ namespace RogueEntity.Core.Meta.ItemTraits
         }
     }
     
-    public sealed class ItemChargeBulkTrait<TGameContext, TItemId> : SimpleItemComponentBulkTraitBase<TGameContext, TItemId, ItemCharge>,
+    public sealed class ItemChargeBulkTrait<TGameContext, TItemId> : SimpleBulkItemComponentTraitBase<TGameContext, TItemId, ItemCharge>,
                                                                  IBulkDataTrait<TGameContext, TItemId>
         where TItemId : IBulkDataStorageKey<TItemId>
     {

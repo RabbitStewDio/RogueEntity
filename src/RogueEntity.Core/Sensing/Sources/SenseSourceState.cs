@@ -58,7 +58,7 @@ namespace RogueEntity.Core.Sensing.Sources
                 return this;
             }
 
-            SenseSource = Optional.Empty<SenseSourceData>();
+            SenseSource = Optional.Empty();
             return this;
         }
         

@@ -5,11 +5,11 @@ using RogueEntity.Api.ItemTraits;
 
 namespace RogueEntity.Core.Meta.Items
 {
-    public abstract class SimpleItemComponentBulkTraitBase<TGameContext, TItemId, TData> : IItemComponentTrait<TGameContext, TItemId, TData>,
+    public abstract class SimpleBulkItemComponentTraitBase<TGameContext, TItemId, TData> : IItemComponentTrait<TGameContext, TItemId, TData>,
                                                                                            IBulkItemTrait<TGameContext, TItemId>
         where TItemId : IBulkDataStorageKey<TItemId>
     {
-        protected SimpleItemComponentBulkTraitBase(ItemTraitId id, int priority)
+        protected SimpleBulkItemComponentTraitBase(ItemTraitId id, int priority)
         {
             Id = id;
             Priority = priority;

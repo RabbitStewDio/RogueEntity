@@ -17,7 +17,10 @@ namespace RogueEntity.Core.Sensing.Sources
     {
         public static EntityRole GetSourceRole<TSense>() => new EntityRole($"Role.Core.Senses.Source.{typeof(TSense).Name}.SenseSource");
         public static EntityRole GetResistanceRole<TSense>() => new EntityRole($"Role.Core.Senses.{typeof(TSense).Name}.ResistanceProvider");
-        public static EntityRelation GetResistanceRelation<TSense>() => new EntityRelation($"Relation.Core.Senses.Resistance.{typeof(TSense).Name}.ProvidesResistanceData", GetResistanceRole<TSense>(), GetSourceRole<TSense>());
+        
+        public static EntityRelation GetResistanceRelation<TSense>() => new EntityRelation($"Relation.Core.Senses.Resistance.{typeof(TSense).Name}.ProvidesResistanceData", 
+                                                                                           GetResistanceRole<TSense>(), GetSourceRole<TSense>());
+        
         public static EntitySystemId CreateSystemId<TSense>(string job) => new EntitySystemId($"Core.Systems.Senses.Source.{typeof(TSense).Name}.{job}");
         public static EntitySystemId CreateEntityId<TSense>(string job) => new EntitySystemId($"Entities.Systems.Senses.Source.{typeof(TSense).Name}.{job}");
         
