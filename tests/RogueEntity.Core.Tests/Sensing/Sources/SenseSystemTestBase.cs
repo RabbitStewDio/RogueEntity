@@ -37,7 +37,7 @@ namespace RogueEntity.Core.Tests.Sensing.Sources
         where TSenseSourceDefinition : ISenseDefinition
     {
         protected TestTimeSource timeSource;
-        protected SensePropertiesSourceFixture<TSense> senseProperties;
+        protected DynamicDataView3D<float> senseProperties;
         protected SenseStateCache senseCache;
         protected SenseMappingTestContext context;
         protected SenseSourceSystem<TSense, TSenseSourceDefinition> senseSystem;
@@ -45,7 +45,7 @@ namespace RogueEntity.Core.Tests.Sensing.Sources
         protected ItemDeclarationId senseActive10;
         protected ItemDeclarationId senseActive5;
         protected ItemDeclarationId senseInactive5;
-        protected SensoryResistanceDirectionalitySystem<TSense> directionalitySystem;
+        protected SensoryResistanceDirectionalitySystem<SenseMappingTestContext, TSense> directionalitySystem;
         protected virtual SensoryResistance<TSense> Convert(float f) => new SensoryResistance<TSense>(Percentage.Of(f));
 
         protected abstract ReferenceItemDeclaration<SenseMappingTestContext, ItemReference> AttachTrait(ReferenceItemDeclaration<SenseMappingTestContext, ItemReference> decl);
@@ -53,7 +53,7 @@ namespace RogueEntity.Core.Tests.Sensing.Sources
         protected virtual SenseSourceSystem<TSense, TSenseSourceDefinition> CreateSystem()
         {
             var physics = GetOrCreateSensePhysics();
-            return new SenseSourceSystem<TSense, TSenseSourceDefinition>(senseProperties.AsLazy<IReadOnlyDynamicDataView3D<SensoryResistance<TSense>>>(),
+            return new SenseSourceSystem<TSense, TSenseSourceDefinition>(senseProperties.AsLazy<IReadOnlyDynamicDataView3D<float>>(),
                                                                          senseCache.AsLazy<IGlobalSenseStateCacheProvider>(),
                                                                          timeSource.AsLazy<ITimeSource>(),
                                                                          directionalitySystem,
@@ -109,8 +109,8 @@ namespace RogueEntity.Core.Tests.Sensing.Sources
                                                            .DoWith(x => AttachTrait(x)));
 
             timeSource = new TestTimeSource();
-            senseProperties = new SensePropertiesSourceFixture<TSense>();
-            directionalitySystem = new SensoryResistanceDirectionalitySystem<TSense>(senseProperties);
+            senseProperties = new DynamicDataView3D<float>();
+            directionalitySystem = new SensoryResistanceDirectionalitySystem<SenseMappingTestContext, TSense>(senseProperties);
 
             senseCache = new SenseStateCache(2, 64, 64);
 
@@ -149,7 +149,7 @@ namespace RogueEntity.Core.Tests.Sensing.Sources
 
         protected void PerformTest(string id, string sourceText, string expectedResultText)
         {
-            senseProperties.GetOrCreate(0).ImportData(SenseTestHelpers.Parse(sourceText), Convert);
+            senseProperties.GetOrCreate(0).ImportData(SenseTestHelpers.Parse(sourceText));
 
             var active10 = context.ItemResolver.Instantiate(context, senseActive10);
             var active5 = context.ItemResolver.Instantiate(context, senseActive5);

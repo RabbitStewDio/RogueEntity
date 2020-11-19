@@ -2,18 +2,19 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using RogueEntity.Api.Modules.Helpers;
+using RogueEntity.Core.Utils;
 
 namespace RogueEntity.Api.Services
 {
     public class DefaultServiceResolver : IServiceResolver, IDisposable
     {
         readonly Dictionary<Type, object> backend;
-        readonly HashSet<Type> promisedReferences;
+        readonly Dictionary<Type, object> promisedReferences;
 
         public DefaultServiceResolver()
         {
             backend = new Dictionary<Type, object>();
-            promisedReferences = new HashSet<Type>();
+            promisedReferences = new Dictionary<Type, object>();
         }
 
         public bool TryResolve<TServiceObject>(out TServiceObject o)
@@ -58,8 +59,15 @@ namespace RogueEntity.Api.Services
 
         public Lazy<T> ResolveToReference<T>()
         {
-            promisedReferences.Add(typeof(T));
-            return new Lazy<T>(Resolve<T>);
+            if (promisedReferences.TryGetValue(typeof(T), out var existingReference) &&
+                existingReference is Lazy<T> lazy)
+            {
+                return lazy;
+            }
+            
+            var l = new TraceableLazy<T>(Resolve<T>);
+            promisedReferences.Add(typeof(T), l);
+            return l;
         }
 
         public void ValidatePromisesCanResolve()
@@ -67,11 +75,17 @@ namespace RogueEntity.Api.Services
             StringBuilder b = new StringBuilder();
             foreach (var p in promisedReferences)
             {
-                if (!backend.ContainsKey(p))
+                if (!backend.ContainsKey(p.Key))
                 {
                     b.Append("- ");
-                    b.Append(p);
+                    b.Append(p.Key);
                     b.AppendLine();
+
+                    if (p.Value is ITraceableObject to)
+                    {
+                        b.Append("  first allocated at ");
+                        b.Append(to.TraceInfo);
+                    }
                 }
             }
 

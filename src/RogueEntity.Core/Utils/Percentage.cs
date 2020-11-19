@@ -14,28 +14,28 @@ namespace RogueEntity.Core.Utils
 
         [DataMember(Order=0)]
         [Key(0)]
-        readonly byte data;
+        public readonly byte RawData;
 
         [SerializationConstructor]
-        Percentage(byte data)
+        Percentage(byte rawData)
         {
-            if (data > 200)
+            if (rawData > 200)
             {
-                data = 200;
+                rawData = 200;
             }
-            this.data = data;
+            this.RawData = rawData;
         }
 
         public Percentage(float data)
         {
             if (data < 0) data = 0;
             if (data > 1) data = 1;
-            this.data = (byte) (200 * data);
+            this.RawData = (byte) (200 * data);
         }
 
         public static implicit operator float(Percentage p)
         {
-            return p.data / 200f;
+            return p.RawData / 200f;
         }
 
         public float ToFloat()
@@ -45,7 +45,7 @@ namespace RogueEntity.Core.Utils
 
         public bool Equals(Percentage other)
         {
-            return data == other.data;
+            return RawData == other.RawData;
         }
 
         public override bool Equals(object obj)
@@ -55,12 +55,12 @@ namespace RogueEntity.Core.Utils
 
         public override int GetHashCode()
         {
-            return data.GetHashCode();
+            return RawData.GetHashCode();
         }
 
         public static Percentage operator +(Percentage left, Percentage right)
         {
-            return new Percentage((byte)(left.data + right.data).Clamp(0, 200));
+            return new Percentage((byte)(left.RawData + right.RawData).Clamp(0, 200));
         }
 
         public static bool operator ==(Percentage left, Percentage right)
@@ -80,7 +80,7 @@ namespace RogueEntity.Core.Utils
 
         public int CompareTo(Percentage other)
         {
-            return data.CompareTo(other.data);
+            return RawData.CompareTo(other.RawData);
         }
 
         public int CompareTo(object obj)
@@ -129,7 +129,5 @@ namespace RogueEntity.Core.Utils
         {
             return new Percentage(rawData);
         }
-
-        public byte ToRawData() => data;
     }
 }

@@ -5,16 +5,16 @@ using RogueEntity.Core.Utils.DataViews;
 
 namespace RogueEntity.Core.Movement.CostModifier.Directions
 {
-    public class MovementResistanceDirectionalitySystem<TMovementMode> : AdjacencyGridTransformSystem<RelativeMovementCostModifier<TMovementMode>>, IMovementResistanceDirectionView<TMovementMode>
+    public class MovementResistanceDirectionalitySystem<TMovementMode> : AdjacencyGridTransformSystem<float>, IMovementResistanceDirectionView<TMovementMode>
     {
-        public MovementResistanceDirectionalitySystem(IReadOnlyDynamicDataView3D<RelativeMovementCostModifier<TMovementMode>> sourceData) : base(sourceData)
+        public MovementResistanceDirectionalitySystem(IReadOnlyDynamicDataView3D<float> sourceData) : base(sourceData)
         {
         }
 
         public void ProcessSystem<TGameContext>(TGameContext x) => Process();
 
-        protected override bool IsMoveAllowed(in (IReadOnlyDynamicDataView2D<RelativeMovementCostModifier<TMovementMode>> sourceData,
-                                                  IReadOnlyBoundedDataView<RelativeMovementCostModifier<TMovementMode>> sourceTile, int z) parameterData,
+        protected override bool IsMoveAllowed(in (IReadOnlyDynamicDataView2D<float> sourceData,
+                                                  IReadOnlyBoundedDataView<float> sourceTile, int z) parameterData,
                                               in Position2D pos,
                                               Direction d)
         {
@@ -22,15 +22,15 @@ namespace RogueEntity.Core.Movement.CostModifier.Directions
             if (d.IsCardinal())
             {
                 var moveData = Query(in parameterData, pos.X + c.X, pos.Y + c.Y);
-                var isMoveAllowed = moveData.CostModifier < 1;
+                var isMoveAllowed = moveData < 1;
                 return isMoveAllowed;
             }
 
             var moveDataHorizontal = Query(in parameterData, pos.X + c.X, pos.Y);
-            var canMoveHorizontal = moveDataHorizontal.CostModifier < 1;
+            var canMoveHorizontal = moveDataHorizontal < 1;
             
             var moveDataVertical = Query(in parameterData, pos.X, pos.Y + c.Y);
-            var canMoveVertical = moveDataVertical.CostModifier < 1;
+            var canMoveVertical = moveDataVertical < 1;
 
             // if both cardinal directions are blocked, we cannot walk diagonally.
             if (!canMoveHorizontal && !canMoveVertical)
@@ -41,8 +41,8 @@ namespace RogueEntity.Core.Movement.CostModifier.Directions
             return true;
         }
 
-        static RelativeMovementCostModifier<TMovementMode> Query(in (IReadOnlyDynamicDataView2D<RelativeMovementCostModifier<TMovementMode>> sourceData,
-                                                           IReadOnlyBoundedDataView<RelativeMovementCostModifier<TMovementMode>> sourceTile, int z) parameterData,
+        static float Query(in (IReadOnlyDynamicDataView2D<float> sourceData,
+                                                           IReadOnlyBoundedDataView<float> sourceTile, int z) parameterData,
                                                        int x,
                                                        int y)
         {

@@ -45,7 +45,7 @@ namespace RogueEntity.Core.Sensing.Sources
                 var itemContext = serviceResolver.Resolve<IItemResolver<TGameContext, TItemId>>();
                 var mapContext = serviceResolver.Resolve<IGridMapContext<TItemId>>();
                 
-                var factory = serviceResolver.Resolve<IAggregationLayerSystem<TGameContext, SensoryResistance<TSense>>>();
+                var factory = serviceResolver.Resolve<IAggregationLayerSystemBackend<TGameContext, SensoryResistance<TSense>>>();
                 var cache = serviceResolver.Resolve<ISenseCacheSetupSystem>();
                 foreach (var layer in layers)
                 {

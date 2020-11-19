@@ -24,7 +24,7 @@ namespace RogueEntity.Core.GridProcessing.LayerAggregation
 
         protected IGridMapContext<TItemId> MapContext => mapContext;
 
-        public void Start(TGameContext context, IAggregationLayerSystem<TGameContext, TAggregateType> system)
+        public void Start(TGameContext context, IAggregationLayerSystemBackend<TGameContext, TAggregateType> system)
         {
             if (!mapContext.TryGetGridDataFor(layer, out var gdc))
             {
@@ -34,7 +34,7 @@ namespace RogueEntity.Core.GridProcessing.LayerAggregation
             gdc.PositionDirty += system.OnPositionDirty;
         }
 
-        public void PrepareLayers(TGameContext context, IAggregationLayerSystem<TGameContext, TAggregateType> system)
+        public void PrepareLayers(TGameContext context, IAggregationLayerSystemBackend<TGameContext, TAggregateType> system)
         {
             if (!mapContext.TryGetGridDataFor(layer, out var gridMapDataContext))
             {
@@ -68,7 +68,7 @@ namespace RogueEntity.Core.GridProcessing.LayerAggregation
 
         protected abstract IAggregationPropertiesDataProcessor<TGameContext, TAggregateType> CreateDataProcessor(MapLayer layer, int zLayer, DynamicDataViewConfiguration config);
 
-        public void Stop(TGameContext context, IAggregationLayerSystem<TGameContext, TAggregateType> system)
+        public void Stop(TGameContext context, IAggregationLayerSystemBackend<TGameContext, TAggregateType> system)
         {
             if (!mapContext.TryGetGridDataFor(layer, out var gdc))
             {

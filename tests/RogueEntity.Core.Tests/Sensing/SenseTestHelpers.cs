@@ -83,10 +83,10 @@ namespace RogueEntity.Core.Tests.Sensing
             return result;
         }
         
-        public static DynamicDataView<float> Parse(string text) => Parse(text, out _);
-        public static DynamicDataView<float> Parse(string text, out Rectangle parsedBounds)
+        public static DynamicDataView2D<float> Parse(string text) => Parse(text, out _);
+        public static DynamicDataView2D<float> Parse(string text, out Rectangle parsedBounds)
         {
-            var map = new DynamicDataView<float>(0, 0, 64, 64);
+            var map = new DynamicDataView2D<float>(0, 0, 64, 64);
             var row = -1;
             using var sr = new StringReader(text);
 
@@ -132,10 +132,10 @@ namespace RogueEntity.Core.Tests.Sensing
             return map;
         }
         
-        public static DynamicDataView<string> ParseDirections(string text) => ParseDirections(text, out _);
-        public static DynamicDataView<string> ParseDirections(string text, out Rectangle parsedBounds)
+        public static DynamicDataView2D<string> ParseDirections(string text) => ParseDirections(text, out _);
+        public static DynamicDataView2D<string> ParseDirections(string text, out Rectangle parsedBounds)
         {
-            var map = new DynamicDataView<string>(0, 0, 64, 64);
+            var map = new DynamicDataView2D<string>(0, 0, 64, 64);
             var row = -1;
             using var sr = new StringReader(text);
 
@@ -180,7 +180,7 @@ namespace RogueEntity.Core.Tests.Sensing
             return map;
         }
 
-        public static string PrintMap(DynamicDataView<float> s)
+        public static string PrintMap(DynamicDataView2D<float> s)
         {
             return PrintMap(s, s.GetActiveBounds());
         }
@@ -213,7 +213,7 @@ namespace RogueEntity.Core.Tests.Sensing
                                     elementStringifier: (f) => f);
         }
 
-        public static void ImportData<TResult, TSource>(this IDynamicDataView2D<TResult> targetMap, DynamicDataView<TSource> source, Func<TSource, TResult> converter)
+        public static void ImportData<TResult, TSource>(this IDynamicDataView2D<TResult> targetMap, DynamicDataView2D<TSource> source, Func<TSource, TResult> converter)
         {
             foreach (var bounds in source.GetActiveTiles())
             {
@@ -230,12 +230,31 @@ namespace RogueEntity.Core.Tests.Sensing
             }
         }
         
+        public static void ImportData<TResult>(this IDynamicDataView2D<TResult> targetMap, DynamicDataView2D<TResult> source)
+        {
+            foreach (var bounds in source.GetActiveTiles())
+            {
+                if (!source.TryGetData(bounds.X, bounds.Y, out var tile))
+                {
+                    continue;
+                }
+
+                foreach (var (x, y) in tile.Bounds.Contents)
+                {
+                    if (!tile.TryGet(x, y, out var s)) continue;
+                    targetMap.TrySet(x, y, s);
+                }
+            }
+        }
+        
         public static Lazy<T> AsLazy<T>(this T l) => new Lazy<T>(l);
 
         public static IReadOnlyDynamicDataView3D<T> As3DMap<T>(this IReadOnlyDynamicDataView2D<T> layerData, int z) => new DataViewWrapper3D<T>(z, layerData);
         
         class DataViewWrapper3D<T> : IReadOnlyDynamicDataView3D<T>
         {
+            public event EventHandler<DynamicDataView3DEventArgs<T>> ViewCreated;
+            public event EventHandler<DynamicDataView3DEventArgs<T>> ViewExpired;
             readonly int z;
             readonly IReadOnlyDynamicDataView2D<T> backend;
 

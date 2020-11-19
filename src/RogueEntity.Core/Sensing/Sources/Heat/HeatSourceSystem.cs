@@ -5,7 +5,6 @@ using RogueEntity.Core.Directionality;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Sensing.Cache;
 using RogueEntity.Core.Sensing.Common;
-using RogueEntity.Core.Sensing.Resistance;
 using RogueEntity.Core.Sensing.Resistance.Directions;
 using RogueEntity.Core.Utils.DataViews;
 
@@ -21,13 +20,13 @@ namespace RogueEntity.Core.Sensing.Sources.Heat
     {
         [NotNull] readonly IHeatPhysicsConfiguration heatPhysics;
 
-        public HeatSourceSystem([NotNull] Lazy<IReadOnlyDynamicDataView3D<SensoryResistance<TemperatureSense>>> senseProperties,
-                          [NotNull] Lazy<IGlobalSenseStateCacheProvider> senseCacheProvider,
-                          [NotNull] Lazy<ITimeSource> timeSource,
-                          [NotNull] ISensoryResistanceDirectionView<TemperatureSense> directionalitySystem,
-                          [NotNull] ISenseStateCacheControl senseCacheControl,
-                          [NotNull] ISensePropagationAlgorithm sensePropagationAlgorithm,
-                          [NotNull] IHeatPhysicsConfiguration heatPhysics) :
+        public HeatSourceSystem([NotNull] Lazy<IReadOnlyDynamicDataView3D<float>> senseProperties,
+                                [NotNull] Lazy<IGlobalSenseStateCacheProvider> senseCacheProvider,
+                                [NotNull] Lazy<ITimeSource> timeSource,
+                                [NotNull] ISensoryResistanceDirectionView<TemperatureSense> directionalitySystem,
+                                [NotNull] ISenseStateCacheControl senseCacheControl,
+                                [NotNull] ISensePropagationAlgorithm sensePropagationAlgorithm,
+                                [NotNull] IHeatPhysicsConfiguration heatPhysics) :
             base(senseProperties, senseCacheProvider, timeSource, directionalitySystem, senseCacheControl, sensePropagationAlgorithm, heatPhysics.HeatPhysics)
         {
             this.heatPhysics = heatPhysics ?? throw new ArgumentNullException(nameof(heatPhysics));

@@ -20,6 +20,7 @@ using RogueEntity.Core.Tests.Sensing.Common;
 using RogueEntity.Core.Tests.Sensing.Sources;
 using RogueEntity.Core.Utils.DataViews;
 using RogueEntity.Core.Meta.EntityKeys;
+using RogueEntity.Core.Utils;
 
 namespace RogueEntity.Core.Tests.Sensing.Receptor
 {
@@ -41,8 +42,8 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor
         ItemDeclarationId senseReceptorInactive5;
 
         protected TestTimeSource timeSource;
-        protected SensePropertiesSourceFixture<TSourceSense> senseProperties;
-        protected SensePropertiesSourceFixture<TReceptorSense> receptorSenseProperties;
+        protected DynamicDataView3D<float> senseProperties;
+        protected DynamicDataView3D<float> receptorSenseProperties;
         protected SenseStateCache senseCache;
         List<Action<SenseMappingTestContext>> senseSystemActions;
 
@@ -50,15 +51,15 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor
 
         protected abstract ReferenceItemDeclaration<SenseMappingTestContext, ItemReference> AttachTrait(ReferenceItemDeclaration<SenseMappingTestContext, ItemReference> decl);
 
-        protected SensoryResistanceDirectionalitySystem<TSourceSense> directionalitySourceSystem;
-        protected SensoryResistanceDirectionalitySystem<TReceptorSense> directionalityReceptorSystem;
+        protected SensoryResistanceDirectionalitySystem<SenseMappingTestContext, TSourceSense> directionalitySourceSystem;
+        protected SensoryResistanceDirectionalitySystem<SenseMappingTestContext, TReceptorSense> directionalityReceptorSystem;
 
         protected abstract (ISensePropagationAlgorithm, ISensePhysics) GetOrCreateReceptorSensePhysics();
 
         protected virtual SenseReceptorSystem<TReceptorSense, TSourceSense> CreateSystem()
         {
             var physics = GetOrCreateReceptorSensePhysics();
-            return new SenseReceptorSystem<TReceptorSense, TSourceSense>(receptorSenseProperties.AsLazy<IReadOnlyDynamicDataView3D<SensoryResistance<TReceptorSense>>>(),
+            return new SenseReceptorSystem<TReceptorSense, TSourceSense>(receptorSenseProperties.AsLazy<IReadOnlyDynamicDataView3D<float>>(),
                                                                          senseCache.AsLazy<ISenseStateCacheProvider>(),
                                                                          senseCache.AsLazy<IGlobalSenseStateCacheProvider>(),
                                                                          timeSource.AsLazy<ITimeSource>(),
@@ -107,12 +108,12 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor
                                                                    .DoWith(x => AttachTrait(x)));
 
             timeSource = new TestTimeSource();
-            senseProperties = new SensePropertiesSourceFixture<TSourceSense>();
-            receptorSenseProperties = new SensePropertiesSourceFixture<TReceptorSense>();
+            senseProperties = new DynamicDataView3D<float>();
+            receptorSenseProperties = new DynamicDataView3D<float>();
             senseCache = new SenseStateCache(2, 64, 64);
 
-            directionalityReceptorSystem = new SensoryResistanceDirectionalitySystem<TReceptorSense>(receptorSenseProperties);
-            directionalitySourceSystem = new SensoryResistanceDirectionalitySystem<TSourceSense>(senseProperties);
+            directionalityReceptorSystem = new SensoryResistanceDirectionalitySystem<SenseMappingTestContext, TReceptorSense>(receptorSenseProperties);
+            directionalitySourceSystem = new SensoryResistanceDirectionalitySystem<SenseMappingTestContext, TSourceSense>(senseProperties);
             
             senseSystem = CreateSystem();
             senseSourceSystem = CreateSourceSystem();
@@ -129,7 +130,7 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor
         protected virtual SenseSourceSystem<TSourceSense, TSenseSourceDefinition> CreateSourceSystem()
         {
             var physics = GetOrCreateSourceSensePhysics();
-            return new SenseSourceSystem<TSourceSense, TSenseSourceDefinition>(senseProperties.AsLazy<IReadOnlyDynamicDataView3D<SensoryResistance<TSourceSense>>>(),
+            return new SenseSourceSystem<TSourceSense, TSenseSourceDefinition>(senseProperties.AsLazy<IReadOnlyDynamicDataView3D<float>>(),
                                                                                senseCache.AsLazy<IGlobalSenseStateCacheProvider>(),
                                                                                timeSource.AsLazy<ITimeSource>(),
                                                                                directionalitySourceSystem,
@@ -188,8 +189,8 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor
 
         protected void PerformTest(string id, string sourceText, string expectedPerceptionResult, string expectedSenseMap, string expectedSenseMapDirections)
         {
-            senseProperties.GetOrCreate(0).ImportData(SenseTestHelpers.Parse(sourceText, out var activeTestArea), Convert);
-            receptorSenseProperties.GetOrCreate(0).ImportData(SenseTestHelpers.Parse(sourceText, out _), f => new SensoryResistance<TReceptorSense>(f));
+            senseProperties.GetOrCreate(0).ImportData(SenseTestHelpers.Parse(sourceText, out var activeTestArea));
+            receptorSenseProperties.GetOrCreate(0).ImportData(SenseTestHelpers.Parse(sourceText, out _));
 
             var sourceActive10 = context.ItemResolver.Instantiate(context, senseSourceActive10);
             var sourceActive5 = context.ItemResolver.Instantiate(context, senseSourceActive5);

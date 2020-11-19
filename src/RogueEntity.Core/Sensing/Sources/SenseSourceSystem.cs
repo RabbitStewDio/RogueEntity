@@ -10,7 +10,6 @@ using RogueEntity.Core.Positioning.Caching;
 using RogueEntity.Core.Sensing.Cache;
 using RogueEntity.Core.Sensing.Common;
 using RogueEntity.Core.Sensing.Common.Physics;
-using RogueEntity.Core.Sensing.Resistance;
 using RogueEntity.Core.Sensing.Resistance.Directions;
 using RogueEntity.Core.Utils.DataViews;
 using Serilog;
@@ -25,7 +24,7 @@ namespace RogueEntity.Core.Sensing.Sources
         const int ZLayerTimeToLive = 50;
 
         readonly Dictionary<int, SenseDataLevel> activeLightsPerLevel;
-        readonly Lazy<IReadOnlyDynamicDataView3D<SensoryResistance<TSense>>> senseProperties;
+        readonly Lazy<IReadOnlyDynamicDataView3D<float>> senseProperties;
         readonly Lazy<IGlobalSenseStateCacheProvider> senseCacheProvider;
         readonly Lazy<ITimeSource> timeSource;
         readonly ISenseStateCacheControl senseCacheControl;
@@ -38,13 +37,13 @@ namespace RogueEntity.Core.Sensing.Sources
         Optional<IGridStateCache> cacheView;
         int currentTime;
 
-        public SenseSourceSystem([NotNull] Lazy<IReadOnlyDynamicDataView3D<SensoryResistance<TSense>>> senseProperties,
-                               [NotNull] Lazy<IGlobalSenseStateCacheProvider> senseCacheProvider,
-                               [NotNull] Lazy<ITimeSource> timeSource,
-                               [NotNull] ISensoryResistanceDirectionView<TSense> directionalitySystem,
-                               [NotNull] ISenseStateCacheControl senseCacheControl,
-                               [NotNull] ISensePropagationAlgorithm sensePropagationAlgorithm,
-                               [NotNull] ISensePhysics physics)
+        public SenseSourceSystem([NotNull] Lazy<IReadOnlyDynamicDataView3D<float>> senseProperties,
+                                 [NotNull] Lazy<IGlobalSenseStateCacheProvider> senseCacheProvider,
+                                 [NotNull] Lazy<ITimeSource> timeSource,
+                                 [NotNull] ISensoryResistanceDirectionView<TSense> directionalitySystem,
+                                 [NotNull] ISenseStateCacheControl senseCacheControl,
+                                 [NotNull] ISensePropagationAlgorithm sensePropagationAlgorithm,
+                                 [NotNull] ISensePhysics physics)
         {
             this.senseProperties = senseProperties ?? throw new ArgumentNullException(nameof(senseProperties));
             this.sensePropagationAlgorithm = sensePropagationAlgorithm ?? throw new ArgumentNullException(nameof(sensePropagationAlgorithm));
@@ -76,7 +75,7 @@ namespace RogueEntity.Core.Sensing.Sources
 
             if (resistanceSource == null)
             {
-                this.resistanceSource = senseProperties.Value.Transform(r => r.BlocksSense.ToFloat());
+                this.resistanceSource = senseProperties.Value;
             }
         }
 

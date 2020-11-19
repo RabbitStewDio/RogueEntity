@@ -10,8 +10,11 @@ namespace RogueEntity.Core.GridProcessing.Transforms
 {
     public abstract class GridTransformSystem<TSourceData, TTargetData> : IReadOnlyDynamicDataView3D<TTargetData>
     {
+        public event EventHandler<DynamicDataView3DEventArgs<TTargetData>> ViewCreated;
+        public event EventHandler<DynamicDataView3DEventArgs<TTargetData>> ViewExpired;
+        
         readonly IReadOnlyDynamicDataView3D<TSourceData> sourceData;
-        readonly Dictionary<int, DynamicDataView<TTargetData>> targetData;
+        readonly Dictionary<int, DynamicDataView2D<TTargetData>> targetData;
         readonly GridTileStateView dirtyMap;
         readonly List<ProcessingParameters> processingParameterCache;
         readonly List<Rectangle> activeTileBuffer;
@@ -21,7 +24,7 @@ namespace RogueEntity.Core.GridProcessing.Transforms
         protected GridTransformSystem(IReadOnlyDynamicDataView3D<TSourceData> sourceData)
         {
             this.sourceData = sourceData;
-            this.targetData = new Dictionary<int, DynamicDataView<TTargetData>>();
+            this.targetData = new Dictionary<int, DynamicDataView2D<TTargetData>>();
             this.dirtyMap = new GridTileStateView(sourceData.OffsetX, sourceData.OffsetY, sourceData.TileSizeX, sourceData.TileSizeY);
             this.processingParameterCache = new List<ProcessingParameters>();
             this.activeTileBuffer = new List<Rectangle>();
@@ -115,14 +118,14 @@ namespace RogueEntity.Core.GridProcessing.Transforms
             }
         }
 
-        DynamicDataView<TTargetData> GetWritableMap(int z)
+        DynamicDataView2D<TTargetData> GetWritableMap(int z)
         {
             if (targetData.TryGetValue(z, out var m))
             {
                 return m;
             }
 
-            m = new DynamicDataView<TTargetData>(sourceData.OffsetX, sourceData.OffsetY, sourceData.TileSizeX, sourceData.TileSizeY);
+            m = new DynamicDataView2D<TTargetData>(sourceData.OffsetX, sourceData.OffsetY, sourceData.TileSizeX, sourceData.TileSizeY);
             targetData[z] = m;
             return m;
         }

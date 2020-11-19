@@ -1,6 +1,3 @@
-using RogueEntity.Api.Modules.Attributes;
-using RogueEntity.Core.Movement.CostModifier;
-
 namespace RogueEntity.Core.Movement.MovementModes.Swimming
 {
     public class SwimmingMovementModule : MovementModuleBase<SwimmingMovement>

@@ -10,7 +10,6 @@ using RogueEntity.Core.Positioning.Caching;
 using RogueEntity.Core.Sensing.Cache;
 using RogueEntity.Core.Sensing.Common;
 using RogueEntity.Core.Sensing.Common.Physics;
-using RogueEntity.Core.Sensing.Resistance;
 using RogueEntity.Core.Sensing.Resistance.Directions;
 using RogueEntity.Core.Sensing.Sources;
 using RogueEntity.Core.Utils;
@@ -34,7 +33,7 @@ namespace RogueEntity.Core.Sensing.Receptors
         static readonly ILogger Logger = SLog.ForContext<SenseReceptorSystem<TReceptorSense, TSourceSense>>();
         const int ZLayerTimeToLive = 50;
 
-        readonly Lazy<IReadOnlyDynamicDataView3D<SensoryResistance<TReceptorSense>>> senseProperties;
+        readonly Lazy<IReadOnlyDynamicDataView3D<float>> senseProperties;
         readonly Lazy<ISenseStateCacheProvider> senseCacheProvider;
         readonly Lazy<IGlobalSenseStateCacheProvider> globalSenseCacheProvider;
         readonly Lazy<ITimeSource> timeSource;
@@ -49,7 +48,7 @@ namespace RogueEntity.Core.Sensing.Receptors
         IReadOnlyDynamicDataView3D<float> resistanceSource;
         int currentTime;
 
-        public SenseReceptorSystem([NotNull] Lazy<IReadOnlyDynamicDataView3D<SensoryResistance<TReceptorSense>>> senseProperties,
+        public SenseReceptorSystem([NotNull] Lazy<IReadOnlyDynamicDataView3D<float>> senseProperties,
                                    [NotNull] Lazy<ISenseStateCacheProvider> senseCacheProvider,
                                    [NotNull] Lazy<IGlobalSenseStateCacheProvider> globalSenseCacheProvider,
                                    [NotNull] Lazy<ITimeSource> timeSource,
@@ -110,11 +109,9 @@ namespace RogueEntity.Core.Sensing.Receptors
 
             if (resistanceSource == null)
             {
-                this.resistanceSource = senseProperties.Value.Transform(TranslateResistance);
+                this.resistanceSource = senseProperties.Value;
             }
         }
-
-        protected virtual float TranslateResistance(SensoryResistance<TReceptorSense> r) => r.BlocksSense.ToFloat();
 
         /// <summary>
         ///  Step 0: Clear any previously left-over state

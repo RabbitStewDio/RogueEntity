@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using EnTTSharp.Entities;
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Core.GridProcessing.LayerAggregation;
@@ -6,7 +7,14 @@ using RogueEntity.Core.Positioning.MapLayers;
 
 namespace RogueEntity.Core.Movement.CostModifier.Map
 {
-    public class RelativeMovementCostSystem<TGameContext, TMovementType> : LayeredAggregationSystem<TGameContext, RelativeMovementCostModifier<TMovementType>>
+    [SuppressMessage("ReSharper", "UnusedTypeParameter", Justification = "Discriminator")]
+    public interface IRelativeMovementCostSystem<TGameContext, TMovementType>: IAggregationLayerSystem<TGameContext, float>
+    {
+        
+    }
+    
+    public class RelativeMovementCostSystem<TGameContext, TMovementType> : LayeredAggregationSystem<TGameContext, float, RelativeMovementCostModifier<TMovementType>>,
+                                                                           IRelativeMovementCostSystem<TGameContext, TMovementType>
     {
         public RelativeMovementCostSystem(int tileWidth, int tileHeight) : base(RelativeMovementCostSystem.ProcessTile, tileWidth, tileHeight)
         {
@@ -19,7 +27,7 @@ namespace RogueEntity.Core.Movement.CostModifier.Map
 
     public static class RelativeMovementCostSystem
     {
-        public static void ProcessTile<TMovementType>(AggregationProcessingParameter<RelativeMovementCostModifier<TMovementType>> p)
+        public static void ProcessTile<TMovementType>(AggregationProcessingParameter<float, RelativeMovementCostModifier<TMovementType>> p)
         {
             var bounds = p.Bounds;
             var resistanceData = p.WritableTile;
@@ -38,7 +46,7 @@ namespace RogueEntity.Core.Movement.CostModifier.Map
             }
         }
 
-        public static void AddLayer<TGameContext, TItemId, TMovementMode>(this IAggregationLayerSystem<TGameContext, RelativeMovementCostModifier<TMovementMode>> system,
+        public static void AddLayer<TGameContext, TItemId, TMovementMode>(this IAggregationLayerSystemBackend<TGameContext, RelativeMovementCostModifier<TMovementMode>> system,
                                                                           IGridMapContext<TItemId> mapContext,
                                                                           IItemResolver<TGameContext, TItemId> itemContext,
                                                                           MapLayer mapLayer)

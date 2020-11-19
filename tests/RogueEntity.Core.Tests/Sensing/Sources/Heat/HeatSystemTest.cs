@@ -6,7 +6,6 @@ using RogueEntity.Core.Sensing;
 using RogueEntity.Core.Sensing.Cache;
 using RogueEntity.Core.Sensing.Common;
 using RogueEntity.Core.Sensing.Common.Physics;
-using RogueEntity.Core.Sensing.Resistance;
 using RogueEntity.Core.Sensing.Sources;
 using RogueEntity.Core.Sensing.Sources.Heat;
 using RogueEntity.Core.Utils.Algorithms;
@@ -68,7 +67,7 @@ namespace RogueEntity.Core.Tests.Sensing.Sources.Heat
 
         protected override SenseSourceSystem<TemperatureSense, HeatSourceDefinition> CreateSystem()
         {
-            return new HeatSourceSystem(senseProperties.AsLazy<IReadOnlyDynamicDataView3D<SensoryResistance<TemperatureSense>>>(),
+            return new HeatSourceSystem(senseProperties.AsLazy<IReadOnlyDynamicDataView3D<float>>(),
                                   senseCache.AsLazy<IGlobalSenseStateCacheProvider>(),
                                   timeSource.AsLazy<ITimeSource>(),
                                   directionalitySystem,

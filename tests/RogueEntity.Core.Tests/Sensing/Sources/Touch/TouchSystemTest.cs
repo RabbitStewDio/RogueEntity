@@ -13,6 +13,7 @@ using RogueEntity.Core.Sensing.Sources;
 using RogueEntity.Core.Sensing.Sources.Touch;
 using RogueEntity.Core.Utils.Algorithms;
 using RogueEntity.Core.Meta.EntityKeys;
+using RogueEntity.Core.Utils.DataViews;
 
 namespace RogueEntity.Core.Tests.Sensing.Sources.Touch
 {
@@ -82,7 +83,7 @@ namespace RogueEntity.Core.Tests.Sensing.Sources.Touch
         [TestCase(nameof(EmptyRoom), EmptyRoom, EmptyRoomResult)]
         public void DoTest(string id, string sourceText, string expectedResultText)
         {
-            senseProperties.GetOrCreate(0).ImportData(SenseTestHelpers.Parse(sourceText), Convert);
+            senseProperties.GetOrCreate(0).ImportData(SenseTestHelpers.Parse(sourceText));
 
             var active10 = context.ItemResolver.Instantiate(context, senseActive10);
             var active5 = context.ItemResolver.Instantiate(context, senseActive5);

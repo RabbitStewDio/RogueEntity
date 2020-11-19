@@ -9,7 +9,7 @@ using RogueEntity.Core.Utils.DataViews;
 
 namespace RogueEntity.Core.Sensing.Common
 {
-    public class SenseDirectionStoreTileWrapper: IReadOnlyBoundedDataView<SenseDirectionStore>
+    public class SenseDirectionStoreTileWrapper : IReadOnlyBoundedDataView<SenseDirectionStore>
     {
         readonly IReadOnlyBoundedDataView<byte> raw;
 
@@ -40,30 +40,55 @@ namespace RogueEntity.Core.Sensing.Common
             get { return raw.Bounds; }
         }
     }
-    
+
     [DataContract]
     [MessagePackObject]
     public class SenseDataMap : IDynamicSenseDataView2D
     {
+        event EventHandler<DynamicDataView2DEventArgs<float>> IReadOnlyDynamicDataView2D<float>.ViewCreated
+        {
+            add { }
+            remove { }
+        }
+
+        event EventHandler<DynamicDataView2DEventArgs<float>> IReadOnlyDynamicDataView2D<float>.ViewExpired
+        {
+            add { }
+            remove { }
+        }
+
+        event EventHandler<DynamicDataView2DEventArgs<SenseDirectionStore>> IReadOnlyDynamicDataView2D<SenseDirectionStore>.ViewCreated
+        {
+            add { }
+            remove { }
+        }
+
+        event EventHandler<DynamicDataView2DEventArgs<SenseDirectionStore>> IReadOnlyDynamicDataView2D<SenseDirectionStore>.ViewExpired
+        {
+            add { }
+            remove { }
+        }
+
         [DataMember(Order = 0)]
         [Key(0)]
-        readonly DynamicDataView<float> sensitivityData;
+        readonly DynamicDataView2D<float> sensitivityData;
+
         [DataMember(Order = 1)]
         [Key(1)]
-        readonly DynamicDataView<byte> directionData;
+        readonly DynamicDataView2D<byte> directionData;
 
         public SenseDataMap(int tileWidth = 64, int tileHeight = 64) : this(0, 0, tileWidth, tileHeight)
         {
         }
-        
+
         public SenseDataMap(int offsetX, int offsetY, int tileWidth, int tileHeight)
         {
-            sensitivityData = new DynamicDataView<float>(offsetX, offsetY, tileWidth, tileHeight);
-            directionData = new DynamicDataView<byte>(offsetX, offsetY, tileWidth, tileHeight);
+            sensitivityData = new DynamicDataView2D<float>(offsetX, offsetY, tileWidth, tileHeight);
+            directionData = new DynamicDataView2D<byte>(offsetX, offsetY, tileWidth, tileHeight);
         }
 
         [SerializationConstructor]
-        public SenseDataMap([NotNull] DynamicDataView<float> sensitivityData, [NotNull] DynamicDataView<byte> directionData)
+        public SenseDataMap([NotNull] DynamicDataView2D<float> sensitivityData, [NotNull] DynamicDataView2D<byte> directionData)
         {
             this.sensitivityData = sensitivityData ?? throw new ArgumentNullException(nameof(sensitivityData));
             this.directionData = directionData ?? throw new ArgumentNullException(nameof(directionData));
@@ -100,10 +125,10 @@ namespace RogueEntity.Core.Sensing.Common
             var r2 = directionData.TrySet(x, y, directions.RawData);
             return r1 && r2;
         }
-        
+
         public void Write(Position2D point,
                           Position2D origin,
-                          float intensity, 
+                          float intensity,
                           SenseDataFlags flags = SenseDataFlags.None)
         {
             var direction = point - origin;

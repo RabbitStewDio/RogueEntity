@@ -28,5 +28,14 @@ namespace RogueEntity.Api.Services
             return r;
         }
 
+        public static Lazy<TTarget> As<TTarget, TSource>(this Lazy<TSource> l) where TSource: TTarget
+        {
+            return new Lazy<TTarget>(() => l.Value);
+        }
+        
+        public static Lazy<TTarget> Map<TTarget, TSource>(this Lazy<TSource> l, Func<TSource, TTarget> fn)
+        {
+            return new Lazy<TTarget>(() => fn(l.Value));
+        }
     }
 }

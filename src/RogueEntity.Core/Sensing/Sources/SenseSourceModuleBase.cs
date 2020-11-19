@@ -23,7 +23,6 @@ using RogueEntity.Core.Sensing.Common.Physics;
 using RogueEntity.Core.Sensing.Resistance;
 using RogueEntity.Core.Sensing.Resistance.Directions;
 using RogueEntity.Core.Sensing.Resistance.Maps;
-using RogueEntity.Core.Utils.DataViews;
 using Serilog;
 
 namespace RogueEntity.Core.Sensing.Sources
@@ -370,24 +369,24 @@ namespace RogueEntity.Core.Sensing.Sources
             system = new SensePropertiesSystem<TGameContext, TSense>(gridConfig.OffsetX, gridConfig.OffsetY, gridConfig.TileSizeX, gridConfig.TileSizeY);
 
             serviceResolver.Store(system);
-            serviceResolver.Store<IAggregationLayerSystem<TGameContext, SensoryResistance<TSense>>>(system);
-            serviceResolver.Store<IReadOnlyDynamicDataView3D<SensoryResistance<TSense>>>(system);
+            serviceResolver.Store<IAggregationLayerSystemBackend<TGameContext, SensoryResistance<TSense>>>(system);
+            serviceResolver.Store<ISensePropertiesDataView<TGameContext, TSense>>(system);
             return system;
         }
 
-        protected virtual SensoryResistanceDirectionalitySystem<TSense> GetOrCreateDirectionalitySystem<TGameContext, TItemId>(IServiceResolver serviceResolver)
+        protected virtual SensoryResistanceDirectionalitySystem<TGameContext, TSense> GetOrCreateDirectionalitySystem<TGameContext, TItemId>(IServiceResolver serviceResolver)
         {
-            if (serviceResolver.TryResolve(out SensoryResistanceDirectionalitySystem<TSense> system))
+            if (serviceResolver.TryResolve(out SensoryResistanceDirectionalitySystem<TGameContext, TSense> system))
             {
                 return system;
             }
 
-            if (!serviceResolver.TryResolve(out IReadOnlyDynamicDataView3D<SensoryResistance<TSense>> data))
+            if (!serviceResolver.TryResolve(out ISensePropertiesDataView<TGameContext, TSense> data))
             {
                 data = GetOrCreateSensePropertiesSystem<TGameContext, TItemId>(serviceResolver);
             }
 
-            system = new SensoryResistanceDirectionalitySystem<TSense>(data);
+            system = new SensoryResistanceDirectionalitySystem<TGameContext, TSense>(data.ResultView);
             serviceResolver.Store(system);
             serviceResolver.Store<ISensoryResistanceDirectionView<TSense>>(system);
             return system;
@@ -406,7 +405,8 @@ namespace RogueEntity.Core.Sensing.Sources
                 senseDirections = GetOrCreateDirectionalitySystem<TGameContext, TItemId>(serviceResolver);
             }
 
-            ls = new SenseSourceSystem<TSense, TSenseSourceDefinition>(serviceResolver.ResolveToReference<IReadOnlyDynamicDataView3D<SensoryResistance<TSense>>>(),
+            var senseProperties = serviceResolver.ResolveToReference<ISensePropertiesDataView<TGameContext, TSense>>().Map(l => l.ResultView);
+            ls = new SenseSourceSystem<TSense, TSenseSourceDefinition>(senseProperties,
                                                                        serviceResolver.ResolveToReference<IGlobalSenseStateCacheProvider>(),
                                                                        serviceResolver.ResolveToReference<ITimeSource>(),
                                                                        senseDirections,

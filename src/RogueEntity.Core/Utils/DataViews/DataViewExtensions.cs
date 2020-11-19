@@ -5,6 +5,16 @@ namespace RogueEntity.Core.Utils.DataViews
 {
     public static class DataViewExtensions
     {
+        public static IDynamicDataView2D<TData> GetOrCreate<TData>(this IDynamicDataView3D<TData> data, int z)
+        {
+            if (data.TryGetWritableView(z, out var view, DataViewCreateMode.CreateMissing))
+            {
+                return view;
+            }
+            
+            throw new InvalidOperationException();
+        }
+        
         public static TranslatedDataView<TData> TranslateBy<TData>(this IReadOnlyView2D<TData> view, int offsetX, int offsetY)
         {
             return new TranslatedDataView<TData>(view, offsetX, offsetY);

@@ -12,8 +12,8 @@ namespace RogueEntity.Core.Utils.DataViews
     [MessagePackObject]
     public class DynamicBoolDataView : IDynamicDataView2D<bool>
     {
-        public event EventHandler<DynamicBoolDataViewEventArgs> ViewCreated;
-        public event EventHandler<DynamicBoolDataViewEventArgs> ViewExpired;
+        public event EventHandler<DynamicDataView2DEventArgs<bool>> ViewCreated;
+        public event EventHandler<DynamicDataView2DEventArgs<bool>> ViewExpired;
 
         [DataMember(Order = 0)]
         [Key(0)]
@@ -177,7 +177,7 @@ namespace RogueEntity.Core.Utils.DataViews
                 e.MarkUsedAge();
                 if ((currentTime - e.LastUsed) > age)
                 {
-                    ViewExpired?.Invoke(this, new DynamicBoolDataViewEventArgs(e));
+                    ViewExpired?.Invoke(this, new DynamicDataView2DEventArgs<bool>(e));
                     expired.Add(entry.Key);
                 }
             }
@@ -214,7 +214,7 @@ namespace RogueEntity.Core.Utils.DataViews
 
             data = new TrackedDataView(new Rectangle(dx * tileSizeX + offsetX, dy * tileSizeY + offsetY, tileSizeX, tileSizeY), currentTime);
             index[new Position2D(dx, dy)] = data;
-            ViewCreated?.Invoke(this, new DynamicBoolDataViewEventArgs(data));
+            ViewCreated?.Invoke(this, new DynamicDataView2DEventArgs<bool>(data));
             activeBounds = default;
             return data;
 
@@ -268,7 +268,7 @@ namespace RogueEntity.Core.Utils.DataViews
             var dy = DataViewPartitions.TileSplit(y, offsetY, tileSizeY);
             var dataRaw = new TrackedDataView(new Rectangle(dx * tileSizeX + offsetX, dy * tileSizeY + offsetY, tileSizeX, tileSizeY), currentTime);
             index[new Position2D(dx, dy)] = dataRaw;
-            ViewCreated?.Invoke(this, new DynamicBoolDataViewEventArgs(dataRaw));
+            ViewCreated?.Invoke(this, new DynamicDataView2DEventArgs<bool>(dataRaw));
             activeBounds = default;
             
             data = dataRaw;

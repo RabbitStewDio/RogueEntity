@@ -11,39 +11,43 @@ using Serilog;
 
 namespace RogueEntity.Core.GridProcessing.LayerAggregation
 {
-    public class AggregatePropertiesLayer<TGameContext, TAggregateData> : IAggregationPropertiesLayer<TGameContext, TAggregateData>
+    public class AggregatePropertiesLayer<TGameContext, TAggregateData, TSourceType> : IAggregationPropertiesLayer<TGameContext, TSourceType>
     {
-        static readonly ILogger Logger = SLog.ForContext<AggregatePropertiesLayer<TGameContext, TAggregateData>>();
+        static readonly ILogger Logger = SLog.ForContext<AggregatePropertiesLayer<TGameContext, TAggregateData, TSourceType>>();
 
         readonly int z;
-        readonly Action<AggregationProcessingParameter<TAggregateData>> processor;
-        readonly Dictionary<byte, IAggregationPropertiesDataProcessor<TGameContext, TAggregateData>> dependencies;
-        readonly DynamicDataView<TAggregateData> resistanceData;
-        readonly List<IAggregationPropertiesDataProcessor<TGameContext, TAggregateData>> dependenciesAsList;
-        readonly List<IReadOnlyDynamicDataView2D<TAggregateData>> dataViewsAsList;
-        readonly Dictionary<Rectangle, AggregationProcessingParameter<TAggregateData>> processingParameterCollector;
+        readonly Action<AggregationProcessingParameter<TAggregateData, TSourceType>> processor;
+        readonly Dictionary<byte, IAggregationPropertiesDataProcessor<TGameContext, TSourceType>> dependencies;
+        readonly DynamicDataView2D<TAggregateData> resistanceData;
+        readonly List<IAggregationPropertiesDataProcessor<TGameContext, TSourceType>> dependenciesAsList;
+        readonly List<IReadOnlyDynamicDataView2D<TSourceType>> dataViewsAsList;
+        readonly Dictionary<Rectangle, AggregationProcessingParameter<TAggregateData, TSourceType>> processingParameterCollector;
         bool combinerDirty;
 
-        public AggregatePropertiesLayer(int z, [NotNull] Action<AggregationProcessingParameter<TAggregateData>> processor, 
-                                        int offsetX, int offsetY, int tileSizeX, int tileSizeY)
+        public AggregatePropertiesLayer(int z,
+                                        [NotNull] Action<AggregationProcessingParameter<TAggregateData, TSourceType>> processor,
+                                        int offsetX,
+                                        int offsetY,
+                                        int tileSizeX,
+                                        int tileSizeY)
         {
             this.z = z;
             this.processor = processor ?? throw new ArgumentNullException(nameof(processor));
-            this.dependencies = new Dictionary<byte, IAggregationPropertiesDataProcessor<TGameContext, TAggregateData>>();
-            this.resistanceData = new DynamicDataView<TAggregateData>(offsetX, offsetY, tileSizeX, tileSizeY);
-            this.dependenciesAsList = new List<IAggregationPropertiesDataProcessor<TGameContext, TAggregateData>>();
-            this.dataViewsAsList = new List<IReadOnlyDynamicDataView2D<TAggregateData>>();
-            this.processingParameterCollector = new Dictionary<Rectangle, AggregationProcessingParameter<TAggregateData>>();
+            this.dependencies = new Dictionary<byte, IAggregationPropertiesDataProcessor<TGameContext, TSourceType>>();
+            this.resistanceData = new DynamicDataView2D<TAggregateData>(offsetX, offsetY, tileSizeX, tileSizeY);
+            this.dependenciesAsList = new List<IAggregationPropertiesDataProcessor<TGameContext, TSourceType>>();
+            this.dataViewsAsList = new List<IReadOnlyDynamicDataView2D<TSourceType>>();
+            this.processingParameterCollector = new Dictionary<Rectangle, AggregationProcessingParameter<TAggregateData, TSourceType>>();
         }
 
-        public DynamicDataView<TAggregateData> ResistanceData => resistanceData;
+        public DynamicDataView2D<TAggregateData> ResistanceData => resistanceData;
 
         public bool IsDefined(MapLayer layer)
         {
             return dependencies.TryGetValue(layer.LayerId, out _);
         }
 
-        public void AddProcess(MapLayer layer, IAggregationPropertiesDataProcessor<TGameContext, TAggregateData> p)
+        public void AddProcess(MapLayer layer, IAggregationPropertiesDataProcessor<TGameContext, TSourceType> p)
         {
             dependencies.Add(layer.LayerId, p);
             combinerDirty = true;
@@ -130,7 +134,7 @@ namespace RogueEntity.Core.GridProcessing.LayerAggregation
                         continue;
                     }
 
-                    proc = new AggregationProcessingParameter<TAggregateData>(t, dataViewsAsList, writableTile);
+                    proc = new AggregationProcessingParameter<TAggregateData, TSourceType>(t, dataViewsAsList, writableTile);
                     processingParameterCollector[t] = proc;
                 }
             }

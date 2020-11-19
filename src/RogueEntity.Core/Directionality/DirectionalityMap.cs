@@ -27,10 +27,10 @@ namespace RogueEntity.Core.Directionality
         readonly int tileSizeY;
         [Key(4)]
         [DataMember(Order = 4)]
-        readonly Dictionary<int, DynamicDataView<DirectionalityInformation>> backend;
+        readonly Dictionary<int, DynamicDataView2D<DirectionalityInformation>> backend;
 
         [SerializationConstructor]
-        internal DirectionalityMap(int offsetX, int offsetY, int tileSizeX, int tileSizeY, Dictionary<int, DynamicDataView<DirectionalityInformation>> backend)
+        internal DirectionalityMap(int offsetX, int offsetY, int tileSizeX, int tileSizeY, Dictionary<int, DynamicDataView2D<DirectionalityInformation>> backend)
         {
             this.offsetX = offsetX;
             this.offsetY = offsetY;
@@ -45,7 +45,7 @@ namespace RogueEntity.Core.Directionality
             this.offsetY = offsetY;
             this.tileSizeX = tileSizeX;
             this.tileSizeY = tileSizeY;
-            this.backend = new Dictionary<int, DynamicDataView<DirectionalityInformation>>();
+            this.backend = new Dictionary<int, DynamicDataView2D<DirectionalityInformation>>();
         }
 
         public bool TryGetMap(int z, out IReadOnlyDynamicDataView2D<DirectionalityInformation> data)
@@ -64,7 +64,7 @@ namespace RogueEntity.Core.Directionality
         {
             if (!backend.TryGetValue(z, out var dataRaw))
             {
-                dataRaw = new DynamicDataView<DirectionalityInformation>(offsetX, offsetY, tileSizeX, tileSizeY);
+                dataRaw = new DynamicDataView2D<DirectionalityInformation>(offsetX, offsetY, tileSizeX, tileSizeY);
                 backend[z] = dataRaw;
             }
             

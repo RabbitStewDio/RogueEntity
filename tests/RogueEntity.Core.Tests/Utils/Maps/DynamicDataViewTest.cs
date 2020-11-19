@@ -10,7 +10,7 @@ namespace RogueEntity.Core.Tests.Utils.Maps
         [Test]
         public void ValidateBasicOperations()
         {
-            var dataView = new DynamicDataView<int>(4, 5, 16, 18);
+            var dataView = new DynamicDataView2D<int>(4, 5, 16, 18);
             dataView[4, 5] = 1;
             dataView[4, 5].Should().Be(1);
             
@@ -21,7 +21,7 @@ namespace RogueEntity.Core.Tests.Utils.Maps
         [Test]
         public void ValidateTileBounds()
         {
-            var dataView = new DynamicDataView<int>(4, 5, 16, 18);
+            var dataView = new DynamicDataView2D<int>(4, 5, 16, 18);
             dataView[4, 5] = 1;
             dataView.TryGetData(4, 5, out var tile).Should().BeTrue();
             tile.Bounds.Should().Be(new Rectangle(4, 5, 16, 18));

@@ -12,7 +12,6 @@ using RogueEntity.Core.Movement.CostModifier.Directions;
 using RogueEntity.Core.Movement.CostModifier.Map;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Grid;
-using RogueEntity.Core.Utils.DataViews;
 
 namespace RogueEntity.Core.Movement.MovementModes
 {
@@ -127,8 +126,8 @@ namespace RogueEntity.Core.Movement.MovementModes
             system = new RelativeMovementCostSystem<TGameContext, TMovementMode>(gridConfig.OffsetX, gridConfig.OffsetY, gridConfig.TileSizeX, gridConfig.TileSizeY);
 
             serviceResolver.Store(system);
-            serviceResolver.Store<IAggregationLayerSystem<TGameContext, RelativeMovementCostModifier<TMovementMode>>>(system);
-            serviceResolver.Store<IReadOnlyDynamicDataView3D<RelativeMovementCostModifier<TMovementMode>>>(system);
+            serviceResolver.Store<IAggregationLayerSystemBackend<TGameContext, RelativeMovementCostModifier<TMovementMode>>>(system);
+            serviceResolver.Store<IRelativeMovementCostSystem<TGameContext, TMovementMode>>(system);
             return system;
         }
 
@@ -139,12 +138,12 @@ namespace RogueEntity.Core.Movement.MovementModes
                 return system;
             }
 
-            if (!serviceResolver.TryResolve(out IReadOnlyDynamicDataView3D<RelativeMovementCostModifier<TMovementMode>> data))
+            if (!serviceResolver.TryResolve(out IRelativeMovementCostSystem<TGameContext, TMovementMode> data))
             {
                 data = GetOrCreateSensePropertiesSystem<TGameContext, TItemId>(serviceResolver);
             }
 
-            system = new MovementResistanceDirectionalitySystem<TMovementMode>(data);
+            system = new MovementResistanceDirectionalitySystem<TMovementMode>(data.ResultView);
             serviceResolver.Store(system);
             serviceResolver.Store<IMovementResistanceDirectionView<TMovementMode>>(system);
             return system;

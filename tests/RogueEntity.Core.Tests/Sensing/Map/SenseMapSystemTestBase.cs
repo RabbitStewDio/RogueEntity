@@ -33,7 +33,7 @@ namespace RogueEntity.Core.Tests.Sensing.Map
 
         protected SenseMappingTestContext context;
         protected TestTimeSource timeSource;
-        protected SensePropertiesSourceFixture<TSourceSense> senseProperties;
+        protected DynamicDataView3D<float> senseProperties;
         protected SenseStateCache senseCache;
         List<Action<SenseMappingTestContext>> senseSystemActions;
         SenseMappingSystemBase<TReceptorSense, TSourceSense, TSenseSourceDefinition> senseSystem;
@@ -66,7 +66,7 @@ namespace RogueEntity.Core.Tests.Sensing.Map
                                                                  .DoWith(x => AttachTrait(x)));
 
             timeSource = new TestTimeSource();
-            senseProperties = new SensePropertiesSourceFixture<TSourceSense>();
+            senseProperties = new DynamicDataView3D<float>();
             senseCache = new SenseStateCache(2, 64, 64);
 
             senseSystem = CreateSystem();
@@ -139,7 +139,7 @@ namespace RogueEntity.Core.Tests.Sensing.Map
 
         protected void PerformTest(string id, string sourceText, string expectedGlobalSenseMap)
         {
-            senseProperties.GetOrCreate(0).ImportData(SenseTestHelpers.Parse(sourceText, out var activeTestArea), Convert);
+            senseProperties.GetOrCreate(0).ImportData(SenseTestHelpers.Parse(sourceText, out var activeTestArea));
 
             var sourceActive10 = context.ItemResolver.Instantiate(context, senseSourceActive10);
             var sourceActive5 = context.ItemResolver.Instantiate(context, senseSourceActive5);

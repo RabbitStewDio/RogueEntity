@@ -1,8 +1,23 @@
+using System.Diagnostics.CodeAnalysis;
 using RogueEntity.Core.GridProcessing.LayerAggregation;
+using RogueEntity.Core.Utils;
 
 namespace RogueEntity.Core.Sensing.Resistance.Maps
 {
-    public class SensePropertiesSystem<TGameContext, TSense> : LayeredAggregationSystem<TGameContext, SensoryResistance<TSense>>
+    /// <summary>
+    ///   A tagging interface to make the dependency injection select the right value.
+    /// </summary>
+    /// <typeparam name="TSense"></typeparam>
+    /// <typeparam name="TGameContext"></typeparam>
+    [SuppressMessage("ReSharper", "UnusedTypeParameter", Justification = "Discriminator")]
+    public interface ISensePropertiesDataView<TGameContext, TSense> : IAggregationLayerSystem<TGameContext, float>
+    {
+        
+    }
+    
+    
+    public class SensePropertiesSystem<TGameContext, TSense> : LayeredAggregationSystem<TGameContext, float, SensoryResistance<TSense>>, 
+                                                               ISensePropertiesDataView<TGameContext, TSense>
     {
         public SensePropertiesSystem(int tileWidth, int tileHeight) : base(SensePropertiesSystem.ProcessTile, tileWidth, tileHeight)
         {
@@ -15,22 +30,22 @@ namespace RogueEntity.Core.Sensing.Resistance.Maps
 
     public static class SensePropertiesSystem
     {
-        public static void ProcessTile<TSense>(AggregationProcessingParameter<SensoryResistance<TSense>> p)
+        public static void ProcessTile<TSense>(AggregationProcessingParameter<float, SensoryResistance<TSense>> p)
         {
             var bounds = p.Bounds;
             var resistanceData = p.WritableTile;
             foreach (var (x, y) in bounds.Contents)
             {
-                var sp = new SensoryResistance<TSense>();
+                var sp = 0;
                 foreach (var dv in p.DataViews)
                 {
                     if (dv.TryGet(x, y, out var d))
                     {
-                        sp += d;
+                        sp += d.BlocksSense.RawData;
                     }
                 }
 
-                resistanceData.TrySet(x, y, sp);
+                resistanceData.TrySet(x, y, Percentage.Of(sp));
             }
         }
     }

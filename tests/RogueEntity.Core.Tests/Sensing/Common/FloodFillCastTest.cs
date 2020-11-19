@@ -7,7 +7,6 @@ using RogueEntity.Core.Sensing;
 using RogueEntity.Core.Sensing.Common;
 using RogueEntity.Core.Sensing.Common.FloodFill;
 using RogueEntity.Core.Sensing.Common.Physics;
-using RogueEntity.Core.Sensing.Resistance;
 using RogueEntity.Core.Sensing.Resistance.Directions;
 using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.Algorithms;
@@ -242,7 +241,7 @@ namespace RogueEntity.Core.Tests.Sensing.Common
             var resistanceMap = Parse(sourceText);
             Console.WriteLine("Using room layout \n" + PrintMap(resistanceMap, new Rectangle(0, 0, width, height)));
             
-            var directionalityMapSystem = new SensoryResistanceDirectionalitySystem<VisionSense>(resistanceMap.As3DMap(0).Transform(e => new SensoryResistance<VisionSense>(e)));
+            var directionalityMapSystem = new SensoryResistanceDirectionalitySystem<object, VisionSense>(resistanceMap.As3DMap(0));
             directionalityMapSystem.MarkGloballyDirty();
             directionalityMapSystem.Process();
             directionalityMapSystem.TryGetView(0, out var directionalityMap).Should().BeTrue();

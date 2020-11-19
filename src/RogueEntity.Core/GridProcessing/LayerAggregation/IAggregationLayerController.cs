@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using RogueEntity.Api.Utils;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.MapLayers;
@@ -10,14 +11,13 @@ namespace RogueEntity.Core.GridProcessing.LayerAggregation
     public interface IAggregationCacheControl
     {
         event EventHandler<PositionDirtyEventArgs> PositionDirty;
-        void OnPositionDirty(object source, PositionDirtyEventArgs args);
     }
 
-    public interface IAggregationPropertiesDataProcessor<TGameContext, TAggregateType>
+    public interface IAggregationPropertiesDataProcessor<TGameContext, TSourceType>
     {
         MapLayer Layer { get; }
         int ZPosition { get; }
-        IReadOnlyDynamicDataView2D<TAggregateType> Data { get; }
+        IReadOnlyDynamicDataView2D<TSourceType> Data { get; }
         ReadOnlyListWrapper<Rectangle> ProcessedTiles { get; }
 
         void MarkDirty(int posGridX, int posGridY);
@@ -25,30 +25,37 @@ namespace RogueEntity.Core.GridProcessing.LayerAggregation
         bool Process(TGameContext context);
     }
 
-    public interface IAggregationPropertiesLayer<TGameContext, TAggregateType>
+    public interface IAggregationPropertiesLayer<TGameContext, TSourceType>
     {
         bool IsDefined(MapLayer layer);
-        void AddProcess(MapLayer layer, IAggregationPropertiesDataProcessor<TGameContext, TAggregateType> p);
+        void AddProcess(MapLayer layer, IAggregationPropertiesDataProcessor<TGameContext, TSourceType> p);
         void RemoveLayer(MapLayer layer);
     }
 
 
+    [SuppressMessage("ReSharper", "UnusedTypeParameter", Justification = "Discriminator")]
     public interface IAggregationLayerSystem<TGameContext, TAggregateType> : IAggregationCacheControl
-    {
+    { 
         public IReadOnlyDynamicDataView3D<TAggregateType> ResultView { get; }
-        public DynamicDataViewConfiguration ViewConfiguration { get; }
-
-        void AddSenseLayerFactory(IAggregationLayerController<TGameContext, TAggregateType> layerHandler);
-
-        bool TryGetSenseLayer(int z, out IAggregationPropertiesLayer<TGameContext, TAggregateType> data);
-        IAggregationPropertiesLayer<TGameContext, TAggregateType> GetOrCreate(int z);
-        void Remove(int z);
     }
 
-    public interface IAggregationLayerController<TGameContext, TAggregateType>
+    public interface IAggregationLayerSystemBackend<TGameContext, TSourceType>
     {
-        void Start(TGameContext context, IAggregationLayerSystem<TGameContext, TAggregateType> system);
-        void PrepareLayers(TGameContext ctx, IAggregationLayerSystem<TGameContext, TAggregateType> system);
-        void Stop(TGameContext context, IAggregationLayerSystem<TGameContext, TAggregateType> system);
+        void OnPositionDirty(object source, PositionDirtyEventArgs args);
+
+        public DynamicDataViewConfiguration ViewConfiguration { get; }
+
+        void AddSenseLayerFactory(IAggregationLayerController<TGameContext, TSourceType> layerHandler);
+
+        bool TryGetSenseLayer(int z, out IAggregationPropertiesLayer<TGameContext, TSourceType> data);
+        IAggregationPropertiesLayer<TGameContext, TSourceType> GetOrCreate(int z);
+        void Remove(int z);
+    }
+    
+    public interface IAggregationLayerController<TGameContext, TSourceType>
+    {
+        void Start(TGameContext context, IAggregationLayerSystemBackend<TGameContext, TSourceType> system);
+        void PrepareLayers(TGameContext ctx, IAggregationLayerSystemBackend<TGameContext, TSourceType> system);
+        void Stop(TGameContext context, IAggregationLayerSystemBackend<TGameContext, TSourceType> system);
     }
 }

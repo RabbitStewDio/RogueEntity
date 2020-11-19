@@ -4,9 +4,8 @@ using RogueEntity.Api.Time;
 using RogueEntity.Core.Sensing.Cache;
 using RogueEntity.Core.Sensing.Common;
 using RogueEntity.Core.Sensing.Common.Physics;
-using RogueEntity.Core.Sensing.Resistance;
 using RogueEntity.Core.Sensing.Resistance.Directions;
-using RogueEntity.Core.Utils.DataViews;
+using RogueEntity.Core.Sensing.Resistance.Maps;
 
 namespace RogueEntity.Core.Sensing.Sources.Heat
 {
@@ -30,7 +29,7 @@ namespace RogueEntity.Core.Sensing.Sources.Heat
             if (!serviceResolver.TryResolve(out SenseSourceSystem<TemperatureSense, HeatSourceDefinition> ls))
             {
                 var physics = serviceResolver.Resolve<IHeatPhysicsConfiguration>();
-                ls = new HeatSourceSystem(serviceResolver.ResolveToReference<IReadOnlyDynamicDataView3D<SensoryResistance<TemperatureSense>>>(),
+                ls = new HeatSourceSystem(serviceResolver.ResolveToReference<ISensePropertiesDataView<TGameContext, TemperatureSense>>().Map(l => l.ResultView),
                                     serviceResolver.ResolveToReference<IGlobalSenseStateCacheProvider>(),
                                     serviceResolver.ResolveToReference<ITimeSource>(),
                                     serviceResolver.Resolve<ISensoryResistanceDirectionView<TemperatureSense>>(),

@@ -1,18 +1,53 @@
 using System;
 using System.Collections.Generic;
+using JetBrains.Annotations;
+using RogueEntity.Core.Positioning;
 
 namespace RogueEntity.Core.Utils.DataViews
 {
-    public class TransformedView2D<TSource, TTarget> : IReadOnlyDynamicDataView2D<TTarget>
+    public class TransformedView2D<TSource, TTarget> : IReadOnlyDynamicDataView2D<TTarget>,
+                                                       IDisposable
     {
+        public event EventHandler<DynamicDataView2DEventArgs<TTarget>> ViewCreated;
+        public event EventHandler<DynamicDataView2DEventArgs<TTarget>> ViewExpired;
         readonly IReadOnlyDynamicDataView2D<TSource> source;
         readonly Func<TSource, TTarget> transformation;
+        readonly Dictionary<Position2D, TransformedBoundedDataView<TSource, TTarget>> index;
 
-        public TransformedView2D(IReadOnlyDynamicDataView2D<TSource> source,
-                                 Func<TSource, TTarget> transformation)
+        public TransformedView2D([NotNull] IReadOnlyDynamicDataView2D<TSource> source,
+                                 [NotNull] Func<TSource, TTarget> transformation)
         {
-            this.source = source;
-            this.transformation = transformation;
+            this.index = new Dictionary<Position2D, TransformedBoundedDataView<TSource, TTarget>>();
+            this.source = source ?? throw new ArgumentNullException(nameof(source));
+            this.transformation = transformation ?? throw new ArgumentNullException(nameof(transformation));
+
+            this.source.ViewExpired += OnViewExpired;
+        }
+
+        ~TransformedView2D()
+        {
+            ReleaseUnmanagedResources();
+        }
+
+        void ReleaseUnmanagedResources()
+        {
+            this.source.ViewExpired += OnViewExpired;
+        }
+
+        public void Dispose()
+        {
+            ReleaseUnmanagedResources();
+            GC.SuppressFinalize(this);
+        }
+
+        void OnViewExpired(object sender, DynamicDataView2DEventArgs<TSource> e)
+        {
+            var dataBounds = e.Key;
+            if (index.TryGetValue(dataBounds, out var ownData))
+            {
+                ViewExpired?.Invoke(this, new DynamicDataView2DEventArgs<TTarget>(ownData));
+                index.Remove(dataBounds);
+            }
         }
 
         public int OffsetX
@@ -47,9 +82,17 @@ namespace RogueEntity.Core.Utils.DataViews
 
         public bool TryGetData(int x, int y, out IReadOnlyBoundedDataView<TTarget> raw)
         {
+            if (index.TryGetValue(new Position2D(x, y), out var targetRaw))
+            {
+                raw = targetRaw;
+                return true;
+            }
+            
             if (source.TryGetData(x, y, out var sourceRaw))
             {
-                raw = new TransformedBoundedDataView<TSource,TTarget>(sourceRaw, transformation);
+                targetRaw = new TransformedBoundedDataView<TSource,TTarget>(sourceRaw, transformation);
+                index[new Position2D(x, y)] = targetRaw;
+                raw = targetRaw;
                 return true;
             }
             
