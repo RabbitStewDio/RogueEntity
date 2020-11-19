@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Serialization;
 using MessagePack;
-using RogueEntity.Core.Positioning;
 
 namespace RogueEntity.Core.Utils.DataViews
 {

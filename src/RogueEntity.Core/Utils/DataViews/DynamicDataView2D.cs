@@ -4,7 +4,6 @@ using System.Runtime.Serialization;
 using System.Threading;
 using JetBrains.Annotations;
 using MessagePack;
-using RogueEntity.Core.Positioning;
 
 namespace RogueEntity.Core.Utils.DataViews
 {
@@ -309,6 +308,20 @@ namespace RogueEntity.Core.Utils.DataViews
             set
             {
                 TrySet(x, y, in value);
+            }
+        }
+
+        [IgnoreDataMember]
+        [IgnoreMember]
+        public T this[Position2D pos]
+        {
+            get
+            {
+                return this[pos.X, pos.Y];
+            }
+            set
+            {
+                this[pos.X, pos.Y] = value;
             }
         }
 

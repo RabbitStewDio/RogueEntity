@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RogueEntity.Core.Utils.Algorithms
 {
@@ -190,6 +191,20 @@ namespace RogueEntity.Core.Utils.Algorithms
             return returnItem;
         }
 
+        public T this[int idx]
+        {
+            get
+            {
+                if (idx < 0 || idx >= numberOfItems)
+                {
+                    throw new IndexOutOfRangeException();
+                }
+                
+                return Data[idx + 1];
+            }
+        }
+        
+        [SuppressMessage("ReSharper", "HeuristicUnreachableCode")]
         void Revalidate()
         {
             return;

@@ -1,7 +1,7 @@
 using System;
 using EnTTSharp.Entities;
 using JetBrains.Annotations;
-using RogueEntity.Core.Positioning;
+using RogueEntity.Core.Utils;
 
 namespace RogueEntity.Core.Sensing.Receptors
 {

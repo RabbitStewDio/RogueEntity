@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using RogueEntity.Core.Positioning;
 
 namespace RogueEntity.Core.Utils
 {

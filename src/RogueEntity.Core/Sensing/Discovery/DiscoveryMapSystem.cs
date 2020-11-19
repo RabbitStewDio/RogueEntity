@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using EnTTSharp.Entities;
-using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Sensing.Receptors;
 using RogueEntity.Core.Utils;
 

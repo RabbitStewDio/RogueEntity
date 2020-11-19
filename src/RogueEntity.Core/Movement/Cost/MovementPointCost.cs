@@ -1,6 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 
-namespace RogueEntity.Core.Movement.CostModifier
+namespace RogueEntity.Core.Movement.Cost
 {
     /// <summary>
     ///   Encodes movement costs as an absolute cost per tile moved. Games like Heroes of Magic provide each unit with a budget of movement points,

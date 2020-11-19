@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
-using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Utils.Algorithms;
 
 namespace RogueEntity.Core.Utils

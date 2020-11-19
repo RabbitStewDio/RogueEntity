@@ -2,21 +2,10 @@ using System.Collections.Generic;
 using System.Linq;
 using EnTTSharp.Entities;
 using RogueEntity.Api.ItemTraits;
-using RogueEntity.Api.Utils;
 using RogueEntity.Core.Meta.Items;
 
-namespace RogueEntity.Core.Movement.CostModifier
+namespace RogueEntity.Core.Movement.Cost
 {
-    public struct PathfindingMovementCostFactors
-    {
-        public readonly ReadOnlyListWrapper<MovementCost> MovementCosts;
-
-        public PathfindingMovementCostFactors(ReadOnlyListWrapper<MovementCost> movementCosts)
-        {
-            MovementCosts = movementCosts;
-        }
-    }
-
     public class PathfindingMovementCostFactorsTrait<TGameContext, TActorId> : IItemComponentInformationTrait<TGameContext, TActorId, PathfindingMovementCostFactors>,
                                                                                IBulkItemTrait<TGameContext, TActorId>,
                                                                                IReferenceItemTrait<TGameContext, TActorId>

@@ -4,7 +4,6 @@ using System.Runtime.Serialization;
 using System.Threading;
 using JetBrains.Annotations;
 using MessagePack;
-using RogueEntity.Core.Positioning;
 
 namespace RogueEntity.Core.Utils.DataViews
 {

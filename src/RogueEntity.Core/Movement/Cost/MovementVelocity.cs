@@ -1,6 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 
-namespace RogueEntity.Core.Movement.CostModifier
+namespace RogueEntity.Core.Movement.Cost
 {
     /// <summary>
     ///   Describes the inverse of movement cost.

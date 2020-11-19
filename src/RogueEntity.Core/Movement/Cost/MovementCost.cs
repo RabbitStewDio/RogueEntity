@@ -1,6 +1,6 @@
 using System;
 
-namespace RogueEntity.Core.Movement.CostModifier
+namespace RogueEntity.Core.Movement.Cost
 {
     /// <summary>
     ///   Describes a units ability to move as the energy it takes to traverse a unit of distance.

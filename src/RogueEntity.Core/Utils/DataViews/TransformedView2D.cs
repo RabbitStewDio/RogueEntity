@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using JetBrains.Annotations;
-using RogueEntity.Core.Positioning;
 
 namespace RogueEntity.Core.Utils.DataViews
 {

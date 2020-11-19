@@ -4,10 +4,10 @@ using RogueEntity.Api.ItemTraits;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Movement.MovementModes;
 
-namespace RogueEntity.Core.Movement.CostModifier
+namespace RogueEntity.Core.Movement.Cost
 {
-    public class MovementVelocityReferenceItemTrait<TGameContext, TActorId, TMovementMode> : SimpleReferenceItemComponentTraitBase<TGameContext, TActorId, MovementVelocity<TMovementMode>>,
-                                                                                             IItemComponentInformationTrait<TGameContext, TActorId, MovementCost>
+    public class MovementVelocityBulkItemTrait<TGameContext, TActorId, TMovementMode> : SimpleBulkItemComponentTraitBase<TGameContext, TActorId, MovementVelocity<TMovementMode>>,
+                                                                                        IItemComponentInformationTrait<TGameContext, TActorId, MovementCost>
         where TActorId : IBulkDataStorageKey<TActorId>
         where TMovementMode : IMovementMode
     {
@@ -15,9 +15,9 @@ namespace RogueEntity.Core.Movement.CostModifier
         readonly float standardMovementCost;
         readonly int movementModePreference;
 
-        public MovementVelocityReferenceItemTrait(TMovementMode movementMode,
-                                                  float standardMovementCost,
-                                                  int movementModePreference) :
+        public MovementVelocityBulkItemTrait(TMovementMode movementMode,
+                                             float standardMovementCost,
+                                             int movementModePreference) :
             base("Core.Traits.Movement.MovementVelocity+" + typeof(TMovementMode).Name, 100)
         {
             this.movementMode = movementMode;

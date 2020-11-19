@@ -1,6 +1,5 @@
 using System;
 using NUnit.Framework;
-using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Sensing;
 using RogueEntity.Core.Sensing.Common;
 using RogueEntity.Core.Sensing.Common.Physics;

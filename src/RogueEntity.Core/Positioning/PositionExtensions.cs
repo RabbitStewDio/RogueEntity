@@ -1,3 +1,4 @@
+using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.Algorithms;
 
 namespace RogueEntity.Core.Positioning

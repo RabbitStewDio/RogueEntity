@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using RogueEntity.Api.Utils;
-using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Utils.DataViews;
 using Serilog;
 
@@ -9,7 +8,8 @@ namespace RogueEntity.Core.Utils.Algorithms
 {
     /// <summary>
     ///   This Dijkstra grid graph allows you to find all possible paths to a set of
-    ///   start nodes.
+    ///   start nodes in a dense array. This is suitable for search tasks that cover
+    ///   a known and rather small search area. 
     ///
     ///   Remember that in a Dijkstra search the search starts from all start nodes
     ///   (the target of your path) towards all target nodes at once (or all cells, if no
@@ -27,73 +27,12 @@ namespace RogueEntity.Core.Utils.Algorithms
     /// </summary>
     public abstract class DijkstraGridBase
     {
-        /// <summary>
-        ///   A weight that adds a small preference for cardinal directions to the
-        ///   algorithm result without interfering with the real weight system.
-        ///
-        ///   This makes the resulting paths a lot more human if the weight system
-        ///   uses zero-costs and the adjacency rule also uses equal cost movements
-        ///   (Cheby, I'm looking at you here!). 
-        /// </summary>
-        readonly struct WeightedEuclid : IComparable<WeightedEuclid>, IComparable
-        {
-            readonly float weight;
-            readonly float euclidHint;
-
-            public WeightedEuclid(float weight, float euclidHint)
-            {
-                this.weight = weight;
-                this.euclidHint = euclidHint;
-            }
-
-            public int CompareTo(WeightedEuclid other)
-            {
-                var weightComparison = weight.CompareTo(other.weight);
-                if (weightComparison != 0)
-                {
-                    return weightComparison;
-                }
-
-                return euclidHint.CompareTo(other.euclidHint);
-            }
-
-            public int CompareTo(object obj)
-            {
-                if (ReferenceEquals(null, obj))
-                {
-                    return 1;
-                }
-
-                return obj is WeightedEuclid other ? CompareTo(other) : throw new ArgumentException($"Object must be of type {nameof(WeightedEuclid)}");
-            }
-
-            public static bool operator <(WeightedEuclid left, WeightedEuclid right)
-            {
-                return left.CompareTo(right) < 0;
-            }
-
-            public static bool operator >(WeightedEuclid left, WeightedEuclid right)
-            {
-                return left.CompareTo(right) > 0;
-            }
-
-            public static bool operator <=(WeightedEuclid left, WeightedEuclid right)
-            {
-                return left.CompareTo(right) <= 0;
-            }
-
-            public static bool operator >=(WeightedEuclid left, WeightedEuclid right)
-            {
-                return left.CompareTo(right) >= 0;
-            }
-        }
-        
         static readonly ILogger Logger = SLog.ForContext<DijkstraGridBase>();
 
         Rectangle bounds;
-        readonly BoundedDataView<int> resultMapCoords;
+        readonly BoundedDataView<Direction> resultMapCoords;
         readonly BoundedDataView<float> resultMapDistanceCost;
-        readonly IntPriorityQueue<WeightedEuclid> openNodes;
+        readonly PriorityQueue<DijkstraNodeWeight, Position2D> openNodes;
         readonly List<Direction> directions;
 
         protected DijkstraGridBase(in Rectangle bounds)
@@ -101,8 +40,8 @@ namespace RogueEntity.Core.Utils.Algorithms
             this.bounds = bounds;
 
             this.directions = new List<Direction>();
-            this.openNodes = new IntPriorityQueue<WeightedEuclid>(bounds.Width * bounds.Height);
-            this.resultMapCoords = new BoundedDataView<int>(in bounds);
+            this.openNodes = new PriorityQueue<DijkstraNodeWeight, Position2D>(bounds.Width * bounds.Height);
+            this.resultMapCoords = new BoundedDataView<Direction>(in bounds);
             this.resultMapDistanceCost = new BoundedDataView<float>(in bounds);
         }
 
@@ -118,16 +57,16 @@ namespace RogueEntity.Core.Utils.Algorithms
             }
             else
             {
-                this.bounds = new Rectangle(newBounds.MinExtentX, newBounds.MinExtentY, 
-                                            Math.Max(newBounds.Width, bounds.Width), 
+                this.bounds = new Rectangle(newBounds.MinExtentX, newBounds.MinExtentY,
+                                            Math.Max(newBounds.Width, bounds.Width),
                                             Math.Max(newBounds.Height, bounds.Height));
                 this.openNodes.Resize(bounds.Width * bounds.Height);
             }
-            
+
             this.resultMapCoords.Resize(in bounds);
             this.resultMapDistanceCost.Resize(in bounds);
         }
-        
+
         protected void PrepareScan()
         {
             openNodes.Clear();
@@ -198,8 +137,8 @@ namespace RogueEntity.Core.Utils.Algorithms
             return nodeCount > 0;
         }
 
-        protected abstract bool EdgeCostInformation(in Position2D sourceNode, in Direction d, float sourceNodeCost, out float cost);
-        
+        protected abstract bool EdgeCostInformation(in Position2D sourceNode, in Direction d, float sourceNodeCost, out float totalPathCost);
+
         protected virtual bool IsTarget(in Position2D openNodePosition)
         {
             return false;
@@ -214,7 +153,7 @@ namespace RogueEntity.Core.Utils.Algorithms
         {
             if (resultMapCoords.TryGetRawIndex(in c, out var idx))
             {
-                openNodes.UpdatePriority(idx, new WeightedEuclid(-weight, 0));
+                openNodes.UpdatePriority(c, new DijkstraNodeWeight(-weight, 0));
                 resultMapCoords[c] = 0;
                 resultMapDistanceCost[c] = weight;
             }
@@ -224,13 +163,9 @@ namespace RogueEntity.Core.Utils.Algorithms
         {
             if (resultMapCoords.TryGetRawIndex(in pos, out var idx))
             {
-                openNodes.UpdatePriority(idx, new WeightedEuclid(-weight, (float)DistanceCalculation.Euclid.Calculate(pos, prev)));
+                openNodes.UpdatePriority(pos, new DijkstraNodeWeight(-weight, (float)DistanceCalculation.Euclid.Calculate(pos, prev)));
                 resultMapDistanceCost[pos] = weight;
-
-                if (resultMapCoords.TryGetRawIndex(in prev, out var prevIdx))
-                {
-                    resultMapCoords[pos] = 1 + prevIdx;
-                }
+                resultMapCoords[pos] = Directions.GetDirection(prev, pos);
             }
         }
 
@@ -242,8 +177,8 @@ namespace RogueEntity.Core.Utils.Algorithms
                 return false;
             }
 
-            var idx = openNodes.Dequeue();
-            return resultMapCoords.TryGetFromRawIndex(idx, out c);
+            c = openNodes.Dequeue();
+            return true;
         }
 
         protected bool IsValidNode(in Position2D nextNodePos)
@@ -264,7 +199,7 @@ namespace RogueEntity.Core.Utils.Algorithms
             // Thus a node is considered "better" if its existing weight is *larger*
             // than the newly given weight, representing the idea that that node must 
             // be closer to one of the source nodes.
-            
+
             if (newWeight <= 0)
             {
                 // Stop processing nodes once we hit the lower bounds of the weight values.
@@ -276,20 +211,20 @@ namespace RogueEntity.Core.Utils.Algorithms
                 // Stop processing nodes once we left the valid map area.
                 return true;
             }
-           
-            return existingWeight >= newWeight;
 
+            return existingWeight >= newWeight;
         }
-        
+
         public bool TryGetPreviousStep(in Position2D pos, out Position2D nextStep)
         {
-            if (!resultMapCoords.TryGet(pos, out var prevIdx) || prevIdx <= 0)
+            if (!resultMapCoords.TryGet(pos, out var prevIdx) || prevIdx == Direction.None)
             {
                 nextStep = default;
                 return false;
             }
 
-            return resultMapCoords.TryGetFromRawIndex(prevIdx - 1, out nextStep);
+            nextStep = pos - prevIdx.ToCoordinates();
+            return true;
         }
 
         /// <summary>
@@ -308,9 +243,9 @@ namespace RogueEntity.Core.Utils.Algorithms
             {
                 return pathAccumulator;
             }
-            
+
             pathAccumulator.Add(p);
-            
+
             while (pathAccumulator.Count < maxLength &&
                    TryGetPreviousStep(in p, out p) &&
                    resultMapDistanceCost.TryGet(p, out goalStrength))
@@ -320,6 +255,7 @@ namespace RogueEntity.Core.Utils.Algorithms
 
             return pathAccumulator;
         }
+
 /*
         public override string ToString()
         {

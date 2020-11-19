@@ -1,5 +1,4 @@
 using System;
-using RogueEntity.Core.Positioning;
 
 namespace RogueEntity.Core.Utils.Algorithms
 {
@@ -7,7 +6,7 @@ namespace RogueEntity.Core.Utils.Algorithms
     /// Represents the concept of a "direction" on a grid. Y always increases downwards, so Direction.Down
     /// is defined as (0, +1) and Direction.Up is defined as (0, -1).
     /// </summary>
-    public enum Direction
+    public enum Direction: byte
     {
         None = 0,
         Up = 1,
@@ -139,7 +138,7 @@ namespace RogueEntity.Core.Utils.Algorithms
         /// <returns>
         /// The direction that most closely matches the heading indicated by the given line.
         /// </returns>
-        public static Direction GetDirection(Position2D start, Position2D end) => GetDirection(end.X - start.X, end.Y - start.Y);
+        public static Direction GetDirection(in Position2D start, in Position2D end) => GetDirection(end.X - start.X, end.Y - start.Y);
 
         /// <summary>
         /// Returns the direction that most closely matches the degree heading of the given line.
@@ -165,7 +164,7 @@ namespace RogueEntity.Core.Utils.Algorithms
         /// <returns>
         /// The direction that most closely matches the heading indicated by the given input.
         /// </returns>
-        public static Direction GetDirection(Position2D deltaChange) => GetDirection(deltaChange.X, deltaChange.Y);
+        public static Direction GetDirection(in Position2D deltaChange) => GetDirection(deltaChange.X, deltaChange.Y);
 
         /// <summary>
         /// Returns the direction that most closely matches the degree heading of a line with the

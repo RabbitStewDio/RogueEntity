@@ -1,8 +1,8 @@
 using System;
 using JetBrains.Annotations;
 using RogueEntity.Core.Directionality;
-using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Sensing.Common.Physics;
+using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.DataViews;
 
 namespace RogueEntity.Core.Sensing.Common.FloodFill

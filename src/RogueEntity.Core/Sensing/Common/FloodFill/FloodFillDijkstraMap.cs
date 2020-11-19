@@ -129,26 +129,26 @@ namespace RogueEntity.Core.Sensing.Common.FloodFill
             }
         }
 
-        protected override bool EdgeCostInformation(in Position2D stepOrigin, in Direction d, float stepOriginCost, out float cost)
+        protected override bool EdgeCostInformation(in Position2D stepOrigin, in Direction d, float stepOriginCost, out float totalPathCost)
         {
             var targetPoint = stepOrigin + d.ToPosition2D();
             if (!valid)
             {
-                cost = default;
+                totalPathCost = default;
                 return false;
             }
 
             var resistance = ResistanceMap[targetPoint.X, targetPoint.Y].Clamp(0, 1);
             if (resistance >= 1)
             {
-                cost = default;
+                totalPathCost = default;
                 return false;
             }
 
             var distanceForStep = Sense.DistanceCalculation.Calculate(d.ToCoordinates());
             var signalStrength = SensePhysics.SignalStrengthAtDistance((float) ((intensity - stepOriginCost) + distanceForStep), radius);
             var totalCost = intensity * signalStrength * (1 - resistance);
-            cost = stepOriginCost - totalCost;
+            totalPathCost = stepOriginCost - totalCost;
             return true;
         }
     }

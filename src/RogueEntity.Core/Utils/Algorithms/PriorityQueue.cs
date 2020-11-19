@@ -1,16 +1,17 @@
 ﻿using System;
-using System.Collections.Generic;
 
 namespace RogueEntity.Core.Utils.Algorithms
 {
-    public class PriorityQueue<TNode> where TNode: IComparable<TNode>
+    public class PriorityQueue<TWeight, TPayLoad> 
+        where TWeight: IComparable<TWeight>
+        where TPayLoad: IEquatable<TPayLoad>
     {
-        readonly struct Node
+        readonly struct Node: IComparable<Node>
         {
-            public readonly TNode Data;
-            public readonly float Priority;
+            public readonly TPayLoad Data;
+            public readonly TWeight Priority;
 
-            public Node(TNode data, float priority)
+            public Node(in TPayLoad data, in TWeight priority)
             {
                 this.Data = data;
                 this.Priority = priority;
@@ -20,56 +21,48 @@ namespace RogueEntity.Core.Utils.Algorithms
             {
                 return $"{nameof(Priority)}: {Priority}, {nameof(Data)}: {Data}";
             }
-        }
 
-        sealed class PriorityRelationalComparer : IComparer<BinaryHeapMap<TNode, Node>.MapEntry>
-        {
-            public int Compare(Node x, Node y)
+            public int CompareTo(Node other)
             {
-                var cmp = x.Priority.CompareTo(y.Priority);
-                if (cmp != 0)
-                {
-                    return cmp;
-                }
-
-                return x.Data.CompareTo(y.Data);
-            }
-
-            public int Compare(BinaryHeapMap<TNode, Node>.MapEntry x, BinaryHeapMap<TNode, Node>.MapEntry y)
-            {
-                return Compare(x.value, y.value);
+                return Priority.CompareTo(other.Priority);
             }
         }
 
-        static IComparer<BinaryHeapMap<TNode, Node>.MapEntry> PriorityComparer { get; } = new PriorityRelationalComparer();
-        
-        readonly BinaryHeapMap<TNode, Node> heap;
+        readonly BinaryHeap<Node> heap; 
 
         public PriorityQueue(int capacity)
         {
-            this.heap = new BinaryHeapMap<TNode, Node>(capacity, PriorityComparer);
+            this.heap = new BinaryHeap<Node>(capacity);
         }
 
         public int Count => heap.Size;
 
-        public void Enqueue(in TNode data, float priority)
+        public void Enqueue(in TPayLoad data, in TWeight priority)
         {
-            var node = new Node(data, priority);
-            heap.Put(data, node);
+            heap.Add(new Node(data, priority));
         }
 
-        public TNode Dequeue()
+        public TPayLoad Dequeue()
         {
             var node = heap.Remove();
             return node.Data;
         }
 
-        public void Remove(in TNode node)
+        public bool Remove(in TPayLoad node)
         {
-            heap.RemoveElement(node);
+            for (int i = 0; i < heap.Size; i += 1)
+            {
+                if (node.Equals(heap[i].Data))
+                {
+                    heap.Remove(i);
+                    return true;
+                }
+            }
+
+            return false;
         }
 
-        public void UpdatePriority(in TNode node, float priority)
+        public void UpdatePriority(in TPayLoad node, in TWeight priority)
         {
             Remove(node);
             Enqueue(node, priority);
@@ -80,9 +73,17 @@ namespace RogueEntity.Core.Utils.Algorithms
             heap.Clear();
         }
 
-        public bool Contains(in TNode node)
+        public bool Contains(in TPayLoad node)
         {
-            return heap.Contains(node);
+            for (int i = 0; i < heap.Size; i += 1)
+            {
+                if (node.Equals(heap[i].Data))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         public void Resize(int maxSize)

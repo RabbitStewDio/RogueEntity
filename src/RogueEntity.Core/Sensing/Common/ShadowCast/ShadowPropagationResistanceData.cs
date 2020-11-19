@@ -1,5 +1,4 @@
 using System;
-using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Utils;
 
 namespace RogueEntity.Core.Sensing.Common.ShadowCast

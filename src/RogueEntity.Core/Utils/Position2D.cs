@@ -3,11 +3,11 @@ using System.Runtime.Serialization;
 using MessagePack;
 using RogueEntity.Core.Utils.Algorithms;
 
-namespace RogueEntity.Core.Positioning
+namespace RogueEntity.Core.Utils
 {
     [DataContract]
     [MessagePackObject]
-    public readonly struct Position2D : IEquatable<Position2D>
+    public readonly struct Position2D : IEquatable<Position2D>, IComparable<Position2D>, IComparable
     {
         [DataMember(Order = 0)]
         [Key(0)]
@@ -159,10 +159,53 @@ namespace RogueEntity.Core.Positioning
             return new Position2D(p.x, p.y);
         }
 
+        public int ToLinearIndex(int lineWidth) => Y * lineWidth + X;
+        
         public static Position2D From(int linearIndex, int lineWidth)
         {
             var y = Math.DivRem(linearIndex, lineWidth, out var x);
             return new Position2D(x, y);
+        }
+
+        public int CompareTo(Position2D other)
+        {
+            var xComparison = X.CompareTo(other.X);
+            if (xComparison != 0)
+            {
+                return xComparison;
+            }
+
+            return Y.CompareTo(other.Y);
+        }
+
+        public int CompareTo(object obj)
+        {
+            if (ReferenceEquals(null, obj))
+            {
+                return 1;
+            }
+
+            return obj is Position2D other ? CompareTo(other) : throw new ArgumentException($"Object must be of type {nameof(Position2D)}");
+        }
+
+        public static bool operator <(Position2D left, Position2D right)
+        {
+            return left.CompareTo(right) < 0;
+        }
+
+        public static bool operator >(Position2D left, Position2D right)
+        {
+            return left.CompareTo(right) > 0;
+        }
+
+        public static bool operator <=(Position2D left, Position2D right)
+        {
+            return left.CompareTo(right) <= 0;
+        }
+
+        public static bool operator >=(Position2D left, Position2D right)
+        {
+            return left.CompareTo(right) >= 0;
         }
     }
 }

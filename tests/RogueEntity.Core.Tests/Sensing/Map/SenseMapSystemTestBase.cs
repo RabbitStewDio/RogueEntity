@@ -18,6 +18,7 @@ using RogueEntity.Core.Tests.Sensing.Sources;
 using RogueEntity.Core.Utils.Algorithms;
 using RogueEntity.Core.Utils.DataViews;
 using RogueEntity.Core.Meta.EntityKeys;
+using RogueEntity.Core.Utils;
 
 namespace RogueEntity.Core.Tests.Sensing.Map
 {

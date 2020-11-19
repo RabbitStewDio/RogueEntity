@@ -1,6 +1,5 @@
 using FluentAssertions;
 using NUnit.Framework;
-using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.DataViews;
 

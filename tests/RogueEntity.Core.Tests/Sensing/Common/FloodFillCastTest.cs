@@ -2,7 +2,6 @@ using System;
 using FluentAssertions;
 using NUnit.Framework;
 using RogueEntity.Core.Directionality;
-using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Sensing;
 using RogueEntity.Core.Sensing.Common;
 using RogueEntity.Core.Sensing.Common.FloodFill;
@@ -68,13 +67,13 @@ namespace RogueEntity.Core.Tests.Sensing.Common
 
         const string EmptyRoomDirectionsCheb = @"
   ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ 
-  ~ , ┌  , ┬  , ┌  , ┬  , ┐  , ┐  , ┐  ,  ~ 
-  ~ , ├  , ┌  , ┌  , ┬  , ┐  , ┐  , ┤  ,  ~ 
+  ~ , ┌  , ┌  , ┌  , ┬  , ┐  , ┐  , ┐  ,  ~ 
+  ~ , ┌  , ┌  , ┌  , ┬  , ┐  , ┐  , ┤  ,  ~ 
   ~ , ┌  , ┌  , ┌  , ┬  , ┐  , ┐  , ┐  ,  ~ 
   ~ , ├  , ├  , ├  , ┼ *, ┤  , ┤  , ┤  ,  ~ 
   ~ , └  , └  , └  , ┴  , ┘  , ┘  , ┘  ,  ~ 
+  ~ , ├  , └  , └  , ┴  , ┘  , ┘  , ┘  ,  ~ 
   ~ , └  , └  , └  , ┴  , ┘  , ┘  , ┘  ,  ~ 
-  ~ , └  , ┴  , └  , ┴  , ┘  , ┘  , ┘  ,  ~ 
   ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ 
 ";
 
@@ -219,7 +218,7 @@ namespace RogueEntity.Core.Tests.Sensing.Common
   ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ , ┼ *,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ 
   ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ , ┴  ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ 
   ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ , ┴  , ┤  ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ 
-  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ , ├  , ┴  , ┴  ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ 
+  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ , ├  , ┴  , ┤  ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ 
   ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ 
   ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ 
   ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ 
@@ -240,12 +239,12 @@ namespace RogueEntity.Core.Tests.Sensing.Common
 
             var resistanceMap = Parse(sourceText);
             Console.WriteLine("Using room layout \n" + PrintMap(resistanceMap, new Rectangle(0, 0, width, height)));
-            
+
             var directionalityMapSystem = new SensoryResistanceDirectionalitySystem<object, VisionSense>(resistanceMap.As3DMap(0));
             directionalityMapSystem.MarkGloballyDirty();
             directionalityMapSystem.Process();
             directionalityMapSystem.TryGetView(0, out var directionalityMap).Should().BeTrue();
-            
+
             var algo = new FloodFillPropagationAlgorithm(LinearDecaySensePhysics.For(dc), new FloodFillWorkingDataSource());
             var calculatedResult = algo.Calculate(source, source.Intensity, pos, resistanceMap, directionalityMap);
             Console.WriteLine(PrintMap(calculatedResult, new Rectangle(new Position2D(0, 0), radius, radius)));
@@ -254,7 +253,7 @@ namespace RogueEntity.Core.Tests.Sensing.Common
 
             var expectedResult = Parse(intensityResultText);
             AssertEquals(calculatedResult, expectedResult, new Rectangle(0, 0, width, height), pos);
-            
+
             var expectedDirections = ParseDirections(directionResultText, out _);
             AssertEquals(new SenseMapDirectionTestView(calculatedResult), expectedDirections, new Rectangle(0, 0, width, height), pos);
         }
