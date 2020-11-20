@@ -32,20 +32,16 @@ namespace RogueEntity.Core.Utils.Algorithms
         Rectangle bounds;
         readonly BoundedDataView<Direction> resultMapCoords;
         readonly BoundedDataView<float> resultMapDistanceCost;
-        readonly PriorityQueue<DijkstraNodeWeight, Position2D> openNodes;
+        readonly PriorityQueue<DijkstraNodeWeight, ShortPosition2D> openNodes;
         readonly List<Direction> directions;
 
         protected DijkstraGridBase(in Rectangle bounds)
         {
-            this.bounds = bounds;
-
             this.directions = new List<Direction>();
-            this.openNodes = new PriorityQueue<DijkstraNodeWeight, Position2D>(bounds.Width * bounds.Height);
+            this.openNodes = new PriorityQueue<DijkstraNodeWeight, ShortPosition2D>(bounds.Width * bounds.Height);
             this.resultMapCoords = new BoundedDataView<Direction>(in bounds);
             this.resultMapDistanceCost = new BoundedDataView<float>(in bounds);
         }
-
-        public Rectangle Bounds => bounds;
 
         protected virtual void Resize(in Rectangle newBounds)
         {
@@ -67,6 +63,8 @@ namespace RogueEntity.Core.Utils.Algorithms
             this.resultMapDistanceCost.Resize(in bounds);
         }
 
+        public Rectangle Bounds => bounds;
+        
         protected void PrepareScan()
         {
             openNodes.Clear();
@@ -79,17 +77,17 @@ namespace RogueEntity.Core.Utils.Algorithms
             RescanMap(out _);
         }
 
-        public bool TryGetCumulativeCost(in Position2D pos, out float result)
+        public bool TryGetCumulativeCost(in ShortPosition2D pos, out float result)
         {
             return resultMapDistanceCost.TryGet(in pos, out result);
         }
 
-        protected abstract void PopulateDirections(Position2D basePosition, List<Direction> buffer);
+        protected abstract void PopulateTraversableDirections(ShortPosition2D basePosition, List<Direction> buffer);
 
-        protected bool RescanMap(out Position2D lowestNode,
+        protected bool RescanMap(out ShortPosition2D lowestNode,
                                  int maxSteps = int.MaxValue)
         {
-            Position2D openNodePosition = default;
+            ShortPosition2D openNodePosition = default;
             var nodeCount = 0;
             while (nodeCount < maxSteps && TryDequeueOpenNode(out openNodePosition))
             {
@@ -106,7 +104,7 @@ namespace RogueEntity.Core.Utils.Algorithms
 
                 nodeCount += 1;
 
-                PopulateDirections(openNodePosition, directions);
+                PopulateTraversableDirections(openNodePosition, directions);
                 foreach (var d in directions)
                 {
                     var nextNodePos = openNodePosition + d;
@@ -116,19 +114,19 @@ namespace RogueEntity.Core.Utils.Algorithms
                         continue;
                     }
 
-                    if (!EdgeCostInformation(in openNodePosition, in d, openNodeWeight, out var cost))
+                    if (!EdgeCostInformation(in openNodePosition, in d, openNodeWeight, out var totalPathCost))
                     {
                         continue;
                     }
 
-                    var newWeight = openNodeWeight - cost;
-                    if (IsExistingResultBetter(in nextNodePos, in newWeight))
+                    // var newWeight = openNodeWeight - totalPathCost;
+                    if (IsExistingResultBetter(in nextNodePos, in totalPathCost))
                     {
                         // already visited.
                         continue;
                     }
 
-                    EnqueueNode(in nextNodePos, newWeight, openNodePosition);
+                    EnqueueNode(in nextNodePos, totalPathCost, openNodePosition);
                 }
             }
 
@@ -137,9 +135,9 @@ namespace RogueEntity.Core.Utils.Algorithms
             return nodeCount > 0;
         }
 
-        protected abstract bool EdgeCostInformation(in Position2D sourceNode, in Direction d, float sourceNodeCost, out float totalPathCost);
+        protected abstract bool EdgeCostInformation(in ShortPosition2D sourceNode, in Direction d, float sourceNodeCost, out float totalPathCost);
 
-        protected virtual bool IsTarget(in Position2D openNodePosition)
+        protected virtual bool IsTarget(in ShortPosition2D openNodePosition)
         {
             return false;
         }
@@ -149,7 +147,7 @@ namespace RogueEntity.Core.Utils.Algorithms
         /// </summary>
         /// <param name="c"></param>
         /// <param name="weight">should be a positive value</param>
-        protected void EnqueueStartingNode(in Position2D c, float weight)
+        protected void EnqueueStartingNode(in ShortPosition2D c, float weight)
         {
             if (resultMapCoords.TryGetRawIndex(in c, out var idx))
             {
@@ -159,17 +157,17 @@ namespace RogueEntity.Core.Utils.Algorithms
             }
         }
 
-        protected void EnqueueNode(in Position2D pos, float weight, in Position2D prev)
+        protected void EnqueueNode(in ShortPosition2D pos, float weight, in ShortPosition2D prev)
         {
-            if (resultMapCoords.TryGetRawIndex(in pos, out var idx))
+            if (resultMapCoords.TryGetRawIndex(pos.X, pos.Y, out var idx))
             {
-                openNodes.UpdatePriority(pos, new DijkstraNodeWeight(-weight, (float)DistanceCalculation.Euclid.Calculate(pos, prev)));
-                resultMapDistanceCost[pos] = weight;
+                openNodes.UpdatePriority(pos, new DijkstraNodeWeight(-weight, (float)DistanceCalculation.Euclid.Calculate2D(pos, prev)));
+                resultMapDistanceCost[pos.X, pos.Y] = weight;
                 resultMapCoords[pos] = Directions.GetDirection(prev, pos);
             }
         }
 
-        protected bool TryDequeueOpenNode(out Position2D c)
+        protected bool TryDequeueOpenNode(out ShortPosition2D c)
         {
             if (openNodes.Count == 0)
             {
@@ -181,12 +179,12 @@ namespace RogueEntity.Core.Utils.Algorithms
             return true;
         }
 
-        protected bool IsValidNode(in Position2D nextNodePos)
+        protected bool IsValidNode(in ShortPosition2D nextNodePos)
         {
             return resultMapCoords.TryGetRawIndex(in nextNodePos, out _);
         }
 
-        protected virtual bool IsExistingResultBetter(in Position2D coord, in float newWeight)
+        protected virtual bool IsExistingResultBetter(in ShortPosition2D coord, in float newWeight)
         {
             // All non-starting nodes are initialized with a weight of zero at the start.
             // This allows us to use Array.Clear which uses MemSet to efficiently
@@ -215,7 +213,7 @@ namespace RogueEntity.Core.Utils.Algorithms
             return existingWeight >= newWeight;
         }
 
-        public bool TryGetPreviousStep(in Position2D pos, out Position2D nextStep)
+        public bool TryGetPreviousStep(in ShortPosition2D pos, out ShortPosition2D nextStep)
         {
             if (!resultMapCoords.TryGet(pos, out var prevIdx) || prevIdx == Direction.None)
             {
@@ -234,11 +232,11 @@ namespace RogueEntity.Core.Utils.Algorithms
         /// <param name="goalStrength"></param>
         /// <param name="maxLength"></param>
         /// <returns></returns>
-        protected List<Position2D> FindPath(Position2D p,
-                                            out float goalStrength,
-                                            int maxLength = int.MaxValue)
+        protected List<ShortPosition2D> FindPath(ShortPosition2D p,
+                                                 out float goalStrength,
+                                                 int maxLength = int.MaxValue)
         {
-            var pathAccumulator = new List<Position2D>();
+            var pathAccumulator = new List<ShortPosition2D>();
             if (!resultMapDistanceCost.TryGet(p, out goalStrength))
             {
                 return pathAccumulator;
@@ -255,37 +253,5 @@ namespace RogueEntity.Core.Utils.Algorithms
 
             return pathAccumulator;
         }
-
-/*
-        public override string ToString()
-        {
-            var b = new StringBuilder();
-            for (var y = 0; y < Height; y += 1)
-            {
-                for (var x = 0; x < Width; x += 1)
-                {
-                    if (x > 0)
-                    {
-                        b.Append("  ");
-                    }
-
-                    var v = this[x, y];
-                    if (!v.ParentNode.TryGetValue(out var p))
-                    {
-                        b.Append($"{v.WeightHint,4:0.0}:{"-",-10}");
-                    }
-                    else
-                    {
-                        var d = Directions.GetDirection(new Coord(x, y), p);
-                        b.Append($"{v.WeightHint,4:0.0}:{d,-10}");
-                    }
-                }
-
-                b.Append('\n');
-            }
-
-            return b.ToString();
-        }
-        */
     }
 }

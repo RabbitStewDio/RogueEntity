@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
-using System.Threading;
 using JetBrains.Annotations;
 using MessagePack;
 
@@ -9,86 +8,32 @@ namespace RogueEntity.Core.Utils.DataViews
 {
     [DataContract]
     [MessagePackObject]
-    public class DynamicDataView2D<T> : IDynamicDataView2D<T>
+    public class PooledDynamicDataView2D<T> : IDynamicDataView2D<T>
     {
         public event EventHandler<DynamicDataView2DEventArgs<T>> ViewCreated;
         public event EventHandler<DynamicDataView2DEventArgs<T>> ViewExpired;
 
-        [DataMember(Order = 0)]
-        [Key(0)]
-        readonly int tileSizeX;
+        readonly Dictionary<Position2D, IPooledBoundedDataView<T>> index;
 
-        [DataMember(Order = 1)]
-        [Key(1)]
-        readonly int tileSizeY;
-
-        [DataMember(Order = 2)]
-        [Key(2)]
-        readonly Dictionary<Position2D, BoundedDataView<T>> index;
-
-        [DataMember(Order = 4)]
-        [Key(4)]
         long currentTime;
-
-        [DataMember(Order = 5)]
-        [Key(5)]
-        int offsetX;
-
-        [DataMember(Order = 6)]
-        [Key(6)]
-        int offsetY;
-
-        [IgnoreDataMember]
-        [IgnoreMember]
-        public int TileSizeX => tileSizeX;
-
-        [IgnoreDataMember]
-        [IgnoreMember]
-        public int TileSizeY => tileSizeY;
-
-        [IgnoreDataMember]
-        [IgnoreMember]
-        public int OffsetX => offsetX;
-
-        [IgnoreDataMember]
-        [IgnoreMember]
-        public int OffsetY => offsetY;
-
-        [IgnoreDataMember]
-        [IgnoreMember]
+        readonly List<Position2D> expired;
         Rectangle activeBounds;
 
-        public DynamicDataView2D(int tileSizeX, int tileSizeY) : this(0, 0, tileSizeX, tileSizeY)
+        readonly IBoundedDataViewPool<T> pool;
+        readonly DynamicDataViewConfiguration tileConfiguration;
+
+        public PooledDynamicDataView2D([NotNull] IBoundedDataViewPool<T> pool)
         {
+            this.tileConfiguration = pool.TileConfiguration;
+            this.pool = pool ?? throw new ArgumentNullException(nameof(pool));
+            this.index = new Dictionary<Position2D, IPooledBoundedDataView<T>>();
+            this.expired = new List<Position2D>();
         }
 
-        public DynamicDataView2D(int offsetX, int offsetY, int tileSizeX, int tileSizeY)
-        {
-            if (tileSizeX <= 0) throw new ArgumentException(nameof(tileSizeX));
-            if (tileSizeY <= 0) throw new ArgumentException(nameof(tileSizeY));
-
-            this.offsetX = offsetX;
-            this.offsetY = offsetY;
-            this.tileSizeX = tileSizeX;
-            this.tileSizeY = tileSizeY;
-            this.index = new Dictionary<Position2D, BoundedDataView<T>>();
-        }
-
-        [SerializationConstructor]
-        protected DynamicDataView2D(int tileSizeX,
-                                  int tileSizeY,
-                                  [NotNull] Dictionary<Position2D, BoundedDataView<T>> index,
-                                  long currentTime,
-                                  int offsetX,
-                                  int offsetY)
-        {
-            this.offsetX = offsetX;
-            this.offsetY = offsetY;
-            this.tileSizeX = tileSizeX;
-            this.tileSizeY = tileSizeY;
-            this.index = index ?? throw new ArgumentNullException(nameof(index));
-            this.currentTime = currentTime;
-        }
+        public int OffsetX => tileConfiguration.OffsetX;
+        public int OffsetY => tileConfiguration.OffsetY;
+        public int TileSizeX => tileConfiguration.TileSizeX;
+        public int TileSizeY => tileConfiguration.TileSizeY;
 
         public Rectangle GetActiveBounds()
         {
@@ -135,25 +80,63 @@ namespace RogueEntity.Core.Utils.DataViews
             return data;
         }
 
+        public void PrepareFrame(long time)
+        {
+            currentTime = time;
+            foreach (var e in index.Values)
+            {
+                e.BeginUseTimePeriod(time);
+            }
+        }
+
         public void Clear()
         {
             foreach (var e in index.Values)
             {
+                e.MarkUsedForWriting();
                 e.Clear();
             }
         }
 
-        public BoundedDataView<T> GetOrCreateData(int x, int y)
+        public void ExpireFrames(long age)
         {
-            if (TryGetDataInternal(x, y, out BoundedDataView<T> rawData))
+            expired.Clear();
+
+            foreach (var entry in index)
             {
+                var e = entry.Value;
+                e.CommitUseTimePeriod();
+                if ((currentTime - e.LastUsed) > age)
+                {
+                    ViewExpired?.Invoke(this, new DynamicDataView2DEventArgs<T>(e));
+                    expired.Add(entry.Key);
+                }
+            }
+
+            if (expired.Count != 0)
+            {
+                activeBounds = default;
+                foreach (var e in expired)
+                {
+                    index.Remove(e);
+                }
+            }
+        }
+
+        public IPooledBoundedDataView<T> GetOrCreateData(int x, int y)
+        {
+            if (TryGetDataInternal(x, y, out IPooledBoundedDataView<T> rawData))
+            {
+                rawData.MarkUsedForWriting();
                 return rawData;
             }
 
-            var dx = DataViewPartitions.TileSplit(x, offsetX, tileSizeX);
-            var dy = DataViewPartitions.TileSplit(y, offsetY, tileSizeY);
-            var data = new BoundedDataView<T>(new Rectangle(dx * tileSizeX + offsetX, dy * tileSizeY + offsetY, tileSizeX, tileSizeY));
-            index[new Position2D(dx, dy)] = data;
+            var (idx, bounds) = tileConfiguration.Configure(x, y);
+            var data = pool.Lease(bounds, currentTime);
+            data.MarkUsedForReading();
+            data.MarkUsedForWriting();
+
+            index[idx] = data;
             ViewCreated?.Invoke(this, new DynamicDataView2DEventArgs<T>(data));
             activeBounds = default;
             return data;
@@ -161,7 +144,7 @@ namespace RogueEntity.Core.Utils.DataViews
 
         public bool TryGetData(int x, int y, out IReadOnlyBoundedDataView<T> raw)
         {
-            if (TryGetDataInternal(x, y, out BoundedDataView<T> t))
+            if (TryGetDataInternal(x, y, out IPooledBoundedDataView<T> t))
             {
                 raw = t;
                 return true;
@@ -173,9 +156,11 @@ namespace RogueEntity.Core.Utils.DataViews
 
         public bool TryGetWriteAccess(int x, int y, out IBoundedDataView<T> raw, DataViewCreateMode mode = DataViewCreateMode.Nothing)
         {
-            if (TryGetDataInternal(x, y, out BoundedDataView<T> t))
+            if (TryGetDataInternal(x, y, out IPooledBoundedDataView<T> t))
             {
                 raw = t;
+                t.MarkUsedForReading();
+                t.MarkUsedForWriting();
                 return true;
             }
 
@@ -184,11 +169,13 @@ namespace RogueEntity.Core.Utils.DataViews
                 raw = default;
                 return false;
             }
-            
-            var dx = DataViewPartitions.TileSplit(x, offsetX, tileSizeX);
-            var dy = DataViewPartitions.TileSplit(y, offsetY, tileSizeY);
-            var data = new BoundedDataView<T>(new Rectangle(dx * tileSizeX + offsetX, dy * tileSizeY + offsetY, tileSizeX, tileSizeY));
-            index[new Position2D(dx, dy)] = data;
+
+            var (idx, bounds) = tileConfiguration.Configure(x, y);
+            var data = pool.Lease(bounds, currentTime);
+            data.MarkUsedForReading();
+            data.MarkUsedForWriting();
+
+            index[idx] = data;
             ViewCreated?.Invoke(this, new DynamicDataView2DEventArgs<T>(data));
             activeBounds = default;
             raw = data;
@@ -197,7 +184,7 @@ namespace RogueEntity.Core.Utils.DataViews
 
         public bool TryGetRawAccess(int x, int y, out IBoundedDataViewRawAccess<T> raw)
         {
-            if (TryGetDataInternal(x, y, out BoundedDataView<T> t))
+            if (TryGetDataInternal(x, y, out IPooledBoundedDataView<T> t))
             {
                 raw = t;
                 return true;
@@ -213,21 +200,21 @@ namespace RogueEntity.Core.Utils.DataViews
             return data.TrySet(x, y, value);
         }
 
-        bool TryGetDataInternal(int x, int y, out BoundedDataView<T> data)
+        bool TryGetDataInternal(int x, int y, out IPooledBoundedDataView<T> data)
         {
-            var dx = DataViewPartitions.TileSplit(x, offsetX, tileSizeX);
-            var dy = DataViewPartitions.TileSplit(y, offsetY, tileSizeY);
-            if (!index.TryGetValue(new Position2D(dx, dy), out data))
+            var idx = tileConfiguration.TileIndex(x, y);
+            if (!index.TryGetValue(idx, out data))
             {
                 return false;
             }
 
+            data.MarkUsedForReading();
             return true;
         }
 
         public bool TryGet(int x, int y, out T result)
         {
-            if (TryGetDataInternal(x, y, out BoundedDataView<T> data))
+            if (TryGetDataInternal(x, y, out IPooledBoundedDataView<T> data))
             {
                 return data.TryGet(x, y, out result);
             }

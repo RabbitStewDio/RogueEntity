@@ -58,7 +58,7 @@ namespace RogueEntity.Core.GridProcessing.LayerAggregation
 
         public void ResetDirtyFlags()
         {
-            dirtyMap.ClearData();
+            dirtyMap.Clear();
         }
 
         public bool Process(TGameContext context)

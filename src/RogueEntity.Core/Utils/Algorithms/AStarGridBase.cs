@@ -1,91 +1,35 @@
 using System;
 using System.Collections.Generic;
-using JetBrains.Annotations;
 using RogueEntity.Core.Utils.DataViews;
 
 namespace RogueEntity.Core.Utils.Algorithms
 {
-    public abstract class AStarGridBase
+    public abstract class AStarGridBase<TPosition>
+        where TPosition : IPosition2D<TPosition>, IEquatable<TPosition>
     {
-        /// <summary>
-        ///   12 bytes.
-        /// </summary>
-        readonly struct AStarNode
-        {
-            internal enum NodeState : byte
-            {
-                [UsedImplicitly] None = 0, 
-                Open = 1, 
-                Closed = 2
-            }
-
-            // Whether or not the node has been closed
-            public readonly NodeState State;
-
-            public readonly Direction DirectionToParent;
-
-            public readonly ushort DistanceFromStart;
-
-            // (Partly estimated) distance to end point going thru this node
-            public readonly float HeuristicValue;
-
-            // (Known) distance from start to this node, by shortest known path
-            public readonly float AccumulatedCost;
-
-
-            public AStarNode(NodeState state, float heuristicValue, float accumulatedCost, Direction directionToParent, ushort distanceFromStart)
-            {
-                State = state;
-                HeuristicValue = heuristicValue;
-                AccumulatedCost = accumulatedCost;
-                DirectionToParent = directionToParent;
-                DistanceFromStart = distanceFromStart;
-            }
-
-            public static AStarNode Start(float h)
-            {
-                return new AStarNode(NodeState.Open, h, 0, Direction.None, 0);
-            }
-
-            public AStarNode Close()
-            {
-                return new AStarNode(NodeState.Closed, HeuristicValue, AccumulatedCost, DirectionToParent, DistanceFromStart);
-            }
-
-            public bool IsClosed()
-            {
-                return State == NodeState.Closed;
-            }
-        }
-
-        readonly DynamicDataView2D<AStarNode> nodes;
-        readonly PriorityQueue<float, Position2D> openNodes;
+        readonly IDynamicDataView2D<AStarNode> nodes;
+        readonly PriorityQueue<float, TPosition> openNodes;
         readonly List<Direction> directionsOfNeighbours;
 
-        protected AStarGridBase(int tileSizeX, int tileSizeY): this(0, 0, tileSizeX, tileSizeY)
-        {
-            
-        }
-        
-        protected AStarGridBase(int offsetX, int offsetY, int tileSizeX, int tileSizeY)
+        protected AStarGridBase(IBoundedDataViewPool<AStarNode> pool)
         {
             this.directionsOfNeighbours = new List<Direction>();
-            this.openNodes = new PriorityQueue<float, Position2D>(4096);
-            this.nodes = new DynamicDataView2D<AStarNode>(offsetX, offsetY, tileSizeX, tileSizeY);
+            this.openNodes = new PriorityQueue<float, TPosition>(4096);
+            this.nodes = new PooledDynamicDataView2D<AStarNode>(pool);
         }
 
-        protected abstract void PopulateDirections(Position2D basePosition, List<Direction> buffer);
-        protected abstract bool EdgeCostInformation(in Position2D sourceNode, in Direction d, float sourceNodeCost, out float totalPathCost);
+        protected abstract void PopulateDirections(TPosition basePosition, List<Direction> buffer);
+        protected abstract bool EdgeCostInformation(in TPosition sourceNode, in Direction d, float sourceNodeCost, out float totalPathCost);
 
-        protected abstract bool IsTargetNode(in Position2D pos);
+        protected abstract bool IsTargetNode(in TPosition pos);
 
-        protected abstract float Heuristic(in Position2D pos);
+        protected abstract float Heuristic(in TPosition pos);
 
-        protected virtual List<Position2D> FindPath(Position2D start, Position2D end, List<Position2D> pathBuffer)
+        protected virtual List<TPosition> FindPath(TPosition start, TPosition end, List<TPosition> pathBuffer)
         {
             if (pathBuffer == null)
             {
-                pathBuffer = new List<Position2D>();
+                pathBuffer = new List<TPosition>();
             }
             else
             {
@@ -97,18 +41,16 @@ namespace RogueEntity.Core.Utils.Algorithms
                 return pathBuffer;
             }
 
-            nodes.ClearData();
-
-            var startNode = AStarNode.Start(Heuristic(start));
-            nodes[start] = startNode;
-            openNodes.Enqueue(start, startNode.HeuristicValue);
+            nodes.Clear();
+            nodes[start.X, start.Y] = AStarNode.Start();
+            openNodes.Enqueue(start, Heuristic(start));
 
             while (openNodes.Count != 0)
             {
                 var currentPosition = openNodes.Dequeue();
-                var currentNode = nodes[currentPosition];
+                var currentNode = nodes[currentPosition.X, currentPosition.Y];
 
-                nodes[currentPosition] = currentNode.Close();
+                nodes[currentPosition.X, currentPosition.Y] = currentNode.Close();
 
                 if (IsTargetNode(currentPosition)) // We found the end, cleanup and return the path
                 {
@@ -119,12 +61,12 @@ namespace RogueEntity.Core.Utils.Algorithms
                 {
                     continue;
                 }
-                
+
                 PopulateDirections(currentPosition, directionsOfNeighbours);
                 foreach (var dir in directionsOfNeighbours)
                 {
-                    var neighborPos = currentPosition + dir;
-                    var neighbor = nodes[neighborPos];
+                    var neighborPos = currentPosition.Add(dir.ToCoordinates());
+                    var neighbor = nodes[neighborPos.X, neighborPos.Y];
                     if (neighbor.IsClosed())
                     {
                         // This neighbor has already been evaluated at shortest possible path, don't re-add
@@ -144,14 +86,13 @@ namespace RogueEntity.Core.Utils.Algorithms
                     }
 
                     // We found a best path, so record and update
-                    nodes[neighborPos] = new AStarNode(AStarNode.NodeState.Open,
-                                                       totalPathCost + Heuristic(in neighborPos),
-                                                       totalPathCost,
-                                                       Directions.GetDirection(currentPosition, neighborPos),
-                                                       (ushort)(currentNode.DistanceFromStart + 1)
+                    nodes[neighborPos.X, neighborPos.Y] = new AStarNode(AStarNode.NodeState.Open,
+                                                                        totalPathCost,
+                                                                        Directions.GetDirection(currentPosition, neighborPos),
+                                                                        (ushort)(currentNode.DistanceFromStart + 1)
                     );
 
-                    openNodes.UpdatePriority(neighborPos, neighbor.HeuristicValue);
+                    openNodes.UpdatePriority(neighborPos, totalPathCost + Heuristic(in neighborPos));
                 }
             }
 
@@ -159,7 +100,7 @@ namespace RogueEntity.Core.Utils.Algorithms
             return pathBuffer;
         }
 
-        protected virtual bool IsExistingResultBetter(in Position2D coord, in float newWeight)
+        protected virtual bool IsExistingResultBetter(in TPosition coord, in float newWeight)
         {
             // All non-starting nodes are initialized with a weight of zero at the start.
             // This allows us to use Array.Clear which uses MemSet to efficiently
@@ -188,13 +129,15 @@ namespace RogueEntity.Core.Utils.Algorithms
             return existingWeight.AccumulatedCost < newWeight;
         }
 
-        List<Position2D> ProduceResult(Position2D currentPosition, AStarNode currentNode, List<Position2D> pathBuffer)
+        List<TPosition> ProduceResult(TPosition currentPosition, AStarNode currentNode, List<TPosition> pathBuffer)
         {
             pathBuffer.Capacity = Math.Max(pathBuffer.Capacity, currentNode.DistanceFromStart);
             while (currentNode.DirectionToParent != Direction.None)
             {
                 pathBuffer.Add(currentPosition);
-                currentPosition -= currentNode.DirectionToParent.ToCoordinates();
+                var cp = currentPosition.Add(currentNode.DirectionToParent.ToCoordinates());
+                currentPosition = cp;
+
                 ushort distanceFromStart = currentNode.DistanceFromStart;
                 if (!nodes.TryGet(currentPosition.X, currentPosition.Y, out currentNode))
                 {

@@ -26,6 +26,9 @@ namespace RogueEntity.Core.Utils.DataViews
 
         public DynamicDataViewConfiguration(int offsetX, int offsetY, int tileSizeX, int tileSizeY)
         {
+            if (tileSizeX <= 0) throw new ArgumentException(nameof(tileSizeX));
+            if (tileSizeY <= 0) throw new ArgumentException(nameof(tileSizeY));
+
             OffsetX = offsetX;
             OffsetY = offsetY;
             TileSizeX = tileSizeX;
@@ -62,6 +65,20 @@ namespace RogueEntity.Core.Utils.DataViews
         public static bool operator !=(DynamicDataViewConfiguration left, DynamicDataViewConfiguration right)
         {
             return !left.Equals(right);
+        }
+
+        public Position2D TileIndex(int x, int y)
+        {
+            var dx = DataViewPartitions.TileSplit(x, OffsetX, TileSizeX);
+            var dy = DataViewPartitions.TileSplit(y, OffsetY, TileSizeY);
+            return new Position2D(dx, dy);
+        }
+        
+        public (Position2D, Rectangle) Configure(int x, int y)
+        {
+            var dx = DataViewPartitions.TileSplit(x, OffsetX, TileSizeX);
+            var dy = DataViewPartitions.TileSplit(y, OffsetY, TileSizeY);
+            return (new Position2D(dx, dy), new Rectangle(dx * TileSizeX + OffsetX, dy * TileSizeY + OffsetY, TileSizeX, TileSizeY));
         }
     }
 

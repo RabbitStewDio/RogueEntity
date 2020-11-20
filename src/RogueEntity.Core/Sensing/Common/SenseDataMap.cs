@@ -95,8 +95,8 @@ namespace RogueEntity.Core.Sensing.Common
 
         public void Clear()
         {
-            sensitivityData.ClearData();
-            directionData.ClearData();
+            sensitivityData.Clear();
+            directionData.Clear();
         }
 
         public Rectangle GetActiveBounds()

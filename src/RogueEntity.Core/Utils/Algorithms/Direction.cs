@@ -22,20 +22,20 @@ namespace RogueEntity.Core.Utils.Algorithms
     public static class Directions
     {
         static readonly Direction[] MoveDirections;
-        static readonly Position2D[] Deltas;
+        static readonly ShortPosition2D[] Deltas;
 
         static Directions()
         {
-            Deltas = new Position2D[9];
-            Deltas[(int) Direction.None] = new Position2D(0, 0);
-            Deltas[(int) Direction.Up] = new Position2D(0, -1);
-            Deltas[(int) Direction.UpRight] = new Position2D(1, -1);
-            Deltas[(int) Direction.Right] = new Position2D(1, 0);
-            Deltas[(int) Direction.DownRight] = new Position2D(1, 1);
-            Deltas[(int) Direction.Down] = new Position2D(0, 1);
-            Deltas[(int) Direction.DownLeft] = new Position2D(-1, 1);
-            Deltas[(int) Direction.Left] = new Position2D(-1, 0);
-            Deltas[(int) Direction.UpLeft] = new Position2D(-1, -1);
+            Deltas = new ShortPosition2D[9];
+            Deltas[(int) Direction.None] = new ShortPosition2D(0, 0);
+            Deltas[(int) Direction.Up] = new ShortPosition2D(0, -1);
+            Deltas[(int) Direction.UpRight] = new ShortPosition2D(1, -1);
+            Deltas[(int) Direction.Right] = new ShortPosition2D(1, 0);
+            Deltas[(int) Direction.DownRight] = new ShortPosition2D(1, 1);
+            Deltas[(int) Direction.Down] = new ShortPosition2D(0, 1);
+            Deltas[(int) Direction.DownLeft] = new ShortPosition2D(-1, 1);
+            Deltas[(int) Direction.Left] = new ShortPosition2D(-1, 0);
+            Deltas[(int) Direction.UpLeft] = new ShortPosition2D(-1, -1);
 
             MoveDirections = new []
             {
@@ -50,7 +50,7 @@ namespace RogueEntity.Core.Utils.Algorithms
             };
         }
 
-        public static Position2D ToCoordinates(this Direction d)
+        public static ShortPosition2D ToCoordinates(this Direction d)
         {
             return Deltas[(int)d];
         }
@@ -138,7 +138,9 @@ namespace RogueEntity.Core.Utils.Algorithms
         /// <returns>
         /// The direction that most closely matches the heading indicated by the given line.
         /// </returns>
-        public static Direction GetDirection(in Position2D start, in Position2D end) => GetDirection(end.X - start.X, end.Y - start.Y);
+        public static Direction GetDirection<TPosition>(in TPosition start, in TPosition end)
+            where TPosition : IPosition2D<TPosition>
+            => GetDirection(end.X - start.X, end.Y - start.Y);
 
         /// <summary>
         /// Returns the direction that most closely matches the degree heading of the given line.

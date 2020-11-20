@@ -50,16 +50,18 @@ namespace RogueEntity.Core.Utils.DataViews
 
         public IReadOnlyList<TData> RawData => Data;
 
-        public void Resize(in Rectangle newBounds)
+        public void Resize(in Rectangle newBounds, bool strict = false)
         {
             if (bounds.Width == newBounds.Width &&
                 bounds.Height == newBounds.Height)
             {
+                this.bounds = newBounds;
                 return;
             }
-            
-            if (bounds.Width >= newBounds.Width &&
-                     bounds.Height >= newBounds.Height)
+
+            if (!strict &&
+                (bounds.Width >= newBounds.Width &&
+                 bounds.Height >= newBounds.Height))
             {
                 // rebase origin, but dont change coordinates.
                 this.bounds = new Rectangle(newBounds.MinExtentX, newBounds.MinExtentY, bounds.Width, bounds.Height);
@@ -119,12 +121,16 @@ namespace RogueEntity.Core.Utils.DataViews
             }
         }
 
-        public bool TryGetRawIndex(in Position2D pos, out int result)
+        public bool TryGetRawIndex<TPosition2D>(in TPosition2D pos, out int result)
+            where TPosition2D : IPosition2D<TPosition2D>
+            => TryGetRawIndex(pos.X, pos.Y, out result);
+
+        public bool TryGetRawIndex(int posX, int posY, out int result)
         {
-            if (bounds.Contains(pos.X, pos.Y))
+            if (bounds.Contains(posX, posY))
             {
-                var rawX = pos.X - bounds.MinExtentX;
-                var rawY = pos.Y - bounds.MinExtentY;
+                var rawX = posX - bounds.MinExtentX;
+                var rawY = posY - bounds.MinExtentY;
                 result = rawX + rawY * bounds.Width;
                 return true;
             }
@@ -149,7 +155,8 @@ namespace RogueEntity.Core.Utils.DataViews
             return true;
         }
 
-        public bool TryGet(in Position2D pos, out TData result)
+        public bool TryGet<TPosition2D>(in TPosition2D pos, out TData result)
+            where TPosition2D : IPosition2D<TPosition2D>
         {
             return TryGet(pos.X, pos.Y, out result);
         }
@@ -169,7 +176,8 @@ namespace RogueEntity.Core.Utils.DataViews
             return true;
         }
 
-        public bool TrySet(in Position2D pos, in TData result)
+        public bool TrySet<TPosition2D>(in TPosition2D pos, in TData result)
+            where TPosition2D : IPosition2D<TPosition2D>
         {
             if (bounds.Contains(pos.X, pos.Y))
             {
@@ -272,7 +280,7 @@ namespace RogueEntity.Core.Utils.DataViews
                 return false;
             }
 
-            return Equals((BoundedDataView<TData>) obj);
+            return Equals((BoundedDataView<TData>)obj);
         }
 
         [SuppressMessage("ReSharper", "NonReadonlyMemberInGetHashCode")]

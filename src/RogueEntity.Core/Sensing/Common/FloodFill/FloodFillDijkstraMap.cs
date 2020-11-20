@@ -4,17 +4,18 @@ using System.Diagnostics.CodeAnalysis;
 using JetBrains.Annotations;
 using RogueEntity.Api.Utils;
 using RogueEntity.Core.Directionality;
-using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Sensing.Common.Physics;
 using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.Algorithms;
 using RogueEntity.Core.Utils.DataViews;
-using Rectangle = RogueEntity.Core.Utils.Rectangle;
+using Serilog;
 
 namespace RogueEntity.Core.Sensing.Common.FloodFill
 {
     public class FloodFillDijkstraMap : DijkstraGridBase
     {
+        static readonly ILogger Logger = SLog.ForContext<FloodFillDijkstraMap>();
+        
         bool valid;
         IReadOnlyView2D<float> ResistanceMap { get; set; }
         SenseSourceDefinition Sense { get; set; }
@@ -25,7 +26,7 @@ namespace RogueEntity.Core.Sensing.Common.FloodFill
         float intensity;
         IReadOnlyView2D<DirectionalityInformation> directionalityView;
 
-        FloodFillDijkstraMap(in Rectangle bounds) : base(in bounds)
+        FloodFillDijkstraMap(int extendX, int extendY) : base(Rectangle.WithRadius(0, 0, extendX, extendY))
         {
             this.directions = ReadOnlyListWrapper<Direction>.Empty;
             valid = false;
@@ -42,12 +43,8 @@ namespace RogueEntity.Core.Sensing.Common.FloodFill
             Console.WriteLine("Using Origin: " + origin + " Radius: " + radius);
             
             var radiusInt = (int)Math.Ceiling(radius);
-            var bounds = new Rectangle(origin.X - radiusInt, origin.Y - radiusInt, 2 * radiusInt + 1, 2 * radiusInt + 1);
-            var result = new FloodFillDijkstraMap(in bounds);
+            var result = new FloodFillDijkstraMap(radiusInt, radiusInt);
             result.Configure(in sense, intensity, in origin, sensePhysics, resistanceMap, directionalityView);
-            
-            Console.WriteLine("Using bounds " + bounds);
-            
             return result;
         }
         
@@ -67,7 +64,7 @@ namespace RogueEntity.Core.Sensing.Common.FloodFill
             this.SensePhysics = sensePhysics ?? throw new ArgumentNullException(nameof(sensePhysics));
             this.ResistanceMap = resistanceMap ?? throw new ArgumentNullException(nameof(resistanceMap));
             var radiusInt = (int)Math.Ceiling(radius);
-            this.Resize(new Rectangle(origin.X - radiusInt, origin.Y - radiusInt, 2 * radiusInt + 1, 2 * radiusInt + 1));
+            this.Resize(Rectangle.WithRadius(0, 0, radiusInt, radiusInt));
             this.directions = Sense.AdjacencyRule.DirectionsOfNeighbors();
             this.valid = true;
         }
@@ -84,38 +81,39 @@ namespace RogueEntity.Core.Sensing.Common.FloodFill
         public void Compute(SenseSourceData data)
         {
             base.PrepareScan();
-            base.EnqueueStartingNode(in origin, Math.Abs(intensity));
+            base.EnqueueStartingNode(new ShortPosition2D(), Math.Abs(intensity));
             base.RescanMap(out _, Bounds.Width * Bounds.Height);
 
             var sgn = Math.Sign(intensity);
             foreach (var pos in Bounds.Contents)
             {
-                if (!TryGetCumulativeCost(pos, out var cost))
+                var shortPos = new ShortPosition2D(pos.X, pos.Y);
+                if (!TryGetCumulativeCost(shortPos, out var cost))
                 {
                     continue;
                 }
 
                 var flags = SenseDataFlags.None;
                 var senseDirection = SenseDirection.None;
-                if (TryGetPreviousStep(pos, out var prev))
+                if (TryGetPreviousStep(shortPos, out var prev))
                 {
                     var delta = pos - prev;
                     senseDirection = SenseDirectionStore.From(delta.X, delta.Y).Direction;
-                    flags |= ResistanceMap[pos.X, pos.Y] >= 1 ? SenseDataFlags.Obstructed : SenseDataFlags.None;
+                    flags |= ResistanceMap[origin.X + pos.X, origin.Y + pos.Y] >= 1 ? SenseDataFlags.Obstructed : SenseDataFlags.None;
                 }
-                if (pos == origin)
+                if (pos == default)
                 {
                     flags |= SenseDataFlags.SelfIlluminating;
                 }
-                data.Write(pos - origin, sgn * cost, senseDirection, flags);
-                
+                data.Write(pos, sgn * cost, senseDirection, flags);
             }
         }
 
-        protected override void PopulateDirections(Position2D basePosition, List<Direction> buffer)
+        protected override void PopulateTraversableDirections(ShortPosition2D basePosition, List<Direction> buffer)
         {
             buffer.Clear();
-            if (!directionalityView.TryGet(basePosition.X, basePosition.Y, out var dir))
+            var targetPos = basePosition + origin; 
+            if (!directionalityView.TryGet(targetPos.X, targetPos.Y, out var dir))
             {
                 dir = DirectionalityInformation.All;
             }
@@ -127,11 +125,15 @@ namespace RogueEntity.Core.Sensing.Common.FloodFill
                     buffer.Add(d);
                 }
             }
+            
+            Logger.Debug("Traversable: For {Position} is {Buffer}", targetPos, buffer);
         }
 
-        protected override bool EdgeCostInformation(in Position2D stepOrigin, in Direction d, float stepOriginCost, out float totalPathCost)
+        protected override bool EdgeCostInformation(in ShortPosition2D stepOrigin, 
+                                                    in Direction d, 
+                                                    float stepOriginCost, out float totalPathCost)
         {
-            var targetPoint = stepOrigin + d.ToPosition2D();
+            var targetPoint = origin + stepOrigin + d.ToCoordinates();
             if (!valid)
             {
                 totalPathCost = default;
@@ -145,10 +147,11 @@ namespace RogueEntity.Core.Sensing.Common.FloodFill
                 return false;
             }
 
-            var distanceForStep = Sense.DistanceCalculation.Calculate(d.ToCoordinates());
+            var distanceForStep = Sense.DistanceCalculation.Calculate2D(d.ToCoordinates());
             var signalStrength = SensePhysics.SignalStrengthAtDistance((float) ((intensity - stepOriginCost) + distanceForStep), radius);
             var totalCost = intensity * signalStrength * (1 - resistance);
-            totalPathCost = stepOriginCost - totalCost;
+            totalPathCost = totalCost;
+            Logger.Debug("EdgeCost: For {Position} is O:{Origin} {Total}", targetPoint, stepOriginCost, totalCost);
             return true;
         }
     }

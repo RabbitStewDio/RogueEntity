@@ -5,23 +5,15 @@ using Serilog;
 
 namespace RogueEntity.Core.Utils.Algorithms
 {
+    /// <summary>
+    ///   Needs 5 bytes per node processed.
+    /// </summary>
     public abstract class DynamicDijkstraGridBase
     {
         static readonly ILogger Logger = SLog.ForContext<DynamicDijkstraGridBase>();
 
-        readonly struct DijkstraNode
-        {
-            public readonly Direction DirectionToOrigin;
-            public readonly float Weight;
-
-            public DijkstraNode(Direction directionToOrigin, float weight)
-            {
-                DirectionToOrigin = directionToOrigin;
-                Weight = weight;
-            }
-        }
-
-        readonly DynamicDataView2D<DijkstraNode> nodes;
+        readonly DynamicDataView2D<float> nodesWeight;
+        readonly DynamicDataView2D<Direction> nodesDirection;
         readonly PriorityQueue<DijkstraNodeWeight, Position2D> openNodes;
         readonly List<Direction> directions;
 
@@ -33,13 +25,15 @@ namespace RogueEntity.Core.Utils.Algorithms
         {
             this.directions = new List<Direction>();
             this.openNodes = new PriorityQueue<DijkstraNodeWeight, Position2D>(4096);
-            this.nodes = new DynamicDataView2D<DijkstraNode>(offsetX, offsetY, tileSizeX, tileSizeY);
+            this.nodesWeight = new DynamicDataView2D<float>(offsetX, offsetY, tileSizeX, tileSizeY);
+            this.nodesDirection = new DynamicDataView2D<Direction>(offsetX, offsetY, tileSizeX, tileSizeY);
         }
 
         protected void PrepareScan()
         {
             openNodes.Clear();
-            nodes.ClearData();
+            nodesDirection.Clear();
+            nodesWeight.Clear();
         }
 
         protected void RescanMap()
@@ -49,14 +43,7 @@ namespace RogueEntity.Core.Utils.Algorithms
 
         public bool TryGetCumulativeCost(in Position2D pos, out float result)
         {
-            if (nodes.TryGet(pos.X, pos.Y, out var resultNode))
-            {
-                result = resultNode.Weight;
-                return true;
-            }
-
-            result = default;
-            return false;
+            return nodesWeight.TryGet(pos.X, pos.Y, out result);
         }
 
         protected abstract void PopulateDirections(Position2D basePosition, List<Direction> buffer);
@@ -74,7 +61,7 @@ namespace RogueEntity.Core.Utils.Algorithms
                     return true;
                 }
 
-                if (!nodes.TryGet(openNodePosition.X, openNodePosition.Y, out var openNode))
+                if (!nodesWeight.TryGet(openNodePosition.X, openNodePosition.Y, out var openNodeWeight))
                 {
                     continue;
                 }
@@ -86,19 +73,18 @@ namespace RogueEntity.Core.Utils.Algorithms
                 {
                     var nextNodePos = openNodePosition + d;
 
-                    if (!EdgeCostInformation(in openNodePosition, in d, openNode.Weight, out var cost))
+                    if (!EdgeCostInformation(in openNodePosition, in d, openNodeWeight, out var totalPathCost))
                     {
                         continue;
                     }
 
-                    var newWeight = openNode.Weight - cost;
-                    if (IsExistingResultBetter(in nextNodePos, in newWeight))
+                    if (IsExistingResultBetter(in nextNodePos, in totalPathCost))
                     {
                         // already visited.
                         continue;
                     }
 
-                    EnqueueNode(in nextNodePos, newWeight, openNodePosition);
+                    EnqueueNode(in nextNodePos, totalPathCost, openNodePosition);
                 }
             }
 
@@ -122,13 +108,15 @@ namespace RogueEntity.Core.Utils.Algorithms
         protected void EnqueueStartingNode(in Position2D c, float weight)
         {
             openNodes.UpdatePriority(c, new DijkstraNodeWeight(-weight, 0));
-            nodes[c] = new DijkstraNode(Direction.None, weight);
+            nodesWeight[c] = weight;
+            nodesDirection[c] = Direction.None;
         }
 
         protected void EnqueueNode(in Position2D pos, float weight, in Position2D prev)
         {
-            openNodes.UpdatePriority(pos, new DijkstraNodeWeight(-weight, (float)DistanceCalculation.Euclid.Calculate(pos, prev)));
-            nodes[pos] = new DijkstraNode(Directions.GetDirection(prev, pos), weight);
+            openNodes.UpdatePriority(pos, new DijkstraNodeWeight(-weight, (float)DistanceCalculation.Euclid.Calculate2D(pos, prev)));
+            nodesWeight[pos] = weight;
+            nodesDirection[pos] = Directions.GetDirection(prev, pos);
         }
 
         protected bool TryDequeueOpenNode(out Position2D c)
@@ -163,25 +151,25 @@ namespace RogueEntity.Core.Utils.Algorithms
                 return true;
             }
 
-            if (!nodes.TryGet(coord.X, coord.Y, out var existingWeight))
+            if (!nodesWeight.TryGet(coord.X, coord.Y, out var existingWeight))
             {
                 // Stop processing nodes once we left the valid map area.
                 return true;
             }
 
-            return existingWeight.Weight >= newWeight;
+            return existingWeight >= newWeight;
         }
 
         public bool TryGetPreviousStep(in Position2D pos, out Position2D nextStep)
         {
-            if (!nodes.TryGet(pos.X, pos.Y, out var prevIdx) ||
-                prevIdx.DirectionToOrigin == Direction.None)
+            if (!nodesDirection.TryGet(pos.X, pos.Y, out var prevIdx) ||
+                prevIdx == Direction.None)
             {
                 nextStep = default;
                 return false;
             }
 
-            nextStep = pos - prevIdx.DirectionToOrigin.ToCoordinates();
+            nextStep = pos - prevIdx.ToCoordinates();
             return true;
         }
 
@@ -197,20 +185,17 @@ namespace RogueEntity.Core.Utils.Algorithms
                                             int maxLength = int.MaxValue)
         {
             var pathAccumulator = new List<Position2D>();
-            if (!nodes.TryGet(p.X, p.Y, out var node))
+            if (!nodesWeight.TryGet(p.X, p.Y, out goalStrength))
             {
-                goalStrength = 0;
                 return pathAccumulator;
             }
 
-            goalStrength = node.Weight;
             pathAccumulator.Add(p);
 
             while (pathAccumulator.Count < maxLength &&
                    TryGetPreviousStep(in p, out p) &&
-                   nodes.TryGet(p.X, p.Y, out node))
+                   nodesWeight.TryGet(p.X, p.Y, out goalStrength))
             {
-                goalStrength = node.Weight;
                 pathAccumulator.Add(p);
             }
 

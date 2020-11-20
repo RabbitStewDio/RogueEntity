@@ -50,7 +50,7 @@ namespace RogueEntity.Core.Positioning.Caching
             globallyDirty = false;
             foreach (var l in tileStateCache.Values)
             {
-                l.ClearData();
+                l.Clear();
             }
         }
 

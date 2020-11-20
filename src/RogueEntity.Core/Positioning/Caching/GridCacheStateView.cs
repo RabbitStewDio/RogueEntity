@@ -44,7 +44,7 @@ namespace RogueEntity.Core.Positioning.Caching
         {
             foreach (var l in trackersPerLayer.Values)
             {
-                l.ClearData();
+                l.Clear();
             }
 
             globallyDirty = false;

@@ -212,7 +212,7 @@ namespace RogueEntity.Core.Tests.Sensing.Discovery
             var sd = new SenseSourceData(10);
             foreach (var p in sd.Bounds.Contents)
             {
-                var str = radius - (float)DistanceCalculation.Euclid.Calculate(p);
+                var str = radius - (float)DistanceCalculation.Euclid.Calculate2D(p);
                 if (str > 0)
                 {
                     sd.Write(p, new Position2D(0, 0), str);
@@ -230,7 +230,7 @@ namespace RogueEntity.Core.Tests.Sensing.Discovery
             var bounds = new Rectangle(origin, radius, radius);
             foreach (var p in bounds.Contents)
             {
-                var str = radius - (float)DistanceCalculation.Euclid.Calculate(p - origin);
+                var str = radius - (float)DistanceCalculation.Euclid.Calculate2D(p - origin);
                 if (str > 0)
                 {
                     sd.Write(p, origin, str);

@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Xna.Framework;
 using RogueEntity.Simple.Demo.BoxPusher;
 using Serilog;
@@ -12,7 +11,6 @@ namespace RogueEntity.Simple.Demo
         
         static void SetUpLogging()
         {
-            var s = new StackTrace();
             var configuration = new ConfigurationBuilder()
                                 .AddJsonFile("appsettings.json", true)
                                 .Build();

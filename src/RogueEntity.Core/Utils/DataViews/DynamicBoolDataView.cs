@@ -154,7 +154,7 @@ namespace RogueEntity.Core.Utils.DataViews
             }
         }
 
-        public void ClearData()
+        public void Clear()
         {
             foreach (var e in index.Values)
             {
