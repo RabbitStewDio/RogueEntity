@@ -13,6 +13,11 @@ namespace RogueEntity.Core.Utils.Algorithms
     public static class DistanceCalculationExtensions
     {
         static readonly float Sqrt = (float) Math.Sqrt(2);
+
+        public static bool IsOtherMoreAccurate(this DistanceCalculation current, DistanceCalculation replacement)
+        {
+            return (int)replacement < (int)current;
+        }
         
         public static AdjacencyRule AsAdjacencyRule(this DistanceCalculation c)
         {

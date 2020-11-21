@@ -3,6 +3,7 @@ using EnTTSharp.Entities;
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Movement.MovementModes;
+using RogueEntity.Core.Utils.Algorithms;
 
 namespace RogueEntity.Core.Movement.Cost
 {
@@ -12,15 +13,18 @@ namespace RogueEntity.Core.Movement.Cost
         where TMovementMode : IMovementMode
     {
         readonly TMovementMode movementMode;
+        readonly DistanceCalculation movementStyle;
         readonly float standardMovementCost;
         readonly int movementModePreference;
 
         public MovementVelocityBulkItemTrait(TMovementMode movementMode,
+                                             DistanceCalculation movementStyle,
                                              float standardMovementCost,
                                              int movementModePreference) :
             base("Core.Traits.Movement.MovementVelocity+" + typeof(TMovementMode).Name, 100)
         {
             this.movementMode = movementMode;
+            this.movementStyle = movementStyle;
             this.standardMovementCost = standardMovementCost;
             this.movementModePreference = movementModePreference;
         }
@@ -34,7 +38,7 @@ namespace RogueEntity.Core.Movement.Cost
         {
             if (TryQuery(v, context, k, out MovementVelocity<TMovementMode> pointCost) && pointCost.Velocity > 0)
             {
-                t = new MovementCost(movementMode, 1 / pointCost.Velocity, movementModePreference);
+                t = new MovementCost(movementMode, movementStyle, 1 / pointCost.Velocity, movementModePreference);
                 return true;
             }
 

@@ -28,7 +28,7 @@ namespace RogueEntity.Core.Movement.CostModifier
         /// <returns></returns>
         public override IEnumerable<EntityRoleInstance> GetEntityRoles()
         {
-            yield return MovementModules.GetResistanceRole<TMovementMode>().Instantiate<TItemId>();
+            yield return MovementModules.GetCostModifierSourceRole<TMovementMode>().Instantiate<TItemId>();
         }
     }
 }

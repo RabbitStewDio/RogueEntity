@@ -3,6 +3,7 @@ using System.Linq;
 using EnTTSharp.Entities;
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Core.Meta.Items;
+using RogueEntity.Core.Movement.MovementModes;
 
 namespace RogueEntity.Core.Movement.Cost
 {
@@ -27,7 +28,7 @@ namespace RogueEntity.Core.Movement.Cost
         
         public IEnumerable<EntityRoleInstance> GetEntityRoles()
         {
-            return Enumerable.Empty<EntityRoleInstance>();
+            yield return MovementModules.GeneralMovableActorRole.Instantiate<TActorId>();
         }
 
         public IEnumerable<EntityRelationInstance> GetEntityRelations()

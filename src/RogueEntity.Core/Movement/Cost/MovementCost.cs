@@ -1,4 +1,5 @@
 using System;
+using RogueEntity.Core.Utils.Algorithms;
 
 namespace RogueEntity.Core.Movement.Cost
 {
@@ -15,6 +16,7 @@ namespace RogueEntity.Core.Movement.Cost
     /// </summary>
     public readonly struct MovementCost : IComparable<MovementCost>, IComparable
     {
+        public readonly DistanceCalculation MovementStyle;
         public readonly IMovementMode MovementMode;
 
         /// <summary>
@@ -29,8 +31,9 @@ namespace RogueEntity.Core.Movement.Cost
         /// </summary>
         public readonly int Preference;
 
-        public MovementCost(IMovementMode movementMode, float cost, int preference)
+        public MovementCost(IMovementMode movementMode, DistanceCalculation movementStyle, float cost, int preference)
         {
+            MovementStyle = movementStyle;
             MovementMode = movementMode;
             Cost = cost;
             Preference = preference;

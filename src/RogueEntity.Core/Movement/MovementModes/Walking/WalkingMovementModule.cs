@@ -16,6 +16,10 @@ namespace RogueEntity.Core.Movement.MovementModes.Walking
             Description = "Provides movement cost modifiers for walking movement";
             IsFrameworkModule = true;
         }
-        
+
+        protected override WalkingMovement GetMovementModeInstance()
+        {
+            return WalkingMovement.Instance;
+        }
     }
 }

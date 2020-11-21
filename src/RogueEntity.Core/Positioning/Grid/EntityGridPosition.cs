@@ -3,13 +3,16 @@ using System.Runtime.Serialization;
 using EnTTSharp.Entities.Attributes;
 using MessagePack;
 using RogueEntity.Core.Positioning.MapLayers;
+using RogueEntity.Core.Utils;
 
 namespace RogueEntity.Core.Positioning.Grid
 {
     /// <summary>
     ///   A densely packed 4D tile coordinate. The coordinate encodes a 3D coordinate with
-    ///   unsigned members and a maximum extent of x=2^24, y=2^24, z=2^12 (aka x=16M, y=16M, z=4k) meters
+    ///   unsigned members and a maximum extent of x=2^16, y=2^16, z=2^16 (aka x=64k, y=64k, z=64k) meters
     ///   and 7 layers for each coordinate point.
+    ///
+    ///   Fully instantiated such a map would consume gigabytes, so its safe to assume that these limits are sufficient.
     /// </summary>
     [EntityComponent]
     [DataContract]
@@ -17,60 +20,42 @@ namespace RogueEntity.Core.Positioning.Grid
     [MessagePackObject]
     public readonly struct EntityGridPosition : IEquatable<EntityGridPosition>, IPosition
     {
-        public const int MinXYValue = 0;
-        public const int MaxXYValue = (1 << 24) - 1;
-        public const int MinZValue = 0;
-        public const int MaxZValue = (1 << 11) - 1;
+        public const int MinXYValue = short.MinValue;
+        public const int MaxXYValue = short.MaxValue;
+        public const int MinZValue = short.MinValue;
+        public const int MaxZValue = short.MaxValue;
         
-        public const int MinLValue = 0;
-        public const int MaxLValue = 15;
-
-        const ulong XMask = 0x0000_0000_00FF_FFFFL;
-        const ulong YMask = 0x0000_FFFF_FF00_0000L;
-        const ulong ZMask = 0x07FF_0000_0000_0000L;
-        const ulong LMask = 0x7800_0000_0000_0000L;
-        const ulong VMask = 0x8000_0000_0000_0000L;
-        const ulong PMask = 0x0FFF_FFFF_FFFF_FFFFL;
+        public const int MinLValue = byte.MinValue;
+        public const int MaxLValue = byte.MaxValue;
 
         [DataMember]
         [Key(0)]
-        readonly ulong position;
+        readonly byte layerId;
+        [DataMember]
+        [Key(1)]
+        readonly short x;
+        [DataMember]
+        [Key(2)]
+        readonly short y;
+        [DataMember]
+        [Key(3)]
+        readonly short z;
+        [DataMember]
+        [Key(4)]
+        readonly byte valid;
 
         [SerializationConstructor]
-        EntityGridPosition(ulong position)
+        public EntityGridPosition(byte layerId, short x, short y, short z, byte valid = 1)
         {
-            this.position = position;
+            this.x = x;
+            this.y = y;
+            this.z = z;
+            this.layerId = layerId;
+            this.valid = valid == 0 ? (byte)0 : (byte)1;
         }
 
-        EntityGridPosition(byte layer, uint x, uint y, uint z)
-        {
-            if (x > MaxXYValue)
-            {
-                throw new ArgumentOutOfRangeException(nameof(x));
-            }
-            if (y > MaxXYValue)
-            {
-                throw new ArgumentOutOfRangeException(nameof(y));
-            }
-
-            if (z > MaxZValue)
-            {
-                throw new ArgumentOutOfRangeException(nameof(y));
-            }
-            if (layer > MaxLValue)
-            {
-                throw new ArgumentOutOfRangeException(nameof(y));
-            }
-
-            ulong data = VMask;
-            data |= x & XMask;
-            data |= ((ulong)y << 24) & YMask;
-            data |= ((ulong)z << 48) & ZMask;
-            data |= ((ulong)layer << 59) & LMask;
-            position = data;
-        }
-
-        public static EntityGridPosition From<TPosition>(in TPosition p) where TPosition: IPosition
+        public static EntityGridPosition From<TPosition>(in TPosition p)
+            where TPosition : IPosition
         {
             if (p.IsInvalid) return Invalid;
             return OfRaw(p.LayerId, p.GridX, p.GridY, p.GridZ);
@@ -78,37 +63,37 @@ namespace RogueEntity.Core.Positioning.Grid
 
         public static EntityGridPosition Of(MapLayer layer, int x, int y, int z = 0)
         {
-            if (x < 0) throw new ArgumentOutOfRangeException(nameof(x), x, $"should be between {MinXYValue} and {MaxXYValue}");
-            if (y < 0) throw new ArgumentOutOfRangeException(nameof(y), y, $"should be between {MinXYValue} and {MaxXYValue}");
-            if (z < 0) throw new ArgumentOutOfRangeException(nameof(z), z, $"should be between {MinXYValue} and {MaxXYValue}");
+            if (x < MinXYValue) throw new ArgumentOutOfRangeException(nameof(x), x, $"should be between {MinXYValue} and {MaxXYValue}");
+            if (y < MinXYValue) throw new ArgumentOutOfRangeException(nameof(y), y, $"should be between {MinXYValue} and {MaxXYValue}");
+            if (z < MinZValue) throw new ArgumentOutOfRangeException(nameof(z), z, $"should be between {MinXYValue} and {MaxXYValue}");
             if (x > MaxXYValue) throw new ArgumentOutOfRangeException(nameof(x), x, $"should be between {MinXYValue} and {MaxXYValue}");
             if (y > MaxXYValue) throw new ArgumentOutOfRangeException(nameof(y), y, $"should be between {MinXYValue} and {MaxXYValue}");
             if (z > MaxZValue) throw new ArgumentOutOfRangeException(nameof(z), z, $"should be between {MinZValue} and {MaxZValue}");
-            
-            return new EntityGridPosition(layer.LayerId, (uint) x, (uint)y, (uint)z);
+
+            return new EntityGridPosition(layer.LayerId, (short)x, (short)y, (short)z);
         }
 
         public static EntityGridPosition OfRaw(byte layer, int x, int y, int z = 0)
         {
-            if (x < 0) throw new ArgumentOutOfRangeException(nameof(x), x, $"should be between {MinXYValue} and {MaxXYValue}");
-            if (y < 0) throw new ArgumentOutOfRangeException(nameof(y), y, $"should be between {MinXYValue} and {MaxXYValue}");
-            if (z < 0) throw new ArgumentOutOfRangeException(nameof(z), z, $"should be between {MinXYValue} and {MaxXYValue}");
+            if (x < MinXYValue) throw new ArgumentOutOfRangeException(nameof(x), x, $"should be between {MinXYValue} and {MaxXYValue}");
+            if (y < MinXYValue) throw new ArgumentOutOfRangeException(nameof(y), y, $"should be between {MinXYValue} and {MaxXYValue}");
+            if (z < MinZValue) throw new ArgumentOutOfRangeException(nameof(z), z, $"should be between {MinXYValue} and {MaxXYValue}");
             if (x > MaxXYValue) throw new ArgumentOutOfRangeException(nameof(x), x, $"should be between {MinXYValue} and {MaxXYValue}");
             if (y > MaxXYValue) throw new ArgumentOutOfRangeException(nameof(y), y, $"should be between {MinXYValue} and {MaxXYValue}");
             if (z > MaxZValue) throw new ArgumentOutOfRangeException(nameof(z), z, $"should be between {MinZValue} and {MaxZValue}");
 
-            return new EntityGridPosition(layer, (uint) x, (uint)y, (uint)z);
+            return new EntityGridPosition(layer, (short)x, (short)y, (short)z, 1);
         }
 
         [IgnoreMember]
         [IgnoreDataMember]
-        public bool IsInvalid => (position & VMask) != VMask;
+        public bool IsInvalid => this.valid != 0;
 
         public static EntityGridPosition Invalid => default;
 
         public bool Equals(EntityGridPosition other)
         {
-            return position == other.position;
+            return layerId == other.layerId && x == other.x && y == other.y && z == other.z && valid == other.valid;
         }
 
         public override bool Equals(object obj)
@@ -118,7 +103,15 @@ namespace RogueEntity.Core.Positioning.Grid
 
         public override int GetHashCode()
         {
-            return position.GetHashCode();
+            unchecked
+            {
+                var hashCode = layerId.GetHashCode();
+                hashCode = (hashCode * 397) ^ x.GetHashCode();
+                hashCode = (hashCode * 397) ^ y.GetHashCode();
+                hashCode = (hashCode * 397) ^ z.GetHashCode();
+                hashCode = (hashCode * 397) ^ valid.GetHashCode();
+                return hashCode;
+            }
         }
 
         public static bool IsSameCell(EntityGridPosition left, EntityGridPosition right)
@@ -128,7 +121,7 @@ namespace RogueEntity.Core.Positioning.Grid
                 return false;
             }
 
-            return (left.position & PMask) == (right.position & PMask);
+            return (left.x == right.x && left.y == right.y && left.z == right.z);
         }
 
         public static bool operator ==(EntityGridPosition left, EntityGridPosition right)
@@ -141,12 +134,29 @@ namespace RogueEntity.Core.Positioning.Grid
             return !left.Equals(right);
         }
 
+        public static EntityGridPosition operator +(EntityGridPosition left, Position2D right)
+        {
+            return OfRaw(left.LayerId,
+                         left.GridX + right.X,
+                         left.GridY + right.Y,
+                         left.GridZ);
+        }
+
+        public static EntityGridPosition operator +(EntityGridPosition left, ShortPosition2D right)
+        {
+            return OfRaw(left.LayerId,
+                         left.GridX + right.X,
+                         left.GridY + right.Y,
+                         left.GridZ);
+        }
+
         public override string ToString()
         {
-            if (position == 0)
+            if (IsInvalid)
             {
                 return "(Invalid)";
             }
+
             return $"({LayerId}: {GridX}, {GridY}, {GridZ})";
         }
 
@@ -156,19 +166,19 @@ namespace RogueEntity.Core.Positioning.Grid
         {
             get
             {
-                if (position == 0)
+                if (IsInvalid)
                 {
                     throw new ArgumentException("Invalid");
                 }
 
-                return (byte)((position & LMask) >> 59);
+                return layerId;
             }
         }
 
         [IgnoreMember]
         [IgnoreDataMember]
         public double X => GridX;
-        
+
         [IgnoreMember]
         [IgnoreDataMember]
         public double Y => GridY;
@@ -183,12 +193,12 @@ namespace RogueEntity.Core.Positioning.Grid
         {
             get
             {
-                if (position == 0)
+                if (IsInvalid)
                 {
                     throw new ArgumentException("Invalid");
                 }
 
-                return (int)(position & XMask);
+                return x;
             }
         }
 
@@ -198,12 +208,12 @@ namespace RogueEntity.Core.Positioning.Grid
         {
             get
             {
-                if (position == 0)
+                if (IsInvalid)
                 {
                     throw new ArgumentException("Invalid");
                 }
 
-                return (int)((position & YMask) >> 24);
+                return y;
             }
         }
 
@@ -213,12 +223,12 @@ namespace RogueEntity.Core.Positioning.Grid
         {
             get
             {
-                if (position == 0)
+                if (IsInvalid)
                 {
                     throw new ArgumentException("Invalid");
                 }
 
-                return (int)((position & ZMask) >> 48);
+                return z;
             }
         }
 

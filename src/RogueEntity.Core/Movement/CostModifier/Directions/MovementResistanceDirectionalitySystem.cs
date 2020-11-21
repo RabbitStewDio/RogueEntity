@@ -7,7 +7,8 @@ namespace RogueEntity.Core.Movement.CostModifier.Directions
 {
     public class MovementResistanceDirectionalitySystem<TMovementMode> : AdjacencyGridTransformSystem<float>, IMovementResistanceDirectionView<TMovementMode>
     {
-        public MovementResistanceDirectionalitySystem(IReadOnlyDynamicDataView3D<float> sourceData) : base(sourceData)
+        public MovementResistanceDirectionalitySystem(IReadOnlyDynamicDataView3D<float> sourceData,
+                                                      AdjacencyRule adjacencyRule = AdjacencyRule.EightWay) : base(sourceData, adjacencyRule)
         {
         }
 

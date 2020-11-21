@@ -12,21 +12,18 @@ namespace RogueEntity.Core.Utils.Algorithms
     {
         static readonly ILogger Logger = SLog.ForContext<DynamicDijkstraGridBase>();
 
-        readonly DynamicDataView2D<float> nodesWeight;
-        readonly DynamicDataView2D<Direction> nodesDirection;
+        readonly IDynamicDataView2D<float> nodesWeight;
+        readonly IDynamicDataView2D<Direction> nodesDirection;
         readonly PriorityQueue<DijkstraNodeWeight, Position2D> openNodes;
         readonly List<Direction> directions;
 
-        protected DynamicDijkstraGridBase(int tileSizeX, int tileSizeY) : this(0, 0, tileSizeX, tileSizeY)
-        {
-        }
-
-        protected DynamicDijkstraGridBase(int offsetX, int offsetY, int tileSizeX, int tileSizeY)
+        protected DynamicDijkstraGridBase(IBoundedDataViewPool<float> weightPool, 
+                                          IBoundedDataViewPool<Direction> directionPool)
         {
             this.directions = new List<Direction>();
             this.openNodes = new PriorityQueue<DijkstraNodeWeight, Position2D>(4096);
-            this.nodesWeight = new DynamicDataView2D<float>(offsetX, offsetY, tileSizeX, tileSizeY);
-            this.nodesDirection = new DynamicDataView2D<Direction>(offsetX, offsetY, tileSizeX, tileSizeY);
+            this.nodesWeight = new PooledDynamicDataView2D<float>(weightPool);
+            this.nodesDirection = new PooledDynamicDataView2D<Direction>(directionPool);
         }
 
         protected void PrepareScan()
@@ -108,15 +105,15 @@ namespace RogueEntity.Core.Utils.Algorithms
         protected void EnqueueStartingNode(in Position2D c, float weight)
         {
             openNodes.UpdatePriority(c, new DijkstraNodeWeight(-weight, 0));
-            nodesWeight[c] = weight;
-            nodesDirection[c] = Direction.None;
+            nodesWeight[c.X, c.Y] = weight;
+            nodesDirection[c.X, c.Y] = Direction.None;
         }
 
         protected void EnqueueNode(in Position2D pos, float weight, in Position2D prev)
         {
             openNodes.UpdatePriority(pos, new DijkstraNodeWeight(-weight, (float)DistanceCalculation.Euclid.Calculate2D(pos, prev)));
-            nodesWeight[pos] = weight;
-            nodesDirection[pos] = Directions.GetDirection(prev, pos);
+            nodesWeight[pos.X, pos.Y] = weight;
+            nodesDirection[pos.X, pos.Y] = Directions.GetDirection(prev, pos);
         }
 
         protected bool TryDequeueOpenNode(out Position2D c)

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using EnTTSharp.Entities;
 using RogueEntity.Api.GameLoops;
 using RogueEntity.Api.ItemTraits;
@@ -10,6 +11,7 @@ using RogueEntity.Core.GridProcessing.LayerAggregation;
 using RogueEntity.Core.Movement.CostModifier;
 using RogueEntity.Core.Movement.CostModifier.Directions;
 using RogueEntity.Core.Movement.CostModifier.Map;
+using RogueEntity.Core.Movement.Pathfinding;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Grid;
 
@@ -17,32 +19,42 @@ namespace RogueEntity.Core.Movement.MovementModes
 {
     public static class MovementModules
     {
+        public static readonly EntityRole GeneralMovableActorRole = new EntityRole("Role.Core.Movement.MovableActor");
+        public static readonly EntityRole GeneralCostModifierSourceRole = new EntityRole("Role.Core.Movement.CostModifierSource");
+
         public static EntityRole GetMovableActorRole<TMovementMode>() => new EntityRole($"Role.Core.Movement.{typeof(TMovementMode).Name}.MovableActor");
-        public static EntityRole GetResistanceRole<TMovementMode>() => new EntityRole($"Role.Core.Movement.{typeof(TMovementMode).Name}.CostModifierSource");
+        public static EntityRole GetCostModifierSourceRole<TMovementMode>() => new EntityRole($"Role.Core.Movement.{typeof(TMovementMode).Name}.CostModifierSource");
 
         public static EntityRelation GetCostModifierRelation<TMovementMode>() => new EntityRelation($"Relation.Core.Movement.Resistance.{typeof(TMovementMode).Name}.ProvidesCostData",
-                                                                                             GetResistanceRole<TMovementMode>(), GetMovableActorRole<TMovementMode>());
+                                                                                                    GetCostModifierSourceRole<TMovementMode>(), GetMovableActorRole<TMovementMode>());
 
         public static EntitySystemId CreateSystemId<TMovementMode>(string job) => new EntitySystemId($"Core.Systems.Movement.CostModifier.{typeof(TMovementMode).Name}.{job}");
         public static EntitySystemId CreateEntityId<TMovementMode>() => new EntitySystemId($"Entities.Systems.Movement.CostModifier.{typeof(TMovementMode).Name}");
     }
 
     public abstract class MovementModuleBase<TMovementMode> : ModuleBase
+        where TMovementMode : IMovementMode
     {
         public static EntityRole MovementCostModifierSourceRole = MovementModules.GetMovableActorRole<TMovementMode>();
-        public static EntityRole MovableActorRole = MovementModules.GetResistanceRole<TMovementMode>();
+        public static EntityRole MovableActorRole = MovementModules.GetCostModifierSourceRole<TMovementMode>();
 
-        public static EntityRelation MovementRelation = MovementModules.GetCostModifierRelation<TMovementMode>();
+        public static EntityRelation ProvidesMovementCostDataRelation = MovementModules.GetCostModifierRelation<TMovementMode>();
 
         public static readonly EntitySystemId RegisterResistanceEntitiesId = MovementModules.CreateEntityId<TMovementMode>();
         public static readonly EntitySystemId RegisterResistanceSystem = MovementModules.CreateSystemId<TMovementMode>("LifeCycle");
         public static readonly EntitySystemId ExecuteResistanceSystem = MovementModules.CreateSystemId<TMovementMode>("ProcessChanges");
 
+        public static readonly EntitySystemId RegisterPathfinderSourceConfigurationSystem = MovementModules.CreateSystemId<TMovementMode>("PathFindingSource");
+        public static readonly EntitySystemId RegisterGoalSourceConfigurationSystem = MovementModules.CreateSystemId<TMovementMode>("GoalFindingSource");
+
         protected MovementModuleBase()
         {
             DeclareDependencies(ModuleDependency.Of(PositionModule.ModuleId));
 
-            RequireRole(MovementCostModifierSourceRole);
+            RequireRole(MovableActorRole).WithImpliedRole(MovementModules.GeneralMovableActorRole);
+            RequireRole(MovementCostModifierSourceRole).WithImpliedRole(MovementModules.GeneralCostModifierSourceRole);
+
+            RequireRelation(ProvidesMovementCostDataRelation);
         }
 
         [InitializerCollector(InitializerCollectorType.Roles)]
@@ -51,13 +63,35 @@ namespace RogueEntity.Core.Movement.MovementModes
                                                                                                                                   EntityRole role)
             where TItemId : IEntityKey
         {
-            if (role == MovementCostModifierSourceRole)
+            if (role != MovementCostModifierSourceRole)
             {
-                yield return ModuleEntityRoleInitializerInfo.CreateFor<TGameContext, TItemId>(MovementCostModifierSourceRole,
-                                                                                              InitializeResistanceRole,
-                                                                                              GetType().Name + "#" + nameof(InitializeResistanceRole))
-                                                            .WithRequiredRolesAnywhereInSystem(); //todo 
+                yield break;
             }
+
+            yield return ModuleEntityRoleInitializerInfo.CreateFor<TGameContext, TItemId>(MovementCostModifierSourceRole,
+                                                                                          InitializeResistanceRole,
+                                                                                          $"{GetType().Name}#{nameof(InitializeResistanceRole)}")
+                                                        .WithRequiredRoles(PositionModule.GridPositionedRole)
+                                                        .WithRequiredRolesAnywhereInSystem(MovableActorRole);
+        }
+        
+        [FinalizerCollector(InitializerCollectorType.Relations)]
+        [SuppressMessage("ReSharper", "UnusedTypeParameter", Justification = "TObject is part of a delegate definition.")]
+        public IEnumerable<ModuleEntityRelationInitializerInfo<TGameContext, TSource>> CollectRoleInitializers<TGameContext, TSource, TObject>(IServiceResolver serviceResolver,
+                                                                                                                                               IModuleEntityInformation entityInformation,
+                                                                                                                                               EntityRelation relation)
+            where TSource : IEntityKey
+            where TObject : IEntityKey
+        {
+            if (relation != ProvidesMovementCostDataRelation)
+            {
+                yield break;
+            }
+
+            yield return ModuleEntityRelationInitializerInfo.CreateFor<TGameContext, TSource>(ProvidesMovementCostDataRelation,
+                                                                                              FinalizePathfinderFromSourcesRelation,
+                                                                                              $"{GetType().Name}#{nameof(FinalizePathfinderFromSourcesRelation)}"
+            );
         }
 
         protected void InitializeResistanceRole<TGameContext, TItemId>(in ModuleEntityInitializationParameter<TGameContext, TItemId> initParameter,
@@ -72,6 +106,30 @@ namespace RogueEntity.Core.Movement.MovementModes
             ctx.Register(RegisterResistanceSystem, 500, RegisterResistanceSystemLifecycle);
         }
 
+        protected void FinalizePathfinderFromSourcesRelation<TGameContext, TItemId>(in ModuleEntityInitializationParameter<TGameContext, TItemId> initParameter,
+                                                                                      IModuleInitializer<TGameContext> initializer,
+                                                                                      EntityRelation relation)
+            where TItemId : IEntityKey
+        {
+            initializer.Register(RegisterPathfinderSourceConfigurationSystem, 500, RegisterPathfinderSources);
+        }
+
+        void RegisterPathfinderSources<TGameContext>(in ModuleInitializationParameter initparameter,
+                                                     IGameLoopSystemRegistration<TGameContext> context)
+        {
+            var serviceResolver = initparameter.ServiceResolver;
+            context.AddInitializationStepHandler(c =>
+            {
+                if (serviceResolver.TryResolve(out IPathFinderSourceBackend pathFinderSource))
+                {
+                    var movementCostMap = serviceResolver.Resolve<IRelativeMovementCostSystem<TGameContext, TMovementMode>>();
+                    var directionMap = serviceResolver.Resolve<IMovementResistanceDirectionView<TMovementMode>>();
+                    pathFinderSource.RegisterMovementSource(GetMovementModeInstance(), movementCostMap.ResultView, directionMap);
+                }
+            });
+        }
+
+        protected abstract TMovementMode GetMovementModeInstance();
 
         protected void RegisterResistanceSystemLifecycle<TGameContext, TItemId>(in ModuleInitializationParameter initParameter,
                                                                                 IGameLoopSystemRegistration<TGameContext> context,
@@ -114,6 +172,7 @@ namespace RogueEntity.Core.Movement.MovementModes
                 context.AddFixedStepHandlers(system.MarkCleanSystem, nameof(system.MarkCleanSystem));
             }
         }
+
 
         protected virtual RelativeMovementCostSystem<TGameContext, TMovementMode> GetOrCreateSensePropertiesSystem<TGameContext, TEntityId>(IServiceResolver serviceResolver)
         {

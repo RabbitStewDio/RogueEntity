@@ -155,5 +155,13 @@ namespace RogueEntity.Core.Utils
         
         public static Percentage Percent(this int f) => Percentage.Of(f / 100f);
         public static Percentage Percent(this float f) => Percentage.Of(f / 100f);
+
+        public static void AddRange2<T>(this ICollection<T> collection, ReadOnlyListWrapper<T> source)
+        {
+            foreach (var v in source)
+            {
+                collection.Add(v);
+            }
+        }
     }
 }

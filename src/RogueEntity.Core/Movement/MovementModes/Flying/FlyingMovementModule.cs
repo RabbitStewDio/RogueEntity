@@ -16,5 +16,10 @@ namespace RogueEntity.Core.Movement.MovementModes.Flying
             Description = "Provides movement cost modifiers for flying movement through the air";
             IsFrameworkModule = true;
         }
+
+        protected override FlyingMovement GetMovementModeInstance()
+        {
+            return FlyingMovement.Instance;
+        }
     }
 }

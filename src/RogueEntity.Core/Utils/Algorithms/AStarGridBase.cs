@@ -4,7 +4,14 @@ using RogueEntity.Core.Utils.DataViews;
 
 namespace RogueEntity.Core.Utils.Algorithms
 {
-    public abstract class AStarGridBase<TPosition>
+    public enum PathFinderResult
+    {
+        NotFound = 0,
+        SearchLimitReached = 1,
+        Found = 2
+    }
+
+    public abstract class AStarGridBase<TPosition, TExtraNodeInfo>
         where TPosition : IPosition2D<TPosition>, IEquatable<TPosition>
     {
         readonly IDynamicDataView2D<AStarNode> nodes;
@@ -18,35 +25,49 @@ namespace RogueEntity.Core.Utils.Algorithms
             this.nodes = new PooledDynamicDataView2D<AStarNode>(pool);
         }
 
-        protected abstract void PopulateDirections(TPosition basePosition, List<Direction> buffer);
-        protected abstract bool EdgeCostInformation(in TPosition sourceNode, in Direction d, float sourceNodeCost, out float totalPathCost);
+        protected abstract void PopulateTraversableDirections(TPosition basePosition, List<Direction> buffer);
+        protected abstract bool EdgeCostInformation(in TPosition sourceNode, in Direction d, float sourceNodeCost, out float totalPathCost, out TExtraNodeInfo nodeInfo);
 
         protected abstract bool IsTargetNode(in TPosition pos);
 
         protected abstract float Heuristic(in TPosition pos);
 
-        protected virtual List<TPosition> FindPath(TPosition start, TPosition end, List<TPosition> pathBuffer)
+        protected void Clear()
         {
-            if (pathBuffer == null)
-            {
-                pathBuffer = new List<TPosition>();
-            }
-            else
-            {
-                pathBuffer.Clear();
-            }
+            nodes.Clear();
+            openNodes.Clear();
+        }
+
+        protected void EnqueueStartPosition(TPosition start)
+        {
+            nodes[start.X, start.Y] = AStarNode.Start();
+            openNodes.Enqueue(start, Heuristic(start));
+        }
+
+        protected PathFinderResult FindPath(TPosition start,
+                                            List<TPosition> pathBuffer,
+                                            int searchLimit = int.MaxValue)
+        {
+            pathBuffer.Clear();
 
             if (IsTargetNode(start))
             {
-                return pathBuffer;
+                return PathFinderResult.Found;
             }
 
-            nodes.Clear();
-            nodes[start.X, start.Y] = AStarNode.Start();
-            openNodes.Enqueue(start, Heuristic(start));
+            Clear();
+            EnqueueStartPosition(start);
+            return ContinueFindPath(pathBuffer, searchLimit);
+        }
+        
+        protected PathFinderResult ContinueFindPath(List<TPosition> pathBuffer,
+                                                    int searchLimit = int.MaxValue)
+        {
 
+            int searchedNodes = 0;
             while (openNodes.Count != 0)
             {
+                searchedNodes += 1;
                 var currentPosition = openNodes.Dequeue();
                 var currentNode = nodes[currentPosition.X, currentPosition.Y];
 
@@ -54,7 +75,14 @@ namespace RogueEntity.Core.Utils.Algorithms
 
                 if (IsTargetNode(currentPosition)) // We found the end, cleanup and return the path
                 {
-                    return ProduceResult(currentPosition, currentNode, pathBuffer);
+                    ProduceResult(currentPosition, currentNode, pathBuffer);
+                    return PathFinderResult.Found;
+                }
+
+                if (searchedNodes >= searchLimit)
+                {
+                    ProduceResult(currentPosition, currentNode, pathBuffer);
+                    return PathFinderResult.SearchLimitReached;
                 }
 
                 if (currentNode.DistanceFromStart == ushort.MaxValue)
@@ -62,7 +90,7 @@ namespace RogueEntity.Core.Utils.Algorithms
                     continue;
                 }
 
-                PopulateDirections(currentPosition, directionsOfNeighbours);
+                PopulateTraversableDirections(currentPosition, directionsOfNeighbours);
                 foreach (var dir in directionsOfNeighbours)
                 {
                     var neighborPos = currentPosition.Add(dir.ToCoordinates());
@@ -73,7 +101,7 @@ namespace RogueEntity.Core.Utils.Algorithms
                         continue;
                     }
 
-                    if (!EdgeCostInformation(in currentPosition, in dir, currentNode.AccumulatedCost, out var totalPathCost))
+                    if (!EdgeCostInformation(in currentPosition, in dir, currentNode.AccumulatedCost, out var totalPathCost, out var nodeInfo))
                     {
                         continue;
                     }
@@ -93,11 +121,17 @@ namespace RogueEntity.Core.Utils.Algorithms
                     );
 
                     openNodes.UpdatePriority(neighborPos, totalPathCost + Heuristic(in neighborPos));
+                    UpdateNode(neighborPos, nodeInfo);
                 }
             }
 
             openNodes.Clear();
-            return pathBuffer;
+            return PathFinderResult.NotFound;
+        }
+
+        protected virtual void UpdateNode(in TPosition pos, TExtraNodeInfo nodeInfo)
+        {
+            
         }
 
         protected virtual bool IsExistingResultBetter(in TPosition coord, in float newWeight)

@@ -13,5 +13,10 @@ namespace RogueEntity.Core.Movement.MovementModes.Swimming
             Description = "Provides movement cost modifiers for swimming movement in or through water";
             IsFrameworkModule = true;
         }
+
+        protected override SwimmingMovement GetMovementModeInstance()
+        {
+            return SwimmingMovement.Instance;
+        }
     }
 }

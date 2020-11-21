@@ -80,11 +80,14 @@ namespace RogueEntity.Api.Modules.Initializers
                     {
                         if (IsValidRelation(roleInitializer, mi, relation))
                         {
+                            Logger.Debug("Invoking module initializer {SourceHint} for entity {Entity} with relation {EntityRelation}", 
+                                         roleInitializer.SourceHint, typeof(TEntityId), relation);
                             roleInitializer.Initializer(in moduleInitializerParams, moduleInitializer, relation);
                         }
                         else
                         {
-                            
+                            Logger.Debug("Skipping module initializer {SourceHint} for entity {Entity} with relation {EntityRelation}", 
+                                         roleInitializer.SourceHint, typeof(TEntityId), relation);
                         }
                     }
                 }

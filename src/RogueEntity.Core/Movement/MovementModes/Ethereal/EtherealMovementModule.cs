@@ -16,5 +16,10 @@ namespace RogueEntity.Core.Movement.MovementModes.Ethereal
             Description = "Provides movement cost modifiers for ghostly movement that passes through solid materials";
             IsFrameworkModule = true;
         }
+
+        protected override EtherealMovement GetMovementModeInstance()
+        {
+            return EtherealMovement.Instance;
+        }
     }
 }
