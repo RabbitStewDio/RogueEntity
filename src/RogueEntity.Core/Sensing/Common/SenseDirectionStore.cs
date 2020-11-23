@@ -4,7 +4,7 @@ using RogueEntity.Core.Utils;
 
 namespace RogueEntity.Core.Sensing.Common
 {
-    public readonly struct SenseDirectionStore
+    public readonly struct SenseDirectionStore : IEquatable<SenseDirectionStore>
     {
         static readonly Dictionary<(int x, int y), SenseDirection> DirectionMapping;
         static readonly Dictionary<SenseDirection, (int x, int y)> ReverseDirectionMapping;
@@ -129,24 +129,30 @@ namespace RogueEntity.Core.Sensing.Common
         {
             return $"{nameof(Direction)}: {Direction}, {nameof(Flags)}: {Flags}";
         }
-    }
 
-    public static class SenseDirectionExtensions
-    {
-        public static SenseDataFlags WithObstructed(this SenseDataFlags f, SenseDataFlags other)
+        public bool Equals(SenseDirectionStore other)
         {
-            return f | (other & SenseDataFlags.Obstructed);
+            return RawData == other.RawData;
         }
 
-        /// <summary>
-        ///   Marks all edges that are shared by both directions.
-        /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        /// <returns></returns>
-        public static SenseDirection Intersect(this SenseDirection a, SenseDirection b)
+        public override bool Equals(object obj)
         {
-            return a & b;
+            return obj is SenseDirectionStore other && Equals(other);
+        }
+
+        public override int GetHashCode()
+        {
+            return RawData.GetHashCode();
+        }
+
+        public static bool operator ==(SenseDirectionStore left, SenseDirectionStore right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(SenseDirectionStore left, SenseDirectionStore right)
+        {
+            return !left.Equals(right);
         }
     }
 }

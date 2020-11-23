@@ -1,314 +1,111 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
+using RogueEntity.Core.Sensing.Common;
 using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.DataViews;
-using RogueEntity.Core.Utils.Maps;
 
 namespace RogueEntity.Core.Tests.Sensing
 {
     public static class SenseTestHelpers
     {
-        public static void AssertEquals(IReadOnlyView2D<float> source,
-                                        IReadOnlyView2D<float> other,
-                                        in Rectangle bounds,
-                                        in Position2D offset)
-        {
-            foreach (var pos in bounds.Contents)
-            {
-                var (x, y) = pos;
-
-                var result = source[x - offset.X, y - offset.Y];
-                var expected = other[x, y];
-                if (Math.Abs(result - expected) > 0.005f)
-                {
-                    throw new ArgumentException($"Error in comparison at [{x}, {y}]: Expected {expected:0.000} but found {result:0.000}.\n" +
-                                                $"{bounds} \n" +
-                                                $"SourceMap:\n" + PrintMap(source, new Rectangle(bounds.MinExtentX - offset.X, bounds.MinExtentY - offset.Y, bounds.Width, bounds.Height)) + "\n" +
-                                                $"Expected:\n" + PrintMap(other, in bounds));
-                }
-            }
-        }
-
-        public static void AssertEquals(IReadOnlyView2D<bool> source,
-                                        IReadOnlyView2D<bool> other,
-                                        in Rectangle bounds,
-                                        in Position2D offset)
-        {
-            foreach (var pos in bounds.Contents)
-            {
-                var (x, y) = pos;
-
-                var result = source[x - offset.X, y - offset.Y];
-                var expected = other[x, y];
-                if (result != expected)
-                {
-                    throw new ArgumentException($"Error in comparison at [{x}, {y}]: Expected {expected} but found {result}.\n" +
-                                                $"{bounds} \n" +
-                                                $"SourceMap:\n" + PrintMap(source, new Rectangle(bounds.MinExtentX - offset.X, bounds.MinExtentY - offset.Y, bounds.Width, bounds.Height)) + "\n" +
-                                                $"Expected:\n" + PrintMap(other, in bounds));
-                }
-            }
-        }
-
-        public static void AssertEquals(IReadOnlyView2D<string> source,
-                                        IReadOnlyView2D<string> other,
-                                        in Rectangle bounds,
-                                        in Position2D offset)
-        {
-            foreach (var pos in bounds.Contents)
-            {
-                var (x, y) = pos;
-
-                var result = source[x - offset.X, y - offset.Y];
-                var expected = other[x, y];
-                if (!string.Equals(result, expected, StringComparison.Ordinal))
-                {
-                    throw new ArgumentException($"Error in comparison at [{x}, {y}]: Expected {expected} but found {result}.\n" +
-                                                $"{bounds} \n" +
-                                                $"SourceMap:\n" + PrintMap(source, new Rectangle(bounds.MinExtentX - offset.X, bounds.MinExtentY - offset.Y, bounds.Width, bounds.Height)) + "\n" +
-                                                $"Expected:\n" + PrintMap(other, in bounds));
-                }
-            }
-        }
 
         public static DynamicBoolDataView ParseBool(string text) => ParseBool(text, out _);
 
         public static DynamicBoolDataView ParseBool(string text, out Rectangle parsedBounds)
         {
-            var tmp = Parse(text, out parsedBounds);
+            var tmp = ParseMap(text, out parsedBounds);
             var result = new DynamicBoolDataView(tmp.OffsetX, tmp.OffsetY, tmp.TileSizeX, tmp.TileSizeY);
-            ImportData(result, tmp, f => f > 0);
+            result.ImportData(tmp, f => f > 0);
             return result;
         }
+        public static DynamicDataView2D<float> ParseMap(string text) => ParseMap(text, out _);
+
+        public static DynamicDataView2D<float> ParseMap(string text, out Rectangle parsedBounds)
+        {
+            var tokenParser = new TokenParser();
+            tokenParser.AddToken("", 0f);
+            tokenParser.AddToken(".", 0f);
+            tokenParser.AddNumericToken<float>(TokenParser.ParseFloat);
+
+            return TestHelpers.Parse<float>(text, tokenParser, out parsedBounds);
+        }
+
         
-        public static DynamicDataView2D<float> Parse(string text) => Parse(text, out _);
-        public static DynamicDataView2D<float> Parse(string text, out Rectangle parsedBounds)
-        {
-            var map = new DynamicDataView2D<float>(0, 0, 64, 64);
-            var row = -1;
-            using var sr = new StringReader(text);
+        public static DynamicDataView2D<SenseDirectionStore> ParseDirections(string text) => ParseDirections(text, out _);
 
-            var maxX = 0;
-            string line;
-            while ((line = sr.ReadLine()) != null)
+        public static DynamicDataView2D<SenseDirectionStore> ParseDirections(string text, out Rectangle parsedBounds)
+        {
+            var tokenParser = new TokenParser();
+            foreach (var (key, value) in SenseDirectionsConsoleView.DirectionMappings)
             {
-                if (string.IsNullOrWhiteSpace(line))
-                {
-                    continue;
-                }
-
-                line = line.Trim();
-                if (line.StartsWith("//"))
-                {
-                    // allow comments. I am not a monster.
-                    continue;
-                }
-
-                row += 1;
-                var vs = line.Split(",");
-                for (var index = 0; index < vs.Length; index++)
-                {
-                    var v = vs[index];
-                    if (string.IsNullOrWhiteSpace(v) || v.Trim().Equals("."))
-                    {
-                        // Allows for some cleaner to see maps. Using a 
-                        // dot for zero makes the cell countable by humans, but 
-                        // reduces visual weight to see the interesting bits of data.
-                        map[index, row] = 0;
-                    }
-                    else
-                    {
-                        // fail hard on parse errors. You should be
-                        // able to write an error free float constant.
-                        map[index, row] = float.Parse(v);
-                    }
-                    maxX = Math.Max(maxX, index);
-                }
+                tokenParser.AddToken(value, key);
             }
-
-            parsedBounds = new Rectangle(0, 0, maxX + 1, row + 1);
-            return map;
+            tokenParser.AddToken("~", SenseDirection.None);
+            tokenParser.AddToken("", SenseDirection.None);
+            tokenParser.AddToken("#", SenseDataFlags.Obstructed);
+            tokenParser.AddToken("*", SenseDataFlags.SelfIlluminating);
+            tokenParser.Add(new SenseDirectionStoreTokenDefinition());
+            return TestHelpers.Parse<SenseDirectionStore>(text, tokenParser, out parsedBounds);
         }
-        
-        public static DynamicDataView2D<string> ParseDirections(string text) => ParseDirections(text, out _);
-        public static DynamicDataView2D<string> ParseDirections(string text, out Rectangle parsedBounds)
-        {
-            var map = new DynamicDataView2D<string>(0, 0, 64, 64);
-            var row = -1;
-            using var sr = new StringReader(text);
 
-            var maxX = 0;
-            string line;
-            while ((line = sr.ReadLine()) != null)
+        class SenseDirectionStoreTokenDefinition : TokenParser.ITokenDefinition<SenseDirectionStore>
+        {
+            public int Weight => 2;
+            
+            public bool TryParse(string text, ITokenParser p, out SenseDirectionStore data)
             {
-                if (string.IsNullOrWhiteSpace(line))
+                var sd = SenseDirection.None;
+                var sf = SenseDataFlags.None;
+                foreach (var c in text)
                 {
-                    continue;
-                }
-
-                if (line.Trim().StartsWith("//"))
-                {
-                    // allow comments. I am not a monster.
-                    continue;
-                }
-
-                row += 1;
-                var vs = line.Split(",");
-                for (var index = 0; index < vs.Length; index++)
-                {
-                    var v = vs[index];
-                    if (string.IsNullOrWhiteSpace(v))
+                    if (p.TryParse($"{c}", out SenseDirection d))
                     {
-                        // Allows for some cleaner to see maps. Using a 
-                        // dot for zero makes the cell countable by humans, but 
-                        // reduces visual weight to see the interesting bits of data.
-                        map[index, row] = "  ~ ";
+                        sd = d;
                     }
-                    else
+
+                    if (p.TryParse($"{c}", out SenseDataFlags f))
                     {
-                        // fail hard on parse errors. You should be
-                        // able to write an error free float constant.
-                        map[index, row] = v.PadRight(4);
+                        sf |= f;
                     }
-                    maxX = Math.Max(maxX, index);
                 }
+                
+                data = SenseDirectionStore.From(sd, sf);
+                return true;
             }
-
-            parsedBounds = new Rectangle(0, 0, maxX + 1, row + 1);
-            return map;
         }
 
-        public static string PrintMap(DynamicDataView2D<float> s)
+        public static string PrintSenseDirectionStore(IReadOnlyView2D<SenseDirectionStore> map, Rectangle bounds)
         {
-            return PrintMap(s, s.GetActiveBounds());
-        }
-
-        public static string PrintMap(IReadOnlyMapData<float> s)
-        {
-            return s.ExtendToString(
-                elementSeparator: ",",
-                elementStringifier: (f) => $"{f,7:0.000}");
-        }
-
-        public static string PrintMap(IReadOnlyView2D<float> s, in Rectangle bounds)
-        {
-            return s.ExtendToString(bounds,
+            return map.ExtendToString(bounds,
                                     elementSeparator: ",",
-                                    elementStringifier: (f) => f != 0 ? $"{f,7:0.000}" : "   .   ");
+                                    elementStringifier: SenseDirectionStoreToString);
+
         }
 
-        public static string PrintMap(IReadOnlyView2D<bool> s, in Rectangle bounds)
+        static string SenseDirectionStoreToString(SenseDirectionStore senseDirection)
         {
-            return s.ExtendToString(bounds,
-                                    elementSeparator: ",",
-                                    elementStringifier: (f) => f ? $" 1" : " .");
-        }
-
-        public static string PrintMap(IReadOnlyView2D<string> s, in Rectangle bounds)
-        {
-            return s.ExtendToString(bounds,
-                                    elementSeparator: ",",
-                                    elementStringifier: (f) => f);
-        }
-
-        public static void ImportData<TResult, TSource>(this IDynamicDataView2D<TResult> targetMap, DynamicDataView2D<TSource> source, Func<TSource, TResult> converter)
-        {
-            foreach (var bounds in source.GetActiveTiles())
+            if (senseDirection.Flags == default && senseDirection.Direction == default)
             {
-                if (!source.TryGetData(bounds.X, bounds.Y, out var tile))
-                {
-                    continue;
-                }
-
-                foreach (var (x, y) in tile.Bounds.Contents)
-                {
-                    if (!tile.TryGet(x, y, out var s)) continue;
-                    targetMap.TrySet(x, y, converter(s));
-                }
-            }
-        }
-        
-        public static void ImportData<TResult>(this IDynamicDataView2D<TResult> targetMap, DynamicDataView2D<TResult> source)
-        {
-            foreach (var bounds in source.GetActiveTiles())
-            {
-                if (!source.TryGetData(bounds.X, bounds.Y, out var tile))
-                {
-                    continue;
-                }
-
-                foreach (var (x, y) in tile.Bounds.Contents)
-                {
-                    if (!tile.TryGet(x, y, out var s)) continue;
-                    targetMap.TrySet(x, y, s);
-                }
-            }
-        }
-        
-        public static Lazy<T> AsLazy<T>(this T l) => new Lazy<T>(l);
-
-        public static IReadOnlyDynamicDataView3D<T> As3DMap<T>(this IReadOnlyDynamicDataView2D<T> layerData, int z) => new DataViewWrapper3D<T>(z, layerData);
-        
-        class DataViewWrapper3D<T> : IReadOnlyDynamicDataView3D<T>
-        {
-            public event EventHandler<DynamicDataView3DEventArgs<T>> ViewCreated;
-            public event EventHandler<DynamicDataView3DEventArgs<T>> ViewExpired;
-            readonly int z;
-            readonly IReadOnlyDynamicDataView2D<T> backend;
-
-            public DataViewWrapper3D(int z, IReadOnlyDynamicDataView2D<T> backend)
-            {
-                this.z = z;
-                this.backend = backend;
+                return "  ~ ";
             }
 
-            public bool TryGetView(int zLevel, out IReadOnlyDynamicDataView2D<T> view)
+            var data = " " + SenseDirectionsConsoleView.DirectionMappings[senseDirection.Direction];
+            if (senseDirection.Flags.HasFlags(SenseDataFlags.Obstructed))
             {
-                if (this.z == zLevel)
-                {
-                    view = backend;
-                    return true;
-                }
-
-                view = default;
-                return false;
+                data += "#";
+            }
+            else
+            {
+                data += " ";
             }
 
-            public List<int> GetActiveLayers(List<int> buffer = null)
+            if (senseDirection.Flags.HasFlags(SenseDataFlags.SelfIlluminating))
             {
-                if (buffer == null)
-                {
-                    buffer = new List<int>();
-                }
-                else
-                {
-                    buffer.Clear();
-                }
-
-                buffer.Add(z);
-                return buffer;
+                data += "*";
             }
-
-            public int OffsetX
+            else
             {
-                get { return backend.OffsetX; }
+                data += " ";
             }
-
-            public int OffsetY
-            {
-                get { return backend.OffsetY; }
-            }
-
-            public int TileSizeX
-            {
-                get { return backend.TileSizeX; }
-            }
-
-            public int TileSizeY
-            {
-                get { return backend.TileSizeY; }
-            }
+            return data;
         }
     }
 }

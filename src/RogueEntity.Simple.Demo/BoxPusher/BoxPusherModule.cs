@@ -9,6 +9,9 @@ using RogueEntity.Core.Sensing.Common.ShadowCast;
 using RogueEntity.Core.Sensing.Sources.Light;
 using RogueEntity.Core.Utils.Algorithms;
 using RogueEntity.Core.Meta.EntityKeys;
+using RogueEntity.Core.Movement.Cost;
+using RogueEntity.Core.Movement.CostModifier;
+using RogueEntity.Core.Movement.MovementModes.Walking;
 
 namespace RogueEntity.Simple.Demo.BoxPusher
 {
@@ -92,23 +95,28 @@ namespace RogueEntity.Simple.Demo.BoxPusher
             var ctx = initializer.DeclareContentContext<ItemReference>();
             ctx.Activate(ctx.CreateBulkEntityBuilder(serviceResolver)
                             .DefineWall()
+                            .WithMovementCostModifier().Block<WalkingMovement>()
                             .Declaration);
 
             ctx.Activate(ctx.CreateBulkEntityBuilder(serviceResolver)
                             .DefineFloor()
+                            .WithMovementCostModifier().For<WalkingMovement>(1)
                             .Declaration);
 
             ctx.Activate(ctx.CreateBulkEntityBuilder(serviceResolver)
                             .DefineFloorTargetZone()
+                            .WithMovementCostModifier().For<WalkingMovement>(1)
                             .Declaration);
 
             ctx.Activate(ctx.CreateReferenceEntityBuilder(serviceResolver)
                             .DefineBox()
+                            .WithMovementCostModifier().Block<WalkingMovement>()
                             .Declaration);
 
             var actorContext = initializer.DeclareContentContext<ActorReference>();
             actorContext.Activate(actorContext.CreateReferenceEntityBuilder(serviceResolver)
                                               .DefinePlayer<TGameContext, ActorReference, ItemReference>()
+                                              .WithMovement().AsPointCost(WalkingMovement.Instance, DistanceCalculation.Euclid, 1)
                                               .Declaration);
         }
     }

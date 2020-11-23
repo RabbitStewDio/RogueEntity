@@ -189,8 +189,8 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor
 
         protected void PerformTest(string id, string sourceText, string expectedPerceptionResult, string expectedSenseMap, string expectedSenseMapDirections)
         {
-            senseProperties.GetOrCreate(0).ImportData(SenseTestHelpers.Parse(sourceText, out var activeTestArea));
-            receptorSenseProperties.GetOrCreate(0).ImportData(SenseTestHelpers.Parse(sourceText, out _));
+            senseProperties.GetOrCreate(0).ImportData(SenseTestHelpers.ParseMap(sourceText, out var activeTestArea));
+            receptorSenseProperties.GetOrCreate(0).ImportData(SenseTestHelpers.ParseMap(sourceText, out _));
 
             var sourceActive10 = context.ItemResolver.Instantiate(context, senseSourceActive10);
             var sourceActive5 = context.ItemResolver.Instantiate(context, senseSourceActive5);
@@ -233,15 +233,15 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor
             {
                 sourceState.SenseSource.TryGetValue(out var sourceData).Should().BeTrue();
                 Console.WriteLine("Computed Sense Source:");
-                Console.WriteLine(SenseTestHelpers.PrintMap(sourceData.TranslateBy(26, 7), activeTestArea));
+                Console.WriteLine(TestHelpers.PrintMap(sourceData.TranslateBy<float>(26, 7), activeTestArea));
                 Console.WriteLine("--> Directions:");
-                Console.WriteLine(SenseTestHelpers.PrintMap(new SenseMapDirectionTestView(sourceData).TranslateBy(26, 7), activeTestArea));
+                Console.WriteLine(TestHelpers.PrintMap(new SenseMapDirectionTestView(sourceData).TranslateBy(26, 7), activeTestArea));
             }
 
             Console.WriteLine("Computed Perception Result:");
-            Console.WriteLine(SenseTestHelpers.PrintMap(vaData.TranslateBy(26, 4), activeTestArea));
+            Console.WriteLine(TestHelpers.PrintMap(vaData.TranslateBy<float>(26, 4), activeTestArea));
             Console.WriteLine("--> Directions:");
-            Console.WriteLine(SenseTestHelpers.PrintMap(new SenseMapDirectionTestView(vaData).TranslateBy(26, 4), activeTestArea));
+            Console.WriteLine(TestHelpers.PrintMap(new SenseMapDirectionTestView(vaData).TranslateBy(26, 4), activeTestArea));
             Console.WriteLine("--");
 
             context.ItemEntityRegistry.GetComponent(active10, out SingleLevelSenseDirectionMapData<TReceptorSense, TSourceSense> rawSenseData).Should().BeTrue();
@@ -250,20 +250,20 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor
             senseData.GetActiveBounds().Height.Should().NotBe(0);
 
             Console.WriteLine("Computed SenseMap Result:");
-            Console.WriteLine(SenseTestHelpers.PrintMap(senseData, activeTestArea));
+            Console.WriteLine(TestHelpers.PrintMap(senseData, activeTestArea));
             Console.WriteLine("--");
-            Console.WriteLine(SenseTestHelpers.PrintMap(new SenseMapDirectionTestView(senseData), activeTestArea));
+            Console.WriteLine(TestHelpers.PrintMap(new SenseMapDirectionTestView(senseData), activeTestArea));
 
             // the resulting sense information is stored relative to the sense origin, with the origin point at the centre of the bounds
             // thus the result map must be mapped to the same area.
-            var expectedPerceptionData = SenseTestHelpers.Parse(expectedPerceptionResult, out _);
-            SenseTestHelpers.AssertEquals(vaData, expectedPerceptionData, activeTestArea, new Position2D(26, 4));
+            var expectedPerceptionData = SenseTestHelpers.ParseMap(expectedPerceptionResult, out _);
+            TestHelpers.AssertEquals(vaData, expectedPerceptionData, activeTestArea, new Position2D(26, 4));
 
-            var expectedSenseMapData = SenseTestHelpers.Parse(expectedSenseMap, out _);
-            SenseTestHelpers.AssertEquals(senseData, expectedSenseMapData, activeTestArea, new Position2D());
+            var expectedSenseMapData = SenseTestHelpers.ParseMap(expectedSenseMap, out _);
+            TestHelpers.AssertEquals(senseData, expectedSenseMapData, activeTestArea, new Position2D());
 
             var expectedSenseMapDirectionData = SenseTestHelpers.ParseDirections(expectedSenseMapDirections, out _);
-            SenseTestHelpers.AssertEquals(new SenseMapDirectionTestView(senseData), expectedSenseMapDirectionData, activeTestArea, new Position2D());
+            TestHelpers.AssertEquals(senseData, expectedSenseMapDirectionData, activeTestArea, new Position2D(), SenseTestHelpers.PrintSenseDirectionStore);
         }
 
         [TearDown]

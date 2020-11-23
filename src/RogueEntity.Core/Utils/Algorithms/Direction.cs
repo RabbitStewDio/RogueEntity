@@ -60,7 +60,7 @@ namespace RogueEntity.Core.Utils.Algorithms
         /// <summary>
         /// Returns the cardinal direction that most closely matches the degree heading of the given
         /// line. Rounds clockwise if the heading is exactly on a diagonal direction. Similar to
-        /// <see cref="GetDirection(Position2D, Position2D)"/>, except this function returns only cardinal directions.
+        /// <see cref="GetDirection{TPosition}"/>, except this function returns only cardinal directions.
         /// </summary>
         /// <param name="start">Starting coordinate of the line.</param>
         /// <param name="end">Ending coordinate of the line.</param>
@@ -86,7 +86,7 @@ namespace RogueEntity.Core.Utils.Algorithms
         /// <summary>
         /// Returns the cardinal direction that most closely matches the degree heading of a line
         /// with the given delta-change values. Rounds clockwise if exactly on a diagonal. Similar to
-        /// <see cref="GetDirection(Position2D)"/>, except this function returns only cardinal directions.
+        /// <see cref="GetDirection{TPosition}"/>, except this function returns only cardinal directions.
         /// </summary>
         /// <param name="deltaChange">
         /// Vector representing the change in x and change in y across the line (deltaChange.X is the

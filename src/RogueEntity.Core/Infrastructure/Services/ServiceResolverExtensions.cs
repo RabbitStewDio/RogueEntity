@@ -1,6 +1,7 @@
 using System;
+using RogueEntity.Api.Services;
 
-namespace RogueEntity.Api.Services
+namespace RogueEntity.Core.Infrastructure.Services
 {
     public static class ServiceResolverExtensions
     {

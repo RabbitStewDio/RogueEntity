@@ -84,7 +84,7 @@ namespace RogueEntity.Core.Tests.Sensing.Sources.Touch
         [TestCase(nameof(EmptyRoom), EmptyRoom, EmptyRoomResult)]
         public void DoTest(string id, string sourceText, string expectedResultText)
         {
-            senseProperties.GetOrCreate(0).ImportData(SenseTestHelpers.Parse(sourceText));
+            senseProperties.GetOrCreate(0).ImportData(SenseTestHelpers.ParseMap(sourceText));
 
             var active10 = context.ItemResolver.Instantiate(context, senseActive10);
             var active5 = context.ItemResolver.Instantiate(context, senseActive5);
@@ -114,13 +114,13 @@ namespace RogueEntity.Core.Tests.Sensing.Sources.Touch
             vc.SenseSource.TryGetValue(out _).Should().BeTrue();
 
             Console.WriteLine("Computed Result:");
-            Console.WriteLine(SenseTestHelpers.PrintMap(vaData, vaData.Bounds));
+            Console.WriteLine(TestHelpers.PrintMap(vaData, vaData.Bounds));
             Console.WriteLine("--");
-            var expectedResult = SenseTestHelpers.Parse(expectedResultText);
+            var expectedResult = SenseTestHelpers.ParseMap(expectedResultText);
 
             // the resulting sense information is stored relative to the sense origin, with the origin point at the centre of the bounds
             // thus the result map must be mapped to the same area.
-            SenseTestHelpers.AssertEquals(vaData, expectedResult, expectedResult.GetActiveBounds(), new Position2D(vaData.Radius, vaData.Radius));
+            TestHelpers.AssertEquals(vaData, expectedResult, expectedResult.GetActiveBounds(), new Position2D(vaData.Radius, vaData.Radius));
         }
     }
 }

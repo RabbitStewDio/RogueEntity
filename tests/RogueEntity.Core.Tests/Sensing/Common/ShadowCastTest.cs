@@ -249,8 +249,8 @@ namespace RogueEntity.Core.Tests.Sensing.Common
             var source = new SenseSourceDefinition(dc, ar,  radius + 1);
             var pos = new Position2D(width / 2, height / 2);
 
-            var resistanceMap = Parse(resistanceMapText, out var roomArea);
-            Console.WriteLine("Using room layout \n" + PrintMap(resistanceMap, roomArea));
+            var resistanceMap = ParseMap(resistanceMapText, out var roomArea);
+            Console.WriteLine("Using room layout \n" + TestHelpers.PrintMap(resistanceMap, roomArea));
 
             var directionalityMapSystem = new SensoryResistanceDirectionalitySystem<object, VisionSense>(resistanceMap.As3DMap(0));
             directionalityMapSystem.Process();
@@ -258,14 +258,14 @@ namespace RogueEntity.Core.Tests.Sensing.Common
 
             var algo = new ShadowPropagationAlgorithm(LinearDecaySensePhysics.For(DistanceCalculation.Euclid), new ShadowPropagationResistanceDataSource());
             var calculatedBrightnessMap = algo.Calculate(source, source.Intensity, pos, resistanceMap, directionalityMap);
-            Console.WriteLine(PrintMap(calculatedBrightnessMap, new Rectangle(new Position2D(0, 0), radius, radius)));
-            Console.WriteLine(PrintMap(new SenseMapDirectionTestView(calculatedBrightnessMap), new Rectangle(new Position2D(0, 0), radius, radius)));
+            Console.WriteLine(TestHelpers.PrintMap(calculatedBrightnessMap, new Rectangle(new Position2D(0, 0), radius, radius)));
+            Console.WriteLine(TestHelpers.PrintMap(new SenseMapDirectionTestView(calculatedBrightnessMap), new Rectangle(new Position2D(0, 0), radius, radius)));
 
-            var expectedResult = Parse(brightnessResultText, out _);
-            AssertEquals(calculatedBrightnessMap, expectedResult, new Rectangle(0, 0, width, height), pos);
+            var expectedResult = ParseMap(brightnessResultText, out _);
+            TestHelpers.AssertEquals(calculatedBrightnessMap, expectedResult, new Rectangle(0, 0, width, height), pos);
             
             var expectedDirections = ParseDirections(directionResultText, out _);
-            AssertEquals(new SenseMapDirectionTestView(calculatedBrightnessMap), expectedDirections, new Rectangle(0, 0, width, height), pos);
+            TestHelpers.AssertEquals(calculatedBrightnessMap, expectedDirections, new Rectangle(0, 0, width, height), pos, PrintSenseDirectionStore);
         }
     }
 }

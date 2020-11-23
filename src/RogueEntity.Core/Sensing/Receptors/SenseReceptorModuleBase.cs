@@ -10,6 +10,7 @@ using RogueEntity.Api.Modules.Helpers;
 using RogueEntity.Api.Services;
 using RogueEntity.Api.Time;
 using RogueEntity.Core.GridProcessing.LayerAggregation;
+using RogueEntity.Core.Infrastructure.Services;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Continuous;
 using RogueEntity.Core.Positioning.Grid;

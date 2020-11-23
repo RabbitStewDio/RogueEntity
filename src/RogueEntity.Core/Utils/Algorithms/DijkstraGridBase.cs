@@ -149,7 +149,7 @@ namespace RogueEntity.Core.Utils.Algorithms
         /// <param name="weight">should be a positive value</param>
         protected void EnqueueStartingNode(in ShortPosition2D c, float weight)
         {
-            if (resultMapCoords.TryGetRawIndex(in c, out var idx))
+            if (resultMapCoords.TryGetRawIndex(in c, out _))
             {
                 openNodes.UpdatePriority(c, new DijkstraNodeWeight(-weight, 0));
                 resultMapCoords[c] = 0;
@@ -159,7 +159,7 @@ namespace RogueEntity.Core.Utils.Algorithms
 
         protected void EnqueueNode(in ShortPosition2D pos, float weight, in ShortPosition2D prev)
         {
-            if (resultMapCoords.TryGetRawIndex(pos.X, pos.Y, out var idx))
+            if (resultMapCoords.TryGetRawIndex(pos.X, pos.Y, out _))
             {
                 openNodes.UpdatePriority(pos, new DijkstraNodeWeight(-weight, (float)DistanceCalculation.Euclid.Calculate2D(pos, prev)));
                 resultMapDistanceCost[pos.X, pos.Y] = weight;

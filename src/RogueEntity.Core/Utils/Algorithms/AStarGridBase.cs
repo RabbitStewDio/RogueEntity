@@ -95,30 +95,41 @@ namespace RogueEntity.Core.Utils.Algorithms
                 {
                     var neighborPos = currentPosition.Add(dir.ToCoordinates());
                     var neighbor = nodes[neighborPos.X, neighborPos.Y];
+                    Console.WriteLine("Evaluating " + neighborPos);
+                    
                     if (neighbor.IsClosed())
                     {
                         // This neighbor has already been evaluated at shortest possible path, don't re-add
+                        Console.WriteLine("  Closed");
                         continue;
                     }
 
                     if (!EdgeCostInformation(in currentPosition, in dir, currentNode.AccumulatedCost, out var totalPathCost, out var nodeInfo))
                     {
+                        Console.WriteLine("  Not traversable");
                         continue;
+                    }
+
+                    if (totalPathCost < currentNode.AccumulatedCost)
+                    {
+                        throw new Exception();
                     }
 
                     var isNeighborOpen = neighbor.State == AStarNode.NodeState.Open;
                     if (isNeighborOpen && IsExistingResultBetter(in neighborPos, in totalPathCost))
                     {
                         // Not a better path
+                        Console.WriteLine("  Not better");
                         continue;
                     }
 
                     // We found a best path, so record and update
                     nodes[neighborPos.X, neighborPos.Y] = new AStarNode(AStarNode.NodeState.Open,
                                                                         totalPathCost,
-                                                                        Directions.GetDirection(currentPosition, neighborPos),
+                                                                        Directions.GetDirection(neighborPos, currentPosition),
                                                                         (ushort)(currentNode.DistanceFromStart + 1)
                     );
+                    Console.WriteLine("  Selected");
 
                     openNodes.UpdatePriority(neighborPos, totalPathCost + Heuristic(in neighborPos));
                     UpdateNode(neighborPos, nodeInfo);
@@ -163,12 +174,13 @@ namespace RogueEntity.Core.Utils.Algorithms
             return existingWeight.AccumulatedCost < newWeight;
         }
 
-        List<TPosition> ProduceResult(TPosition currentPosition, AStarNode currentNode, List<TPosition> pathBuffer)
+        void ProduceResult(TPosition currentPosition, AStarNode currentNode, List<TPosition> pathBuffer)
         {
             pathBuffer.Capacity = Math.Max(pathBuffer.Capacity, currentNode.DistanceFromStart);
             while (currentNode.DirectionToParent != Direction.None)
             {
                 pathBuffer.Add(currentPosition);
+                Console.WriteLine($" {currentPosition} => {currentNode.AccumulatedCost} => {currentNode.DirectionToParent}");
                 var cp = currentPosition.Add(currentNode.DirectionToParent.ToCoordinates());
                 currentPosition = cp;
 
@@ -183,8 +195,6 @@ namespace RogueEntity.Core.Utils.Algorithms
                     throw new ArgumentException();
                 }
             }
-
-            return pathBuffer;
         }
     }
 }

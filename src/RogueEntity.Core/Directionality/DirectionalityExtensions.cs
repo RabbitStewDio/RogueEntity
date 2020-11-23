@@ -1,3 +1,4 @@
+using System;
 using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.Algorithms;
 
@@ -54,6 +55,30 @@ namespace RogueEntity.Core.Directionality
             s += (d.IsMovementAllowed(Direction.Left)) ? ",Le" : ",__";
             s += (d.IsMovementAllowed(Direction.UpLeft)) ? ",UL" : ",__";
             return s;
+        }
+
+        public static bool TryParse(string value, out DirectionalityInformation d)
+        {
+            var split = value.Split(new [] {','}, StringSplitOptions.None);
+            d = DirectionalityInformation.None;
+            
+            foreach (var s in split)
+            {
+                d |= s switch
+                {
+                    "Up" => DirectionalityInformation.Up,
+                    "UR" => DirectionalityInformation.UpRight,
+                    "Ri" => DirectionalityInformation.Right,
+                    "DR" => DirectionalityInformation.DownRight,
+                    "Do" => DirectionalityInformation.Down,
+                    "DL" => DirectionalityInformation.DownLeft,
+                    "Le" => DirectionalityInformation.Left,
+                    "UL" => DirectionalityInformation.UpLeft,
+                    _ => DirectionalityInformation.None
+                };
+            }
+
+            return true;
         }
     }
 }

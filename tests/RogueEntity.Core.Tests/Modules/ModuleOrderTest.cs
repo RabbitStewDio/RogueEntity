@@ -5,7 +5,7 @@ using FluentAssertions;
 using NUnit.Framework;
 using RogueEntity.Api.Modules;
 using RogueEntity.Api.Modules.Helpers;
-using RogueEntity.Api.Services;
+using RogueEntity.Core.Infrastructure.Services;
 using RogueEntity.Core.Utils;
 using RogueEntity.Core.Meta.EntityKeys;
 

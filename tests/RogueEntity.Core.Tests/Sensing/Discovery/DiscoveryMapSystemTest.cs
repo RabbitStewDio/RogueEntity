@@ -293,14 +293,14 @@ namespace RogueEntity.Core.Tests.Sensing.Discovery
             m2.TryGetMap(0, out var mapB).Should().BeTrue();
             
             Console.WriteLine("Computed Discovery Map Actor A (10):");
-            Console.WriteLine(SenseTestHelpers.PrintMap(mapA, activeTestArea));
+            Console.WriteLine(TestHelpers.PrintMap(mapA, activeTestArea));
             Console.WriteLine("--");
             Console.WriteLine("Computed Discovery Map Actor B (5):");
-            Console.WriteLine(SenseTestHelpers.PrintMap(mapB, activeTestArea));
+            Console.WriteLine(TestHelpers.PrintMap(mapB, activeTestArea));
             Console.WriteLine("--");
 
-            SenseTestHelpers.AssertEquals(mapA, expectedMapActorA, activeTestArea, new Position2D());
-            SenseTestHelpers.AssertEquals(mapB, expectedMapActorB, activeTestArea, new Position2D());
+            TestHelpers.AssertEquals(mapA, expectedMapActorA, activeTestArea, new Position2D());
+            TestHelpers.AssertEquals(mapB, expectedMapActorB, activeTestArea, new Position2D());
 
             // reposition the actor... 
             context.ItemResolver.TryUpdateData(active10, context, EntityGridPosition.Of(TestMapLayers.One, 14, 8), out _).Should().BeTrue();
@@ -315,10 +315,10 @@ namespace RogueEntity.Core.Tests.Sensing.Discovery
             }
             
             Console.WriteLine("Computed Discovery Map Actor A (10) after move:");
-            Console.WriteLine(SenseTestHelpers.PrintMap(mapA, activeTestArea));
+            Console.WriteLine(TestHelpers.PrintMap(mapA, activeTestArea));
             Console.WriteLine("--");
             
-            SenseTestHelpers.AssertEquals(mapA, expectedMapActorAMoved, activeTestArea, new Position2D());
+            TestHelpers.AssertEquals(mapA, expectedMapActorAMoved, activeTestArea, new Position2D());
             
         }
     }

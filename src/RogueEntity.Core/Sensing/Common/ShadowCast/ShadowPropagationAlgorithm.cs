@@ -165,9 +165,18 @@ namespace RogueEntity.Core.Sensing.Common.ShadowCast
                         {
                             var strengthAtDistance = sensePhysics.SignalStrengthAtDistance(distanceFromOrigin, maxRadius);
                             var bright = p.Intensity * strengthAtDistance * signalStrength;
-                            var senseDirection = SenseDirectionStore.From(currentX, currentY).Direction;
-                            data.Write(new Position2D(currentX, currentY), bright, senseDirection,
-                                       fullyBlocked ? SenseDataFlags.Obstructed : SenseDataFlags.None);
+                            if (bright > 0.0005f)
+                            {
+                                var senseDirection = SenseDirectionStore.From(currentX, currentY).Direction;
+                                data.Write(new Position2D(currentX, currentY), bright, senseDirection,
+                                           fullyBlocked ? SenseDataFlags.Obstructed : SenseDataFlags.None);
+                            }
+                            else
+                            {
+                                // Ignore all very weak signals. They do not add anything to the actual output
+                                // but continue to keep the CPU busy for a few more turns. 
+                                signalStrength = 0;
+                            }
                         }
                         else
                         {

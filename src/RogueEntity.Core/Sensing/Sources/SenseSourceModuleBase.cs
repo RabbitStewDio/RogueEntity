@@ -12,6 +12,7 @@ using RogueEntity.Api.Services;
 using RogueEntity.Api.Time;
 using RogueEntity.Api.Utils;
 using RogueEntity.Core.GridProcessing.LayerAggregation;
+using RogueEntity.Core.Infrastructure.Services;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Continuous;

@@ -1,6 +1,6 @@
 using RogueEntity.Api.GameLoops;
 using RogueEntity.Api.Modules;
-using RogueEntity.Api.Services;
+using RogueEntity.Core.Infrastructure.Services;
 using RogueEntity.Core.Sensing.Common.Physics;
 using RogueEntity.Core.Sensing.Common.ShadowCast;
 using RogueEntity.Core.Sensing.Sources.Light;

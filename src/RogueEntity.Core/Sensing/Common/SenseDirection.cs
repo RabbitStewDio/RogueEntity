@@ -9,6 +9,11 @@ namespace RogueEntity.Core.Sensing.Common
         North = 1, 
         East = 2, 
         South = 4, 
-        West = 8
+        West = 8,
+        
+        NorthEast = North| East, // 3
+        NorthWest = North| West, // 9
+        SouthEast = South| East, // 6
+        SouthWest = South| West, // 12
     }
 }

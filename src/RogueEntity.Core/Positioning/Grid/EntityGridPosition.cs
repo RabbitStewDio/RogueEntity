@@ -82,12 +82,12 @@ namespace RogueEntity.Core.Positioning.Grid
             if (y > MaxXYValue) throw new ArgumentOutOfRangeException(nameof(y), y, $"should be between {MinXYValue} and {MaxXYValue}");
             if (z > MaxZValue) throw new ArgumentOutOfRangeException(nameof(z), z, $"should be between {MinZValue} and {MaxZValue}");
 
-            return new EntityGridPosition(layer, (short)x, (short)y, (short)z, 1);
+            return new EntityGridPosition(layer, (short)x, (short)y, (short)z);
         }
 
         [IgnoreMember]
         [IgnoreDataMember]
-        public bool IsInvalid => this.valid != 0;
+        public bool IsInvalid => this.valid == 0;
 
         public static EntityGridPosition Invalid => default;
 

@@ -2,9 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using RogueEntity.Api.Modules.Helpers;
+using RogueEntity.Api.Services;
 using RogueEntity.Core.Utils;
 
-namespace RogueEntity.Api.Services
+namespace RogueEntity.Core.Infrastructure.Services
 {
     public class DefaultServiceResolver : IServiceResolver, IDisposable
     {

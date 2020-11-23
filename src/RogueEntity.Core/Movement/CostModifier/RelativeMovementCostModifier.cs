@@ -24,6 +24,7 @@ namespace RogueEntity.Core.Movement.CostModifier
         public static readonly RelativeMovementCostModifier<TMovementMode> Unchanged = new RelativeMovementCostModifier<TMovementMode>(1f);
         
         [DataMember(Order = 0)]
+        [Key(0)]
         public readonly ushort CostModifier;
 
         [SerializationConstructor]
@@ -37,6 +38,8 @@ namespace RogueEntity.Core.Movement.CostModifier
             CostModifier = (ushort) (blocksSense * 100).Clamp(0, ushort.MaxValue);
         }
 
+        [IgnoreDataMember]
+        [IgnoreMember]
         public float Value => CostModifier / 100f;
         
         public override string ToString()
@@ -70,6 +73,8 @@ namespace RogueEntity.Core.Movement.CostModifier
         }
 
         public static implicit operator float(RelativeMovementCostModifier<TMovementMode> v) => v.Value;
+        public static implicit operator RelativeMovementCostModifier<TMovementMode>(float v) => new RelativeMovementCostModifier<TMovementMode>(v);
+        public static implicit operator RelativeMovementCostModifier<TMovementMode>(Percentage v) => new RelativeMovementCostModifier<TMovementMode>(v);
         
         public static RelativeMovementCostModifier<TMovementMode> operator *(RelativeMovementCostModifier<TMovementMode> left, RelativeMovementCostModifier<TMovementMode> right)
         {

@@ -38,7 +38,7 @@ namespace RogueEntity.Core.Tests.Positioning
         [Test]
         public void MinValueTest()
         {
-            var p = EntityGridPosition.Of(TestMapLayers.One, EntityGridPosition.MinXYValue, EntityGridPosition.MinXYValue);
+            var p = EntityGridPosition.Of(TestMapLayers.One, EntityGridPosition.MinXYValue, EntityGridPosition.MinXYValue, EntityGridPosition.MinZValue);
             p.IsInvalid.Should().BeFalse();
             p.X.Should().Be(EntityGridPosition.MinXYValue);
             p.Y.Should().Be(EntityGridPosition.MinXYValue);

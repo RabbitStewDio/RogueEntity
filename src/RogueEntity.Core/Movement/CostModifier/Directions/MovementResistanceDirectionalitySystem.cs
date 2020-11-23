@@ -23,15 +23,15 @@ namespace RogueEntity.Core.Movement.CostModifier.Directions
             if (d.IsCardinal())
             {
                 var moveData = Query(in parameterData, pos.X + c.X, pos.Y + c.Y);
-                var isMoveAllowed = moveData < 1;
+                var isMoveAllowed = moveData > 0;
                 return isMoveAllowed;
             }
 
             var moveDataHorizontal = Query(in parameterData, pos.X + c.X, pos.Y);
-            var canMoveHorizontal = moveDataHorizontal < 1;
+            var canMoveHorizontal = moveDataHorizontal > 0;
             
             var moveDataVertical = Query(in parameterData, pos.X, pos.Y + c.Y);
-            var canMoveVertical = moveDataVertical < 1;
+            var canMoveVertical = moveDataVertical > 0;
 
             // if both cardinal directions are blocked, we cannot walk diagonally.
             if (!canMoveHorizontal && !canMoveVertical)

@@ -61,8 +61,12 @@ namespace RogueEntity.Core.Tests.Meta.Items
             {
                 EntityRegistry.RegisterNonConstructable<TData>();
             }
+
+            SetUpOverride();
         }
-        
+
+        protected virtual void SetUpOverride() {}
+
         protected virtual BulkItemDeclaration<TGameContext, TItemId> CreateBulkItemDeclaration(IBulkItemTrait<TGameContext, TItemId> bulkTrait)
         {
             return new BulkItemDeclaration<TGameContext, TItemId>(BulkItemId).WithTrait(bulkTrait);

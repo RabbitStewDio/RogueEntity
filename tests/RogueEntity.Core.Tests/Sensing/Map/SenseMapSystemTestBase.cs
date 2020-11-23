@@ -140,7 +140,7 @@ namespace RogueEntity.Core.Tests.Sensing.Map
 
         protected void PerformTest(string id, string sourceText, string expectedGlobalSenseMap)
         {
-            senseProperties.GetOrCreate(0).ImportData(SenseTestHelpers.Parse(sourceText, out var activeTestArea));
+            senseProperties.GetOrCreate(0).ImportData(SenseTestHelpers.ParseMap(sourceText, out var activeTestArea));
 
             var sourceActive10 = context.ItemResolver.Instantiate(context, senseSourceActive10);
             var sourceActive5 = context.ItemResolver.Instantiate(context, senseSourceActive5);
@@ -156,11 +156,11 @@ namespace RogueEntity.Core.Tests.Sensing.Map
             senseSystem.TryGetSenseData(0, out var globalSenseMap).Should().BeTrue();
             
             Console.WriteLine("Computed Global Sense Map:");
-            Console.WriteLine(SenseTestHelpers.PrintMap(globalSenseMap, activeTestArea));
+            Console.WriteLine(TestHelpers.PrintMap(globalSenseMap, activeTestArea));
             Console.WriteLine("--");
             
-            var expectedSenseMapData = SenseTestHelpers.Parse(expectedGlobalSenseMap, out _);
-            SenseTestHelpers.AssertEquals(globalSenseMap, expectedSenseMapData, activeTestArea, new Position2D());
+            var expectedSenseMapData = SenseTestHelpers.ParseMap(expectedGlobalSenseMap, out _);
+            TestHelpers.AssertEquals(globalSenseMap, expectedSenseMapData, activeTestArea, new Position2D());
         }
 
         [TearDown]

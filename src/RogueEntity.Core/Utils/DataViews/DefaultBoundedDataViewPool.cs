@@ -1,4 +1,3 @@
-using JetBrains.Annotations;
 using Microsoft.Extensions.ObjectPool;
 
 namespace RogueEntity.Core.Utils.DataViews
@@ -6,10 +5,12 @@ namespace RogueEntity.Core.Utils.DataViews
     public class DefaultBoundedDataViewPool<T> : IBoundedDataViewPool<T>
     {
         readonly ObjectPool<DefaultPooledBoundedDataView<T>> pool;
-
-        public DefaultBoundedDataViewPool([NotNull] ObjectPoolProvider poolProvider,
-                                          DynamicDataViewConfiguration config)
+        
+        public DefaultBoundedDataViewPool(DynamicDataViewConfiguration config,
+                                          ObjectPoolProvider poolProvider = null)
         {
+            poolProvider ??= new DefaultObjectPoolProvider();
+            
             this.pool = poolProvider.Create(new Policy());
             this.TileConfiguration = config;
         }

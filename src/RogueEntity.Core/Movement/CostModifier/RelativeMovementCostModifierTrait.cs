@@ -11,9 +11,9 @@ namespace RogueEntity.Core.Movement.CostModifier
     {
         readonly RelativeMovementCostModifier<TMovementMode> sensoryResistance;
 
-        public RelativeMovementCostModifierTrait(float movementCostModifier) : base("Core.Item.RelativeMovementCostModifier+" + typeof(TMovementMode).Name, 100)
+        public RelativeMovementCostModifierTrait(RelativeMovementCostModifier<TMovementMode> movementCostModifier) : base("Core.Item.RelativeMovementCostModifier+" + typeof(TMovementMode).Name, 100)
         {
-            this.sensoryResistance = new RelativeMovementCostModifier<TMovementMode>(movementCostModifier);
+            this.sensoryResistance = movementCostModifier;
         }
 
         protected override RelativeMovementCostModifier<TMovementMode> GetData(TContext context, TItemId k)

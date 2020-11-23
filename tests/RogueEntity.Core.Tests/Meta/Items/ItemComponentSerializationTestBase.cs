@@ -286,7 +286,7 @@ namespace RogueEntity.Core.Tests.Meta.Items
         {
             if (!scn.TryRegisterComponent<TData>(out var registration))
             {
-                Assert.Fail("Unable to register component type.");
+                Assert.Fail("Unable to register component type " + typeof(TData));
             }
 
             return registration;
