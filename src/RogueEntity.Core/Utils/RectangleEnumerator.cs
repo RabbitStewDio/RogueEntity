@@ -47,7 +47,7 @@ namespace RogueEntity.Core.Utils
         {
             get
             {
-                return Position2D.From(idx, width) + origin;
+                return Position2D.FromLinearIndex(idx, width) + origin;
             }
         }
     }

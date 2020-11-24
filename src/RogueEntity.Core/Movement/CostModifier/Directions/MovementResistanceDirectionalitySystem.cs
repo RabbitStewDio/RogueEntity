@@ -20,16 +20,17 @@ namespace RogueEntity.Core.Movement.CostModifier.Directions
                                               Direction d)
         {
             var c = d.ToCoordinates();
-            if (d.IsCardinal())
+            var moveData = Query(in parameterData, pos.X + c.X, pos.Y + c.Y);
+            var isMoveAllowed = moveData > 0;
+            
+            if (!isMoveAllowed || d.IsCardinal())
             {
-                var moveData = Query(in parameterData, pos.X + c.X, pos.Y + c.Y);
-                var isMoveAllowed = moveData > 0;
                 return isMoveAllowed;
             }
 
             var moveDataHorizontal = Query(in parameterData, pos.X + c.X, pos.Y);
             var canMoveHorizontal = moveDataHorizontal > 0;
-            
+
             var moveDataVertical = Query(in parameterData, pos.X, pos.Y + c.Y);
             var canMoveVertical = moveDataVertical > 0;
 
@@ -38,14 +39,14 @@ namespace RogueEntity.Core.Movement.CostModifier.Directions
             {
                 return false;
             }
-            
+
             return true;
         }
 
         static float Query(in (IReadOnlyDynamicDataView2D<float> sourceData,
-                                                           IReadOnlyBoundedDataView<float> sourceTile, int z) parameterData,
-                                                       int x,
-                                                       int y)
+                               IReadOnlyBoundedDataView<float> sourceTile, int z) parameterData,
+                           int x,
+                           int y)
         {
             if (!parameterData.sourceTile.TryGet(x, y, out var moveData))
             {

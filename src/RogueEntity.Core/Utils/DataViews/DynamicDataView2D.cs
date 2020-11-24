@@ -57,6 +57,10 @@ namespace RogueEntity.Core.Utils.DataViews
         [IgnoreMember]
         Rectangle activeBounds;
 
+        public DynamicDataView2D(DynamicDataViewConfiguration config) : this(config.OffsetX, config.OffsetY, config.TileSizeX, config.TileSizeY)
+        {
+        }
+
         public DynamicDataView2D(int tileSizeX, int tileSizeY) : this(0, 0, tileSizeX, tileSizeY)
         {
         }

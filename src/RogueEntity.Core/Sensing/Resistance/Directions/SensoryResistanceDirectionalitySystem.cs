@@ -21,10 +21,10 @@ namespace RogueEntity.Core.Sensing.Resistance.Directions
             var (cx, cy) = d.ToCoordinates();
             var (x, y) = pos;
 
-            if (d.IsCardinal())
+            var moveData = Query(in parameterData, x + cx, y + cy);
+            var isMoveAllowed = moveData < 1;
+            if (!isMoveAllowed || d.IsCardinal())
             {
-                var moveData = Query(in parameterData, x + cx, y + cy);
-                var isMoveAllowed = moveData < 1;
                 return isMoveAllowed;
             }
 

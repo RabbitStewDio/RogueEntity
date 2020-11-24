@@ -76,7 +76,7 @@ namespace RogueEntity.Core.Tests
         public static void AssertEquals(IReadOnlyView2D<bool> source,
                                         IReadOnlyView2D<bool> other,
                                         in Rectangle bounds,
-                                        in Position2D offset)
+                                        in Position2D offset = default)
         {
             foreach (var pos in bounds.Contents)
             {
@@ -98,7 +98,7 @@ namespace RogueEntity.Core.Tests
         public static void AssertEquals(IReadOnlyView2D<string> source,
                                         IReadOnlyView2D<string> other,
                                         in Rectangle bounds,
-                                        in Position2D offset)
+                                        in Position2D offset = default)
         {
             foreach (var pos in bounds.Contents)
             {

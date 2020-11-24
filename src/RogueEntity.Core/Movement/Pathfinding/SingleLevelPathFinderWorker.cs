@@ -114,7 +114,7 @@ namespace RogueEntity.Core.Movement.Pathfinding
             {
                 if (s.Directions.TryGet(targetPos.GridX, targetPos.GridY, out var dir))
                 {
-                    Logger.Debug("Direction: For {Position} is {Buffer}", targetPos, dir);
+                    Logger.Verbose("Direction: For {Position} is {Buffer}", targetPos, dir);
                     allowedMovements |= dir;
                 }
             }
@@ -127,7 +127,7 @@ namespace RogueEntity.Core.Movement.Pathfinding
                 }
             }
 
-            Logger.Debug("Traversable: For {Position} is {Buffer}", targetPos, buffer);
+            Logger.Verbose("Traversable: For {Position} is {Buffer}", targetPos, buffer);
         }
 
         protected override bool EdgeCostInformation(in Position2D sourceNode, in Direction d, float sourceNodeCost, out float totalPathCost, out IMovementMode movementMode)

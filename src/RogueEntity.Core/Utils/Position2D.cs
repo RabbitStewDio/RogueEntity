@@ -44,7 +44,7 @@ namespace RogueEntity.Core.Utils
 
         public Position2D With(int x, int y)
         {
-            return From(x, y);
+            return new Position2D(x, y);
         }
 
         public Position2D Add(Position2D d)
@@ -195,7 +195,7 @@ namespace RogueEntity.Core.Utils
 
         public int ToLinearIndex(int lineWidth) => Y * lineWidth + X;
         
-        public static Position2D From(int linearIndex, int lineWidth)
+        public static Position2D FromLinearIndex(int linearIndex, int lineWidth)
         {
             var y = Math.DivRem(linearIndex, lineWidth, out var x);
             return new Position2D(x, y);

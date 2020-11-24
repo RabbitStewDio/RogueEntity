@@ -1,12 +1,16 @@
 using System;
+using System.Collections.Generic;
 using FluentAssertions;
 using NUnit.Framework;
+using RogueEntity.Core.Movement;
 using RogueEntity.Core.Movement.Cost;
 using RogueEntity.Core.Movement.CostModifier.Directions;
 using RogueEntity.Core.Movement.MovementModes.Walking;
 using RogueEntity.Core.Movement.Pathfinding;
 using RogueEntity.Core.Positioning.Grid;
+using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.Algorithms;
+using RogueEntity.Core.Utils.DataViews;
 using static RogueEntity.Core.Tests.Movement.PathfindingTestUtil;
 
 namespace RogueEntity.Core.Tests.Movement.Pathfinding
@@ -16,33 +20,33 @@ namespace RogueEntity.Core.Tests.Movement.Pathfinding
     {
         const string EmptyRoom = @"
 // 9x9; an empty room
-  ###  ,  ###  ,  ###  ,  ###  ,  ###  ,  ###  ,  ###  ,  ###  ,  ###  
-  ###  ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,  ###
-  ###  ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,  ###
-  ###  ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,  ###
-  ###  ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,  ###
-  ###  ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,  ###
-  ###  ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,  ###
-  ###  ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,  ###
-  ###  ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,  ###
-  ###  ,  ###  ,  ###  ,  ###  ,  ###  ,  ###  ,  ###  ,  ###  ,  ###  
+ ### , ### , ### , ### , ### , ### , ### , ### , ###  
+ ### ,  .  ,  .  ,  .  ,  .  ,  .  ,  .  ,  .  , ###
+ ### ,  .  ,  .  ,  .  ,  .  ,  .  ,  .  ,  .  , ###
+ ### ,  .  ,  .  ,  .  ,  .  ,  .  ,  .  ,  .  , ###
+ ### ,  .  ,  .  ,  .  ,  .  ,  .  ,  .  ,  .  , ###
+ ### ,  .  ,  .  ,  .  ,  .  ,  .  ,  .  ,  .  , ###
+ ### ,  .  ,  .  ,  .  ,  .  ,  .  ,  .  ,  .  , ###
+ ### ,  .  ,  .  ,  .  ,  .  ,  .  ,  .  ,  .  , ###
+ ### ,  .  ,  .  ,  .  ,  .  ,  .  ,  .  ,  .  , ###
+ ### , ### , ### , ### , ### , ### , ### , ### , ###  
 ";
 
         const string EmptyRoomResult = @"
-// 11x11; an empty room
-  1.000,  1.000,  1.000,  1.000,  1.000,  1.000,  1.000,  1.000,  1.000
-  1.000,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,  1.000
-  1.000,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,  1.000
-  1.000,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,  1.000
-  1.000,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,  1.000
-  1.000,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,  1.000
-  1.000,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,  1.000
-  1.000,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,   .   ,  1.000
-  1.000,  1.000,  1.000,  1.000,  1.000,  1.000,  1.000,  1.000,  1.000
+ ### , ### , ### , ### , ### , ### , ### , ### , ### 
+ ### ,  @  ,  .  ,  .  ,  .  ,  .  ,  .  ,  .  , ### 
+ ### ,  .  ,   6 ,  .  ,  .  ,  .  ,  .  ,  .  , ### 
+ ### ,  .  ,  .  ,   5 ,  .  ,  .  ,  .  ,  .  , ### 
+ ### ,  .  ,  .  ,  .  ,   4 ,  .  ,  .  ,  .  , ### 
+ ### ,  .  ,  .  ,  .  ,  .  ,   3 ,  .  ,  .  , ### 
+ ### ,  .  ,  .  ,  .  ,  .  ,  .  ,   2 ,  .  , ### 
+ ### ,  .  ,  .  ,  .  ,  .  ,  .  ,  .  ,   1 , ### 
+ ### ,  .  ,  .  ,  .  ,  .  ,  .  ,  .  ,  .  , ### 
+ ### , ### , ### , ### , ### , ### , ### , ### , ### 
 ";
 
         [Test]
-        [TestCase(nameof(EmptyRoom), EmptyRoom, EmptyRoomResult, 1, 1, 8, 8)]
+        [TestCase(nameof(EmptyRoom), EmptyRoom, EmptyRoomResult, 1, 1, 7, 7)]
         public void ValidatePathFinding(string id, string sourceText, string resultText, int sx, int sy, int tx, int ty)
         {
             var resistanceMap = ParseMap(sourceText, out var bounds);
@@ -53,22 +57,54 @@ namespace RogueEntity.Core.Tests.Movement.Pathfinding
             directionalityMapSystem.Process();
             directionalityMapSystem.TryGetView(0, out var directionalityMap).Should().BeTrue();
 
-
             var pfs = new SingleLevelPathFinderSource();
             pfs.RegisterMovementSource(WalkingMovement.Instance, resistanceMap.As3DMap(0), directionalityMap.As3DMap(0));
             var pf = pfs.GetPathFinder(new PathfindingMovementCostFactors(new MovementCost(WalkingMovement.Instance, DistanceCalculation.Euclid, 1)));
 
-            var result = pf.TryFindPath(EntityGridPosition.OfRaw(0, sx, sy, 0), EntityGridPosition.OfRaw(0, tx, ty, 0), out var resultPath);
+            var startPosition = EntityGridPosition.OfRaw(0, sx, sy, 0);
+            var targetPosition = EntityGridPosition.OfRaw(0, tx, ty, 0);
+            var result = pf.TryFindPath(startPosition, targetPosition, out var resultPath);
             result.Should().Be(PathFinderResult.Found);
+            resultPath.Should().NotBeEmpty();
             
-            var resultMap = ParseMap(sourceText, out _);
+            var expectedResultMap = ParseResultMap(resultText, out _);
+            var producedResultMap = CreateResult(resistanceMap, resultPath, startPosition, bounds);
+            Console.WriteLine("Expected Result\n" + PrintResultMap(expectedResultMap, bounds));
+            Console.WriteLine("Computed Result\n" + PrintResultMap(producedResultMap, bounds));
             
+            TestHelpers.AssertEquals(producedResultMap, expectedResultMap, bounds, default, PrintResultMap);
+
+        }
+
+        DynamicDataView2D<(bool, int)> CreateResult(DynamicDataView2D<float> resistanceMap, 
+                                                    List<(EntityGridPosition, IMovementMode)> resultPath,
+                                                    EntityGridPosition startPos,
+                                                    Rectangle bounds)
+        {
+            var resultMap = new DynamicDataView2D<(bool, int)>(resistanceMap.ToConfiguration());
             
-            resultPath.Should()
-                      .Equal(
-                          (EntityGridPosition.OfRaw(0, sx, sy, 0), WalkingMovement.Instance),
-                          (EntityGridPosition.OfRaw(0, sx, sy, 0), WalkingMovement.Instance)
-                      );
+            foreach (var (x,y) in bounds.Contents)
+            {
+                var wall = resistanceMap[x,y] <= 0;
+                var pos = startPos.WithPosition(x, y);
+                int pathIndex;
+                if (pos == startPos)
+                {
+                    pathIndex = 0;
+                }
+                else
+                {
+                    pathIndex = resultPath.PathIndexOf(pos);
+                    if (pathIndex >= 0)
+                    {
+                        pathIndex += 1;
+                    }
+                }
+
+                resultMap[x, y] = (wall, pathIndex);
+            }
+
+            return resultMap;
         }
     }
 }

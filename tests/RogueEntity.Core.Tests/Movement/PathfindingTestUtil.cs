@@ -5,7 +5,6 @@ namespace RogueEntity.Core.Tests.Movement
 {
     public static class PathfindingTestUtil
     {
-
         public static DynamicDataView2D<float> ParseMap(string text) => ParseMap(text, out _);
 
         public static DynamicDataView2D<float> ParseMap(string text, out Rectangle parsedBounds)
@@ -21,10 +20,52 @@ namespace RogueEntity.Core.Tests.Movement
             return TestHelpers.Parse<float>(text, tokenParser, out parsedBounds);
         }
 
-        static bool IsWall(string text)
+        public static DynamicDataView2D<(bool, int)> ParseResultMap(string text, out Rectangle parsedBounds)
         {
-            return "".PadLeft(text.Length, '#').Equals(text);
+            var tokenParser = new TokenParser();
+            tokenParser.AddToken("", (false, -1));
+            tokenParser.AddToken(".", (false, -1));
+            tokenParser.AddToken("###", (true, -1));
+            tokenParser.AddToken("##", (true, -1));
+            tokenParser.AddToken("#", (true, -1));
+            tokenParser.AddToken("@", (false, 0));
+            tokenParser.AddNumericToken<(bool, int)>(ParsePathResult);
+
+            return TestHelpers.Parse<(bool, int)>(text, tokenParser, out parsedBounds);
         }
-        
+
+        static bool ParsePathResult(float parsedNumber, out (bool, int) result)
+        {
+            result = (false, (int)parsedNumber);
+            return true;
+        }
+
+        public static string PrintResultMap(IReadOnlyView2D<(bool, int)> resultMap, Rectangle bounds)
+        {
+            return resultMap.ExtendToString(bounds,
+                                            elementSeparator: ",",
+                                            elementStringifier: PathFinderResultToString);
+        }
+
+        static string PathFinderResultToString((bool, int) arg)
+        {
+
+            if (arg.Item2 < 0)
+            {
+                if (arg.Item1)
+                {
+                    return " ### ";
+                }
+                
+                return "  .  ";
+            }
+            
+            if (arg.Item2 == 0)
+            {
+                return "  @  ";
+            }
+
+            return $" {arg.Item2,3} ";
+        }
     }
 }
