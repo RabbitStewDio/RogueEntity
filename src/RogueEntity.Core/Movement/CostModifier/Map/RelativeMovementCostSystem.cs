@@ -1,4 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
 using EnTTSharp.Entities;
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Core.GridProcessing.LayerAggregation;
@@ -7,14 +6,8 @@ using RogueEntity.Core.Positioning.MapLayers;
 
 namespace RogueEntity.Core.Movement.CostModifier.Map
 {
-    [SuppressMessage("ReSharper", "UnusedTypeParameter", Justification = "Discriminator")]
-    public interface IRelativeMovementCostSystem<TGameContext, TMovementType>: IAggregationLayerSystem<TGameContext, float>
-    {
-        
-    }
-    
     public class RelativeMovementCostSystem<TGameContext, TMovementType> : LayeredAggregationSystem<TGameContext, float, RelativeMovementCostModifier<TMovementType>>,
-                                                                           IRelativeMovementCostSystem<TGameContext, TMovementType>
+                                                                           IRelativeMovementCostSystem<TMovementType>
     {
         public RelativeMovementCostSystem(int tileWidth, int tileHeight) : base(RelativeMovementCostSystem.ProcessTile, tileWidth, tileHeight)
         {
@@ -31,18 +24,25 @@ namespace RogueEntity.Core.Movement.CostModifier.Map
         {
             var bounds = p.Bounds;
             var resistanceData = p.WritableTile;
-            foreach (var (x, y) in bounds.Contents)
+            resistanceData.Fill(RelativeMovementCostModifier<TMovementType>.Unchanged);
+
+            foreach (var view in p.DataViews)
             {
-                var sp = RelativeMovementCostModifier<TMovementType>.Unchanged;
-                foreach (var dv in p.DataViews)
+                if (!view.TryGetData(bounds.X, bounds.Y, out var dv))
                 {
-                    if (dv.TryGet(x, y, out var d))
-                    {
-                        sp *= d;
-                    }
+                    continue;
                 }
 
-                resistanceData.TrySet(x, y, sp);
+                foreach (var (x, y) in bounds.Contents)
+                {
+                    if (!dv.TryGet(x, y, out var d))
+                    {
+                        continue;
+                    }
+
+                    var sp = resistanceData[x, y] + d;
+                    resistanceData.TrySet(x, y, sp);
+                }
             }
         }
 

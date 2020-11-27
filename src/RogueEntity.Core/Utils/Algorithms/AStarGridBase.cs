@@ -25,6 +25,8 @@ namespace RogueEntity.Core.Utils.Algorithms
             this.nodes = new PooledDynamicDataView2D<AStarNode>(pool);
         }
 
+        public IReadOnlyDynamicDataView2D<AStarNode> Nodes => nodes;
+
         protected abstract void PopulateTraversableDirections(TPosition basePosition, List<Direction> buffer);
         protected abstract bool EdgeCostInformation(in TPosition sourceNode, in Direction d, float sourceNodeCost, out float totalPathCost, out TExtraNodeInfo nodeInfo);
 
@@ -133,6 +135,7 @@ namespace RogueEntity.Core.Utils.Algorithms
             }
 
             openNodes.Clear();
+            Console.WriteLine("Searched: " + searchedNodes);
             return PathFinderResult.NotFound;
         }
 

@@ -11,20 +11,19 @@ namespace RogueEntity.Core.Sensing.Common.ShadowCast
 {
     public class ShadowPropagationAlgorithm : ISensePropagationAlgorithm
     {
-        readonly struct ShadowParameters<TResistanceMap>
-            where TResistanceMap : IReadOnlyView2D<float>
+        readonly struct ShadowParameters
         {
-            public readonly TResistanceMap ResistanceMap;
+            public readonly IReadOnlyDynamicDataView2D<float> ResistanceMap;
             public readonly SenseSourceDefinition Sense;
             public readonly float Intensity;
             public readonly Position2D Origin;
-            public readonly IReadOnlyView2D<DirectionalityInformation> DirectionalityView;
+            public readonly IReadOnlyDynamicDataView2D<DirectionalityInformation> DirectionalityView;
 
-            public ShadowParameters(in TResistanceMap resistanceMap,
+            public ShadowParameters(in IReadOnlyDynamicDataView2D<float> resistanceMap,
                                     in SenseSourceDefinition sense,
                                     float intensity,
                                     in Position2D origin,
-                                    IReadOnlyView2D<DirectionalityInformation> directionalityView)
+                                    IReadOnlyDynamicDataView2D<DirectionalityInformation> directionalityView)
             {
                 this.ResistanceMap = resistanceMap;
                 this.Sense = sense;
@@ -36,6 +35,8 @@ namespace RogueEntity.Core.Sensing.Common.ShadowCast
 
         readonly ISensePhysics sensePhysics;
         readonly ShadowPropagationResistanceDataSource dataSource;
+        IReadOnlyBoundedDataView<float> resistanceTile;
+        IReadOnlyBoundedDataView<DirectionalityInformation> directionalityTile;
 
         public ShadowPropagationAlgorithm([NotNull] ISensePhysics sensePhysics,
                                           [NotNull] ShadowPropagationResistanceDataSource dataSource)
@@ -44,13 +45,12 @@ namespace RogueEntity.Core.Sensing.Common.ShadowCast
             this.dataSource = dataSource ?? throw new ArgumentNullException(nameof(dataSource));
         }
 
-        public SenseSourceData Calculate<TResistanceMap>(in SenseSourceDefinition sense,
-                                                         float intensity,
-                                                         in Position2D position,
-                                                         in TResistanceMap resistanceMap,
-                                                         IReadOnlyView2D<DirectionalityInformation> directionalityView,
-                                                         SenseSourceData data = null)
-            where TResistanceMap : IReadOnlyView2D<float>
+        public SenseSourceData Calculate(in SenseSourceDefinition sense,
+                                         float intensity,
+                                         in Position2D position,
+                                         IReadOnlyDynamicDataView2D<float> resistanceMap,
+                                         IReadOnlyDynamicDataView2D<DirectionalityInformation> directionalityView,
+                                         SenseSourceData data = null)
         {
             var radius = (int)Math.Ceiling(sensePhysics.SignalRadiusForIntensity(intensity));
             if (data == null || data.Radius != radius)
@@ -62,48 +62,57 @@ namespace RogueEntity.Core.Sensing.Common.ShadowCast
                 data.Reset();
             }
 
-            var resistanceData = dataSource.Create(radius);
-
-            data.Write(new Position2D(0, 0), intensity, SenseDirection.None, SenseDataFlags.SelfIlluminating);
-            resistanceData[0, 0] = 1;
-            var shadowParam = new ShadowParameters<TResistanceMap>(resistanceMap, sense, intensity, position, directionalityView);
-            foreach (var d in DiagonalDirectionsOfNeighbors)
+            try
             {
-                var delta = d.ToCoordinates();
-                ShadowCast(1, 1.0f, 0.0f, new PropagationDirection(0, delta.X, delta.Y, 0), in shadowParam, data, resistanceData);
-                ShadowCast(1, 1.0f, 0.0f, new PropagationDirection(delta.X, 0, 0, delta.Y), in shadowParam, data, resistanceData);
-            }
+                var resistanceData = dataSource.Create(radius);
 
-            return data;
+                data.Write(new Position2D(0, 0), intensity, SenseDirection.None, SenseDataFlags.SelfIlluminating);
+                resistanceData[0, 0] = 1;
+                var shadowParam = new ShadowParameters(resistanceMap, sense, intensity, position, directionalityView);
+                foreach (var d in DiagonalDirectionsOfNeighbors)
+                {
+                    var delta = d.ToCoordinates();
+                    ShadowCast(1, 1.0f, 0.0f, new PropagationDirection(0, delta.X, delta.Y, 0), in shadowParam, data, resistanceData);
+                    ShadowCast(1, 1.0f, 0.0f, new PropagationDirection(delta.X, 0, 0, delta.Y), in shadowParam, data, resistanceData);
+                }
+
+                return data;
+            }
+            finally
+            {
+                directionalityTile = null;
+                resistanceTile = null;
+            }
         }
 
-        bool IsBlockedByDirectionalityMap<TResistanceMap>(in ShadowParameters<TResistanceMap> p,
-                                                          int prevX,
-                                                          int prevY,
-                                                          int currentX,
-                                                          int currentY)
-            where TResistanceMap : IReadOnlyView2D<float>
+        bool IsBlockedByDirectionalityMap(in ShadowParameters p,
+                                          int prevX,
+                                          int prevY,
+                                          int currentX,
+                                          int currentY)
         {
-            if (p.DirectionalityView.TryGet(prevX + p.Origin.X, prevY + p.Origin.Y, out var dirInfo))
+            var dirInfo = p.DirectionalityView.TryGet(ref directionalityTile, prevX + p.Origin.X, prevY + p.Origin.Y, DirectionalityInformation.None);
+            if (dirInfo == DirectionalityInformation.None)
             {
-                var direction = Directions.GetDirection(prevX, prevY, currentX, currentY);
-                if (!dirInfo.IsMovementAllowed(direction))
-                {
-                    return true;
-                }
+                return true;
+            }
+
+            var direction = Directions.GetDirection(prevX, prevY, currentX, currentY);
+            if (!dirInfo.IsMovementAllowed(direction))
+            {
+                return true;
             }
 
             return false;
         }
 
-        void ShadowCast<TResistanceMap>(int row,
-                                        float start,
-                                        float end,
-                                        in PropagationDirection pd,
-                                        in ShadowParameters<TResistanceMap> p,
-                                        in SenseSourceData data,
-                                        ShadowPropagationResistanceData resistanceData)
-            where TResistanceMap : IReadOnlyView2D<float>
+        void ShadowCast(int row,
+                        float start,
+                        float end,
+                        in PropagationDirection pd,
+                        in ShadowParameters p,
+                        in SenseSourceData data,
+                        ShadowPropagationResistanceData resistanceData)
         {
             var newStart = 0f;
             if (start < end)
@@ -153,11 +162,11 @@ namespace RogueEntity.Core.Sensing.Common.ShadowCast
 
                     var signalStrength = resistanceData[prevX, prevY];
                     var distanceFromOrigin = (float)dist.Calculate(deltaX, deltaY, 0);
-                    var resistance = p.ResistanceMap[globalCurrentX, globalCurrentY];
+                    var resistance = p.ResistanceMap.TryGet(ref resistanceTile, globalCurrentX, globalCurrentY, 1);
 
                     var fullyBlocked = IsFullyBlocked(resistance);
                     var blockedByDirections = IsBlockedByDirectionalityMap(in p, prevX, prevY, currentX, currentY);
-                    
+
                     if (distanceFromOrigin <= radius)
                     {
                         // filter out cases where 
@@ -186,7 +195,7 @@ namespace RogueEntity.Core.Sensing.Common.ShadowCast
                     }
 
                     resistanceData[currentX, currentY] = signalStrength * (1 - resistance);
-                    
+
                     if (blocked) // Previous cell was blocked
                     {
                         if (fullyBlocked)

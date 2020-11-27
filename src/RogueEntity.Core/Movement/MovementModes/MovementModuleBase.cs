@@ -17,21 +17,6 @@ using RogueEntity.Core.Positioning.Grid;
 
 namespace RogueEntity.Core.Movement.MovementModes
 {
-    public static class MovementModules
-    {
-        public static readonly EntityRole GeneralMovableActorRole = new EntityRole("Role.Core.Movement.MovableActor");
-        public static readonly EntityRole GeneralCostModifierSourceRole = new EntityRole("Role.Core.Movement.CostModifierSource");
-
-        public static EntityRole GetMovableActorRole<TMovementMode>() => new EntityRole($"Role.Core.Movement.{typeof(TMovementMode).Name}.MovableActor");
-        public static EntityRole GetCostModifierSourceRole<TMovementMode>() => new EntityRole($"Role.Core.Movement.{typeof(TMovementMode).Name}.CostModifierSource");
-
-        public static EntityRelation GetCostModifierRelation<TMovementMode>() => new EntityRelation($"Relation.Core.Movement.Resistance.{typeof(TMovementMode).Name}.ProvidesCostData",
-                                                                                                    GetCostModifierSourceRole<TMovementMode>(), GetMovableActorRole<TMovementMode>());
-
-        public static EntitySystemId CreateSystemId<TMovementMode>(string job) => new EntitySystemId($"Core.Systems.Movement.CostModifier.{typeof(TMovementMode).Name}.{job}");
-        public static EntitySystemId CreateEntityId<TMovementMode>() => new EntitySystemId($"Entities.Systems.Movement.CostModifier.{typeof(TMovementMode).Name}");
-    }
-
     public abstract class MovementModuleBase<TMovementMode> : ModuleBase
         where TMovementMode : IMovementMode
     {
@@ -122,9 +107,9 @@ namespace RogueEntity.Core.Movement.MovementModes
             {
                 if (serviceResolver.TryResolve(out IPathFinderSourceBackend pathFinderSource))
                 {
-                    var movementCostMap = serviceResolver.Resolve<IRelativeMovementCostSystem<TGameContext, TMovementMode>>();
+                    var movementCostMap = serviceResolver.Resolve<IRelativeMovementCostSystem<TMovementMode>>();
                     var directionMap = serviceResolver.Resolve<IMovementResistanceDirectionView<TMovementMode>>();
-                    pathFinderSource.RegisterMovementSource(GetMovementModeInstance(), movementCostMap.ResultView, directionMap);
+                    pathFinderSource.RegisterMovementSource(GetMovementModeInstance(), movementCostMap.ResultView, directionMap.ResultView);
                 }
             });
         }
@@ -186,7 +171,7 @@ namespace RogueEntity.Core.Movement.MovementModes
 
             serviceResolver.Store(system);
             serviceResolver.Store<IAggregationLayerSystemBackend<TGameContext, RelativeMovementCostModifier<TMovementMode>>>(system);
-            serviceResolver.Store<IRelativeMovementCostSystem<TGameContext, TMovementMode>>(system);
+            serviceResolver.Store<IRelativeMovementCostSystem<TMovementMode>>(system);
             return system;
         }
 
@@ -197,7 +182,7 @@ namespace RogueEntity.Core.Movement.MovementModes
                 return system;
             }
 
-            if (!serviceResolver.TryResolve(out IRelativeMovementCostSystem<TGameContext, TMovementMode> data))
+            if (!serviceResolver.TryResolve(out IRelativeMovementCostSystem<TMovementMode> data))
             {
                 data = GetOrCreateSensePropertiesSystem<TGameContext, TItemId>(serviceResolver);
             }

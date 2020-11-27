@@ -4,7 +4,7 @@ namespace RogueEntity.Core.Movement.Pathfinding
 {
     public interface IPathFinderSource
     {
-        IPathFinder GetPathFinder(in PathfindingMovementCostFactors movementProfile);
-        void Return(IPathFinder pf);
+        IPathFinderBuilder GetPathFinder();
+        void Return(IPathFinderBuilder pf);
     }
 }

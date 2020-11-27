@@ -10,14 +10,14 @@ namespace RogueEntity.Core.Sensing.Resistance.Maps
     /// <typeparam name="TSense"></typeparam>
     /// <typeparam name="TGameContext"></typeparam>
     [SuppressMessage("ReSharper", "UnusedTypeParameter", Justification = "Discriminator")]
-    public interface ISensePropertiesDataView<TGameContext, TSense> : IAggregationLayerSystem<TGameContext, float>
+    public interface ISensePropertiesDataView<TSense> : IAggregationLayerSystem<float>
     {
         
     }
     
     
     public class SensePropertiesSystem<TGameContext, TSense> : LayeredAggregationSystem<TGameContext, float, SensoryResistance<TSense>>, 
-                                                               ISensePropertiesDataView<TGameContext, TSense>
+                                                               ISensePropertiesDataView<TSense>
     {
         public SensePropertiesSystem(int tileWidth, int tileHeight) : base(SensePropertiesSystem.ProcessTile, tileWidth, tileHeight)
         {
@@ -34,18 +34,25 @@ namespace RogueEntity.Core.Sensing.Resistance.Maps
         {
             var bounds = p.Bounds;
             var resistanceData = p.WritableTile;
-            foreach (var (x, y) in bounds.Contents)
+            resistanceData.Clear();
+
+            foreach (var view in p.DataViews)
             {
-                var sp = 0;
-                foreach (var dv in p.DataViews)
+                if (!view.TryGetData(bounds.X, bounds.Y, out var dv))
                 {
-                    if (dv.TryGet(x, y, out var d))
-                    {
-                        sp += d.BlocksSense.RawData;
-                    }
+                    continue;
                 }
 
-                resistanceData.TrySet(x, y, Percentage.Of(sp));
+                foreach (var (x, y) in bounds.Contents)
+                {
+                    if (!dv.TryGet(x, y, out var d))
+                    {
+                        continue;
+                    }
+
+                    var sp = resistanceData[x, y] + d.BlocksSense.RawData;
+                    resistanceData.TrySet(x, y, Percentage.Of(sp));
+                }
             }
         }
     }

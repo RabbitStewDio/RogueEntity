@@ -42,8 +42,8 @@ namespace RogueEntity.Core.Sensing.Sources.Heat
         protected override SenseSourceData RefreshSenseState<TPosition>(in HeatSourceDefinition definition,
                                                                         float intensity,
                                                                         in TPosition pos,
-                                                                        IReadOnlyView2D<float> resistanceView,
-                                                                        IReadOnlyView2D<DirectionalityInformation> directionView,
+                                                                        IReadOnlyDynamicDataView2D<float> resistanceView,
+                                                                        IReadOnlyDynamicDataView2D<DirectionalityInformation> directionView,
                                                                         SenseSourceData data)
         {
             var environmentTemperature = heatPhysics.GetEnvironmentTemperature(pos.GridZ);

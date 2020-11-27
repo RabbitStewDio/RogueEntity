@@ -14,8 +14,8 @@ namespace RogueEntity.Core.Sensing.Common.FloodFill
                                     float intensity,
                                     in Position2D origin,
                                     [NotNull] ISensePhysics sensePhysics,
-                                    [NotNull] IReadOnlyView2D<float> resistanceMap,
-                                    [NotNull] IReadOnlyView2D<DirectionalityInformation> directionalityView)
+                                    [NotNull] IReadOnlyDynamicDataView2D<float> resistanceMap,
+                                    [NotNull] IReadOnlyDynamicDataView2D<DirectionalityInformation> directionalityView)
         {
             ResultMap = FloodFillDijkstraMap.Create(in sense, intensity, in origin, sensePhysics, resistanceMap, directionalityView);
         }
@@ -24,8 +24,8 @@ namespace RogueEntity.Core.Sensing.Common.FloodFill
                               float intensity,
                               in Position2D origin,
                               ISensePhysics sensePhysics,
-                              IReadOnlyView2D<float> resistanceMap,
-                              [NotNull] IReadOnlyView2D<DirectionalityInformation> directionalityView)
+                              IReadOnlyDynamicDataView2D<float> resistanceMap,
+                              [NotNull] IReadOnlyDynamicDataView2D<DirectionalityInformation> directionalityView)
         {
             ResultMap.Configure(in sense, intensity, in origin, sensePhysics, resistanceMap, directionalityView);
         }

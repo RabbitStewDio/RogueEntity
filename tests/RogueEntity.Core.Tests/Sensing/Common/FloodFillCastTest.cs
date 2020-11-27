@@ -243,7 +243,7 @@ namespace RogueEntity.Core.Tests.Sensing.Common
             var directionalityMapSystem = new SensoryResistanceDirectionalitySystem<object, VisionSense>(resistanceMap.As3DMap(0));
             directionalityMapSystem.MarkGloballyDirty();
             directionalityMapSystem.Process();
-            directionalityMapSystem.TryGetView(0, out var directionalityMap).Should().BeTrue();
+            directionalityMapSystem.ResultView.TryGetView(0, out var directionalityMap).Should().BeTrue();
 
             var algo = new FloodFillPropagationAlgorithm(LinearDecaySensePhysics.For(dc), new FloodFillWorkingDataSource());
             var calculatedResult = algo.Calculate(source, source.Intensity, pos, resistanceMap, directionalityMap);

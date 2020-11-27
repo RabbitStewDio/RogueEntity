@@ -18,13 +18,13 @@ namespace RogueEntity.Core.Sensing.Common.ShadowCast
             this.sensePhysics = sensePhysics ?? throw new ArgumentNullException(nameof(sensePhysics));
         }
 
-        public SenseSourceData Calculate<TResistanceMap>(in SenseSourceDefinition sense,
-                                                         float intensity,
-                                                         in Position2D position,
-                                                         in TResistanceMap resistanceMap,
-                                                         IReadOnlyView2D<DirectionalityInformation> directionalityView,
-                                                         SenseSourceData data = null)
-            where TResistanceMap : IReadOnlyView2D<float>
+
+        public SenseSourceData Calculate(in SenseSourceDefinition sense,
+                                         float intensity,
+                                         in Position2D position,
+                                         IReadOnlyDynamicDataView2D<float> resistanceMap,
+                                         IReadOnlyDynamicDataView2D<DirectionalityInformation> directionalityView,
+                                         SenseSourceData data = null)
         {
             var radius = (int)Math.Ceiling(sensePhysics.SignalRadiusForIntensity(intensity));
             if (data == null ||
@@ -64,16 +64,15 @@ namespace RogueEntity.Core.Sensing.Common.ShadowCast
         }
 
 
-        void ShadowCastLimited<TResistanceMap>(int row,
-                                               float start,
-                                               float end,
-                                               in PropagationDirection p,
-                                               TResistanceMap resistanceMap,
-                                               in SenseSourceDefinition sense,
-                                               float intensity,
-                                               in Position2D pos,
-                                               in SenseSourceData light)
-            where TResistanceMap : IReadOnlyView2D<float>
+        void ShadowCastLimited(int row,
+                               float start,
+                               float end,
+                               in PropagationDirection p,
+                               IReadOnlyDynamicDataView2D<float> resistanceMap,
+                               in SenseSourceDefinition sense,
+                               float intensity,
+                               in Position2D pos,
+                               in SenseSourceData light)
         {
             if (start < end)
             {

@@ -220,7 +220,7 @@ namespace RogueEntity.Core.Sensing.Receptors
             if (!activeLightsPerLevel.TryGetValue(level, out var lights))
             {
                 if (!resistanceSource.TryGetView(level, out var senseData) ||
-                    !directionalitySystem.TryGetView(level, out var dirData))
+                    !directionalitySystem.ResultView.TryGetView(level, out var dirData))
                 {
                     return;
                 }
@@ -271,7 +271,7 @@ namespace RogueEntity.Core.Sensing.Receptors
             if (!activeLightsPerLevel.TryGetValue(level, out var lights))
             {
                 if (!resistanceSource.TryGetView(level, out var senseData) ||
-                    !directionalitySystem.TryGetView(level, out var dirData))
+                    !directionalitySystem.ResultView.TryGetView(level, out var dirData))
                 {
                     return;
                 }
@@ -320,8 +320,8 @@ namespace RogueEntity.Core.Sensing.Receptors
         protected virtual SenseSourceData RefreshReceptorState<TPosition>(SensoryReceptorData<TReceptorSense, TSourceSense> definition,
                                                                           float intensity,
                                                                           TPosition pos,
-                                                                          IReadOnlyView2D<float> resistanceView,
-                                                                          IReadOnlyView2D<DirectionalityInformation> directionalityView,
+                                                                          IReadOnlyDynamicDataView2D<float> resistanceView,
+                                                                          IReadOnlyDynamicDataView2D<DirectionalityInformation> directionalityView,
                                                                           SenseSourceData data)
             where TPosition : IPosition
         {
@@ -401,7 +401,7 @@ namespace RogueEntity.Core.Sensing.Receptors
             }
         }
 
-        protected bool TryGetResistanceView(int z, out IReadOnlyView2D<float> resistanceView, out IReadOnlyView2D<DirectionalityInformation> directionalityView)
+        protected bool TryGetResistanceView(int z, out IReadOnlyDynamicDataView2D<float> resistanceView, out IReadOnlyDynamicDataView2D<DirectionalityInformation> directionalityView)
         {
             if (activeLightsPerLevel.TryGetValue(z, out var level))
             {
@@ -417,8 +417,8 @@ namespace RogueEntity.Core.Sensing.Receptors
 
         class SenseDataLevel : ISenseReceptorProcessor
         {
-            public readonly IReadOnlyView2D<float> ResistanceView;
-            public readonly IReadOnlyView2D<DirectionalityInformation> DirectionalityView;
+            public readonly IReadOnlyDynamicDataView2D<float> ResistanceView;
+            public readonly IReadOnlyDynamicDataView2D<DirectionalityInformation> DirectionalityView;
             public int LastRecentlyUsedTime { get; private set; }
 
             readonly ISensePhysics physics;
@@ -426,8 +426,8 @@ namespace RogueEntity.Core.Sensing.Receptors
             readonly DirectionalSenseDataMapServices directionalSenseMapServices;
             readonly List<Rectangle> receptorBounds;
 
-            public SenseDataLevel(IReadOnlyView2D<float> resistanceMap,
-                                  IReadOnlyView2D<DirectionalityInformation> directionalityView,
+            public SenseDataLevel(IReadOnlyDynamicDataView2D<float> resistanceMap,
+                                  IReadOnlyDynamicDataView2D<DirectionalityInformation> directionalityView,
                                   ISensePhysics physics)
             {
                 this.DirectionalityView = directionalityView;

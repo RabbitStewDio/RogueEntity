@@ -212,8 +212,8 @@ namespace RogueEntity.Core.Sensing.Sources
         protected virtual SenseSourceData RefreshSenseState<TPosition>(in TSenseSourceDefinition definition,
                                                                        float intensity,
                                                                        in TPosition pos,
-                                                                       IReadOnlyView2D<float> resistanceView,
-                                                                       IReadOnlyView2D<DirectionalityInformation> directionView,
+                                                                       IReadOnlyDynamicDataView2D<float> resistanceView,
+                                                                       IReadOnlyDynamicDataView2D<DirectionalityInformation> directionView,
                                                                        SenseSourceData data)
             where TPosition : IPosition
         {
@@ -280,7 +280,7 @@ namespace RogueEntity.Core.Sensing.Sources
             zLevelBuffer.Clear();
         }
 
-        protected bool TryGetResistanceView(int z, out IReadOnlyView2D<float> resistanceView, out IReadOnlyView2D<DirectionalityInformation> directionMap)
+        protected bool TryGetResistanceView(int z, out IReadOnlyDynamicDataView2D<float> resistanceView, out IReadOnlyDynamicDataView2D<DirectionalityInformation> directionMap)
         {
             if (activeLightsPerLevel.TryGetValue(z, out var level))
             {
@@ -291,7 +291,7 @@ namespace RogueEntity.Core.Sensing.Sources
             }
 
             if (resistanceSource.TryGetView(z, out var sensePropertiesForLevel) &&
-                directionalitySystem.TryGetView(z, out var directionMapForLevel))
+                directionalitySystem.ResultView.TryGetView(z, out var directionMapForLevel))
             {
                 level = new SenseDataLevel(sensePropertiesForLevel, directionMapForLevel);
                 level.MarkUsed(currentTime);
@@ -308,11 +308,11 @@ namespace RogueEntity.Core.Sensing.Sources
 
         class SenseDataLevel
         {
-            public readonly IReadOnlyView2D<DirectionalityInformation> DirectionMap;
-            public readonly IReadOnlyView2D<float> ResistanceView;
+            public readonly IReadOnlyDynamicDataView2D<DirectionalityInformation> DirectionMap;
+            public readonly IReadOnlyDynamicDataView2D<float> ResistanceView;
             public int LastRecentlyUsedTime { get; private set; }
 
-            public SenseDataLevel(IReadOnlyView2D<float> resistanceMap, IReadOnlyView2D<DirectionalityInformation> directionMap)
+            public SenseDataLevel(IReadOnlyDynamicDataView2D<float> resistanceMap, IReadOnlyDynamicDataView2D<DirectionalityInformation> directionMap)
             {
                 DirectionMap = directionMap;
                 this.ResistanceView = resistanceMap;

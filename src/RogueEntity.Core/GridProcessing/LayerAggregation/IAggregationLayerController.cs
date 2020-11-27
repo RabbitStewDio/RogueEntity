@@ -34,7 +34,7 @@ namespace RogueEntity.Core.GridProcessing.LayerAggregation
 
 
     [SuppressMessage("ReSharper", "UnusedTypeParameter", Justification = "Discriminator")]
-    public interface IAggregationLayerSystem<TGameContext, TAggregateType> : IAggregationCacheControl
+    public interface IAggregationLayerSystem<TAggregateType> : IAggregationCacheControl
     { 
         public IReadOnlyDynamicDataView3D<TAggregateType> ResultView { get; }
     }

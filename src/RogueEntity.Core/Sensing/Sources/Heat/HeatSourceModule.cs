@@ -30,7 +30,7 @@ namespace RogueEntity.Core.Sensing.Sources.Heat
             if (!serviceResolver.TryResolve(out SenseSourceSystem<TemperatureSense, HeatSourceDefinition> ls))
             {
                 var physics = serviceResolver.Resolve<IHeatPhysicsConfiguration>();
-                ls = new HeatSourceSystem(serviceResolver.ResolveToReference<ISensePropertiesDataView<TGameContext, TemperatureSense>>().Map(l => l.ResultView),
+                ls = new HeatSourceSystem(serviceResolver.ResolveToReference<ISensePropertiesDataView<TemperatureSense>>().Map(l => l.ResultView),
                                     serviceResolver.ResolveToReference<IGlobalSenseStateCacheProvider>(),
                                     serviceResolver.ResolveToReference<ITimeSource>(),
                                     serviceResolver.Resolve<ISensoryResistanceDirectionView<TemperatureSense>>(),

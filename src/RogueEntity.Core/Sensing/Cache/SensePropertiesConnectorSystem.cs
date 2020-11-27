@@ -9,10 +9,10 @@ namespace RogueEntity.Core.Sensing.Cache
     [SuppressMessage("ReSharper", "UnusedTypeParameter", Justification = "Discriminator")]
     public class SensePropertiesConnectorSystem<TGameContext, TSense>
     {
-        readonly IAggregationLayerSystem<TGameContext, float> sensePropertiesSystem;
+        readonly IAggregationLayerSystem<float> sensePropertiesSystem;
         readonly SenseStateCache cache;
 
-        public SensePropertiesConnectorSystem([NotNull] IAggregationLayerSystem<TGameContext, float> sensePropertiesSystem,
+        public SensePropertiesConnectorSystem([NotNull] IAggregationLayerSystem<float> sensePropertiesSystem,
                                               [NotNull] SenseStateCache cache)
         {
             this.sensePropertiesSystem = sensePropertiesSystem ?? throw new ArgumentNullException(nameof(sensePropertiesSystem));

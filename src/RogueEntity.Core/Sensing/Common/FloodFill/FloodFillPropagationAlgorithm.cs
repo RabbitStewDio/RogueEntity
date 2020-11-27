@@ -18,13 +18,12 @@ namespace RogueEntity.Core.Sensing.Common.FloodFill
             this.sensePhysics = sensePhysics ?? throw new ArgumentNullException(nameof(sensePhysics));
         }
 
-        public SenseSourceData Calculate<TResistanceMap>(in SenseSourceDefinition sense,
-                                                         float intensity,
-                                                         in Position2D position,
-                                                         in TResistanceMap resistanceMap,
-                                                         IReadOnlyView2D<DirectionalityInformation> directionalityView,
-                                                         SenseSourceData data = null)
-            where TResistanceMap : IReadOnlyView2D<float>
+        public SenseSourceData Calculate(in SenseSourceDefinition sense,
+                                         float intensity,
+                                         in Position2D position,
+                                         IReadOnlyDynamicDataView2D<float> resistanceMap,
+                                         IReadOnlyDynamicDataView2D<DirectionalityInformation> directionalityView,
+                                         SenseSourceData data = null)
         {
             var radius = (int)Math.Ceiling(sensePhysics.SignalRadiusForIntensity(intensity));
             if (data == null || data.Radius != radius)
@@ -39,7 +38,6 @@ namespace RogueEntity.Core.Sensing.Common.FloodFill
 
             var ndata = dataSource.Create(sense, intensity, position, sensePhysics, resistanceMap, directionalityView);
             ndata.ResultMap.Compute(data);
-//            data.Write(new Position2D(0, 0), intensity, SenseDirection.None, SenseDataFlags.SelfIlluminating);
             return data;
         }
     }

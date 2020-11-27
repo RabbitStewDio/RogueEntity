@@ -7,26 +7,25 @@ using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Utils.Algorithms;
 using RogueEntity.Core.Utils.DataViews;
 
-namespace RogueEntity.Core.Movement.Pathfinding
+namespace RogueEntity.Core.Movement.Pathfinding.SingleLevel
 {
     /// <summary>
     ///    A pathfinder that searches a 2D plane for a potential path from source to target.
     ///    This worker assumes that movement modes have no context-switching costs (so
     ///    starting to fly from walking is not more expensive than continuing to fly).  
     /// </summary>
-    public class SingleLevelPathFinder : IPathFinder, IDisposable
+    public class SingleLevelPathFinder : IPathFinder
     {
-        readonly IPathFinderSource creator;
         readonly List<MovementSourceData3D> movementSourceData;
         readonly SingleLevelPathFinderWorker singleLevelPathFinder;
+        SingleLevelPathFinderBuilder currentOwner;
+        IPathFinderTargetEvaluator targetEvaluator;
         bool disposed;
 
-        public SingleLevelPathFinder([NotNull] IPathFinderSource creator,
-                                     [NotNull] IBoundedDataViewPool<AStarNode> astarNodePool,
+        public SingleLevelPathFinder([NotNull] IBoundedDataViewPool<AStarNode> astarNodePool,
                                      [NotNull] IBoundedDataViewPool<IMovementMode> movementModePool)
         {
             this.movementSourceData = new List<MovementSourceData3D>();
-            this.creator = creator ?? throw new ArgumentNullException(nameof(creator));
             this.singleLevelPathFinder = new SingleLevelPathFinderWorker(astarNodePool, movementModePool);
         }
 
@@ -38,7 +37,26 @@ namespace RogueEntity.Core.Movement.Pathfinding
             }
 
             disposed = true;
-            creator.Return(this);
+            currentOwner.Return(this);
+            currentOwner = null;
+            targetEvaluator = null;
+        }
+
+        public IPathFinderTargetEvaluator TargetEvaluator
+        {
+            get { return targetEvaluator; }
+        }
+
+        public void Configure([NotNull] SingleLevelPathFinderBuilder owner,
+                              [NotNull] IPathFinderTargetEvaluator evaluator)
+        {
+            this.currentOwner = owner ?? throw new ArgumentNullException(nameof(owner));
+            this.targetEvaluator = evaluator ?? throw new ArgumentNullException(nameof(evaluator));
+        }
+
+        public IPathFinder Build()
+        {
+            return this;
         }
 
         public void Reset()
@@ -47,8 +65,9 @@ namespace RogueEntity.Core.Movement.Pathfinding
             this.singleLevelPathFinder.Reset();
         }
 
+        public IReadOnlyDynamicDataView2D<AStarNode> ProcessedNodes => singleLevelPathFinder.Nodes;
+
         public PathFinderResult TryFindPath(EntityGridPosition source,
-                                            EntityGridPosition target,
                                             out List<(EntityGridPosition, IMovementMode)> path,
                                             List<(EntityGridPosition, IMovementMode)> pathBuffer = null,
                                             int searchLimit = int.MaxValue)
@@ -62,24 +81,27 @@ namespace RogueEntity.Core.Movement.Pathfinding
                 pathBuffer.Clear();
             }
 
-            var dx = target.GridX - source.GridX;
-            var dy = target.GridY - source.GridY;
-            var dz = target.GridZ - source.GridZ;
-            if (dz != 0)
+            singleLevelPathFinder.ConfigureActiveLevel(source.GridZ);
+            var heuristics = DistanceCalculation.Manhattan;
+            foreach (var m in movementSourceData)
+            {
+                singleLevelPathFinder.ConfigureMovementProfile(in m.MovementCost, m.Costs, m.Directions);
+                if (heuristics.IsOtherMoreAccurate(m.MovementCost.MovementStyle))
+                {
+                    heuristics = m.MovementCost.MovementStyle;
+                }
+
+            }
+            singleLevelPathFinder.ConfigureFinished(heuristics.AsAdjacencyRule());
+
+            if (!targetEvaluator.Initialize(source, heuristics))
             {
                 path = pathBuffer;
                 return PathFinderResult.NotFound;
             }
 
-            singleLevelPathFinder.ConfigureActiveLevel(target.GridZ);
-            foreach (var m in movementSourceData)
-            {
-                singleLevelPathFinder.ConfigureMovementProfile(in m.MovementCost, m.Costs, m.Directions);
-            }
-
-            singleLevelPathFinder.ConfigureFinished();
             path = pathBuffer;
-            return singleLevelPathFinder.FindPath(source, target, pathBuffer, searchLimit);
+            return singleLevelPathFinder.FindPath(source, targetEvaluator, pathBuffer, searchLimit);
         }
 
         public void ConfigureMovementProfile(in MovementCost costProfile,

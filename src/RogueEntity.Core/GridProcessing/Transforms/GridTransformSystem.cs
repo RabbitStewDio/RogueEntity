@@ -8,23 +8,19 @@ using RogueEntity.Core.Utils.DataViews;
 
 namespace RogueEntity.Core.GridProcessing.Transforms
 {
-    public abstract class GridTransformSystem<TSourceData, TTargetData> : IReadOnlyDynamicDataView3D<TTargetData>
+    public abstract class GridTransformSystemBase<TSourceData, TTargetData>
     {
-        public event EventHandler<DynamicDataView3DEventArgs<TTargetData>> ViewCreated;
-        public event EventHandler<DynamicDataView3DEventArgs<TTargetData>> ViewExpired;
+        protected abstract IReadOnlyDynamicDataView3D<TSourceData> SourceData { get; }
+        protected abstract IDynamicDataView3D<TTargetData> TargetData { get; }
         
-        readonly IReadOnlyDynamicDataView3D<TSourceData> sourceData;
-        readonly Dictionary<int, DynamicDataView2D<TTargetData>> targetData;
         readonly GridTileStateView dirtyMap;
         readonly List<ProcessingParameters> processingParameterCache;
         readonly List<Rectangle> activeTileBuffer;
         readonly List<int> activeZLevelsBuffer;
         readonly Action<ProcessingParameters> processTileDelegate;
 
-        protected GridTransformSystem(IReadOnlyDynamicDataView3D<TSourceData> sourceData)
+        protected GridTransformSystemBase(DynamicDataViewConfiguration sourceData)
         {
-            this.sourceData = sourceData;
-            this.targetData = new Dictionary<int, DynamicDataView2D<TTargetData>>();
             this.dirtyMap = new GridTileStateView(sourceData.OffsetX, sourceData.OffsetY, sourceData.TileSizeX, sourceData.TileSizeY);
             this.processingParameterCache = new List<ProcessingParameters>();
             this.activeTileBuffer = new List<Rectangle>();
@@ -32,57 +28,75 @@ namespace RogueEntity.Core.GridProcessing.Transforms
             this.processTileDelegate = ProcessTile;
         }
 
-        public int OffsetX
-        {
-            get { return sourceData.OffsetX; }
-        }
 
-        public int OffsetY
+        public void Process()
         {
-            get { return sourceData.OffsetY; }
-        }
+            processingParameterCache.Clear();
 
-        public int TileSizeX
-        {
-            get { return sourceData.TileSizeX; }
-        }
-
-        public int TileSizeY
-        {
-            get { return sourceData.TileSizeY; }
-        }
-
-        public List<int> GetActiveLayers(List<int> buffer = null)
-        {
-            if (buffer == null)
+            var sourceData = SourceData;
+            foreach (var zPosition in sourceData.GetActiveLayers(activeZLevelsBuffer))
             {
-                buffer = new List<int>();
-            }
-            else
-            {
-                buffer.Clear();
-            }
+                if (!sourceData.TryGetView(zPosition, out var sourceView))
+                {
+                    continue;
+                }
 
-            foreach (var d in targetData.Keys)
-            {
-                buffer.Add(d);
-            }
+                if (!TargetData.TryGetWritableView(zPosition, out var directionMap, DataViewCreateMode.CreateMissing))
+                {
+                    continue;
+                }
+                
+                foreach (var tile in sourceView.GetActiveTiles(activeTileBuffer))
+                {
+                    if (!dirtyMap.IsDirty(tile.X, tile.Y, zPosition))
+                    {
+                        continue;
+                    }
 
-            return buffer;
-        }
+                    if (!sourceView.TryGetData(tile.X, tile.Y, out var sourceTile) ||
+                        !directionMap.TryGetWriteAccess(tile.X, tile.Y, out var resultTile, DataViewCreateMode.CreateMissing))
+                    {
+                        continue;
+                    }
 
-        public bool TryGetView(int z, out IReadOnlyDynamicDataView2D<TTargetData> view)
-        {
-            if (targetData.TryGetValue(z, out var viewRaw))
-            {
-                view = viewRaw;
-                return true;
+                    processingParameterCache.Add(new ProcessingParameters(tile, zPosition, sourceView, sourceTile, resultTile));
+                }
             }
 
-            view = default;
-            return false;
+            if (processingParameterCache.Count == 0)
+            {
+                return;
+            }
+            Parallel.ForEach(processingParameterCache, processTileDelegate);
         }
 
+        protected abstract void ProcessTile(ProcessingParameters args);
+
+        public void MarkGloballyDirty()
+        {
+            dirtyMap.MarkGloballyDirty();
+        }
+
+        public void MarkDirty(PositionDirtyEventArgs args)
+        {
+            dirtyMap.MarkDirty(args.Position);
+        }
+
+        public void MarkDirty(Position args)
+        {
+            dirtyMap.MarkDirty(args);
+        }
+
+        public void MarkClean()
+        {
+            dirtyMap.MarkClean();
+        }
+
+        public void MarkCleanSystem<TGameContext>(TGameContext ctx)
+        {
+            dirtyMap.MarkClean();
+        }
+        
         protected readonly struct ProcessingParameters
         {
             public readonly Rectangle Bounds;
@@ -117,76 +131,19 @@ namespace RogueEntity.Core.GridProcessing.Transforms
                 resultTile = ResultTile;
             }
         }
-
-        DynamicDataView2D<TTargetData> GetWritableMap(int z)
+    }
+    
+    public abstract class GridTransformSystem<TSourceData, TTargetData>: GridTransformSystemBase<TSourceData, TTargetData>
+    {
+        protected GridTransformSystem(IReadOnlyDynamicDataView3D<TSourceData> sourceData): base(sourceData.ToConfiguration())
         {
-            if (targetData.TryGetValue(z, out var m))
-            {
-                return m;
-            }
-
-            m = new DynamicDataView2D<TTargetData>(sourceData.OffsetX, sourceData.OffsetY, sourceData.TileSizeX, sourceData.TileSizeY);
-            targetData[z] = m;
-            return m;
+            this.SourceData = sourceData;
+            this.TargetData = new DynamicDataView3D<TTargetData>(sourceData.ToConfiguration());
         }
 
-        public void Process()
-        {
-            processingParameterCache.Clear();
+        protected override IReadOnlyDynamicDataView3D<TSourceData> SourceData { get; }
+        protected override IDynamicDataView3D<TTargetData> TargetData { get; }
 
-            foreach (var zPosition in sourceData.GetActiveLayers(activeZLevelsBuffer))
-            {
-                if (!sourceData.TryGetView(zPosition, out var sourceView))
-                {
-                    continue;
-                }
-
-                var directionMap = GetWritableMap(zPosition);
-                foreach (var tile in sourceView.GetActiveTiles(activeTileBuffer))
-                {
-                    if (!dirtyMap.IsDirty(tile.X, tile.Y, zPosition))
-                    {
-                        continue;
-                    }
-
-                    if (!sourceView.TryGetData(tile.X, tile.Y, out var sourceTile) ||
-                        !directionMap.TryGetWriteAccess(tile.X, tile.Y, out var resultTile, DataViewCreateMode.CreateMissing))
-                    {
-                        continue;
-                    }
-
-                    processingParameterCache.Add(new ProcessingParameters(tile, zPosition, sourceView, sourceTile, resultTile));
-                }
-            }
-
-            Parallel.ForEach(processingParameterCache, processTileDelegate);
-        }
-
-        protected abstract void ProcessTile(ProcessingParameters args);
-
-        public void MarkGloballyDirty()
-        {
-            dirtyMap.MarkGloballyDirty();
-        }
-
-        public void MarkDirty(PositionDirtyEventArgs args)
-        {
-            dirtyMap.MarkDirty(args.Position);
-        }
-
-        public void MarkDirty(Position args)
-        {
-            dirtyMap.MarkDirty(args);
-        }
-
-        public void MarkClean()
-        {
-            dirtyMap.MarkClean();
-        }
-
-        public void MarkCleanSystem<TGameContext>(TGameContext ctx)
-        {
-            dirtyMap.MarkClean();
-        }
+        public IReadOnlyDynamicDataView3D<TTargetData> ResultView => TargetData;
     }
 }

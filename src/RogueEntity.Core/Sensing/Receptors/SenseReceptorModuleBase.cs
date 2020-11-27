@@ -300,7 +300,7 @@ namespace RogueEntity.Core.Sensing.Receptors
 
             serviceResolver.Store(system);
             serviceResolver.Store<IAggregationLayerSystemBackend<TGameContext, SensoryResistance<TReceptorSense>>>(system);
-            serviceResolver.Store<ISensePropertiesDataView<TGameContext, TReceptorSense>>(system);
+            serviceResolver.Store<ISensePropertiesDataView<TReceptorSense>>(system);
             return system;
         }
 
@@ -311,7 +311,7 @@ namespace RogueEntity.Core.Sensing.Receptors
                 return system;
             }
 
-            if (!serviceResolver.TryResolve(out ISensePropertiesDataView<TGameContext, TReceptorSense> data))
+            if (!serviceResolver.TryResolve(out ISensePropertiesDataView<TReceptorSense> data))
             {
                 data = GetOrCreateSensePropertiesSystem<TGameContext, TItemId>(serviceResolver);
             }
@@ -330,7 +330,7 @@ namespace RogueEntity.Core.Sensing.Receptors
             if (!serviceResolver.TryResolve(out SenseReceptorSystem<TReceptorSense, TSourceSense> ls))
             {
                 var physics = GetOrCreatePhysics(serviceResolver);
-                var senseProperties = serviceResolver.ResolveToReference<ISensePropertiesDataView<TGameContext, TReceptorSense>>().Map(l => l.ResultView);
+                var senseProperties = serviceResolver.ResolveToReference<ISensePropertiesDataView<TReceptorSense>>().Map(l => l.ResultView);
                 ls = new SenseReceptorSystem<TReceptorSense, TSourceSense>(senseProperties,
                                                                            serviceResolver.ResolveToReference<ISenseStateCacheProvider>(),
                                                                            serviceResolver.ResolveToReference<IGlobalSenseStateCacheProvider>(),

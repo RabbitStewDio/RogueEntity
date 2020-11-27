@@ -5,28 +5,48 @@ namespace RogueEntity.Core.Utils.DataViews
 {
     public static class DataViewExtensions
     {
+        public static TData TryGet<TResistanceMap, TData>(this TResistanceMap resistanceMap,
+                                                          ref IReadOnlyBoundedDataView<TData> resistanceTile,
+                                                          int tx,
+                                                          int ty,
+                                                          TData defaultValue)
+            where TResistanceMap : IReadOnlyDynamicDataView2D<TData>
+        {
+            if (resistanceTile == null || !resistanceTile.TryGet(tx, ty, out var resistance))
+            {
+                if (!resistanceMap.TryGetData(tx, ty, out resistanceTile) ||
+                    !resistanceTile.TryGet(tx, ty, out resistance))
+                {
+                    resistance = defaultValue;
+                }
+            }
+
+            return resistance;
+        }
+
+
         public static IDynamicDataView2D<TData> GetOrCreate<TData>(this IDynamicDataView3D<TData> data, int z)
         {
             if (data.TryGetWritableView(z, out var view, DataViewCreateMode.CreateMissing))
             {
                 return view;
             }
-            
+
             throw new InvalidOperationException();
         }
-        
+
         public static TranslatedDataView<TData> TranslateBy<TData>(this IReadOnlyView2D<TData> view, int offsetX, int offsetY)
         {
             return new TranslatedDataView<TData>(view, offsetX, offsetY);
         }
-        
-        public static IReadOnlyDynamicDataView3D<TResult> Transform<TSource, TResult>(this IReadOnlyDynamicDataView3D<TSource> source, 
+
+        public static IReadOnlyDynamicDataView3D<TResult> Transform<TSource, TResult>(this IReadOnlyDynamicDataView3D<TSource> source,
                                                                                       Func<TSource, TResult> transformFunction)
         {
             return new TransformedView3D<TSource, TResult>(source, transformFunction);
         }
 
-        public static IReadOnlyDynamicDataView2D<TResult> Transform<TSource, TResult>(this IReadOnlyDynamicDataView2D<TSource> source, 
+        public static IReadOnlyDynamicDataView2D<TResult> Transform<TSource, TResult>(this IReadOnlyDynamicDataView2D<TSource> source,
                                                                                       Func<TSource, TResult> transformFunction)
         {
             return new TransformedView2D<TSource, TResult>(source, transformFunction);
@@ -156,7 +176,7 @@ namespace RogueEntity.Core.Utils.DataViews
             return result.ToString();
         }
 
-        public static string ExtendToString(this IReadOnlyView2D<float> map, 
+        public static string ExtendToString(this IReadOnlyView2D<float> map,
                                             in Rectangle bounds,
                                             int fieldSize)
         {

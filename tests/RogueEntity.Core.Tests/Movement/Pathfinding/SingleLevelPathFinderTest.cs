@@ -7,6 +7,7 @@ using RogueEntity.Core.Movement.Cost;
 using RogueEntity.Core.Movement.CostModifier.Directions;
 using RogueEntity.Core.Movement.MovementModes.Walking;
 using RogueEntity.Core.Movement.Pathfinding;
+using RogueEntity.Core.Movement.Pathfinding.SingleLevel;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.Algorithms;
@@ -55,37 +56,39 @@ namespace RogueEntity.Core.Tests.Movement.Pathfinding
             var directionalityMapSystem = new MovementResistanceDirectionalitySystem<WalkingMovement>(resistanceMap.As3DMap(0));
             directionalityMapSystem.MarkGloballyDirty();
             directionalityMapSystem.Process();
-            directionalityMapSystem.TryGetView(0, out var directionalityMap).Should().BeTrue();
+            directionalityMapSystem.ResultView.TryGetView(0, out var directionalityMap).Should().BeTrue();
 
-            var pfs = new SingleLevelPathFinderSource();
+            var pfs = new SingleLevelPathFinderSource(new SingleLevelPathfinderPolicy());
             pfs.RegisterMovementSource(WalkingMovement.Instance, resistanceMap.As3DMap(0), directionalityMap.As3DMap(0));
-            var pf = pfs.GetPathFinder(new PathfindingMovementCostFactors(new MovementCost(WalkingMovement.Instance, DistanceCalculation.Euclid, 1)));
 
             var startPosition = EntityGridPosition.OfRaw(0, sx, sy, 0);
             var targetPosition = EntityGridPosition.OfRaw(0, tx, ty, 0);
-            var result = pf.TryFindPath(startPosition, targetPosition, out var resultPath);
+            var pf = pfs.GetPathFinder()
+                        .WithTarget(new DefaultPathFinderTargetEvaluator().WithTargetPosition(targetPosition))
+                        .Build(new PathfindingMovementCostFactors(new MovementCost(WalkingMovement.Instance, DistanceCalculation.Euclid, 1)));
+            
+            var result = pf.TryFindPath(startPosition, out var resultPath);
             result.Should().Be(PathFinderResult.Found);
             resultPath.Should().NotBeEmpty();
-            
+
             var expectedResultMap = ParseResultMap(resultText, out _);
             var producedResultMap = CreateResult(resistanceMap, resultPath, startPosition, bounds);
             Console.WriteLine("Expected Result\n" + PrintResultMap(expectedResultMap, bounds));
             Console.WriteLine("Computed Result\n" + PrintResultMap(producedResultMap, bounds));
-            
-            TestHelpers.AssertEquals(producedResultMap, expectedResultMap, bounds, default, PrintResultMap);
 
+            TestHelpers.AssertEquals(producedResultMap, expectedResultMap, bounds, default, PrintResultMap);
         }
 
-        DynamicDataView2D<(bool, int)> CreateResult(DynamicDataView2D<float> resistanceMap, 
+        DynamicDataView2D<(bool, int)> CreateResult(DynamicDataView2D<float> resistanceMap,
                                                     List<(EntityGridPosition, IMovementMode)> resultPath,
                                                     EntityGridPosition startPos,
                                                     Rectangle bounds)
         {
             var resultMap = new DynamicDataView2D<(bool, int)>(resistanceMap.ToConfiguration());
-            
-            foreach (var (x,y) in bounds.Contents)
+
+            foreach (var (x, y) in bounds.Contents)
             {
-                var wall = resistanceMap[x,y] <= 0;
+                var wall = resistanceMap[x, y] <= 0;
                 var pos = startPos.WithPosition(x, y);
                 int pathIndex;
                 if (pos == startPos)

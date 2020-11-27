@@ -98,7 +98,15 @@ namespace RogueEntity.Core.Utils.DataViews
             }
         }
 
-        public void Fill(in Rectangle fillBounds, TData v)
+        public void Fill(in TData v)
+        {
+            for (var i = 0; i < data.Length; i++)
+            {
+                data[i] = v;
+            }
+        }
+        
+        public void Fill(in Rectangle fillBounds, in TData v)
         {
             var boundsLocal = this.bounds.GetIntersection(fillBounds);
             if (boundsLocal.Width == 0 || boundsLocal.Height == 0)

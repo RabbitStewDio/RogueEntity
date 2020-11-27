@@ -7,7 +7,7 @@ using RogueEntity.Core.Utils.DataViews;
 
 namespace RogueEntity.Core.GridProcessing.LayerAggregation
 {
-    public class LayeredAggregationSystem<TGameContext, TAggregationType, TSourceType> : IAggregationLayerSystem<TGameContext, TAggregationType>,
+    public class LayeredAggregationSystem<TGameContext, TAggregationType, TSourceType> : IAggregationLayerSystem<TAggregationType>,
                                                                                          IAggregationLayerSystemBackend<TGameContext, TSourceType>,
                                                                                          IReadOnlyDynamicDataView3D<TAggregationType>
     {

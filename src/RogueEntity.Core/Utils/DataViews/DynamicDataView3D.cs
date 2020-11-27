@@ -17,6 +17,10 @@ namespace RogueEntity.Core.Utils.DataViews
         {
         }
 
+        public DynamicDataView3D(DynamicDataViewConfiguration config): this(config.OffsetX, config.OffsetY, config.TileSizeX, config.TileSizeY)
+        {
+        }
+
         public DynamicDataView3D(int tileSizeX, int tileSizeY): this(0, 0, tileSizeX, tileSizeY)
         {
             

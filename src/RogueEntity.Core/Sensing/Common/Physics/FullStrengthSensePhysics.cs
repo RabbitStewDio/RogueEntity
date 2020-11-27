@@ -1,6 +1,5 @@
 using System;
 using JetBrains.Annotations;
-using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.Algorithms;
 
 namespace RogueEntity.Core.Sensing.Common.Physics
@@ -25,9 +24,8 @@ namespace RogueEntity.Core.Sensing.Common.Physics
 
         public float SignalStrengthAtDistance(float distance, float maxRadius)
         {
-            var pct = distance / maxRadius;
-            var v = (float)Math.Ceiling(pct);
-            return v.Clamp(0, 1);
+            if (distance > maxRadius) return 0;
+            return 1;
         }
     }
 }

@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using RogueEntity.Core.Utils.DataViews;
 
@@ -9,7 +11,9 @@ namespace RogueEntity.Core.Positioning.Caching
         readonly int offsetY;
         readonly int tileSizeX;
         readonly int tileSizeY;
-        readonly Dictionary<int, DynamicBoolDataView> tileStateCache;
+        readonly ConcurrentDictionary<int, DynamicBoolDataView> tileStateCache;
+        readonly Func<int, DynamicBoolDataView> getActionDelegate;
+        KeyValuePair<int, DynamicBoolDataView>[] copyBuffer; 
         bool globallyDirty;
 
         public GridTileStateView(int offsetX, int offsetY, int tileSizeX, int tileSizeY)
@@ -18,10 +22,11 @@ namespace RogueEntity.Core.Positioning.Caching
             this.offsetY = offsetY;
             this.tileSizeX = tileSizeX;
             this.tileSizeY = tileSizeY;
-            this.tileStateCache = new Dictionary<int, DynamicBoolDataView>();
+            this.tileStateCache = new ConcurrentDictionary<int, DynamicBoolDataView>();
             this.globallyDirty = true;
+            this.getActionDelegate = GetOrAddAction;
         }
-        
+
         public void MarkGloballyDirty()
         {
             globallyDirty = true;
@@ -34,28 +39,41 @@ namespace RogueEntity.Core.Positioning.Caching
 
         public void MarkDirty(in Position p)
         {
-            if (!tileStateCache.TryGetValue(p.GridZ, out var view))
-            {
-                view = new DynamicBoolDataView(64, 64);
-                tileStateCache[p.GridZ] = view;
-            }
-            
+            var view = tileStateCache.GetOrAdd(p.GridZ, getActionDelegate);
             var dx = DataViewPartitions.TileSplit(p.GridX, offsetX, tileSizeX);
             var dy = DataViewPartitions.TileSplit(p.GridY, offsetY, tileSizeY);
             view[dx, dy] = true;
         }
 
+        DynamicBoolDataView GetOrAddAction(int key)
+        {
+            return new DynamicBoolDataView(offsetX, offsetY, tileSizeX, tileSizeY);
+        }
+        
+        /// <summary>
+        ///   Should not be called from a multi-threaded context. Marking stuff dirty can
+        ///   happen at any time, but marking stuff as clean should be its own tightly controlle.d
+        /// </summary>
         public void MarkClean()
         {
             globallyDirty = false;
-            foreach (var l in tileStateCache.Values)
+            ICollection<KeyValuePair<int, DynamicBoolDataView>> view = tileStateCache;
+            var count = tileStateCache.Count;
+            if (copyBuffer.Length < count)
             {
-                l.Clear();
+                Array.Resize(ref copyBuffer, tileStateCache.Count);
+                view.CopyTo(copyBuffer, tileStateCache.Count);
+            }
+
+            for (var index = 0; index < count; index++)
+            {
+                var l = copyBuffer[index];
+                l.Value.Clear();
             }
         }
 
         public bool IsDirty(in Position pos) => IsDirty(pos.GridX, pos.GridY, pos.GridZ);
-        
+
         public bool IsDirty(int x, int y, int z)
         {
             if (globallyDirty)
@@ -67,11 +85,10 @@ namespace RogueEntity.Core.Positioning.Caching
             {
                 return false;
             }
-            
+
             var dx = DataViewPartitions.TileSplit(x, offsetX, tileSizeX);
             var dy = DataViewPartitions.TileSplit(y, offsetY, tileSizeY);
             return view[dx, dy];
         }
-        
     }
 }

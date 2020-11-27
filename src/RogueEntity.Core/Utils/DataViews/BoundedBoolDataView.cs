@@ -213,6 +213,17 @@ namespace RogueEntity.Core.Utils.DataViews
             Array.Clear(data, 0, data.Length);
         }
 
+        public void Fill(in bool b)
+        {
+            byte val = b ? byte.MaxValue : byte.MinValue;
+            for (var i = 0; i < data.Length; i++)
+            {
+                data[i] = val;
+            }
+
+            anyValueSet = b ? data.Length : 0;
+        }
+
         public bool AnyValueSet()
         {
             return anyValueSet != 0;

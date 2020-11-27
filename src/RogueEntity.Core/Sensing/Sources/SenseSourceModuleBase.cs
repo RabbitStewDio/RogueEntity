@@ -371,7 +371,7 @@ namespace RogueEntity.Core.Sensing.Sources
 
             serviceResolver.Store(system);
             serviceResolver.Store<IAggregationLayerSystemBackend<TGameContext, SensoryResistance<TSense>>>(system);
-            serviceResolver.Store<ISensePropertiesDataView<TGameContext, TSense>>(system);
+            serviceResolver.Store<ISensePropertiesDataView<TSense>>(system);
             return system;
         }
 
@@ -382,7 +382,7 @@ namespace RogueEntity.Core.Sensing.Sources
                 return system;
             }
 
-            if (!serviceResolver.TryResolve(out ISensePropertiesDataView<TGameContext, TSense> data))
+            if (!serviceResolver.TryResolve(out ISensePropertiesDataView<TSense> data))
             {
                 data = GetOrCreateSensePropertiesSystem<TGameContext, TItemId>(serviceResolver);
             }
@@ -406,7 +406,7 @@ namespace RogueEntity.Core.Sensing.Sources
                 senseDirections = GetOrCreateDirectionalitySystem<TGameContext, TItemId>(serviceResolver);
             }
 
-            var senseProperties = serviceResolver.ResolveToReference<ISensePropertiesDataView<TGameContext, TSense>>().Map(l => l.ResultView);
+            var senseProperties = serviceResolver.ResolveToReference<ISensePropertiesDataView<TSense>>().Map(l => l.ResultView);
             ls = new SenseSourceSystem<TSense, TSenseSourceDefinition>(senseProperties,
                                                                        serviceResolver.ResolveToReference<IGlobalSenseStateCacheProvider>(),
                                                                        serviceResolver.ResolveToReference<ITimeSource>(),

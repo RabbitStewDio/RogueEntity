@@ -98,6 +98,15 @@ namespace RogueEntity.Core.Utils.DataViews
             }
         }
 
+        public void Fill(in T value)
+        {
+            foreach (var e in index.Values)
+            {
+                e.MarkUsedForWriting();
+                e.Fill(in value);
+            }
+        }
+
         public void ExpireFrames(long age)
         {
             expired.Clear();

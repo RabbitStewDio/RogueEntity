@@ -146,6 +146,14 @@ namespace RogueEntity.Core.Utils.DataViews
             }
         }
 
+        public void Fill(in T data)
+        {
+            foreach (var e in index.Values)
+            {
+                e.Fill(in data);
+            }
+        }
+
         public BoundedDataView<T> GetOrCreateData(int x, int y)
         {
             if (TryGetDataInternal(x, y, out BoundedDataView<T> rawData))

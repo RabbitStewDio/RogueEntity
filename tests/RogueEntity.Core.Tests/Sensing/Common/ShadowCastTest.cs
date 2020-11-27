@@ -254,7 +254,7 @@ namespace RogueEntity.Core.Tests.Sensing.Common
 
             var directionalityMapSystem = new SensoryResistanceDirectionalitySystem<object, VisionSense>(resistanceMap.As3DMap(0));
             directionalityMapSystem.Process();
-            directionalityMapSystem.TryGetView(0, out var directionalityMap);
+            directionalityMapSystem.ResultView.TryGetView(0, out var directionalityMap);
 
             var algo = new ShadowPropagationAlgorithm(LinearDecaySensePhysics.For(DistanceCalculation.Euclid), new ShadowPropagationResistanceDataSource());
             var calculatedBrightnessMap = algo.Calculate(source, source.Intensity, pos, resistanceMap, directionalityMap);

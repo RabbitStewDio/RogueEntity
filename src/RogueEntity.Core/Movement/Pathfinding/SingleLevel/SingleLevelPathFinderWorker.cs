@@ -10,7 +10,7 @@ using RogueEntity.Core.Utils.Algorithms;
 using RogueEntity.Core.Utils.DataViews;
 using Serilog;
 
-namespace RogueEntity.Core.Movement.Pathfinding
+namespace RogueEntity.Core.Movement.Pathfinding.SingleLevel
 {
     public class SingleLevelPathFinderWorker : AStarGridBase<Position2D, IMovementMode>
     {
@@ -22,8 +22,7 @@ namespace RogueEntity.Core.Movement.Pathfinding
 
         int activeLevel;
         EntityGridPosition origin;
-        Position2D targetPosition;
-        DistanceCalculation heuristics;
+        IPathFinderTargetEvaluator targetEvaluator;
 
         public SingleLevelPathFinderWorker(IBoundedDataViewPool<AStarNode> pool,
                                          IBoundedDataViewPool<IMovementMode> movementModePool) : base(pool)
@@ -47,17 +46,13 @@ namespace RogueEntity.Core.Movement.Pathfinding
                 movementDirections.TryGetView(activeLevel, out var directionView))
             {
                 movementCostsOnLevel.Add(new MovementSourceData(costProfile, costView, directionView));
-                if (heuristics.IsOtherMoreAccurate(costProfile.MovementStyle))
-                {
-                    heuristics = costProfile.MovementStyle;
-                }
             }
         }
 
-        public void ConfigureFinished()
+        public void ConfigureFinished(AdjacencyRule r)
         {
             directions.Clear();
-            foreach (var h in heuristics.AsAdjacencyRule().DirectionsOfNeighbors())
+            foreach (var h in r.DirectionsOfNeighbors())
             {
                 directions.Add(h);
             }
@@ -65,30 +60,22 @@ namespace RogueEntity.Core.Movement.Pathfinding
 
         public void Reset()
         {
-            heuristics = DistanceCalculation.Manhattan;
             movementCostsOnLevel.Clear();
             nodesSources.Clear();
         }
 
         public PathFinderResult FindPath(EntityGridPosition from, 
-                                         EntityGridPosition to,
+                                         IPathFinderTargetEvaluator targetEvaluator,
                                          List<(EntityGridPosition, IMovementMode)> path,
                                          int maxSearchSteps = int.MaxValue)
         {
-            if (from.IsInvalid || to.IsInvalid)
+            if (from.IsInvalid)
             {
                 throw new ArgumentException();
             }
 
-            if (from.GridZ != to.GridZ)
-            {
-                throw new ArgumentException();
-            }
-
+            this.targetEvaluator = targetEvaluator;
             origin = from;
-            var dx = to.GridX - from.GridX;
-            var dy = to.GridY - from.GridY;
-            targetPosition = new Position2D(dx, dy);
 
             var result = base.FindPath(new Position2D(), pathBuffer, maxSearchSteps);
             if (result == PathFinderResult.NotFound)
@@ -139,12 +126,17 @@ namespace RogueEntity.Core.Movement.Pathfinding
             
             foreach (var m in movementCostsOnLevel)
             {
-                if (!m.Directions.TryGet(targetPos.GridX, targetPos.GridX, out var dir) || !dir.IsMovementAllowed(d))
+                if (!m.Directions.TryGet(targetPos.GridX, targetPos.GridY, out var dir))
                 {
                     continue;
                 }
-                
-                var tileCost = m.Costs[targetPos.GridX, targetPos.GridX];
+
+                if (!dir.IsMovementAllowed(d))
+                {
+                    continue;
+                }
+
+                var tileCost = m.Costs[targetPos.GridX, targetPos.GridY];
                 if (tileCost <= 0)
                 {
                     // a cost of zero means its undefined. This should mean the tile is not valid.
@@ -173,12 +165,12 @@ namespace RogueEntity.Core.Movement.Pathfinding
 
         protected override bool IsTargetNode(in Position2D pos)
         {
-            return targetPosition == pos;
+            return targetEvaluator.IsTargetNode(origin.GridZ, in pos);
         }
 
         protected override float Heuristic(in Position2D pos)
         {
-            return (float)heuristics.Calculate2D(pos, targetPosition);
+            return targetEvaluator.TargetHeuristic(origin.GridZ, in pos);
         }
 
         protected override void UpdateNode(in Position2D pos, IMovementMode nodeInfo)
