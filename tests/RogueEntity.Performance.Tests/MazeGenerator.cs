@@ -6,6 +6,7 @@ using RogueEntity.Core.Positioning.MapLayers;
 using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.Algorithms;
 using RogueEntity.Core.Utils.DataViews;
+using RogueEntity.Generator.CellularAutomata;
 
 namespace RogueEntity.Performance.Tests
 {
@@ -45,10 +46,10 @@ namespace RogueEntity.Performance.Tests
             var rng = ProduceRandomGenerator();
 
             var ruleString = "B3/S12345";
-            var ruleSet = ParseRuleString(ruleString);
+            var ruleSet = CARuleParser.ParseRuleString(ruleString);
 
-            var sys = new MazeGridTransformSystem<TEntity>(new DynamicDataViewConfiguration(0, 0, 64, 64), ruleSet, spaceEntity, wallEntity);
-            if (!sys.ResultView.TryGetWritableView(0, out var baseView, DataViewCreateMode.CreateMissing))
+            var sys = new CellGridTransformSystem<TEntity>(new DynamicDataViewConfiguration(0, 0, 64, 64), ruleSet, spaceEntity, wallEntity);
+            if (!sys.DataView.TryGetWritableView(0, out var baseView, DataViewCreateMode.CreateMissing))
             {
                 throw new ArgumentException();
             }
@@ -71,7 +72,7 @@ namespace RogueEntity.Performance.Tests
                 sys.ProcessAndSwap();
             }
 
-            if (sys.ResultView.TryGetView(0, out var resultView))
+            if (sys.DataView.TryGetView(0, out var resultView))
             {
                 return resultView;
             }
@@ -79,146 +80,7 @@ namespace RogueEntity.Performance.Tests
             throw new Exception();
         }
 
-        CellTransitions[] ParseRuleString(string ruleString)
-        {
-            var cellRule = new CellTransitions[10];
-            Array.Fill(cellRule, CellTransitions.Dead);
-
-            if (ruleString.Length == 0)
-            {
-                return cellRule;
-            }
-
-            var bsSyntax = (ruleString[0] == 'b' || ruleString[0] == 'B');
-            // B{n}/S{n} syntax.
-            var isBornFlag = bsSyntax;
-            // state == true => set born flag 
-            // state == false => clear death flag
-            foreach (var c in ruleString)
-            {
-                if (c == '/')
-                {
-                    isBornFlag = !isBornFlag;
-                }
-                else if (char.IsDigit(c))
-                {
-                    var idx = c - '0';
-                    if (isBornFlag)
-                    {
-                        // born rule
-                        cellRule[idx] |= CellTransitions.Born;
-                    }
-                    else
-                    {
-                        // survival rule
-                        cellRule[idx] &= ~CellTransitions.Dead;
-                    }
-                }
-            }
-
-            return cellRule;
-        }
     }
 
-    class MazeGridTransformSystem<TEntity> : GridTransformSystemBase<TEntity, TEntity>
-    {
-        static readonly EqualityComparer<TEntity> EqualityComparer = EqualityComparer<TEntity>.Default;
 
-        readonly CellTransitions[] rules;
-        protected override IReadOnlyDynamicDataView3D<TEntity> SourceData => sourceView;
-        protected override IDynamicDataView3D<TEntity> TargetData => targetView;
-
-        IDynamicDataView3D<TEntity> sourceView;
-        IDynamicDataView3D<TEntity> targetView;
-        readonly TEntity cellAliveMarker;
-        readonly TEntity cellDeadMarker;
-
-        public MazeGridTransformSystem(DynamicDataViewConfiguration config,
-                                       CellTransitions[] rules,
-                                       TEntity cellAliveMarker,
-                                       TEntity cellDeadMarker) : base(config)
-        {
-            this.rules = rules;
-            this.cellAliveMarker = cellAliveMarker;
-            this.cellDeadMarker = cellDeadMarker;
-            sourceView = new DynamicDataView3D<TEntity>();
-            targetView = new DynamicDataView3D<TEntity>();
-        }
-
-        public IDynamicDataView3D<TEntity> ResultView => sourceView;
-
-        public void ProcessAndSwap()
-        {
-            base.Process();
-
-            var tmp = sourceView;
-            sourceView = targetView;
-            targetView = tmp;
-        }
-
-        protected override void ProcessTile(ProcessingParameters args)
-        {
-            bool dirty = false;
-            foreach (var (x, y) in args.Bounds.Contents)
-            {
-                var source = args.SourceTile[x, y];
-                var alive = EqualityComparer.Equals(cellAliveMarker, source);
-                var n = CountNeighbours(args.SourceTile, args.SourceLayer, x, y) + (alive ? 1 : 0);
-                if (rules[n].HasFlags(CellTransitions.Dead))
-                {
-                    args.ResultTile[x, y] = cellDeadMarker;
-                    dirty |= alive;
-                }
-                else if (rules[n].HasFlags(CellTransitions.Born))
-                {
-                    args.ResultTile[x, y] = cellAliveMarker;
-                    dirty |= !alive;
-                }
-                else
-                {
-                    args.ResultTile[x, y] = source;
-                }
-            }
-
-            if (dirty)
-            {
-                MarkDirty(Position.Of(MapLayer.Indeterminate, args.Bounds.X, args.Bounds.Y, args.ZPosition));
-            }
-        }
-
-        // bool IsCellAlive(IReadOnlyDynamicDataView2D<TEntity> v, int x, int y) => EqualityComparer.Equals(v[x, y], cellAliveMarker);
-
-        int CountNeighbours(IReadOnlyBoundedDataView<TEntity> b,
-                            IReadOnlyDynamicDataView2D<TEntity> n,
-                            int x,
-                            int y)
-        {
-            var result = 0;
-            foreach (var d in AdjacencyRule.EightWay.DirectionsOfNeighbors())
-            {
-                var c = d.ToCoordinates();
-                var tx = x + c.X;
-                var ty = y + c.Y;
-                if (!b.TryGet(tx, ty, out var content))
-                {
-                    content = n[tx, ty];
-                }
-
-                if (EqualityComparer.Equals(content, cellAliveMarker))
-                {
-                    result += 1;
-                }
-            }
-
-            return result;
-        }
-    }
-
-    [Flags]
-    public enum CellTransitions
-    {
-        Unchanged = 0,
-        Born = 1,
-        Dead = 2
-    }
 }

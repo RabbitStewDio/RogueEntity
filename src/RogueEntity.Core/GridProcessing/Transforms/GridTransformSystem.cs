@@ -29,7 +29,7 @@ namespace RogueEntity.Core.GridProcessing.Transforms
         }
 
 
-        public void Process()
+        public bool Process()
         {
             processingParameterCache.Clear();
 
@@ -65,9 +65,60 @@ namespace RogueEntity.Core.GridProcessing.Transforms
 
             if (processingParameterCache.Count == 0)
             {
-                return;
+                return false;
             }
-            Parallel.ForEach(processingParameterCache, processTileDelegate);
+            
+            var r = Parallel.ForEach(processingParameterCache, processTileDelegate);
+            return r.IsCompleted;
+        }
+
+        public bool Process(Rectangle bounds)
+        {
+            processingParameterCache.Clear();
+
+            var sourceData = SourceData;
+            foreach (var zPosition in sourceData.GetActiveLayers(activeZLevelsBuffer))
+            {
+                if (!sourceData.TryGetView(zPosition, out var sourceView))
+                {
+                    continue;
+                }
+
+                if (!TargetData.TryGetWritableView(zPosition, out var directionMap, DataViewCreateMode.CreateMissing))
+                {
+                    continue;
+                }
+                
+                foreach (var tile in sourceView.GetActiveTiles(activeTileBuffer))
+                {
+                    if (!tile.Intersects(bounds))
+                    {
+                        continue;
+                    }
+
+                    if (!dirtyMap.IsDirty(tile.X, tile.Y, zPosition))
+                    {
+                        continue;
+                    }
+
+                    if (!sourceView.TryGetData(tile.X, tile.Y, out var sourceTile) ||
+                        !directionMap.TryGetWriteAccess(tile.X, tile.Y, out var resultTile, DataViewCreateMode.CreateMissing))
+                    {
+                        continue;
+                    }
+
+                    var effectiveArea = tile.GetIntersection(bounds);
+                    processingParameterCache.Add(new ProcessingParameters(effectiveArea, zPosition, sourceView, sourceTile, resultTile));
+                }
+            }
+
+            if (processingParameterCache.Count == 0)
+            {
+                return false;
+            }
+            
+            var r = Parallel.ForEach(processingParameterCache, processTileDelegate);
+            return r.IsCompleted;
         }
 
         protected abstract void ProcessTile(ProcessingParameters args);

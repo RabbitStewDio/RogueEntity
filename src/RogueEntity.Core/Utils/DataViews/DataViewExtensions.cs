@@ -9,7 +9,7 @@ namespace RogueEntity.Core.Utils.DataViews
                                                           ref IReadOnlyBoundedDataView<TData> resistanceTile,
                                                           int tx,
                                                           int ty,
-                                                          TData defaultValue)
+                                                          in TData defaultValue)
             where TResistanceMap : IReadOnlyDynamicDataView2D<TData>
         {
             if (resistanceTile == null || !resistanceTile.TryGet(tx, ty, out var resistance))
@@ -24,6 +24,50 @@ namespace RogueEntity.Core.Utils.DataViews
             return resistance;
         }
 
+        public static TData TryGetForUpdate<TResistanceMap, TData>(this TResistanceMap resistanceMap,
+                                                                   ref IBoundedDataView<TData> resistanceTile,
+                                                                   int tx,
+                                                                   int ty,
+                                                                   in TData defaultValue, 
+                                                                   DataViewCreateMode mode = DataViewCreateMode.Nothing)
+            where TResistanceMap : IDynamicDataView2D<TData>
+        {
+            if (resistanceTile == null || !resistanceTile.TryGet(tx, ty, out var resistance))
+            {
+                if (!resistanceMap.TryGetWriteAccess(tx, ty, out resistanceTile) ||
+                    !resistanceTile.TryGet(tx, ty, out resistance))
+                {
+                    resistance = defaultValue;
+                }
+            }
+
+            return resistance;
+        }
+
+        public static bool TryUpdate<TResistanceMap, TData>(this TResistanceMap resistanceMap,
+                                                         ref IBoundedDataView<TData> resistanceTile,
+                                                         int tx,
+                                                         int ty,
+                                                         in TData value, 
+                                                         DataViewCreateMode mode = DataViewCreateMode.Nothing)
+            where TResistanceMap : IDynamicDataView2D<TData>
+        {
+            if (resistanceTile == null)
+            {
+                if (!resistanceMap.TryGetWriteAccess(tx, ty, out resistanceTile, mode))
+                {
+                    return false;
+                }
+            }
+            
+            if (resistanceTile.TrySet(tx, ty, in value))
+            {
+                return true;
+            }
+
+            return resistanceMap.TrySet(tx, ty, in value);
+
+        }
 
         public static IDynamicDataView2D<TData> GetOrCreate<TData>(this IDynamicDataView3D<TData> data, int z)
         {

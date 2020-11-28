@@ -9,7 +9,7 @@ using RogueEntity.Core.Meta.Items;
 namespace RogueEntity.Core.Inventory
 {
     public sealed class RandomizedInventoryTrait<TGameContext, TOwnerId, TItemId> : IReferenceItemTrait<TGameContext, TOwnerId>
-        where TGameContext : IRandomContext
+        where TGameContext : IEntityRandomGeneratorSource
         where TOwnerId : IEntityKey, IRandomSeedSource
         where TItemId : IEntityKey
     {
@@ -44,7 +44,7 @@ namespace RogueEntity.Core.Inventory
             var rng = context.RandomGenerator(k, 0);
             foreach (var i in itemPool)
             {
-                if (rng() >= i.Probability)
+                if (rng.Next() >= i.Probability)
                 {
                     continue;
                 }

@@ -11,10 +11,10 @@ namespace RogueEntity.Core.Effects.Uses
         where TItemId : IEntityKey
         where TActorId : IEntityKey
     {
-        readonly IRandomContext randomContext;
+        readonly IEntityRandomGeneratorSource randomContext;
         readonly IItemResolver<TGameContext, TItemId> itemResolver;
 
-        public ReduceDurabilityOnUseEffect(IRandomContext randomContext, IItemResolver<TGameContext, TItemId> itemResolver)
+        public ReduceDurabilityOnUseEffect(IEntityRandomGeneratorSource randomContext, IItemResolver<TGameContext, TItemId> itemResolver)
         {
             this.randomContext = randomContext;
             this.itemResolver = itemResolver;

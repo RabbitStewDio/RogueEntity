@@ -1,18 +1,17 @@
 ﻿using System;
 using EnTTSharp.Entities;
+using RogueEntity.Core.Infrastructure.Randomness.PCGSharp;
 
 namespace RogueEntity.Core.Infrastructure.Randomness
 {
     public static class RandomContext
     {
-        public static int MakeSeed<TEntity>(TEntity entity,
+        public static ulong MakeSeed<TEntity>(TEntity entity,
                                             int seedVariance) 
             where TEntity : IRandomSeedSource
         {
-            unchecked
-            {
-                return entity.AsRandomSeed() * 319 + seedVariance;
-            }
+            var retval = ((ulong)entity.AsRandomSeed()) << 32;
+            return retval + (ulong)seedVariance;
         }
 
         public static Func<double> DefaultRandomGenerator<TEntity>(TEntity entity,
@@ -20,7 +19,7 @@ namespace RogueEntity.Core.Infrastructure.Randomness
             where TEntity : IRandomSeedSource
         {
             var seed = MakeSeed(entity, seedVariance);
-            var r = new Random(seed);
+            var r = new PCG(seed);
             return r.NextDouble;
         }
 

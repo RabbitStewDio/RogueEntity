@@ -11,43 +11,44 @@ namespace RogueEntity.Core.Utils.Algorithms
         Found = 2
     }
 
-    public abstract class AStarGridBase<TPosition, TExtraNodeInfo>
-        where TPosition : IPosition2D<TPosition>, IEquatable<TPosition>
+    public abstract class AStarGridBase<TExtraNodeInfo>
     {
         readonly IDynamicDataView2D<AStarNode> nodes;
-        readonly PriorityQueue<float, TPosition> openNodes;
+        IBoundedDataView<AStarNode> nodeTile;
+        readonly PriorityQueue<float, Position2D> openNodes;
         readonly List<Direction> directionsOfNeighbours;
 
         protected AStarGridBase(IBoundedDataViewPool<AStarNode> pool)
         {
             this.directionsOfNeighbours = new List<Direction>();
-            this.openNodes = new PriorityQueue<float, TPosition>(4096);
+            this.openNodes = new PriorityQueue<float, Position2D>(4096);
             this.nodes = new PooledDynamicDataView2D<AStarNode>(pool);
         }
 
         public IReadOnlyDynamicDataView2D<AStarNode> Nodes => nodes;
 
-        protected abstract void PopulateTraversableDirections(TPosition basePosition, List<Direction> buffer);
-        protected abstract bool EdgeCostInformation(in TPosition sourceNode, in Direction d, float sourceNodeCost, out float totalPathCost, out TExtraNodeInfo nodeInfo);
+        protected abstract void PopulateTraversableDirections(Position2D basePosition, List<Direction> buffer);
+        protected abstract bool EdgeCostInformation(in Position2D sourceNode, in Direction d, float sourceNodeCost, out float totalPathCost, out TExtraNodeInfo nodeInfo);
 
-        protected abstract bool IsTargetNode(in TPosition pos);
+        protected abstract bool IsTargetNode(in Position2D pos);
 
-        protected abstract float Heuristic(in TPosition pos);
+        protected abstract float Heuristic(in Position2D pos);
 
         protected void Clear()
         {
             nodes.Clear();
             openNodes.Clear();
+            nodeTile = null;
         }
 
-        protected void EnqueueStartPosition(TPosition start)
+        protected void EnqueueStartPosition(Position2D start)
         {
             nodes[start.X, start.Y] = AStarNode.Start();
             openNodes.Enqueue(start, Heuristic(start));
         }
 
-        protected PathFinderResult FindPath(TPosition start,
-                                            List<TPosition> pathBuffer,
+        protected PathFinderResult FindPath(Position2D start,
+                                            List<Position2D> pathBuffer,
                                             int searchLimit = int.MaxValue)
         {
             pathBuffer.Clear();
@@ -62,7 +63,7 @@ namespace RogueEntity.Core.Utils.Algorithms
             return ContinueFindPath(pathBuffer, searchLimit);
         }
 
-        protected PathFinderResult ContinueFindPath(List<TPosition> pathBuffer,
+        protected PathFinderResult ContinueFindPath(List<Position2D> pathBuffer,
                                                     int searchLimit = int.MaxValue)
         {
             int searchedNodes = 0;
@@ -70,9 +71,13 @@ namespace RogueEntity.Core.Utils.Algorithms
             {
                 searchedNodes += 1;
                 var currentPosition = openNodes.Dequeue();
-                var currentNode = nodes[currentPosition.X, currentPosition.Y];
+                var currentNode = nodes.TryGetForUpdate(ref nodeTile, currentPosition.X, currentPosition.Y, in AStarNode.Empty, DataViewCreateMode.CreateMissing);
 
-                nodes[currentPosition.X, currentPosition.Y] = currentNode.Close();
+                var closedNode = currentNode.Close();
+                if (!nodes.TryUpdate(ref nodeTile, currentPosition.X, currentPosition.Y, in closedNode, DataViewCreateMode.CreateMissing))
+                {
+                    throw new Exception("Unable to update existing node.");
+                }
 
                 if (IsTargetNode(currentPosition)) // We found the end, cleanup and return the path
                 {
@@ -92,10 +97,11 @@ namespace RogueEntity.Core.Utils.Algorithms
                 }
 
                 PopulateTraversableDirections(currentPosition, directionsOfNeighbours);
-                foreach (var dir in directionsOfNeighbours)
+                for (var index = 0; index < directionsOfNeighbours.Count; index++)
                 {
+                    var dir = directionsOfNeighbours[index];
                     var neighborPos = currentPosition.Add(dir.ToCoordinates());
-                    var neighbor = nodes[neighborPos.X, neighborPos.Y];
+                    var neighbor = nodes.TryGetForUpdate(ref nodeTile, neighborPos.X, neighborPos.Y, in AStarNode.Empty, DataViewCreateMode.CreateMissing);
 
                     if (neighbor.IsClosed())
                     {
@@ -123,14 +129,17 @@ namespace RogueEntity.Core.Utils.Algorithms
                     }
 
                     // We found a best path, so record and update
-                    nodes[neighborPos.X, neighborPos.Y] = new AStarNode(AStarNode.NodeState.Open,
-                                                                        totalPathCost,
-                                                                        Directions.GetDirection(currentPosition, neighborPos),
-                                                                        (ushort)(currentNode.DistanceFromStart + 1)
+                    var newNode = new AStarNode(AStarNode.NodeState.Open,
+                                                totalPathCost,
+                                                Directions.GetDirection(currentPosition, neighborPos),
+                                                (ushort)(currentNode.DistanceFromStart + 1)
                     );
 
-                    openNodes.UpdatePriority(neighborPos, totalPathCost + Heuristic(in neighborPos));
-                    UpdateNode(neighborPos, nodeInfo);
+                    if (nodes.TryUpdate(ref nodeTile, neighborPos.X, neighborPos.Y, in newNode, DataViewCreateMode.CreateMissing))
+                    {
+                        openNodes.UpdatePriority(neighborPos, totalPathCost + Heuristic(in neighborPos));
+                        UpdateNode(neighborPos, nodeInfo);
+                    }
                 }
             }
 
@@ -139,11 +148,11 @@ namespace RogueEntity.Core.Utils.Algorithms
             return PathFinderResult.NotFound;
         }
 
-        protected virtual void UpdateNode(in TPosition pos, TExtraNodeInfo nodeInfo)
+        protected virtual void UpdateNode(in Position2D pos, TExtraNodeInfo nodeInfo)
         {
         }
 
-        protected virtual bool IsExistingResultBetter(in TPosition coord, in float newWeight)
+        protected virtual bool IsExistingResultBetter(in Position2D coord, in float newWeight)
         {
             // All non-starting nodes are initialized with a weight of zero at the start.
             // This allows us to use Array.Clear which uses MemSet to efficiently
@@ -172,7 +181,7 @@ namespace RogueEntity.Core.Utils.Algorithms
             return existingWeight.AccumulatedCost < newWeight;
         }
 
-        void ProduceResult(TPosition currentPosition, AStarNode currentNode, List<TPosition> pathBuffer)
+        void ProduceResult(Position2D currentPosition, AStarNode currentNode, List<Position2D> pathBuffer)
         {
             pathBuffer.Capacity = Math.Max(pathBuffer.Capacity, currentNode.DistanceFromStart);
             while (currentNode.DirectionToParent != Direction.None)

@@ -1,9 +1,10 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Utils.DataViews;
 
-namespace RogueEntity.Core.Positioning.Caching
+namespace RogueEntity.Core.GridProcessing.Transforms
 {
     public class GridTileStateView
     {
@@ -13,7 +14,7 @@ namespace RogueEntity.Core.Positioning.Caching
         readonly int tileSizeY;
         readonly ConcurrentDictionary<int, DynamicBoolDataView> tileStateCache;
         readonly Func<int, DynamicBoolDataView> getActionDelegate;
-        KeyValuePair<int, DynamicBoolDataView>[] copyBuffer; 
+        KeyValuePair<int, DynamicBoolDataView>[] copyBuffer;
         bool globallyDirty;
 
         public GridTileStateView(int offsetX, int offsetY, int tileSizeX, int tileSizeY)
@@ -49,10 +50,10 @@ namespace RogueEntity.Core.Positioning.Caching
         {
             return new DynamicBoolDataView(offsetX, offsetY, tileSizeX, tileSizeY);
         }
-        
+
         /// <summary>
         ///   Should not be called from a multi-threaded context. Marking stuff dirty can
-        ///   happen at any time, but marking stuff as clean should be its own tightly controlle.d
+        ///   happen at any time, but marking stuff as clean should be its own tightly controlled
         /// </summary>
         public void MarkClean()
         {

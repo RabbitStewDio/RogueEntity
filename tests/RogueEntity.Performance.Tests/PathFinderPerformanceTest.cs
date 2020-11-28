@@ -76,8 +76,8 @@ namespace RogueEntity.Performance.Tests
                                    .Build(new PathfindingMovementCostFactors(new MovementCost(WalkingMovement.Instance, DistanceCalculation.Euclid, 1))))
                 {
                     var result = pf.TryFindPath(startPosition, out var resultPath);
-                    Console.WriteLine($"From {startPosition} to {targetPosition} = {result} + {string.Join(", ", resultPath.Select(e => e.Item1))}");
-                    if (i == 0)
+                    Console.WriteLine($"{i} = From {startPosition} to {targetPosition} = {result} + {string.Join(", ", resultPath.Select(e => e.Item1))}");
+                    if (i == -1)
                     {
                         var spf = pf as SingleLevelPathFinder;
                         var translatedDataView = spf.ProcessedNodes.TranslateBy(startPosition.GridX, startPosition.GridY);

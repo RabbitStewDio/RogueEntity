@@ -137,8 +137,8 @@ namespace RogueEntity.Core.Utils.DataViews
         {
             if (bounds.Contains(posX, posY))
             {
-                var rawX = posX - bounds.MinExtentX;
-                var rawY = posY - bounds.MinExtentY;
+                var rawX = posX - bounds.X;
+                var rawY = posY - bounds.Y;
                 result = rawX + rawY * bounds.Width;
                 return true;
             }
@@ -149,10 +149,11 @@ namespace RogueEntity.Core.Utils.DataViews
 
         public bool TryGet(int x, int y, out TData result)
         {
-            var rawX = x - bounds.MinExtentX;
-            var rawY = y - bounds.MinExtentY;
+            var rawX = x - bounds.X;
+            var rawY = y - bounds.Y;
             if (rawX < 0 || rawY < 0 ||
-                rawX >= bounds.Width || rawY >= bounds.Height)
+                rawX >= bounds.Width || 
+                rawY >= bounds.Height)
             {
                 result = default;
                 return false;
@@ -171,8 +172,8 @@ namespace RogueEntity.Core.Utils.DataViews
 
         public bool TrySet(int x, int y, in TData result)
         {
-            var rawX = x - bounds.MinExtentX;
-            var rawY = y - bounds.MinExtentY;
+            var rawX = x - bounds.X;
+            var rawY = y - bounds.Y;
             if (rawX < 0 || rawY < 0 ||
                 rawX >= bounds.Width || rawY >= bounds.Height)
             {
@@ -189,8 +190,8 @@ namespace RogueEntity.Core.Utils.DataViews
         {
             if (bounds.Contains(pos.X, pos.Y))
             {
-                var rawX = pos.X - bounds.MinExtentX;
-                var rawY = pos.Y - bounds.MinExtentY;
+                var rawX = pos.X - bounds.X;
+                var rawY = pos.Y - bounds.Y;
                 var linIdx = rawX + rawY * bounds.Width;
                 data[linIdx] = result;
                 return true;

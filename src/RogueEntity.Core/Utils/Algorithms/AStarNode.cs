@@ -7,6 +7,8 @@ namespace RogueEntity.Core.Utils.Algorithms
     /// </summary>
     public readonly struct AStarNode
     {
+        public static readonly AStarNode Empty = new AStarNode();
+        
         public enum NodeState : byte
         {
             [UsedImplicitly] None = 0,

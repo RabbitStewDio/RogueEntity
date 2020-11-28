@@ -1,6 +1,7 @@
 ﻿using System;
 using EnTTSharp.Entities;
 using RogueEntity.Api.ItemTraits;
+using RogueEntity.Core.Infrastructure.Randomness;
 using RogueEntity.Core.Meta.ItemTraits;
 using RogueEntity.Core.Utils;
 
@@ -77,7 +78,7 @@ namespace RogueEntity.Core.Meta.ItemBuilder
             return (TBuilder)this;
         }
 
-        public TBuilder WithRandomizedProperties(Func<double> randomGenerator)
+        public TBuilder WithRandomizedProperties(IRandomGenerator randomGenerator)
         {
             if (ItemResolver.TryQueryData(Reference, Context, out StackCount stackSize))
             {

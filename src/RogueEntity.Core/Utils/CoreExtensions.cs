@@ -7,37 +7,25 @@ namespace RogueEntity.Core.Utils
 {
     public static class CoreExtensions
     {
-        public static int Next(this Func<double> g, int lowerBound, int upperBoundExclusive)
-        {
-            if (lowerBound >= upperBoundExclusive)
-            {
-                return lowerBound;
-            }
-
-            var delta = upperBoundExclusive - lowerBound;
-            var floor = (int)(g() * delta);
-            if (floor == delta)
-            {
-                // cheap hack. When using float the system happily 
-                // rounds up.
-                floor = delta - 1;
-            }
-            return floor + lowerBound;
-        }
-
         public static float Clamp(this float value, float min, float max)
         {
-            return Math.Max(min, Math.Min(max, value));
+            if (value < min) return min;
+            if (value > max) return max;
+            return value;
         }
 
         public static int Clamp(this int value, int min, int max)
         {
-            return Math.Max(min, Math.Min(max, value));
+            if (value < min) return min;
+            if (value > max) return max;
+            return value;
         }
 
         public static ushort Clamp(this ushort value, ushort min, ushort max)
         {
-            return Math.Max(min, Math.Min(max, value));
+            if (value < min) return min;
+            if (value > max) return max;
+            return value;
         }
 
         public static TEnum[] GetValues<TEnum>() where TEnum : struct, IComparable, IConvertible, IFormattable
