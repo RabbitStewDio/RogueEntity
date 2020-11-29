@@ -101,11 +101,6 @@ namespace RogueEntity.Core.Movement.Pathfinding.SingleLevel
             this.targetEvaluator = evaluator;
 
             var result = base.FindPath(from.ToGridXY(), pathBuffer, maxSearchSteps);
-            if (result == PathFinderResult.NotFound)
-            {
-                return PathFinderResult.NotFound;
-            }
-
             path.Clear();
             foreach (var p in pathBuffer)
             {

@@ -13,4 +13,10 @@ namespace RogueEntity.Core.Movement.Pathfinding
                                             int searchLimit = int.MaxValue);
         
     }
+
+    public interface IPathFinderPerformanceView
+    {
+        public int NodesEvaluated { get; }
+        public TimeSpan TimeElapsed { get; }
+    }
 }

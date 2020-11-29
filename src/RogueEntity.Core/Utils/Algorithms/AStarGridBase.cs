@@ -39,6 +39,7 @@ namespace RogueEntity.Core.Utils.Algorithms
             nodes.Clear();
             openNodes.Clear();
             nodeTile = null;
+            NodesEvaluated = 0;
         }
 
         protected void EnqueueStartPosition(Position2D start)
@@ -66,12 +67,22 @@ namespace RogueEntity.Core.Utils.Algorithms
         protected PathFinderResult ContinueFindPath(List<Position2D> pathBuffer,
                                                     int searchLimit = int.MaxValue)
         {
-            int searchedNodes = 0;
+            int searchedNodes = NodesEvaluated;
+            AStarNode bestSoFar = default;
+            Position2D bestSoFarPos = default;
+            float bestSoFarH = float.MaxValue;
             while (openNodes.Count != 0)
             {
                 searchedNodes += 1;
                 var currentPosition = openNodes.Dequeue();
                 var currentNode = nodes.TryGetForUpdate(ref nodeTile, currentPosition.X, currentPosition.Y, in AStarNode.Empty, DataViewCreateMode.CreateMissing);
+                var currentHeuristic = Heuristic(in currentPosition);
+                if (currentHeuristic < bestSoFarH)
+                {
+                    bestSoFarH = currentHeuristic; 
+                    bestSoFarPos = currentPosition;
+                    bestSoFar = currentNode;
+                }
 
                 var closedNode = currentNode.Close();
                 if (!nodes.TryUpdate(ref nodeTile, currentPosition.X, currentPosition.Y, in closedNode, DataViewCreateMode.CreateMissing))
@@ -82,12 +93,14 @@ namespace RogueEntity.Core.Utils.Algorithms
                 if (IsTargetNode(currentPosition)) // We found the end, cleanup and return the path
                 {
                     ProduceResult(currentPosition, currentNode, pathBuffer);
+                    NodesEvaluated = searchedNodes;
                     return PathFinderResult.Found;
                 }
 
                 if (searchedNodes >= searchLimit)
                 {
                     ProduceResult(currentPosition, currentNode, pathBuffer);
+                    NodesEvaluated = searchedNodes;
                     return PathFinderResult.SearchLimitReached;
                 }
 
@@ -143,10 +156,20 @@ namespace RogueEntity.Core.Utils.Algorithms
                 }
             }
 
+            NodesEvaluated = searchedNodes;
+            if (bestSoFarH < float.MaxValue)
+            {
+                ProduceResult(bestSoFarPos, bestSoFar, pathBuffer);
+            }
+            else
+            {
+                pathBuffer.Clear();
+            }
             openNodes.Clear();
-            Console.WriteLine("Searched: " + searchedNodes);
             return PathFinderResult.NotFound;
         }
+        
+        public int NodesEvaluated { get; private set; }
 
         protected virtual void UpdateNode(in Position2D pos, TExtraNodeInfo nodeInfo)
         {

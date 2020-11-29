@@ -58,11 +58,20 @@ namespace RogueEntity.Performance.Tests
             resistanceMap[0, 10].Should().Be(1);
             resistanceMap[0, 11].Should().Be(1);
 
+            TimeSpan totalTime = TimeSpan.Zero;
+            int nodesEvaluated = 0;
+            
             using (var pf = pfs.GetPathFinder()
                                .WithTarget(new DefaultPathFinderTargetEvaluator().WithTargetPosition(EntityGridPosition.OfRaw(0, 0, 11)))
                                .Build(new PathfindingMovementCostFactors(new MovementCost(WalkingMovement.Instance, DistanceCalculation.Euclid, 1))))
             {
                 var result2 = pf.TryFindPath(EntityGridPosition.OfRaw(0, 0, 9), out var resultPath2);
+                if (pf is IPathFinderPerformanceView pv)
+                {
+                    totalTime += pv.TimeElapsed;
+                    nodesEvaluated += pv.NodesEvaluated;
+                }
+                
                 Console.WriteLine($" = {result2} + {string.Join(", ", resultPath2.Select(e => e.Item1))}");
             }
             
@@ -85,8 +94,16 @@ namespace RogueEntity.Performance.Tests
                         Console.WriteLine(translatedDataView
                                               .ExtendToString(bounds, elementSeparator: "", elementStringifier: e => e.State == AStarNode.NodeState.Closed ? "@" : " "));
                     }
+                    
+                    if (pf is IPathFinderPerformanceView pv)
+                    {
+                        totalTime += pv.TimeElapsed;
+                        nodesEvaluated += pv.NodesEvaluated;
+                    }
                 }
             }
+            
+            Console.WriteLine($"Performance View: {nodesEvaluated:n0} in {totalTime}");
         }
     }
 }

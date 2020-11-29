@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using JetBrains.Annotations;
 using RogueEntity.Core.Directionality;
 using RogueEntity.Core.Movement.Cost;
@@ -14,10 +15,12 @@ namespace RogueEntity.Core.Movement.Pathfinding.SingleLevel
     ///    This worker assumes that movement modes have no context-switching costs (so
     ///    starting to fly from walking is not more expensive than continuing to fly).  
     /// </summary>
-    public class SingleLevelPathFinder : IPathFinder
+    public class SingleLevelPathFinder : IPathFinder, IPathFinderPerformanceView
     {
         readonly List<MovementSourceData3D> movementSourceData;
         readonly SingleLevelPathFinderWorker singleLevelPathFinder;
+        readonly Stopwatch sw;
+
         SingleLevelPathFinderBuilder currentOwner;
         IPathFinderTargetEvaluator targetEvaluator;
         bool disposed;
@@ -27,6 +30,7 @@ namespace RogueEntity.Core.Movement.Pathfinding.SingleLevel
         {
             this.movementSourceData = new List<MovementSourceData3D>();
             this.singleLevelPathFinder = new SingleLevelPathFinderWorker(astarNodePool, movementModePool);
+            this.sw = new Stopwatch();
         }
 
         public void Dispose()
@@ -101,8 +105,19 @@ namespace RogueEntity.Core.Movement.Pathfinding.SingleLevel
             }
 
             path = pathBuffer;
-            return singleLevelPathFinder.FindPath(source, targetEvaluator, pathBuffer, searchLimit);
+            sw.Restart();
+            try
+            {
+                return singleLevelPathFinder.FindPath(source, targetEvaluator, pathBuffer, searchLimit);
+            }
+            finally
+            {
+                TimeElapsed = sw.Elapsed;
+            }
         }
+
+        public int NodesEvaluated => singleLevelPathFinder.NodesEvaluated;
+        public TimeSpan TimeElapsed { get; private set; }
 
         public void ConfigureMovementProfile(in MovementCost costProfile,
                                              [NotNull] IReadOnlyDynamicDataView3D<float> costs,
