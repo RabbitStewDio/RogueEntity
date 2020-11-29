@@ -1,10 +1,7 @@
 using System;
-using System.Collections.Generic;
-using RogueEntity.Core.GridProcessing.Transforms;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.MapLayers;
 using RogueEntity.Core.Utils;
-using RogueEntity.Core.Utils.Algorithms;
 using RogueEntity.Core.Utils.DataViews;
 using RogueEntity.Generator.CellularAutomata;
 
@@ -21,14 +18,14 @@ namespace RogueEntity.Performance.Tests
             this.bounds = bounds;
         }
 
-        public MazeGenerator WithSeed(int seed)
+        public MazeGenerator WithSeed(int seedValue)
         {
-            return new MazeGenerator(seed, bounds);
+            return new MazeGenerator(seedValue, bounds);
         }
 
-        public MazeGenerator WithBounds(in Rectangle bounds)
+        public MazeGenerator WithBounds(in Rectangle boundsValue)
         {
-            return new MazeGenerator(seed, bounds);
+            return new MazeGenerator(seed, boundsValue);
         }
 
         Random ProduceRandomGenerator()
@@ -62,7 +59,7 @@ namespace RogueEntity.Performance.Tests
             foreach (var (x, y) in Rectangle.WithRadius(bounds.Center.X, bounds.Center.Y, 3, 3).Contents)
             {
                 baseView[x, y] = rng.NextDouble() >= 0.5 ? wallEntity : spaceEntity;
-                sys.MarkDirty(Position.Of(MapLayer.Indeterminate, x, y, 0));
+                sys.MarkDirty(Position.Of(MapLayer.Indeterminate, x, y));
             }
 
             baseView[bounds.Center.X, bounds.Center.Y] = spaceEntity;

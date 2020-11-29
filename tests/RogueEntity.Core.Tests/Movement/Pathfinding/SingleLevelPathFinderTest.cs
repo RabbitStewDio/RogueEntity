@@ -61,8 +61,8 @@ namespace RogueEntity.Core.Tests.Movement.Pathfinding
             var pfs = new SingleLevelPathFinderSource(new SingleLevelPathfinderPolicy());
             pfs.RegisterMovementSource(WalkingMovement.Instance, resistanceMap.As3DMap(0), directionalityMap.As3DMap(0));
 
-            var startPosition = EntityGridPosition.OfRaw(0, sx, sy, 0);
-            var targetPosition = EntityGridPosition.OfRaw(0, tx, ty, 0);
+            var startPosition = EntityGridPosition.OfRaw(0, sx, sy);
+            var targetPosition = EntityGridPosition.OfRaw(0, tx, ty);
             var pf = pfs.GetPathFinder()
                         .WithTarget(new DefaultPathFinderTargetEvaluator().WithTargetPosition(targetPosition))
                         .Build(new PathfindingMovementCostFactors(new MovementCost(WalkingMovement.Instance, DistanceCalculation.Euclid, 1)));

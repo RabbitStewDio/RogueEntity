@@ -76,17 +76,20 @@ namespace RogueEntity.Core.Infrastructure.Services
             StringBuilder b = new StringBuilder();
             foreach (var p in promisedReferences)
             {
-                if (!backend.ContainsKey(p.Key))
+                if (backend.ContainsKey(p.Key))
                 {
-                    b.Append("- ");
-                    b.Append(p.Key);
-                    b.AppendLine();
+                    continue;
+                }
 
-                    if (p.Value is ITraceableObject to)
-                    {
-                        b.Append("  first allocated at ");
-                        b.Append(to.TraceInfo);
-                    }
+                b.Append("- ");
+                b.Append(p.Key);
+                b.AppendLine();
+
+                if (p.Value is ITraceableObject to &&
+                    to.TryGetTraceInfo(out var ti))
+                {
+                    b.Append("  first allocated at ");
+                    b.Append(ti);
                 }
             }
 

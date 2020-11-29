@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Xml.XPath;
 using RogueEntity.Core.Movement;
 using RogueEntity.Core.Positioning.Grid;
 

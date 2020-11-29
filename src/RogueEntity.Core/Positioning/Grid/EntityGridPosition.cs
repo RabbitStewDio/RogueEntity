@@ -242,14 +242,14 @@ namespace RogueEntity.Core.Positioning.Grid
             return OfRaw(layer, GridX, GridY, GridZ);
         }
 
-        public EntityGridPosition WithPosition(int x, int y)
+        public EntityGridPosition WithPosition(int tx, int ty)
         {
-            return OfRaw(this.LayerId, x, y, GridZ);
+            return OfRaw(this.LayerId, tx, ty, GridZ);
         }
         
-        public EntityGridPosition WithPosition(int x, int y, int z)
+        public EntityGridPosition WithPosition(int tx, int ty, int tz)
         {
-            return OfRaw(this.LayerId, x, y, z);
+            return OfRaw(this.LayerId, tx, ty, tz);
         }
     }
 }

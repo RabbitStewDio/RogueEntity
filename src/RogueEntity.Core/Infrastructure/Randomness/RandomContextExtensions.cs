@@ -1,4 +1,3 @@
-using System;
 using EnTTSharp.Entities;
 
 namespace RogueEntity.Core.Infrastructure.Randomness

@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace RogueEntity.Core.Infrastructure.Randomness
+﻿namespace RogueEntity.Core.Infrastructure.Randomness
 {
     public interface IEntityRandomGeneratorSource
     {

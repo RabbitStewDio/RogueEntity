@@ -7,13 +7,11 @@ namespace RogueEntity.Core.Utils
 {
     public interface ITraceableObject
     {
-        StackTrace TraceInfo { get; }
+        bool TryGetTraceInfo(out StackTrace s);
     }
     
     public class TraceableLazy<T> : Lazy<T>, ITraceableObject
     {
-#if DEBUG
-#endif
         void CollectTraceInformation()
         {
 #if DEBUG
@@ -21,7 +19,21 @@ namespace RogueEntity.Core.Utils
 #endif
         }
 
-        public StackTrace TraceInfo { get; private set; }
+#if DEBUG
+        StackTrace TraceInfo { get; private set; }
+#endif
+
+        public bool TryGetTraceInfo(out StackTrace s)
+        {
+            
+#if DEBUG
+            s = TraceInfo;
+            return true;
+#else
+            s = default;
+            return false;
+#endif
+        }
 
         public TraceableLazy()
         {

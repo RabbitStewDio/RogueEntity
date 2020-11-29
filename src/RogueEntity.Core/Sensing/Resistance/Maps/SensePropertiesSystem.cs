@@ -8,7 +8,6 @@ namespace RogueEntity.Core.Sensing.Resistance.Maps
     ///   A tagging interface to make the dependency injection select the right value.
     /// </summary>
     /// <typeparam name="TSense"></typeparam>
-    /// <typeparam name="TGameContext"></typeparam>
     [SuppressMessage("ReSharper", "UnusedTypeParameter", Justification = "Discriminator")]
     public interface ISensePropertiesDataView<TSense> : IAggregationLayerSystem<float>
     {

@@ -48,6 +48,11 @@ namespace RogueEntity.Core.Utils.Algorithms
             openNodes.Enqueue(start, Heuristic(start));
         }
 
+        void ThrowNodeUpdateError(in Position2D pos)
+        {
+            throw new Exception($"Unable to update existing node at {pos}.");
+        }
+        
         protected PathFinderResult FindPath(Position2D start,
                                             List<Position2D> pathBuffer,
                                             int searchLimit = int.MaxValue)
@@ -87,7 +92,7 @@ namespace RogueEntity.Core.Utils.Algorithms
                 var closedNode = currentNode.Close();
                 if (!nodes.TryUpdate(ref nodeTile, currentPosition.X, currentPosition.Y, in closedNode, DataViewCreateMode.CreateMissing))
                 {
-                    throw new Exception("Unable to update existing node.");
+                    ThrowNodeUpdateError(in currentPosition);
                 }
 
                 if (IsTargetNode(currentPosition)) // We found the end, cleanup and return the path

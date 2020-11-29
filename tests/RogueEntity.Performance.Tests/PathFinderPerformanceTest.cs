@@ -38,7 +38,7 @@ namespace RogueEntity.Performance.Tests
             var positions = new List<EntityGridPosition>();
             while (positions.Count < 50)
             {
-                var startPosition = EntityGridPosition.OfRaw(0, rnd.Next(bounds.Width / 2, bounds.Width), rnd.Next(bounds.Height / 2, bounds.Height), 0);
+                var startPosition = EntityGridPosition.OfRaw(0, rnd.Next(bounds.Width / 2, bounds.Width), rnd.Next(bounds.Height / 2, bounds.Height));
                 if (resistanceMap[startPosition.GridX, startPosition.GridY] > 0.5)
                 {
                     positions.Add(startPosition);
@@ -47,7 +47,7 @@ namespace RogueEntity.Performance.Tests
 
             while (positions.Count < 100)
             {
-                var targetPosition = EntityGridPosition.OfRaw(0, rnd.Next(bounds.Width / 2), rnd.Next(bounds.Height / 2), 0);
+                var targetPosition = EntityGridPosition.OfRaw(0, rnd.Next(bounds.Width / 2), rnd.Next(bounds.Height / 2));
                 if (resistanceMap[targetPosition.GridX, targetPosition.GridY] > 0.5)
                 {
                     positions.Add(targetPosition);

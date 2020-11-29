@@ -1,6 +1,5 @@
 using System;
 using RogueEntity.Core.Infrastructure.Randomness;
-using RogueEntity.Core.Movement.MovementModes.Walking;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.MapLayers;
 using RogueEntity.Core.Utils;
@@ -93,7 +92,7 @@ namespace RogueEntity.Generator.CellularAutomata
             foreach (var (x, y) in area.Contents)
             {
                 baseView[x, y] = rng.Next() >= 0.5 ? deadEntity : aliveEntity;
-                sys.MarkDirty(Position.Of(MapLayer.Indeterminate, x, y, 0));
+                sys.MarkDirty(Position.Of(MapLayer.Indeterminate, x, y));
             }
             
             baseView[area.Center.X, area.Center.Y] = aliveEntity;

@@ -24,7 +24,7 @@ namespace RogueEntity.Core.Tests.Movement.Cost
         {
             return new ItemComponentTestDataFactory<PathfindingMovementCostFactors>(new PathfindingMovementCostFactors(new List<MovementCost>()
             {
-                new MovementCost(WalkingMovement.Instance, DistanceCalculation.Chebyshev, 10, 0)
+                new MovementCost(WalkingMovement.Instance, DistanceCalculation.Chebyshev, 10)
             }));
         }
 
@@ -73,7 +73,7 @@ namespace RogueEntity.Core.Tests.Movement.Cost
             factors.Should()
                    .Be(new PathfindingMovementCostFactors(new List<MovementCost>()
                    {
-                       new MovementCost(SwimmingMovement.Instance, DistanceCalculation.Manhattan, 10, 0),
+                       new MovementCost(SwimmingMovement.Instance, DistanceCalculation.Manhattan, 10),
                        new MovementCost(WalkingMovement.Instance, DistanceCalculation.Euclid, 10, 10),
                        new MovementCost(EtherealMovement.Instance, DistanceCalculation.Chebyshev, 15, -10)
                    }));

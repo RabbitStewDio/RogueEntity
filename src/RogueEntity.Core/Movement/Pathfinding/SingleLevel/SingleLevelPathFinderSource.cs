@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using JetBrains.Annotations;
 using Microsoft.Extensions.ObjectPool;
 using RogueEntity.Core.Directionality;
-using RogueEntity.Core.Movement.Cost;
 using RogueEntity.Core.Utils.DataViews;
 
 namespace RogueEntity.Core.Movement.Pathfinding.SingleLevel

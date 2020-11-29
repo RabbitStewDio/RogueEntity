@@ -15,12 +15,13 @@ namespace RogueEntity.Core.Movement.Pathfinding.SingleLevel
     {
         readonly Physics physics;
         readonly ShadowPropagationAlgorithm algo;
-        readonly SenseSourceData result;
 
         int targetDistance;
         int zLevel;
         Position2D targetPosition;
         Position2D sourcePosition;
+        SenseSourceData result;
+        
         readonly IRelativeMovementCostSystem<TMovementMode> resistanceMap;
         readonly IMovementResistanceDirectionView<TMovementMode> directionMap;
         readonly Action<LineOfSightTargetEvaluator<TMovementMode>> returnToPoolAction;
@@ -61,10 +62,10 @@ namespace RogueEntity.Core.Movement.Pathfinding.SingleLevel
             targetDistance = 1;
         }
 
-        public bool Initialize<TPosition>(in TPosition sourcePosition, DistanceCalculation c)
+        public bool Initialize<TPosition>(in TPosition origin, DistanceCalculation c)
             where TPosition : IPosition
         {
-            this.sourcePosition = sourcePosition.ToGridXY();
+            this.sourcePosition = origin.ToGridXY();
             this.physics.DistanceMeasurement = c;
             
             var sourceDef = new SenseSourceDefinition(physics.DistanceMeasurement, physics.AdjacencyRule, targetDistance);
@@ -72,7 +73,7 @@ namespace RogueEntity.Core.Movement.Pathfinding.SingleLevel
             if (resistanceMap.ResultView.TryGetView(zLevel, out var resistanceView) &&
                 directionMap.ResultView.TryGetView(zLevel, out var directionView))
             {
-                algo.Calculate(sourceDef, targetDistance, targetPosition, resistanceView, directionView, result);
+                result = algo.Calculate(sourceDef, targetDistance, targetPosition, resistanceView, directionView, result);
                 return true;
             }
 

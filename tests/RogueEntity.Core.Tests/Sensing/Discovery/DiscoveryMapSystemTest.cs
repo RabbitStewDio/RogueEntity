@@ -299,8 +299,8 @@ namespace RogueEntity.Core.Tests.Sensing.Discovery
             Console.WriteLine(TestHelpers.PrintMap(mapB, activeTestArea));
             Console.WriteLine("--");
 
-            TestHelpers.AssertEquals(mapA, expectedMapActorA, activeTestArea, new Position2D());
-            TestHelpers.AssertEquals(mapB, expectedMapActorB, activeTestArea, new Position2D());
+            TestHelpers.AssertEquals(mapA, expectedMapActorA, activeTestArea);
+            TestHelpers.AssertEquals(mapB, expectedMapActorB, activeTestArea);
 
             // reposition the actor... 
             context.ItemResolver.TryUpdateData(active10, context, EntityGridPosition.Of(TestMapLayers.One, 14, 8), out _).Should().BeTrue();
@@ -318,7 +318,7 @@ namespace RogueEntity.Core.Tests.Sensing.Discovery
             Console.WriteLine(TestHelpers.PrintMap(mapA, activeTestArea));
             Console.WriteLine("--");
             
-            TestHelpers.AssertEquals(mapA, expectedMapActorAMoved, activeTestArea, new Position2D());
+            TestHelpers.AssertEquals(mapA, expectedMapActorAMoved, activeTestArea);
             
         }
     }

@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using JetBrains.Annotations;
-using RogueEntity.Api.Utils;
 using RogueEntity.Core.Directionality;
 using RogueEntity.Core.Movement.Cost;
 using RogueEntity.Core.Positioning;
@@ -9,13 +8,11 @@ using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.Algorithms;
 using RogueEntity.Core.Utils.DataViews;
-using Serilog;
 
 namespace RogueEntity.Core.Movement.Pathfinding.SingleLevel
 {
     public class SingleLevelPathFinderWorker : AStarGridBase<IMovementMode>
     {
-        static readonly ILogger Logger = SLog.ForContext<SingleLevelPathFinderWorker>();
         readonly List<Direction> directions;
         readonly List<MovementSourceData> movementCostsOnLevel;
         readonly PooledDynamicDataView2D<IMovementMode> nodesSources;

@@ -3,7 +3,6 @@ using EnTTSharp.Entities;
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Core.Infrastructure.Randomness;
 using RogueEntity.Core.Meta.ItemTraits;
-using RogueEntity.Core.Utils;
 
 namespace RogueEntity.Core.Meta.ItemBuilder
 {

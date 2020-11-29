@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using RogueEntity.Core.GridProcessing.Transforms;
 using RogueEntity.Core.Positioning;
