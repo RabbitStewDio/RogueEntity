@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.CompilerServices;
 using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.Algorithms;
 
@@ -22,6 +23,7 @@ namespace RogueEntity.Core.Directionality
             Masks[(int)Direction.UpLeft] = DirectionalityInformation.UpLeft;
         }
         
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsMovementAllowed(this DirectionalityInformation d, Direction dir)
         {
             var idx = (int)dir;
@@ -29,6 +31,7 @@ namespace RogueEntity.Core.Directionality
             return (d & mask) == mask;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static DirectionalityInformation With(this DirectionalityInformation d, Direction dir)
         {
             var idx = (int)dir;
@@ -36,6 +39,7 @@ namespace RogueEntity.Core.Directionality
             return d | mask;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static DirectionalityInformation WithOut(this DirectionalityInformation d, Direction dir)
         {
             var idx = (int)dir;

@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using JetBrains.Annotations;
 
 namespace RogueEntity.Core.Utils.Algorithms
@@ -45,6 +46,7 @@ namespace RogueEntity.Core.Utils.Algorithms
             return new AStarNode(NodeState.Closed, AccumulatedCost, DirectionToParent, DistanceFromStart);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsClosed()
         {
             return State == NodeState.Closed;

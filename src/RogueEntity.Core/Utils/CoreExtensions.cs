@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using System.Runtime.CompilerServices;
 using RogueEntity.Api.Utils;
 
 namespace RogueEntity.Core.Utils
 {
     public static class CoreExtensions
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float Clamp(this float value, float min, float max)
         {
             if (value < min) return min;
@@ -14,6 +16,7 @@ namespace RogueEntity.Core.Utils
             return value;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int Clamp(this int value, int min, int max)
         {
             if (value < min) return min;
@@ -21,6 +24,7 @@ namespace RogueEntity.Core.Utils
             return value;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ushort Clamp(this ushort value, ushort min, ushort max)
         {
             if (value < min) return min;

@@ -72,7 +72,7 @@ namespace RogueEntity.Core.Utils.DataViews
                 bounds.Height >= newBounds.Height)
             {
                 // rebase origin, but dont change coordinates.
-                this.bounds = new Rectangle(newBounds.MinExtentX, newBounds.MinExtentY, bounds.Width, bounds.Height);
+                this.bounds = new Rectangle(newBounds.X, newBounds.Y, bounds.Width, bounds.Height);
                 Array.Clear(data, 0, data.Length);
                 this.anyValueSet = 0;
             }
@@ -89,12 +89,17 @@ namespace RogueEntity.Core.Utils.DataViews
             return (int)Math.Ceiling(v / (float)boundary) * boundary;
         }
 
+        public bool Contains(int x, int y)
+        {
+            return bounds.Contains(x, y);
+        }
+
         bool TryGetRawIndex(int x, int y, out int result)
         {
             if (bounds.Contains(x, y))
             {
-                var rawX = x - bounds.MinExtentX;
-                var rawY = y - bounds.MinExtentY;
+                var rawX = x - bounds.X;
+                var rawY = y - bounds.Y;
                 result = (rawX + rawY * bounds.Width);
                 return true;
             }
@@ -103,8 +108,11 @@ namespace RogueEntity.Core.Utils.DataViews
             return false;
         }
 
-        
-        
+        public ref bool TryGetForUpdate(int x, int y, ref bool defaultValue, out bool success)
+        {
+            throw new InvalidOperationException();
+        }
+
         public bool Any(int x, int y)
         {
             if (TryGetRawIndex(x, y, out var rawBitIdx))
@@ -195,9 +203,9 @@ namespace RogueEntity.Core.Utils.DataViews
         public override string ToString()
         {
             var b = new StringBuilder();
-            for (int y = Bounds.MinExtentY; y < Bounds.MaxExtentY; y += 1)
+            for (int y = Bounds.X; y < Bounds.MaxExtentY; y += 1)
             {
-                for (int x = Bounds.MinExtentX; x < Bounds.MaxExtentX; x += 1)
+                for (int x = Bounds.Y; x < Bounds.MaxExtentX; x += 1)
                 {
                     b.Append(this[x, y] ? '*' : '.');
                 }

@@ -9,9 +9,14 @@ namespace RogueEntity.Core.Utils.DataViews
         public DefaultBoundedDataViewPool(DynamicDataViewConfiguration config,
                                           ObjectPoolProvider poolProvider = null)
         {
-            poolProvider ??= new DefaultObjectPoolProvider();
+            if (poolProvider == null)
+            {
+                var provider = new DefaultObjectPoolProvider();
+                provider.MaximumRetained = 512;
+                poolProvider = provider;
+            }
             
-            this.pool = poolProvider.Create(new Policy());
+            this.pool = poolProvider.Create(new Policy(config));
             this.TileConfiguration = config;
         }
 
@@ -35,9 +40,16 @@ namespace RogueEntity.Core.Utils.DataViews
 
         class Policy : IPooledObjectPolicy<DefaultPooledBoundedDataView<T>>
         {
+            readonly DynamicDataViewConfiguration config;
+
+            public Policy(DynamicDataViewConfiguration config)
+            {
+                this.config = config;
+            }
+
             public DefaultPooledBoundedDataView<T> Create()
             {
-                return DefaultPooledBoundedDataView<T>.CreateForPool();
+                return DefaultPooledBoundedDataView<T>.CreateForPool(config);
             }
 
             public bool Return(DefaultPooledBoundedDataView<T> obj)

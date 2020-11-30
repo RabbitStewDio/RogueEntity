@@ -29,6 +29,11 @@ namespace RogueEntity.Core.Sensing.Common
             return false;
         }
 
+        public bool Contains(int x, int y)
+        {
+            return raw.Contains(x, y);
+        }
+
         public SenseDirectionStore this[int x, int y]
         {
             get { return new SenseDirectionStore(raw[x, y]); }

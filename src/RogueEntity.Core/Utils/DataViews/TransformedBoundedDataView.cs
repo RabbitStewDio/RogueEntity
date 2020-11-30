@@ -39,5 +39,10 @@ namespace RogueEntity.Core.Utils.DataViews
         }
 
         public Rectangle Bounds => source.Bounds;
+
+        public bool Contains(int x, int y)
+        {
+            return source.Contains(x, y);
+        }
     }
 }

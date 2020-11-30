@@ -103,6 +103,8 @@ namespace RogueEntity.Core.Movement.MovementModes
                                                      IGameLoopSystemRegistration<TGameContext> context)
         {
             var serviceResolver = initparameter.ServiceResolver;
+            GetOrCreateModeRegistry(serviceResolver).Register(GetMovementModeInstance());
+            
             context.AddInitializationStepHandler(c =>
             {
                 if (serviceResolver.TryResolve(out IPathFinderSourceBackend pathFinderSource))
@@ -193,6 +195,19 @@ namespace RogueEntity.Core.Movement.MovementModes
             return system;
         }
 
+        protected MovementModeRegistry GetOrCreateModeRegistry(IServiceResolver r)
+        {
+            if (r.TryResolve(out MovementModeRegistry reg))
+            {
+                return reg;
+            }
+
+            reg = new MovementModeRegistry();
+            r.Store(reg);
+            r.Store<IMovementModeRegistry>(reg);
+            return reg;
+        }
+        
         protected void RegisterEntities<TItemId>(in ModuleInitializationParameter initParameter,
                                                  EntityRegistry<TItemId> registry)
             where TItemId : IEntityKey

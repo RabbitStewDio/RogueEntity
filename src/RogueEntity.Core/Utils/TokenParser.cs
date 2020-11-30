@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using RogueEntity.Api.Utils;
 
-namespace RogueEntity.Core.Tests
+namespace RogueEntity.Core.Utils
 {
     public interface ITokenParser
     {

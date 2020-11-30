@@ -27,7 +27,6 @@ namespace RogueEntity.Core.GridProcessing.Transforms
             this.processTileDelegate = ProcessTile;
         }
 
-
         public bool Process()
         {
             processingParameterCache.Clear();

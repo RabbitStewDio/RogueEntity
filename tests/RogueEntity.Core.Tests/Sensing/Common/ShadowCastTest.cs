@@ -7,6 +7,7 @@ using RogueEntity.Core.Sensing.Common.ShadowCast;
 using RogueEntity.Core.Sensing.Resistance.Directions;
 using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.Algorithms;
+using RogueEntity.Core.Utils.DataViews;
 using static RogueEntity.Core.Tests.Sensing.SenseTestHelpers;
 
 namespace RogueEntity.Core.Tests.Sensing.Common

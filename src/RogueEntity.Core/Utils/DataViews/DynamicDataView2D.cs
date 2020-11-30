@@ -247,6 +247,18 @@ namespace RogueEntity.Core.Utils.DataViews
             return false;
         }
 
+        public ref T TryGetForUpdate(int x, int y, ref T defaultValue, out bool success, DataViewCreateMode mode = DataViewCreateMode.Nothing)
+        {
+            if (TryGetWriteAccess(x, y, out IBoundedDataView<T> data, mode))
+            {
+                return ref data.TryGetForUpdate(x, y, ref defaultValue, out success);
+            }
+
+            success = false;
+            return ref defaultValue;
+            
+        }
+
         [IgnoreDataMember]
         [IgnoreMember]
         public T this[int x, int y]

@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using JetBrains.Annotations;
+using RogueEntity.Api.Utils;
 using RogueEntity.Core.Directionality;
 using RogueEntity.Core.Movement.Cost;
 using RogueEntity.Core.Positioning;
@@ -13,12 +15,13 @@ namespace RogueEntity.Core.Movement.Pathfinding.SingleLevel
 {
     public class SingleLevelPathFinderWorker : AStarGridBase<IMovementMode>
     {
-        readonly List<Direction> directions;
         readonly List<MovementSourceData> movementCostsOnLevel;
         readonly PooledDynamicDataView2D<IMovementMode> nodesSources;
         readonly List<Position2D> pathBuffer;
         IReadOnlyBoundedDataView<DirectionalityInformation>[] directionsTile;
         IReadOnlyBoundedDataView<float>[] costsTile;
+        IBoundedDataView<IMovementMode> nodeSourceTile;
+        ReadOnlyListWrapper<Direction>[] directionData;
 
         int activeLevel;
         IPathFinderTargetEvaluator targetEvaluator;
@@ -27,7 +30,6 @@ namespace RogueEntity.Core.Movement.Pathfinding.SingleLevel
                                            IBoundedDataViewPool<IMovementMode> movementModePool) : base(pool)
         {
             pathBuffer = new List<Position2D>();
-            directions = new List<Direction>();
             nodesSources = new PooledDynamicDataView2D<IMovementMode>(movementModePool);
             movementCostsOnLevel = new List<MovementSourceData>();
             directionsTile = new IReadOnlyBoundedDataView<DirectionalityInformation>[0];
@@ -36,6 +38,11 @@ namespace RogueEntity.Core.Movement.Pathfinding.SingleLevel
 
         public void ConfigureActiveLevel(int z)
         {
+            movementCostsOnLevel.Clear();
+            nodesSources.Clear();
+            nodeSourceTile = null;
+            Array.Clear(directionsTile, 0, directionsTile.Length);
+            Array.Clear(costsTile, 0, costsTile.Length);
             activeLevel = z;
         }
 
@@ -46,7 +53,7 @@ namespace RogueEntity.Core.Movement.Pathfinding.SingleLevel
             if (movementCosts.TryGetView(activeLevel, out var costView) &&
                 movementDirections.TryGetView(activeLevel, out var directionView))
             {
-                movementCostsOnLevel.Add(new MovementSourceData(movementCostsOnLevel.Count, costProfile, costView, directionView));
+                movementCostsOnLevel.Add(new MovementSourceData(costProfile, costView, directionView));
             }
 
             if (movementCostsOnLevel.Count > directionsTile.Length)
@@ -57,6 +64,7 @@ namespace RogueEntity.Core.Movement.Pathfinding.SingleLevel
             {
                 Array.Clear(directionsTile, 0, directionsTile.Length);
             }
+            
             if (movementCostsOnLevel.Count > costsTile.Length)
             {
                 costsTile = new IReadOnlyBoundedDataView<float>[movementCostsOnLevel.Count];
@@ -65,20 +73,18 @@ namespace RogueEntity.Core.Movement.Pathfinding.SingleLevel
             {
                 Array.Clear(costsTile, 0, costsTile.Length);
             }
-            
         }
-
+        
         public void ConfigureFinished(AdjacencyRule r)
         {
-            directions.Clear();
-            foreach (var h in r.DirectionsOfNeighbors())
-            {
-                directions.Add(h);
-            }
+            directionData = DirectionalityLookup.Get(r);
         }
 
         public void Reset()
         {
+            nodeSourceTile = null;
+            targetEvaluator = null;
+            directionData = default;
             movementCostsOnLevel.Clear();
             nodesSources.Clear();
             Array.Clear(directionsTile, 0, directionsTile.Length);
@@ -107,10 +113,8 @@ namespace RogueEntity.Core.Movement.Pathfinding.SingleLevel
             return result;
         }
 
-        protected override void PopulateTraversableDirections(Position2D basePos, List<Direction> buffer)
+        protected override ReadOnlyListWrapper<Direction> PopulateTraversableDirections(Position2D basePos)
         {
-            buffer.Clear();
-            
             var targetPosX = basePos.X;
             var targetPosY = basePos.Y;
             var allowedMovements = DirectionalityInformation.None;
@@ -118,20 +122,13 @@ namespace RogueEntity.Core.Movement.Pathfinding.SingleLevel
             for (var index = 0; index < movementCostsOnLevel.Count; index++)
             {
                 var s = movementCostsOnLevel[index];
-                var dir = s.Directions.TryGet(ref directionsTile[s.Index], targetPosX, targetPosY, DirectionalityInformation.None);
+                var dir = s.Directions.TryGet(ref directionsTile[index], targetPosX, targetPosY, DirectionalityInformation.None);
                 allowedMovements |= dir;
             }
 
-            for (var index = 0; index < directions.Count; index++)
-            {
-                var d = directions[index];
-                if (allowedMovements.IsMovementAllowed(d))
-                {
-                    buffer.Add(d);
-                }
-            }
+            return directionData[(int)allowedMovements];
         }
-
+        
         protected override bool EdgeCostInformation(in Position2D sourceNode, in Direction d, float sourceNodeCost, out float totalPathCost, out IMovementMode movementMode)
         {
             var targetPosX = sourceNode.X;
@@ -143,7 +140,7 @@ namespace RogueEntity.Core.Movement.Pathfinding.SingleLevel
             for (var index = 0; index < movementCostsOnLevel.Count; index++)
             {
                 var m = movementCostsOnLevel[index];
-                var dir = m.Directions.TryGet(ref directionsTile[m.Index], targetPosX, targetPosY, DirectionalityInformation.None);
+                var dir = m.Directions.TryGet(ref directionsTile[index], targetPosX, targetPosY, DirectionalityInformation.None);
                 if (dir == DirectionalityInformation.None)
                 {
                     continue;
@@ -154,7 +151,7 @@ namespace RogueEntity.Core.Movement.Pathfinding.SingleLevel
                     continue;
                 }
 
-                var tileCost = m.Costs.TryGet(ref costsTile[m.Index], targetPosX, targetPosY, 0);
+                var tileCost = m.Costs.TryGet(ref costsTile[index], targetPosX, targetPosY, 0);
                 if (tileCost <= 0)
                 {
                     // a cost of zero means its undefined. This should mean the tile is not valid.
@@ -193,25 +190,29 @@ namespace RogueEntity.Core.Movement.Pathfinding.SingleLevel
 
         protected override void UpdateNode(in Position2D pos, IMovementMode nodeInfo)
         {
-            nodesSources[pos.X, pos.Y] = nodeInfo;
+            IMovementMode defaultMovement = null;
+            ref var entry = ref nodesSources.TryGetRefForUpdate(ref nodeSourceTile, pos.X, pos.Y, ref defaultMovement, out var success, DataViewCreateMode.CreateMissing);
+            if (!success)
+            {
+                throw new Exception();
+            }
+
+            entry = nodeInfo;
         }
 
         readonly struct MovementSourceData
         {
-            public readonly int Index;
             public readonly IMovementMode MovementType;
             public readonly float BaseCost;
             public readonly IReadOnlyDynamicDataView2D<float> Costs;
             public readonly IReadOnlyDynamicDataView2D<DirectionalityInformation> Directions;
 
-            public MovementSourceData(int index,
-                                      in MovementCost movementCost,
+            public MovementSourceData(in MovementCost movementCost,
                                       [NotNull] IReadOnlyDynamicDataView2D<float> costs,
                                       [NotNull] IReadOnlyDynamicDataView2D<DirectionalityInformation> directions)
             {
                 BaseCost = movementCost.Cost;
                 MovementType = movementCost.MovementMode ?? throw new ArgumentNullException(nameof(movementCost.MovementMode));
-                Index = index;
                 Costs = costs ?? throw new ArgumentNullException(nameof(costs));
                 Directions = directions ?? throw new ArgumentNullException(nameof(directions));
             }

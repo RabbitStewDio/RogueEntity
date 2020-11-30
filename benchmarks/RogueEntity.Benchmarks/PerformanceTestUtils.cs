@@ -3,18 +3,17 @@ using System.IO;
 using System.Reflection;
 using System.Resources;
 using System.Text;
-using RogueEntity.Core.Tests;
 using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.DataViews;
 
-namespace RogueEntity.Performance.Tests
+namespace RogueEntity.Benchmarks
 {
     public static class PerformanceTestUtils
     {
         public static string ReadResource(string id)
         {
             var assembly = typeof(PerformanceTestUtils).GetTypeInfo().Assembly;
-            using var resource = assembly.GetManifestResourceStream("RogueEntity.Performance.Tests." + id);
+            using var resource = assembly.GetManifestResourceStream("RogueEntity.Benchmarks." + id);
             if (resource == null)
             {
                 throw new MissingManifestResourceException();

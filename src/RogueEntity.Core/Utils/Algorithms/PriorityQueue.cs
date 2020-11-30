@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace RogueEntity.Core.Utils.Algorithms
 {
@@ -26,13 +27,23 @@ namespace RogueEntity.Core.Utils.Algorithms
             {
                 return Priority.CompareTo(other.Priority);
             }
+
+            sealed class PriorityRelationalComparer : IComparer<Node>
+            {
+                public int Compare(Node x, Node y)
+                {
+                    return x.Priority.CompareTo(y.Priority);
+                }
+            }
+
+            public static IComparer<Node> PriorityComparer { get; } = new PriorityRelationalComparer();
         }
 
         readonly BinaryHeap<Node> heap; 
 
         public PriorityQueue(int capacity)
         {
-            this.heap = new BinaryHeap<Node>(capacity);
+            this.heap = new BinaryHeap<Node>(capacity, Node.PriorityComparer);
         }
 
         public int Count => heap.Size;
@@ -48,11 +59,13 @@ namespace RogueEntity.Core.Utils.Algorithms
             return node.Data;
         }
 
-        public bool Remove(in TPayLoad node)
+        public bool Remove(in TPayLoad element)
         {
-            for (int i = 0; i < heap.Size; i += 1)
+            var size = heap.Size;
+            for (int i = 0; i < size; i += 1)
             {
-                if (node.Equals(heap[i].Data))
+                var payload = heap[i].Data;
+                if (element.Equals(payload))
                 {
                     heap.Remove(i);
                     return true;
@@ -63,8 +76,8 @@ namespace RogueEntity.Core.Utils.Algorithms
         }
 
         public void UpdatePriority(in TPayLoad node, in TWeight priority)
-        {
-            Remove(node);
+        { 
+            // Remove(node);
             Enqueue(node, priority);
         }
 
@@ -75,7 +88,8 @@ namespace RogueEntity.Core.Utils.Algorithms
 
         public bool Contains(in TPayLoad node)
         {
-            for (int i = 0; i < heap.Size; i += 1)
+            var heapSize = heap.Size;
+            for (int i = 0; i < heapSize; i += 1)
             {
                 if (node.Equals(heap[i].Data))
                 {

@@ -283,6 +283,11 @@ namespace RogueEntity.Core.Utils.DataViews
             return true;
         }
 
+        public ref bool TryGetForUpdate(int x, int y, ref bool defaultValue, out bool success, DataViewCreateMode mode = DataViewCreateMode.Nothing)
+        {
+            throw new InvalidOperationException();
+        }
+
         public bool TryGetRawAccess(int x, int y, out IBoundedDataViewRawAccess<bool> raw)
         {
             raw = default;

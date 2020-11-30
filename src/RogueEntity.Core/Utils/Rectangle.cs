@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using RogueEntity.Core.Utils.Algorithms;
 
@@ -381,6 +382,7 @@ namespace RogueEntity.Core.Utils
         /// </summary>
         /// <param name="position">The position to check.</param>
         /// <returns>Whether or not the specified point is considered within the rectangle.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Contains(in Position2D position)
         {
             return (position.X >= X && position.X < (X + Width) && position.Y >= Y && position.Y < (Y + Height));
@@ -392,6 +394,7 @@ namespace RogueEntity.Core.Utils
         /// <param name="x">The x-value position to check.</param>
         /// <param name="y">The y-value position to check.</param>
         /// <returns>Whether or not the specified point is considered within the rectangle.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Contains(int x, int y) => (x >= X && x < (X + Width) && y >= Y && y < (Y + Height));
 
         /// <summary>
@@ -402,6 +405,7 @@ namespace RogueEntity.Core.Utils
         /// <returns>
         /// True if the given rectangle is completely contained within the current one, false otherwise.
         /// </returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Contains(in Rectangle other)
         {
             return (X <= other.X && other.X + other.Width <= X + Width && Y <= other.Y &&
@@ -417,9 +421,10 @@ namespace RogueEntity.Core.Utils
         /// <returns>
         /// true if the area of the two rectangles encompass the exact same area, false otherwise.
         /// </returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Equals(Rectangle other)
         {
-            return (X == other.X && Y == other.Y && Width == other.Width && Height == other.Height);
+            return Height == other.Height && Width == other.Width && X == other.X && Y == other.Y;
         }
 
         /// <summary>
@@ -429,9 +434,10 @@ namespace RogueEntity.Core.Utils
         /// <returns>
         /// true if the object specified is a rectangle instance and encompasses the same area, false otherwise.
         /// </returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override bool Equals(Object obj)
         {
-            return obj is Rectangle && this == (Rectangle) obj;
+            return obj is Rectangle other && Equals(other);
         }
 
         /// <summary>
@@ -448,16 +454,7 @@ namespace RogueEntity.Core.Utils
         public Rectangle Expand(int horizontalChange, int verticalChange)
             => new Rectangle(X - horizontalChange, Y - verticalChange, Width + (2 * horizontalChange),
                 Height + (2 * verticalChange));
-
-        /// <summary>
-        /// Simple hashing.
-        /// </summary>
-        /// <returns>Hash code for rectangle.</returns>
-        public override int GetHashCode()
-        {
-            return X.GetHashCode() ^ Y.GetHashCode() ^ Width.GetHashCode() ^ Height.GetHashCode();
-        }
-
+        
         /// <summary>
         /// Returns whether or not the given rectangle intersects the current one.
         /// </summary>
@@ -467,6 +464,23 @@ namespace RogueEntity.Core.Utils
         {
             return (other.X < X + Width && X < other.X + other.Width && other.Y < Y + Height &&
                     Y < other.Y + other.Height);
+        }
+
+        /// <summary>
+        /// Simple hashing.
+        /// </summary>
+        /// <returns>Hash code for rectangle.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                var hashCode = Height;
+                hashCode = (hashCode * 397) ^ Width;
+                hashCode = (hashCode * 397) ^ X;
+                hashCode = (hashCode * 397) ^ Y;
+                return hashCode;
+            }
         }
 
         /// <summary>

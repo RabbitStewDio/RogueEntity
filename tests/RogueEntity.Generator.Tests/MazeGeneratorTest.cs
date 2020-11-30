@@ -8,7 +8,7 @@ using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.DataViews;
 using RogueEntity.Generator.CellularAutomata;
 
-namespace RogueEntity.Performance.Tests
+namespace RogueEntity.Generator.Tests
 {
     public class MazeGeneratorTest
     {

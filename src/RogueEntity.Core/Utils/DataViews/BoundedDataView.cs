@@ -164,10 +164,32 @@ namespace RogueEntity.Core.Utils.DataViews
             return true;
         }
 
+        public bool Contains(int x, int y)
+        {
+            return bounds.Contains(x, y);
+        }
+
         public bool TryGet<TPosition2D>(in TPosition2D pos, out TData result)
             where TPosition2D : IPosition2D<TPosition2D>
         {
             return TryGet(pos.X, pos.Y, out result);
+        }
+
+        public ref TData TryGetForUpdate(int x, int y, ref TData defaultValue, out bool success)
+        {
+            var rawX = x - bounds.X;
+            var rawY = y - bounds.Y;
+            if (rawX < 0 || rawY < 0 ||
+                rawX >= bounds.Width || 
+                rawY >= bounds.Height)
+            {
+                success = false;
+                return ref defaultValue;
+            }
+            
+            var linIdx = rawX + rawY * bounds.Width;
+            success = true; 
+            return ref data[linIdx];
         }
 
         public bool TrySet(int x, int y, in TData result)

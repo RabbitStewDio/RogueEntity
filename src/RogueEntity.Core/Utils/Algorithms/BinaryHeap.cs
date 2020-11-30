@@ -149,13 +149,12 @@ namespace RogueEntity.Core.Utils.Algorithms
             NodeAdded(in Data[index], index);
 
             var swapItem = index;
-            int parent;
 
             // removing a node: Take the first node out. Now move the last node (largest node) to the top and trickle it downwards.
 
-            do
+            while(true)
             {
-                parent = swapItem;
+                var parent = swapItem;
                 var p2 = parent * 2;
                 if ((p2 + 1) < numberOfItems)
                 {
@@ -180,11 +179,13 @@ namespace RogueEntity.Core.Utils.Algorithms
                 }
 
                 // One if the parent's children are smaller or equal, swap them
-                if (parent != swapItem)
+                if (parent == swapItem)
                 {
-                    Swap(parent, swapItem);
+                    break;
                 }
-            } while (parent != swapItem);
+                
+                Swap(parent, swapItem);
+            }
 
             Revalidate();
             NodeRemoved(in returnItem);

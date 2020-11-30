@@ -54,6 +54,9 @@ namespace RogueEntity.Core.Movement.Pathfinding.SingleLevel
         public void Configure([NotNull] SingleLevelPathFinderBuilder owner,
                               [NotNull] IPathFinderTargetEvaluator evaluator)
         {
+            this.disposed = false;
+            this.movementSourceData.Clear();
+            this.singleLevelPathFinder.Reset();
             this.currentOwner = owner ?? throw new ArgumentNullException(nameof(owner));
             this.targetEvaluator = evaluator ?? throw new ArgumentNullException(nameof(evaluator));
         }
@@ -67,6 +70,7 @@ namespace RogueEntity.Core.Movement.Pathfinding.SingleLevel
         {
             this.disposed = false;
             this.singleLevelPathFinder.Reset();
+            this.movementSourceData.Clear();
         }
 
         public IReadOnlyDynamicDataView2D<AStarNode> ProcessedNodes => singleLevelPathFinder.Nodes;

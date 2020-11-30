@@ -57,9 +57,9 @@ namespace RogueEntity.Core.Utils.DataViews
             }
         }
 
-        public static DefaultPooledBoundedDataView<T> CreateForPool()
+        public static DefaultPooledBoundedDataView<T> CreateForPool(in DynamicDataViewConfiguration config)
         {
-            return new DefaultPooledBoundedDataView<T>(new Rectangle(), 0);
+            return new DefaultPooledBoundedDataView<T>(new Rectangle(0, 0, config.TileSizeX, config.TileSizeY), 0);
         }
     }
 }
