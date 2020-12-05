@@ -10,8 +10,8 @@ using RogueEntity.Core.Sensing.Common.Physics;
 using RogueEntity.Core.Sensing.Receptors;
 using RogueEntity.Core.Sensing.Receptors.Noise;
 using RogueEntity.Core.Sensing.Sources.Noise;
-using RogueEntity.Core.Utils.Algorithms;
 using RogueEntity.Core.Meta.EntityKeys;
+using RogueEntity.Core.Positioning.Algorithms;
 
 namespace RogueEntity.Core.Tests.Sensing.Receptor.Noise
 {

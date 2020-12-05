@@ -3,11 +3,11 @@ using JetBrains.Annotations;
 using RogueEntity.Core.Movement.CostModifier.Directions;
 using RogueEntity.Core.Movement.CostModifier.Map;
 using RogueEntity.Core.Positioning;
+using RogueEntity.Core.Positioning.Algorithms;
 using RogueEntity.Core.Sensing.Common;
 using RogueEntity.Core.Sensing.Common.Physics;
 using RogueEntity.Core.Sensing.Common.ShadowCast;
 using RogueEntity.Core.Utils;
-using RogueEntity.Core.Utils.Algorithms;
 
 namespace RogueEntity.Core.Movement.Pathfinding.SingleLevel
 {
@@ -44,7 +44,7 @@ namespace RogueEntity.Core.Movement.Pathfinding.SingleLevel
         }
 
         public LineOfSightTargetEvaluator<TMovementMode> WithTarget<TPosition>(TPosition position, int distance)
-            where TPosition : IPosition
+            where TPosition : IPosition<TPosition>
         {
             this.zLevel = position.GridZ;
             this.targetPosition = position.ToGridXY();
@@ -63,7 +63,7 @@ namespace RogueEntity.Core.Movement.Pathfinding.SingleLevel
         }
 
         public bool Initialize<TPosition>(in TPosition origin, DistanceCalculation c)
-            where TPosition : IPosition
+            where TPosition : IPosition<TPosition>
         {
             this.sourcePosition = origin.ToGridXY();
             this.physics.DistanceMeasurement = c;

@@ -91,7 +91,7 @@ namespace RogueEntity.Core.Positioning.Caching
         }
         
         public bool IsDirty<TPosition>(TPosition p)
-            where TPosition : IPosition
+            where TPosition : IPosition<TPosition>
         {
             if (globallyDirty)
             {
@@ -154,7 +154,7 @@ namespace RogueEntity.Core.Positioning.Caching
         }
 
         public bool IsDirty<TPosition>(TPosition center, float radius)
-            where TPosition : IPosition
+            where TPosition : IPosition<TPosition>
         {
             if (globallyDirty)
             {

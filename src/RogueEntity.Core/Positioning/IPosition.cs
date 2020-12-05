@@ -1,6 +1,6 @@
 namespace RogueEntity.Core.Positioning
 {
-    public interface IPosition
+    public interface IPosition<out TPosition> where TPosition: IPosition<TPosition> 
     {
         double X { get; }
         double Y { get; }
@@ -12,5 +12,8 @@ namespace RogueEntity.Core.Positioning
 
         byte LayerId { get; }
         bool IsInvalid { get; }
+
+        TPosition WithPosition(int x, int y);
+        TPosition WithPosition(double tx, double ty);
     }
 }

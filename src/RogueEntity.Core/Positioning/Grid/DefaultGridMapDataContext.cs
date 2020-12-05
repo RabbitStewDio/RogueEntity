@@ -17,11 +17,16 @@ namespace RogueEntity.Core.Positioning.Grid
             this.Layer = layer;
         }
         
+        public DefaultGridMapDataContext(MapLayer layer, DynamicDataViewConfiguration conf): base(conf)
+        {
+            this.Layer = layer;
+        }
+        
         [UsedImplicitly] 
         public MapLayer Layer { get; }
 
         public void MarkDirty<TPosition>(in TPosition position)
-            where TPosition : IPosition
+            where TPosition : IPosition<TPosition>
         {
             PositionDirty?.Invoke(this, new PositionDirtyEventArgs(Position.From(position)));
         }

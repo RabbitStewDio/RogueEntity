@@ -1,6 +1,6 @@
 using System;
 
-namespace RogueEntity.Core.Utils.Algorithms
+namespace RogueEntity.Core.Positioning.Algorithms
 {
     /// <summary>
     ///   A weight that adds a small preference for cardinal directions to the

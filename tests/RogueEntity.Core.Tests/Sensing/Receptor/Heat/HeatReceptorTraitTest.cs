@@ -8,8 +8,8 @@ using RogueEntity.Core.Sensing.Receptors.Heat;
 using RogueEntity.Core.Sensing.Sources;
 using RogueEntity.Core.Sensing.Sources.Heat;
 using RogueEntity.Core.Tests.Meta.Items;
-using RogueEntity.Core.Utils.Algorithms;
 using RogueEntity.Core.Meta.EntityKeys;
+using RogueEntity.Core.Positioning.Algorithms;
 
 namespace RogueEntity.Core.Tests.Sensing.Receptor.Heat
 {

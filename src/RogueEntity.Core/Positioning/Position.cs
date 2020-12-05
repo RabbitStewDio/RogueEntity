@@ -9,14 +9,17 @@ namespace RogueEntity.Core.Positioning
     ///
     ///   This object is not meant for storage.
     /// </summary>
-    public readonly struct Position : IEquatable<Position>, IPosition
+    public readonly struct Position : IEquatable<Position>, IPosition<Position>
     {
         public static Position Invalid = default;
         readonly byte layerId;
+        public readonly double Z;
+        public readonly double Y;
+        public readonly double X;
 
-        public double X { get; }
-        public double Y { get; }
-        public double Z { get; }
+        double IPosition<Position>.X => X;
+        double IPosition<Position>.Y => Y;
+        double IPosition<Position>.Z => Z;
 
         public byte LayerId
         {
@@ -35,9 +38,9 @@ namespace RogueEntity.Core.Positioning
 
         public Position(double x, double y, double z, byte layer)
         {
-            X = x;
-            Y = y;
-            Z = z;
+            this.X = x;
+            this.Y = y;
+            this.Z = z;
             layerId = (byte) (layer + 1);
         }
 
@@ -87,23 +90,23 @@ namespace RogueEntity.Core.Positioning
         }
 
         public Position Apply<TPosition>(TPosition p)
-            where TPosition : IPosition
+            where TPosition : IPosition<TPosition>
         {
             return new Position(p.X, p.Y, p.Z, this.LayerId);
         }
 
-        public Position From(int x, int y)
+        public Position WithPosition(int x, int y)
         {
             return new Position(x, y, this.Z, this.LayerId);
         }
 
-        public Position From(double x, double y)
+        public Position WithPosition(double tx, double ty)
         {
-            return new Position(x, y, this.Z, this.LayerId);
+            return new Position(tx, ty, this.Z, this.LayerId);
         }
 
         public static Position From<TPosition>(TPosition p)
-            where TPosition : IPosition
+            where TPosition : IPosition<TPosition>
         {
             if (p.IsInvalid)
             {

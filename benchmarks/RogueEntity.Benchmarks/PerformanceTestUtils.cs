@@ -56,7 +56,6 @@ namespace RogueEntity.Benchmarks
                 }
 
                 row += 1;
-                var maxLength = (line.Length / 2) * 2;
                 for (var index = 0; index < line.Length; index += 2)
                 {
                     

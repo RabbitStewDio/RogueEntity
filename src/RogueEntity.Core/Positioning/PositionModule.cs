@@ -6,6 +6,7 @@ using RogueEntity.Api.Modules.Attributes;
 using RogueEntity.Core.Meta;
 using RogueEntity.Core.Positioning.Continuous;
 using RogueEntity.Core.Positioning.Grid;
+using RogueEntity.Core.Positioning.SpatialQueries;
 
 namespace RogueEntity.Core.Positioning
 {
@@ -20,6 +21,7 @@ namespace RogueEntity.Core.Positioning
 
         public static readonly EntitySystemId RegisterClearContinuousPositionChangeTracker = "Systems.Core.Position.Continuous.ClearChangeTracker";
         public static readonly EntitySystemId RegisterClearGridPositionChangeTracker = "Systems.Core.Position.Grid.ClearChangeTracker";
+        public static readonly EntitySystemId RegisterSpatialQuery = "Systems.Core.Position.RegisterSpatialQuery";
 
         public static readonly EntityRole PositionedRole = new EntityRole("Role.Core.Position.Positionable");
         public static readonly EntityRole GridPositionedRole = new EntityRole("Role.Core.Position.GridPositioned");
@@ -45,6 +47,38 @@ namespace RogueEntity.Core.Positioning
         {
             var entityContext = initializer.DeclareEntityContext<TActorId>();
             entityContext.Register(RegisterCommonPositions, 0, RegisterCommonEntities);
+            
+            if (!initParameter.ServiceResolver.TryResolve(out SpatialQueryRegistry r))
+            {
+                r = new SpatialQueryRegistry();
+                initParameter.ServiceResolver.Store(r);
+                initParameter.ServiceResolver.Store<ISpatialQueryLookup>(r);
+            }
+        }
+
+        [EntityRoleFinalizerAttribute("Role.Core.Position.Positionable")]
+        protected void FinalizePositionedRole<TGameContext, TActorId>(in ModuleEntityInitializationParameter<TGameContext, TActorId> initParameter,
+                                                                      IModuleInitializer<TGameContext> initializer,
+                                                                      EntityRole role)
+            where TActorId : IEntityKey
+        {
+            var ctx = initializer.DeclareEntityContext<TActorId>();
+            ctx.Register(RegisterSpatialQuery, 9_999_999, RegisterSpatialQueryBruteForce);
+        }
+
+        void RegisterSpatialQueryBruteForce<TActorId>(in ModuleInitializationParameter initParameter, EntityRegistry<TActorId> registry)
+            where TActorId : IEntityKey
+        {
+            if (!initParameter.ServiceResolver.TryResolve(out ISpatialQuery<TActorId> q))
+            {
+                q = new BruteForceSpatialQueryBackend<TActorId>(registry);
+                initParameter.ServiceResolver.Store(q);
+
+                if (initParameter.ServiceResolver.TryResolve(out SpatialQueryRegistry r))
+                {
+                    r.Register(q);
+                }
+            }
         }
 
         [EntityRoleInitializer("Role.Core.Position.GridPositioned")]

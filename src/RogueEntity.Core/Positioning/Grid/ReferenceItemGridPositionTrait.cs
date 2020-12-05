@@ -145,7 +145,7 @@ namespace RogueEntity.Core.Positioning.Grid
                 // was on map before, now no longer on map.
                 if (!layerPreference.IsAcceptable(previousPosition, out var previousLayerId) ||
                     !gridContext.TryGetGridDataFor(previousLayerId, out var previousMapContext) ||
-                    !previousMapContext.TryGetWritableView(previousPosition.GridZ, out var previousMap, DataViewCreateMode.CreateMissing))
+                    !previousMapContext.TryGetWritableView(previousPosition.GridZ, out var previousMap))
                 {
                     throw new ArgumentException("A previously set position was not accepted as layer target.");
                 }
@@ -185,7 +185,7 @@ namespace RogueEntity.Core.Positioning.Grid
             {
                 if (!layerPreference.IsAcceptable(previousPosition, out var previousLayerId) ||
                     !gridContext.TryGetGridDataFor(previousLayerId, out var previousItemMap) ||
-                    !previousItemMap.TryGetWritableView(previousPosition.GridZ, out var previousMap, DataViewCreateMode.CreateMissing))
+                    !previousItemMap.TryGetWritableView(previousPosition.GridZ, out var previousMap))
                 {
                     throw new ArgumentException("A previously set position was not accepted as layer target.");
                 }

@@ -1,3 +1,9 @@
+using System.Collections.Generic;
+using RogueEntity.Api.Utils;
+using RogueEntity.Core.Movement;
+using RogueEntity.Core.Movement.GoalFinding;
+using RogueEntity.Core.Positioning.Grid;
+using RogueEntity.Core.Tests.Movement.Pathfinding;
 using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.DataViews;
 
@@ -18,6 +24,29 @@ namespace RogueEntity.Core.Tests.Movement
             tokenParser.AddNumericToken<float>(TokenParser.ParseFloat);
 
             return TestHelpers.Parse<float>(text, tokenParser, out parsedBounds);
+        }
+
+        public static DynamicDataView2D<(float, Optional<GoalMarker<TGoal>>)> ParseGoalMap<TGoal>(string text, out Rectangle parsedBounds)
+        {
+            static bool ParseFloat(float f, out (float, Optional<GoalMarker<TGoal>>) r)
+            {
+                var none = Optional.Empty<GoalMarker<TGoal>>();
+                r = (f, none);
+                return true;
+            }
+
+            var none = Optional.Empty<GoalMarker<TGoal>>();
+            
+            var tokenParser = new TokenParser();
+            tokenParser.AddToken("", (1f, none));
+            tokenParser.AddToken(".", (1f, none));
+            tokenParser.AddToken("###", (0f, none));
+            tokenParser.AddToken("##", (0f, none));
+            tokenParser.AddToken("#", (0f, none));
+            tokenParser.AddToken("G", (0f, Optional.ValueOf(new GoalMarker<TGoal>(10))));
+            tokenParser.AddNumericToken<(float, Optional<GoalMarker<TGoal>>)>(ParseFloat);
+
+            return TestHelpers.Parse<(float, Optional<GoalMarker<TGoal>>)>(text, tokenParser, out parsedBounds);
         }
 
         public static DynamicDataView2D<(bool, int)> ParseResultMap(string text, out Rectangle parsedBounds)
@@ -67,5 +96,37 @@ namespace RogueEntity.Core.Tests.Movement
 
             return $" {arg.Item2,3} ";
         }
+        
+        public static DynamicDataView2D<(bool, int)> CreateResult(DynamicDataView2D<float> resistanceMap,
+                                                                  List<(EntityGridPosition, IMovementMode)> resultPath,
+                                                                  EntityGridPosition startPos,
+                                                                  Rectangle bounds)
+        {
+            var resultMap = new DynamicDataView2D<(bool, int)>(resistanceMap.ToConfiguration());
+
+            foreach (var (x, y) in bounds.Contents)
+            {
+                var wall = resistanceMap[x, y] <= 0;
+                var pos = startPos.WithPosition(x, y);
+                int pathIndex;
+                if (pos == startPos)
+                {
+                    pathIndex = 0;
+                }
+                else
+                {
+                    pathIndex = resultPath.PathIndexOf(pos);
+                    if (pathIndex >= 0)
+                    {
+                        pathIndex += 1;
+                    }
+                }
+
+                resultMap[x, y] = (wall, pathIndex);
+            }
+
+            return resultMap;
+        }
+
     }
 }

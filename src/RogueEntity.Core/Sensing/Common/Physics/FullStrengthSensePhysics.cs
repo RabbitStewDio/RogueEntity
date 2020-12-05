@@ -1,6 +1,6 @@
 using System;
 using JetBrains.Annotations;
-using RogueEntity.Core.Utils.Algorithms;
+using RogueEntity.Core.Positioning.Algorithms;
 
 namespace RogueEntity.Core.Sensing.Common.Physics
 {

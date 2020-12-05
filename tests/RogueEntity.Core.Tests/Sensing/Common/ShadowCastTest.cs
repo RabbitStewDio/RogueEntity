@@ -1,12 +1,12 @@
 using System;
 using NUnit.Framework;
+using RogueEntity.Core.Positioning.Algorithms;
 using RogueEntity.Core.Sensing;
 using RogueEntity.Core.Sensing.Common;
 using RogueEntity.Core.Sensing.Common.Physics;
 using RogueEntity.Core.Sensing.Common.ShadowCast;
 using RogueEntity.Core.Sensing.Resistance.Directions;
 using RogueEntity.Core.Utils;
-using RogueEntity.Core.Utils.Algorithms;
 using RogueEntity.Core.Utils.DataViews;
 using static RogueEntity.Core.Tests.Sensing.SenseTestHelpers;
 

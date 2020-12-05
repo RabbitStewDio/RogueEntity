@@ -1,21 +1,20 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using JetBrains.Annotations;
 using RogueEntity.Api.Utils;
 using RogueEntity.Core.Directionality;
 using RogueEntity.Core.Movement.Cost;
+using RogueEntity.Core.Movement.CostModifier;
 using RogueEntity.Core.Positioning;
-using RogueEntity.Core.Positioning.Grid;
+using RogueEntity.Core.Positioning.Algorithms;
 using RogueEntity.Core.Utils;
-using RogueEntity.Core.Utils.Algorithms;
 using RogueEntity.Core.Utils.DataViews;
 
 namespace RogueEntity.Core.Movement.Pathfinding.SingleLevel
 {
     public class SingleLevelPathFinderWorker : AStarGridBase<IMovementMode>
     {
-        readonly List<MovementSourceData> movementCostsOnLevel;
+        readonly List<MovementCostData2D> movementCostsOnLevel;
         readonly PooledDynamicDataView2D<IMovementMode> nodesSources;
         readonly List<Position2D> pathBuffer;
         IReadOnlyBoundedDataView<DirectionalityInformation>[] directionsTile;
@@ -31,7 +30,7 @@ namespace RogueEntity.Core.Movement.Pathfinding.SingleLevel
         {
             pathBuffer = new List<Position2D>();
             nodesSources = new PooledDynamicDataView2D<IMovementMode>(movementModePool);
-            movementCostsOnLevel = new List<MovementSourceData>();
+            movementCostsOnLevel = new List<MovementCostData2D>();
             directionsTile = new IReadOnlyBoundedDataView<DirectionalityInformation>[0];
             costsTile = new IReadOnlyBoundedDataView<float>[0];
         }
@@ -53,7 +52,7 @@ namespace RogueEntity.Core.Movement.Pathfinding.SingleLevel
             if (movementCosts.TryGetView(activeLevel, out var costView) &&
                 movementDirections.TryGetView(activeLevel, out var directionView))
             {
-                movementCostsOnLevel.Add(new MovementSourceData(costProfile, costView, directionView));
+                movementCostsOnLevel.Add(new MovementCostData2D(costProfile, costView, directionView));
             }
 
             if (movementCostsOnLevel.Count > directionsTile.Length)
@@ -91,10 +90,11 @@ namespace RogueEntity.Core.Movement.Pathfinding.SingleLevel
             Array.Clear(costsTile, 0, costsTile.Length);
         }
 
-        public PathFinderResult FindPath(EntityGridPosition from,
-                                         IPathFinderTargetEvaluator evaluator,
-                                         List<(EntityGridPosition, IMovementMode)> path,
-                                         int maxSearchSteps = int.MaxValue)
+        public PathFinderResult FindPath<TPosition>(TPosition from,
+                                                    IPathFinderTargetEvaluator evaluator,
+                                                    List<(TPosition, IMovementMode)> path,
+                                                    int maxSearchSteps = int.MaxValue)
+            where TPosition: IPosition<TPosition>
         {
             if (from.IsInvalid)
             {
@@ -200,22 +200,5 @@ namespace RogueEntity.Core.Movement.Pathfinding.SingleLevel
             entry = nodeInfo;
         }
 
-        readonly struct MovementSourceData
-        {
-            public readonly IMovementMode MovementType;
-            public readonly float BaseCost;
-            public readonly IReadOnlyDynamicDataView2D<float> Costs;
-            public readonly IReadOnlyDynamicDataView2D<DirectionalityInformation> Directions;
-
-            public MovementSourceData(in MovementCost movementCost,
-                                      [NotNull] IReadOnlyDynamicDataView2D<float> costs,
-                                      [NotNull] IReadOnlyDynamicDataView2D<DirectionalityInformation> directions)
-            {
-                BaseCost = movementCost.Cost;
-                MovementType = movementCost.MovementMode ?? throw new ArgumentNullException(nameof(movementCost.MovementMode));
-                Costs = costs ?? throw new ArgumentNullException(nameof(costs));
-                Directions = directions ?? throw new ArgumentNullException(nameof(directions));
-            }
-        }
     }
 }

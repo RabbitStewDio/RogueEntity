@@ -1,7 +1,7 @@
 using EnTTSharp.Entities;
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Core.Meta.ItemBuilder;
-using RogueEntity.Core.Utils.Algorithms;
+using RogueEntity.Core.Positioning.Algorithms;
 
 namespace RogueEntity.Core.Movement.Cost
 {

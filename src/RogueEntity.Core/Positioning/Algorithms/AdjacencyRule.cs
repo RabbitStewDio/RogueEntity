@@ -1,4 +1,4 @@
-namespace RogueEntity.Core.Utils.Algorithms
+namespace RogueEntity.Core.Positioning.Algorithms
 {
     public enum AdjacencyRule
     {

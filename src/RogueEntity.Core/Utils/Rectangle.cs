@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
-using RogueEntity.Core.Utils.Algorithms;
+using RogueEntity.Core.Positioning.Algorithms;
 
 namespace RogueEntity.Core.Utils
 {

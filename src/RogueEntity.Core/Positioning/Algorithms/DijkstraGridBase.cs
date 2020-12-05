@@ -1,10 +1,11 @@
 using System;
 using System.Collections.Generic;
 using RogueEntity.Api.Utils;
+using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.DataViews;
 using Serilog;
 
-namespace RogueEntity.Core.Utils.Algorithms
+namespace RogueEntity.Core.Positioning.Algorithms
 {
     /// <summary>
     ///   This Dijkstra grid graph allows you to find all possible paths to a set of
@@ -25,19 +26,17 @@ namespace RogueEntity.Core.Utils.Algorithms
     ///   that your weights for each target are greater than the number of cells in the
     ///   search area.
     /// </summary>
-    public abstract class DijkstraGridBase
+    public abstract class DijkstraGridBase<TExtraNodeInfo>
     {
-        static readonly ILogger Logger = SLog.ForContext<DijkstraGridBase>();
+        static readonly ILogger Logger = SLog.ForContext<DijkstraGridBase<TExtraNodeInfo>>();
 
         Rectangle bounds;
         readonly BoundedDataView<Direction> resultMapCoords;
         readonly BoundedDataView<float> resultMapDistanceCost;
         readonly PriorityQueue<DijkstraNodeWeight, ShortPosition2D> openNodes;
-        readonly List<Direction> directions;
 
         protected DijkstraGridBase(in Rectangle bounds)
         {
-            this.directions = new List<Direction>();
             this.openNodes = new PriorityQueue<DijkstraNodeWeight, ShortPosition2D>(bounds.Width * bounds.Height);
             this.resultMapCoords = new BoundedDataView<Direction>(in bounds);
             this.resultMapDistanceCost = new BoundedDataView<float>(in bounds);
@@ -72,31 +71,23 @@ namespace RogueEntity.Core.Utils.Algorithms
             resultMapDistanceCost.Clear();
         }
 
-        protected void RescanMap()
-        {
-            RescanMap(out _);
-        }
-
         public bool TryGetCumulativeCost(in ShortPosition2D pos, out float result)
         {
             return resultMapDistanceCost.TryGet(in pos, out result);
         }
 
-        protected abstract void PopulateTraversableDirections(ShortPosition2D basePosition, List<Direction> buffer);
+        protected abstract ReadOnlyListWrapper<Direction> PopulateTraversableDirections(ShortPosition2D basePosition);
 
-        protected bool RescanMap(out ShortPosition2D lowestNode,
-                                 int maxSteps = int.MaxValue)
+        protected bool RescanMap(int maxSteps = int.MaxValue)
         {
-            ShortPosition2D openNodePosition = default;
             var nodeCount = 0;
-            while (nodeCount < maxSteps && TryDequeueOpenNode(out openNodePosition))
+            while (nodeCount < maxSteps)
             {
-                if (IsTarget(in openNodePosition))
+                if (!TryDequeueOpenNode(out var openNodePosition))
                 {
-                    lowestNode = openNodePosition;
-                    return true;
+                    break;
                 }
-
+                
                 if (!resultMapDistanceCost.TryGet(openNodePosition, out var openNodeWeight))
                 {
                     continue;
@@ -104,17 +95,17 @@ namespace RogueEntity.Core.Utils.Algorithms
 
                 nodeCount += 1;
 
-                PopulateTraversableDirections(openNodePosition, directions);
+                var directions = PopulateTraversableDirections(openNodePosition);
                 foreach (var d in directions)
                 {
                     var nextNodePos = openNodePosition + d;
 
-                    if (!IsValidNode(in nextNodePos))
+                    if (!resultMapCoords.Contains(nextNodePos.X, nextNodePos.Y))
                     {
                         continue;
                     }
 
-                    if (!EdgeCostInformation(in openNodePosition, in d, openNodeWeight, out var totalPathCost))
+                    if (!EdgeCostInformation(in openNodePosition, in d, openNodeWeight, out var totalPathCost, out TExtraNodeInfo ni))
                     {
                         continue;
                     }
@@ -127,15 +118,20 @@ namespace RogueEntity.Core.Utils.Algorithms
                     }
 
                     EnqueueNode(in nextNodePos, totalPathCost, openNodePosition);
+                    UpdateNode(nextNodePos, ni);
                 }
             }
 
-            lowestNode = openNodePosition;
             Logger.Verbose("Evaluated {Count} nodes during rescan.", nodeCount);
+            NodesEvaluated = nodeCount;
             return nodeCount > 0;
         }
+        
+        public int NodesEvaluated { get; private set; }
 
-        protected abstract bool EdgeCostInformation(in ShortPosition2D sourceNode, in Direction d, float sourceNodeCost, out float totalPathCost);
+        protected abstract void UpdateNode(in ShortPosition2D nextNodePos, TExtraNodeInfo nodeInfo);
+
+        protected abstract bool EdgeCostInformation(in ShortPosition2D sourceNode, in Direction d, float sourceNodeCost, out float totalPathCost, out TExtraNodeInfo nodeInfo);
 
         protected virtual bool IsTarget(in ShortPosition2D openNodePosition)
         {
@@ -177,11 +173,6 @@ namespace RogueEntity.Core.Utils.Algorithms
 
             c = openNodes.Dequeue();
             return true;
-        }
-
-        protected bool IsValidNode(in ShortPosition2D nextNodePos)
-        {
-            return resultMapCoords.TryGetRawIndex(in nextNodePos, out _);
         }
 
         protected virtual bool IsExistingResultBetter(in ShortPosition2D coord, in float newWeight)
@@ -230,13 +221,23 @@ namespace RogueEntity.Core.Utils.Algorithms
         /// </summary>
         /// <param name="p"></param>
         /// <param name="goalStrength"></param>
+        /// <param name="pathAccumulator"></param>
         /// <param name="maxLength"></param>
         /// <returns></returns>
         protected List<ShortPosition2D> FindPath(ShortPosition2D p,
                                                  out float goalStrength,
+                                                 List<ShortPosition2D> pathAccumulator = null,
                                                  int maxLength = int.MaxValue)
         {
-            var pathAccumulator = new List<ShortPosition2D>();
+            if (pathAccumulator == null)
+            {
+                pathAccumulator = new List<ShortPosition2D>();
+            }
+            else
+            {
+                pathAccumulator.Clear();
+            }
+            
             if (!resultMapDistanceCost.TryGet(p, out goalStrength))
             {
                 return pathAccumulator;

@@ -1,7 +1,6 @@
 using System;
-using RogueEntity.Core.Positioning;
 
-namespace RogueEntity.Core.Utils.Algorithms
+namespace RogueEntity.Core.Positioning.Algorithms
 {
     public enum DistanceCalculation
     {
@@ -47,40 +46,6 @@ namespace RogueEntity.Core.Utils.Algorithms
                 default:
                     throw new ArgumentOutOfRangeException(nameof(c), c, null);
             }
-        }
-
-        public static double Calculate<TPosition>(this DistanceCalculation c, TPosition p1, TPosition p2)
-            where TPosition : IPosition
-        {
-            var dx = p1.X - p2.X;
-            var dy = p1.Y - p2.Y;
-            var dz = p1.Z - p2.Z;
-            return c.Calculate(dx, dy, dz);
-        }
-
-        public static double Calculate2D<TPosition>(this DistanceCalculation c, TPosition p1, TPosition p2)
-            where TPosition : IPosition2D<TPosition>
-        {
-            var dx = p1.X - p2.X;
-            var dy = p1.Y - p2.Y;
-            return c.Calculate(dx, dy, 0);
-        }
-
-        public static double Calculate<TPosition>(this DistanceCalculation c, TPosition p1)
-            where TPosition : IPosition
-        {
-            var dx = p1.X;
-            var dy = p1.Y;
-            var dz = p1.Z;
-            return c.Calculate(dx, dy, dz);
-        }
-
-        public static double Calculate2D<TPosition>(this DistanceCalculation c, TPosition p1)
-            where TPosition : IPosition2D<TPosition>
-        {
-            var dx = p1.X;
-            var dy = p1.Y;
-            return c.Calculate(dx, dy, 0);
         }
 
         public static double Calculate(this DistanceCalculation c, double dx, double dy, double dz)

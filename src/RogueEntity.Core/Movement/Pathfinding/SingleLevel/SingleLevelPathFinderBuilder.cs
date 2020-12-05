@@ -24,7 +24,7 @@ namespace RogueEntity.Core.Movement.Pathfinding.SingleLevel
             pathFinderPool.Return(pf);
         }
 
-        public Dictionary<IMovementMode, SingleLevelPathFinderSource.MovementSourceData> MovementCostData { get; set; }
+        public IReadOnlyDictionary<IMovementMode, SingleLevelPathFinderSource.MovementSourceData> MovementCostData { get; set; }
 
         public IPathFinderBuilder WithTarget(IPathFinderTargetEvaluator evaluator)
         {

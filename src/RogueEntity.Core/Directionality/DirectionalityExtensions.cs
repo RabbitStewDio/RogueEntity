@@ -1,7 +1,7 @@
 using System;
 using System.Runtime.CompilerServices;
+using RogueEntity.Core.Positioning.Algorithms;
 using RogueEntity.Core.Utils;
-using RogueEntity.Core.Utils.Algorithms;
 
 namespace RogueEntity.Core.Directionality
 {

@@ -1,17 +1,17 @@
 using System;
 using System.Collections.Generic;
-using RogueEntity.Core.Positioning.Grid;
-using RogueEntity.Core.Utils.Algorithms;
+using RogueEntity.Core.Positioning;
+using RogueEntity.Core.Positioning.Algorithms;
 
 namespace RogueEntity.Core.Movement.Pathfinding
 {
-    public interface IPathFinder: IDisposable
+    public interface IPathFinder : IDisposable
     {
-        public PathFinderResult TryFindPath(EntityGridPosition source,
-                                            out List<(EntityGridPosition, IMovementMode)> path,
-                                            List<(EntityGridPosition, IMovementMode)> pathBuffer = null,
-                                            int searchLimit = int.MaxValue);
-        
+        public PathFinderResult TryFindPath<TPosition>(in TPosition source,
+                                                       out List<(TPosition, IMovementMode)> path,
+                                                       List<(TPosition, IMovementMode)> pathBuffer = null,
+                                                       int searchLimit = int.MaxValue)
+            where TPosition: IPosition<TPosition>;
     }
 
     public interface IPathFinderPerformanceView

@@ -8,7 +8,7 @@ namespace RogueEntity.Core.Positioning.Grid
     public interface IGridMapDataContext<TItemId>: IDynamicDataView3D<TItemId>
     {
         public event EventHandler<PositionDirtyEventArgs> PositionDirty;
-        void MarkDirty<TPosition>(in TPosition position) where TPosition: IPosition;
+        void MarkDirty<TPosition>(in TPosition position) where TPosition: IPosition<TPosition>;
     }
 
     public interface IGridMapRawDataContext<TItemId>
@@ -19,7 +19,7 @@ namespace RogueEntity.Core.Positioning.Grid
     public static class GridMapDataContextExtensions
     {
         public static bool TryGet<TItemId, TPosition>(this IGridMapDataContext<TItemId> data, in TPosition pos, out TItemId d)
-            where TPosition: IPosition
+            where TPosition: IPosition<TPosition>
         {
             if (!data.TryGetView(pos.GridZ, out var map))
             {
@@ -31,7 +31,7 @@ namespace RogueEntity.Core.Positioning.Grid
         }
 
         public static bool TrySet<TItemId, TPosition>(this IGridMapDataContext<TItemId> data, in TPosition pos, in TItemId d)
-            where TPosition: IPosition
+            where TPosition: IPosition<TPosition>
         {
             if (!data.TryGetWritableView(pos.GridZ, out var map, DataViewCreateMode.CreateMissing))
             {

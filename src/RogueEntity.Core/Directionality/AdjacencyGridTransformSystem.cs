@@ -1,7 +1,7 @@
 using RogueEntity.Api.Utils;
 using RogueEntity.Core.GridProcessing.Transforms;
+using RogueEntity.Core.Positioning.Algorithms;
 using RogueEntity.Core.Utils;
-using RogueEntity.Core.Utils.Algorithms;
 using RogueEntity.Core.Utils.DataViews;
 
 namespace RogueEntity.Core.Directionality

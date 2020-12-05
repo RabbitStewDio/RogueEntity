@@ -2,7 +2,7 @@ using System;
 using System.Runtime.Serialization;
 using EnTTSharp.Entities.Attributes;
 using MessagePack;
-using RogueEntity.Core.Utils.Algorithms;
+using RogueEntity.Core.Positioning.Algorithms;
 
 namespace RogueEntity.Core.Movement.Cost
 {

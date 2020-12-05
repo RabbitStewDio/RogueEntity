@@ -1,6 +1,6 @@
 using System;
+using RogueEntity.Core.Positioning.Algorithms;
 using RogueEntity.Core.Utils;
-using RogueEntity.Core.Utils.Algorithms;
 
 namespace RogueEntity.Core.Sensing.Common.Physics
 {

@@ -5,8 +5,8 @@ using RogueEntity.Core.Sensing.Common.Physics;
 using RogueEntity.Core.Sensing.Sources;
 using RogueEntity.Core.Sensing.Sources.Light;
 using RogueEntity.Core.Tests.Meta.Items;
-using RogueEntity.Core.Utils.Algorithms;
 using RogueEntity.Core.Meta.EntityKeys;
+using RogueEntity.Core.Positioning.Algorithms;
 
 namespace RogueEntity.Core.Tests.Sensing.Sources.Light
 {

@@ -7,8 +7,8 @@ using RogueEntity.Core.Movement.Cost;
 using RogueEntity.Core.Movement.MovementModes.Ethereal;
 using RogueEntity.Core.Movement.MovementModes.Swimming;
 using RogueEntity.Core.Movement.MovementModes.Walking;
+using RogueEntity.Core.Positioning.Algorithms;
 using RogueEntity.Core.Tests.Meta.Items;
-using RogueEntity.Core.Utils.Algorithms;
 
 namespace RogueEntity.Core.Tests.Movement.Cost
 {

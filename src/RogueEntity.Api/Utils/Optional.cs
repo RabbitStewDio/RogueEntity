@@ -9,6 +9,11 @@ namespace RogueEntity.Api.Utils
     
     public static class Optional
     {
+        public static Optional<T> Empty<T>()
+        {
+            return new OptionalEmptyPlaceholder();
+        }
+
         public static OptionalEmptyPlaceholder Empty()
         {
             return new OptionalEmptyPlaceholder();

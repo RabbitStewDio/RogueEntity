@@ -4,8 +4,9 @@ using System.Diagnostics;
 using JetBrains.Annotations;
 using RogueEntity.Core.Directionality;
 using RogueEntity.Core.Movement.Cost;
-using RogueEntity.Core.Positioning.Grid;
-using RogueEntity.Core.Utils.Algorithms;
+using RogueEntity.Core.Movement.CostModifier;
+using RogueEntity.Core.Positioning;
+using RogueEntity.Core.Positioning.Algorithms;
 using RogueEntity.Core.Utils.DataViews;
 
 namespace RogueEntity.Core.Movement.Pathfinding.SingleLevel
@@ -17,7 +18,7 @@ namespace RogueEntity.Core.Movement.Pathfinding.SingleLevel
     /// </summary>
     public class SingleLevelPathFinder : IPathFinder, IPathFinderPerformanceView
     {
-        readonly List<MovementSourceData3D> movementSourceData;
+        readonly List<MovementCostData3D> movementSourceData;
         readonly SingleLevelPathFinderWorker singleLevelPathFinder;
         readonly Stopwatch sw;
 
@@ -28,7 +29,7 @@ namespace RogueEntity.Core.Movement.Pathfinding.SingleLevel
         public SingleLevelPathFinder([NotNull] IBoundedDataViewPool<AStarNode> astarNodePool,
                                      [NotNull] IBoundedDataViewPool<IMovementMode> movementModePool)
         {
-            this.movementSourceData = new List<MovementSourceData3D>();
+            this.movementSourceData = new List<MovementCostData3D>();
             this.singleLevelPathFinder = new SingleLevelPathFinderWorker(astarNodePool, movementModePool);
             this.sw = new Stopwatch();
         }
@@ -61,11 +62,6 @@ namespace RogueEntity.Core.Movement.Pathfinding.SingleLevel
             this.targetEvaluator = evaluator ?? throw new ArgumentNullException(nameof(evaluator));
         }
 
-        public IPathFinder Build()
-        {
-            return this;
-        }
-
         public void Reset()
         {
             this.disposed = false;
@@ -75,18 +71,25 @@ namespace RogueEntity.Core.Movement.Pathfinding.SingleLevel
 
         public IReadOnlyDynamicDataView2D<AStarNode> ProcessedNodes => singleLevelPathFinder.Nodes;
 
-        public PathFinderResult TryFindPath(EntityGridPosition source,
-                                            out List<(EntityGridPosition, IMovementMode)> path,
-                                            List<(EntityGridPosition, IMovementMode)> pathBuffer = null,
-                                            int searchLimit = int.MaxValue)
+        public PathFinderResult TryFindPath<TPosition>(in TPosition source,
+                                                       out List<(TPosition, IMovementMode)> path,
+                                                       List<(TPosition, IMovementMode)> pathBuffer = null,
+                                                       int searchLimit = Int32.MaxValue)
+            where TPosition : IPosition<TPosition>
         {
             if (pathBuffer == null)
             {
-                pathBuffer = new List<(EntityGridPosition, IMovementMode)>();
+                pathBuffer = new List<(TPosition, IMovementMode)>();
             }
             else
             {
                 pathBuffer.Clear();
+            }
+
+            if (source.IsInvalid)
+            {
+                path = pathBuffer;
+                return PathFinderResult.NotFound;
             }
 
             singleLevelPathFinder.ConfigureActiveLevel(source.GridZ);
@@ -98,8 +101,8 @@ namespace RogueEntity.Core.Movement.Pathfinding.SingleLevel
                 {
                     heuristics = m.MovementCost.MovementStyle;
                 }
-
             }
+
             singleLevelPathFinder.ConfigureFinished(heuristics.AsAdjacencyRule());
 
             if (!targetEvaluator.Initialize(source, heuristics))
@@ -127,23 +130,7 @@ namespace RogueEntity.Core.Movement.Pathfinding.SingleLevel
                                              [NotNull] IReadOnlyDynamicDataView3D<float> costs,
                                              [NotNull] IReadOnlyDynamicDataView3D<DirectionalityInformation> directions)
         {
-            this.movementSourceData.Add(new MovementSourceData3D(in costProfile, costs, directions));
-        }
-
-        readonly struct MovementSourceData3D
-        {
-            public readonly MovementCost MovementCost;
-            public readonly IReadOnlyDynamicDataView3D<float> Costs;
-            public readonly IReadOnlyDynamicDataView3D<DirectionalityInformation> Directions;
-
-            public MovementSourceData3D(in MovementCost movementCost,
-                                        [NotNull] IReadOnlyDynamicDataView3D<float> costs,
-                                        [NotNull] IReadOnlyDynamicDataView3D<DirectionalityInformation> directions)
-            {
-                MovementCost = movementCost;
-                Costs = costs ?? throw new ArgumentNullException(nameof(costs));
-                Directions = directions ?? throw new ArgumentNullException(nameof(directions));
-            }
+            this.movementSourceData.Add(new MovementCostData3D(in costProfile, costs, directions));
         }
     }
 }

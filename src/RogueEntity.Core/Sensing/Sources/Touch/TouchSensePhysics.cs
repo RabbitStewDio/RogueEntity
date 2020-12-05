@@ -1,7 +1,7 @@
 using RogueEntity.Api.Services;
+using RogueEntity.Core.Positioning.Algorithms;
 using RogueEntity.Core.Sensing.Common.FloodFill;
 using RogueEntity.Core.Sensing.Common.Physics;
-using RogueEntity.Core.Utils.Algorithms;
 
 namespace RogueEntity.Core.Sensing.Sources.Touch
 {

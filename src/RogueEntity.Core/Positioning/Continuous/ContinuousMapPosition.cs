@@ -16,7 +16,7 @@ namespace RogueEntity.Core.Positioning.Continuous
     [DataContract]
     [Serializable]
     [MessagePackObject]
-    public readonly struct ContinuousMapPosition : IPosition, IEquatable<ContinuousMapPosition>
+    public readonly struct ContinuousMapPosition : IPosition<ContinuousMapPosition>, IEquatable<ContinuousMapPosition>
     {
         const double UnitScale = 1024;
         const int MaxZUnit = 0x7F_FFFF;
@@ -95,6 +95,16 @@ namespace RogueEntity.Core.Positioning.Continuous
         public bool Equals(ContinuousMapPosition other)
         {
             return XUnit == other.XUnit && YUnit == other.YUnit && zUnitAndLayerId == other.zUnitAndLayerId;
+        }
+
+        public ContinuousMapPosition WithPosition(int x, int y)
+        {
+            return new ContinuousMapPosition(x, y, this.Z, this.LayerId);
+        }
+
+        public ContinuousMapPosition WithPosition(double tx, double ty)
+        {
+            return new ContinuousMapPosition(tx, ty, this.Z, this.LayerId);
         }
 
         public override int GetHashCode()

@@ -2,9 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using RogueEntity.Api.Utils;
+using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.DataViews;
 
-namespace RogueEntity.Core.Utils.Algorithms
+namespace RogueEntity.Core.Positioning.Algorithms
 {
     public enum PathFinderResult
     {

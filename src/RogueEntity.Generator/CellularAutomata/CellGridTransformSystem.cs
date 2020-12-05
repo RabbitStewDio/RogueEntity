@@ -1,9 +1,9 @@
 using System.Collections.Generic;
 using RogueEntity.Core.GridProcessing.Transforms;
 using RogueEntity.Core.Positioning;
+using RogueEntity.Core.Positioning.Algorithms;
 using RogueEntity.Core.Positioning.MapLayers;
 using RogueEntity.Core.Utils;
-using RogueEntity.Core.Utils.Algorithms;
 using RogueEntity.Core.Utils.DataViews;
 
 namespace RogueEntity.Generator.CellularAutomata

@@ -100,6 +100,7 @@ namespace RogueEntity.Core.Meta.ItemBuilder
                     declaration.WithTrait(trait);
                 }
             }
+
             return new BulkItemDeclarationBuilder<TGameContext, TItemId>(entityContext, serviceResolver, declaration);
         }
     }

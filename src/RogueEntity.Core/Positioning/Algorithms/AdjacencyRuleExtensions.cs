@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Generic;
 using RogueEntity.Api.Utils;
+using RogueEntity.Core.Utils;
 
-namespace RogueEntity.Core.Utils.Algorithms
+namespace RogueEntity.Core.Positioning.Algorithms
 {
     public static class AdjacencyRuleExtensions
     {

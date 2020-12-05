@@ -1,7 +1,7 @@
 using System;
 using System.Runtime.Serialization;
 using MessagePack;
-using RogueEntity.Core.Utils.Algorithms;
+using RogueEntity.Core.Positioning.Algorithms;
 
 namespace RogueEntity.Core.Utils
 {

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace RogueEntity.Core.Utils.Algorithms
+namespace RogueEntity.Core.Utils
 {
     public class PriorityQueue<TWeight, TPayLoad> 
         where TWeight: IComparable<TWeight>

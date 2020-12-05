@@ -1,9 +1,10 @@
 using System.Collections.Generic;
 using RogueEntity.Api.Utils;
+using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.DataViews;
 using Serilog;
 
-namespace RogueEntity.Core.Utils.Algorithms
+namespace RogueEntity.Core.Positioning.Algorithms
 {
     /// <summary>
     ///   Needs 5 bytes per node processed.

@@ -3,7 +3,7 @@ namespace RogueEntity.Core.Positioning.Grid
     public static class GridMapContextExtensions
     {
         public static bool IsValid<TItemId, TPosition>(this IGridMapDataContext<TItemId> context, TPosition p)
-            where TPosition : IPosition
+            where TPosition : IPosition<TPosition>
         {
             if (p.IsInvalid) return false;
             if (!context.TryGetView(p.GridZ, out _))

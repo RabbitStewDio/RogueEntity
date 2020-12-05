@@ -11,8 +11,8 @@ using RogueEntity.Core.Sensing.Receptors;
 using RogueEntity.Core.Sensing.Receptors.Touch;
 using RogueEntity.Core.Sensing.Sources;
 using RogueEntity.Core.Sensing.Sources.Touch;
-using RogueEntity.Core.Utils.Algorithms;
 using RogueEntity.Core.Meta.EntityKeys;
+using RogueEntity.Core.Positioning.Algorithms;
 using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.DataViews;
 

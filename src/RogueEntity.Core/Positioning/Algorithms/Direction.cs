@@ -1,6 +1,7 @@
 using System;
+using RogueEntity.Core.Utils;
 
-namespace RogueEntity.Core.Utils.Algorithms
+namespace RogueEntity.Core.Positioning.Algorithms
 {
     /// <summary>
     /// Represents the concept of a "direction" on a grid. Y always increases downwards, so Direction.Down

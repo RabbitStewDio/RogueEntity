@@ -1,14 +1,13 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using RogueEntity.Core.Movement.Cost;
 using RogueEntity.Core.Movement.CostModifier.Directions;
 using RogueEntity.Core.Movement.MovementModes.Walking;
 using RogueEntity.Core.Movement.Pathfinding;
 using RogueEntity.Core.Movement.Pathfinding.SingleLevel;
+using RogueEntity.Core.Positioning.Algorithms;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Utils;
-using RogueEntity.Core.Utils.Algorithms;
 using RogueEntity.Core.Utils.DataViews;
 
 namespace RogueEntity.Benchmarks
@@ -24,7 +23,7 @@ namespace RogueEntity.Benchmarks
         {
             this.id = id;
             positions = new List<EntityGridPosition>();
-            pathfinderSource = new SingleLevelPathFinderSource(new SingleLevelPathfinderPolicy());
+            pathfinderSource = new SingleLevelPathFinderSource(new SingleLevelPathFinderPolicy());
         }
 
         public virtual void SetUpGlobal()
@@ -79,7 +78,7 @@ namespace RogueEntity.Benchmarks
                                .WithTarget(new DefaultPathFinderTargetEvaluator().WithTargetPosition(EntityGridPosition.OfRaw(0, 0, 11)))
                                .Build(new PathfindingMovementCostFactors(new MovementCost(WalkingMovement.Instance, DistanceCalculation.Euclid, 1))))
             {
-                var result2 = pf.TryFindPath(EntityGridPosition.OfRaw(0, 0, 9), out var resultPath2);
+                pf.TryFindPath(EntityGridPosition.OfRaw(0, 0, 9), out _);
                 if (pf is IPathFinderPerformanceView pv)
                 {
                     totalTime += pv.TimeElapsed;
@@ -100,15 +99,17 @@ namespace RogueEntity.Benchmarks
                                    .WithTarget(new DefaultPathFinderTargetEvaluator().WithTargetPosition(targetPosition))
                                    .Build(new PathfindingMovementCostFactors(new MovementCost(WalkingMovement.Instance, DistanceCalculation.Euclid, 1))))
                 {
-                    var result = pf.TryFindPath(startPosition, out var resultPath);
+                    pf.TryFindPath(startPosition, out _);
                     // Console.WriteLine($"{i} = From {startPosition} to {targetPosition} = {result} + {string.Join(", ", resultPath.Select(e => e.Item1))}");
                     if (i == -1)
                     {
-                        var spf = pf as SingleLevelPathFinder;
-                        var translatedDataView = spf.ProcessedNodes.TranslateBy(startPosition.GridX, startPosition.GridY);
-                        if (translatedDataView[startPosition.GridX, startPosition.GridY].State != AStarNode.NodeState.Closed)
+                        if (pf is SingleLevelPathFinder spf)
                         {
-                            throw new Exception();
+                            var translatedDataView = spf.ProcessedNodes.TranslateBy(startPosition.GridX, startPosition.GridY);
+                            if (translatedDataView[startPosition.GridX, startPosition.GridY].State != AStarNode.NodeState.Closed)
+                            {
+                                throw new Exception();
+                            }
                         }
 
                         // Console.WriteLine(translatedDataView.ExtendToString(bounds, elementSeparator: "", elementStringifier: e => e.State == AStarNode.NodeState.Closed ? "@" : " "));

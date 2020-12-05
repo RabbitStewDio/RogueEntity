@@ -138,7 +138,9 @@ namespace RogueEntity.Api.Modules.Initializers
 
                 if (!m.IsSameGenericAction(new[] {typeof(TGameContext), entityType},
                                            out var genericMethod, out var errorHint,
-                                           typeof(ModuleEntityInitializationParameter<TGameContext, TEntityId>).MakeByRefType(), typeof(IModuleInitializer<TGameContext>), typeof(EntityRole)))
+                                           typeof(ModuleEntityInitializationParameter<TGameContext, TEntityId>).MakeByRefType(), 
+                                           typeof(IModuleInitializer<TGameContext>), 
+                                           typeof(EntityRole)))
                 {
                     if (string.IsNullOrEmpty(errorHint))
                     {

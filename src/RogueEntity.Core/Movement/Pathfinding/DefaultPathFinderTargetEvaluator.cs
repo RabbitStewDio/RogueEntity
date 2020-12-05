@@ -1,7 +1,7 @@
 using System;
 using RogueEntity.Core.Positioning;
+using RogueEntity.Core.Positioning.Algorithms;
 using RogueEntity.Core.Utils;
-using RogueEntity.Core.Utils.Algorithms;
 
 namespace RogueEntity.Core.Movement.Pathfinding
 {
@@ -19,7 +19,7 @@ namespace RogueEntity.Core.Movement.Pathfinding
         }
 
         public DefaultPathFinderTargetEvaluator WithTargetPosition<TPosition>(TPosition value) 
-            where TPosition: IPosition
+            where TPosition: IPosition<TPosition>
         {
             if (value.IsInvalid) throw new Exception();
             targetZLevel = value.GridZ;
@@ -43,7 +43,7 @@ namespace RogueEntity.Core.Movement.Pathfinding
         }
 
         public bool Initialize<TPosition>(in TPosition sourcePosition, DistanceCalculation c)
-            where TPosition : IPosition
+            where TPosition : IPosition<TPosition>
         {
             if (sourcePosition.IsInvalid)
             {

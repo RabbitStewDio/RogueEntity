@@ -12,10 +12,10 @@ namespace RogueEntity.Core.Movement.Pathfinding.SingleLevel
         readonly Dictionary<IMovementMode, MovementSourceData> movementCostMaps;
         readonly ObjectPool<SingleLevelPathFinderBuilder> pathfinderPool;
 
-        public SingleLevelPathFinderSource(SingleLevelPathfinderPolicy sourcePolicy)
+        public SingleLevelPathFinderSource(SingleLevelPathFinderPolicy sourcePolicy)
         {
             movementCostMaps = new Dictionary<IMovementMode, MovementSourceData>();
-            pathfinderPool = new DefaultObjectPool<SingleLevelPathFinderBuilder>(new PathfinderSourcePolicy(sourcePolicy));
+            pathfinderPool = new DefaultObjectPool<SingleLevelPathFinderBuilder>(new SingleLevelPathFinderBuilderPolicy(sourcePolicy));
         }
 
         public void RegisterMovementSource(IMovementMode movementMode,
@@ -64,35 +64,4 @@ namespace RogueEntity.Core.Movement.Pathfinding.SingleLevel
             }
         }
     }
-    
-    class PathfinderSourcePolicy : IPooledObjectPolicy<SingleLevelPathFinderBuilder>
-    {
-        readonly ObjectPool<SingleLevelPathFinder> pathFinderPool;
-        readonly ObjectPool<DefaultPathFinderTargetEvaluator> targetEvaluatorPool;
-
-        public PathfinderSourcePolicy([NotNull] SingleLevelPathfinderPolicy policy)
-        {
-            this.pathFinderPool = new DefaultObjectPool<SingleLevelPathFinder>(policy);
-            this.targetEvaluatorPool = new DefaultObjectPool<DefaultPathFinderTargetEvaluator>(new DefaultPathFinderTargetEvaluatorPolicy(ReturnTargetEvaluator));
-        }
-
-        void ReturnTargetEvaluator(DefaultPathFinderTargetEvaluator obj)
-        {
-            this.targetEvaluatorPool.Return(obj);
-        }
-
-        public SingleLevelPathFinderBuilder Create()
-        {
-            return new SingleLevelPathFinderBuilder(pathFinderPool, targetEvaluatorPool);
-        }
-
-        public bool Return(SingleLevelPathFinderBuilder obj)
-        {
-            obj.Reset();
-            return true;
-        }
-    }
-    
-    
-
 }

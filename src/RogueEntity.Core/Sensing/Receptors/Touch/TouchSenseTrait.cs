@@ -5,10 +5,10 @@ using RogueEntity.Api.ItemTraits;
 using RogueEntity.Api.Utils;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Positioning;
+using RogueEntity.Core.Positioning.Algorithms;
 using RogueEntity.Core.Sensing.Common;
 using RogueEntity.Core.Sensing.Sources;
 using RogueEntity.Core.Sensing.Sources.Touch;
-using RogueEntity.Core.Utils.Algorithms;
 
 namespace RogueEntity.Core.Sensing.Receptors.Touch
 {

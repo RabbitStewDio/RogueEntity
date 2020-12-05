@@ -1,18 +1,19 @@
 using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using EnTTSharp.Entities;
 using JetBrains.Annotations;
 using RogueEntity.Api.Utils;
 using RogueEntity.Core.Directionality;
+using RogueEntity.Core.Positioning;
+using RogueEntity.Core.Positioning.Algorithms;
 using RogueEntity.Core.Sensing.Common.Physics;
 using RogueEntity.Core.Utils;
-using RogueEntity.Core.Utils.Algorithms;
 using RogueEntity.Core.Utils.DataViews;
 using Serilog;
 
 namespace RogueEntity.Core.Sensing.Common.FloodFill
 {
-    public class FloodFillDijkstraMap : DijkstraGridBase
+    public class FloodFillDijkstraMap : DijkstraGridBase<Unit>
     {
         static readonly ILogger Logger = SLog.ForContext<FloodFillDijkstraMap>();
         
@@ -21,17 +22,16 @@ namespace RogueEntity.Core.Sensing.Common.FloodFill
         IReadOnlyDynamicDataView2D<DirectionalityInformation> directionalityView;
         IReadOnlyBoundedDataView<float> resistanceTile;
         IReadOnlyBoundedDataView<DirectionalityInformation> directionalityTile;
-        
+        ReadOnlyListWrapper<Direction>[] directionData;
+
         SenseSourceDefinition Sense { get; set; }
         ISensePhysics SensePhysics { get; set; }
-        ReadOnlyListWrapper<Direction> directions;
         Position2D origin;
         float radius;
         float intensity;
 
         FloodFillDijkstraMap(int extendX, int extendY) : base(Rectangle.WithRadius(0, 0, extendX, extendY))
         {
-            this.directions = ReadOnlyListWrapper<Direction>.Empty;
             valid = false;
         }
 
@@ -43,7 +43,7 @@ namespace RogueEntity.Core.Sensing.Common.FloodFill
                                                   [NotNull] IReadOnlyDynamicDataView2D<DirectionalityInformation> directionalityView)
         {
             var radius = sensePhysics.SignalRadiusForIntensity(intensity);
-            Console.WriteLine("Using Origin: " + origin + " Radius: " + radius);
+            // Console.WriteLine("Using Origin: " + origin + " Radius: " + radius);
             
             var radiusInt = (int)Math.Ceiling(radius);
             var result = new FloodFillDijkstraMap(radiusInt, radiusInt);
@@ -68,7 +68,7 @@ namespace RogueEntity.Core.Sensing.Common.FloodFill
             this.resistanceMap = resistanceMap ?? throw new ArgumentNullException(nameof(resistanceMap));
             var radiusInt = (int)Math.Ceiling(radius);
             this.Resize(Rectangle.WithRadius(0, 0, radiusInt, radiusInt));
-            this.directions = Sense.AdjacencyRule.DirectionsOfNeighbors();
+            this.directionData = DirectionalityLookup.Get(Sense.AdjacencyRule);
             this.valid = true;
         }
 
@@ -79,7 +79,7 @@ namespace RogueEntity.Core.Sensing.Common.FloodFill
             this.Sense = default;
             this.SensePhysics = null;
             this.resistanceMap = null;
-            this.directions = ReadOnlyListWrapper<Direction>.Empty;
+            this.directionData = null;
             this.valid = false;
         }
 
@@ -87,11 +87,9 @@ namespace RogueEntity.Core.Sensing.Common.FloodFill
         {
             try
             {
-
-
                 base.PrepareScan();
                 base.EnqueueStartingNode(new ShortPosition2D(), Math.Abs(intensity));
-                base.RescanMap(out _, Bounds.Width * Bounds.Height);
+                base.RescanMap(Bounds.Width * Bounds.Height);
 
                 var sgn = Math.Sign(intensity);
                 foreach (var pos in Bounds.Contents)
@@ -131,26 +129,20 @@ namespace RogueEntity.Core.Sensing.Common.FloodFill
             }
         }
 
-        protected override void PopulateTraversableDirections(ShortPosition2D basePosition, List<Direction> buffer)
+        protected override ReadOnlyListWrapper<Direction> PopulateTraversableDirections(ShortPosition2D basePos)
         {
-            buffer.Clear();
-            var targetPos = basePosition + origin;
-            var dir = directionalityView.TryGet(ref directionalityTile, targetPos.X, targetPos.Y, DirectionalityInformation.All);
             
-            foreach (var d in directions)
-            {
-                if (dir.IsMovementAllowed(d))
-                {
-                    buffer.Add(d);
-                }
-            }
-            
-            Logger.Debug("Traversable: For {Position} is {Buffer}", targetPos, buffer);
+            var targetPosX = basePos.X;
+            var targetPosY = basePos.Y;
+            var allowedMovements = directionalityView.TryGet(ref directionalityTile, targetPosX, targetPosY, DirectionalityInformation.All);
+            return directionData[(int)allowedMovements];
         }
 
-        protected override bool EdgeCostInformation(in ShortPosition2D stepOrigin, 
-                                                    in Direction d, 
-                                                    float stepOriginCost, out float totalPathCost)
+        protected override void UpdateNode(in ShortPosition2D nextNodePos, Unit nodeInfo)
+        {
+        }
+
+        protected override bool EdgeCostInformation(in ShortPosition2D stepOrigin, in Direction d, float stepOriginCost, out float totalPathCost, out Unit nodeInfo)
         {
             var targetPoint = origin + stepOrigin + d.ToCoordinates();
             if (!valid)
@@ -170,7 +162,7 @@ namespace RogueEntity.Core.Sensing.Common.FloodFill
             var signalStrength = SensePhysics.SignalStrengthAtDistance((float) ((intensity - stepOriginCost) + distanceForStep), radius);
             var totalCost = intensity * signalStrength * (1 - resistance);
             totalPathCost = totalCost;
-            Logger.Debug("EdgeCost: For {Position} is O:{Origin} {Total}", targetPoint, stepOriginCost, totalCost);
+            // Logger.Debug("EdgeCost: For {Position} is O:{Origin} {Total}", targetPoint, stepOriginCost, totalCost);
             return true;
         }
     }

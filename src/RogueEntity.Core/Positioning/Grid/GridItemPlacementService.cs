@@ -69,7 +69,7 @@ namespace RogueEntity.Core.Positioning.Grid
                 {
                     if (c.X < 0 || c.Y < 0) continue;
 
-                    placementPos = origin.From(c.X, c.Y);
+                    placementPos = origin.WithPosition(c.X, c.Y);
                     if (!mapData.IsValid(placementPos))
                     {
                         continue;
@@ -132,7 +132,7 @@ namespace RogueEntity.Core.Positioning.Grid
                 {
                     if (c.X < 0 || c.Y < 0) continue;
 
-                    placementPos = origin.From(c.X, c.Y);
+                    placementPos = origin.WithPosition(c.X, c.Y);
                     if (!mapData.IsValid(placementPos))
                     {
                         continue;

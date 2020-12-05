@@ -5,7 +5,7 @@
         public static bool IsAcceptable<TPosition>(this MapLayerPreference pref, 
                                                    TPosition p, 
                                                    out MapLayer layerId) 
-            where TPosition: IPosition
+            where TPosition: IPosition<TPosition>
         {
             foreach (var l in pref.AcceptableLayers)
             {

@@ -117,7 +117,7 @@ namespace RogueEntity.Core.Sensing.Sources
                                                                             in SenseSourceState<TSense> state,
                                                                             in TPosition pos)
             where TItemId : IEntityKey
-            where TPosition : IPosition
+            where TPosition : IPosition<TPosition>
         {
             if (definition.Enabled)
             {
@@ -215,7 +215,7 @@ namespace RogueEntity.Core.Sensing.Sources
                                                                        IReadOnlyDynamicDataView2D<float> resistanceView,
                                                                        IReadOnlyDynamicDataView2D<DirectionalityInformation> directionView,
                                                                        SenseSourceData data)
-            where TPosition : IPosition
+            where TPosition : IPosition<TPosition>
         {
             var position = new Position2D(pos.GridX, pos.GridY);
             var sourceDefinition = definition.SenseDefinition;

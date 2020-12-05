@@ -1,10 +1,10 @@
 using RogueEntity.Api.GameLoops;
 using RogueEntity.Api.Modules;
 using RogueEntity.Core.Infrastructure.Services;
+using RogueEntity.Core.Positioning.Algorithms;
 using RogueEntity.Core.Sensing.Common.Physics;
 using RogueEntity.Core.Sensing.Common.ShadowCast;
 using RogueEntity.Core.Sensing.Sources.Light;
-using RogueEntity.Core.Utils.Algorithms;
 using Serilog;
 
 namespace RogueEntity.Simple.Demo.BoxPusher

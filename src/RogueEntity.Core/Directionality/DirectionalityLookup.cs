@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using RogueEntity.Api.Utils;
-using RogueEntity.Core.Utils.Algorithms;
+using RogueEntity.Core.Positioning.Algorithms;
 
 namespace RogueEntity.Core.Directionality
 {
