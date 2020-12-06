@@ -69,6 +69,7 @@ namespace RogueEntity.Core.Sensing.Common.FloodFill
             var radiusInt = (int)Math.Ceiling(radius);
             this.Resize(Rectangle.WithRadius(0, 0, radiusInt, radiusInt));
             this.directionData = DirectionalityLookup.Get(Sense.AdjacencyRule);
+            Console.WriteLine($"Using adjacency rule {Sense.AdjacencyRule}");
             this.valid = true;
         }
 
@@ -131,10 +132,10 @@ namespace RogueEntity.Core.Sensing.Common.FloodFill
 
         protected override ReadOnlyListWrapper<Direction> PopulateTraversableDirections(ShortPosition2D basePos)
         {
-            
-            var targetPosX = basePos.X;
-            var targetPosY = basePos.Y;
+            var targetPosX = basePos.X + origin.X;
+            var targetPosY = basePos.Y + origin.Y;
             var allowedMovements = directionalityView.TryGet(ref directionalityTile, targetPosX, targetPosY, DirectionalityInformation.All);
+
             return directionData[(int)allowedMovements];
         }
 

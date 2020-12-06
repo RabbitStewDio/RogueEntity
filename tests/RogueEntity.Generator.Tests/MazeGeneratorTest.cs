@@ -15,9 +15,9 @@ namespace RogueEntity.Generator.Tests
         [Test]
         public void TestMaze()
         {
-            var bounds = new Rectangle(0, 0, 256, 256);
+            var bounds = new Rectangle(0, 0, 32, 32);
             var mg = new CAGridRunnerBuilder(new DefaultRandomGeneratorSource().FromConstantSeed(10), bounds, CARuleStrings.MazeGeneration);
-            var maze = mg.Generate('.', '#', 512);
+            var maze = mg.Generate('.', '#', 128);
             Console.WriteLine(maze.ExtendToString(bounds, elementSeparator: "", elementStringifier: e => $"{e}{e}"));
         }
 
@@ -75,14 +75,6 @@ namespace RogueEntity.Generator.Tests
                 Console.WriteLine(rv.ExtendToString(bounds, elementSeparator: "", elementStringifier: e => $"{e}"));
             }
 
-        }
-
-        [Test]
-        public void TestEmbeddedResource()
-        {
-            var assembly = typeof(MazeGeneratorTest).GetTypeInfo().Assembly;
-            using Stream resource = assembly.GetManifestResourceStream("RogueEntity.Performance.Tests.Maze256.txt");
-            resource.Should().NotBeNull();
         }
     }
 }
