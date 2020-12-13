@@ -140,16 +140,15 @@ namespace RogueEntity.Core.Sensing.Sources
                     bi.itemDeclaration.HasItemComponent<TGameContext, TItemId, SensoryResistance<TSense>>() &&
                     layerPref.TryQuery(out var layerPreferences))
                 {
-                   layers.UnionWith(layerPreferences.AcceptableLayers);
+                    layers.UnionWith(layerPreferences.AcceptableLayers);
                 }
             }
-            
+
             var ctx = initializer.DeclareEntityContext<TItemId>();
-            
+
             var mapLayers = layers.ToList();
             Logger.Debug("{Sense} will use map layers {Layers} as resistance source for {EntityId}", typeof(TSense), mapLayers, typeof(TItemId));
             ctx.Register(systemId, 1100, SenseSourceModules.RegisterSenseResistanceSourceLayer<TGameContext, TItemId, TSense>(mapLayers));
-
         }
 
         protected void InitializeSenseSourceRole<TGameContext, TItemId>(in ModuleEntityInitializationParameter<TGameContext, TItemId> initParameter,
@@ -198,8 +197,8 @@ namespace RogueEntity.Core.Sensing.Sources
         }
 
         protected void InitializeResistanceEntities<TGameContext, TItemId>(in ModuleEntityInitializationParameter<TGameContext, TItemId> initParameter,
-                                                                       IModuleInitializer<TGameContext> initializer,
-                                                                       EntityRole role)
+                                                                           IModuleInitializer<TGameContext> initializer,
+                                                                           EntityRole role)
             where TItemId : IEntityKey
         {
             var ctx = initializer.DeclareEntityContext<TItemId>();
@@ -212,7 +211,7 @@ namespace RogueEntity.Core.Sensing.Sources
             where TItemId : IEntityKey
         {
             // The sense resistance system is only needed if there is at least one sense source of this type active.
-            
+
             var ctx = initializer.DeclareEntityContext<TItemId>();
             ctx.Register(RegisterResistanceSystem, 500, RegisterResistanceSystemLifecycle);
             ctx.Register(ExecuteResistanceSystem, 51000, RegisterResistanceSystemExecution);
@@ -264,7 +263,8 @@ namespace RogueEntity.Core.Sensing.Sources
             var ls = GetOrCreateSenseSourceSystem<TGameContext, TItemId>(serviceResolver);
             var system = registry.BuildSystem()
                                  .WithContext<TGameContext>()
-                                 .CreateSystem<TSenseSourceDefinition, SenseSourceState<TSense>, EntityGridPosition>(ls.FindDirtySenseSources);
+                                 .WithInputParameter<TSenseSourceDefinition, SenseSourceState<TSense>, EntityGridPosition>()
+                                 .CreateSystem(ls.FindDirtySenseSources);
             context.AddInitializationStepHandler(system);
             context.AddFixedStepHandlers(system);
         }
@@ -278,7 +278,8 @@ namespace RogueEntity.Core.Sensing.Sources
             var ls = GetOrCreateSenseSourceSystem<TGameContext, TItemId>(serviceResolver);
             var system = registry.BuildSystem()
                                  .WithContext<TGameContext>()
-                                 .CreateSystem<TSenseSourceDefinition, SenseSourceState<TSense>, ContinuousMapPosition>(ls.FindDirtySenseSources);
+                                 .WithInputParameter<TSenseSourceDefinition, SenseSourceState<TSense>, ContinuousMapPosition>()
+                                 .CreateSystem(ls.FindDirtySenseSources);
             context.AddInitializationStepHandler(system);
             context.AddFixedStepHandlers(system);
         }
@@ -293,7 +294,9 @@ namespace RogueEntity.Core.Sensing.Sources
             var refreshLocalSenseState =
                 registry.BuildSystem()
                         .WithContext<TGameContext>()
-                        .CreateSystem<TSenseSourceDefinition, SenseSourceState<TSense>, SenseDirtyFlag<TSense>, ObservedSenseSource<TSense>>(ls.RefreshLocalSenseState);
+                        .WithInputParameter<TSenseSourceDefinition, SenseDirtyFlag<TSense>, ObservedSenseSource<TSense>>()
+                        .WithOutputParameter<SenseSourceState<TSense>>()
+                        .CreateSystem(ls.RefreshLocalSenseState);
 
             context.AddInitializationStepHandler(refreshLocalSenseState);
             context.AddFixedStepHandlers(refreshLocalSenseState);
@@ -440,6 +443,5 @@ namespace RogueEntity.Core.Sensing.Sources
 
     [SuppressMessage("ReSharper", "UnusedTypeParameter")]
     readonly struct SenseDirectionalitySystemRegisteredMarker<TSense>
-    {
-    }
+    { }
 }

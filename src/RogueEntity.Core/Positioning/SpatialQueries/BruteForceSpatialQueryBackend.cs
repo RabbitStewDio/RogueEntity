@@ -1,4 +1,8 @@
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using EnTTSharp.Entities;
+using JetBrains.Annotations;
 using RogueEntity.Core.Positioning.Algorithms;
 using RogueEntity.Core.Positioning.Continuous;
 using RogueEntity.Core.Positioning.Grid;
@@ -9,97 +13,243 @@ namespace RogueEntity.Core.Positioning.SpatialQueries
         where TItemId : IEntityKey
     {
         readonly EntityRegistry<TItemId> registry;
+        readonly ConcurrentDictionary<CachedEntryKey, IDisposable> entries;
 
         public BruteForceSpatialQueryBackend(EntityRegistry<TItemId> registry)
         {
             this.registry = registry;
+            this.entries = new ConcurrentDictionary<CachedEntryKey, IDisposable>();
         }
 
-        public void Query2D<TComponent>(ReceiveSpatialQueryResult<TItemId, TComponent> receiver,
-                                        in Position pos,
-                                        float distance = 1,
-                                        DistanceCalculation d = DistanceCalculation.Euclid)
+
+        public List<SpatialQueryResult<TItemId, TComponent>> Query2D<TComponent>(in Position pos,
+                                                                                 float distance = 1,
+                                                                                 DistanceCalculation d = DistanceCalculation.Euclid,
+                                                                                 List<SpatialQueryResult<TItemId, TComponent>> buffer = null)
         {
+            if (buffer == null)
+            {
+                buffer = new List<SpatialQueryResult<TItemId, TComponent>>();
+            }
+            else
+            {
+                buffer.Clear();
+            }
+
             if (TryGetView<EntityGridPosition, TComponent>(out var gridView))
             {
-                gridView.ApplyWithContext(new Context<TComponent>(receiver, pos, d), AddResult2D);
+                gridView.Invoke2D(buffer, pos, distance, d);
             }
 
             if (TryGetView<ContinuousMapPosition, TComponent>(out var conView))
             {
-                conView.ApplyWithContext(new Context<TComponent>(receiver, pos, d), AddResult2D);
+                conView.Invoke2D(buffer, pos, distance, d);
             }
+
+            return buffer;
         }
 
-        public void Query3D<TComponent>(ReceiveSpatialQueryResult<TItemId, TComponent> receiver,
-                                        in Position pos,
-                                        float distance = 1,
-                                        DistanceCalculation d = DistanceCalculation.Euclid)
+        public List<SpatialQueryResult<TItemId, TComponent>> Query3D<TComponent>(in Position pos,
+                                                                                 float distance = 1,
+                                                                                 DistanceCalculation d = DistanceCalculation.Euclid,
+                                                                                 List<SpatialQueryResult<TItemId, TComponent>> buffer = null)
         {
+            if (buffer == null)
+            {
+                buffer = new List<SpatialQueryResult<TItemId, TComponent>>();
+            }
+            else
+            {
+                buffer.Clear();
+            }
+
             if (TryGetView<EntityGridPosition, TComponent>(out var gridView))
             {
-                gridView.ApplyWithContext(new Context<TComponent>(receiver, pos, d), AddResult3D);
+                gridView.Invoke3D(buffer, pos, distance, d);
             }
 
             if (TryGetView<ContinuousMapPosition, TComponent>(out var conView))
             {
-                conView.ApplyWithContext(new Context<TComponent>(receiver, pos, d), AddResult3D);
+                conView.Invoke3D(buffer, pos, distance, d);
             }
+
+            return buffer;
         }
 
-        static void AddResult2D<TPosition, TComponent>(IEntityViewControl<TItemId> v,
-                                                       Context<TComponent> context,
-                                                       TItemId k,
-                                                       in TPosition pos,
-                                                       in TComponent c)
+        bool TryGetView<TPosition, TComponent>(out CachedEntry<TPosition, TComponent> entry)
             where TPosition : IPosition<TPosition>
         {
-            if (pos.GridX != context.Origin.GridX)
-            {
-                return;
-            }
-
-            var localPos = Position.From(pos);
-            var dist = context.DistanceCalculator.Calculate(localPos, context.Origin);
-            context.Receiver(new SpatialQueryResult<TItemId, TComponent>(k, Position.From(pos), c, (float)dist));
+            var key = CachedEntryKey<TPosition, TComponent>.CreateKey(registry);
+            entry = (CachedEntry<TPosition, TComponent>)entries.GetOrAdd(key, key.FactoryDelegate);
+            return true;
         }
 
-        static void AddResult3D<TPosition, TComponent>(IEntityViewControl<TItemId> v,
-                                                       Context<TComponent> context,
-                                                       TItemId k,
-                                                       in TPosition pos,
-                                                       in TComponent c)
+        class CachedEntry<TPosition, TComponent> : IDisposable
             where TPosition : IPosition<TPosition>
         {
-            var localPos = Position.From(pos);
-            var dist = context.DistanceCalculator.Calculate(localPos, context.Origin);
-            context.Receiver(new SpatialQueryResult<TItemId, TComponent>(k, Position.From(pos), c, (float)dist));
-        }
+            readonly EntityRegistry<TItemId> registry;
+            readonly IEntityView<TItemId, TPosition, TComponent> view;
+            readonly ViewDelegates.ApplyWithContext<TItemId, Context, TPosition, TComponent> add2D;
+            readonly ViewDelegates.ApplyWithContext<TItemId, Context, TPosition, TComponent> add3D;
 
-        bool TryGetView<TPosition, TComponent>(out IEntityView<TItemId, TPosition, TComponent> v)
-        {
-            if (this.registry.IsManaged<TPosition>() &&
-                this.registry.IsManaged<TComponent>())
+            public CachedEntry(EntityRegistry<TItemId> registry)
             {
-                v = this.registry.View<TPosition, TComponent>();
-                return true;
+                this.registry = registry;
+                if (this.registry.IsManaged<TPosition>() &&
+                    this.registry.IsManaged<TComponent>())
+                {
+                    view = this.registry.PersistentView<TPosition, TComponent>();
+                }
+
+                this.add2D = AddResult2D;
+                this.add3D = AddResult3D;
             }
 
-            v = default;
-            return false;
+            public void Invoke2D(List<SpatialQueryResult<TItemId, TComponent>> receiver,
+                                 in Position pos,
+                                 float distance = 1,
+                                 DistanceCalculation d = DistanceCalculation.Euclid)
+            {
+                view?.ApplyWithContext(new Context(receiver, pos, distance, d), add2D);
+            }
+
+            public void Invoke3D(List<SpatialQueryResult<TItemId, TComponent>> receiver,
+                                 in Position pos,
+                                 float distance = 1,
+                                 DistanceCalculation d = DistanceCalculation.Euclid)
+            {
+                view?.ApplyWithContext(new Context(receiver, pos, distance, d), add3D);
+            }
+
+            static void AddResult2D(IEntityViewControl<TItemId> v,
+                                    Context context,
+                                    TItemId k,
+                                    in TPosition pos,
+                                    in TComponent c)
+            {
+                if (pos.IsInvalid)
+                {
+                    return;
+                }
+
+                if (pos.GridZ != context.Origin.GridZ)
+                {
+                    return;
+                }
+
+                var localPos = Position.From(pos);
+                var dist = context.DistanceCalculator.Calculate(localPos, context.Origin);
+                if (dist <= context.Distance)
+                {
+                    context.Receiver.Add(new SpatialQueryResult<TItemId, TComponent>(k, localPos, c, (float)dist));
+                }
+            }
+
+            static void AddResult3D(IEntityViewControl<TItemId> v,
+                                    Context context,
+                                    TItemId k,
+                                    in TPosition pos,
+                                    in TComponent c)
+            {
+                if (pos.IsInvalid)
+                {
+                    return;
+                }
+
+                var localPos = Position.From(pos);
+                var dist = context.DistanceCalculator.Calculate(localPos, context.Origin);
+                if (dist <= context.Distance)
+                {
+                    context.Receiver.Add(new SpatialQueryResult<TItemId, TComponent>(k, localPos, c, (float)dist));
+                }
+            }
+
+            readonly struct Context
+            {
+                public readonly List<SpatialQueryResult<TItemId, TComponent>> Receiver;
+                public readonly Position Origin;
+                public readonly DistanceCalculation DistanceCalculator;
+                public readonly float Distance;
+
+                public Context(List<SpatialQueryResult<TItemId, TComponent>> receiver,
+                               in Position origin,
+                               float distance,
+                               DistanceCalculation distanceCalculator)
+                {
+                    Receiver = receiver;
+                    Origin = origin;
+                    DistanceCalculator = distanceCalculator;
+                    Distance = distance;
+                }
+            }
+
+
+            public void Dispose()
+            {
+                view?.Dispose();
+            }
         }
 
-        readonly struct Context<TComponent>
+        readonly struct CachedEntryKey : IEquatable<CachedEntryKey>
         {
-            public readonly ReceiveSpatialQueryResult<TItemId, TComponent> Receiver;
-            public readonly Position Origin;
-            public readonly DistanceCalculation DistanceCalculator;
+            readonly Type positionType;
+            readonly Type componentType;
+            internal readonly EntityRegistry<TItemId> Registry;
+            public readonly Func<CachedEntryKey, IDisposable> FactoryDelegate;
 
-            public Context(ReceiveSpatialQueryResult<TItemId, TComponent> receiver, in Position origin, DistanceCalculation distanceCalculator)
+            public CachedEntryKey([NotNull] Type positionType,
+                                  [NotNull] Type componentType,
+                                  [NotNull] EntityRegistry<TItemId> registry,
+                                  [NotNull] Func<CachedEntryKey, IDisposable> factoryDelegate)
             {
-                Receiver = receiver;
-                Origin = origin;
-                DistanceCalculator = distanceCalculator;
+                this.positionType = positionType ?? throw new ArgumentNullException(nameof(positionType));
+                this.componentType = componentType ?? throw new ArgumentNullException(nameof(componentType));
+                this.FactoryDelegate = factoryDelegate ?? throw new ArgumentNullException(nameof(factoryDelegate));
+                this.Registry = registry ?? throw new ArgumentNullException(nameof(registry));
+            }
+
+            public bool Equals(CachedEntryKey other)
+            {
+                return positionType == other.positionType && componentType == other.componentType;
+            }
+
+            public override bool Equals(object obj)
+            {
+                return obj is CachedEntryKey other && Equals(other);
+            }
+
+            public override int GetHashCode()
+            {
+                unchecked
+                {
+                    return (positionType.GetHashCode() * 397) ^ componentType.GetHashCode();
+                }
+            }
+
+            public static bool operator ==(CachedEntryKey left, CachedEntryKey right)
+            {
+                return left.Equals(right);
+            }
+
+            public static bool operator !=(CachedEntryKey left, CachedEntryKey right)
+            {
+                return !left.Equals(right);
+            }
+        }
+
+        /// <summary>
+        ///   A factory struct to hold the static but generically typed factory instance. 
+        /// </summary>
+        /// <typeparam name="TPosition"></typeparam>
+        /// <typeparam name="TComponent"></typeparam>
+        readonly struct CachedEntryKey<TPosition, TComponent>
+            where TPosition : IPosition<TPosition>
+        {
+            static readonly Func<CachedEntryKey, IDisposable> FactoryDelegate = k => new CachedEntry<TPosition, TComponent>(k.Registry);
+
+            public static CachedEntryKey CreateKey(EntityRegistry<TItemId> registry)
+            {
+                return new CachedEntryKey(typeof(TPosition), typeof(TComponent), registry, FactoryDelegate);
             }
         }
     }

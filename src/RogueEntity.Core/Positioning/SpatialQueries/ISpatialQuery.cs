@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using EnTTSharp.Entities;
 using RogueEntity.Core.Positioning.Algorithms;
 
@@ -11,28 +12,28 @@ namespace RogueEntity.Core.Positioning.SpatialQueries
         /// <summary>
         ///    Returns all entities within a given 2D plane denoted by the position's z-index. 
         /// </summary>
-        /// <param name="receiver"></param>
         /// <param name="pos"></param>
         /// <param name="distance"></param>
         /// <param name="d"></param>
+        /// <param name="buffer"></param>
         /// <typeparam name="TComponent"></typeparam>
-        void Query2D<TComponent>(ReceiveSpatialQueryResult<TEntityId, TComponent> receiver,
-                                 in Position pos,
-                                 float distance = 1,
-                                 DistanceCalculation d = DistanceCalculation.Euclid);
+        List<SpatialQueryResult<TEntityId, TComponent>> Query2D<TComponent>(in Position pos,
+                                                                            float distance = 1,
+                                                                            DistanceCalculation d = DistanceCalculation.Euclid,
+                                                                            List<SpatialQueryResult<TEntityId, TComponent>> buffer = null);
 
         /// <summary>
         ///    Returns all entities within a given 3D volume around the given position. 
         /// </summary>
-        /// <param name="receiver"></param>
         /// <param name="pos"></param>
         /// <param name="distance"></param>
         /// <param name="d"></param>
+        /// <param name="buffer"></param>
         /// <typeparam name="TComponent"></typeparam>
         /// <returns></returns>
-        void Query3D<TComponent>(ReceiveSpatialQueryResult<TEntityId, TComponent> receiver,
-                                 in Position pos,
-                                 float distance = 1,
-                                 DistanceCalculation d = DistanceCalculation.Euclid);
+        List<SpatialQueryResult<TEntityId, TComponent>> Query3D<TComponent>(in Position pos,
+                                                                            float distance = 1,
+                                                                            DistanceCalculation d = DistanceCalculation.Euclid,
+                                                                            List<SpatialQueryResult<TEntityId, TComponent>> buffer = null);
     }
 }

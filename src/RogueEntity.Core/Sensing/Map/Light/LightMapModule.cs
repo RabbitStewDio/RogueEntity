@@ -88,7 +88,8 @@ namespace RogueEntity.Core.Sensing.Map.Light
             var system =
                 registry.BuildSystem()
                         .WithContext<TGameContext>()
-                        .CreateSystem<LightSourceDefinition, SenseSourceState<VisionSense>>(hs.CollectSenseSources);
+                        .WithInputParameter<LightSourceDefinition, SenseSourceState<VisionSense>>()
+                        .CreateSystem(hs.CollectSenseSources);
 
             context.AddInitializationStepHandler(system);
             context.AddFixedStepHandlers(system);

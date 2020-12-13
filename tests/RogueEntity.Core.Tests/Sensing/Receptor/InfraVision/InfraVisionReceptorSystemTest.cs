@@ -238,7 +238,9 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.InfraVision
                                  .WithContext<SenseMappingTestContext>();
 
             var omniSystem = new SenseReceptorBlitterSystem<VisionSense, TemperatureSense>(senseSystem, new DefaultRadiationSenseReceptorBlitter());
-            return builder.CreateSystem<SingleLevelSenseDirectionMapData<VisionSense, TemperatureSense>, SensoryReceptorState<VisionSense, TemperatureSense>>(omniSystem.CopySenseSourcesToVisionField);
+            return builder.WithInputParameter<SensoryReceptorState<VisionSense, TemperatureSense>>()
+                          .WithOutputParameter<SingleLevelSenseDirectionMapData<VisionSense, TemperatureSense>>()
+                          .CreateSystem(omniSystem.CopySenseSourcesToVisionField);
         }
 
         protected override (ISensePropagationAlgorithm propagationAlgorithm, ISensePhysics sensePhysics) GetOrCreateSourceSensePhysics()

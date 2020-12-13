@@ -184,14 +184,14 @@ namespace RogueEntity.Core.Sensing.Sources
                                                                   TGameContext context,
                                                                   TItemId k,
                                                                   in TSenseSourceDefinition definition,
-                                                                  in SenseSourceState<TSense> state,
                                                                   in SenseDirtyFlag<TSense> dirtyMarker,
-                                                                  in ObservedSenseSource<TSense> observed)
+                                                                  in ObservedSenseSource<TSense> observed,
+                                                                  ref SenseSourceState<TSense> state)
             where TItemId : IEntityKey
         {
             if (!definition.Enabled)
             {
-                state.WithDirtyState(SenseSourceDirtyState.Inactive);
+                state = state.WithDirtyState(SenseSourceDirtyState.Inactive);
                 if (state.SenseSource.TryGetValue(out var dataIn))
                 {
                     dataIn.Reset();
@@ -205,7 +205,7 @@ namespace RogueEntity.Core.Sensing.Sources
             {
                 state.SenseSource.TryGetValue(out var dataIn);
                 var data = RefreshSenseState(definition, state.LastIntensity, pos, resistanceView, directionMap, dataIn);
-                state.WithDirtyState(SenseSourceDirtyState.Active).WithSenseState(data);
+                state = state.WithDirtyState(SenseSourceDirtyState.Active).WithSenseState(data);
             }
         }
 

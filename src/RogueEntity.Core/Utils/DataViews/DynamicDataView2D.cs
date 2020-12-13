@@ -163,9 +163,18 @@ namespace RogueEntity.Core.Utils.DataViews
 
             var dx = DataViewPartitions.TileSplit(x, offsetX, tileSizeX);
             var dy = DataViewPartitions.TileSplit(y, offsetY, tileSizeY);
-            var data = new BoundedDataView<T>(new Rectangle(dx * tileSizeX + offsetX, dy * tileSizeY + offsetY, tileSizeX, tileSizeY));
-            index[new Position2D(dx, dy)] = data;
+            
+            var data = CreateDataViewInternal(dx, dy);
+            
             ViewCreated?.Invoke(this, new DynamicDataView2DEventArgs<T>(data));
+            return data;
+        }
+
+        BoundedDataView<T> CreateDataViewInternal(int dx, int dy)
+        {
+            var bounds = new Rectangle(dx * tileSizeX + offsetX, dy * tileSizeY + offsetY, tileSizeX, tileSizeY);
+            var data = new BoundedDataView<T>(bounds);
+            index[new Position2D(dx, dy)] = data;
             activeBounds = default;
             return data;
         }
@@ -198,10 +207,10 @@ namespace RogueEntity.Core.Utils.DataViews
             
             var dx = DataViewPartitions.TileSplit(x, offsetX, tileSizeX);
             var dy = DataViewPartitions.TileSplit(y, offsetY, tileSizeY);
-            var data = new BoundedDataView<T>(new Rectangle(dx * tileSizeX + offsetX, dy * tileSizeY + offsetY, tileSizeX, tileSizeY));
-            index[new Position2D(dx, dy)] = data;
+            var data = CreateDataViewInternal(dx, dy);
+            
             ViewCreated?.Invoke(this, new DynamicDataView2DEventArgs<T>(data));
-            activeBounds = default;
+
             raw = data;
             return true;
         }
@@ -228,6 +237,7 @@ namespace RogueEntity.Core.Utils.DataViews
         {
             var dx = DataViewPartitions.TileSplit(x, offsetX, tileSizeX);
             var dy = DataViewPartitions.TileSplit(y, offsetY, tileSizeY);
+            
             if (!index.TryGetValue(new Position2D(dx, dy), out data))
             {
                 return false;

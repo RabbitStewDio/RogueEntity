@@ -87,7 +87,7 @@ namespace RogueEntity.Core.Tests.Sensing.Map
         protected virtual List<Action<SenseMappingTestContext>> CreateSystemActions()
         {
             var builder = context.ItemEntityRegistry.BuildSystem().WithContext<SenseMappingTestContext>();
-            var collectSystem = builder.CreateSystem<TSenseSourceDefinition, SenseSourceState<TSourceSense>>(senseSystem.CollectSenseSources);
+            var collectSystem = builder.WithInputParameter<TSenseSourceDefinition, SenseSourceState<TSourceSense>>().CreateSystem(senseSystem.CollectSenseSources);
             void ProcessAction(SenseMappingTestContext c) => senseSystem.ProcessSenseMap(c.ItemEntityRegistry);
 
             return new List<Action<SenseMappingTestContext>>

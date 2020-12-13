@@ -5,14 +5,14 @@ namespace RogueEntity.Benchmarks
 {
     [SimpleJob(RuntimeMoniker.Net472, baseline: true)]
     [SimpleJob(RuntimeMoniker.NetCoreApp31)]
-    public class PathFinderBenchmarkMaze256: PathFinderBenchmarkBase
+    public class GoalFinderBenchmarkMaze256: GoalFinderBenchmarkBase
     {
-        public PathFinderBenchmarkMaze256() : base("Maze256.txt")
+        public GoalFinderBenchmarkMaze256() : base("Maze256.txt")
         {
         }
         
         [Benchmark]
-        public void PathFinderMaze256()
+        public void GoalMaze256()
         {
             ValidatePathFinding();
         }

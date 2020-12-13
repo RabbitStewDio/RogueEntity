@@ -54,8 +54,8 @@ namespace RogueEntity.Core.Sensing.Receptors
 
         [InitializerCollector(InitializerCollectorType.Roles)]
         public IEnumerable<ModuleEntityRoleInitializerInfo<TGameContext, TItemId>> CollectRoleInitializers<TGameContext, TItemId>(IServiceResolver serviceResolver,
-                                                                                                                         IModuleEntityInformation entityInformation,
-                                                                                                                         EntityRole role)
+                                                                                                                                  IModuleEntityInformation entityInformation,
+                                                                                                                                  EntityRole role)
             where TItemId : IEntityKey
         {
             if (role == SenseReceptorActorRole)
@@ -64,13 +64,16 @@ namespace RogueEntity.Core.Sensing.Receptors
                     (SenseReceptorActorRole, InitializeSenseReceptorRole);
 
                 yield return ModuleEntityRoleInitializerInfo.CreateFor<TGameContext, TItemId>
-                    (SenseReceptorActorRole, InitializeCollectReceptorsGrid).WithRequiredRoles(PositionModule.GridPositionedRole);
+                                                                (SenseReceptorActorRole, InitializeCollectReceptorsGrid)
+                                                            .WithRequiredRoles(PositionModule.GridPositionedRole);
 
                 yield return ModuleEntityRoleInitializerInfo.CreateFor<TGameContext, TItemId>
-                    (SenseReceptorActorRole, InitializeCollectReceptorsContinuous).WithRequiredRoles(PositionModule.ContinuousPositionedRole);
+                                                                (SenseReceptorActorRole, InitializeCollectReceptorsContinuous)
+                                                            .WithRequiredRoles(PositionModule.ContinuousPositionedRole);
 
                 yield return ModuleEntityRoleInitializerInfo.CreateFor<TGameContext, TItemId>
-                    (SenseReceptorActorRole, InitializeSenseCache).WithRequiredRoles(PositionModule.GridPositionedRole);
+                                                                (SenseReceptorActorRole, InitializeSenseCache)
+                                                            .WithRequiredRoles(PositionModule.GridPositionedRole);
             }
 
             if (role == SenseSourceRole)
@@ -94,8 +97,8 @@ namespace RogueEntity.Core.Sensing.Receptors
         }
 
         protected void InitializeSenseReceptorRole<TGameContext, TItemId>(in ModuleEntityInitializationParameter<TGameContext, TItemId> initParameter,
-                                                             IModuleInitializer<TGameContext> initializer,
-                                                             EntityRole role)
+                                                                          IModuleInitializer<TGameContext> initializer,
+                                                                          EntityRole role)
             where TItemId : IEntityKey
         {
             var ctx = initializer.DeclareEntityContext<TItemId>();
@@ -154,7 +157,11 @@ namespace RogueEntity.Core.Sensing.Receptors
             var ls = GetOrCreateSenseReceptorSystem<TGameContext, TItemId>(serviceResolver);
             var system = registry.BuildSystem()
                                  .WithContext<TGameContext>()
-                                 .CreateSystem<SensoryReceptorData<TReceptorSense, TSourceSense>, SensoryReceptorState<TReceptorSense, TSourceSense>, EntityGridPosition>(ls.CollectReceptor);
+                                 .WithInputParameter<
+                                     SensoryReceptorData<TReceptorSense, TSourceSense>, 
+                                     EntityGridPosition>()
+                                 .WithOutputParameter<SensoryReceptorState<TReceptorSense, TSourceSense>>()
+                                 .CreateSystem(ls.CollectReceptor);
             context.AddInitializationStepHandler(system);
             context.AddFixedStepHandlers(system);
         }
@@ -168,7 +175,11 @@ namespace RogueEntity.Core.Sensing.Receptors
             var ls = GetOrCreateSenseReceptorSystem<TGameContext, TItemId>(serviceResolver);
             var system = registry.BuildSystem()
                                  .WithContext<TGameContext>()
-                                 .CreateSystem<SensoryReceptorData<TReceptorSense, TSourceSense>, SensoryReceptorState<TReceptorSense, TSourceSense>, ContinuousMapPosition>(ls.CollectReceptor);
+                                 .WithInputParameter<
+                                     SensoryReceptorData<TReceptorSense, TSourceSense>, 
+                                     ContinuousMapPosition>()
+                                 .WithOutputParameter<SensoryReceptorState<TReceptorSense, TSourceSense>>()
+                                 .CreateSystem(ls.CollectReceptor);
             context.AddInitializationStepHandler(system);
             context.AddFixedStepHandlers(system);
         }
@@ -182,7 +193,8 @@ namespace RogueEntity.Core.Sensing.Receptors
             var ls = GetOrCreateSenseReceptorSystem<TGameContext, TItemId>(serviceResolver);
             var system = registry.BuildSystem()
                                  .WithContext<TGameContext>()
-                                 .CreateSystem<TSenseSource, SenseSourceState<TSourceSense>>(ls.CollectObservedSenseSource);
+                                 .WithInputParameter<TSenseSource, SenseSourceState<TSourceSense>>()
+                                 .CreateSystem(ls.CollectObservedSenseSource);
             context.AddInitializationStepHandler(system);
             context.AddFixedStepHandlers(system);
         }
@@ -198,8 +210,11 @@ namespace RogueEntity.Core.Sensing.Receptors
             var refreshLocalSenseState =
                 registry.BuildSystem()
                         .WithContext<TGameContext>()
-                        .CreateSystem<SensoryReceptorData<TReceptorSense, TSourceSense>, SensoryReceptorState<TReceptorSense, TSourceSense>, SenseReceptorDirtyFlag<TReceptorSense, TSourceSense>>(
-                            ls.RefreshLocalReceptorState);
+                        .WithInputParameter<
+                            SensoryReceptorData<TReceptorSense, TSourceSense>,
+                            SenseReceptorDirtyFlag<TReceptorSense, TSourceSense>>()
+                        .WithOutputParameter<SensoryReceptorState<TReceptorSense, TSourceSense>>()
+                        .CreateSystem(ls.RefreshLocalReceptorState);
             context.AddInitializationStepHandler(refreshLocalSenseState);
             context.AddFixedStepHandlers(refreshLocalSenseState);
         }
@@ -225,7 +240,9 @@ namespace RogueEntity.Core.Sensing.Receptors
             var omni = new SenseReceptorBlitterSystem<TReceptorSense, TSourceSense>(ls, senseBlitter);
             var system = registry.BuildSystem()
                                  .WithContext<TGameContext>()
-                                 .CreateSystem<SingleLevelSenseDirectionMapData<TReceptorSense, TSourceSense>, SensoryReceptorState<TReceptorSense, TSourceSense>>(omni.CopySenseSourcesToVisionField);
+                                 .WithInputParameter<SensoryReceptorState<TReceptorSense, TSourceSense>>()
+                                 .WithOutputParameter<SingleLevelSenseDirectionMapData<TReceptorSense, TSourceSense>>()
+                                 .CreateSystem(omni.CopySenseSourcesToVisionField);
 
 
             context.AddInitializationStepHandler(system);
@@ -249,8 +266,9 @@ namespace RogueEntity.Core.Sensing.Receptors
             var uniSys = new SenseReceptorBlitterSystem<TReceptorSense, TSourceSense>(ls, senseBlitter);
             var system = registry.BuildSystem()
                                  .WithContext<TGameContext>()
-                                 .CreateSystem<SingleLevelSenseDirectionMapData<TReceptorSense, TSourceSense>, SensoryReceptorState<TReceptorSense, TSourceSense>>(
-                                     uniSys.CopySenseSourcesToVisionField);
+                                 .WithInputParameter<SensoryReceptorState<TReceptorSense, TSourceSense>>()
+                                 .WithOutputParameter<SingleLevelSenseDirectionMapData<TReceptorSense, TSourceSense>>()
+                                 .CreateSystem(uniSys.CopySenseSourcesToVisionField);
 
 
             context.AddInitializationStepHandler(system);
@@ -269,8 +287,11 @@ namespace RogueEntity.Core.Sensing.Receptors
             var clearReceptorStateSystem =
                 registry.BuildSystem()
                         .WithContext<TGameContext>()
-                        .CreateSystem<SensoryReceptorData<TReceptorSense, TSourceSense>, SensoryReceptorState<TReceptorSense, TSourceSense>, SenseReceptorDirtyFlag<TReceptorSense, TSourceSense>>(
-                            ls.ResetReceptorCacheState);
+                        .WithInputParameter<
+                            SensoryReceptorData<TReceptorSense, TSourceSense>,
+                            SenseReceptorDirtyFlag<TReceptorSense, TSourceSense>>()
+                        .WithOutputParameter<SensoryReceptorState<TReceptorSense, TSourceSense>>()
+                        .CreateSystem(ls.ResetReceptorCacheState);
 
             context.AddInitializationStepHandler(clearReceptorStateSystem, nameof(ls.ResetReceptorCacheState));
             context.AddFixedStepHandlers(clearReceptorStateSystem, nameof(ls.ResetReceptorCacheState));
@@ -278,7 +299,8 @@ namespace RogueEntity.Core.Sensing.Receptors
             var clearObservedStateSystem =
                 registry.BuildSystem()
                         .WithContext<TGameContext>()
-                        .CreateSystem<ObservedSenseSource<TSourceSense>>(ls.ResetSenseSourceObservedState);
+                        .WithInputParameter<ObservedSenseSource<TSourceSense>>()
+                        .CreateSystem(ls.ResetSenseSourceObservedState);
 
             context.AddInitializationStepHandler(clearObservedStateSystem, nameof(ls.ResetSenseSourceObservedState));
             context.AddFixedStepHandlers(clearObservedStateSystem, nameof(ls.ResetSenseSourceObservedState));

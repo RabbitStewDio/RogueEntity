@@ -14,7 +14,7 @@ namespace RogueEntity.Core.Movement.GoalFinding
 
     public interface IGoalFinderTargetEvaluator: IDisposable
     {
-        void CollectGoals(in Position origin, float range, DistanceCalculation dc, IGoalFinderTargetEvaluatorVisitor v);
+        int CollectGoals(in Position origin, float range, DistanceCalculation dc, IGoalFinderTargetEvaluatorVisitor v);
     }
 
     public class CompoundGoalTargetEvaluator : IGoalFinderTargetEvaluator
@@ -40,12 +40,15 @@ namespace RogueEntity.Core.Movement.GoalFinding
             entityTypeGoalFinders.Add(e);
         }
         
-        public void CollectGoals(in Position origin, float range, DistanceCalculation dc, IGoalFinderTargetEvaluatorVisitor v)
+        public int CollectGoals(in Position origin, float range, DistanceCalculation dc, IGoalFinderTargetEvaluatorVisitor v)
         {
+            var goalsCollected = 0;
             foreach (var f in entityTypeGoalFinders)
             {
-                f.CollectGoals(origin, range, dc, v);
+                goalsCollected += f.CollectGoals(origin, range, dc, v);
             }
+
+            return goalsCollected;
         }
     }
     
@@ -53,49 +56,61 @@ namespace RogueEntity.Core.Movement.GoalFinding
         where TItemId : IEntityKey
     {
         readonly ISpatialQuery<TItemId> query;
+        readonly List<SpatialQueryResult<TItemId, GoalMarker<TGoal>>> buffer;
 
         public GoalTargetEvaluator2D(ISpatialQuery<TItemId> query)
         {
             this.query = query;
+            this.buffer = new List<SpatialQueryResult<TItemId, GoalMarker<TGoal>>>();
         }
 
         public void Dispose()
         {
         }
 
-        public void CollectGoals(in Position origin, float range, DistanceCalculation dc, IGoalFinderTargetEvaluatorVisitor v)
+        public int CollectGoals(in Position origin, float range, DistanceCalculation dc, IGoalFinderTargetEvaluatorVisitor v)
         {
-            void ReceiveSpatialQueryResult(in SpatialQueryResult<TItemId, GoalMarker<TGoal>> c)
+            int goalsCollected = 0;
+            query.Query2D(origin, range, dc, buffer);
+            
+            for (var i = 0; i < buffer.Count; i++)
             {
+                var c = buffer[i];
                 v.RegisterGoalAt(c.Position, c.Component);
+                goalsCollected += 1;
             }
-
-            query.Query2D<GoalMarker<TGoal>>(ReceiveSpatialQueryResult, origin, range, dc);
+            return goalsCollected;
         }
     }
 
     public class GoalTargetEvaluator3D<TItemId, TGoal> : IGoalFinderTargetEvaluator
         where TItemId : IEntityKey
     {
+        readonly List<SpatialQueryResult<TItemId, GoalMarker<TGoal>>> buffer;
         readonly ISpatialQuery<TItemId> query;
 
         public GoalTargetEvaluator3D(ISpatialQuery<TItemId> query)
         {
             this.query = query;
+            this.buffer = new List<SpatialQueryResult<TItemId, GoalMarker<TGoal>>>();
         }
 
         public void Dispose()
         {
         }
 
-        public void CollectGoals(in Position origin, float range, DistanceCalculation dc, IGoalFinderTargetEvaluatorVisitor v)
+        public int CollectGoals(in Position origin, float range, DistanceCalculation dc, IGoalFinderTargetEvaluatorVisitor v)
         {
-            void ReceiveSpatialQueryResult(in SpatialQueryResult<TItemId, GoalMarker<TGoal>> c)
-            {
-                v.RegisterGoalAt(c.Position, c.Component);
-            }
+            int goalsCollected = 0;
+            query.Query3D(origin, range, dc, buffer);
 
-            query.Query3D<GoalMarker<TGoal>>(ReceiveSpatialQueryResult, origin, range, dc);
+            for (var i = 0; i < buffer.Count; i++)
+            {
+                var c = buffer[i];
+                v.RegisterGoalAt(c.Position, c.Component);
+                goalsCollected += 1;
+            }
+            return goalsCollected;
         }
     }
 }

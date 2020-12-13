@@ -130,7 +130,9 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Touch
                                  .WithContext<SenseMappingTestContext>();
 
             var omniSystem = new SenseReceptorBlitterSystem<TouchSense, TouchSense>(senseSystem, new DefaultRadiationSenseReceptorBlitter());
-            return builder.CreateSystem<SingleLevelSenseDirectionMapData<TouchSense, TouchSense>, SensoryReceptorState<TouchSense, TouchSense>>(omniSystem.CopySenseSourcesToVisionField);
+            return builder.WithInputParameter<SensoryReceptorState<TouchSense, TouchSense>>()
+                          .WithOutputParameter<SingleLevelSenseDirectionMapData<TouchSense, TouchSense>>()
+                          .CreateSystem(omniSystem.CopySenseSourcesToVisionField);
         }
 
         protected override ReferenceItemDeclaration<SenseMappingTestContext, ItemReference> AttachTrait(ReferenceItemDeclaration<SenseMappingTestContext, ItemReference> decl)

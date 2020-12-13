@@ -115,7 +115,7 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Vision
   ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ 
   ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~
 ";
-        
+
         const string PillarRoom = @"
 // 11x11; an empty room
 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1
@@ -232,7 +232,9 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Vision
                                  .WithContext<SenseMappingTestContext>();
 
             var omniSystem = new SenseReceptorBlitterSystem<VisionSense, VisionSense>(senseSystem, new DefaultRadiationSenseReceptorBlitter());
-            return builder.CreateSystem<SingleLevelSenseDirectionMapData<VisionSense, VisionSense>, SensoryReceptorState<VisionSense, VisionSense>>(omniSystem.CopySenseSourcesToVisionField);
+            return builder.WithOutputParameter<SensoryReceptorState<VisionSense, VisionSense>>()
+                          .WithInputParameter<SingleLevelSenseDirectionMapData<VisionSense, VisionSense>>()
+                          .CreateSystem(omniSystem.CopySenseSourcesToVisionField);
         }
 
         protected override (ISensePropagationAlgorithm propagationAlgorithm, ISensePhysics sensePhysics) GetOrCreateSourceSensePhysics()

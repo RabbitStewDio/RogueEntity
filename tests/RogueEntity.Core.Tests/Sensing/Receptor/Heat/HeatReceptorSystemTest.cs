@@ -261,8 +261,9 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Heat
                                  .WithContext<SenseMappingTestContext>();
 
             var omniSystem = new SenseReceptorBlitterSystem<TemperatureSense, TemperatureSense>(senseSystem, new DefaultDirectionalSenseReceptorBlitter());
-            return builder.CreateSystem<SingleLevelSenseDirectionMapData<TemperatureSense, TemperatureSense>, SensoryReceptorState<TemperatureSense, TemperatureSense>>(
-                omniSystem.CopySenseSourcesToVisionField);
+            return builder.WithInputParameter<SensoryReceptorState<TemperatureSense, TemperatureSense>>()
+                          .WithOutputParameter<SingleLevelSenseDirectionMapData<TemperatureSense, TemperatureSense>>()
+                          .CreateSystem(omniSystem.CopySenseSourcesToVisionField);
         }
 
         protected override SenseSourceSystem<TemperatureSense, HeatSourceDefinition> CreateSourceSystem()

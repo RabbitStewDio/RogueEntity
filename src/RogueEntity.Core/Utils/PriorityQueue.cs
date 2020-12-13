@@ -104,5 +104,7 @@ namespace RogueEntity.Core.Utils
         {
             heap.Resize(maxSize);
         }
+
+        public int Capacity => heap.Capacity;
     }
 }

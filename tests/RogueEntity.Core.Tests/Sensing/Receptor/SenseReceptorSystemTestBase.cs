@@ -94,17 +94,21 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor
                                                                .WithTrait(new ReferenceItemGridPositionTrait<SenseMappingTestContext, ItemReference>(context.ItemResolver, context, TestMapLayers.One))
                                                                .DoWith(x => AttachTrait(x)));
             senseSourceInactive5 = context.ItemRegistry.Register(new ReferenceItemDeclaration<SenseMappingTestContext, ItemReference>("SenseSource-Inactive-5")
-                                                                 .WithTrait(new ReferenceItemGridPositionTrait<SenseMappingTestContext, ItemReference>(context.ItemResolver, context, TestMapLayers.One))
+                                                                 .WithTrait(
+                                                                     new ReferenceItemGridPositionTrait<SenseMappingTestContext, ItemReference>(context.ItemResolver, context, TestMapLayers.One))
                                                                  .DoWith(x => AttachTrait(x)));
 
             senseReceptorActive10 = context.ItemRegistry.Register(new ReferenceItemDeclaration<SenseMappingTestContext, ItemReference>("SenseReceptor-Active-10")
-                                                                  .WithTrait(new ReferenceItemGridPositionTrait<SenseMappingTestContext, ItemReference>(context.ItemResolver, context, TestMapLayers.One))
+                                                                  .WithTrait(new ReferenceItemGridPositionTrait<SenseMappingTestContext, ItemReference>(
+                                                                                 context.ItemResolver, context, TestMapLayers.One))
                                                                   .DoWith(x => AttachTrait(x)));
             senseReceptorActive5 = context.ItemRegistry.Register(new ReferenceItemDeclaration<SenseMappingTestContext, ItemReference>("SenseReceptor-Active-5")
-                                                                 .WithTrait(new ReferenceItemGridPositionTrait<SenseMappingTestContext, ItemReference>(context.ItemResolver, context, TestMapLayers.One))
+                                                                 .WithTrait(
+                                                                     new ReferenceItemGridPositionTrait<SenseMappingTestContext, ItemReference>(context.ItemResolver, context, TestMapLayers.One))
                                                                  .DoWith(x => AttachTrait(x)));
             senseReceptorInactive5 = context.ItemRegistry.Register(new ReferenceItemDeclaration<SenseMappingTestContext, ItemReference>("SenseReceptor-Inactive-5")
-                                                                   .WithTrait(new ReferenceItemGridPositionTrait<SenseMappingTestContext, ItemReference>(context.ItemResolver, context, TestMapLayers.One))
+                                                                   .WithTrait(new ReferenceItemGridPositionTrait<SenseMappingTestContext, ItemReference>(
+                                                                                  context.ItemResolver, context, TestMapLayers.One))
                                                                    .DoWith(x => AttachTrait(x)));
 
             timeSource = new TestTimeSource();
@@ -114,7 +118,7 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor
 
             directionalityReceptorSystem = new SensoryResistanceDirectionalitySystem<SenseMappingTestContext, TReceptorSense>(receptorSenseProperties);
             directionalitySourceSystem = new SensoryResistanceDirectionalitySystem<SenseMappingTestContext, TSourceSense>(senseProperties);
-            
+
             senseSystem = CreateSystem();
             senseSourceSystem = CreateSourceSystem();
             senseSystem.EnsureSenseCacheAvailable(context);
@@ -148,24 +152,33 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor
             {
                 ls.EnsureSenseCacheAvailable,
                 ss.EnsureSenseCacheAvailable,
-                
+
                 ls.BeginSenseCalculation,
                 ss.BeginSenseCalculation,
 
                 directionalityReceptorSystem.ProcessSystem,
                 directionalitySourceSystem.ProcessSystem,
 
-                builder.CreateSystem<SensoryReceptorData<TReceptorSense, TSourceSense>, SensoryReceptorState<TReceptorSense, TSourceSense>, EntityGridPosition>(ls.CollectReceptor), // 5550
-                builder.CreateSystem<TSenseSourceDefinition, SenseSourceState<TSourceSense>, EntityGridPosition>(ss.FindDirtySenseSources), // 5500
-                builder.CreateSystem<SensoryReceptorData<TReceptorSense, TSourceSense>,
-                    SensoryReceptorState<TReceptorSense, TSourceSense>, SenseReceptorDirtyFlag<TReceptorSense, TSourceSense>>(ls.RefreshLocalReceptorState), // 5600
-                builder.CreateSystem<TSenseSourceDefinition, SenseSourceState<TSourceSense>>(ls.CollectObservedSenseSource), // 5750
-                builder.CreateSystem<TSenseSourceDefinition, SenseSourceState<TSourceSense>, SenseDirtyFlag<TSourceSense>, ObservedSenseSource<TSourceSense>>(ss.RefreshLocalSenseState), // 5800
+                builder.WithInputParameter<SensoryReceptorData<TReceptorSense, TSourceSense>, 
+                           EntityGridPosition>()
+                       .WithOutputParameter<SensoryReceptorState<TReceptorSense, TSourceSense>>()
+                       .CreateSystem(ls.CollectReceptor), // 5550
+                builder.WithInputParameter<TSenseSourceDefinition, SenseSourceState<TSourceSense>, EntityGridPosition>().CreateSystem(ss.FindDirtySenseSources), // 5500
+                builder.WithInputParameter<SensoryReceptorData<TReceptorSense, TSourceSense>,
+                           SenseReceptorDirtyFlag<TReceptorSense, TSourceSense>>()
+                       .WithOutputParameter<SensoryReceptorState<TReceptorSense, TSourceSense>>()
+                       .CreateSystem(ls.RefreshLocalReceptorState), // 5600
+                builder.WithInputParameter<TSenseSourceDefinition, SenseSourceState<TSourceSense>>().CreateSystem(ls.CollectObservedSenseSource), // 5750
+                builder.WithInputParameter<TSenseSourceDefinition, SenseDirtyFlag<TSourceSense>, ObservedSenseSource<TSourceSense>>()
+                       .WithOutputParameter<SenseSourceState<TSourceSense>>()
+                       .CreateSystem(ss.RefreshLocalSenseState), // 5800
                 CreateCopyAction(), // 5850
-                builder.CreateSystem<SensoryReceptorData<TReceptorSense, TSourceSense>, SensoryReceptorState<TReceptorSense, TSourceSense>, SenseReceptorDirtyFlag<TReceptorSense, TSourceSense>>(
-                    ls.ResetReceptorCacheState), // 5900
-                builder.CreateSystem<ObservedSenseSource<TSourceSense>>(ls.ResetSenseSourceObservedState), // 5900
-                builder.CreateSystem<TSenseSourceDefinition, SenseSourceState<TSourceSense>, SenseDirtyFlag<TSourceSense>>(ss.ResetSenseSourceCacheState),
+                builder
+                    .WithInputParameter<SensoryReceptorData<TReceptorSense, TSourceSense>, SenseReceptorDirtyFlag<TReceptorSense, TSourceSense>>()
+                    .WithOutputParameter<SensoryReceptorState<TReceptorSense, TSourceSense>>()
+                    .CreateSystem(ls.ResetReceptorCacheState), // 5900
+                builder.WithInputParameter<ObservedSenseSource<TSourceSense>>().CreateSystem(ls.ResetSenseSourceObservedState), // 5900
+                builder.WithInputParameter<TSenseSourceDefinition, SenseSourceState<TSourceSense>, SenseDirtyFlag<TSourceSense>>().CreateSystem(ss.ResetSenseSourceCacheState),
                 ls.EndSenseCalculation,
                 ss.EndSenseCalculation
             };

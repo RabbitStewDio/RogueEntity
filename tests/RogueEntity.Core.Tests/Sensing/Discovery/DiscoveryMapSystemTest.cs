@@ -166,17 +166,20 @@ namespace RogueEntity.Core.Tests.Sensing.Discovery
             context.ItemEntityRegistry.RegisterNonConstructable<SingleLevelSenseDirectionMapData<NoiseSense, NoiseSense>>();
             context.ItemEntityRegistry.RegisterFlag<SenseReceptorDirtyFlag<NoiseSense, NoiseSense>>();
 
-            var visionSensePhysics = new InfraVisionSenseReceptorPhysicsConfiguration(new HeatPhysicsConfiguration(new LinearDecaySensePhysics(DistanceCalculation.Chebyshev), Temperature.FromCelsius(0)));
+            var visionSensePhysics =
+                new InfraVisionSenseReceptorPhysicsConfiguration(new HeatPhysicsConfiguration(new LinearDecaySensePhysics(DistanceCalculation.Chebyshev), Temperature.FromCelsius(0)));
             var noiseSensePhysics =
                 new NoiseSenseReceptorPhysicsConfiguration(new NoisePhysicsConfiguration(new LinearDecaySensePhysics(DistanceCalculation.Chebyshev)), new FloodFillWorkingDataSource());
 
             senseReceptorActive10 = context.ItemRegistry.Register(new ReferenceItemDeclaration<SenseMappingTestContext, ItemReference>("SenseReceptor-Active-10")
-                                                                  .WithTrait(new ReferenceItemGridPositionTrait<SenseMappingTestContext, ItemReference>(context.ItemResolver, context, TestMapLayers.One))
+                                                                  .WithTrait(new ReferenceItemGridPositionTrait<SenseMappingTestContext, ItemReference>(
+                                                                                 context.ItemResolver, context, TestMapLayers.One))
                                                                   .WithTrait(new DiscoveryMapTrait<SenseMappingTestContext, ItemReference>())
                                                                   .WithTrait(new InfraVisionSenseTrait<SenseMappingTestContext, ItemReference>(visionSensePhysics, 10))
             );
             senseReceptorActive5 = context.ItemRegistry.Register(new ReferenceItemDeclaration<SenseMappingTestContext, ItemReference>("SenseReceptor-Active-5")
-                                                                 .WithTrait(new ReferenceItemGridPositionTrait<SenseMappingTestContext, ItemReference>(context.ItemResolver, context, TestMapLayers.One))
+                                                                 .WithTrait(
+                                                                     new ReferenceItemGridPositionTrait<SenseMappingTestContext, ItemReference>(context.ItemResolver, context, TestMapLayers.One))
                                                                  .WithTrait(new DiscoveryMapTrait<SenseMappingTestContext, ItemReference>())
                                                                  .WithTrait(new NoiseDirectionSenseTrait<SenseMappingTestContext, ItemReference>(noiseSensePhysics, 10))
             );
@@ -195,15 +198,17 @@ namespace RogueEntity.Core.Tests.Sensing.Discovery
 
             return new List<Action<SenseMappingTestContext>>
             {
-                builder.CreateSystem<DiscoveryMapData,
-                    SensoryReceptorState<VisionSense, TemperatureSense>,
-                    SingleLevelSenseDirectionMapData<VisionSense, TemperatureSense>,
-                    SenseReceptorDirtyFlag<VisionSense, TemperatureSense>>(senseSystem.ExpandDiscoveredArea),
-                
-                builder.CreateSystem<DiscoveryMapData,
-                    SensoryReceptorState<NoiseSense, NoiseSense>,
-                    SingleLevelSenseDirectionMapData<NoiseSense, NoiseSense>,
-                    SenseReceptorDirtyFlag<NoiseSense, NoiseSense>>(senseSystem.ExpandDiscoveredArea)
+                builder.WithInputParameter<DiscoveryMapData,
+                           SensoryReceptorState<VisionSense, TemperatureSense>,
+                           SingleLevelSenseDirectionMapData<VisionSense, TemperatureSense>,
+                           SenseReceptorDirtyFlag<VisionSense, TemperatureSense>>()
+                       .CreateSystem(senseSystem.ExpandDiscoveredArea),
+
+                builder.WithInputParameter<DiscoveryMapData,
+                           SensoryReceptorState<NoiseSense, NoiseSense>,
+                           SingleLevelSenseDirectionMapData<NoiseSense, NoiseSense>,
+                           SenseReceptorDirtyFlag<NoiseSense, NoiseSense>>()
+                       .CreateSystem(senseSystem.ExpandDiscoveredArea)
             };
         }
 
@@ -223,7 +228,7 @@ namespace RogueEntity.Core.Tests.Sensing.Discovery
             sd.MarkWritten();
             return sd;
         }
-        
+
         protected SenseDataMap ComputeDummySenseMap(int radius, Position2D origin)
         {
             var sd = new SenseDataMap();
@@ -275,7 +280,7 @@ namespace RogueEntity.Core.Tests.Sensing.Discovery
             var expectedMapActorA = SenseTestHelpers.ParseBool(expectedSenseMapActorA, out _);
             var expectedMapActorB = SenseTestHelpers.ParseBool(expectedSenseMapActorB, out _);
             var expectedMapActorAMoved = SenseTestHelpers.ParseBool(expectedSenseMapAfterMoveA, out _);
-            
+
             var active10 = context.ItemResolver.Instantiate(context, senseReceptorActive10);
             var active5 = context.ItemResolver.Instantiate(context, senseReceptorActive5);
 
@@ -291,7 +296,7 @@ namespace RogueEntity.Core.Tests.Sensing.Discovery
 
             m1.TryGetMap(0, out var mapA).Should().BeTrue();
             m2.TryGetMap(0, out var mapB).Should().BeTrue();
-            
+
             Console.WriteLine("Computed Discovery Map Actor A (10):");
             Console.WriteLine(TestHelpers.PrintMap(mapA, activeTestArea));
             Console.WriteLine("--");
@@ -313,13 +318,12 @@ namespace RogueEntity.Core.Tests.Sensing.Discovery
             {
                 s(context);
             }
-            
+
             Console.WriteLine("Computed Discovery Map Actor A (10) after move:");
             Console.WriteLine(TestHelpers.PrintMap(mapA, activeTestArea));
             Console.WriteLine("--");
-            
+
             TestHelpers.AssertEquals(mapA, expectedMapActorAMoved, activeTestArea);
-            
         }
     }
 }

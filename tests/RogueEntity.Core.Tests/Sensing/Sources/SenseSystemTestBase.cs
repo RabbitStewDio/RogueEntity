@@ -75,9 +75,11 @@ namespace RogueEntity.Core.Tests.Sensing.Sources
 
                 directionalitySystem.ProcessSystem,
 
-                builder.CreateSystem<TSenseSourceDefinition, SenseSourceState<TSense>, EntityGridPosition>(ls.FindDirtySenseSources),
-                Guard(builder.CreateSystem<TSenseSourceDefinition, SenseSourceState<TSense>, SenseDirtyFlag<TSense>, ObservedSenseSource<TSense>>(ls.RefreshLocalSenseState)),
-                builder.CreateSystem<TSenseSourceDefinition, SenseSourceState<TSense>, SenseDirtyFlag<TSense>>(ls.ResetSenseSourceCacheState),
+                builder.WithInputParameter<TSenseSourceDefinition, SenseSourceState<TSense>, EntityGridPosition>().CreateSystem(ls.FindDirtySenseSources),
+                Guard(builder.WithInputParameter<TSenseSourceDefinition, SenseDirtyFlag<TSense>, ObservedSenseSource<TSense>>()
+                             .WithOutputParameter<SenseSourceState<TSense>>()
+                             .CreateSystem(ls.RefreshLocalSenseState)),
+                builder.WithInputParameter<TSenseSourceDefinition, SenseSourceState<TSense>, SenseDirtyFlag<TSense>>().CreateSystem(ls.ResetSenseSourceCacheState),
 
                 ls.EndSenseCalculation
             };

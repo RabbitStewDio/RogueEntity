@@ -8,7 +8,6 @@ using RogueEntity.Core.Movement.CostModifier;
 using RogueEntity.Core.Movement.Pathfinding;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Algorithms;
-using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.DataViews;
 
 namespace RogueEntity.Core.Movement.GoalFinding.SingleLevel
@@ -16,7 +15,7 @@ namespace RogueEntity.Core.Movement.GoalFinding.SingleLevel
     public class SingleLevelGoalFinder : IGoalFinder, IPathFinderPerformanceView
     {
         readonly List<MovementCostData3D> movementSourceData;
-        readonly SingleLevelGoalFinderWorker singleLevelPathFinder;
+        readonly SingleLevelGoalFinderDijkstraWorker singleLevelPathFinderDijkstra;
         readonly Stopwatch sw;
 
         SingleLevelGoalFinderBuilder currentOwner;
@@ -28,7 +27,7 @@ namespace RogueEntity.Core.Movement.GoalFinding.SingleLevel
         {
             movementSourceData = new List<MovementCostData3D>();
             sw = new Stopwatch();
-            singleLevelPathFinder = new SingleLevelGoalFinderWorker();
+            singleLevelPathFinderDijkstra = new SingleLevelGoalFinderDijkstraWorker();
         }
 
         public void Dispose()
@@ -51,7 +50,7 @@ namespace RogueEntity.Core.Movement.GoalFinding.SingleLevel
             this.searchRadius = searchRadiusParam;
             this.disposed = false;
             this.movementSourceData.Clear();
-            this.singleLevelPathFinder.Reset();
+            this.singleLevelPathFinderDijkstra.Reset();
             this.currentOwner = owner ?? throw new ArgumentNullException(nameof(owner));
             this.targetEvaluator = evaluator ?? throw new ArgumentNullException(nameof(evaluator));
         }
@@ -84,26 +83,32 @@ namespace RogueEntity.Core.Movement.GoalFinding.SingleLevel
                 return PathFinderResult.NotFound;
             }
 
-            var searchBounds = Rectangle.WithRadius(source.GridX, source.GridY, searchRadiusInt, searchRadiusInt);
-            singleLevelPathFinder.ConfigureActiveLevel(source, searchBounds);
+            singleLevelPathFinderDijkstra.ConfigureActiveLevel(source, searchRadiusInt);
             var heuristics = DistanceCalculation.Manhattan;
             foreach (var m in movementSourceData)
             {
-                singleLevelPathFinder.ConfigureMovementProfile(in m.MovementCost, m.Costs, m.Directions);
+                singleLevelPathFinderDijkstra.ConfigureMovementProfile(in m.MovementCost, m.Costs, m.Directions);
                 if (heuristics.IsOtherMoreAccurate(m.MovementCost.MovementStyle))
                 {
                     heuristics = m.MovementCost.MovementStyle;
                 }
             }
 
-            singleLevelPathFinder.ConfigureFinished(heuristics.AsAdjacencyRule());
+            singleLevelPathFinderDijkstra.ConfigureFinished(heuristics.AsAdjacencyRule());
 
-            TargetEvaluator.CollectGoals(Position.From(source), searchRadius, heuristics, singleLevelPathFinder);
+            var goals = TargetEvaluator.CollectGoals(Position.From(source), searchRadius, heuristics, singleLevelPathFinderDijkstra);
+            if (goals == 0)
+            {
+                path = pathBuffer;
+                return PathFinderResult.NotFound;
+            }
+            
+            sw.Reset();
             sw.Start();
             try
             {
                 path = pathBuffer;
-                return singleLevelPathFinder.PerformSearch(source, pathBuffer);
+                return singleLevelPathFinderDijkstra.PerformSearch(source, pathBuffer, searchLimit);
             }
             finally
             {
@@ -113,7 +118,7 @@ namespace RogueEntity.Core.Movement.GoalFinding.SingleLevel
         }
 
         public IGoalFinderTargetEvaluator TargetEvaluator => targetEvaluator;
-        public int NodesEvaluated => singleLevelPathFinder.NodesEvaluated;
+        public int NodesEvaluated => singleLevelPathFinderDijkstra.NodesEvaluated;
         public TimeSpan TimeElapsed { get; private set; }
 
         public void ConfigureMovementProfile(in MovementCost costProfile,

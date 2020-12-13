@@ -95,10 +95,11 @@ namespace RogueEntity.Core.Sensing.Discovery
 
             var entitySystem = registry.BuildSystem()
                                        .WithContext<TGameContext>()
-                                       .CreateSystem<DiscoveryMapData,
+                                       .WithInputParameter<DiscoveryMapData,
                                            SensoryReceptorState<VisionSense, VisionSense>,
                                            SingleLevelSenseDirectionMapData<VisionSense, VisionSense>,
-                                           SenseReceptorDirtyFlag<VisionSense, VisionSense>>(system.ExpandDiscoveredArea);
+                                           SenseReceptorDirtyFlag<VisionSense, VisionSense>>()
+                                       .CreateSystem(system.ExpandDiscoveredArea);
 
             context.AddFixedStepHandlers(entitySystem);
             context.AddInitializationStepHandler(entitySystem);
@@ -114,10 +115,11 @@ namespace RogueEntity.Core.Sensing.Discovery
 
             var entitySystem = registry.BuildSystem()
                                        .WithContext<TGameContext>()
-                                       .CreateSystem<DiscoveryMapData,
+                                       .WithInputParameter<DiscoveryMapData,
                                            SensoryReceptorState<VisionSense, TemperatureSense>,
                                            SingleLevelSenseDirectionMapData<VisionSense, TemperatureSense>,
-                                           SenseReceptorDirtyFlag<VisionSense, TemperatureSense>>(system.ExpandDiscoveredArea);
+                                           SenseReceptorDirtyFlag<VisionSense, TemperatureSense>>()
+                                       .CreateSystem(system.ExpandDiscoveredArea);
 
             context.AddFixedStepHandlers(entitySystem);
             context.AddInitializationStepHandler(entitySystem);
@@ -133,10 +135,11 @@ namespace RogueEntity.Core.Sensing.Discovery
 
             var entitySystem = registry.BuildSystem()
                                        .WithContext<TGameContext>()
-                                       .CreateSystem<DiscoveryMapData,
+                                       .WithInputParameter<DiscoveryMapData,
                                            SensoryReceptorState<TouchSense, TouchSense>,
                                            SingleLevelSenseDirectionMapData<TouchSense, TouchSense>,
-                                           SenseReceptorDirtyFlag<TouchSense, TouchSense>>(system.ExpandDiscoveredArea);
+                                           SenseReceptorDirtyFlag<TouchSense, TouchSense>>()
+                                       .CreateSystem(system.ExpandDiscoveredArea);
 
             context.AddFixedStepHandlers(entitySystem);
             context.AddInitializationStepHandler(entitySystem);

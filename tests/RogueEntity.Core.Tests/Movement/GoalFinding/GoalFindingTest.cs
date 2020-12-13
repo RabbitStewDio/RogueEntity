@@ -16,6 +16,7 @@ using static RogueEntity.Core.Tests.Movement.PathfindingTestUtil;
 
 namespace RogueEntity.Core.Tests.Movement.GoalFinding
 {
+    [TestFixture]
     public class GoalFindingTest
     {
         ItemContextBackend<object, ItemReference> context;

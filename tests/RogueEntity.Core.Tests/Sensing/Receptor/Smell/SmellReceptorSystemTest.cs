@@ -118,7 +118,7 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Smell
   ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ 
   ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~
 ";
-        
+
         /// <summary>
         ///  A room with a pillar blocking the direct line of sight to the noise source.
         ///  Anyone staying in a cheap hotel knows that noise travels through any opening
@@ -253,7 +253,9 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Smell
                                  .WithContext<SenseMappingTestContext>();
 
             var omniSystem = new SenseReceptorBlitterSystem<SmellSense, SmellSense>(senseSystem, new DefaultDirectionalSenseReceptorBlitter());
-            return builder.CreateSystem<SingleLevelSenseDirectionMapData<SmellSense, SmellSense>, SensoryReceptorState<SmellSense, SmellSense>>(omniSystem.CopySenseSourcesToVisionField);
+            return builder.WithInputParameter<SensoryReceptorState<SmellSense, SmellSense>>()
+                          .WithOutputParameter<SingleLevelSenseDirectionMapData<SmellSense, SmellSense>>()
+                          .CreateSystem(omniSystem.CopySenseSourcesToVisionField);
         }
 
         protected override ReferenceItemDeclaration<SenseMappingTestContext, ItemReference> AttachTrait(ReferenceItemDeclaration<SenseMappingTestContext, ItemReference> decl)

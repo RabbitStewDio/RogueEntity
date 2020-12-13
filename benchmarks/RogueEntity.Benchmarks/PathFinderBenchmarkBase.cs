@@ -19,7 +19,7 @@ namespace RogueEntity.Benchmarks
         readonly SingleLevelPathFinderSource pathfinderSource;
         Rectangle bounds;
 
-        public PathFinderBenchmarkBase(string id)
+        protected PathFinderBenchmarkBase(string id)
         {
             this.id = id;
             positions = new List<EntityGridPosition>();
@@ -29,22 +29,27 @@ namespace RogueEntity.Benchmarks
         public virtual void SetUpGlobal()
         {
             var sourceText = PerformanceTestUtils.ReadResource(id);
-            var resistanceMap = PerformanceTestUtils.ParseMap(sourceText, out bounds);
+            var movementCostData = PerformanceTestUtils.ParseMap(sourceText, out bounds);
             // Console.WriteLine("Using room layout \n" + TestHelpers.PrintMap(resistanceMap, bounds));
 
-            var directionalityMapSystem = new MovementResistanceDirectionalitySystem<WalkingMovement>(resistanceMap.As3DMap(0));
+            var directionalityMapSystem = new MovementResistanceDirectionalitySystem<WalkingMovement>(movementCostData.As3DMap(0));
             directionalityMapSystem.MarkGloballyDirty();
             directionalityMapSystem.Process();
             if (!directionalityMapSystem.ResultView.TryGetView(0, out var directionalityMap))
                 throw new Exception();
 
-            pathfinderSource.RegisterMovementSource(WalkingMovement.Instance, resistanceMap.As3DMap(0), directionalityMap.As3DMap(0));
+            pathfinderSource.RegisterMovementSource(WalkingMovement.Instance, movementCostData.As3DMap(0), directionalityMap.As3DMap(0));
 
             var rnd = new Random(10);
             while (positions.Count < 50)
             {
                 var startPosition = EntityGridPosition.OfRaw(0, rnd.Next(bounds.Width / 2, bounds.Width), rnd.Next(bounds.Height / 2, bounds.Height));
-                if (resistanceMap[startPosition.GridX, startPosition.GridY] > 0.5)
+                if (positions.Contains(startPosition))
+                {
+                    continue;
+                }
+                
+                if (movementCostData[startPosition.GridX, startPosition.GridY] > 0.5)
                 {
                     positions.Add(startPosition);
                 }
@@ -53,18 +58,40 @@ namespace RogueEntity.Benchmarks
             while (positions.Count < 100)
             {
                 var targetPosition = EntityGridPosition.OfRaw(0, rnd.Next(bounds.Width / 2), rnd.Next(bounds.Height / 2));
-                if (resistanceMap[targetPosition.GridX, targetPosition.GridY] > 0.5)
+                if (positions.Contains(targetPosition))
+                {
+                    continue;
+                }
+                
+                if (movementCostData[targetPosition.GridX, targetPosition.GridY] > 0.5)
                 {
                     positions.Add(targetPosition);
                 }
             }
             
             
-            if (resistanceMap[0, 9] < 1 ||
-                resistanceMap[0, 10] < 1 ||
-                resistanceMap[0, 11] < 1)
+            if (movementCostData[0, 9] < 1 ||
+                movementCostData[0, 10] < 1 ||
+                movementCostData[0, 11] < 1)
             {
                 throw new Exception();
+            }
+
+            EnsurePathFindingValid();
+        }
+
+        void EnsurePathFindingValid()
+        {
+            using (var pf = pathfinderSource.GetPathFinder()
+                                            .WithTarget(new DefaultPathFinderTargetEvaluator().WithTargetPosition(EntityGridPosition.OfRaw(0, 0, 11)))
+                                            .Build(new PathfindingMovementCostFactors(new MovementCost(WalkingMovement.Instance, DistanceCalculation.Euclid, 1))))
+            {
+                var result = pf.TryFindPath(EntityGridPosition.OfRaw(0, 0, 9), out _);
+                if (result != PathFinderResult.Found)
+                {
+                    throw new ArgumentException();
+                }
+                //Console.WriteLine($" = {result2} + {string.Join(", ", resultPath2.Select(e => e.Item1))}");
             }
         }
         
@@ -73,20 +100,6 @@ namespace RogueEntity.Benchmarks
 
             TimeSpan totalTime = TimeSpan.Zero;
             int nodesEvaluated = 0;
-
-            using (var pf = pathfinderSource.GetPathFinder()
-                               .WithTarget(new DefaultPathFinderTargetEvaluator().WithTargetPosition(EntityGridPosition.OfRaw(0, 0, 11)))
-                               .Build(new PathfindingMovementCostFactors(new MovementCost(WalkingMovement.Instance, DistanceCalculation.Euclid, 1))))
-            {
-                pf.TryFindPath(EntityGridPosition.OfRaw(0, 0, 9), out _);
-                if (pf is IPathFinderPerformanceView pv)
-                {
-                    totalTime += pv.TimeElapsed;
-                    nodesEvaluated += pv.NodesEvaluated;
-                }
-
-                //Console.WriteLine($" = {result2} + {string.Join(", ", resultPath2.Select(e => e.Item1))}");
-            }
 
             var rnd = new Random(11);
             
@@ -124,7 +137,7 @@ namespace RogueEntity.Benchmarks
                 }
             }
 
-            Console.WriteLine($"Performance View: {nodesEvaluated:n0} nodes in {totalTime} sec");
+            // Console.WriteLine($"Performance View: {nodesEvaluated:n0} nodes in {totalTime} sec");
         }
     }
 }

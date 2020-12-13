@@ -89,7 +89,8 @@ namespace RogueEntity.Core.Sensing.Map.InfraVision
             var system =
                 registry.BuildSystem()
                         .WithContext<TGameContext>()
-                        .CreateSystem<HeatSourceDefinition, SenseSourceState<TemperatureSense>>(hs.CollectSenseSources);
+                        .WithInputParameter<HeatSourceDefinition, SenseSourceState<TemperatureSense>>()
+                        .CreateSystem(hs.CollectSenseSources);
 
             context.AddInitializationStepHandler(system);
             context.AddFixedStepHandlers(system);

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using RogueEntity.Core.Movement;
 using RogueEntity.Core.Positioning.Grid;
 
-namespace RogueEntity.Core.Tests.Movement.Pathfinding
+namespace RogueEntity.Core.Tests.Movement
 {
     public static class ResultPathExtensions
     {

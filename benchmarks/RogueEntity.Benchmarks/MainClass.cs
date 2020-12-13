@@ -1,6 +1,7 @@
-using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using BenchmarkDotNet.Configs;
+using BenchmarkDotNet.Diagnosers;
 using BenchmarkDotNet.Running;
 
 namespace RogueEntity.Benchmarks
@@ -13,30 +14,49 @@ namespace RogueEntity.Benchmarks
         public static void Main(string[] args)
         {
             if (RunManually)
-            {
-                RunOnce();
+            { 
+                RunOnce_GoalFinder();
                 return;
             }
 
-            var summary = BenchmarkRunner.Run(typeof(MainClass).Assembly);
-            Console.WriteLine(summary);
+            var config = new ManualConfig();
+            config.Add(DefaultConfig.Instance);
+            config.Add(MemoryDiagnoser.Default);
+            // config.Add(new InliningDiagnoser(true, new[] {"EnTTSharp", "RogueEntity"}));
+
+            // config.Add(ThreadingDiagnoser.Default);
+            var summary = BenchmarkRunner.Run(typeof(MainClass).Assembly, config);
+            // Console.WriteLine(summary);
         }
 
-        static void RunOnce()
+        static void RunOnce_GoalFinder()
+        {
+            var bm = new GoalFinderBenchmarkMaze256();
+            bm.SetUpGlobal();
+            Stopwatch sw = Stopwatch.StartNew();
+            for (int i = 0; i < 200; i += 1)
+            {
+                if ((i % 50) == 0)
+                {
+                    //MemoryProfiler.GetSnapshot();
+                }
+
+                sw.Restart();
+                bm.GoalMaze256();
+                // Console.WriteLine(i + " " + sw.Elapsed);
+            }
+        }
+
+        static void RunOnce_PathFinder()
         {
             var bm = new PathFinderBenchmarkMaze256();
             bm.SetUpGlobal();
             Stopwatch sw = Stopwatch.StartNew();
-            for (int i = 0; i < 20; i += 1)
+            for (int i = 0; i < 200; i += 1)
             {
-                if (i == 4)
-                {
-                    Console.WriteLine("HERE");
-                }
-
                 sw.Restart();
-                bm.BenchmarkMaze256();
-                Console.WriteLine(i + " " + sw.Elapsed);
+                bm.PathFinderMaze256();
+                // Console.WriteLine(i + " " + sw.Elapsed);
             }
         }
     }

@@ -12,7 +12,7 @@ using RogueEntity.Core.Utils.DataViews;
 
 namespace RogueEntity.Core.Movement.GoalFinding.SingleLevel
 {
-    public class SingleLevelGoalFinderWorker : DijkstraGridBase<IMovementMode>, IGoalFinderTargetEvaluatorVisitor
+    public class SingleLevelGoalFinderDijkstraWorker : DijkstraGridBase<IMovementMode>, IGoalFinderTargetEvaluatorVisitor
     {
         readonly List<MovementCostData2D> movementCostsOnLevel;
         readonly List<ShortPosition2D> pathBuffer;
@@ -24,23 +24,28 @@ namespace RogueEntity.Core.Movement.GoalFinding.SingleLevel
         readonly BoundedDataView<IMovementMode> nodesSources;
         Position2D origin;
 
+        public SingleLevelGoalFinderDijkstraWorker() : base(default)
+        {
+            pathBuffer = new List<ShortPosition2D>();
+            nodesSources = new BoundedDataView<IMovementMode>(default);
+            movementCostsOnLevel = new List<MovementCostData2D>();
+            directionsTile = new IReadOnlyBoundedDataView<DirectionalityInformation>[0];
+            costsTile = new IReadOnlyBoundedDataView<float>[0];
+        }
+
         public void Reset()
         {
             base.PrepareScan();
         }
 
-        public SingleLevelGoalFinderWorker() : base(default)
-        {
-            pathBuffer = new List<ShortPosition2D>();
-            nodesSources = new BoundedDataView<IMovementMode>(default);
-            movementCostsOnLevel = new List<MovementCostData2D>();
-        }
-
-        public void ConfigureActiveLevel<TPosition>(in TPosition pos, in Rectangle searchBounds)
+        public void ConfigureActiveLevel<TPosition>(in TPosition pos, int searchRadius)
             where TPosition : IPosition<TPosition>
         {
             movementCostsOnLevel.Clear();
 
+
+            var searchBounds = new Rectangle(new Position2D(), searchRadius, searchRadius);
+            base.Resize(searchBounds);
             nodesSources.Resize(searchBounds);
             nodesSources.Clear();
 
@@ -97,15 +102,17 @@ namespace RogueEntity.Core.Movement.GoalFinding.SingleLevel
         }
 
         public PathFinderResult PerformSearch<TPosition>(in TPosition from,
-                                                         List<(TPosition, IMovementMode)> path)
+                                                         List<(TPosition, IMovementMode)> path,
+                                                         int searchLimit = int.MaxValue)
             where TPosition : IPosition<TPosition>
         {
-            base.RescanMap();
+            base.RescanMap(searchLimit);
+            
             base.FindPath(new ShortPosition2D(), out _, pathBuffer);
             path.Clear();
             foreach (var p in pathBuffer)
             {
-                path.Add((from.WithPosition(p.X, p.Y), nodesSources[p.X, p.Y]));
+                path.Add((from.WithPosition(p.X + origin.X, p.Y + origin.Y), nodesSources[p.X, p.Y]));
             }
 
             if (path.Count == 0)
@@ -137,7 +144,7 @@ namespace RogueEntity.Core.Movement.GoalFinding.SingleLevel
             var targetPosX = sourceNode.X;
             var targetPosY = sourceNode.Y;
             var costInformationAvailable = false;
-            totalPathCost = 0;
+            var pathCost = 0f;
             movementMode = default;
 
             for (var index = 0; index < movementCostsOnLevel.Count; index++)
@@ -161,23 +168,24 @@ namespace RogueEntity.Core.Movement.GoalFinding.SingleLevel
                     continue;
                 }
 
-                var accumulatedCost = sourceNodeCost + m.BaseCost * tileCost;
+                var accumulatedCost = m.BaseCost * tileCost;
                 if (costInformationAvailable)
                 {
-                    if (accumulatedCost < totalPathCost)
+                    if (accumulatedCost < pathCost)
                     {
-                        totalPathCost = accumulatedCost;
+                        pathCost = accumulatedCost;
                         movementMode = m.MovementType;
                     }
                 }
                 else
                 {
-                    totalPathCost = accumulatedCost;
+                    pathCost = accumulatedCost;
                     movementMode = m.MovementType;
                     costInformationAvailable = true;
                 }
             }
 
+            totalPathCost = Math.Max(0, sourceNodeCost - pathCost);
             return costInformationAvailable;
         }
 

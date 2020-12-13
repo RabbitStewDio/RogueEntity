@@ -31,8 +31,8 @@ namespace RogueEntity.Core.Movement.Pathfinding.SingleLevel
             pathBuffer = new List<Position2D>();
             nodesSources = new PooledDynamicDataView2D<IMovementMode>(movementModePool);
             movementCostsOnLevel = new List<MovementCostData2D>();
-            directionsTile = new IReadOnlyBoundedDataView<DirectionalityInformation>[0];
-            costsTile = new IReadOnlyBoundedDataView<float>[0];
+            directionsTile = new IReadOnlyBoundedDataView<DirectionalityInformation>[4];
+            costsTile = new IReadOnlyBoundedDataView<float>[4];
         }
 
         public void ConfigureActiveLevel(int z)

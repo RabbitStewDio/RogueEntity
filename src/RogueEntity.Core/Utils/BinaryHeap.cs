@@ -25,12 +25,12 @@ namespace RogueEntity.Core.Utils
         public BinaryHeap(int numberOfElements, 
                           IComparer<T> comparer = null)
         {
-            if (numberOfElements <= 1)
+            if (numberOfElements <= 0)
             {
-                throw new ArgumentException();
+                throw new ArgumentException($"NumberOfElements must be larger than 0, but found {numberOfElements}", nameof(numberOfElements));
             }
 
-            this.Data = new T[numberOfElements];
+            this.Data = new T[1 + numberOfElements];
             this.numberOfItems = 1;
             this.Comparer = comparer ?? Comparer<T>.Default;
         }
@@ -285,9 +285,19 @@ namespace RogueEntity.Core.Utils
             }
         }
 
-        public void Resize(int maxSize)
+        public int Capacity => Data.Length - 1;
+        
+        public void Resize(int numberOfElements)
         {
-            Array.Resize(ref Data, maxSize);
+            if (numberOfElements <= 1)
+            {
+                throw new ArgumentException($"NumberOfElements must be larger than 0, but found {numberOfElements}", nameof(numberOfElements));
+            }
+
+            if (Data.Length != 1 + numberOfElements)
+            {
+                Array.Resize(ref Data, 1 + numberOfElements);
+            }
         }
     }
 }

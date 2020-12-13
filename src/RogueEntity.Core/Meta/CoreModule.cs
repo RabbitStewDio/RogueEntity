@@ -92,7 +92,8 @@ namespace RogueEntity.Core.Meta
         {
             var markCascades = registry.BuildSystem()
                                        .WithContext<TGameContext>()
-                                       .CreateSystem<CascadingDestroyedMarker>(DestroyedEntitiesSystem<TItemId>.SchedulePreviouslyMarkedItemsForDestruction);
+                                       .WithInputParameter<CascadingDestroyedMarker>()
+                                       .CreateSystem(DestroyedEntitiesSystem<TItemId>.SchedulePreviouslyMarkedItemsForDestruction);
             context.AddFixedStepHandlers(markCascades);
         }
 

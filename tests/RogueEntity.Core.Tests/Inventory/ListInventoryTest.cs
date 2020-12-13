@@ -289,20 +289,20 @@ namespace RogueEntity.Core.Tests.Inventory
                 // Any inventory item that had been marked for delayed destruction is now marked as destroyable.
                 Context.ActorEntities.BuildSystem()
                        .WithContext<InventoryTestContext>()
-                       .CreateSystem<CascadingDestroyedMarker>(DestroyedEntitiesSystem<ActorReference>.SchedulePreviouslyMarkedItemsForDestruction),
+                       .WithInputParameter<CascadingDestroyedMarker>().CreateSystem(DestroyedEntitiesSystem<ActorReference>.SchedulePreviouslyMarkedItemsForDestruction),
                 Context.ItemEntities.BuildSystem()
                        .WithContext<InventoryTestContext>()
-                       .CreateSystem<CascadingDestroyedMarker>(DestroyedEntitiesSystem<ItemReference>.SchedulePreviouslyMarkedItemsForDestruction),
+                       .WithInputParameter<CascadingDestroyedMarker>().CreateSystem(DestroyedEntitiesSystem<ItemReference>.SchedulePreviouslyMarkedItemsForDestruction),
 
                 
                 // any destroyed item that is a container must mark its remaining container contents as scheduled for destruction at the 
                 // next turn.
                 Context.ActorEntities.BuildSystem()
                        .WithContext<InventoryTestContext>()
-                       .CreateSystem<DestroyedMarker, ListInventoryData<ActorReference, ItemReference>>(dsa.MarkDestroyedContainerEntities),
+                       .WithInputParameter<DestroyedMarker, ListInventoryData<ActorReference, ItemReference>>().CreateSystem(dsa.MarkDestroyedContainerEntities),
                 Context.ItemEntities.BuildSystem()
                        .WithContext<InventoryTestContext>()
-                       .CreateSystem<DestroyedMarker, ListInventoryData<ItemReference, ItemReference>>(dsi.MarkDestroyedContainerEntities),
+                       .WithInputParameter<DestroyedMarker, ListInventoryData<ItemReference, ItemReference>>().CreateSystem(dsi.MarkDestroyedContainerEntities),
 
                 // Finally clean up any item marked as destroyed.
                 new DestroyedEntitiesSystem<ItemReference>(Context.ItemEntities).DeleteMarkedEntities,

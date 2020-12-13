@@ -20,7 +20,7 @@ namespace RogueEntity.Core.Utils
         }
 
 #if DEBUG
-        StackTrace TraceInfo { get; private set; }
+        StackTrace TraceInfo { get; set; }
 #endif
 
         public bool TryGetTraceInfo(out StackTrace s)

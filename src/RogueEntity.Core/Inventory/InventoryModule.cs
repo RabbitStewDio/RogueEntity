@@ -64,7 +64,10 @@ namespace RogueEntity.Core.Inventory
         {
             var itemResolver = initParameter.ServiceResolver.Resolve<IItemResolver<TGameContext, TItemId>>();
             var system = new DestroyContainerContentsSystem<TGameContext, TActorId, TItemId>(itemResolver);
-            var action = registry.BuildSystem().WithContext<TGameContext>().CreateSystem<DestroyedMarker, ListInventoryData<TActorId, TItemId>>(system.MarkDestroyedContainerEntities);
+            var action = registry.BuildSystem()
+                                 .WithContext<TGameContext>()
+                                 .WithInputParameter<DestroyedMarker, ListInventoryData<TActorId, TItemId>>()
+                                 .CreateSystem(system.MarkDestroyedContainerEntities);
             context.AddInitializationStepHandler(action);
             context.AddFixedStepHandlers(action);
         }

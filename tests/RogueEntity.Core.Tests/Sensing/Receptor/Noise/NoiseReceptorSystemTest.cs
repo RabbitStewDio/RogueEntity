@@ -117,7 +117,7 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Noise
   ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ 
   ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~
 ";
-        
+
         /// <summary>
         ///  A room with a pillar blocking the direct line of sight to the noise source.
         ///  Anyone staying in a cheap hotel knows that noise travels through any opening
@@ -224,9 +224,10 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Noise
   ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ 
   ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~ ,  ~
 ";
-        
+
         readonly NoisePhysicsConfiguration sourcePhysics;
         readonly NoiseSenseReceptorPhysicsConfiguration physics;
+
         public NoiseReceptorSystemTest()
         {
             this.sourcePhysics = new NoisePhysicsConfiguration(LinearDecaySensePhysics.For(DistanceCalculation.Chebyshev));
@@ -239,7 +240,9 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Noise
                                  .WithContext<SenseMappingTestContext>();
 
             var omniSystem = new SenseReceptorBlitterSystem<NoiseSense, NoiseSense>(senseSystem, new DefaultDirectionalSenseReceptorBlitter());
-            return builder.CreateSystem<SingleLevelSenseDirectionMapData<NoiseSense, NoiseSense>, SensoryReceptorState<NoiseSense, NoiseSense>>(omniSystem.CopySenseSourcesToVisionField);
+            return builder.WithInputParameter<SensoryReceptorState<NoiseSense, NoiseSense>>()
+                          .WithOutputParameter<SingleLevelSenseDirectionMapData<NoiseSense, NoiseSense>>()
+                          .CreateSystem(omniSystem.CopySenseSourcesToVisionField);
         }
 
         protected override (ISensePropagationAlgorithm propagationAlgorithm, ISensePhysics sensePhysics) GetOrCreateSourceSensePhysics()

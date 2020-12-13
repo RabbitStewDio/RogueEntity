@@ -37,9 +37,10 @@ namespace RogueEntity.Core.Positioning.Algorithms
 
         protected DijkstraGridBase(in Rectangle bounds)
         {
-            this.openNodes = new PriorityQueue<DijkstraNodeWeight, ShortPosition2D>(bounds.Width * bounds.Height);
+            this.openNodes = new PriorityQueue<DijkstraNodeWeight, ShortPosition2D>(Math.Max(16, bounds.Width * bounds.Height));
             this.resultMapCoords = new BoundedDataView<Direction>(in bounds);
             this.resultMapDistanceCost = new BoundedDataView<float>(in bounds);
+            this.bounds = bounds;
         }
 
         protected virtual void Resize(in Rectangle newBounds)
@@ -55,7 +56,7 @@ namespace RogueEntity.Core.Positioning.Algorithms
                 this.bounds = new Rectangle(newBounds.MinExtentX, newBounds.MinExtentY,
                                             Math.Max(newBounds.Width, bounds.Width),
                                             Math.Max(newBounds.Height, bounds.Height));
-                this.openNodes.Resize(bounds.Width * bounds.Height);
+                this.openNodes.Resize(Math.Max(openNodes.Capacity, bounds.Width * bounds.Height));
             }
 
             this.resultMapCoords.Resize(in bounds);

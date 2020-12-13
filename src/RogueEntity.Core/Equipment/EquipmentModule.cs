@@ -63,7 +63,11 @@ namespace RogueEntity.Core.Equipment
         {
             var itemResolver = initParameter.ServiceResolver.Resolve<IItemResolver<TGameContext, TItemId>>();
             var system = new DestroyContainerContentsSystem<TGameContext, TActorId, TItemId>(itemResolver);
-            var action = registry.BuildSystem().WithContext<TGameContext>().CreateSystem<DestroyedMarker, SlottedEquipmentData<TItemId>>(system.MarkDestroyedContainerEntities);
+            var action = registry.BuildSystem()
+                                 .WithContext<TGameContext>()
+                                 .WithInputParameter<DestroyedMarker, SlottedEquipmentData<TItemId>>()
+                                 .CreateSystem(system.MarkDestroyedContainerEntities);
+            
             context.AddInitializationStepHandler(action);
             context.AddFixedStepHandlers(action);
         }
