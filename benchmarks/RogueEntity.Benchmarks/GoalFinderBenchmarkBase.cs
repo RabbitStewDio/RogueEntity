@@ -10,6 +10,7 @@ using RogueEntity.Core.Movement.Cost;
 using RogueEntity.Core.Movement.CostModifier.Directions;
 using RogueEntity.Core.Movement.GoalFinding;
 using RogueEntity.Core.Movement.GoalFinding.SingleLevel;
+using RogueEntity.Core.Movement.Goals;
 using RogueEntity.Core.Movement.MovementModes.Walking;
 using RogueEntity.Core.Movement.Pathfinding;
 using RogueEntity.Core.Movement.Pathfinding.SingleLevel;
@@ -147,7 +148,7 @@ namespace RogueEntity.Benchmarks
                 throw new Exception($"Unable to position goal entity {positions.Count} at {targetPosition}");
             }
             
-            using (var pf = pathfinderSource.GetPathFinder()
+            using (var pf = pathfinderSource.GetGoalFinder()
                                             .WithGoal<PerformanceGoal>()
                                             .Build(new PathfindingMovementCostFactors(new MovementCost(WalkingMovement.Instance, DistanceCalculation.Euclid, 1))))
             {
@@ -175,7 +176,7 @@ namespace RogueEntity.Benchmarks
             {
                 var startPosition = positions[rnd.Next(0, 50)];
 
-                using (var pf = pathfinderSource.GetPathFinder()
+                using (var pf = pathfinderSource.GetGoalFinder()
                                                 .WithGoal<PerformanceGoal>()
                                                 .WithSearchRadius(32)
                                                 .Build(new PathfindingMovementCostFactors(new MovementCost(WalkingMovement.Instance, DistanceCalculation.Euclid, 1))))

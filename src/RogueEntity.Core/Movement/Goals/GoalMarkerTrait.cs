@@ -3,7 +3,7 @@ using EnTTSharp.Entities;
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Core.Meta.Items;
 
-namespace RogueEntity.Core.Movement.GoalFinding
+namespace RogueEntity.Core.Movement.Goals
 {
     public class GoalMarkerTrait<TGameContext, TItemId, TDiscriminator>: SimpleReferenceItemComponentTraitBase<TGameContext, TItemId, GoalMarker<TDiscriminator>>
         where TItemId : IEntityKey

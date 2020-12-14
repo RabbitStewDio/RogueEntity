@@ -1,5 +1,6 @@
 using JetBrains.Annotations;
 using Microsoft.Extensions.ObjectPool;
+using RogueEntity.Core.Movement.Goals;
 using RogueEntity.Core.Positioning.SpatialQueries;
 
 namespace RogueEntity.Core.Movement.GoalFinding.SingleLevel

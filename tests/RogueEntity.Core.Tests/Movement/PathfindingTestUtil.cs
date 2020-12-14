@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using RogueEntity.Api.Utils;
 using RogueEntity.Core.Movement;
 using RogueEntity.Core.Movement.GoalFinding;
+using RogueEntity.Core.Movement.Goals;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.DataViews;

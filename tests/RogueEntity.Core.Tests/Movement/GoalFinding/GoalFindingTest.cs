@@ -1,16 +1,18 @@
 using System;
 using FluentAssertions;
 using NUnit.Framework;
+using RogueEntity.Core.Directionality;
 using RogueEntity.Core.Meta.EntityKeys;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Movement.Cost;
 using RogueEntity.Core.Movement.CostModifier.Directions;
-using RogueEntity.Core.Movement.GoalFinding;
 using RogueEntity.Core.Movement.GoalFinding.SingleLevel;
+using RogueEntity.Core.Movement.Goals;
 using RogueEntity.Core.Movement.MovementModes.Walking;
 using RogueEntity.Core.Positioning.Algorithms;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Positioning.SpatialQueries;
+using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.DataViews;
 using static RogueEntity.Core.Tests.Movement.PathfindingTestUtil;
 
@@ -55,17 +57,17 @@ namespace RogueEntity.Core.Tests.Movement.GoalFinding
         {
             var gridMapContext = new DefaultGridPositionContextBackend<ItemReference>();
             gridMapContext.WithDefaultMapLayer(TestMapLayers.One, DynamicDataViewConfiguration.Default_16x16);
-            
-            
+
+
             context = new ItemContextBackend<object, ItemReference>(new ItemReferenceMetaData());
             context.EntityRegistry.RegisterNonConstructable<ItemDeclarationHolder<object, ItemReference>>();
             context.EntityRegistry.RegisterNonConstructable<EntityGridPosition>();
             context.EntityRegistry.RegisterNonConstructable<EntityGridPositionChangedMarker>();
             context.EntityRegistry.RegisterNonConstructable<GoalMarker<TestGoal>>();
             context.ItemRegistry.Register(new ReferenceItemDeclaration<object, ItemReference>("Goal")
-                                              .WithTrait(new GoalMarkerTrait<object, ItemReference, TestGoal>(10))
-                                              .WithTrait(new ReferenceItemGridPositionTrait<object, ItemReference>(context.ItemResolver, gridMapContext, TestMapLayers.One))
-                                          );
+                                          .WithTrait(new GoalMarkerTrait<object, ItemReference, TestGoal>(10))
+                                          .WithTrait(new ReferenceItemGridPositionTrait<object, ItemReference>(context.ItemResolver, gridMapContext, TestMapLayers.One))
+            );
 
             goalRegistry = new GoalRegistry();
             goalRegistry.RegisterGoalEntity<ItemReference, TestGoal>();
@@ -74,21 +76,49 @@ namespace RogueEntity.Core.Tests.Movement.GoalFinding
             spatialQueryRegistry.Register(new BruteForceSpatialQueryBackend<ItemReference>(context.EntityRegistry));
         }
 
+
+        public readonly struct PathFinderTestParameters
+        {
+            public readonly string SourceText;
+            public readonly string ResultText;
+            public readonly Position2D Origin;
+            public readonly (Position2D pos, float strength)[] Targets;
+
+            public PathFinderTestParameters(string sourceText, string resultText, Position2D origin, params (Position2D, float)[] targets)
+            {
+                this.SourceText = sourceText;
+                this.ResultText = resultText;
+                this.Origin = origin;
+                this.Targets = targets;
+            }
+        }
+
+        static readonly TestCaseData[] TestData =
+        {
+            new TestCaseData(new PathFinderTestParameters(EmptyRoom, EmptyRoomResult, new Position2D(1, 1), (new Position2D(7, 7), 10)))
+                .SetName(nameof(EmptyRoom)),
+            new TestCaseData(new PathFinderTestParameters(EmptyRoom, EmptyRoomResult, new Position2D(1, 1), (new Position2D(7, 7), 20), (new Position2D(7, 1), 10)))
+                .SetName(nameof(EmptyRoom) + " with 2 goals"),
+        };
+
         [Test]
-        [TestCase(nameof(EmptyRoom), EmptyRoom, EmptyRoomResult, 1, 1, 7, 7)]
-        public void ValidatePathFinding(string id, string sourceText, string resultText, int sx, int sy, int tx, int ty)
+        [TestCaseSource(nameof(TestData))]
+        public void ValidatePathFinding(PathFinderTestParameters p)
         {
             var gameContext = new object();
-            
-            var resistanceMap = ParseMap(sourceText, out var bounds);
+
+            var resistanceMap = ParseMap(p.SourceText, out var bounds);
             Console.WriteLine("Using room layout \n" + TestHelpers.PrintMap(resistanceMap, bounds));
 
-            InstantiateGoalTarget(tx, ty, gameContext);
+            foreach (var (t, s) in p.Targets)
+            {
+                InstantiateGoalTarget(t.X, t.Y, s, gameContext);
+            }
 
-            var startPosition = EntityGridPosition.OfRaw(0, sx, sy);
-            
-            var pfs = CreateGoalFinderSource(resistanceMap);
-            var pf = pfs.GetPathFinder()
+            var startPosition = EntityGridPosition.Of(TestMapLayers.One, p.Origin.X, p.Origin.Y);
+
+            var pfs = CreateGoalFinderSource(resistanceMap, bounds);
+            var pf = pfs.GetGoalFinder()
                         .WithGoal<TestGoal>()
                         .Build(new PathfindingMovementCostFactors(new MovementCost(WalkingMovement.Instance, DistanceCalculation.Euclid, 1)));
 
@@ -96,7 +126,7 @@ namespace RogueEntity.Core.Tests.Movement.GoalFinding
             result.Should().Be(PathFinderResult.Found);
             resultPath.Should().NotBeEmpty();
 
-            var expectedResultMap = ParseResultMap(resultText, out _);
+            var expectedResultMap = ParseResultMap(p.ResultText, out _);
             var producedResultMap = CreateResult(resistanceMap, resultPath, startPosition, bounds);
             Console.WriteLine("Expected Result\n" + PrintResultMap(expectedResultMap, bounds));
             Console.WriteLine("Computed Result\n" + PrintResultMap(producedResultMap, bounds));
@@ -104,20 +134,23 @@ namespace RogueEntity.Core.Tests.Movement.GoalFinding
             TestHelpers.AssertEquals(producedResultMap, expectedResultMap, bounds, default, PrintResultMap);
         }
 
-        void InstantiateGoalTarget(int tx, int ty, object gameContext)
+        void InstantiateGoalTarget(int tx, int ty, float strength, object gameContext)
         {
-            var targetPosition = EntityGridPosition.OfRaw(0, tx, ty);
+            var targetPosition = EntityGridPosition.Of(TestMapLayers.One, tx, ty);
             var target = context.ItemResolver.Instantiate(gameContext, "Goal");
+            context.ItemResolver.TryUpdateData(target, gameContext, new GoalMarker<TestGoal>(strength), out _).Should().BeTrue();
             context.ItemResolver.TryUpdateData(target, gameContext, targetPosition, out _).Should().BeTrue();
         }
 
-        SingleLevelGoalFinderSource CreateGoalFinderSource(DynamicDataView2D<float> resistanceMap)
+        SingleLevelGoalFinderSource CreateGoalFinderSource(DynamicDataView2D<float> resistanceMap, Rectangle bounds)
         {
             var directionalityMapSystem = new MovementResistanceDirectionalitySystem<WalkingMovement>(resistanceMap.As3DMap(0));
             directionalityMapSystem.MarkGloballyDirty();
             directionalityMapSystem.Process();
             directionalityMapSystem.ResultView.TryGetView(0, out var directionalityMap).Should().BeTrue();
 
+            Console.WriteLine("Directionality: \n" + TestHelpers.PrintMap(directionalityMap.Transform(e => $"[{e.ToFormattedString()}] "), bounds));
+            
             var pfs = new SingleLevelGoalFinderSource(new SingleLevelGoalFinderPolicy(), goalRegistry, spatialQueryRegistry);
             pfs.RegisterMovementSource(WalkingMovement.Instance, resistanceMap.As3DMap(0), directionalityMap.As3DMap(0));
             return pfs;

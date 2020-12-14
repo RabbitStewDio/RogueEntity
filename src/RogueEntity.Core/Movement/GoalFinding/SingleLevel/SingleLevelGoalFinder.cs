@@ -2,18 +2,23 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using JetBrains.Annotations;
+using RogueEntity.Api.Utils;
 using RogueEntity.Core.Directionality;
 using RogueEntity.Core.Movement.Cost;
 using RogueEntity.Core.Movement.CostModifier;
+using RogueEntity.Core.Movement.Goals;
 using RogueEntity.Core.Movement.Pathfinding;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Algorithms;
 using RogueEntity.Core.Utils.DataViews;
+using Serilog;
 
 namespace RogueEntity.Core.Movement.GoalFinding.SingleLevel
 {
     public class SingleLevelGoalFinder : IGoalFinder, IPathFinderPerformanceView
     {
+        static readonly ILogger Logger = SLog.ForContext<SingleLevelGoalFinder>();
+        
         readonly List<MovementCostData3D> movementSourceData;
         readonly SingleLevelGoalFinderDijkstraWorker singleLevelPathFinderDijkstra;
         readonly Stopwatch sw;
@@ -73,6 +78,7 @@ namespace RogueEntity.Core.Movement.GoalFinding.SingleLevel
             if (source.IsInvalid)
             {
                 path = pathBuffer;
+                Logger.Verbose("Goal not found: source is invalid");
                 return PathFinderResult.NotFound;
             }
 
@@ -80,6 +86,7 @@ namespace RogueEntity.Core.Movement.GoalFinding.SingleLevel
             if (searchRadiusInt == 0)
             {
                 path = pathBuffer;
+                Logger.Verbose("Goal not found: search area is empty");
                 return PathFinderResult.NotFound;
             }
 
@@ -100,6 +107,7 @@ namespace RogueEntity.Core.Movement.GoalFinding.SingleLevel
             if (goals == 0)
             {
                 path = pathBuffer;
+                Logger.Verbose("Goal not found: no goals specified");
                 return PathFinderResult.NotFound;
             }
             

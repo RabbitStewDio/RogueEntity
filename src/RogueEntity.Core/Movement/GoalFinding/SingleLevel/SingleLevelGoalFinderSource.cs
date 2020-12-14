@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using JetBrains.Annotations;
 using Microsoft.Extensions.ObjectPool;
 using RogueEntity.Core.Directionality;
+using RogueEntity.Core.Movement.Goals;
 using RogueEntity.Core.Positioning.SpatialQueries;
 using RogueEntity.Core.Utils.DataViews;
 
@@ -40,7 +41,7 @@ namespace RogueEntity.Core.Movement.GoalFinding.SingleLevel
             movementCostMaps[movementMode] = new MovementSourceData(cost, direction);
         }
 
-        public IGoalFinderBuilder GetPathFinder()
+        public IGoalFinderBuilder GetGoalFinder()
         {
             var x = pool.Get();
             x.Configure(movementCostMaps);

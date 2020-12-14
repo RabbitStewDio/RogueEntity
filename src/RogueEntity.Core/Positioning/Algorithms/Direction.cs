@@ -23,6 +23,7 @@ namespace RogueEntity.Core.Positioning.Algorithms
     public static class Directions
     {
         static readonly Direction[] MoveDirections;
+        static readonly Direction[] InverseDirections;
         static readonly ShortPosition2D[] Deltas;
 
         static Directions()
@@ -49,8 +50,25 @@ namespace RogueEntity.Core.Positioning.Algorithms
                 Direction.Left, 
                 Direction.UpLeft
             };
+            InverseDirections = new []
+            {
+                Direction.None, 
+                Direction.Down, 
+                Direction.DownLeft, 
+                Direction.Left, 
+                Direction.UpLeft, 
+                Direction.Up, 
+                Direction.UpRight, 
+                Direction.Right, 
+                Direction.DownRight
+            };
         }
 
+        public static Direction Inverse(this Direction d)
+        {
+            return InverseDirections[(int)d];
+        }
+        
         public static ShortPosition2D ToCoordinates(this Direction d)
         {
             return Deltas[(int)d];

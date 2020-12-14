@@ -1,7 +1,7 @@
 using EnTTSharp.Entities;
 using RogueEntity.Core.Meta.ItemBuilder;
 
-namespace RogueEntity.Core.Movement.GoalFinding
+namespace RogueEntity.Core.Movement.Goals
 {
     public static class GoalMarkerDeclarations
     {

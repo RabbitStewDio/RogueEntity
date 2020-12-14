@@ -5,6 +5,7 @@ using RogueEntity.Api.Utils;
 using RogueEntity.Core.Directionality;
 using RogueEntity.Core.Movement.Cost;
 using RogueEntity.Core.Movement.CostModifier;
+using RogueEntity.Core.Movement.Goals;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Algorithms;
 using RogueEntity.Core.Utils;
@@ -12,6 +13,10 @@ using RogueEntity.Core.Utils.DataViews;
 
 namespace RogueEntity.Core.Movement.GoalFinding.SingleLevel
 {
+    /// <summary>
+    ///   Performs a localized Dijkstra-Search. All working coordinates are translated so that they center
+    ///   around the search origin (origin = (0,0))
+    /// </summary>
     public class SingleLevelGoalFinderDijkstraWorker : DijkstraGridBase<IMovementMode>, IGoalFinderTargetEvaluatorVisitor
     {
         readonly List<MovementCostData2D> movementCostsOnLevel;
@@ -114,6 +119,7 @@ namespace RogueEntity.Core.Movement.GoalFinding.SingleLevel
             {
                 path.Add((from.WithPosition(p.X + origin.X, p.Y + origin.Y), nodesSources[p.X, p.Y]));
             }
+            path.Reverse();
 
             if (path.Count == 0)
             {
@@ -125,8 +131,8 @@ namespace RogueEntity.Core.Movement.GoalFinding.SingleLevel
 
         protected override ReadOnlyListWrapper<Direction> PopulateTraversableDirections(ShortPosition2D basePos)
         {
-            var targetPosX = basePos.X;
-            var targetPosY = basePos.Y;
+            var targetPosX = basePos.X + origin.X;
+            var targetPosY = basePos.Y + origin.Y;
             var allowedMovements = DirectionalityInformation.None;
 
             for (var index = 0; index < movementCostsOnLevel.Count; index++)
@@ -139,10 +145,18 @@ namespace RogueEntity.Core.Movement.GoalFinding.SingleLevel
             return directionData[(int)allowedMovements];
         }
 
+        
+        /// <summary>
+        ///   GoalFinding searches from all goals to the current location of the player (inverse of the desired movement).
+        ///   We have to take into account that movement options may be different in that direction, thus the edge we
+        ///   compute is the edge from (source + direction to source). 
+        /// </summary>
         protected override bool EdgeCostInformation(in ShortPosition2D sourceNode, in Direction d, float sourceNodeCost, out float totalPathCost, out IMovementMode movementMode)
         {
-            var targetPosX = sourceNode.X;
-            var targetPosY = sourceNode.Y;
+            var inverseDirection = d.Inverse();
+            var dx = d.ToCoordinates();
+            var targetPosX = sourceNode.X + dx.X + origin.X;
+            var targetPosY = sourceNode.Y + dx.Y + origin.Y;
             var costInformationAvailable = false;
             var pathCost = 0f;
             movementMode = default;
@@ -156,7 +170,7 @@ namespace RogueEntity.Core.Movement.GoalFinding.SingleLevel
                     continue;
                 }
 
-                if (!dir.IsMovementAllowed(d))
+                if (!dir.IsMovementAllowed(inverseDirection))
                 {
                     continue;
                 }

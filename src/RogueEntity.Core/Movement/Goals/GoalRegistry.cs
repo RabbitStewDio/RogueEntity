@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using EnTTSharp.Entities;
 using RogueEntity.Api.Utils;
 
-namespace RogueEntity.Core.Movement.GoalFinding
+namespace RogueEntity.Core.Movement.Goals
 {
     public class GoalRegistry
     {

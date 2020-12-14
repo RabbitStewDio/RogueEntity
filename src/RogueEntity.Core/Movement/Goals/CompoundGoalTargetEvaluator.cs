@@ -1,22 +1,12 @@
-using System;
 using System.Collections.Generic;
 using EnTTSharp.Entities;
+using RogueEntity.Core.Movement.GoalFinding;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Algorithms;
 using RogueEntity.Core.Positioning.SpatialQueries;
 
-namespace RogueEntity.Core.Movement.GoalFinding
+namespace RogueEntity.Core.Movement.Goals
 {
-    public interface IGoalFinderTargetEvaluatorVisitor
-    {
-        public void RegisterGoalAt<TGoal>(in Position pos, GoalMarker<TGoal> goal);
-    }
-
-    public interface IGoalFinderTargetEvaluator: IDisposable
-    {
-        int CollectGoals(in Position origin, float range, DistanceCalculation dc, IGoalFinderTargetEvaluatorVisitor v);
-    }
-
     public class CompoundGoalTargetEvaluator : IGoalFinderTargetEvaluator
     {
         readonly List<IGoalFinderTargetEvaluator> entityTypeGoalFinders;

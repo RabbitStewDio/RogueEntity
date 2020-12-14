@@ -5,6 +5,7 @@ using JetBrains.Annotations;
 using Microsoft.Extensions.ObjectPool;
 using RogueEntity.Api.Utils;
 using RogueEntity.Core.Movement.Cost;
+using RogueEntity.Core.Movement.Goals;
 using RogueEntity.Core.Movement.Pathfinding;
 
 namespace RogueEntity.Core.Movement.GoalFinding.SingleLevel
@@ -52,7 +53,7 @@ namespace RogueEntity.Core.Movement.GoalFinding.SingleLevel
             return this;
         }
 
-        public IPathFinder Build(in PathfindingMovementCostFactors movementProfile)
+        public IGoalFinder Build(in PathfindingMovementCostFactors movementProfile)
         {
             var e = compoundTargetEvaluatorPool.Get();
             foreach (var goal in goals)

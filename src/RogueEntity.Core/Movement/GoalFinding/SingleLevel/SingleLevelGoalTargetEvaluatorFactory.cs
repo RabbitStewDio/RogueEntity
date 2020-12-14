@@ -2,6 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using EnTTSharp.Entities;
 using RogueEntity.Api.Utils;
+using RogueEntity.Core.Movement.Goals;
 using RogueEntity.Core.Positioning.SpatialQueries;
 
 namespace RogueEntity.Core.Movement.GoalFinding.SingleLevel

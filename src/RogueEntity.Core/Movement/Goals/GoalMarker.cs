@@ -3,7 +3,7 @@ using System.Runtime.Serialization;
 using EnTTSharp.Entities.Attributes;
 using MessagePack;
 
-namespace RogueEntity.Core.Movement.GoalFinding
+namespace RogueEntity.Core.Movement.Goals
 {
     [EntityComponent(EntityConstructor.NonConstructable)]
     [MessagePackObject]

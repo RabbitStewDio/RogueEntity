@@ -134,11 +134,6 @@ namespace RogueEntity.Core.Positioning.Algorithms
 
         protected abstract bool EdgeCostInformation(in ShortPosition2D sourceNode, in Direction d, float sourceNodeCost, out float totalPathCost, out TExtraNodeInfo nodeInfo);
 
-        protected virtual bool IsTarget(in ShortPosition2D openNodePosition)
-        {
-            return false;
-        }
-
         /// <summary>
         /// 
         /// </summary>
@@ -176,7 +171,7 @@ namespace RogueEntity.Core.Positioning.Algorithms
             return true;
         }
 
-        protected virtual bool IsExistingResultBetter(in ShortPosition2D coord, in float newWeight)
+        bool IsExistingResultBetter(in ShortPosition2D coord, in float newWeight)
         {
             // All non-starting nodes are initialized with a weight of zero at the start.
             // This allows us to use Array.Clear which uses MemSet to efficiently
@@ -205,7 +200,7 @@ namespace RogueEntity.Core.Positioning.Algorithms
             return existingWeight >= newWeight;
         }
 
-        public bool TryGetPreviousStep(in ShortPosition2D pos, out ShortPosition2D nextStep)
+        protected bool TryGetPreviousStep(in ShortPosition2D pos, out ShortPosition2D nextStep)
         {
             if (!resultMapCoords.TryGet(pos, out var prevIdx) || prevIdx == Direction.None)
             {

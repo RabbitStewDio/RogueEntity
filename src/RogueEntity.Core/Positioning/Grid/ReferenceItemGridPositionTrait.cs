@@ -126,7 +126,7 @@ namespace RogueEntity.Core.Positioning.Grid
 
             if (!v.IsValid(k))
             {
-                throw new ArgumentException();
+                throw new ArgumentException("Given entity is no longer valid.");
             }
 
             if (!v.GetComponent(k, out EntityGridPosition previousPosition))
