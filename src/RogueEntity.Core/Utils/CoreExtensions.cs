@@ -144,7 +144,7 @@ namespace RogueEntity.Core.Utils
 
             return true;
         }
-        
+
         public static Percentage Percent(this int f) => Percentage.Of(f / 100f);
         public static Percentage Percent(this float f) => Percentage.Of(f / 100f);
 

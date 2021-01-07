@@ -1,5 +1,5 @@
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using RogueEntity.Api.Utils;
 using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.DataViews;
 
@@ -22,7 +22,7 @@ namespace RogueEntity.Core.Sensing.Common
         new int TileSizeX { get; }
         new int TileSizeY { get; }
 
-        new List<Rectangle> GetActiveTiles(List<Rectangle> data = null);
+        new BufferList<Rectangle> GetActiveTiles(BufferList<Rectangle> data = null);
         new Rectangle GetActiveBounds();
     }
 }

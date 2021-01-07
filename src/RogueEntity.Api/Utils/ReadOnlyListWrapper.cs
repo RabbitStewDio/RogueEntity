@@ -1,17 +1,19 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace RogueEntity.Api.Utils
 {
     public readonly struct ReadOnlyListWrapper<T> : IReadOnlyList<T>, ICollection<T>
     {
+        static readonly EqualityComparer<T> EqualityComparer = EqualityComparer<T>.Default;
         public static readonly ReadOnlyListWrapper<T> Empty = new List<T>();
         static readonly List<T> EmptyList = new List<T>();
-        readonly List<T> list;
+        readonly IReadOnlyList<T> list;
 
-        public ReadOnlyListWrapper(List<T> list)
+        public ReadOnlyListWrapper(IReadOnlyList<T> list)
         {
             this.list = list ?? EmptyList;
         }
@@ -38,97 +40,218 @@ namespace RogueEntity.Api.Utils
 
         public bool Contains(T item)
         {
-            return list.Contains(item);
+            for (var i = 0; i < list.Count; i++)
+            {
+                if (EqualityComparer.Equals(list[i], item))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         public bool Exists(Predicate<T> match)
         {
-            return list.Exists(match);
+            for (var i = 0; i < list.Count; i++)
+            {
+                if (match(list[i]))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         public T Find(Predicate<T> match)
         {
-            return list.Find(match);
+            for (var i = 0; i < list.Count; i++)
+            {
+                if (match(list[i]))
+                {
+                    return list[i];
+                }
+            }
+
+            return default;
         }
 
         public ReadOnlyListWrapper<T> FindAll(Predicate<T> match)
         {
-            return new ReadOnlyListWrapper<T>(list.FindAll(match));
+            List<T> retval = new List<T>();
+            for (var i = 0; i < list.Count; i++)
+            {
+                if (match(list[i]))
+                {
+                    retval.Add(list[i]);
+                }
+            }
+
+            return retval;
         }
 
         public int FindIndex(int startIndex, int count, Predicate<T> match)
         {
-            return list.FindIndex(startIndex, count, match);
+            for (var i = startIndex; i < count; i++)
+            {
+                if (match(list[i]))
+                {
+                    return i;
+                }
+            }
+
+            return -1;
         }
 
         public int FindIndex(int startIndex, Predicate<T> match)
         {
-            return list.FindIndex(startIndex, match);
+            return FindIndex(startIndex, Count - startIndex, match);
         }
 
         public int FindIndex(Predicate<T> match)
         {
-            return list.FindIndex(match);
+            return FindIndex(0, Count, match);
         }
 
         public T FindLast(Predicate<T> match)
         {
-            return list.FindLast(match);
+            for (var i = list.Count - 1; i >= 0; i--)
+            {
+                if (match(list[i]))
+                {
+                    return list[i];
+                }
+            }
+
+            return default;
+
         }
 
         public int FindLastIndex(int startIndex, int count, Predicate<T> match)
         {
-            return list.FindLastIndex(startIndex, count, match);
+            for (var i = count - 1; i >= startIndex; i--)
+            {
+                if (match(list[i]))
+                {
+                    return i;
+                }
+            }
+
+            return -1;
         }
 
         public int FindLastIndex(int startIndex, Predicate<T> match)
         {
-            return list.FindLastIndex(startIndex, match);
+            return FindLastIndex(startIndex, Count - startIndex, match);
         }
 
         public int FindLastIndex(Predicate<T> match)
         {
-            return list.FindLastIndex(match);
+            return FindLastIndex(0, Count, match);
         }
 
-        public List<T>.Enumerator GetEnumerator()
+        public Enumerator GetEnumerator()
         {
-            return list.GetEnumerator();
+            return new Enumerator(this.list);
         }
 
-        public ReadOnlyListWrapper<T> GetRange(int index, int count)
+        public struct Enumerator : IEnumerator<T>
         {
-            return new ReadOnlyListWrapper<T>(list.GetRange(index, count));
+            readonly IReadOnlyList<T> contents;
+            int index;
+            T current;
+
+            internal Enumerator(IReadOnlyList<T> widget) : this()
+            {
+                this.contents = widget;
+                index = -1;
+                current = default;
+            }
+
+            public void Dispose()
+            {
+            }
+
+            public bool MoveNext()
+            {
+                if (index + 1 < contents.Count)
+                {
+                    index += 1;
+                    current = contents[index];
+                    return true;
+                }
+
+                current = default;
+                return false;
+            }
+
+            public void Reset()
+            {
+                index = -1;
+                current = default;
+            }
+
+            object IEnumerator.Current => Current;
+
+            public T Current
+            {
+                get
+                {
+                    if (index < 0 || index >= contents.Count)
+                    {
+                        throw new InvalidOperationException();
+                    }
+
+                    return current;
+                }
+            }
         }
 
         public int IndexOf(T item)
         {
-            return list.IndexOf(item);
+            return IndexOf(item,0, Count);
         }
 
         public int IndexOf(T item, int index)
         {
-            return list.IndexOf(item, index);
+            return IndexOf(item, index, Count - index);
         }
 
         public int IndexOf(T item, int index, int count)
         {
-            return list.IndexOf(item, index, count);
+            for (var i = index; i < count; i++)
+            {
+                if (EqualityComparer.Equals(list[i], item))
+                {
+                    return i;
+                }
+            }
+
+            return -1;
         }
 
         public int LastIndexOf(T item)
         {
-            return list.LastIndexOf(item);
+            return LastIndexOf(item, 0, Count);
         }
 
         public int LastIndexOf(T item, int index)
         {
-            return list.LastIndexOf(item, index);
+            return LastIndexOf(item, index, Count - index);
         }
 
         public int LastIndexOf(T item, int index, int count)
         {
-            return list.LastIndexOf(item, index, count);
+            for (var i = count - 1; i >= index; i--)
+            {
+                if (EqualityComparer.Equals(list[i], item))
+                {
+                    return i;
+                }
+            }
+
+            return -1;
         }
 
         public T[] ToArray()
@@ -138,7 +261,16 @@ namespace RogueEntity.Api.Utils
 
         public bool TrueForAll(Predicate<T> match)
         {
-            return list.TrueForAll(match);
+            for (var i = 0; i < list.Count; i++)
+            {
+                if (!match(list[i]))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+
         }
 
         public int Count => list.Count;
@@ -146,7 +278,6 @@ namespace RogueEntity.Api.Utils
         public T this[int index]
         {
             get => list[index];
-            set => list[index] = value;
         }
 
         void ICollection<T>.Add(T item)
@@ -161,7 +292,10 @@ namespace RogueEntity.Api.Utils
 
         void ICollection<T>.CopyTo(T[] array, int arrayIndex)
         {
-            list.CopyTo(array, arrayIndex);
+            for (var i = 0; i < list.Count; i++)
+            {
+                array[i + arrayIndex] = list[i];
+            }
         }
 
         bool ICollection<T>.Remove(T item)
@@ -189,6 +323,7 @@ namespace RogueEntity.Api.Utils
         }
 
         public static implicit operator ReadOnlyListWrapper<T>(List<T> raw) => new ReadOnlyListWrapper<T>(raw);
+        public static implicit operator ReadOnlyListWrapper<T>(BufferList<T> raw) => new ReadOnlyListWrapper<T>(raw);
     }
 
 }

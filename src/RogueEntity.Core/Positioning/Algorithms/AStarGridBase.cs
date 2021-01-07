@@ -63,7 +63,7 @@ namespace RogueEntity.Core.Positioning.Algorithms
         }
         
         protected PathFinderResult FindPath(Position2D start,
-                                            List<Position2D> pathBuffer,
+                                            BufferList<Position2D> pathBuffer,
                                             int searchLimit = int.MaxValue)
         {
             pathBuffer.Clear();
@@ -78,7 +78,7 @@ namespace RogueEntity.Core.Positioning.Algorithms
             return ContinueFindPath(pathBuffer, searchLimit);
         }
 
-        protected PathFinderResult ContinueFindPath(List<Position2D> pathBuffer,
+        protected PathFinderResult ContinueFindPath(BufferList<Position2D> pathBuffer,
                                                     int searchLimit = int.MaxValue)
         {
             var defaultNode = AStarNode.Empty;
@@ -233,7 +233,7 @@ namespace RogueEntity.Core.Positioning.Algorithms
             return existingWeight.AccumulatedCost < newWeight;
         }
 
-        void ProduceResult(Position2D currentPosition, AStarNode currentNode, List<Position2D> pathBuffer)
+        void ProduceResult(Position2D currentPosition, AStarNode currentNode, BufferList<Position2D> pathBuffer)
         {
             pathBuffer.Capacity = Math.Max(pathBuffer.Capacity, currentNode.DistanceFromStart);
             while (currentNode.DirectionToParent != Direction.None)

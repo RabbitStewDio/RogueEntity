@@ -1,5 +1,5 @@
 using System;
-using System.Collections.Generic;
+using RogueEntity.Api.Utils;
 
 namespace RogueEntity.Core.Utils.DataViews
 {
@@ -14,6 +14,6 @@ namespace RogueEntity.Core.Utils.DataViews
         int TileSizeY { get; }
 
         bool TryGetView(int z, out IReadOnlyDynamicDataView2D<T> view);
-        List<int> GetActiveLayers(List<int> buffer = null);
+        BufferList<int> GetActiveLayers(BufferList<int> buffer = null);
     }
 }

@@ -25,18 +25,11 @@ namespace RogueEntity.Core.Equipment
             return equipment.TryUnequipItem(context, item, out _);
         }
 
-        public static List<EquippedItem<TItemId>> QueryItems<TGameContext, TItemId>(this ISlottedEquipment<TGameContext, TItemId> equipment,
-                                                                                    List<EquippedItem<TItemId>> data = null)
+        public static BufferList<EquippedItem<TItemId>> QueryItems<TGameContext, TItemId>(this ISlottedEquipment<TGameContext, TItemId> equipment,
+                                                                                          BufferList<EquippedItem<TItemId>> data = null)
             where TItemId : IEntityKey
         {
-            if (data == null)
-            {
-                data = new List<EquippedItem<TItemId>>();
-            }
-            else
-            {
-                data.Clear();
-            }
+            data = BufferList.PrepareBuffer(data);
 
             foreach (var slot in equipment.AvailableSlots)
             {
@@ -50,18 +43,11 @@ namespace RogueEntity.Core.Equipment
             return data;
         }
 
-        public static List<EquippedItem<TItemId>> QueryEquipmentSlots<TGameContext, TItemId>(this ISlottedEquipment<TGameContext, TItemId> equipment,
-                                                                                             List<EquippedItem<TItemId>> data = null)
+        public static BufferList<EquippedItem<TItemId>> QueryEquipmentSlots<TGameContext, TItemId>(this ISlottedEquipment<TGameContext, TItemId> equipment,
+                                                                                                   BufferList<EquippedItem<TItemId>> data = null)
             where TItemId : IEntityKey
         {
-            if (data == null)
-            {
-                data = new List<EquippedItem<TItemId>>();
-            }
-            else
-            {
-                data.Clear();
-            }
+            data = BufferList.PrepareBuffer(data);
 
             foreach (var slot in equipment.AvailableSlots)
             {

@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using EnTTSharp.Entities;
 using RogueEntity.Api.ItemTraits;
+using RogueEntity.Api.Utils;
 using RogueEntity.Core.Meta.Items;
 
 namespace RogueEntity.Core.Meta.Base
@@ -16,13 +17,13 @@ namespace RogueEntity.Core.Meta.Base
                                                                                     IItemComponentInformationTrait<TGameContext, TItemId, IContainerEntityMarker>
         where TItemId : IEntityKey
     {
-        readonly List<IItemComponentInformationTrait<TGameContext, TItemId, IContainerEntityMarker>> traits;
+        readonly BufferList<IItemComponentInformationTrait<TGameContext, TItemId, IContainerEntityMarker>> traits;
         public ItemTraitId Id => "Core.Common.ContainerEntityMarkerQuery";
         public int Priority => 0;
 
         public ContainerEntityMarkerResolverTrait()
         {
-            traits = new List<IItemComponentInformationTrait<TGameContext, TItemId, IContainerEntityMarker>>();
+            traits = new BufferList<IItemComponentInformationTrait<TGameContext, TItemId, IContainerEntityMarker>>();
         }
 
         public IReferenceItemTrait<TGameContext, TItemId> CreateInstance()

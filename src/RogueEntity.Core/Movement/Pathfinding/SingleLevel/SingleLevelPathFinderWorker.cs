@@ -16,7 +16,7 @@ namespace RogueEntity.Core.Movement.Pathfinding.SingleLevel
     {
         readonly List<MovementCostData2D> movementCostsOnLevel;
         readonly PooledDynamicDataView2D<IMovementMode> nodesSources;
-        readonly List<Position2D> pathBuffer;
+        readonly BufferList<Position2D> pathBuffer;
         IReadOnlyBoundedDataView<DirectionalityInformation>[] directionsTile;
         IReadOnlyBoundedDataView<float>[] costsTile;
         IBoundedDataView<IMovementMode> nodeSourceTile;
@@ -28,7 +28,7 @@ namespace RogueEntity.Core.Movement.Pathfinding.SingleLevel
         public SingleLevelPathFinderWorker(IBoundedDataViewPool<AStarNode> pool,
                                            IBoundedDataViewPool<IMovementMode> movementModePool) : base(pool)
         {
-            pathBuffer = new List<Position2D>();
+            pathBuffer = new BufferList<Position2D>();
             nodesSources = new PooledDynamicDataView2D<IMovementMode>(movementModePool);
             movementCostsOnLevel = new List<MovementCostData2D>();
             directionsTile = new IReadOnlyBoundedDataView<DirectionalityInformation>[4];
@@ -92,7 +92,7 @@ namespace RogueEntity.Core.Movement.Pathfinding.SingleLevel
 
         public PathFinderResult FindPath<TPosition>(TPosition from,
                                                     IPathFinderTargetEvaluator evaluator,
-                                                    List<(TPosition, IMovementMode)> path,
+                                                    BufferList<(TPosition, IMovementMode)> path,
                                                     int maxSearchSteps = int.MaxValue)
             where TPosition: IPosition<TPosition>
         {

@@ -106,7 +106,7 @@ namespace RogueEntity.Core.Tests.Sensing.Sources.Touch
             vc.LastPosition.Should().Be(new Position(5, 5, 0, TestMapLayers.One));
 
             va.State.Should().Be(SenseSourceDirtyState.Active);
-            vb.State.Should().Be(SenseSourceDirtyState.Active);
+            vb.State.Should().Be(SenseSourceDirtyState.Dirty);
             vc.State.Should().Be(SenseSourceDirtyState.Active);
 
             va.SenseSource.TryGetValue(out var vaData).Should().BeTrue("because this sense is observed");

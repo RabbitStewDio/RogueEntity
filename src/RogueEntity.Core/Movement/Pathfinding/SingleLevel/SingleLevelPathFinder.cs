@@ -2,11 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using JetBrains.Annotations;
+using RogueEntity.Api.Utils;
 using RogueEntity.Core.Directionality;
 using RogueEntity.Core.Movement.Cost;
 using RogueEntity.Core.Movement.CostModifier;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Algorithms;
+using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.DataViews;
 
 namespace RogueEntity.Core.Movement.Pathfinding.SingleLevel
@@ -72,20 +74,12 @@ namespace RogueEntity.Core.Movement.Pathfinding.SingleLevel
         public IReadOnlyDynamicDataView2D<AStarNode> ProcessedNodes => singleLevelPathFinder.Nodes;
 
         public PathFinderResult TryFindPath<TPosition>(in TPosition source,
-                                                       out List<(TPosition, IMovementMode)> path,
-                                                       List<(TPosition, IMovementMode)> pathBuffer = null,
+                                                       out BufferList<(TPosition, IMovementMode)> path,
+                                                       BufferList<(TPosition, IMovementMode)> pathBuffer = null,
                                                        int searchLimit = Int32.MaxValue)
             where TPosition : IPosition<TPosition>
         {
-            if (pathBuffer == null)
-            {
-                pathBuffer = new List<(TPosition, IMovementMode)>();
-            }
-            else
-            {
-                pathBuffer.Clear();
-            }
-
+            pathBuffer = BufferList.PrepareBuffer(pathBuffer);
             if (source.IsInvalid)
             {
                 path = pathBuffer;

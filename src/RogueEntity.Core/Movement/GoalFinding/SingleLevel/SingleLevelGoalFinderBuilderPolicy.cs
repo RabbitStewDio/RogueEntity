@@ -10,7 +10,8 @@ namespace RogueEntity.Core.Movement.GoalFinding.SingleLevel
         readonly SingleLevelGoalTargetEvaluatorFactory factory;
         readonly GoalRegistry goalRegistry;
         readonly ObjectPool<SingleLevelGoalFinder> pathFinderPool;
-        readonly ObjectPool<CompoundGoalTargetEvaluator> compoundTargetEvaluatorPool;
+        readonly ObjectPool<CompoundGoalTargetSource> compoundTargetEvaluatorPool;
+        readonly ObjectPool<AnyOfGoalFinderFilter> filterPool;
 
         public SingleLevelGoalFinderBuilderPolicy([NotNull] SingleLevelGoalFinderPolicy policy,
                                                   GoalRegistry goalRegistry,
@@ -19,12 +20,13 @@ namespace RogueEntity.Core.Movement.GoalFinding.SingleLevel
             this.goalRegistry = goalRegistry;
             this.factory = new SingleLevelGoalTargetEvaluatorFactory(goalRegistry, queryLookup);
             this.pathFinderPool = new DefaultObjectPool<SingleLevelGoalFinder>(policy);
-            this.compoundTargetEvaluatorPool = new DefaultObjectPool<CompoundGoalTargetEvaluator>(new DefaultPooledObjectPolicy<CompoundGoalTargetEvaluator>());
+            this.compoundTargetEvaluatorPool = new DefaultObjectPool<CompoundGoalTargetSource>(new DefaultPooledObjectPolicy<CompoundGoalTargetSource>());
+            this.filterPool = new DefaultObjectPool<AnyOfGoalFinderFilter>(new DefaultPooledObjectPolicy<AnyOfGoalFinderFilter>());
         }
 
         public SingleLevelGoalFinderBuilder Create()
         {
-            return new SingleLevelGoalFinderBuilder(factory, goalRegistry, pathFinderPool, compoundTargetEvaluatorPool);
+            return new SingleLevelGoalFinderBuilder(factory, goalRegistry, pathFinderPool, compoundTargetEvaluatorPool, filterPool);
         }
 
         public bool Return(SingleLevelGoalFinderBuilder obj)

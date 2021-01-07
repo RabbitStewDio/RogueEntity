@@ -17,10 +17,10 @@ namespace RogueEntity.Core.Movement.GoalFinding.SingleLevel
     ///   Performs a localized Dijkstra-Search. All working coordinates are translated so that they center
     ///   around the search origin (origin = (0,0))
     /// </summary>
-    public class SingleLevelGoalFinderDijkstraWorker : DijkstraGridBase<IMovementMode>, IGoalFinderTargetEvaluatorVisitor
+    public class SingleLevelGoalFinderDijkstraWorker : DijkstraGridBase<IMovementMode>
     {
         readonly List<MovementCostData2D> movementCostsOnLevel;
-        readonly List<ShortPosition2D> pathBuffer;
+        readonly BufferList<ShortPosition2D> pathBuffer;
 
         IReadOnlyBoundedDataView<DirectionalityInformation>[] directionsTile;
         IReadOnlyBoundedDataView<float>[] costsTile;
@@ -31,7 +31,7 @@ namespace RogueEntity.Core.Movement.GoalFinding.SingleLevel
 
         public SingleLevelGoalFinderDijkstraWorker() : base(default)
         {
-            pathBuffer = new List<ShortPosition2D>();
+            pathBuffer = new BufferList<ShortPosition2D>();
             nodesSources = new BoundedDataView<IMovementMode>(default);
             movementCostsOnLevel = new List<MovementCostData2D>();
             directionsTile = new IReadOnlyBoundedDataView<DirectionalityInformation>[0];
@@ -95,19 +95,20 @@ namespace RogueEntity.Core.Movement.GoalFinding.SingleLevel
             directionData = DirectionalityLookup.Get(r);
         }
 
-        public void RegisterGoalAt<TGoal>(in Position pos, GoalMarker<TGoal> goal)
+        public void AddGoal(in GoalRecord record)
         {
+            var pos = record.Position;
             if (pos.GridZ != activeLevel) return;
 
             var p = pos.ToGridXY() - origin;
             if (nodesSources.Contains(p.X, p.Y))
             {
-                EnqueueStartingNode(new ShortPosition2D(p.X, p.Y), goal.Strength);
+                EnqueueStartingNode(new ShortPosition2D(p.X, p.Y), record.Strength);
             }
         }
 
         public PathFinderResult PerformSearch<TPosition>(in TPosition from,
-                                                         List<(TPosition, IMovementMode)> path,
+                                                         BufferList<(TPosition, IMovementMode)> path,
                                                          int searchLimit = int.MaxValue)
             where TPosition : IPosition<TPosition>
         {

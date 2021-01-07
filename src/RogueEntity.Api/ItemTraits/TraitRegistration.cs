@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using RogueEntity.Api.Utils;
 
 namespace RogueEntity.Api.ItemTraits
 {
@@ -105,17 +106,9 @@ namespace RogueEntity.Api.ItemTraits
             return GetEnumerator();
         }
 
-        public List<TTraitImpl> QueryAll<TTraitImpl>(List<TTraitImpl> cache)
+        public BufferList<TTraitImpl> QueryAll<TTraitImpl>(BufferList<TTraitImpl> cache)
         {
-            if (cache == null)
-            {
-                cache = new List<TTraitImpl>();
-            }
-            else
-            {
-                cache.Clear();
-            }
-
+            cache = BufferList.PrepareBuffer(cache);
             foreach (var t in traits)
             {
                 if (t is TTraitImpl tt)

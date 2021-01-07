@@ -64,7 +64,7 @@ namespace RogueEntity.Core.Positioning.Algorithms
         }
 
         public Rectangle Bounds => bounds;
-        
+
         protected void PrepareScan()
         {
             openNodes.Clear();
@@ -88,7 +88,7 @@ namespace RogueEntity.Core.Positioning.Algorithms
                 {
                     break;
                 }
-                
+
                 if (!resultMapDistanceCost.TryGet(openNodePosition, out var openNodeWeight))
                 {
                     continue;
@@ -127,7 +127,7 @@ namespace RogueEntity.Core.Positioning.Algorithms
             NodesEvaluated = nodeCount;
             return nodeCount > 0;
         }
-        
+
         public int NodesEvaluated { get; private set; }
 
         protected abstract void UpdateNode(in ShortPosition2D nextNodePos, TExtraNodeInfo nodeInfo);
@@ -220,20 +220,13 @@ namespace RogueEntity.Core.Positioning.Algorithms
         /// <param name="pathAccumulator"></param>
         /// <param name="maxLength"></param>
         /// <returns></returns>
-        protected List<ShortPosition2D> FindPath(ShortPosition2D p,
-                                                 out float goalStrength,
-                                                 List<ShortPosition2D> pathAccumulator = null,
-                                                 int maxLength = int.MaxValue)
+        protected BufferList<ShortPosition2D> FindPath(ShortPosition2D p,
+                                                       out float goalStrength,
+                                                       BufferList<ShortPosition2D> pathAccumulator = null,
+                                                       int maxLength = int.MaxValue)
         {
-            if (pathAccumulator == null)
-            {
-                pathAccumulator = new List<ShortPosition2D>();
-            }
-            else
-            {
-                pathAccumulator.Clear();
-            }
-            
+            pathAccumulator = BufferList.PrepareBuffer(pathAccumulator);
+
             if (!resultMapDistanceCost.TryGet(p, out goalStrength))
             {
                 return pathAccumulator;

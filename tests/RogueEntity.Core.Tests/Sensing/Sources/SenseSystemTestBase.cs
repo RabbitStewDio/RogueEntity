@@ -75,11 +75,15 @@ namespace RogueEntity.Core.Tests.Sensing.Sources
 
                 directionalitySystem.ProcessSystem,
 
-                builder.WithInputParameter<TSenseSourceDefinition, SenseSourceState<TSense>, EntityGridPosition>().CreateSystem(ls.FindDirtySenseSources),
+                builder.WithInputParameter<TSenseSourceDefinition, EntityGridPosition>()
+                       .WithOutputParameter<SenseSourceState<TSense>>()
+                       .CreateSystem(ls.FindDirtySenseSources),
                 Guard(builder.WithInputParameter<TSenseSourceDefinition, SenseDirtyFlag<TSense>, ObservedSenseSource<TSense>>()
                              .WithOutputParameter<SenseSourceState<TSense>>()
                              .CreateSystem(ls.RefreshLocalSenseState)),
-                builder.WithInputParameter<TSenseSourceDefinition, SenseSourceState<TSense>, SenseDirtyFlag<TSense>>().CreateSystem(ls.ResetSenseSourceCacheState),
+                builder.WithInputParameter<TSenseSourceDefinition, SenseDirtyFlag<TSense>>()
+                       .WithOutputParameter<SenseSourceState<TSense>>()
+                       .CreateSystem(ls.ResetSenseSourceCacheState),
 
                 ls.EndSenseCalculation
             };
@@ -172,7 +176,7 @@ namespace RogueEntity.Core.Tests.Sensing.Sources
             vb.LastPosition.Should().Be(new Position(8, 9, 0, TestMapLayers.One));
 
             va.State.Should().Be(SenseSourceDirtyState.Active);
-            vb.State.Should().Be(SenseSourceDirtyState.Active);
+            vb.State.Should().Be(SenseSourceDirtyState.Dirty, "Because (8, 9, 0) is not observed.");
 
             va.SenseSource.TryGetValue(out var vaData).Should().BeTrue("because this sense is observed");
             vb.SenseSource.TryGetValue(out _).Should().BeFalse("because this sense is not observed by anyone, and thus not computed");

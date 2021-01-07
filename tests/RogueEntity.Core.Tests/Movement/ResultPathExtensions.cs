@@ -8,7 +8,7 @@ namespace RogueEntity.Core.Tests.Movement
 {
     public static class ResultPathExtensions
     {
-        public static int PathIndexOf(this List<(EntityGridPosition, IMovementMode)> pathItems, EntityGridPosition pos)
+        public static int PathIndexOf(this IReadOnlyList<(EntityGridPosition, IMovementMode)> pathItems, EntityGridPosition pos)
         {
             for (var index = 0; index < pathItems.Count; index++)
             {
@@ -22,13 +22,13 @@ namespace RogueEntity.Core.Tests.Movement
             return -1;
         }
 
-        public static PathEnumerable ToPathEnumerable(this List<(EntityGridPosition, IMovementMode)> pathItems) => new PathEnumerable(pathItems);
+        public static PathEnumerable ToPathEnumerable(this IReadOnlyList<(EntityGridPosition, IMovementMode)> pathItems) => new PathEnumerable(pathItems);
         
         public readonly struct PathEnumerable : IEnumerable<(EntityGridPosition, IMovementMode)>
         {
-            readonly List<(EntityGridPosition, IMovementMode)> pathItems;
+            readonly IReadOnlyList<(EntityGridPosition, IMovementMode)> pathItems;
 
-            public PathEnumerable(List<(EntityGridPosition, IMovementMode)> pathItems)
+            public PathEnumerable(IReadOnlyList<(EntityGridPosition, IMovementMode)> pathItems)
             {
                 this.pathItems = pathItems;
             }
@@ -48,10 +48,10 @@ namespace RogueEntity.Core.Tests.Movement
         
         public struct PathEnumerator: IEnumerator<(EntityGridPosition, IMovementMode)>
         {
-            readonly List<(EntityGridPosition, IMovementMode)> pathItems;
+            readonly IReadOnlyList<(EntityGridPosition, IMovementMode)> pathItems;
             int index;
 
-            public PathEnumerator(List<(EntityGridPosition, IMovementMode)> pathItems)
+            public PathEnumerator(IReadOnlyList<(EntityGridPosition, IMovementMode)> pathItems)
             {
                 this.pathItems = pathItems;
                 this.index = pathItems.Count;

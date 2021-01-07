@@ -20,16 +20,23 @@ namespace RogueEntity.Core.Movement.GoalFinding.SingleLevel
         static readonly ILogger Logger = SLog.ForContext<SingleLevelGoalFinder>();
         
         readonly List<MovementCostData3D> movementSourceData;
+        readonly GoalSet goalRecordSet;
+        readonly BufferList<GoalRecord> goalRecordBuffer;
+        readonly BufferList<GoalRecord> goalFilterBuffer;
         readonly SingleLevelGoalFinderDijkstraWorker singleLevelPathFinderDijkstra;
         readonly Stopwatch sw;
 
         SingleLevelGoalFinderBuilder currentOwner;
-        IGoalFinderTargetEvaluator targetEvaluator;
+        IGoalFinderTargetSource targetSource;
+        IGoalFinderFilter filter;
         bool disposed;
         float searchRadius;
 
         public SingleLevelGoalFinder()
         {
+            goalRecordBuffer = new BufferList<GoalRecord>();
+            goalFilterBuffer = new BufferList<GoalRecord>();
+            goalRecordSet = new GoalSet();
             movementSourceData = new List<MovementCostData3D>();
             sw = new Stopwatch();
             singleLevelPathFinderDijkstra = new SingleLevelGoalFinderDijkstraWorker();
@@ -44,37 +51,35 @@ namespace RogueEntity.Core.Movement.GoalFinding.SingleLevel
 
             disposed = true;
             currentOwner.Return(this);
+            goalRecordSet.Clear();
+            goalRecordBuffer.Clear();
+            goalFilterBuffer.Clear();
+            movementSourceData.Clear();
             currentOwner = null;
-            targetEvaluator = null;
+            targetSource = null;
         }
 
         public void Configure([NotNull] SingleLevelGoalFinderBuilder owner,
-                              [NotNull] IGoalFinderTargetEvaluator evaluator,
+                              [NotNull] IGoalFinderTargetSource source,
+                              [NotNull] IGoalFinderFilter filterFromBuilder,
                               float searchRadiusParam)
         {
+            this.filter = filterFromBuilder;
             this.searchRadius = searchRadiusParam;
             this.disposed = false;
             this.movementSourceData.Clear();
             this.singleLevelPathFinderDijkstra.Reset();
             this.currentOwner = owner ?? throw new ArgumentNullException(nameof(owner));
-            this.targetEvaluator = evaluator ?? throw new ArgumentNullException(nameof(evaluator));
+            this.targetSource = source ?? throw new ArgumentNullException(nameof(source));
         }
 
         public PathFinderResult TryFindPath<TPosition>(in TPosition source, 
-                                                       out List<(TPosition, IMovementMode)> path, 
-                                                       List<(TPosition, IMovementMode)> pathBuffer = null, 
+                                                       out BufferList<(TPosition, IMovementMode)> path, 
+                                                       BufferList<(TPosition, IMovementMode)> pathBuffer = null, 
                                                        int searchLimit = Int32.MaxValue)
             where TPosition : IPosition<TPosition>
         {
-            if (pathBuffer == null)
-            {
-                pathBuffer = new List<(TPosition, IMovementMode)>();
-            }
-            else
-            {
-                pathBuffer.Clear();
-            }
-
+            pathBuffer = BufferList.PrepareBuffer(pathBuffer);
             if (source.IsInvalid)
             {
                 path = pathBuffer;
@@ -103,12 +108,17 @@ namespace RogueEntity.Core.Movement.GoalFinding.SingleLevel
 
             singleLevelPathFinderDijkstra.ConfigureFinished(heuristics.AsAdjacencyRule());
 
-            var goals = TargetEvaluator.CollectGoals(Position.From(source), searchRadius, heuristics, singleLevelPathFinderDijkstra);
-            if (goals == 0)
+            if (!TryApplyGoals(source, heuristics, out var goals))
             {
                 path = pathBuffer;
-                Logger.Verbose("Goal not found: no goals specified");
                 return PathFinderResult.NotFound;
+            }
+
+            goals.CopyTo(goalRecordBuffer);
+
+            foreach (var goal in goalRecordBuffer)
+            {
+                singleLevelPathFinderDijkstra.AddGoal(goal);
             }
             
             sw.Reset();
@@ -125,7 +135,22 @@ namespace RogueEntity.Core.Movement.GoalFinding.SingleLevel
             }
         }
 
-        public IGoalFinderTargetEvaluator TargetEvaluator => targetEvaluator;
+        bool TryApplyGoals<TPosition>(TPosition source, DistanceCalculation heuristics, out GoalSet goals)
+            where TPosition : IPosition<TPosition>
+        {
+            var position = Position.From(source);
+            goals = TargetSource.CollectGoals(position, searchRadius, heuristics, goalRecordSet);
+            if (goals.Count == 0)
+            {
+                Logger.Verbose("Goal not found: no goals specified");
+                return false;
+            }
+
+            goals = filter.FilterGoals(position, searchRadius, heuristics, goals);
+            return goals.Count > 0;
+        }
+
+        public IGoalFinderTargetSource TargetSource => targetSource;
         public int NodesEvaluated => singleLevelPathFinderDijkstra.NodesEvaluated;
         public TimeSpan TimeElapsed { get; private set; }
 

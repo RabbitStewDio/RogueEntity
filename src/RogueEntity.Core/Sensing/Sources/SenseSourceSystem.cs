@@ -114,8 +114,8 @@ namespace RogueEntity.Core.Sensing.Sources
                                                                             TGameContext context,
                                                                             TItemId k,
                                                                             in TSenseSourceDefinition definition,
-                                                                            in SenseSourceState<TSense> state,
-                                                                            in TPosition pos)
+                                                                            in TPosition pos,
+                                                                            ref SenseSourceState<TSense> state)
             where TItemId : IEntityKey
             where TPosition : IPosition<TPosition>
         {
@@ -126,18 +126,20 @@ namespace RogueEntity.Core.Sensing.Sources
                 if (state.LastPosition != position ||
                     Math.Abs(state.LastIntensity - localIntensity) > 0.05f)
                 {
-                    var nstate = state.WithPosition(position).WithIntensity(localIntensity).WithDirtyState(SenseSourceDirtyState.Dirty);
-                    v.WriteBack(k, in nstate);
+                    state = state.WithPosition(position)
+                                 .WithIntensity(localIntensity)
+                                 .WithDirtyState(SenseSourceDirtyState.Dirty);
                     v.AssignOrReplace(k, new SenseDirtyFlag<TSense>());
+                    Console.WriteLine($"For {pos} dirty");
 
                     senseCacheControl.MarkDirty<TSense>(position);
                 }
                 else if (state.State != SenseSourceDirtyState.Active ||
                          (cacheView.TryGetValue(out var cache) && cache.IsDirty(pos, physics.SignalRadiusForIntensity(localIntensity))))
                 {
-                    var nstate = state.WithDirtyState(SenseSourceDirtyState.Dirty);
-                    v.WriteBack(k, in nstate);
+                    state = state.WithDirtyState(SenseSourceDirtyState.Dirty);
                     v.AssignOrReplace(k, new SenseDirtyFlag<TSense>());
+                    Console.WriteLine($"For {pos} dirty2");
 
                     senseCacheControl.MarkDirty<TSense>(position);
                 }
@@ -148,9 +150,9 @@ namespace RogueEntity.Core.Sensing.Sources
             if (state.State != SenseSourceDirtyState.Inactive)
             {
                 // Light has been disabled since the last calculation.
-                var nstate = state.WithDirtyState(SenseSourceDirtyState.Dirty);
-                v.WriteBack(k, in nstate);
+                state = state.WithDirtyState(SenseSourceDirtyState.Dirty);
                 v.AssignOrReplace(k, new SenseDirtyFlag<TSense>());
+                Console.WriteLine($"For {pos} dirty3");
 
                 if (!state.LastPosition.IsInvalid)
                 {
@@ -189,6 +191,7 @@ namespace RogueEntity.Core.Sensing.Sources
                                                                   ref SenseSourceState<TSense> state)
             where TItemId : IEntityKey
         {
+            
             if (!definition.Enabled)
             {
                 state = state.WithDirtyState(SenseSourceDirtyState.Inactive);
@@ -197,6 +200,7 @@ namespace RogueEntity.Core.Sensing.Sources
                     dataIn.Reset();
                 }
 
+                Console.WriteLine($"Pos {state.LastPosition}/{k} not enabled");
                 return;
             }
 
@@ -205,7 +209,20 @@ namespace RogueEntity.Core.Sensing.Sources
             {
                 state.SenseSource.TryGetValue(out var dataIn);
                 var data = RefreshSenseState(definition, state.LastIntensity, pos, resistanceView, directionMap, dataIn);
-                state = state.WithDirtyState(SenseSourceDirtyState.Active).WithSenseState(data);
+                state = state.WithDirtyState(SenseSourceDirtyState.Active)
+                             .WithSenseState(data);
+                
+                Console.WriteLine($"Pos {state.LastPosition} active");
+            }
+            else
+            {
+                state = state.WithDirtyState(SenseSourceDirtyState.Inactive);
+                if (state.SenseSource.TryGetValue(out var dataIn))
+                {
+                    dataIn.Reset();
+                }
+                
+                Console.WriteLine($"Pos {state.LastPosition} no resistance view, ignored");
             }
         }
 
@@ -240,20 +257,23 @@ namespace RogueEntity.Core.Sensing.Sources
                                                                       TGameContext context,
                                                                       TItemId k,
                                                                       in TSenseSourceDefinition definition,
-                                                                      in SenseSourceState<TSense> state,
-                                                                      in SenseDirtyFlag<TSense> dirtyFlag)
+                                                                      in SenseDirtyFlag<TSense> dirtyFlag,
+                                                                      ref SenseSourceState<TSense> state)
             where TItemId : IEntityKey
         {
+/*            
             if (definition.Enabled && state.State != SenseSourceDirtyState.Active)
             {
-                v.WriteBack(k, state.WithDirtyState(SenseSourceDirtyState.Active));
+                Console.WriteLine($"Pos {state.LastPosition} marked active");
+                state = state.WithDirtyState(SenseSourceDirtyState.Active);
             }
 
             if (!definition.Enabled && state.State != SenseSourceDirtyState.Inactive)
             {
-                v.WriteBack(k, state.WithDirtyState(SenseSourceDirtyState.Inactive));
+                Console.WriteLine($"Pos {state.LastPosition} marked inactive");
+                state = state.WithDirtyState(SenseSourceDirtyState.Inactive);
             }
-
+*/
             v.RemoveComponent<SenseDirtyFlag<TSense>>(k);
         }
 

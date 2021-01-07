@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using RogueEntity.Api.Utils;
 
 namespace RogueEntity.Api.ItemTraits
 {
@@ -10,7 +11,7 @@ namespace RogueEntity.Api.ItemTraits
     {
         ItemDeclarationId Id { get; }
         bool TryQuery<TTrait>(out TTrait t) where TTrait : IItemTrait;
-        List<TTrait> QueryAll<TTrait>(List<TTrait> cache = null) where TTrait : IItemTrait;
+        BufferList<TTrait> QueryAll<TTrait>(BufferList<TTrait> cache = null) where TTrait : IItemTrait;
         
         public IEnumerable<(ItemTraitId traitId, EntityRoleInstance role)> GetEntityRoles();
         public IEnumerable<(ItemTraitId traitId, EntityRelationInstance relation)> GetEntityRelations();

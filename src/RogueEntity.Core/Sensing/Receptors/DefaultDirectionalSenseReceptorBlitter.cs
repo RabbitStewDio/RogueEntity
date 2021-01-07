@@ -31,7 +31,6 @@ namespace RogueEntity.Core.Sensing.Receptors
                 
                 if (Math.Abs(intensity) > Math.Abs(receptorSenseIntensities[currentPos]))
                 {
-                    Console.WriteLine(dir);
                     receptorSenseIntensities.TrySet(currentPos, intensity);
                     receptorSenseDirections.TrySet(currentPos, dir.RawData);
                 }

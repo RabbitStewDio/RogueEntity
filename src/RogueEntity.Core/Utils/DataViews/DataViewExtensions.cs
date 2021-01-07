@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
+using RogueEntity.Api.Utils;
 
 namespace RogueEntity.Core.Utils.DataViews
 {
@@ -127,17 +128,9 @@ namespace RogueEntity.Core.Utils.DataViews
                 return false;
             }
 
-            public List<int> GetActiveLayers(List<int> buffer = null)
+            public BufferList<int> GetActiveLayers(BufferList<int> buffer = null)
             {
-                if (buffer == null)
-                {
-                    buffer = new List<int>();
-                }
-                else
-                {
-                    buffer.Clear();
-                }
-
+                buffer = BufferList.PrepareBuffer(buffer);
                 buffer.Add(z);
                 return buffer;
             }

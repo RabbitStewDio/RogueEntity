@@ -163,7 +163,9 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor
                            EntityGridPosition>()
                        .WithOutputParameter<SensoryReceptorState<TReceptorSense, TSourceSense>>()
                        .CreateSystem(ls.CollectReceptor), // 5550
-                builder.WithInputParameter<TSenseSourceDefinition, SenseSourceState<TSourceSense>, EntityGridPosition>().CreateSystem(ss.FindDirtySenseSources), // 5500
+                builder.WithInputParameter<TSenseSourceDefinition, EntityGridPosition>()
+                       .WithOutputParameter<SenseSourceState<TSourceSense>>()
+                       .CreateSystem(ss.FindDirtySenseSources), // 5500
                 builder.WithInputParameter<SensoryReceptorData<TReceptorSense, TSourceSense>,
                            SenseReceptorDirtyFlag<TReceptorSense, TSourceSense>>()
                        .WithOutputParameter<SensoryReceptorState<TReceptorSense, TSourceSense>>()
@@ -178,7 +180,9 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor
                     .WithOutputParameter<SensoryReceptorState<TReceptorSense, TSourceSense>>()
                     .CreateSystem(ls.ResetReceptorCacheState), // 5900
                 builder.WithInputParameter<ObservedSenseSource<TSourceSense>>().CreateSystem(ls.ResetSenseSourceObservedState), // 5900
-                builder.WithInputParameter<TSenseSourceDefinition, SenseSourceState<TSourceSense>, SenseDirtyFlag<TSourceSense>>().CreateSystem(ss.ResetSenseSourceCacheState),
+                builder.WithInputParameter<TSenseSourceDefinition, SenseDirtyFlag<TSourceSense>>()
+                       .WithOutputParameter<SenseSourceState<TSourceSense>>()
+                       .CreateSystem(ss.ResetSenseSourceCacheState),
                 ls.EndSenseCalculation,
                 ss.EndSenseCalculation
             };

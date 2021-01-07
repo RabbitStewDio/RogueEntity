@@ -98,7 +98,7 @@ namespace RogueEntity.Core.Tests.Movement
         }
         
         public static DynamicDataView2D<(bool, int)> CreateResult(DynamicDataView2D<float> resistanceMap,
-                                                                  List<(EntityGridPosition, IMovementMode)> resultPath,
+                                                                  IReadOnlyList<(EntityGridPosition, IMovementMode)> resultPath,
                                                                   EntityGridPosition startPos,
                                                                   Rectangle bounds)
         {

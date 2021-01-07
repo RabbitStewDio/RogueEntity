@@ -174,7 +174,6 @@ namespace RogueEntity.Core.Inventory
 
                 var itemsProcessed = itemsLeftToPickUp - newItemCount;
                 Data = Data.Update(index, itemWeight * itemsProcessed, changedItem);
-                items[index] = changedItem;
                 itemsLeftToPickUp = newItemCount;
                 itemsPickedUp += itemsProcessed;
                 if (itemsLeftToPickUp <= 0)
@@ -360,19 +359,12 @@ namespace RogueEntity.Core.Inventory
         /// <param name="count"></param>
         /// <param name="removedItems"></param>
         /// <returns></returns>
-        public List<TItemId> TryRemoveItemsInBulk(TGameContext context,
-                                                  ItemDeclarationId itemByType,
-                                                  int count,
-                                                  List<TItemId> removedItems = null)
+        public BufferList<TItemId> TryRemoveItemsInBulk(TGameContext context,
+                                                        ItemDeclarationId itemByType,
+                                                        int count,
+                                                        BufferList<TItemId> removedItems = null)
         {
-            if (removedItems == null)
-            {
-                removedItems = new List<TItemId>();
-            }
-            else
-            {
-                removedItems.Clear();
-            }
+            removedItems = BufferList.PrepareBuffer(removedItems);
 
             for (int i = Data.Items.Count - 1; i >= 0; i--)
             {

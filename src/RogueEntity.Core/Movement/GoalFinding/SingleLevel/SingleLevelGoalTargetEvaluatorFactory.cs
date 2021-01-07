@@ -25,11 +25,11 @@ namespace RogueEntity.Core.Movement.GoalFinding.SingleLevel
             createDelegate = Create;
         }
 
-        public bool TryGet<TEntityId, TGoal>(out GoalTargetEvaluator2D<TEntityId, TGoal> result)
+        public bool TryGet<TEntityId, TGoal>(out EntityGoalTargetSource2D<TEntityId, TGoal> result)
             where TEntityId : IEntityKey
         {
             var maybeResult = data.GetOrAdd((typeof(TEntityId), typeof(TGoal)), createDelegate);
-            if (maybeResult is GoalTargetEvaluator2D<TEntityId, TGoal> r)
+            if (maybeResult is EntityGoalTargetSource2D<TEntityId, TGoal> r)
             {
                 result = r;
                 return true;
@@ -60,7 +60,7 @@ namespace RogueEntity.Core.Movement.GoalFinding.SingleLevel
             {
                 if (queryLookup.TryGetQuery<TContextA>(out var q))
                 {
-                    return new GoalTargetEvaluator2D<TContextA, TContextB>(q);
+                    return new EntityGoalTargetSource2D<TContextA, TContextB>(q);
                 }
 
                 return null;

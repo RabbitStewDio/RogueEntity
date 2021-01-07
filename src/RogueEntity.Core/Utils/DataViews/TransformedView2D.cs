@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using JetBrains.Annotations;
+using RogueEntity.Api.Utils;
 
 namespace RogueEntity.Core.Utils.DataViews
 {
@@ -69,7 +70,7 @@ namespace RogueEntity.Core.Utils.DataViews
             get { return source.TileSizeY; }
         }
 
-        public List<Rectangle> GetActiveTiles(List<Rectangle> data = null)
+        public BufferList<Rectangle> GetActiveTiles(BufferList<Rectangle> data = null)
         {
             return source.GetActiveTiles(data);
         }

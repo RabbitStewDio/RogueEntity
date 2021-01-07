@@ -1,15 +1,17 @@
 using System;
 using System.Collections.Generic;
+using RogueEntity.Api.Utils;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Algorithms;
+using RogueEntity.Core.Utils;
 
 namespace RogueEntity.Core.Movement.Pathfinding
 {
     public interface IPathFinder : IDisposable
     {
         public PathFinderResult TryFindPath<TPosition>(in TPosition source,
-                                                       out List<(TPosition, IMovementMode)> path,
-                                                       List<(TPosition, IMovementMode)> pathBuffer = null,
+                                                       out BufferList<(TPosition, IMovementMode)> path,
+                                                       BufferList<(TPosition, IMovementMode)> pathBuffer = null,
                                                        int searchLimit = int.MaxValue)
             where TPosition: IPosition<TPosition>;
     }

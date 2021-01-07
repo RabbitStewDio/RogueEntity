@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.Serialization;
 using JetBrains.Annotations;
 using MessagePack;
+using RogueEntity.Api.Utils;
 
 namespace RogueEntity.Core.Utils.DataViews
 {
@@ -61,16 +62,9 @@ namespace RogueEntity.Core.Utils.DataViews
             return r;
         }
 
-        public List<Rectangle> GetActiveTiles(List<Rectangle> data = null)
+        public BufferList<Rectangle> GetActiveTiles(BufferList<Rectangle> data = null)
         {
-            if (data == null)
-            {
-                data = new List<Rectangle>();
-            }
-            else
-            {
-                data.Clear();
-            }
+            data = BufferList.PrepareBuffer(data);
 
             foreach (var k in index.Values)
             {

@@ -263,7 +263,8 @@ namespace RogueEntity.Core.Sensing.Sources
             var ls = GetOrCreateSenseSourceSystem<TGameContext, TItemId>(serviceResolver);
             var system = registry.BuildSystem()
                                  .WithContext<TGameContext>()
-                                 .WithInputParameter<TSenseSourceDefinition, SenseSourceState<TSense>, EntityGridPosition>()
+                                 .WithInputParameter<TSenseSourceDefinition, EntityGridPosition>()
+                                 .WithOutputParameter<SenseSourceState<TSense>>()
                                  .CreateSystem(ls.FindDirtySenseSources);
             context.AddInitializationStepHandler(system);
             context.AddFixedStepHandlers(system);
@@ -278,7 +279,8 @@ namespace RogueEntity.Core.Sensing.Sources
             var ls = GetOrCreateSenseSourceSystem<TGameContext, TItemId>(serviceResolver);
             var system = registry.BuildSystem()
                                  .WithContext<TGameContext>()
-                                 .WithInputParameter<TSenseSourceDefinition, SenseSourceState<TSense>, ContinuousMapPosition>()
+                                 .WithInputParameter<TSenseSourceDefinition, ContinuousMapPosition>()
+                                 .WithOutputParameter<SenseSourceState<TSense>>()
                                  .CreateSystem(ls.FindDirtySenseSources);
             context.AddInitializationStepHandler(system);
             context.AddFixedStepHandlers(system);
@@ -309,8 +311,19 @@ namespace RogueEntity.Core.Sensing.Sources
         {
             var serviceResolver = initParameter.ServiceResolver;
             var ls = GetOrCreateSenseSourceSystem<TGameContext, TItemId>(serviceResolver);
+
+            var resetSystem = registry.BuildSystem()
+                                      .WithContext<TGameContext>()
+                                      .WithInputParameter<TSenseSourceDefinition, SenseDirtyFlag<TSense>>()
+                                      .WithOutputParameter<SenseSourceState<TSense>>()
+                                      .CreateSystem(ls.ResetSenseSourceCacheState);
+            
+            context.AddInitializationStepHandler(resetSystem, nameof(ls.ResetSenseSourceCacheState));
+            context.AddFixedStepHandlers(resetSystem, nameof(ls.ResetSenseSourceCacheState));
+            
             context.AddInitializationStepHandler(ls.EndSenseCalculation, nameof(ls.EndSenseCalculation));
             context.AddFixedStepHandlers(ls.EndSenseCalculation, nameof(ls.EndSenseCalculation));
+            
             context.AddDisposeStepHandler(ls.ShutDown, nameof(ls.ShutDown));
         }
 

@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using RogueEntity.Api.ItemTraits;
+﻿using RogueEntity.Api.ItemTraits;
+using RogueEntity.Api.Utils;
 using RogueEntity.Core.Meta.Base;
 using RogueEntity.Core.Meta.ItemTraits;
 
@@ -16,9 +16,9 @@ namespace RogueEntity.Core.Inventory
 
         bool TryRemoveItemStack(TGameContext context, TItemId itemByType, int itemPosition);
 
-        List<TItemId> TryRemoveItemsInBulk(TGameContext context,
-                                      ItemDeclarationId itemByType,
-                                      int count,
-                                      List<TItemId> removedItems = null);
+        BufferList<TItemId> TryRemoveItemsInBulk(TGameContext context,
+                                                 ItemDeclarationId itemByType,
+                                                 int count,
+                                                 BufferList<TItemId> removedItems = null);
     }
 }

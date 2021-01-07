@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using EnTTSharp.Entities;
 using RogueEntity.Api.ItemTraits;
+using RogueEntity.Api.Utils;
 
 namespace RogueEntity.Core.Meta.Items
 {
@@ -30,7 +31,7 @@ namespace RogueEntity.Core.Meta.Items
             return traits.TryQuery(out t);
         }
 
-        public override List<TTrait> QueryAll<TTrait>(List<TTrait> cache = null)
+        public override BufferList<TTrait> QueryAll<TTrait>(BufferList<TTrait> cache = null)
         {
             return traits.QueryAll(cache);
         }

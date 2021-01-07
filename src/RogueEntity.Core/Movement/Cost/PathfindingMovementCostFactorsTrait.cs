@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using EnTTSharp.Entities;
 using RogueEntity.Api.ItemTraits;
+using RogueEntity.Api.Utils;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Movement.MovementModes;
 
@@ -12,14 +13,14 @@ namespace RogueEntity.Core.Movement.Cost
                                                                                IReferenceItemTrait<TGameContext, TActorId>
         where TActorId : IEntityKey
     {
-        readonly List<IItemComponentInformationTrait<TGameContext, TActorId, MovementCost>> sourceTraits;
+        readonly BufferList<IItemComponentInformationTrait<TGameContext, TActorId, MovementCost>> sourceTraits;
         readonly List<MovementCost> movementCosts;
         bool movementCostsValid;
         bool traitsValid;
 
         public PathfindingMovementCostFactorsTrait()
         {
-            sourceTraits = new List<IItemComponentInformationTrait<TGameContext, TActorId, MovementCost>>();
+            sourceTraits = new BufferList<IItemComponentInformationTrait<TGameContext, TActorId, MovementCost>>();
             movementCosts = new List<MovementCost>();
         }
 

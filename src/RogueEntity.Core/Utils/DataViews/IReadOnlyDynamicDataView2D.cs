@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using RogueEntity.Api.Utils;
 
 namespace RogueEntity.Core.Utils.DataViews
 {
@@ -13,7 +14,7 @@ namespace RogueEntity.Core.Utils.DataViews
         int TileSizeX { get; }
         int TileSizeY { get; }
 
-        List<Rectangle> GetActiveTiles(List<Rectangle> data = null);
+        BufferList<Rectangle> GetActiveTiles(BufferList<Rectangle> data = null);
         Rectangle GetActiveBounds();
         bool TryGetData(int x, int y, out IReadOnlyBoundedDataView<T> raw);
     }

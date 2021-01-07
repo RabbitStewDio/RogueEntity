@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.Serialization;
 using JetBrains.Annotations;
 using MessagePack;
+using RogueEntity.Api.Utils;
 using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.DataViews;
 
@@ -149,7 +150,7 @@ namespace RogueEntity.Core.Sensing.Common
             get { return sensitivityData.OffsetY; }
         }
 
-        public List<Rectangle> GetActiveTiles(List<Rectangle> data = null)
+        public BufferList<Rectangle> GetActiveTiles(BufferList<Rectangle> data = null)
         {
             return sensitivityData.GetActiveTiles(data);
         }

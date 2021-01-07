@@ -13,23 +13,28 @@ namespace RogueEntity.Core.Movement.GoalFinding.SingleLevel
     public class SingleLevelGoalFinderBuilder: IGoalFinderBuilder, IGenericLifter<IEntityKey, IGoal>
     {
         readonly ObjectPool<SingleLevelGoalFinder> pathFinderPool;
-        readonly ObjectPool<CompoundGoalTargetEvaluator> compoundTargetEvaluatorPool;
+        readonly ObjectPool<CompoundGoalTargetSource> compoundTargetEvaluatorPool;
+        readonly ObjectPool<AnyOfGoalFinderFilter> filterPool;
 
-        readonly List<IGoalFinderTargetEvaluator> goals;
+        readonly List<IGoalFinderTargetSource> goals;
         readonly SingleLevelGoalTargetEvaluatorFactory evaluatorFactory;
         readonly GoalRegistry goalRegistry;
+        readonly List<IGoalFinderFilter> filters;
         float searchRadius;
 
         public SingleLevelGoalFinderBuilder(SingleLevelGoalTargetEvaluatorFactory evaluatorFactory, 
                                             GoalRegistry goalRegistry,
                                             ObjectPool<SingleLevelGoalFinder> pathFinderPool,
-                                            ObjectPool<CompoundGoalTargetEvaluator> compoundTargetEvaluatorPool)
+                                            ObjectPool<CompoundGoalTargetSource> compoundTargetEvaluatorPool,
+                                            ObjectPool<AnyOfGoalFinderFilter> filterPool)
         {
             this.evaluatorFactory = evaluatorFactory;
             this.goalRegistry = goalRegistry;
             this.pathFinderPool = pathFinderPool;
             this.compoundTargetEvaluatorPool = compoundTargetEvaluatorPool;
-            this.goals = new List<IGoalFinderTargetEvaluator>();
+            this.filterPool = filterPool;
+            this.filters = new List<IGoalFinderFilter>();
+            this.goals = new List<IGoalFinderTargetSource>();
         }
 
         public void Configure([NotNull] IReadOnlyDictionary<IMovementMode, SingleLevelGoalFinderSource.MovementSourceData> data)
@@ -47,6 +52,12 @@ namespace RogueEntity.Core.Movement.GoalFinding.SingleLevel
             return this;
         }
 
+        public IGoalFinderBuilder WithFilter(IGoalFinderFilter filter)
+        {
+            filters.Add(filter);
+            return this;
+        }
+        
         public IGoalFinderBuilder WithSearchRadius(float radius)
         {
             this.searchRadius = radius;
@@ -60,9 +71,11 @@ namespace RogueEntity.Core.Movement.GoalFinding.SingleLevel
             {
                 e.Add(goal);
             }
-            
+
+            var filter = CreateGoalFinderFilter();
+
             var g = pathFinderPool.Get();
-            g.Configure(this, e, searchRadius);
+            g.Configure(this, e, filter, searchRadius);
             foreach (var m in movementProfile.MovementCosts)
             {
                 if (MovementCostData.TryGetValue(m.MovementMode, out var mapData))
@@ -75,9 +88,30 @@ namespace RogueEntity.Core.Movement.GoalFinding.SingleLevel
 
         }
 
+        IGoalFinderFilter CreateGoalFinderFilter()
+        {
+            IGoalFinderFilter filter;
+            if (filters.Count > 0)
+            {
+                var f = filterPool.Get();
+                foreach (var fi in filters)
+                {
+                    f.With(fi);
+                }
+
+                filter = f;
+            }
+            else
+            {
+                filter = PassThroughGoalFinderFilter.Instance;
+            }
+
+            return filter;
+        }
+
         public void Return(SingleLevelGoalFinder pf)
         {
-            pf.TargetEvaluator?.Dispose();
+            pf.TargetSource?.Dispose();
             pathFinderPool.Return(pf);
         }
 

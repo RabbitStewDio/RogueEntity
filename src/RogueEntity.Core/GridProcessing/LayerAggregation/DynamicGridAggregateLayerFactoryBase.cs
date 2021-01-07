@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using EnTTSharp.Entities;
 using JetBrains.Annotations;
+using RogueEntity.Api.Utils;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Positioning.MapLayers;
 using RogueEntity.Core.Utils.DataViews;
@@ -13,13 +14,13 @@ namespace RogueEntity.Core.GridProcessing.LayerAggregation
     {
         readonly MapLayer layer;
         readonly IGridMapContext<TItemId> mapContext;
-        readonly List<int> cachedZLevels;
+        readonly BufferList<int> cachedZLevels;
 
         protected DynamicGridAggregateLayerFactoryBase(MapLayer layer, [NotNull] IGridMapContext<TItemId> mapContext)
         {
             this.layer = layer;
             this.mapContext = mapContext ?? throw new ArgumentNullException(nameof(mapContext));
-            this.cachedZLevels = new List<int>();
+            this.cachedZLevels = new BufferList<int>();
         }
 
         protected IGridMapContext<TItemId> MapContext => mapContext;

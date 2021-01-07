@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using RogueEntity.Api.Utils;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.DataViews;
@@ -14,16 +15,16 @@ namespace RogueEntity.Core.GridProcessing.Transforms
         
         readonly GridTileStateView dirtyMap;
         readonly List<ProcessingParameters> processingParameterCache;
-        readonly List<Rectangle> activeTileBuffer;
-        readonly List<int> activeZLevelsBuffer;
+        readonly BufferList<Rectangle> activeTileBuffer;
+        readonly BufferList<int> activeZLevelsBuffer;
         readonly Action<ProcessingParameters> processTileDelegate;
 
         protected GridTransformSystemBase(DynamicDataViewConfiguration sourceData)
         {
             this.dirtyMap = new GridTileStateView(sourceData.OffsetX, sourceData.OffsetY, sourceData.TileSizeX, sourceData.TileSizeY);
             this.processingParameterCache = new List<ProcessingParameters>();
-            this.activeTileBuffer = new List<Rectangle>();
-            this.activeZLevelsBuffer = new List<int>();
+            this.activeTileBuffer = new BufferList<Rectangle>();
+            this.activeZLevelsBuffer = new BufferList<int>();
             this.processTileDelegate = ProcessTile;
         }
 

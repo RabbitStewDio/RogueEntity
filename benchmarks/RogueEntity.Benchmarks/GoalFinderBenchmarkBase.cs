@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Profiler.Api;
 using RogueEntity.Api.ItemTraits;
+using RogueEntity.Api.Utils;
 using RogueEntity.Core.Meta.EntityKeys;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Movement;
@@ -37,7 +38,7 @@ namespace RogueEntity.Benchmarks
         readonly SingleLevelGoalFinderSource pathfinderSource;
         readonly GoalRegistry goalRegistry;
         readonly SpatialQueryRegistry queryRegistry;
-        readonly List<(EntityGridPosition, IMovementMode)> pathBuffer;
+        readonly BufferList<(EntityGridPosition, IMovementMode)> pathBuffer;
 
         Rectangle bounds;
 
@@ -64,7 +65,7 @@ namespace RogueEntity.Benchmarks
             goalRegistry.RegisterGoalEntity<ItemReference, PerformanceGoal>();
             
             positions = new List<EntityGridPosition>();
-            pathBuffer = new List<(EntityGridPosition, IMovementMode)>(256);
+            pathBuffer = new BufferList<(EntityGridPosition, IMovementMode)>(256);
             pathfinderSource = new SingleLevelGoalFinderSource(new SingleLevelGoalFinderPolicy(), goalRegistry, queryRegistry);
         }
 

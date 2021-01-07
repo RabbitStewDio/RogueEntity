@@ -21,7 +21,7 @@ namespace RogueEntity.Core.GridProcessing.LayerAggregation
         readonly IGridMapContext<TItemId> mapContext;
         readonly int zPosition;
         readonly DynamicBoolDataView dirtyMap;
-        readonly List<Rectangle> activeTilesCache;
+        readonly BufferList<Rectangle> activeTilesCache;
         readonly List<TileProcessingParameters> processingFastParameterCache;
         readonly DynamicDataView2D<TAggregateType> writableDataView;
         bool dirtyAfterCreation;
@@ -39,7 +39,7 @@ namespace RogueEntity.Core.GridProcessing.LayerAggregation
             this.zPosition = zPosition;
             this.writableDataView = new DynamicDataView2D<TAggregateType>(offsetX, offsetY, tileSizeX, tileSizeY);
             this.dirtyMap = new DynamicBoolDataView(offsetX, offsetY, tileSizeX, tileSizeY);
-            this.activeTilesCache = new List<Rectangle>();
+            this.activeTilesCache = new BufferList<Rectangle>();
             this.processingFastParameterCache = new List<TileProcessingParameters>();
             this.processFastDelegate = ProcessTile;
             this.dirtyAfterCreation = true;
