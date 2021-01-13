@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <NoPackageAnalysis>true</NoPackageAnalysis>
+    <BuildOutputTargetFolder>tasks</BuildOutputTargetFolder>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\EnTTSharp\src\EnTTSharp.Serialization.Binary\EnTTSharp.Serialization.Binary.csproj" />
+    <ProjectReference Include="..\..\..\EnTTSharp\src\EnTTSharp.Serialization.Xml\EnTTSharp.Serialization.Xml.csproj" />
+    <ProjectReference Include="..\RogueEntity.Api\RogueEntity.Api.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- pack the props files -->
+    <Content Include="build\*.ttinclude" PackagePath="build\" />
+    <Content Include="build\*.targets" PackagePath="build\" />
+    <PackageReference Update="@(PackageReference)" PrivateAssets="All" />
+  </ItemGroup>
+
+</Project>

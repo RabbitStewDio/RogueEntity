@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+   <!-- an external project should use a nuget reference instead -->
+  <Import Project="..\RogueEntity.EntityKeyGenerator\build\EntityKeyT4Build.targets" />
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\EnTTSharp\src\EnTTSharp.Serialization.Binary\EnTTSharp.Serialization.Binary.csproj" />
+    <ProjectReference Include="..\..\..\EnTTSharp\src\EnTTSharp.Serialization.Xml\EnTTSharp.Serialization.Xml.csproj" />
+    <ProjectReference Include="..\RogueEntity.Api\RogueEntity.Api.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="SampleEntityKey.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>SampleEntityKey.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="SampleEntityKey.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>SampleEntityKey.tt</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+</Project>
