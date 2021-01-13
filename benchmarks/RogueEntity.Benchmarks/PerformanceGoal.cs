@@ -1,5 +1,4 @@
-using RogueEntity.Core.Movement.GoalFinding;
-using RogueEntity.Core.Movement.Goals;
+using RogueEntity.Core.MovementPlaning.Goals;
 
 namespace RogueEntity.Benchmarks
 {

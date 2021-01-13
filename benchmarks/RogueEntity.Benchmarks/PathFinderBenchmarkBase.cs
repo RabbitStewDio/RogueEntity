@@ -1,10 +1,11 @@
+using RogueEntity.Core.Movement;
 using System;
 using System.Collections.Generic;
 using RogueEntity.Core.Movement.Cost;
 using RogueEntity.Core.Movement.CostModifier.Directions;
 using RogueEntity.Core.Movement.MovementModes.Walking;
-using RogueEntity.Core.Movement.Pathfinding;
-using RogueEntity.Core.Movement.Pathfinding.SingleLevel;
+using RogueEntity.Core.MovementPlaning.Pathfinding;
+using RogueEntity.Core.MovementPlaning.Pathfinding.SingleLevel;
 using RogueEntity.Core.Positioning.Algorithms;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Utils;
@@ -16,14 +17,16 @@ namespace RogueEntity.Benchmarks
     {
         readonly string id;
         readonly List<EntityGridPosition> positions;
-        readonly SingleLevelPathFinderSource pathfinderSource;
+        readonly MovementDataCollector movementDataCollector;
+        SingleLevelPathFinderSource pathfinderSource;
         Rectangle bounds;
 
         protected PathFinderBenchmarkBase(string id)
         {
             this.id = id;
             positions = new List<EntityGridPosition>();
-            pathfinderSource = new SingleLevelPathFinderSource(new SingleLevelPathFinderPolicy());
+            movementDataCollector = new MovementDataCollector();
+            pathfinderSource = new SingleLevelPathFinderSource(new SingleLevelPathFinderPolicy(), movementDataCollector);
         }
 
         public virtual void SetUpGlobal()
@@ -32,13 +35,13 @@ namespace RogueEntity.Benchmarks
             var movementCostData = PerformanceTestUtils.ParseMap(sourceText, out bounds);
             // Console.WriteLine("Using room layout \n" + TestHelpers.PrintMap(resistanceMap, bounds));
 
-            var directionalityMapSystem = new MovementResistanceDirectionalitySystem<WalkingMovement>(movementCostData.As3DMap(0));
+            var directionalityMapSystem = new OutboundMovementDirectionalitySystem<WalkingMovement>(movementCostData.As3DMap(0));
             directionalityMapSystem.MarkGloballyDirty();
             directionalityMapSystem.Process();
             if (!directionalityMapSystem.ResultView.TryGetView(0, out var directionalityMap))
                 throw new Exception();
 
-            pathfinderSource.RegisterMovementSource(WalkingMovement.Instance, movementCostData.As3DMap(0), directionalityMap.As3DMap(0));
+            movementDataCollector.RegisterMovementSource(WalkingMovement.Instance, movementCostData.As3DMap(0), directionalityMap.As3DMap(0), directionalityMap.As3DMap(0));
 
             var rnd = new Random(10);
             while (positions.Count < 50)

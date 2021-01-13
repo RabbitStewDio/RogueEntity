@@ -35,12 +35,12 @@ namespace RogueEntity.Core.Movement.CostModifier.Map
 
                 foreach (var (x, y) in bounds.Contents)
                 {
-                    if (!dv.TryGet(x, y, out var d))
+                    if (!dv.TryGet(x, y, out var costModifier))
                     {
                         continue;
                     }
 
-                    var sp = resistanceData[x, y] + d;
+                    var sp = resistanceData[x, y] + costModifier;
                     resistanceData.TrySet(x, y, sp);
                 }
             }

@@ -4,11 +4,12 @@ using NUnit.Framework;
 using RogueEntity.Core.Directionality;
 using RogueEntity.Core.Meta.EntityKeys;
 using RogueEntity.Core.Meta.Items;
+using RogueEntity.Core.Movement;
 using RogueEntity.Core.Movement.Cost;
 using RogueEntity.Core.Movement.CostModifier.Directions;
-using RogueEntity.Core.Movement.GoalFinding.SingleLevel;
-using RogueEntity.Core.Movement.Goals;
 using RogueEntity.Core.Movement.MovementModes.Walking;
+using RogueEntity.Core.MovementPlaning.GoalFinding.SingleLevel;
+using RogueEntity.Core.MovementPlaning.Goals;
 using RogueEntity.Core.Positioning.Algorithms;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Positioning.SpatialQueries;
@@ -26,7 +27,7 @@ namespace RogueEntity.Core.Tests.Movement.GoalFinding
         SpatialQueryRegistry spatialQueryRegistry;
 
         const string EmptyRoom = @"
-// 9x9; an empty room
+ // 9x9; an empty room
  ### , ### , ### , ### , ### , ### , ### , ### , ###  
  ### ,  .  ,  .  ,  .  ,  .  ,  .  ,  .  ,  .  , ###
  ### ,  .  ,  .  ,  .  ,  .  ,  .  ,  .  ,  .  , ###
@@ -46,6 +47,33 @@ namespace RogueEntity.Core.Tests.Movement.GoalFinding
  ### ,  .  ,  .  ,   5 ,  .  ,  .  ,  .  ,  .  , ### 
  ### ,  .  ,  .  ,  .  ,   4 ,  .  ,  .  ,  .  , ### 
  ### ,  .  ,  .  ,  .  ,  .  ,   3 ,  .  ,  .  , ### 
+ ### ,  .  ,  .  ,  .  ,  .  ,  .  ,   2 ,  .  , ### 
+ ### ,  .  ,  .  ,  .  ,  .  ,  .  ,  .  ,   1 , ### 
+ ### ,  .  ,  .  ,  .  ,  .  ,  .  ,  .  ,  .  , ### 
+ ### , ### , ### , ### , ### , ### , ### , ### , ### 
+";
+
+        const string DiagonalBlockRoom = @"
+ // 9x9; an empty room
+ ### , ### , ### , ### , ### , ### , ### , ### , ###  
+ ### ,  .  ,  .  ,  .  ,  .  ,  .  ,  .  ,  .  , ###
+ ### ,  .  ,  .  ,  .  ,  .  ,  .  ,  .  ,  .  , ###
+ ### ,  .  ,  .  ,  .  , ### ,  .  ,  .  ,  .  , ###
+ ### ,  .  ,  .  , ### ,  .  ,  .  ,  .  ,  .  , ###
+ ### ,  .  ,  .  ,  .  ,  .  ,  .  ,  .  ,  .  , ###
+ ### ,  .  ,  .  ,  .  ,  .  ,  .  ,  .  ,  .  , ###
+ ### ,  .  ,  .  ,  .  ,  .  ,  .  ,  .  ,  .  , ###
+ ### ,  .  ,  .  ,  .  ,  .  ,  .  ,  .  ,  .  , ###
+ ### , ### , ### , ### , ### , ### , ### , ### , ###  
+";
+
+        const string DiagonalRoomResult = @"
+ ### , ### , ### , ### , ### , ### , ### , ### , ### 
+ ### ,  @  ,  .  ,  .  ,  .  ,  .  ,  .  ,  .  , ### 
+ ### ,  .  ,  8  ,  .  ,  .  ,  .  ,  .  ,  .  , ### 
+ ### ,  .  ,  7  ,   . , ### ,  .  ,  .  ,  .  , ### 
+ ### ,  .  ,  6  , ### ,  .  ,  .  ,  .  ,  .  , ### 
+ ### ,  .  ,  .  ,  5  ,  4  ,   3 ,  .  ,  .  , ### 
  ### ,  .  ,  .  ,  .  ,  .  ,  .  ,   2 ,  .  , ### 
  ### ,  .  ,  .  ,  .  ,  .  ,  .  ,  .  ,   1 , ### 
  ### ,  .  ,  .  ,  .  ,  .  ,  .  ,  .  ,  .  , ### 
@@ -97,6 +125,8 @@ namespace RogueEntity.Core.Tests.Movement.GoalFinding
         {
             new TestCaseData(new PathFinderTestParameters(EmptyRoom, EmptyRoomResult, new Position2D(1, 1), (new Position2D(7, 7), 10)))
                 .SetName(nameof(EmptyRoom)),
+            new TestCaseData(new PathFinderTestParameters(DiagonalBlockRoom, DiagonalRoomResult, new Position2D(1, 1), (new Position2D(7, 7), 10)))
+                .SetName(nameof(DiagonalBlockRoom)),
             new TestCaseData(new PathFinderTestParameters(EmptyRoom, EmptyRoomResult, new Position2D(1, 1), (new Position2D(7, 7), 20), (new Position2D(7, 1), 10)))
                 .SetName(nameof(EmptyRoom) + " with 2 goals"),
         };
@@ -144,15 +174,22 @@ namespace RogueEntity.Core.Tests.Movement.GoalFinding
 
         SingleLevelGoalFinderSource CreateGoalFinderSource(DynamicDataView2D<float> resistanceMap, Rectangle bounds)
         {
-            var directionalityMapSystem = new MovementResistanceDirectionalitySystem<WalkingMovement>(resistanceMap.As3DMap(0));
-            directionalityMapSystem.MarkGloballyDirty();
-            directionalityMapSystem.Process();
-            directionalityMapSystem.ResultView.TryGetView(0, out var directionalityMap).Should().BeTrue();
+            var outboundDirectionalityMapSystem = new OutboundMovementDirectionalitySystem<WalkingMovement>(resistanceMap.As3DMap(0));
+            outboundDirectionalityMapSystem.MarkGloballyDirty();
+            outboundDirectionalityMapSystem.Process();
+            outboundDirectionalityMapSystem.ResultView.TryGetView(0, out var outboundDirectionalityMap).Should().BeTrue();
 
-            Console.WriteLine("Directionality: \n" + TestHelpers.PrintMap(directionalityMap.Transform(e => $"[{e.ToFormattedString()}] "), bounds));
+            var inboundDirectionalityMapSystem = new InboundMovementDirectionalitySystem<WalkingMovement>(resistanceMap.As3DMap(0));
+            inboundDirectionalityMapSystem.MarkGloballyDirty();
+            inboundDirectionalityMapSystem.Process();
+            inboundDirectionalityMapSystem.ResultView.TryGetView(0, out var inboundDirectionalityMap).Should().BeTrue();
+
+            Console.WriteLine("Directionality: \n" + TestHelpers.PrintMap(outboundDirectionalityMap.Transform(e => $"[{e.ToFormattedString()}] "), bounds));
+
+            var ms = new MovementDataCollector();
+            ms.RegisterMovementSource(WalkingMovement.Instance, resistanceMap.As3DMap(0), inboundDirectionalityMap.As3DMap(0), outboundDirectionalityMap.As3DMap(0));
             
-            var pfs = new SingleLevelGoalFinderSource(new SingleLevelGoalFinderPolicy(), goalRegistry, spatialQueryRegistry);
-            pfs.RegisterMovementSource(WalkingMovement.Instance, resistanceMap.As3DMap(0), directionalityMap.As3DMap(0));
+            var pfs = new SingleLevelGoalFinderSource(new SingleLevelGoalFinderPolicy(), goalRegistry, spatialQueryRegistry, ms);
             return pfs;
         }
     }

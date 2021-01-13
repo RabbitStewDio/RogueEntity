@@ -11,7 +11,6 @@ using RogueEntity.Core.GridProcessing.LayerAggregation;
 using RogueEntity.Core.Movement.CostModifier;
 using RogueEntity.Core.Movement.CostModifier.Directions;
 using RogueEntity.Core.Movement.CostModifier.Map;
-using RogueEntity.Core.Movement.Pathfinding;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Grid;
 
@@ -28,6 +27,8 @@ namespace RogueEntity.Core.Movement.MovementModes
         public static readonly EntitySystemId RegisterResistanceEntitiesId = MovementModules.CreateEntityId<TMovementMode>();
         public static readonly EntitySystemId RegisterResistanceSystem = MovementModules.CreateSystemId<TMovementMode>("LifeCycle");
         public static readonly EntitySystemId ExecuteResistanceSystem = MovementModules.CreateSystemId<TMovementMode>("ProcessChanges");
+        public static readonly EntitySystemId ExecuteInboundDirectionSystem = MovementModules.CreateSystemId<TMovementMode>("ProcessInboundDirection");
+        public static readonly EntitySystemId ExecuteOutboundDirectionSystem = MovementModules.CreateSystemId<TMovementMode>("ProcessOutboundDirection");
 
         public static readonly EntitySystemId RegisterPathfinderSourceConfigurationSystem = MovementModules.CreateSystemId<TMovementMode>("PathFindingSource");
         public static readonly EntitySystemId RegisterGoalSourceConfigurationSystem = MovementModules.CreateSystemId<TMovementMode>("GoalFindingSource");
@@ -87,7 +88,8 @@ namespace RogueEntity.Core.Movement.MovementModes
             var ctx = initializer.DeclareEntityContext<TItemId>();
             ctx.Register(RegisterResistanceEntitiesId, 0, RegisterEntities);
             ctx.Register(ExecuteResistanceSystem, 51000, RegisterResistanceSystemExecution);
-            ctx.Register(ExecuteResistanceSystem, 52000, RegisterProcessSenseDirectionalitySystem);
+            ctx.Register(ExecuteInboundDirectionSystem, 52000, RegisterProcessInboundDirectionalitySystem);
+            ctx.Register(ExecuteOutboundDirectionSystem, 52000, RegisterProcessOutboundDirectionalitySystem);
             ctx.Register(RegisterResistanceSystem, 500, RegisterResistanceSystemLifecycle);
         }
 
@@ -107,11 +109,12 @@ namespace RogueEntity.Core.Movement.MovementModes
             
             context.AddInitializationStepHandler(c =>
             {
-                if (serviceResolver.TryResolve(out IPathFinderSourceBackend pathFinderSource))
+                if (serviceResolver.TryResolve(out IMovementDataCollector pathFinderSource))
                 {
                     var movementCostMap = serviceResolver.Resolve<IRelativeMovementCostSystem<TMovementMode>>();
-                    var directionMap = serviceResolver.Resolve<IMovementResistanceDirectionView<TMovementMode>>();
-                    pathFinderSource.RegisterMovementSource(GetMovementModeInstance(), movementCostMap.ResultView, directionMap.ResultView);
+                    var inboundDirectionMap = serviceResolver.Resolve<IInboundMovementDirectionView<TMovementMode>>();
+                    var outboundDirectionMap = serviceResolver.Resolve<IOutboundMovementDirectionView<TMovementMode>>();
+                    pathFinderSource.RegisterMovementSource(GetMovementModeInstance(), movementCostMap.ResultView, inboundDirectionMap.ResultView, outboundDirectionMap.ResultView);
                 }
             });
         }
@@ -124,7 +127,7 @@ namespace RogueEntity.Core.Movement.MovementModes
             where TItemId : IEntityKey
         {
             var serviceResolver = initParameter.ServiceResolver;
-            var system = GetOrCreateSensePropertiesSystem<TGameContext, TItemId>(serviceResolver);
+            var system = GetOrCreateMovementPropertiesSystem<TGameContext, TItemId>(serviceResolver);
             context.AddInitializationStepHandler(system.Start);
             context.AddDisposeStepHandler(system.Stop);
         }
@@ -135,23 +138,42 @@ namespace RogueEntity.Core.Movement.MovementModes
             where TItemId : IEntityKey
         {
             var serviceResolver = initParameter.ServiceResolver;
-            var system = GetOrCreateSensePropertiesSystem<TGameContext, TItemId>(serviceResolver);
+            var system = GetOrCreateMovementPropertiesSystem<TGameContext, TItemId>(serviceResolver);
 
             context.AddInitializationStepHandler(system.ProcessSenseProperties);
             context.AddFixedStepHandlers(system.ProcessSenseProperties);
         }
 
-        protected void RegisterProcessSenseDirectionalitySystem<TGameContext, TItemId>(in ModuleInitializationParameter initParameter,
+        protected void RegisterProcessInboundDirectionalitySystem<TGameContext, TItemId>(in ModuleInitializationParameter initParameter,
                                                                                        IGameLoopSystemRegistration<TGameContext> context,
                                                                                        EntityRegistry<TItemId> registry)
             where TItemId : IEntityKey
         {
             var serviceResolver = initParameter.ServiceResolver;
-            var system = GetOrCreateDirectionalitySystem<TGameContext, TItemId>(serviceResolver);
+            var system = GetOrCreateInboundDirectionalitySystem<TGameContext, TItemId>(serviceResolver);
 
-            if (!serviceResolver.TryResolve(out MovementDirectionalitySystemRegisteredMarker _))
+            if (!serviceResolver.TryResolve(out InboundDirectionalitySystemRegisteredMarker _))
             {
-                serviceResolver.Store(new MovementDirectionalitySystemRegisteredMarker());
+                serviceResolver.Store(new InboundDirectionalitySystemRegisteredMarker());
+                context.AddInitializationStepHandler(c => system.MarkGloballyDirty(), nameof(system.MarkGloballyDirty));
+                context.AddInitializationStepHandler(system.ProcessSystem, nameof(system.ProcessSystem));
+                context.AddInitializationStepHandler(system.MarkCleanSystem, nameof(system.MarkCleanSystem));
+                context.AddFixedStepHandlers(system.ProcessSystem, nameof(system.ProcessSystem));
+                context.AddFixedStepHandlers(system.MarkCleanSystem, nameof(system.MarkCleanSystem));
+            }
+        }
+
+        protected void RegisterProcessOutboundDirectionalitySystem<TGameContext, TItemId>(in ModuleInitializationParameter initParameter,
+                                                                                       IGameLoopSystemRegistration<TGameContext> context,
+                                                                                       EntityRegistry<TItemId> registry)
+            where TItemId : IEntityKey
+        {
+            var serviceResolver = initParameter.ServiceResolver;
+            var system = GetOrCreateOutboundDirectionalitySystem<TGameContext, TItemId>(serviceResolver);
+
+            if (!serviceResolver.TryResolve(out OutboundDirectionalitySystemRegisteredMarker _))
+            {
+                serviceResolver.Store(new OutboundDirectionalitySystemRegisteredMarker());
                 context.AddInitializationStepHandler(c => system.MarkGloballyDirty(), nameof(system.MarkGloballyDirty));
                 context.AddInitializationStepHandler(system.ProcessSystem, nameof(system.ProcessSystem));
                 context.AddInitializationStepHandler(system.MarkCleanSystem, nameof(system.MarkCleanSystem));
@@ -161,7 +183,7 @@ namespace RogueEntity.Core.Movement.MovementModes
         }
 
 
-        protected virtual RelativeMovementCostSystem<TGameContext, TMovementMode> GetOrCreateSensePropertiesSystem<TGameContext, TEntityId>(IServiceResolver serviceResolver)
+        protected virtual RelativeMovementCostSystem<TGameContext, TMovementMode> GetOrCreateMovementPropertiesSystem<TGameContext, TEntityId>(IServiceResolver serviceResolver)
         {
             if (serviceResolver.TryResolve(out RelativeMovementCostSystem<TGameContext, TMovementMode> system))
             {
@@ -177,21 +199,39 @@ namespace RogueEntity.Core.Movement.MovementModes
             return system;
         }
 
-        protected virtual MovementResistanceDirectionalitySystem<TMovementMode> GetOrCreateDirectionalitySystem<TGameContext, TItemId>(IServiceResolver serviceResolver)
+        protected virtual InboundMovementDirectionalitySystem<TMovementMode> GetOrCreateInboundDirectionalitySystem<TGameContext, TItemId>(IServiceResolver serviceResolver)
         {
-            if (serviceResolver.TryResolve(out MovementResistanceDirectionalitySystem<TMovementMode> system))
+            if (serviceResolver.TryResolve(out InboundMovementDirectionalitySystem<TMovementMode> system))
             {
                 return system;
             }
 
             if (!serviceResolver.TryResolve(out IRelativeMovementCostSystem<TMovementMode> data))
             {
-                data = GetOrCreateSensePropertiesSystem<TGameContext, TItemId>(serviceResolver);
+                data = GetOrCreateMovementPropertiesSystem<TGameContext, TItemId>(serviceResolver);
             }
 
-            system = new MovementResistanceDirectionalitySystem<TMovementMode>(data.ResultView);
+            system = new InboundMovementDirectionalitySystem<TMovementMode>(data.ResultView);
             serviceResolver.Store(system);
-            serviceResolver.Store<IMovementResistanceDirectionView<TMovementMode>>(system);
+            serviceResolver.Store<IInboundMovementDirectionView<TMovementMode>>(system);
+            return system;
+        }
+
+        protected virtual OutboundMovementDirectionalitySystem<TMovementMode> GetOrCreateOutboundDirectionalitySystem<TGameContext, TItemId>(IServiceResolver serviceResolver)
+        {
+            if (serviceResolver.TryResolve(out OutboundMovementDirectionalitySystem<TMovementMode> system))
+            {
+                return system;
+            }
+
+            if (!serviceResolver.TryResolve(out IRelativeMovementCostSystem<TMovementMode> data))
+            {
+                data = GetOrCreateMovementPropertiesSystem<TGameContext, TItemId>(serviceResolver);
+            }
+
+            system = new OutboundMovementDirectionalitySystem<TMovementMode>(data.ResultView);
+            serviceResolver.Store(system);
+            serviceResolver.Store<IOutboundMovementDirectionView<TMovementMode>>(system);
             return system;
         }
 
@@ -215,7 +255,11 @@ namespace RogueEntity.Core.Movement.MovementModes
             registry.RegisterNonConstructable<RelativeMovementCostModifier<TMovementMode>>();
         }
 
-        readonly struct MovementDirectionalitySystemRegisteredMarker
+        readonly struct InboundDirectionalitySystemRegisteredMarker
+        {
+        }
+        
+        readonly struct OutboundDirectionalitySystemRegisteredMarker
         {
         }
     }

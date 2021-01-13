@@ -36,7 +36,7 @@ namespace RogueEntity.Core.Positioning.Algorithms
         /// </summary>
         /// <param name="basePosition"></param>
         /// <returns></returns>
-        protected abstract ReadOnlyListWrapper<Direction> PopulateTraversableDirections(Position2D basePosition);
+        protected abstract ReadOnlyListWrapper<Direction> PopulateTraversableDirections(in Position2D basePosition);
         protected abstract bool EdgeCostInformation(in Position2D sourceNode, in Direction d, float sourceNodeCost, out float totalPathCost, out TExtraNodeInfo nodeInfo);
 
         protected abstract bool IsTargetNode(in Position2D pos);
