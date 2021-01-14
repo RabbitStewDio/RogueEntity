@@ -1,10 +1,6 @@
 using RogueEntity.Api.GameLoops;
 using RogueEntity.Api.Modules;
 using RogueEntity.Core.Infrastructure.Services;
-using RogueEntity.Core.Positioning.Algorithms;
-using RogueEntity.Core.Sensing.Common.Physics;
-using RogueEntity.Core.Sensing.Common.ShadowCast;
-using RogueEntity.Core.Sensing.Sources.Light;
 using Serilog;
 
 namespace RogueEntity.Simple.Demo.BoxPusher
@@ -17,10 +13,7 @@ namespace RogueEntity.Simple.Demo.BoxPusher
 
             var context = new BoxPusherContext();
 
-            var serviceResolver = new DefaultServiceResolver().WithService(context)
-                                                              .WithService<ShadowPropagationResistanceDataSource>()
-                                                              .WithService<ILightPhysicsConfiguration>(new LightPhysicsConfiguration(new LinearDecaySensePhysics(DistanceCalculation.Euclid)));
-                                                              
+            var serviceResolver = new DefaultServiceResolver().WithService(context);
 
             var ms = new ModuleSystem<BoxPusherContext>(serviceResolver);
             ms.ScanForModules("BoxPusher");

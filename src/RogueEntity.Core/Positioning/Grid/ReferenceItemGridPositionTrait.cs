@@ -54,6 +54,7 @@ namespace RogueEntity.Core.Positioning.Grid
 
         public void Initialize(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, IItemDeclaration item)
         {
+            v.AssignComponent(k, EntityGridPosition.Invalid);
         }
 
         public void Apply(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, IItemDeclaration item)
@@ -151,7 +152,7 @@ namespace RogueEntity.Core.Positioning.Grid
                 }
 
                 previousMap[previousPosition.GridX, previousPosition.GridY] = default;
-                v.RemoveComponent<EntityGridPosition>(k);
+                v.ReplaceComponent(k, EntityGridPosition.Invalid);
                 previousMapContext.MarkDirty(previousPosition);
                 logger.Verbose("Desired position is EntityGridPosition.Invalid, therefore removed item {Item} from map", k);
                 return true;

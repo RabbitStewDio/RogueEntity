@@ -16,14 +16,12 @@ namespace RogueEntity.Core.Meta
         public static readonly string ModuleId = "Core.MetaModule";
 
         public static readonly EntitySystemId CommonComponentsId = "Entities.Core.CommonEntities";
-        public static readonly EntitySystemId PlayerComponentsId = "Entities.Core.Player";
         public static readonly EntitySystemId WorldItemComponentsId = "Entities.Core.Item";
         public static readonly EntitySystemId ContainedComponentsId = "Entities.Core.ContainedItem";
 
-        public static readonly EntitySystemId DestroyItemsSystemId = "Core.Entity.DestroyMarked";
-        public static readonly EntitySystemId DestroyCascadingItemsSystemId = "Core.Entity.DestroyCascadingMarked";
+        public static readonly EntitySystemId DestroyItemsSystemId = "System.Core.Entity.DestroyMarked";
+        public static readonly EntitySystemId DestroyCascadingItemsSystemId = "System.Core.Entity.DestroyCascadingMarked";
 
-        public static readonly EntityRole PlayerRole = new EntityRole("Role.Core.Player");
         public static readonly EntityRole EntityRole = new EntityRole("Role.Core.Entity");
         public static readonly EntityRole ItemRole = new EntityRole("Role.Core.Item");
 
@@ -38,7 +36,6 @@ namespace RogueEntity.Core.Meta
             IsFrameworkModule = true;
 
             RequireRole(EntityRole);
-            RequireRole(PlayerRole).WithImpliedRole(EntityRole);
             RequireRole(ItemRole).WithImpliedRole(EntityRole);
             RequireRole(ContainedItemRole).WithImpliedRole(EntityRole);
         }
@@ -63,16 +60,6 @@ namespace RogueEntity.Core.Meta
             entityContext.Register(CommonComponentsId, -20_000, RegisterCoreComponents);
             entityContext.Register(DestroyCascadingItemsSystemId, 0, RegisterCascadingDestructionSystems);
             entityContext.Register(DestroyItemsSystemId, int.MaxValue, RegisterEntityCleanupSystems);
-        }
-
-        [EntityRoleInitializer("Role.Core.Player")]
-        protected void InitializePlayerRole<TGameContext, TItemId>(in ModuleEntityInitializationParameter<TGameContext,TItemId> initParameter,
-                                                                   IModuleInitializer<TGameContext> initializer,
-                                                                   EntityRole r)
-            where TItemId : IEntityKey
-        {
-            var entityContext = initializer.DeclareEntityContext<TItemId>();
-            entityContext.Register(PlayerComponentsId, -20_000, RegisterPlayerComponents);
         }
 
         [EntityRoleInitializer("Role.Core.ContainedItem")]
@@ -129,13 +116,6 @@ namespace RogueEntity.Core.Meta
             registry.RegisterNonConstructable<Temperature>();
             registry.RegisterNonConstructable<Durability>();
             registry.RegisterNonConstructable<ItemCharge>();
-        }
-
-        void RegisterPlayerComponents<TItemId>(in ModuleInitializationParameter initParameter,
-                                               EntityRegistry<TItemId> registry)
-            where TItemId : IEntityKey
-        {
-            registry.RegisterFlag<PlayerTag>();
         }
 
         void RegisterContainedItemComponents<TItemId>(in ModuleInitializationParameter initParameter,

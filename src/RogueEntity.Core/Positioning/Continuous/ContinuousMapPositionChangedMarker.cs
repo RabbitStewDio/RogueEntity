@@ -3,7 +3,7 @@ using EnTTSharp.Entities;
 
 namespace RogueEntity.Core.Positioning.Continuous
 {
-    public readonly struct ContinuousMapPositionChangedMarker
+    public readonly struct ContinuousMapPositionChangedMarker: IPositionChangeMarker<ContinuousMapPosition>
     {
         public readonly ContinuousMapPosition PreviousPosition;
 
@@ -11,6 +11,8 @@ namespace RogueEntity.Core.Positioning.Continuous
         {
             this.PreviousPosition = previousPosition;
         }
+
+        ContinuousMapPosition IPositionChangeMarker<ContinuousMapPosition>.PreviousPosition => PreviousPosition;
 
         public static void Update<TKey>(IEntityViewControl<TKey> v, TKey k, ContinuousMapPosition previous)
             where TKey : IEntityKey

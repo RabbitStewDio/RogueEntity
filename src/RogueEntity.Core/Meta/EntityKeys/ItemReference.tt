@@ -2,7 +2,7 @@
 <#@ output extension=".cs" #>
 <#@ assembly name="mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" #>
 
-<#@ include file="../../../RogueEntity.EntityKeyGenerator/build/EntityKey.ttinclude" #>
+<#@ include file="../../../RogueEntity.EntityKeyGenerator/Includes/EntityKey.ttinclude" #>
 
 <#
     Generate("ItemReference", "RogueEntity.Core.Meta.EntityKeys");

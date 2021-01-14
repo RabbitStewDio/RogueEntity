@@ -21,6 +21,10 @@ using RogueEntity.Api.ItemTraits;
 
 
 
+
+
+
+
 namespace RogueEntity.EntityKeyGenerator.Sample
 {
     [EntityKey]
@@ -175,8 +179,10 @@ namespace RogueEntity.EntityKeyGenerator.Sample
     }
 
 
-    public class SampleEntityKeyMetaData : IBulkDataStorageMetaData<SampleEntityKey>
+    public sealed class SampleEntityKeyMetaData : IBulkDataStorageMetaData<SampleEntityKey>
     {
+        public static readonly SampleEntityKeyMetaData Instance = new SampleEntityKeyMetaData();
+
         public int MaxAge => SampleEntityKey.MaxAge;
         public bool IsSameBulkType(SampleEntityKey a, SampleEntityKey b) => !a.IsEmpty && !a.IsReference && !b.IsReference && a.BulkItemId == b.BulkItemId;
         public bool IsReferenceEntity(in SampleEntityKey targetItem) => targetItem.IsReference;

@@ -10,7 +10,7 @@ namespace RogueEntity.Core.Positioning.Grid
     [DataContract]
     [Serializable]
     [MessagePackObject]
-    public readonly struct EntityGridPositionChangedMarker
+    public readonly struct EntityGridPositionChangedMarker: IPositionChangeMarker<EntityGridPosition>
     {
         [DataMember]
         [Key(0)]
@@ -21,6 +21,8 @@ namespace RogueEntity.Core.Positioning.Grid
         {
             this.PreviousPosition = previousPosition;
         }
+
+        EntityGridPosition IPositionChangeMarker<EntityGridPosition>.PreviousPosition => PreviousPosition;
 
         public static void Update<TKey>(IEntityViewControl<TKey> v, TKey k, EntityGridPosition previous) 
             where TKey : IEntityKey

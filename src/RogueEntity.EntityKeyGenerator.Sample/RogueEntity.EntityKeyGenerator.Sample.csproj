@@ -5,7 +5,7 @@
   </PropertyGroup>
 
    <!-- an external project should use a nuget reference instead -->
-  <Import Project="..\RogueEntity.EntityKeyGenerator\build\EntityKeyT4Build.targets" />
+  <Import Project="..\RogueEntity.EntityKeyGenerator\Includes\EntityKeyT4Build.targets" />
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\EnTTSharp\src\EnTTSharp.Serialization.Binary\EnTTSharp.Serialization.Binary.csproj" />

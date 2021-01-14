@@ -3,6 +3,7 @@ using RogueEntity.Api.ItemTraits;
 using RogueEntity.Core.Meta.Base;
 using RogueEntity.Core.Meta.ItemBuilder;
 using RogueEntity.Core.Meta.ItemTraits;
+using RogueEntity.Core.Players;
 
 namespace RogueEntity.Core.Meta
 {

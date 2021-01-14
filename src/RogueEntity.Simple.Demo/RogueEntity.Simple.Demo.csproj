@@ -20,6 +20,8 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\EnTTSharp\src\EnTTSharp\EnTTSharp.csproj" />
     <ProjectReference Include="..\RogueEntity.Core\RogueEntity.Core.csproj" />
+    <ProjectReference Include="..\RogueEntity.SadConsole\RogueEntity.SadConsole.csproj" />
+    <ProjectReference Include="..\RogueEntity.Simple\RogueEntity.Simple.csproj" />
   </ItemGroup>
 
   <ItemGroup>

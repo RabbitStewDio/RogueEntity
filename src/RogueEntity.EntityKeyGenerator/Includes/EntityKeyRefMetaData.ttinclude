@@ -1,0 +1,43 @@
+<#@ template language="C#"#>
+<#@ assembly name="mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" #>
+
+<#+
+    void GenerateBulkEntityKeyMetaData(string className)
+    {
+        if (string.IsNullOrEmpty(className))
+        {
+            throw new ArgumentException(nameof(className));
+        }
+#>
+    public class <#= className #>MetaData : IBulkDataStorageMetaData<<#= className #>>
+    {
+        public int MaxAge => <#= className #>.MaxAge;
+        public bool IsSameBulkType(<#= className #> a, <#= className #> b) => !a.IsEmpty && !a.IsReference && !b.IsReference && a.BulkItemId == b.BulkItemId;
+        public bool IsReferenceEntity(in <#= className #> targetItem) => targetItem.IsReference;
+        
+        public <#= className #> CreateReferenceKey(byte age, int entityId) => <#= className #>.FromReferencedItem(age, entityId);
+
+        public bool TryCreateBulkKey(int id, int data, out <#= className #> key)
+        {
+            key = <#= className #>.BulkItemFactoryMethod(id).WithData(data);
+            return true;
+        }
+
+        public bool TryDeconstructBulkKey(in <#= className #> id, out int entityId, out int payload)
+        {
+            if (id.IsReference)
+            {
+                entityId = default;
+                payload = default;
+                return false;
+            }
+            
+            entityId = id.BulkItemId;
+            payload = id.Data;
+            return true;
+        }
+
+    }
+<#+
+    }
+#>

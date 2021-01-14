@@ -1,4 +1,3 @@
-using RogueEntity.Api.ItemTraits;
 using RogueEntity.Api.Modules;
 using RogueEntity.Api.Modules.Attributes;
 using RogueEntity.Core.Meta.EntityKeys;
@@ -9,79 +8,25 @@ using RogueEntity.Core.Movement.CostModifier;
 using RogueEntity.Core.Movement.MovementModes.Walking;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Algorithms;
-using RogueEntity.Core.Sensing.Common.Physics;
-using RogueEntity.Core.Sensing.Common.ShadowCast;
 using RogueEntity.Core.Sensing.Sources.Light;
+using static RogueEntity.Core.Movement.CostModifier.MovementCostModifiers;
 
 namespace RogueEntity.Simple.BoxPusher
 {
     [Module("BoxPusher")]
     public class BoxPusherModule : ModuleBase
     {
-
         public BoxPusherModule()
         {
             Id = "Game.BoxPusher";
-
-            // DeclareDependencies(ModuleDependency.Of(InventoryModule.ModuleId),
-            //                     ModuleDependency.Of(SensoryCacheModule.ModuleId),
-            //                     ModuleDependency.Of(PositionModule.ModuleId),
-            //                     ModuleDependency.Of(LightSourceModule.ModuleId),
-            //                     ModuleDependency.Of(CoreModule.ModuleId));
         }
-
 
         [ModuleInitializer]
         void InitializeModule<TGameContext>(in ModuleInitializationParameter mip, IModuleInitializer<TGameContext> initializer)
         {
-            if (!mip.ServiceResolver.TryResolve(out ILightPhysicsConfiguration lightPhysics))
-            {
-                if (!mip.ServiceResolver.TryResolve(out ShadowPropagationResistanceDataSource ds))
-                {
-                    ds = new ShadowPropagationResistanceDataSource();
-                    mip.ServiceResolver.Store(ds);
-                }
-
-                lightPhysics = new LightPhysicsConfiguration(LinearDecaySensePhysics.For(DistanceCalculation.Euclid), ds);
-                mip.ServiceResolver.Store(lightPhysics);
-            }
-
-            if (!mip.ServiceResolver.TryResolve(out IItemContextBackend<TGameContext, ActorReference> actorBackend))
-            {
-                actorBackend = new ItemContextBackend<TGameContext, ActorReference>(new ActorReferenceMetaData());
-                mip.ServiceResolver.Store(actorBackend);
-                mip.ServiceResolver.Store(actorBackend.ItemResolver);
-                mip.ServiceResolver.Store(actorBackend.EntityMetaData);
-            }
-
-            if (!mip.ServiceResolver.TryResolve(out IItemResolver<TGameContext, ActorReference> _))
-            {
-                mip.ServiceResolver.Store(actorBackend.ItemResolver);
-            }
-            
-            if (!mip.ServiceResolver.TryResolve(out IBulkDataStorageMetaData<ActorReference> _))
-            {
-                mip.ServiceResolver.Store(actorBackend.EntityMetaData);
-            }
-
-            if (!mip.ServiceResolver.TryResolve(out IItemContextBackend<TGameContext, ItemReference> itemBackend))
-            {
-                itemBackend = new ItemContextBackend<TGameContext, ItemReference>(new ItemReferenceMetaData());
-                mip.ServiceResolver.Store(itemBackend);
-                mip.ServiceResolver.Store(itemBackend.ItemResolver);
-                mip.ServiceResolver.Store(itemBackend.EntityMetaData);
-            }
-
-            if (!mip.ServiceResolver.TryResolve(out IItemResolver<TGameContext, ItemReference> _))
-            {
-                mip.ServiceResolver.Store(itemBackend.ItemResolver);
-            }
-
-            if (!mip.ServiceResolver.TryResolve(out IBulkDataStorageMetaData<ItemReference> _))
-            {
-                mip.ServiceResolver.Store(actorBackend.EntityMetaData);
-            }
-
+            mip.ServiceResolver.ConfigureLightPhysics();
+            mip.ServiceResolver.ConfigureEntityType<TGameContext, ActorReference>(ActorReferenceMetaData.Instance);
+            mip.ServiceResolver.ConfigureEntityType<TGameContext, ItemReference>(ItemReferenceMetaData.Instance);
 
             mip.ServiceResolver.GetOrCreateGridMapContext<ItemReference>();
             mip.ServiceResolver.GetOrCreateGridMapContext<ActorReference>();
@@ -95,28 +40,29 @@ namespace RogueEntity.Simple.BoxPusher
             var ctx = initializer.DeclareContentContext<ItemReference>();
             ctx.Activate(ctx.CreateBulkEntityBuilder(serviceResolver)
                             .DefineWall()
-                            .WithMovementCostModifier().Block<WalkingMovement>()
+                            .WithMovementCostModifier(Blocked<WalkingMovement>())
                             .Declaration);
 
             ctx.Activate(ctx.CreateBulkEntityBuilder(serviceResolver)
                             .DefineFloor()
-                            .WithMovementCostModifier().For<WalkingMovement>(1)
+                            .WithMovementCostModifier(For<WalkingMovement>(1))
                             .Declaration);
 
             ctx.Activate(ctx.CreateBulkEntityBuilder(serviceResolver)
                             .DefineFloorTargetZone()
-                            .WithMovementCostModifier().For<WalkingMovement>(1)
+                            .WithMovementCostModifier(For<WalkingMovement>(1))
                             .Declaration);
 
             ctx.Activate(ctx.CreateReferenceEntityBuilder(serviceResolver)
                             .DefineBox()
-                            .WithMovementCostModifier().Block<WalkingMovement>()
+                            .WithMovementCostModifier(Blocked<WalkingMovement>())
                             .Declaration);
 
             var actorContext = initializer.DeclareContentContext<ActorReference>();
             actorContext.Activate(actorContext.CreateReferenceEntityBuilder(serviceResolver)
                                               .DefinePlayer<TGameContext, ActorReference, ItemReference>()
-                                              .WithMovement().AsPointCost(WalkingMovement.Instance, DistanceCalculation.Euclid, 1)
+                                              .WithMovement()
+                                              .AsPointCost(WalkingMovement.Instance, DistanceCalculation.Euclid, 1)
                                               .Declaration);
         }
     }

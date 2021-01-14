@@ -1,0 +1,47 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <ItemGroup>
+        <DotNetCliToolReference Include="dotnet-t4-project-tool" Version="2.0.5"/>
+        <PackageReference Include="JetBrains.Annotations" Version="2020.1.0"/>
+        <PackageReference Include="Serilog" Version="2.9.0"/>
+        <PackageReference Include="System.ValueTuple" Version="4.5.0"/>
+        <TextTemplate Include="**\*.tt"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Remove="**/*.meta"/>
+    </ItemGroup>
+
+    <Target Name="TextTemplateTransform" BeforeTargets="BeforeBuild" Inputs="@(TextTemplate)" Outputs="@(TextTemplate->'%(RelativeDir)%(Filename).cs')">
+        <Message Importance="high" IsCritical="true" Text="Actually executed"/>
+        <!-- 
+            This is a crude hack to make Mono's T4 generator work at least somewhat sensibly
+            when working with include files or relative paths. Microsoft's T4 used MSBuild
+            syntax $(X) to reference environment variables, whilst Mono's version uses Environment
+            variable syntax (%x%). 
+ 
+            dotnet <tool> is also sensitive to the current working directory with local tools 
+            and cannot be used when the working directory changes.
+         -->
+        <Exec WorkingDirectory="$(ProjectDir)" Command="dotnet t4 -v %(TextTemplate.Identity) -o %(TextTemplate.RelativeDir)%(TextTemplate.Filename).cs -I=%(TextTemplate.RelativeDir) -I=$(MSBuildThisFileDirectory)" EnvironmentVariables="ProjectDir=$(ProjectDir) TemplateDir=$(MSBuildThisFileDirectory)"/>
+
+        <!--
+            The generator may have added new files that are not included in the list of compiled items.
+            Those files would not be compiled in the same run that generated the files. So we have to
+            add them to the compile collection manually after the fact. 
+
+            But adding files that had been added already also triggers an error (DuplicateItems) and
+            thus we have to first remove them before adding them again. Remove does nothing if the 
+            item is not in the collection, and adding them afterwards ensures there is only one left.
+        -->
+        <ItemGroup>
+            <Compile Remove="%(TextTemplate.RelativeDir)%(TextTemplate.Filename).cs"/>
+            <Compile Include="%(TextTemplate.RelativeDir)%(TextTemplate.Filename).cs"/>
+            <FileWrites Include="%(TextTemplate.RelativeDir)%(TextTemplate.Filename).cs"/> <!-- For clean to work properly -->
+        </ItemGroup>
+    </Target>
+
+    <Target Name="TextTemplateClean" Inputs="@(TextTemplate)" Outputs="@(TextTemplate->'%(RelativeDir)%(Filename).cs_dummy')" AfterTargets="Clean" >
+        <Delete Files="%(TextTemplate.RelativeDir)%(TextTemplate.Filename).cs"/>
+    </Target>
+
+</Project>

@@ -4,78 +4,30 @@ using RogueEntity.Core.Meta.ItemBuilder;
 
 namespace RogueEntity.Core.Movement.CostModifier
 {
+    public static class MovementCostModifiers
+    {
+        public static RelativeMovementCostModifier<TMovement> Blocked<TMovement>() => RelativeMovementCostModifier<TMovement>.Blocked;
+        public static RelativeMovementCostModifier<TMovement> Clear<TMovement>() => RelativeMovementCostModifier<TMovement>.Unchanged;
+        public static RelativeMovementCostModifier<TMovement> For<TMovement>(float costFactor) => new RelativeMovementCostModifier<TMovement>(costFactor);
+
+    }
+
     public static class RelativeMovementCostModifierItemDeclarations
     {
-        public static MovementCostModifierBulkItemBuilder<TGameContext, TItemId> WithMovementCostModifier<TGameContext, TItemId>(
-            this BulkItemDeclarationBuilder<TGameContext, TItemId> builder)
+        public static BulkItemDeclarationBuilder<TGameContext, TItemId> 
+            WithMovementCostModifier<TGameContext, TItemId, TMovementMode>(this BulkItemDeclarationBuilder<TGameContext, TItemId> builder,
+                                                                           RelativeMovementCostModifier<TMovementMode> m)
             where TItemId : IBulkDataStorageKey<TItemId>
         {
-            return new MovementCostModifierBulkItemBuilder<TGameContext, TItemId>(builder);
+            return builder.WithTrait(new RelativeMovementCostModifierTrait<TGameContext, TItemId, TMovementMode>(m));
         }
 
-        public static MovementCostModifierReferenceItemBuilder<TGameContext, TItemId> WithMovementCostModifier<TGameContext, TItemId>(
-            this ReferenceItemDeclarationBuilder<TGameContext, TItemId> builder)
+        public static ReferenceItemDeclarationBuilder<TGameContext, TItemId> 
+            WithMovementCostModifier<TGameContext, TItemId, TMovementMode>(this ReferenceItemDeclarationBuilder<TGameContext, TItemId> builder,
+                                                                           RelativeMovementCostModifier<TMovementMode> m)
             where TItemId : IEntityKey
         {
-            return new MovementCostModifierReferenceItemBuilder<TGameContext, TItemId>(builder);
-        }
-
-        public readonly struct MovementCostModifierReferenceItemBuilder<TGameContext, TItemId>
-            where TItemId : IEntityKey
-        {
-            readonly ReferenceItemDeclarationBuilder<TGameContext, TItemId> builder;
-
-            public MovementCostModifierReferenceItemBuilder(ReferenceItemDeclarationBuilder<TGameContext, TItemId> builder)
-            {
-                this.builder = builder;
-            }
-
-            public ReferenceItemDeclarationBuilder<TGameContext, TItemId> For<TMovementMode>(float relativeCostFactor)
-                where TMovementMode : IMovementMode
-            {
-                return this.builder.WithTrait(new RelativeMovementCostModifierTrait<TGameContext, TItemId, TMovementMode>(relativeCostFactor));
-            }
-
-            public ReferenceItemDeclarationBuilder<TGameContext, TItemId> Block<TMovementMode>()
-                where TMovementMode : IMovementMode
-            {
-                return this.builder.WithTrait(new RelativeMovementCostModifierTrait<TGameContext, TItemId, TMovementMode>(RelativeMovementCostModifier<TMovementMode>.Blocked));
-            }
-
-            public ReferenceItemDeclarationBuilder<TGameContext, TItemId> Clear<TMovementMode>()
-                where TMovementMode : IMovementMode
-            {
-                return this.builder.WithTrait(new RelativeMovementCostModifierTrait<TGameContext, TItemId, TMovementMode>(RelativeMovementCostModifier<TMovementMode>.Unchanged));
-            }
-        }
-
-        public readonly struct MovementCostModifierBulkItemBuilder<TGameContext, TItemId>
-            where TItemId : IBulkDataStorageKey<TItemId>
-        {
-            readonly BulkItemDeclarationBuilder<TGameContext, TItemId> builder;
-
-            public MovementCostModifierBulkItemBuilder(BulkItemDeclarationBuilder<TGameContext, TItemId> builder)
-            {
-                this.builder = builder;
-            }
-
-            public BulkItemDeclarationBuilder<TGameContext, TItemId> For<TMovementMode>(float relativeCostFactor)
-                where TMovementMode : IMovementMode
-            {
-                return this.builder.WithTrait(new RelativeMovementCostModifierTrait<TGameContext, TItemId, TMovementMode>(relativeCostFactor));
-            }
-
-            public BulkItemDeclarationBuilder<TGameContext, TItemId> Block<TMovementMode>()
-                where TMovementMode : IMovementMode
-            {
-                return this.builder.WithTrait(new RelativeMovementCostModifierTrait<TGameContext, TItemId, TMovementMode>(RelativeMovementCostModifier<TMovementMode>.Blocked));
-            }
-
-            public BulkItemDeclarationBuilder<TGameContext, TItemId> Clear<TMovementMode>()
-                where TMovementMode : IMovementMode
-            {
-                return this.builder.WithTrait(new RelativeMovementCostModifierTrait<TGameContext, TItemId, TMovementMode>(RelativeMovementCostModifier<TMovementMode>.Unchanged));
-            }
+            return builder.WithTrait(new RelativeMovementCostModifierTrait<TGameContext, TItemId, TMovementMode>(m));
         }
     }
 }

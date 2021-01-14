@@ -1,4 +1,5 @@
 ﻿using EnTTSharp.Entities;
+using EnTTSharp.Entities.Pools;
 
 namespace RogueEntity.Api.ItemTraits
 {

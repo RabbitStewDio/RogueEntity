@@ -179,8 +179,10 @@ namespace RogueEntity.Core.Meta.EntityKeys
     }
 
 
-    public class ActorReferenceMetaData : IBulkDataStorageMetaData<ActorReference>
+    public sealed class ActorReferenceMetaData : IBulkDataStorageMetaData<ActorReference>
     {
+        public static readonly ActorReferenceMetaData Instance = new ActorReferenceMetaData();
+
         public int MaxAge => ActorReference.MaxAge;
         public bool IsSameBulkType(ActorReference a, ActorReference b) => !a.IsEmpty && !a.IsReference && !b.IsReference && a.BulkItemId == b.BulkItemId;
         public bool IsReferenceEntity(in ActorReference targetItem) => targetItem.IsReference;

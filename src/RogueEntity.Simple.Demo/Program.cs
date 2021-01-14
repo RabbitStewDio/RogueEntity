@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework;
 using RogueEntity.Simple.Demo.BoxPusher;
 using Serilog;
 using Console = SadConsole.Console;
+using Game = SadConsole.Game;
 
 namespace RogueEntity.Simple.Demo
 {
@@ -22,20 +23,20 @@ namespace RogueEntity.Simple.Demo
         }
         
         static void Main()
-        {
+        { 
             SetUpLogging();
             
             BoxPusherGame.BoxMain();
             
             // Setup the engine and create the main window.
-            SadConsole.Game.Create(80, 25);
+            Game.Create(80, 25);
 
             // Hook the start event so we can add consoles to the system.
-            SadConsole.Game.OnInitialize = Init;
+            Game.OnInitialize = Init;
 
             // Start the game.
-            SadConsole.Game.Instance.Run();
-            SadConsole.Game.Instance.Dispose();
+            Game.Instance.Run();
+            Game.Instance.Dispose();
         }
 
         static void Init()
