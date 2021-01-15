@@ -5,12 +5,12 @@ using Serilog;
 
 namespace RogueEntity.Api.Modules.Helpers
 {
-    public class ModuleRecord<TGameContext>
+    public class ModuleRecord
     {
-        public static readonly ILogger Logger = SLog.ForContext<ModuleSystem<TGameContext>>();
+        public static readonly ILogger Logger = SLog.ForContext<ModuleSystem>();
         public readonly ModuleId ModuleId;
         public readonly ModuleBase Module;
-        public readonly List<ModuleRecord<TGameContext>> Dependencies;
+        public readonly List<ModuleRecord> Dependencies;
         public bool IsUsedAsDependency { get; set; }
         public bool ResolvedRoles { get; set; }
         public bool ResolvedEquivalence { get; set; }
@@ -39,7 +39,7 @@ namespace RogueEntity.Api.Modules.Helpers
         {
             Module = module;
             ModuleId = module.Id;
-            Dependencies = new List<ModuleRecord<TGameContext>>();
+            Dependencies = new List<ModuleRecord>();
         }
 
         public override string ToString()
@@ -47,7 +47,7 @@ namespace RogueEntity.Api.Modules.Helpers
             return $"{nameof(ModuleId)}: {ModuleId}";
         }
 
-        public void AddDependency(ModuleRecord<TGameContext> value, string dependencyType)
+        public void AddDependency(ModuleRecord value, string dependencyType)
         {
             foreach (var d in Dependencies)
             {

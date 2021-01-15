@@ -13,8 +13,8 @@ using RogueEntity.Core.Positioning.Algorithms;
 namespace RogueEntity.Core.Tests.Sensing.Receptor.Touch
 {
     [TestFixture]
-    public class TouchReceptorTraitTest : ItemComponentTraitTestBase<SenseMappingTestContext, ActorReference, SensoryReceptorData<TouchSense, TouchSense>,
-        TouchSenseTrait<SenseMappingTestContext, ActorReference>>
+    public class TouchReceptorTraitTest : ItemComponentTraitTestBase<ActorReference, SensoryReceptorData<TouchSense, TouchSense>,
+        TouchSenseTrait<ActorReference>>
     {
         readonly TouchSenseReceptorPhysicsConfiguration physics;
 
@@ -23,9 +23,8 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Touch
             physics = new TouchSenseReceptorPhysicsConfiguration(new LinearDecaySensePhysics(DistanceCalculation.Chebyshev));
         }
 
-        protected override SenseMappingTestContext CreateContext()
+        protected override void SetUpPrepare()
         {
-            var context = new SenseMappingTestContext();
             EntityRegistry.RegisterNonConstructable<TouchSourceDefinition>();
             EntityRegistry.RegisterNonConstructable<SenseSourceState<TouchSense>>();
             EntityRegistry.RegisterFlag<ObservedSenseSource<TouchSense>>();
@@ -35,13 +34,11 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Touch
             EntityRegistry.RegisterNonConstructable<SensoryReceptorState<TouchSense, TouchSense>>();
             EntityRegistry.RegisterNonConstructable<SingleLevelSenseDirectionMapData<TouchSense, TouchSense>>();
             EntityRegistry.RegisterFlag<SenseReceptorDirtyFlag<TouchSense, TouchSense>>();
-
-            return context;
         }
 
-        protected override TouchSenseTrait<SenseMappingTestContext, ActorReference> CreateTrait()
+        protected override TouchSenseTrait<ActorReference> CreateTrait()
         {
-            return new TouchSenseTrait<SenseMappingTestContext, ActorReference>(physics);
+            return new TouchSenseTrait<ActorReference>(physics);
         }
 
         protected override IItemComponentTestDataFactory<SensoryReceptorData<TouchSense, TouchSense>> ProduceTestData(EntityRelations<ActorReference> relations)

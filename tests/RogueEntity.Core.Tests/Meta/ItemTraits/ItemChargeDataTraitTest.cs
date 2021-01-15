@@ -4,20 +4,15 @@ using RogueEntity.Core.Meta.EntityKeys;
 
 namespace RogueEntity.Core.Tests.Meta.ItemTraits
 {
-    public class ItemChargeDataTraitTest: ItemComponentTraitTestBase<BasicItemContext, ItemReference, ItemCharge, ItemChargeTrait<BasicItemContext, ItemReference>>
+    public class ItemChargeDataTraitTest: ItemComponentTraitTestBase<ItemReference, ItemCharge, ItemChargeTrait<ItemReference>>
     {
         public ItemChargeDataTraitTest() : base(new ItemReferenceMetaData())
         {
         }
 
-        protected override BasicItemContext CreateContext()
+        protected override ItemChargeTrait<ItemReference> CreateTrait()
         {
-            return new BasicItemContext();
-        }
-
-        protected override ItemChargeTrait<BasicItemContext, ItemReference> CreateTrait()
-        {
-            return new ItemChargeTrait<BasicItemContext, ItemReference>(1, 100);
+            return new ItemChargeTrait<ItemReference>(1, 100);
         }
 
         protected override IItemComponentTestDataFactory<ItemCharge> ProduceTestData(EntityRelations<ItemReference> relations)

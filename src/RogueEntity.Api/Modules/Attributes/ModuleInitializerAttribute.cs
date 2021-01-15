@@ -6,7 +6,7 @@ namespace RogueEntity.Api.Modules.Attributes
     /// <summary>
     ///   Marks general module initializers. Those methods must have the signature
     ///  <![CDATA[
-    ///      void YourInitializerName<TGameContext>(IServiceResolver serviceResolver, IModuleInitializer<TGameContext> initializer);
+    ///      void YourInitializerName(IServiceResolver serviceResolver, IModuleInitializer initializer);
     ///  ]]>
     /// </summary>
     [MeansImplicitUse]

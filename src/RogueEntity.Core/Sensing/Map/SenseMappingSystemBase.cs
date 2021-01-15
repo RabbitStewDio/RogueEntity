@@ -19,9 +19,9 @@ namespace RogueEntity.Core.Sensing.Map
         where TTargetSense : ISense
         where TSourceSense : ISense
     {
-        [SuppressMessage("ReSharper", "UnusedMember.Local")] 
+        [SuppressMessage("ReSharper", "UnusedMember.Local")]
         static readonly ILogger Logger = SLog.ForContext<SenseMappingSystemBase<TTargetSense, TSourceSense, TSenseSourceDefinition>>();
-        
+
         static readonly Action<SenseDataLevel> ProcessSenseMapInstance = v => v.ProcessSenseSources();
         const int ZLayerTimeToLive = 50;
 
@@ -42,9 +42,7 @@ namespace RogueEntity.Core.Sensing.Map
         /// <summary>
         ///   Cleanup method used during system shutdown.
         /// </summary>
-        /// <param name="ctx"></param>
-        /// <typeparam name="TGameContext"></typeparam>
-        public void ShutDown<TGameContext>(TGameContext ctx)
+        public void ShutDown()
         {
             activeLightsPerLevel.Clear();
         }
@@ -53,17 +51,14 @@ namespace RogueEntity.Core.Sensing.Map
         ///  Step 1: Collect all active sense sources. Also marks all lights as observed.
         /// </summary>
         /// <param name="v"></param>
-        /// <param name="context"></param>
         /// <param name="k"></param>
         /// <param name="definition"></param>
         /// <param name="state"></param>
         /// <typeparam name="TItemId"></typeparam>
-        /// <typeparam name="TGameContext"></typeparam>
-        public void CollectSenseSources<TItemId, TGameContext>(IEntityViewControl<TItemId> v,
-                                                               TGameContext context,
-                                                               TItemId k,
-                                                               in TSenseSourceDefinition definition,
-                                                               in SenseSourceState<TSourceSense> state)
+        public void CollectSenseSources<TItemId>(IEntityViewControl<TItemId> v,
+                                                 TItemId k,
+                                                 in TSenseSourceDefinition definition,
+                                                 in SenseSourceState<TSourceSense> state)
             where TItemId : IEntityKey
         {
             if (!state.LastPosition.IsInvalid)
@@ -87,11 +82,11 @@ namespace RogueEntity.Core.Sensing.Map
                 v.ResetComponent<SenseDirtyFlag<TSourceSense>>();
             }
         }
-        
+
         /// <summary>
         ///  Step 3: Finally clear the collected sense sources
         /// </summary>
-        public void EndSenseCalculation<TGameContext>(TGameContext ctx)
+        public void EndSenseCalculation()
         {
             var currentTime = timeSource.Value.FixedStepTime;
             zLevelBuffer.Clear();
@@ -192,7 +187,7 @@ namespace RogueEntity.Core.Sensing.Map
                         {
                             targetBounds = targetBounds.GetUnion(senseBounds);
                         }
-                            
+
                         blittableSenses.Add((collectedSense.pos, sd));
                     }
 

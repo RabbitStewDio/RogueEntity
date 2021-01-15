@@ -43,8 +43,8 @@ namespace RogueEntity.Core.Sensing.Discovery
         }
 
         [EntityRoleInitializer("Role.Core.Senses.DiscoveredArea")]
-        protected void Initialize<TGameContext, TActorId>(in ModuleEntityInitializationParameter<TGameContext, TActorId> initParameter,
-                                                          IModuleInitializer<TGameContext> initializer,
+        protected void Initialize< TActorId>(in ModuleEntityInitializationParameter< TActorId> initParameter,
+                                                          IModuleInitializer initializer,
                                                           EntityRole role)
             where TActorId : IEntityKey
         {
@@ -54,8 +54,8 @@ namespace RogueEntity.Core.Sensing.Discovery
 
         [EntityRoleInitializer("Role.Core.Senses.DiscoveredArea",
                                ConditionalRoles = new[] {"Role.Core.Senses.Receptor.Vision.ActorRole"})]
-        protected void InitializeVision<TGameContext, TActorId>(in ModuleEntityInitializationParameter<TGameContext, TActorId> initParameter,
-                                                                IModuleInitializer<TGameContext> initializer,
+        protected void InitializeVision< TActorId>(in ModuleEntityInitializationParameter< TActorId> initParameter,
+                                                                IModuleInitializer initializer,
                                                                 EntityRole role)
             where TActorId : IEntityKey
         {
@@ -65,8 +65,8 @@ namespace RogueEntity.Core.Sensing.Discovery
 
         [EntityRoleInitializer("Role.Core.Senses.DiscoveredArea",
                                ConditionalRoles = new[] {"Role.Core.Senses.Receptor.InfraVision.ActorRole"})]
-        protected void InitializeInfraVision<TGameContext, TActorId>(in ModuleEntityInitializationParameter<TGameContext, TActorId> initParameter,
-                                                                     IModuleInitializer<TGameContext> initializer,
+        protected void InitializeInfraVision< TActorId>(in ModuleEntityInitializationParameter< TActorId> initParameter,
+                                                                     IModuleInitializer initializer,
                                                                      EntityRole role)
             where TActorId : IEntityKey
         {
@@ -76,8 +76,8 @@ namespace RogueEntity.Core.Sensing.Discovery
 
         [EntityRoleInitializer("Role.Core.Senses.DiscoveredArea",
                                ConditionalRoles = new[] {"Role.Core.Senses.Receptor.Touch.ActorRole"})]
-        protected void InitializeTouch<TGameContext, TActorId>(in ModuleEntityInitializationParameter<TGameContext, TActorId> initParameter,
-                                                               IModuleInitializer<TGameContext> initializer,
+        protected void InitializeTouch< TActorId>(in ModuleEntityInitializationParameter< TActorId> initParameter,
+                                                               IModuleInitializer initializer,
                                                                EntityRole role)
             where TActorId : IEntityKey
         {
@@ -85,8 +85,8 @@ namespace RogueEntity.Core.Sensing.Discovery
             ctx.Register(RegisterTouchSystem, 60_200, RegisterDiscoveryActionsTouch);
         }
 
-        void RegisterDiscoveryActionsVision<TGameContext, TActorId>(in ModuleInitializationParameter initParameter,
-                                                                    IGameLoopSystemRegistration<TGameContext> context,
+        void RegisterDiscoveryActionsVision< TActorId>(in ModuleInitializationParameter initParameter,
+                                                                    IGameLoopSystemRegistration context,
                                                                     EntityRegistry<TActorId> registry)
             where TActorId : IEntityKey
         {
@@ -94,7 +94,7 @@ namespace RogueEntity.Core.Sensing.Discovery
             var system = GetOrCreate(serviceResolver);
 
             var entitySystem = registry.BuildSystem()
-                                       .WithContext<TGameContext>()
+                                       .WithoutContext()
                                        .WithInputParameter<DiscoveryMapData,
                                            SensoryReceptorState<VisionSense, VisionSense>,
                                            SingleLevelSenseDirectionMapData<VisionSense, VisionSense>,
@@ -105,8 +105,8 @@ namespace RogueEntity.Core.Sensing.Discovery
             context.AddInitializationStepHandler(entitySystem);
         }
 
-        void RegisterDiscoveryActionsInfraVision<TGameContext, TActorId>(in ModuleInitializationParameter initParameter,
-                                                                         IGameLoopSystemRegistration<TGameContext> context,
+        void RegisterDiscoveryActionsInfraVision< TActorId>(in ModuleInitializationParameter initParameter,
+                                                                         IGameLoopSystemRegistration context,
                                                                          EntityRegistry<TActorId> registry)
             where TActorId : IEntityKey
         {
@@ -114,7 +114,7 @@ namespace RogueEntity.Core.Sensing.Discovery
             var system = GetOrCreate(serviceResolver);
 
             var entitySystem = registry.BuildSystem()
-                                       .WithContext<TGameContext>()
+                                       .WithoutContext()
                                        .WithInputParameter<DiscoveryMapData,
                                            SensoryReceptorState<VisionSense, TemperatureSense>,
                                            SingleLevelSenseDirectionMapData<VisionSense, TemperatureSense>,
@@ -125,8 +125,8 @@ namespace RogueEntity.Core.Sensing.Discovery
             context.AddInitializationStepHandler(entitySystem);
         }
 
-        void RegisterDiscoveryActionsTouch<TGameContext, TActorId>(in ModuleInitializationParameter initParameter,
-                                                                   IGameLoopSystemRegistration<TGameContext> context,
+        void RegisterDiscoveryActionsTouch< TActorId>(in ModuleInitializationParameter initParameter,
+                                                                   IGameLoopSystemRegistration context,
                                                                    EntityRegistry<TActorId> registry)
             where TActorId : IEntityKey
         {
@@ -134,7 +134,7 @@ namespace RogueEntity.Core.Sensing.Discovery
             var system = GetOrCreate(serviceResolver);
 
             var entitySystem = registry.BuildSystem()
-                                       .WithContext<TGameContext>()
+                                       .WithoutContext()
                                        .WithInputParameter<DiscoveryMapData,
                                            SensoryReceptorState<TouchSense, TouchSense>,
                                            SingleLevelSenseDirectionMapData<TouchSense, TouchSense>,

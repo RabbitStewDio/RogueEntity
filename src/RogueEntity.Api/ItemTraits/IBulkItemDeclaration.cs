@@ -2,9 +2,9 @@
 
 namespace RogueEntity.Api.ItemTraits
 {
-    public interface IBulkItemDeclaration<TContext, TItemId> : IItemDeclaration
+    public interface IBulkItemDeclaration<TItemId> : IItemDeclaration
         where TItemId: IEntityKey
     {
-        TItemId Initialize(TContext context, TItemId itemReference);
+        TItemId Initialize(TItemId itemReference);
     }
 }

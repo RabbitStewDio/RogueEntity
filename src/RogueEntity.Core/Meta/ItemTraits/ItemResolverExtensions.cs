@@ -7,8 +7,8 @@ namespace RogueEntity.Core.Meta.ItemTraits
 {
     public static class ItemResolverExtensions
     {
-        public static StackCount QueryStackSize<TGameContext, TItemId>(this IItemResolver<TGameContext, TItemId> resolver,
-                                                                       TItemId item, TGameContext context)
+        public static StackCount QueryStackSize< TItemId>(this IItemResolver< TItemId> resolver,
+                                                                       TItemId item)
             where TItemId : IEntityKey
         {
             if (EqualityComparer<TItemId>.Default.Equals(item, default))
@@ -16,7 +16,7 @@ namespace RogueEntity.Core.Meta.ItemTraits
                 return StackCount.Of(0);
             }
             
-            if (resolver.TryQueryData(item, context, out StackCount p))
+            if (resolver.TryQueryData(item, out StackCount p))
             {
                 return p;
             }
@@ -24,11 +24,11 @@ namespace RogueEntity.Core.Meta.ItemTraits
             return StackCount.One;
         }
 
-        public static WeightView QueryWeight<TGameContext, TItemId>(this IItemResolver<TGameContext, TItemId> resolver,
-                                                                    TItemId item, TGameContext context)
+        public static WeightView QueryWeight< TItemId>(this IItemResolver< TItemId> resolver,
+                                                                    TItemId item)
             where TItemId : IEntityKey
         {
-            if (resolver.TryQueryData(item, context, out WeightView p))
+            if (resolver.TryQueryData(item, out WeightView p))
             {
                 return p;
             }
@@ -36,12 +36,11 @@ namespace RogueEntity.Core.Meta.ItemTraits
             return default;
         }
 
-        public static Weight QueryBaseWeight<TGameContext, TItemId>(this IItemResolver<TGameContext, TItemId> resolver, 
-                                                                    TItemId r,
-                                                                    TGameContext context) 
+        public static Weight QueryBaseWeight< TItemId>(this IItemResolver< TItemId> resolver, 
+                                                                    TItemId r) 
             where TItemId : IEntityKey
         {
-            if (resolver.TryQueryData(r, context, out Weight p))
+            if (resolver.TryQueryData(r, out Weight p))
             {
                 return p;
             }
@@ -49,8 +48,7 @@ namespace RogueEntity.Core.Meta.ItemTraits
             return default;
         }
 
-        public static bool SplitLargeStack<TGameContext, TItemId>(this IItemResolver<TGameContext, TItemId> itemResolver,
-                                                                  TGameContext context,
+        public static bool SplitLargeStack< TItemId>(this IItemResolver< TItemId> itemResolver,
                                                                   TItemId r, int count,
                                                                   out TItemId taken,
                                                                   out TItemId remainder,
@@ -70,11 +68,11 @@ namespace RogueEntity.Core.Meta.ItemTraits
                 return false;
             }
 
-            var s = itemResolver.QueryStackSize(r, context);
+            var s = itemResolver.QueryStackSize(r);
             var maxApplicable = Math.Min(count, s.MaximumStackSize);
             var guaranteedRemaining = count - maxApplicable;
 
-            if (itemResolver.SplitStack(context, r, (ushort)maxApplicable, out taken, out remainder, out var remaining))
+            if (itemResolver.SplitStack(r, (ushort)maxApplicable, out taken, out remainder, out var remaining))
             {
                 remainingCount = remaining + guaranteedRemaining;
                 return true;
@@ -86,8 +84,7 @@ namespace RogueEntity.Core.Meta.ItemTraits
             return false;
         }
 
-        public static bool SplitStack<TGameContext, TItemId>(this IItemResolver<TGameContext, TItemId> itemResolver,
-                                                             TGameContext context,
+        public static bool SplitStack< TItemId>(this IItemResolver< TItemId> itemResolver,
                                                              TItemId r,
                                                              int count,
                                                              out TItemId taken,
@@ -109,7 +106,7 @@ namespace RogueEntity.Core.Meta.ItemTraits
                 return false;
             }
 
-            if (!itemResolver.TryQueryData(r, context, out StackCount p))
+            if (!itemResolver.TryQueryData(r,  out StackCount p))
             {
                 // If not stackable assume a max-stack size of 1
                 taken = r;
@@ -129,8 +126,8 @@ namespace RogueEntity.Core.Meta.ItemTraits
             // count < p.Count
 
             var takenStack = p.Take(count, out var remainderStack, out var notApplied);
-            if (itemResolver.TryUpdateData(r, context, in remainderStack, out remainder) &&
-                itemResolver.TryUpdateData(r, context, in takenStack, out taken))
+            if (itemResolver.TryUpdateData(r,  in remainderStack, out remainder) &&
+                itemResolver.TryUpdateData(r,  in takenStack, out taken))
             {
                 remainingCount = (ushort)notApplied;
                 return true;

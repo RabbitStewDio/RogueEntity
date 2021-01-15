@@ -12,7 +12,7 @@ using RogueEntity.Core.Positioning.Algorithms;
 namespace RogueEntity.Core.Tests.Sensing.Sources.Smell
 {
     [TestFixture]
-    public class SmellSourceTraitTest: ItemComponentTraitTestBase<SenseMappingTestContext, ActorReference, SmellSource, SmellSourceTrait<SenseMappingTestContext, ActorReference>>
+    public class SmellSourceTraitTest: ItemComponentTraitTestBase<ActorReference, SmellSource, SmellSourceTrait<ActorReference>>
     {
         readonly SmellPhysicsConfiguration physics;
 
@@ -21,19 +21,17 @@ namespace RogueEntity.Core.Tests.Sensing.Sources.Smell
             physics = new SmellPhysicsConfiguration(new LinearDecaySensePhysics(DistanceCalculation.Chebyshev));
         }
 
-        protected override SenseMappingTestContext CreateContext()
+        protected override void SetUpPrepare()
         {
-            var context = new SenseMappingTestContext();
             EntityRegistry.RegisterNonConstructable<SmellSourceDefinition>();
             EntityRegistry.RegisterNonConstructable<SenseSourceState<SmellSense>>();
             EntityRegistry.RegisterFlag<ObservedSenseSource<SmellSense>>();
             EntityRegistry.RegisterFlag<SenseDirtyFlag<SmellSense>>();
-            return context;
         }
 
-        protected override SmellSourceTrait<SenseMappingTestContext, ActorReference> CreateTrait()
+        protected override SmellSourceTrait<ActorReference> CreateTrait()
         {
-            return new SmellSourceTrait<SenseMappingTestContext, ActorReference>(physics);
+            return new SmellSourceTrait<ActorReference>(physics);
         }
 
         protected override IItemComponentTestDataFactory<SmellSource> ProduceTestData(EntityRelations<ActorReference> relations)

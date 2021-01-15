@@ -7,74 +7,74 @@ using Serilog;
 
 namespace RogueEntity.Api.Modules.Helpers
 {
-    public class ModuleInitializer<TGameContext> : IModuleInitializer<TGameContext>, IModuleInitializationData<TGameContext>
+    public class ModuleInitializer : IModuleInitializer, IModuleInitializationData
     {
-        static readonly ILogger Logger = SLog.ForContext<ModuleInitializer<TGameContext>>();
-        
+        static readonly ILogger Logger = SLog.ForContext<ModuleInitializer>();
+
         readonly List<GlobalDeclarationRecord> globalSystems;
         readonly Dictionary<Type, object> moduleInitializers;
-        readonly Dictionary<Type, Action<IModuleEntityInitializationCallback<TGameContext>>> moduleInitializerCallbacks;
+        readonly Dictionary<Type, Action<IModuleEntityInitializationCallback>> moduleInitializerCallbacks;
         public ModuleId CurrentModuleId { get; set; }
 
         public ModuleInitializer()
         {
             moduleInitializers = new Dictionary<Type, object>();
-            moduleInitializerCallbacks = new Dictionary<Type, Action<IModuleEntityInitializationCallback<TGameContext>>>();
+            moduleInitializerCallbacks = new Dictionary<Type, Action<IModuleEntityInitializationCallback>>();
             globalSystems = new List<GlobalDeclarationRecord>();
         }
 
-        public IModuleContentContext<TGameContext, TEntityId> DeclareContentContext<TEntityId>()
+        public IModuleContentContext<TEntityId> DeclareContentContext<TEntityId>()
             where TEntityId : IEntityKey
         {
             if (moduleInitializers.TryGetValue(typeof(TEntityId), out var raw))
             {
-                var context = (ModuleEntityContext<TGameContext, TEntityId>)raw;
+                var context = (ModuleEntityContext<TEntityId>)raw;
                 context.CurrentModuleId = CurrentModuleId;
                 return context;
             }
 
-            var retval = new ModuleEntityContext<TGameContext, TEntityId>(CurrentModuleId);
+            var retval = new ModuleEntityContext<TEntityId>(CurrentModuleId);
             moduleInitializers[typeof(TEntityId)] = retval;
             moduleInitializerCallbacks[typeof(TEntityId)] = CallInit<TEntityId>;
             Logger.Debug("Activated entity type {EntityId} via content context creation", typeof(TEntityId));
             return retval;
         }
 
-        public IModuleEntityContext<TGameContext, TEntityId> DeclareEntityContext<TEntityId>()
+        public IModuleEntityContext<TEntityId> DeclareEntityContext<TEntityId>()
             where TEntityId : IEntityKey
         {
             if (moduleInitializers.TryGetValue(typeof(TEntityId), out var raw))
             {
-                var context = (ModuleEntityContext<TGameContext, TEntityId>)raw;
+                var context = (ModuleEntityContext<TEntityId>)raw;
                 context.CurrentModuleId = CurrentModuleId;
                 return context;
             }
 
-            var retval = new ModuleEntityContext<TGameContext, TEntityId>(CurrentModuleId);
+            var retval = new ModuleEntityContext<TEntityId>(CurrentModuleId);
             moduleInitializers[typeof(TEntityId)] = retval;
             moduleInitializerCallbacks[typeof(TEntityId)] = CallInit<TEntityId>;
             Logger.Debug("Activated entity type {EntityId} via entity system context creation", typeof(TEntityId));
             return retval;
         }
 
-        void CallInit<TEntityId>(IModuleEntityInitializationCallback<TGameContext> callback)
+        void CallInit<TEntityId>(IModuleEntityInitializationCallback callback)
             where TEntityId : IEntityKey
         {
             if (moduleInitializers.TryGetValue(typeof(TEntityId), out var context))
             {
-                var mc = (ModuleEntityContext<TGameContext, TEntityId>)context;
+                var mc = (ModuleEntityContext<TEntityId>)context;
                 callback.PerformInitialization(mc);
             }
         }
 
-        public bool TryGetCallback(Type entityType, out Action<IModuleEntityInitializationCallback<TGameContext>> callback)
+        public bool TryGetCallback(Type entityType, out Action<IModuleEntityInitializationCallback> callback)
         {
             return moduleInitializerCallbacks.TryGetValue(entityType, out callback);
         }
-        
-        public IEnumerable<(Type entityType, Action<IModuleEntityInitializationCallback<TGameContext>> callback)> EntityInitializers => moduleInitializerCallbacks.Select(e => (e.Key, e.Value));
-        
-        public void Register(EntitySystemId id, int priority, GlobalSystemRegistrationDelegate<TGameContext> entityRegistration)
+
+        public IEnumerable<(Type entityType, Action<IModuleEntityInitializationCallback> callback)> EntityInitializers => moduleInitializerCallbacks.Select(e => (e.Key, e.Value));
+
+        public void Register(EntitySystemId id, int priority, GlobalSystemRegistrationDelegate entityRegistration)
         {
             globalSystems.Add(new GlobalDeclarationRecord()
             {
@@ -86,15 +86,15 @@ namespace RogueEntity.Api.Modules.Helpers
             });
         }
 
-        public IEnumerable<IGlobalSystemDeclaration<TGameContext>> GlobalSystems => globalSystems;
+        public IEnumerable<IGlobalSystemDeclaration> GlobalSystems => globalSystems;
 
-        class GlobalDeclarationRecord : IGlobalSystemDeclaration<TGameContext>
+        class GlobalDeclarationRecord : IGlobalSystemDeclaration
         {
             public ModuleId DeclaringModule { get; set; }
             public EntitySystemId Id { get; set; }
             public int Priority { get; set; }
             public int InsertionOrder { get; set; }
-            public GlobalSystemRegistrationDelegate<TGameContext> SystemRegistration { get; set; }
+            public GlobalSystemRegistrationDelegate SystemRegistration { get; set; }
         }
     }
 }

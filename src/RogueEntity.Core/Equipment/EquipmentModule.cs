@@ -34,8 +34,8 @@ namespace RogueEntity.Core.Equipment
         }
 
         [EntityRoleInitializer("Role.Core.Equipment.ContainedItem")]
-        protected void InitializeContainedItemRole<TGameContext, TItemId>(in ModuleEntityInitializationParameter<TGameContext, TItemId> initParameter,
-                                                                          IModuleInitializer<TGameContext> initializer,
+        protected void InitializeContainedItemRole< TItemId>(in ModuleEntityInitializationParameter< TItemId> initParameter,
+                                                                          IModuleInitializer initializer,
                                                                           EntityRole r)
             where TItemId : IEntityKey
         {
@@ -44,27 +44,27 @@ namespace RogueEntity.Core.Equipment
         }
 
         [EntityRelationInitializer("Relation.Core.Equipment")]
-        protected void InitializeContainerEntities<TGameContext, TActorId, TItemId>(in ModuleEntityInitializationParameter<TGameContext, TActorId> initParameter,
-                                                                                    IModuleInitializer<TGameContext> initializer,
+        protected void InitializeContainerEntities< TActorId, TItemId>(in ModuleEntityInitializationParameter< TActorId> initParameter,
+                                                                                    IModuleInitializer initializer,
                                                                                     EntityRelation r)
             where TActorId : IEntityKey
             where TItemId : IEntityKey
         {
             var entityContext = initializer.DeclareEntityContext<TActorId>();
             entityContext.Register(ContainerComponentId, -19000, RegisterContainerEntities<TActorId, TItemId>);
-            entityContext.Register(CascadingDestructionSystemId, 100_000_000, RegisterCascadingDestruction<TGameContext, TActorId, TItemId>);
+            entityContext.Register(CascadingDestructionSystemId, 100_000_000, RegisterCascadingDestruction< TActorId, TItemId>);
         }
 
-        void RegisterCascadingDestruction<TGameContext, TActorId, TItemId>(in ModuleInitializationParameter initParameter,
-                                                                           IGameLoopSystemRegistration<TGameContext> context,
+        void RegisterCascadingDestruction< TActorId, TItemId>(in ModuleInitializationParameter initParameter,
+                                                                           IGameLoopSystemRegistration context,
                                                                            EntityRegistry<TActorId> registry)
             where TActorId : IEntityKey
             where TItemId : IEntityKey
         {
-            var itemResolver = initParameter.ServiceResolver.Resolve<IItemResolver<TGameContext, TItemId>>();
-            var system = new DestroyContainerContentsSystem<TGameContext, TActorId, TItemId>(itemResolver);
+            var itemResolver = initParameter.ServiceResolver.Resolve<IItemResolver< TItemId>>();
+            var system = new DestroyContainerContentsSystem< TActorId, TItemId>(itemResolver);
             var action = registry.BuildSystem()
-                                 .WithContext<TGameContext>()
+                                 .WithoutContext()
                                  .WithInputParameter<DestroyedMarker, SlottedEquipmentData<TItemId>>()
                                  .CreateSystem(system.MarkDestroyedContainerEntities);
             

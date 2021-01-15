@@ -1,4 +1,4 @@
-namespace RogueEntity.Core.Tests.Positioning
+namespace RogueEntity.Core.Tests.Positioning.Grid
 {
     public class GridMapSerializationTest
     {

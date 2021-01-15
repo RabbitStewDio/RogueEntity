@@ -5,13 +5,12 @@ namespace RogueEntity.Core.Sensing.Sources.Noise
 {
     public static class NoisyItemExtensions
     {
-        public static void PlayNoise<TGameContext, TItemId>(this IItemResolver<TGameContext, TItemId> resolver,
-                                                            TItemId item,
-                                                            TGameContext context,
-                                                            in NoiseClip clip)
+        public static void PlayNoise<TItemId>(this IItemResolver<TItemId> resolver,
+                                              TItemId item,
+                                              in NoiseClip clip)
             where TItemId : IEntityKey
         {
-            resolver.TryUpdateData(item, context, in clip, out _);
+            resolver.TryUpdateData(item, in clip, out _);
         }
     }
 }

@@ -6,19 +6,19 @@ using RogueEntity.Core.Meta.Items;
 
 namespace RogueEntity.Core.Sensing.Receptors.Smell
 {
-    public class SmellDirectionSenseTrait<TGameContext, TActorId> : SenseReceptorTraitBase<TGameContext, TActorId, SmellSense, SmellSense>,
-                                                                    IItemComponentInformationTrait<TGameContext, TActorId, ISmellDirectionMap>
+    public class SmellDirectionSenseTrait<TActorId> : SenseReceptorTraitBase<TActorId, SmellSense, SmellSense>,
+                                                      IItemComponentInformationTrait<TActorId, ISmellDirectionMap>
         where TActorId : IEntityKey
     {
         public SmellDirectionSenseTrait([NotNull] ISmellSenseReceptorPhysicsConfiguration physicsConfiguration,
-                                        float intensity, bool active = true) : base(physicsConfiguration.SmellPhysics, intensity, active)
-        {
-        }
+                                        float intensity,
+                                        bool active = true) : base(physicsConfiguration.SmellPhysics, intensity, active)
+        { }
 
         public override ItemTraitId Id => "Core.Sense.Receptor.Smell";
         public override int Priority => 100;
 
-        public bool TryQuery(IEntityViewControl<TActorId> v, TGameContext context, TActorId k, out ISmellDirectionMap t)
+        public bool TryQuery(IEntityViewControl<TActorId> v, TActorId k, out ISmellDirectionMap t)
         {
             if (v.GetComponent(k, out SingleLevelSenseDirectionMapData<SmellSense, SmellSense> m))
             {

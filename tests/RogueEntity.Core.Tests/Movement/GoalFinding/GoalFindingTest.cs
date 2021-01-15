@@ -22,7 +22,7 @@ namespace RogueEntity.Core.Tests.Movement.GoalFinding
     [TestFixture]
     public class GoalFindingTest
     {
-        ItemContextBackend<object, ItemReference> context;
+        ItemContextBackend<ItemReference> context;
         GoalRegistry goalRegistry;
         SpatialQueryRegistry spatialQueryRegistry;
 
@@ -87,14 +87,14 @@ namespace RogueEntity.Core.Tests.Movement.GoalFinding
             gridMapContext.WithDefaultMapLayer(TestMapLayers.One, DynamicDataViewConfiguration.Default_16x16);
 
 
-            context = new ItemContextBackend<object, ItemReference>(new ItemReferenceMetaData());
-            context.EntityRegistry.RegisterNonConstructable<ItemDeclarationHolder<object, ItemReference>>();
+            context = new ItemContextBackend<ItemReference>(new ItemReferenceMetaData());
+            context.EntityRegistry.RegisterNonConstructable<ItemDeclarationHolder<ItemReference>>();
             context.EntityRegistry.RegisterNonConstructable<EntityGridPosition>();
             context.EntityRegistry.RegisterNonConstructable<EntityGridPositionChangedMarker>();
             context.EntityRegistry.RegisterNonConstructable<GoalMarker<TestGoal>>();
-            context.ItemRegistry.Register(new ReferenceItemDeclaration<object, ItemReference>("Goal")
-                                          .WithTrait(new GoalMarkerTrait<object, ItemReference, TestGoal>(10))
-                                          .WithTrait(new ReferenceItemGridPositionTrait<object, ItemReference>(context.ItemResolver, gridMapContext, TestMapLayers.One))
+            context.ItemRegistry.Register(new ReferenceItemDeclaration<ItemReference>("Goal")
+                                          .WithTrait(new GoalMarkerTrait<ItemReference, TestGoal>(10))
+                                          .WithTrait(new ReferenceItemGridPositionTrait<ItemReference>(context.ItemResolver, gridMapContext, TestMapLayers.One))
             );
 
             goalRegistry = new GoalRegistry();
@@ -135,14 +135,12 @@ namespace RogueEntity.Core.Tests.Movement.GoalFinding
         [TestCaseSource(nameof(TestData))]
         public void ValidatePathFinding(PathFinderTestParameters p)
         {
-            var gameContext = new object();
-
             var resistanceMap = ParseMap(p.SourceText, out var bounds);
             Console.WriteLine("Using room layout \n" + TestHelpers.PrintMap(resistanceMap, bounds));
 
             foreach (var (t, s) in p.Targets)
             {
-                InstantiateGoalTarget(t.X, t.Y, s, gameContext);
+                InstantiateGoalTarget(t.X, t.Y, s);
             }
 
             var startPosition = EntityGridPosition.Of(TestMapLayers.One, p.Origin.X, p.Origin.Y);
@@ -164,12 +162,12 @@ namespace RogueEntity.Core.Tests.Movement.GoalFinding
             TestHelpers.AssertEquals(producedResultMap, expectedResultMap, bounds, default, PrintResultMap);
         }
 
-        void InstantiateGoalTarget(int tx, int ty, float strength, object gameContext)
+        void InstantiateGoalTarget(int tx, int ty, float strength)
         {
             var targetPosition = EntityGridPosition.Of(TestMapLayers.One, tx, ty);
-            var target = context.ItemResolver.Instantiate(gameContext, "Goal");
-            context.ItemResolver.TryUpdateData(target, gameContext, new GoalMarker<TestGoal>(strength), out _).Should().BeTrue();
-            context.ItemResolver.TryUpdateData(target, gameContext, targetPosition, out _).Should().BeTrue();
+            var target = context.ItemResolver.Instantiate("Goal");
+            context.ItemResolver.TryUpdateData(target, new GoalMarker<TestGoal>(strength), out _).Should().BeTrue();
+            context.ItemResolver.TryUpdateData(target, targetPosition, out _).Should().BeTrue();
         }
 
         SingleLevelGoalFinderSource CreateGoalFinderSource(DynamicDataView2D<float> resistanceMap, Rectangle bounds)

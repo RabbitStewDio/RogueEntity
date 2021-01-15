@@ -7,8 +7,8 @@ using RogueEntity.Core.Positioning.Algorithms;
 
 namespace RogueEntity.Core.Movement.Cost
 {
-    public class MovementVelocityReferenceItemTrait<TGameContext, TActorId, TMovementMode> : SimpleReferenceItemComponentTraitBase<TGameContext, TActorId, MovementVelocity<TMovementMode>>,
-                                                                                             IItemComponentInformationTrait<TGameContext, TActorId, MovementCost>
+    public class MovementVelocityReferenceItemTrait< TActorId, TMovementMode> : SimpleReferenceItemComponentTraitBase< TActorId, MovementVelocity<TMovementMode>>,
+                                                                                             IItemComponentInformationTrait< TActorId, MovementCost>
         where TActorId : IEntityKey
         where TMovementMode : IMovementMode
     {
@@ -29,14 +29,14 @@ namespace RogueEntity.Core.Movement.Cost
             this.movementModePreference = movementModePreference;
         }
 
-        protected override MovementVelocity<TMovementMode> CreateInitialValue(TGameContext c, TActorId reference)
+        protected override MovementVelocity<TMovementMode> CreateInitialValue(TActorId reference)
         {
             return new MovementVelocity<TMovementMode>(standardMovementCost);
         }
 
-        public bool TryQuery(IEntityViewControl<TActorId> v, TGameContext context, TActorId k, out MovementCost t)
+        public bool TryQuery(IEntityViewControl<TActorId> v,  TActorId k, out MovementCost t)
         {
-            if (TryQuery(v, context, k, out MovementVelocity<TMovementMode> pointCost) && pointCost.Velocity > 0)
+            if (TryQuery(v,  k, out MovementVelocity<TMovementMode> pointCost) && pointCost.Velocity > 0)
             {
                 t = new MovementCost(movementMode, movementStyle, 1 / pointCost.Velocity, movementModePreference);
                 return true;
@@ -46,7 +46,7 @@ namespace RogueEntity.Core.Movement.Cost
             return false;
         }
 
-        protected override bool ValidateData(IEntityViewControl<TActorId> entityViewControl, TGameContext context, in TActorId itemReference, in MovementVelocity<TMovementMode> data)
+        protected override bool ValidateData(IEntityViewControl<TActorId> entityViewControl,  in TActorId itemReference, in MovementVelocity<TMovementMode> data)
         {
             return data.Velocity > 0;
         }

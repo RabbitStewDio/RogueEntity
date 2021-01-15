@@ -60,9 +60,7 @@ namespace RogueEntity.Core.Sensing.Sources
         /// <summary>
         ///   To be called once during initialization.
         /// </summary>
-        /// <param name="context"></param>
-        /// <typeparam name="TGameContext"></typeparam>
-        public void EnsureSenseCacheAvailable<TGameContext>(TGameContext context)
+        public void EnsureSenseCacheAvailable()
         {
             var provider = senseCacheProvider.Value;
             if (provider.TryGetGlobalSenseCache(out var cache))
@@ -83,9 +81,7 @@ namespace RogueEntity.Core.Sensing.Sources
         /// <summary>
         ///   To be called during system shutdown.
         /// </summary>
-        /// <param name="ctx"></param>
-        /// <typeparam name="TGameContext"></typeparam>
-        public void ShutDown<TGameContext>(TGameContext ctx)
+        public void ShutDown()
         {
             activeLightsPerLevel.Clear();
         }
@@ -93,7 +89,7 @@ namespace RogueEntity.Core.Sensing.Sources
         /// <summary>
         ///  Step 0: Clear any previously left-over state
         /// </summary>
-        public void BeginSenseCalculation<TGameContext>(TGameContext ctx)
+        public void BeginSenseCalculation()
         {
             currentTime = timeSource.Value.FixedStepTime;
         }
@@ -102,20 +98,17 @@ namespace RogueEntity.Core.Sensing.Sources
         ///  Step 1: Collect all active sense sources that requires a refresh.
         /// </summary>
         /// <param name="v"></param>
-        /// <param name="context"></param>
         /// <param name="k"></param>
         /// <param name="definition"></param>
         /// <param name="state"></param>
         /// <param name="pos"></param>
         /// <typeparam name="TItemId"></typeparam>
-        /// <typeparam name="TGameContext"></typeparam>
         /// <typeparam name="TPosition"></typeparam>
-        public void FindDirtySenseSources<TItemId, TGameContext, TPosition>(IEntityViewControl<TItemId> v,
-                                                                            TGameContext context,
-                                                                            TItemId k,
-                                                                            in TSenseSourceDefinition definition,
-                                                                            in TPosition pos,
-                                                                            ref SenseSourceState<TSense> state)
+        public void FindDirtySenseSources<TItemId, TPosition>(IEntityViewControl<TItemId> v,
+                                                              TItemId k,
+                                                              in TSenseSourceDefinition definition,
+                                                              in TPosition pos,
+                                                              ref SenseSourceState<TSense> state)
             where TItemId : IEntityKey
             where TPosition : IPosition<TPosition>
         {
@@ -174,24 +167,20 @@ namespace RogueEntity.Core.Sensing.Sources
         ///   stores the lit area in a local map. This can safely run in parallel.
         /// </summary>
         /// <param name="v"></param>
-        /// <param name="context"></param>
         /// <param name="k"></param>
         /// <param name="definition"></param>
         /// <param name="state"></param>
         /// <param name="dirtyMarker"></param>
         /// <param name="observed"></param>
         /// <typeparam name="TItemId"></typeparam>
-        /// <typeparam name="TGameContext"></typeparam>
-        public void RefreshLocalSenseState<TItemId, TGameContext>(IEntityViewControl<TItemId> v,
-                                                                  TGameContext context,
-                                                                  TItemId k,
-                                                                  in TSenseSourceDefinition definition,
-                                                                  in SenseDirtyFlag<TSense> dirtyMarker,
-                                                                  in ObservedSenseSource<TSense> observed,
-                                                                  ref SenseSourceState<TSense> state)
+        public void RefreshLocalSenseState<TItemId>(IEntityViewControl<TItemId> v,
+                                                    TItemId k,
+                                                    in TSenseSourceDefinition definition,
+                                                    in SenseDirtyFlag<TSense> dirtyMarker,
+                                                    in ObservedSenseSource<TSense> observed,
+                                                    ref SenseSourceState<TSense> state)
             where TItemId : IEntityKey
         {
-            
             if (!definition.Enabled)
             {
                 state = state.WithDirtyState(SenseSourceDirtyState.Inactive);
@@ -211,7 +200,7 @@ namespace RogueEntity.Core.Sensing.Sources
                 var data = RefreshSenseState(definition, state.LastIntensity, pos, resistanceView, directionMap, dataIn);
                 state = state.WithDirtyState(SenseSourceDirtyState.Active)
                              .WithSenseState(data);
-                
+
                 Console.WriteLine($"Pos {state.LastPosition} active");
             }
             else
@@ -221,7 +210,7 @@ namespace RogueEntity.Core.Sensing.Sources
                 {
                     dataIn.Reset();
                 }
-                
+
                 Console.WriteLine($"Pos {state.LastPosition} no resistance view, ignored");
             }
         }
@@ -246,19 +235,16 @@ namespace RogueEntity.Core.Sensing.Sources
         ///   Step 4: Mark sense source as clean
         /// </summary>
         /// <param name="v"></param>
-        /// <param name="context"></param>
         /// <param name="k"></param>
         /// <param name="definition"></param>
         /// <param name="state"></param>
         /// <param name="dirtyFlag"></param>
         /// <typeparam name="TItemId"></typeparam>
-        /// <typeparam name="TGameContext"></typeparam>
-        public void ResetSenseSourceCacheState<TItemId, TGameContext>(IEntityViewControl<TItemId> v,
-                                                                      TGameContext context,
-                                                                      TItemId k,
-                                                                      in TSenseSourceDefinition definition,
-                                                                      in SenseDirtyFlag<TSense> dirtyFlag,
-                                                                      ref SenseSourceState<TSense> state)
+        public void ResetSenseSourceCacheState<TItemId>(IEntityViewControl<TItemId> v,
+                                                        TItemId k,
+                                                        in TSenseSourceDefinition definition,
+                                                        in SenseDirtyFlag<TSense> dirtyFlag,
+                                                        ref SenseSourceState<TSense> state)
             where TItemId : IEntityKey
         {
 /*            
@@ -280,7 +266,7 @@ namespace RogueEntity.Core.Sensing.Sources
         /// <summary>
         ///  Step 5: Clear the collected sense sources
         /// </summary>
-        public void EndSenseCalculation<TGameContext>(TGameContext ctx)
+        public void EndSenseCalculation()
         {
             zLevelBuffer.Clear();
             foreach (var l in activeLightsPerLevel)

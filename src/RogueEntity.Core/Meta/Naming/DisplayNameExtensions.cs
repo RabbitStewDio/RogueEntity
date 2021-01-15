@@ -9,12 +9,11 @@ namespace RogueEntity.Core.Meta.Naming
         public static readonly IDisplayName Something = new NonCountableNounDisplayName("something");
         public static readonly IDisplayName Somebody = new NonCountableNounDisplayName("somebody");
 
-        public static IDisplayName ToItemName<TGameContext, TItemId>(this TItemId actor,
-                                                                     IItemResolver<TGameContext, TItemId> itemResolver,
-                                                                     TGameContext context)
+        public static IDisplayName ToItemName<TItemId>(this TItemId actor,
+                                                       IItemResolver<TItemId> itemResolver)
             where TItemId : IEntityKey
         {
-            if (itemResolver.TryQueryData(actor, context, out IDisplayName name))
+            if (itemResolver.TryQueryData(actor, out IDisplayName name))
             {
                 return name;
             }
@@ -22,84 +21,44 @@ namespace RogueEntity.Core.Meta.Naming
             return Something;
         }
 
-        public static BulkItemDeclarationBuilder<TGameContext, TItemId> WithName<TGameContext, TItemId>(this BulkItemDeclarationBuilder<TGameContext, TItemId> builder,
-                                                                                                                 string name)
+        public static BulkItemDeclarationBuilder<TItemId> WithName<TItemId>(this BulkItemDeclarationBuilder<TItemId> builder,
+                                                                            string name)
             where TItemId : IEntityKey
         {
-            builder.Declaration.WithTrait(new DefaultItemNameTrait<TGameContext, TItemId>(new CountableNounDisplayName(name)));
+            builder.Declaration.WithTrait(new DefaultItemNameTrait<TItemId>(new CountableNounDisplayName(name)));
             return builder;
         }
 
-        public static ReferenceItemDeclarationBuilder<TGameContext, TItemId> WithName<TGameContext, TItemId>(this ReferenceItemDeclarationBuilder<TGameContext, TItemId> builder,
-                                                                                                                      string name)
+        public static ReferenceItemDeclarationBuilder<TItemId> WithName<TItemId>(this ReferenceItemDeclarationBuilder<TItemId> builder,
+                                                                                 string name)
             where TItemId : IEntityKey
         {
-            builder.Declaration.WithTrait(new DefaultItemNameTrait<TGameContext, TItemId>(new CountableNounDisplayName(name)));
+            builder.Declaration.WithTrait(new DefaultItemNameTrait<TItemId>(new CountableNounDisplayName(name)));
             return builder;
         }
 
-        public static BulkItemDeclarationBuilder<TGameContext, TItemId> WithUniqueName<TGameContext, TItemId>(this BulkItemDeclarationBuilder<TGameContext, TItemId> builder,
-                                                                                                              string name)
+        public static BulkItemDeclarationBuilder<TItemId> WithUniqueName<TItemId>(this BulkItemDeclarationBuilder<TItemId> builder,
+                                                                                  string name)
             where TItemId : IEntityKey
         {
-            builder.Declaration.WithTrait(new DefaultItemNameTrait<TGameContext, TItemId>(new NonCountableNounDisplayName(name)));
+            builder.Declaration.WithTrait(new DefaultItemNameTrait<TItemId>(new NonCountableNounDisplayName(name)));
             return builder;
         }
 
-        public static ReferenceItemDeclarationBuilder<TGameContext, TItemId> WithUniqueName<TGameContext, TItemId>(this ReferenceItemDeclarationBuilder<TGameContext, TItemId> builder,
-                                                                                                                   string name)
+        public static ReferenceItemDeclarationBuilder<TItemId> WithUniqueName<TItemId>(this ReferenceItemDeclarationBuilder<TItemId> builder,
+                                                                                       string name)
             where TItemId : IEntityKey
         {
-            builder.Declaration.WithTrait(new DefaultItemNameTrait<TGameContext, TItemId>(new NonCountableNounDisplayName(name)));
+            builder.Declaration.WithTrait(new DefaultItemNameTrait<TItemId>(new NonCountableNounDisplayName(name)));
             return builder;
         }
 
-
-/*
-        public static IDisplayName ToActorName<TGameContext, TActorId>(this TActorId actor,
-                                                                       TGameContext context)
-            where TGameContext : IActorContext<TGameContext, TActorId>
-            where TActorId : IEntityKey
-        {
-            if (context.ActorResolver.TryQueryData(actor, context, out IDisplayName name))
-            {
-                return name;
-            }
-
-            return Somebody;
-        }
-
-        public static string ToDefiniteActorName<TGameContext, TActorId>(this TActorId actor, TGameContext context, int count = 1)
-            where TGameContext : IActorContext<TGameContext, TActorId>
-            where TActorId : IEntityKey
-        {
-            if (context.ActorResolver.TryQueryData(actor, context, out IDisplayName name))
-            {
-                return name.GetDefiniteFormName(count);
-            }
-
-            return Somebody.GetDefiniteFormName(count);
-        }
-        public static string ToIndefiniteActorName<TGameContext, TActorId>(this TActorId actor, TGameContext context, int count = 1)
-            where TGameContext : IActorContext<TGameContext, TActorId>
-            where TActorId : IEntityKey
-        {
-            if (context.ActorResolver.TryQueryData(actor, context, out IDisplayName name))
-            {
-                return name.GetIndefiniteFormName(count);
-            }
-
-            return Somebody.GetIndefiniteFormName(count);
-        }
-*/
-
-        public static string ToDefiniteItemName<TGameContext, TItemId>(this TItemId actor, 
-                                                                       IItemResolver<TGameContext, TItemId> itemResolver,
-                                                                       TGameContext context, 
-                                                                       int count = 1)
+        public static string ToDefiniteItemName<TItemId>(this TItemId actor,
+                                                         IItemResolver<TItemId> itemResolver,
+                                                         int count = 1)
             where TItemId : IEntityKey
         {
-            if (itemResolver.TryQueryData(actor, context, out IDisplayName name))
+            if (itemResolver.TryQueryData(actor, out IDisplayName name))
             {
                 return name.GetDefiniteFormName(count);
             }
@@ -107,13 +66,12 @@ namespace RogueEntity.Core.Meta.Naming
             return Something.GetDefiniteFormName(count);
         }
 
-        public static string ToIndefiniteItemName<TGameContext, TItemId>(this TItemId actor, 
-                                                                         IItemResolver<TGameContext, TItemId> itemResolver,
-                                                                         TGameContext context, 
-                                                                         int count = 1)
+        public static string ToIndefiniteItemName<TItemId>(this TItemId actor,
+                                                           IItemResolver<TItemId> itemResolver,
+                                                           int count = 1)
             where TItemId : IEntityKey
         {
-            if (itemResolver.TryQueryData(actor, context, out IDisplayName name))
+            if (itemResolver.TryQueryData(actor, out IDisplayName name))
             {
                 return name.GetIndefiniteFormName(count);
             }

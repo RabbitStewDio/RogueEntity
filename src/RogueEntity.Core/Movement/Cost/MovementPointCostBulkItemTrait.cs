@@ -7,8 +7,8 @@ using RogueEntity.Core.Positioning.Algorithms;
 
 namespace RogueEntity.Core.Movement.Cost
 {
-    public class MovementPointCostBulkItemTrait<TGameContext, TActorId, TMovementMode> : SimpleBulkItemComponentTraitBase<TGameContext, TActorId, MovementPointCost<TMovementMode>>,
-                                                                                         IItemComponentInformationTrait<TGameContext, TActorId, MovementCost>
+    public class MovementPointCostBulkItemTrait< TActorId, TMovementMode> : SimpleBulkItemComponentTraitBase< TActorId, MovementPointCost<TMovementMode>>,
+                                                                                         IItemComponentInformationTrait< TActorId, MovementCost>
         where TActorId : IBulkDataStorageKey<TActorId>
         where TMovementMode : IMovementMode
     {
@@ -29,14 +29,14 @@ namespace RogueEntity.Core.Movement.Cost
             this.movementModePreference = movementModePreference;
         }
 
-        protected override MovementPointCost<TMovementMode> CreateInitialValue(TGameContext c, TActorId reference)
+        protected override MovementPointCost<TMovementMode> CreateInitialValue( TActorId reference)
         {
             return new MovementPointCost<TMovementMode>(standardMovementCost);
         }
 
-        public bool TryQuery(IEntityViewControl<TActorId> v, TGameContext context, TActorId k, out MovementCost t)
+        public bool TryQuery(IEntityViewControl<TActorId> v, TActorId k, out MovementCost t)
         {
-            if (TryQuery(v, context, k, out MovementPointCost<TMovementMode> pointCost) &&
+            if (TryQuery(v,  k, out MovementPointCost<TMovementMode> pointCost) &&
                 pointCost.Cost > 0)
             {
                 t = new MovementCost(movementMode, movementStyle, pointCost.Cost, movementModePreference);
@@ -47,7 +47,7 @@ namespace RogueEntity.Core.Movement.Cost
             return false;
         }
 
-        protected override bool ValidateData(IEntityViewControl<TActorId> entityViewControl, TGameContext context, in TActorId itemReference, in MovementPointCost<TMovementMode> data)
+        protected override bool ValidateData(IEntityViewControl<TActorId> entityViewControl, in TActorId itemReference, in MovementPointCost<TMovementMode> data)
         {
             return data.Cost > 0;
         }

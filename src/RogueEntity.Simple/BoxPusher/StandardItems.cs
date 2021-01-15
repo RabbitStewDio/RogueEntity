@@ -16,13 +16,13 @@ namespace RogueEntity.Simple.BoxPusher
 {
     public static class StandardItems
     {
-        public static void DoSomething<TGameContext>(ItemDeclarationBuilder<TGameContext> t)
+        public static void DoSomething(ItemDeclarationBuilder t)
         {
             var itemDeclarationBuilderWithReferenceContext = t.ForEntity<ItemReference>();
             itemDeclarationBuilderWithReferenceContext.DefineWall();
         }
 
-        public static ReferenceItemDeclarationBuilder<TGameContext, TActorId> DefinePlayer<TGameContext, TActorId, TItemId>(this ItemDeclarationBuilderWithReferenceContext<TGameContext, TActorId> b)
+        public static ReferenceItemDeclarationBuilder<TActorId> DefinePlayer<TActorId, TItemId>(this ItemDeclarationBuilderWithReferenceContext<TActorId> b)
             where TActorId : IEntityKey
             where TItemId : IEntityKey
         {
@@ -36,7 +36,7 @@ namespace RogueEntity.Simple.BoxPusher
                 ;
         }
 
-        public static ReferenceItemDeclarationBuilder<TGameContext, TItemId> DefineBox<TGameContext, TItemId>(this ItemDeclarationBuilderWithReferenceContext<TGameContext, TItemId> b)
+        public static ReferenceItemDeclarationBuilder<TItemId> DefineBox<TItemId>(this ItemDeclarationBuilderWithReferenceContext<TItemId> b)
             where TItemId : IEntityKey
         {
             return b.Define("Items.Box")
@@ -46,7 +46,7 @@ namespace RogueEntity.Simple.BoxPusher
                 ;
         }
 
-        public static ReferenceItemDeclarationBuilder<TGameContext, TItemId> DefineWall<TGameContext, TItemId>(this ItemDeclarationBuilderWithReferenceContext<TGameContext, TItemId> b)
+        public static ReferenceItemDeclarationBuilder<TItemId> DefineWall<TItemId>(this ItemDeclarationBuilderWithReferenceContext<TItemId> b)
             where TItemId : IEntityKey
         {
             return b.Define("Items.Wall")
@@ -56,7 +56,7 @@ namespace RogueEntity.Simple.BoxPusher
                     .WithName("wall");
         }
 
-        public static BulkItemDeclarationBuilder<TGameContext, TItemId> DefineWall<TGameContext, TItemId>(this ItemDeclarationBuilderWithBulkContext<TGameContext, TItemId> b)
+        public static BulkItemDeclarationBuilder<TItemId> DefineWall<TItemId>(this ItemDeclarationBuilderWithBulkContext<TItemId> b)
             where TItemId : IBulkDataStorageKey<TItemId>
         {
             return b.Define("Items.Wall")
@@ -66,7 +66,7 @@ namespace RogueEntity.Simple.BoxPusher
                     .WithName("wall");
         }
 
-        public static BulkItemDeclarationBuilder<TGameContext, TItemId> DefineFloor<TGameContext, TItemId>(this ItemDeclarationBuilderWithBulkContext<TGameContext, TItemId> b)
+        public static BulkItemDeclarationBuilder<TItemId> DefineFloor<TItemId>(this ItemDeclarationBuilderWithBulkContext<TItemId> b)
             where TItemId : IBulkDataStorageKey<TItemId>
         {
             return b.Define("Items.Floor.Empty")
@@ -76,7 +76,7 @@ namespace RogueEntity.Simple.BoxPusher
                     .WithName("floor");
         }
 
-        public static BulkItemDeclarationBuilder<TGameContext, TItemId> DefineFloorTargetZone<TGameContext, TItemId>(this ItemDeclarationBuilderWithBulkContext<TGameContext, TItemId> b)
+        public static BulkItemDeclarationBuilder<TItemId> DefineFloorTargetZone<TItemId>(this ItemDeclarationBuilderWithBulkContext<TItemId> b)
             where TItemId : IBulkDataStorageKey<TItemId>
         {
             return b.Define("Items.Floor.TargetZone")

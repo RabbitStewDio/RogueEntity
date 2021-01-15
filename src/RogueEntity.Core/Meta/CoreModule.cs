@@ -41,18 +41,18 @@ namespace RogueEntity.Core.Meta
         }
 
         [EntityRoleInitializer("Role.Core.Item")]
-        protected void InitializeItemRole<TGameContext, TItemId>(in ModuleEntityInitializationParameter<TGameContext,TItemId> initParameter,
-                                                                 IModuleInitializer<TGameContext> initializer,
+        protected void InitializeItemRole< TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
+                                                                 IModuleInitializer initializer,
                                                                  EntityRole r)
             where TItemId : IEntityKey
         {
             var entityContext = initializer.DeclareEntityContext<TItemId>();
-            entityContext.Register(WorldItemComponentsId, -19_999, RegisterSharedItemComponents<TGameContext, TItemId>);
+            entityContext.Register(WorldItemComponentsId, -19_999, RegisterSharedItemComponents);
         }
 
         [EntityRoleInitializer("Role.Core.Entity")]
-        protected void InitializeEntityRole<TGameContext, TItemId>(in ModuleEntityInitializationParameter<TGameContext,TItemId> initParameter,
-                                                                   IModuleInitializer<TGameContext> initializer,
+        protected void InitializeEntityRole< TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
+                                                                   IModuleInitializer initializer,
                                                                    EntityRole r)
             where TItemId : IEntityKey
         {
@@ -63,8 +63,8 @@ namespace RogueEntity.Core.Meta
         }
 
         [EntityRoleInitializer("Role.Core.ContainedItem")]
-        protected void InitializeContainedItemRole<TGameContext, TItemId>(in ModuleEntityInitializationParameter<TGameContext,TItemId> initParameter,
-                                                                          IModuleInitializer<TGameContext> initializer,
+        protected void InitializeContainedItemRole< TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
+                                                                          IModuleInitializer initializer,
                                                                           EntityRole r)
             where TItemId : IEntityKey
         {
@@ -72,20 +72,20 @@ namespace RogueEntity.Core.Meta
             entityContext.Register(ContainedComponentsId, -20_000, RegisterContainedItemComponents);
         }
 
-        void RegisterCascadingDestructionSystems<TGameContext, TItemId>(in ModuleInitializationParameter initParameter,
-                                                                        IGameLoopSystemRegistration<TGameContext> context,
+        void RegisterCascadingDestructionSystems< TItemId>(in ModuleInitializationParameter initParameter,
+                                                                        IGameLoopSystemRegistration context,
                                                                         EntityRegistry<TItemId> registry)
             where TItemId : IEntityKey
         {
             var markCascades = registry.BuildSystem()
-                                       .WithContext<TGameContext>()
+                                       .WithoutContext()
                                        .WithInputParameter<CascadingDestroyedMarker>()
                                        .CreateSystem(DestroyedEntitiesSystem<TItemId>.SchedulePreviouslyMarkedItemsForDestruction);
             context.AddFixedStepHandlers(markCascades);
         }
 
-        void RegisterEntityCleanupSystems<TGameContext, TItemId>(in ModuleInitializationParameter initParameter,
-                                                                 IGameLoopSystemRegistration<TGameContext> context,
+        void RegisterEntityCleanupSystems< TItemId>(in ModuleInitializationParameter initParameter,
+                                                                 IGameLoopSystemRegistration context,
                                                                  EntityRegistry<TItemId> registry)
             where TItemId : IEntityKey
         {
@@ -103,13 +103,13 @@ namespace RogueEntity.Core.Meta
             registry.RegisterFlag<CascadingDestroyedMarker>();
         }
 
-        void RegisterSharedItemComponents<TGameContext, TItemId>(in ModuleInitializationParameter initParameter,
+        void RegisterSharedItemComponents< TItemId>(in ModuleInitializationParameter initParameter,
                                                                  EntityRegistry<TItemId> registry)
             where TItemId : IEntityKey
         {
             // All entities carry a reference to their trait declaration with them. This allows
             // systems to lookup traits and to perform actions on them.
-            registry.RegisterNonConstructable<ItemDeclarationHolder<TGameContext, TItemId>>();
+            registry.RegisterNonConstructable<ItemDeclarationHolder< TItemId>>();
 
             registry.RegisterNonConstructable<StackCount>();
             registry.RegisterNonConstructable<Weight>();

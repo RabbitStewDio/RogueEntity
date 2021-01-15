@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using EnTTSharp.Entities;
 using JetBrains.Annotations;
 using RogueEntity.Api.Utils;
@@ -9,7 +8,7 @@ using RogueEntity.Core.Utils.DataViews;
 
 namespace RogueEntity.Core.GridProcessing.LayerAggregation
 {
-    public abstract class DynamicGridAggregateLayerFactoryBase<TGameContext, TItemId, TAggregateType> : IAggregationLayerController<TGameContext, TAggregateType>
+    public abstract class DynamicGridAggregateLayerFactoryBase<TItemId, TAggregateType> : IAggregationLayerController<TAggregateType>
         where TItemId : IEntityKey
     {
         readonly MapLayer layer;
@@ -25,7 +24,7 @@ namespace RogueEntity.Core.GridProcessing.LayerAggregation
 
         protected IGridMapContext<TItemId> MapContext => mapContext;
 
-        public void Start(TGameContext context, IAggregationLayerSystemBackend<TGameContext, TAggregateType> system)
+        public void Start(IAggregationLayerSystemBackend<TAggregateType> system)
         {
             if (!mapContext.TryGetGridDataFor(layer, out var gdc))
             {
@@ -35,7 +34,7 @@ namespace RogueEntity.Core.GridProcessing.LayerAggregation
             gdc.PositionDirty += system.OnPositionDirty;
         }
 
-        public void PrepareLayers(TGameContext context, IAggregationLayerSystemBackend<TGameContext, TAggregateType> system)
+        public void PrepareLayers(IAggregationLayerSystemBackend<TAggregateType> system)
         {
             if (!mapContext.TryGetGridDataFor(layer, out var gridMapDataContext))
             {
@@ -67,9 +66,9 @@ namespace RogueEntity.Core.GridProcessing.LayerAggregation
             }
         }
 
-        protected abstract IAggregationPropertiesDataProcessor<TGameContext, TAggregateType> CreateDataProcessor(MapLayer layer, int zLayer, DynamicDataViewConfiguration config);
+        protected abstract IAggregationPropertiesDataProcessor<TAggregateType> CreateDataProcessor(MapLayer layer, int zLayer, DynamicDataViewConfiguration config);
 
-        public void Stop(TGameContext context, IAggregationLayerSystemBackend<TGameContext, TAggregateType> system)
+        public void Stop(IAggregationLayerSystemBackend<TAggregateType> system)
         {
             if (!mapContext.TryGetGridDataFor(layer, out var gdc))
             {

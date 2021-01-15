@@ -15,7 +15,7 @@ namespace RogueEntity.Core.Movement.CostModifier.Directions
                                                    AdjacencyRule adjacencyRule = AdjacencyRule.EightWay) : base(sourceData, adjacencyRule)
         { }
 
-        public void ProcessSystem<TGameContext>(TGameContext x) => Process();
+        public void ProcessSystem() => Process();
 
         
         protected override void ProcessTile(ProcessingParameters args)

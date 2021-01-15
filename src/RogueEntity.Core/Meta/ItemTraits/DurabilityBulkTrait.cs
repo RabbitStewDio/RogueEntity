@@ -6,15 +6,14 @@ using RogueEntity.Core.Meta.Items;
 
 namespace RogueEntity.Core.Meta.ItemTraits
 {
-    public sealed class DurabilityBulkTrait<TContext, TItemId> : IItemComponentTrait<TContext, TItemId, Durability>,
-                                                                 IBulkDataTrait<TContext, TItemId>
+    public sealed class DurabilityBulkTrait<TItemId> : IItemComponentTrait<TItemId, Durability>,
+                                                       IBulkDataTrait<TItemId>
         where TItemId : IBulkDataStorageKey<TItemId>
     {
         readonly Durability baseValue;
 
         public DurabilityBulkTrait(ushort maxDurability) : this(maxDurability, maxDurability)
-        {
-        }
+        { }
 
         public DurabilityBulkTrait(ushort initialCount, ushort maxDurability)
         {
@@ -27,12 +26,12 @@ namespace RogueEntity.Core.Meta.ItemTraits
         public ItemTraitId Id { get; }
         public int Priority { get; }
 
-        public TItemId Initialize(TContext context, IItemDeclaration item, TItemId reference)
+        public TItemId Initialize(IItemDeclaration item, TItemId reference)
         {
             return reference.WithData(baseValue.HitPoints);
         }
 
-        public bool TryQuery(IEntityViewControl<TItemId> v, TContext context, TItemId k, out Durability t)
+        public bool TryQuery(IEntityViewControl<TItemId> v, TItemId k, out Durability t)
         {
             if (k.IsReference)
             {
@@ -44,7 +43,6 @@ namespace RogueEntity.Core.Meta.ItemTraits
         }
 
         public bool TryUpdate(IEntityViewControl<TItemId> v,
-                              TContext context,
                               TItemId k,
                               in Durability t,
                               out TItemId changedK)
@@ -60,13 +58,13 @@ namespace RogueEntity.Core.Meta.ItemTraits
             return true;
         }
 
-        public bool TryRemove(IEntityViewControl<TItemId> entityRegistry, TContext context, TItemId k, out TItemId changedItem)
+        public bool TryRemove(IEntityViewControl<TItemId> entityRegistry, TItemId k, out TItemId changedItem)
         {
             changedItem = k;
             return false;
         }
 
-        IBulkItemTrait<TContext, TItemId> IBulkItemTrait<TContext, TItemId>.CreateInstance()
+        IBulkItemTrait<TItemId> IBulkItemTrait<TItemId>.CreateInstance()
         {
             return this;
         }

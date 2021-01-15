@@ -45,18 +45,18 @@ namespace RogueEntity.Core.Tests.Sensing.Sources.Touch
 
         TouchSenseReceptorPhysicsConfiguration physics;
 
-        protected override ReferenceItemDeclaration<SenseMappingTestContext, ItemReference> AttachTrait(ReferenceItemDeclaration<SenseMappingTestContext, ItemReference> decl)
+        protected override ReferenceItemDeclaration<ItemReference> AttachTrait(ReferenceItemDeclaration<ItemReference> decl)
         {
             switch (decl.Id.Id)
             {
                 case "SenseSource-Active-10":
-                    decl.WithTrait(new TouchSenseTrait<SenseMappingTestContext, ItemReference>(physics));
+                    decl.WithTrait(new TouchSenseTrait<ItemReference>(physics));
                     break;
                 case "SenseSource-Active-5":
-                    decl.WithTrait(new TouchSenseTrait<SenseMappingTestContext, ItemReference>(physics));
+                    decl.WithTrait(new TouchSenseTrait<ItemReference>(physics));
                     break;
                 case "SenseSource-Inactive-5":
-                    decl.WithTrait(new TouchSenseTrait<SenseMappingTestContext, ItemReference>(physics));
+                    decl.WithTrait(new TouchSenseTrait<ItemReference>(physics));
                     break;
             }
 
@@ -86,15 +86,15 @@ namespace RogueEntity.Core.Tests.Sensing.Sources.Touch
         {
             senseProperties.GetOrCreate(0).ImportData(SenseTestHelpers.ParseMap(sourceText));
 
-            var active10 = context.ItemResolver.Instantiate(context, senseActive10);
-            var active5 = context.ItemResolver.Instantiate(context, senseActive5);
-            var inactive = context.ItemResolver.Instantiate(context, senseInactive5);
+            var active10 = context.ItemResolver.Instantiate(senseActive10);
+            var active5 = context.ItemResolver.Instantiate(senseActive5);
+            var inactive = context.ItemResolver.Instantiate(senseInactive5);
 
             PrepareItems(active10, active5, inactive);
 
             foreach (var a in senseSystemActions)
             {
-                a(context);
+                a();
             }
 
             context.ItemEntityRegistry.GetComponent(active10, out SenseSourceState<TouchSense> va).Should().BeTrue();

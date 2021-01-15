@@ -3,16 +3,16 @@ using RogueEntity.Api.Modules.Helpers;
 
 namespace RogueEntity.Api.Modules
 {
-    public interface IModuleInitializer<TGameContext>
+    public interface IModuleInitializer
     {
-        IModuleContentContext<TGameContext, TEntityId> DeclareContentContext<TEntityId>()
+        IModuleContentContext<TEntityId> DeclareContentContext<TEntityId>()
             where TEntityId : IEntityKey;
         
-        IModuleEntityContext<TGameContext, TEntityId> DeclareEntityContext<TEntityId>()
+        IModuleEntityContext<TEntityId> DeclareEntityContext<TEntityId>()
             where TEntityId : IEntityKey;
 
         void Register(EntitySystemId id,
                       int priority,
-                      GlobalSystemRegistrationDelegate<TGameContext> entityRegistration);
+                      GlobalSystemRegistrationDelegate entityRegistration);
     }
 }

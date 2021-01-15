@@ -8,13 +8,14 @@ namespace RogueEntity.Core.Infrastructure.Actions.Schedule
 {
     [DataContract]
     [Serializable]
-    public class ScheduledActionPlan<TContext, TActorId>: IReadOnlyCollection<ScheduledAction<TContext, TActorId>> where TActorId : IEntityKey
+    public class ScheduledActionPlan<TActorId> : IReadOnlyCollection<ScheduledAction<TActorId>>
+        where TActorId : IEntityKey
     {
-        readonly Queue<ScheduledAction<TContext, TActorId>> additionalActions;
-        
+        readonly Queue<ScheduledAction<TActorId>> additionalActions;
+
         public ScheduledActionPlan()
         {
-            additionalActions = new Queue<ScheduledAction<TContext, TActorId>>();
+            additionalActions = new Queue<ScheduledAction<TActorId>>();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
@@ -22,14 +23,14 @@ namespace RogueEntity.Core.Infrastructure.Actions.Schedule
             return GetEnumerator();
         }
 
-        IEnumerator<ScheduledAction<TContext, TActorId>> IEnumerable<ScheduledAction<TContext, TActorId>>.GetEnumerator()
+        IEnumerator<ScheduledAction<TActorId>> IEnumerable<ScheduledAction<TActorId>>.GetEnumerator()
         {
             return GetEnumerator();
         }
 
         public int Count => additionalActions.Count;
 
-        public Queue<ScheduledAction<TContext, TActorId>>.Enumerator GetEnumerator()
+        public Queue<ScheduledAction<TActorId>>.Enumerator GetEnumerator()
         {
             return additionalActions.GetEnumerator();
         }
@@ -39,14 +40,14 @@ namespace RogueEntity.Core.Infrastructure.Actions.Schedule
             additionalActions.Clear();
         }
 
-        public void Add(ScheduledAction<TContext, TActorId> action)
+        public void Add(ScheduledAction<TActorId> action)
         {
             additionalActions.Enqueue(action);
         }
 
         public bool Empty => additionalActions.Count == 0;
 
-        public bool TryDequeue(out ScheduledAction<TContext, TActorId> action)
+        public bool TryDequeue(out ScheduledAction<TActorId> action)
         {
             if (additionalActions.Count > 0)
             {

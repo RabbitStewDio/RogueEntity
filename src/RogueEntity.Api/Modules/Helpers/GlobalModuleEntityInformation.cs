@@ -16,9 +16,9 @@ namespace RogueEntity.Api.Modules.Helpers
         void RecordRelation(EntityRelation r, Type target);
     }
     
-    public class GlobalModuleEntityInformation<TGameContext> : IModuleEntityInformation
+    public class GlobalModuleEntityInformation : IModuleEntityInformation
     {
-        static readonly ILogger Logger = SLog.ForContext<ModuleSystem<TGameContext>>();
+        static readonly ILogger Logger = SLog.ForContext<ModuleSystem>();
         readonly Dictionary<Type, ModuleEntityInformation> rolesPerType;
 
         public GlobalModuleEntityInformation()
@@ -176,7 +176,7 @@ namespace RogueEntity.Api.Modules.Helpers
             return result;
         }
 
-        public bool IsValidRole<TEntityId>(ModuleEntityRoleInitializerInfo<TGameContext, TEntityId> r, EntityRole role)
+        public bool IsValidRole<TEntityId>(ModuleEntityRoleInitializerInfo< TEntityId> r, EntityRole role)
             where TEntityId : IEntityKey
         {
             if (rolesPerType.TryGetValue(typeof(TEntityId), out var rec))
@@ -284,7 +284,7 @@ namespace RogueEntity.Api.Modules.Helpers
                 return relationRecord.TryQueryTarget(requiredRelation, out _);
             }
 
-            public bool IsValidRole<TEntityId>(ModuleEntityRoleInitializerInfo<TGameContext, TEntityId> r, EntityRole role)
+            public bool IsValidRole<TEntityId>(ModuleEntityRoleInitializerInfo< TEntityId> r, EntityRole role)
                 where TEntityId : IEntityKey
             {
                 if (r.Role != role)

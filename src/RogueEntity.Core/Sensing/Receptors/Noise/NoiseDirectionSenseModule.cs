@@ -25,9 +25,9 @@ namespace RogueEntity.Core.Sensing.Receptors.Noise
             DeclareDependency(ModuleDependency.Of(NoiseSourceModule.ModuleId));
         }
 
-        protected override void RegisterCalculateDirectionalSystem<TGameContext, TItemId>(in ModuleInitializationParameter initParameter,
-                                                                                          IGameLoopSystemRegistration<TGameContext> context,
-                                                                                          EntityRegistry<TItemId> registry)
+        protected override void RegisterCalculateDirectionalSystem<TItemId>(in ModuleInitializationParameter initParameter,
+                                                                            IGameLoopSystemRegistration context,
+                                                                            EntityRegistry<TItemId> registry)
         {
             RegisterCalculateUniDirectionalSystem(in initParameter, context, registry);
         }

@@ -5,11 +5,11 @@ namespace RogueEntity.Core.Sensing.Sources.Noise
 {
     public static class NoiseSourceTraitDeclarations
     {
-        public static ReferenceItemDeclarationBuilder<TGameContext, TItemId> WithNoiseSource<TGameContext, TItemId>(this ReferenceItemDeclarationBuilder<TGameContext, TItemId> builder)
+        public static ReferenceItemDeclarationBuilder< TItemId> WithNoiseSource< TItemId>(this ReferenceItemDeclarationBuilder< TItemId> builder)
             where TItemId : IEntityKey
         {
             var physics = builder.ServiceResolver.Resolve<INoisePhysicsConfiguration>();
-            var trait = new NoiseSourceTrait<TGameContext, TItemId>(physics);
+            var trait = new NoiseSourceTrait< TItemId>(physics);
             builder.Declaration.WithTrait(trait);
             return builder;
         }

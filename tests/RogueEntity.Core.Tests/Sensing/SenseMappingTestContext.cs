@@ -8,18 +8,18 @@ using RogueEntity.Core.Meta.EntityKeys;
 
 namespace RogueEntity.Core.Tests.Sensing
 {
-    public class SenseMappingTestContext : //IItemContext<SenseMappingTestContext, ActorReference>,
-                                           IItemContext<SenseMappingTestContext, ItemReference>,
+    public class SenseMappingTestContext : //IItemContext<ActorReference>,
+                                           IItemContext<ItemReference>,
                                            IGridMapContext<ItemReference>,
                                            IGridMapContext<ActorReference>
     {
-        readonly ItemContextBackend<SenseMappingTestContext, ItemReference> itemBackend;
+        readonly ItemContextBackend<ItemReference> itemBackend;
         readonly IGridMapContext<ItemReference> itemMap;
         readonly IGridMapContext<ActorReference> actorMap;
 
         public SenseMappingTestContext()
         {
-            itemBackend = new ItemContextBackend<SenseMappingTestContext, ItemReference>(new ItemReferenceMetaData());
+            itemBackend = new ItemContextBackend<ItemReference>(new ItemReferenceMetaData());
             itemMap = new DefaultGridPositionContextBackend<ItemReference>()
                 .WithDefaultMapLayer(TestMapLayers.One)
                 .WithDefaultMapLayer(TestMapLayers.Two);
@@ -74,7 +74,7 @@ namespace RogueEntity.Core.Tests.Sensing
             return actorMap.TryGetGridDataFor(layer, out data);
         }
 
-        public IItemRegistryBackend<SenseMappingTestContext, ItemReference> ItemRegistry
+        public IItemRegistryBackend<ItemReference> ItemRegistry
         {
             get { return itemBackend.ItemRegistry; }
         }
@@ -84,7 +84,7 @@ namespace RogueEntity.Core.Tests.Sensing
             get { return itemBackend.EntityRegistry; }
         }
 
-        public IItemResolver<SenseMappingTestContext, ItemReference> ItemResolver
+        public IItemResolver<ItemReference> ItemResolver
         {
             get { return itemBackend.ItemResolver; }
         }

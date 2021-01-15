@@ -8,23 +8,20 @@ using RogueEntity.Core.Meta.EntityKeys;
 namespace RogueEntity.Core.Tests.Sensing.Discovery
 {
     [TestFixture]
-    public class DiscoveryMapTraitTest: ItemComponentInformationTraitTestBase<SenseMappingTestContext, ActorReference, IDiscoveryMap, DiscoveryMapTrait<SenseMappingTestContext, ActorReference>>
+    public class DiscoveryMapTraitTest: ItemComponentInformationTraitTestBase<ActorReference, IDiscoveryMap, DiscoveryMapTrait<ActorReference>>
     {
         public DiscoveryMapTraitTest() : base(new ActorReferenceMetaData())
         {
         }
 
-        protected override SenseMappingTestContext CreateContext()
+        protected override void SetUpPrepare()
         {
-            var context = new SenseMappingTestContext();
             EntityRegistry.RegisterNonConstructable<DiscoveryMapData>();
-
-            return context;
         }
 
         protected override IItemComponentTestDataFactory<IDiscoveryMap> ProduceTestData(EntityRelations<ActorReference> relations)
         {
-            if (!ItemResolver.TryQueryData(relations.DefaultEntityId, Context, out IDiscoveryMap d))
+            if (!ItemResolver.TryQueryData(relations.DefaultEntityId, out IDiscoveryMap d))
             {
                 throw new ArgumentException();
             }
@@ -32,9 +29,9 @@ namespace RogueEntity.Core.Tests.Sensing.Discovery
             return new ItemComponentTestDataFactory<IDiscoveryMap>(ProduceDiscoveryData(writable));
         }
 
-        protected override DiscoveryMapTrait<SenseMappingTestContext, ActorReference> CreateTrait()
+        protected override DiscoveryMapTrait<ActorReference> CreateTrait()
         {
-            return new DiscoveryMapTrait<SenseMappingTestContext, ActorReference>();
+            return new DiscoveryMapTrait<ActorReference>();
         }
 
         protected override EntityComponentRegistration PerformEntityComponentRegistration(EntityRegistrationScanner scn)

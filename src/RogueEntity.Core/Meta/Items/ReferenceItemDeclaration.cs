@@ -1,15 +1,14 @@
-﻿using System.Collections.Generic;
-using EnTTSharp.Entities;
+﻿using EnTTSharp.Entities;
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Api.Utils;
 
 namespace RogueEntity.Core.Meta.Items
 {
-    public class ReferenceItemDeclaration<TContext, TItemId> : ItemDeclaration<TContext>, 
-                                                               IReferenceItemDeclaration<TContext, TItemId> 
+    public class ReferenceItemDeclaration<TItemId> : ItemDeclaration, 
+                                                               IReferenceItemDeclaration<TItemId> 
         where TItemId : IEntityKey
     {
-        readonly TraitRegistration<IReferenceItemTrait<TContext, TItemId>> traits;
+        readonly TraitRegistration<IReferenceItemTrait<TItemId>> traits;
 
         public ReferenceItemDeclaration(ItemDeclarationId id): this(id, id.Id) 
         {
@@ -17,10 +16,10 @@ namespace RogueEntity.Core.Meta.Items
 
         public ReferenceItemDeclaration(ItemDeclarationId id, string tag): base(id, tag) 
         {
-            traits = new TraitRegistration<IReferenceItemTrait<TContext, TItemId>>(TraitComparer.Default);
+            traits = new TraitRegistration<IReferenceItemTrait<TItemId>>(TraitComparer.Default);
         }
 
-        public ReferenceItemDeclaration<TContext, TItemId> WithTrait(IReferenceItemTrait<TContext, TItemId> trait)
+        public ReferenceItemDeclaration<TItemId> WithTrait(IReferenceItemTrait<TItemId> trait)
         {
             traits.Add(trait);
             return this;
@@ -36,19 +35,19 @@ namespace RogueEntity.Core.Meta.Items
             return traits.QueryAll(cache);
         }
 
-        public virtual void Initialize(IEntityViewControl<TItemId> v, TContext context, TItemId k)
+        public virtual void Initialize(IEntityViewControl<TItemId> v, TItemId k)
         {
             foreach (var itemTrait in traits)
             {
-                itemTrait.Initialize(v, context, k, this);
+                itemTrait.Initialize(v, k, this);
             }
         }
 
-        public virtual void Apply(IEntityViewControl<TItemId> v, TContext context, TItemId k)
+        public virtual void Apply(IEntityViewControl<TItemId> v, TItemId k)
         {
             foreach (var itemTrait in traits)
             {
-                itemTrait.Apply(v, context, k, this);
+                itemTrait.Apply(v, k, this);
             }
         }
 

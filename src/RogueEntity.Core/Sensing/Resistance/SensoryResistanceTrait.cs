@@ -7,7 +7,7 @@ using RogueEntity.Core.Utils;
 
 namespace RogueEntity.Core.Sensing.Resistance
 {
-    public class SensoryResistanceTrait<TContext, TItemId, TSense>: StatelessItemComponentTraitBase<TContext, TItemId, SensoryResistance<TSense>>
+    public class SensoryResistanceTrait< TItemId, TSense>: StatelessItemComponentTraitBase< TItemId, SensoryResistance<TSense>>
         where TItemId : IEntityKey
     {
         readonly SensoryResistance<TSense> sensoryResistance;
@@ -21,7 +21,7 @@ namespace RogueEntity.Core.Sensing.Resistance
         {
         }
 
-        protected override SensoryResistance<TSense> GetData(TContext context, TItemId k)
+        protected override SensoryResistance<TSense> GetData(TItemId k)
         {
             return sensoryResistance;
         }

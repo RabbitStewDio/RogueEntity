@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using EnTTSharp.Entities;
 using RogueEntity.Api.Utils;
 
@@ -6,26 +5,24 @@ namespace RogueEntity.Core.Equipment
 {
     public static class SlottedEquipmentExtensions
     {
-        public static bool TryEquipItem<TGameContext, TItemId>(this ISlottedEquipment<TGameContext, TItemId> equipment,
-                                                               TGameContext context,
+        public static bool TryEquipItem< TItemId>(this ISlottedEquipment< TItemId> equipment,
                                                                TItemId item,
                                                                out TItemId modifiedItem,
                                                                out EquipmentSlot actualSlot,
                                                                bool ignoreWeight = false)
             where TItemId : IEntityKey
         {
-            return equipment.TryEquipItem(context, item, out modifiedItem, Optional.Empty(), out actualSlot, ignoreWeight);
+            return equipment.TryEquipItem(item, out modifiedItem, Optional.Empty(), out actualSlot, ignoreWeight);
         }
 
-        public static bool TryUnequipItem<TGameContext, TItemId>(this ISlottedEquipment<TGameContext, TItemId> equipment,
-                                                                 TGameContext context,
+        public static bool TryUnequipItem< TItemId>(this ISlottedEquipment< TItemId> equipment,
                                                                  TItemId item)
             where TItemId : IEntityKey
         {
-            return equipment.TryUnequipItem(context, item, out _);
+            return equipment.TryUnequipItem(item, out _);
         }
 
-        public static BufferList<EquippedItem<TItemId>> QueryItems<TGameContext, TItemId>(this ISlottedEquipment<TGameContext, TItemId> equipment,
+        public static BufferList<EquippedItem<TItemId>> QueryItems< TItemId>(this ISlottedEquipment< TItemId> equipment,
                                                                                           BufferList<EquippedItem<TItemId>> data = null)
             where TItemId : IEntityKey
         {
@@ -43,7 +40,7 @@ namespace RogueEntity.Core.Equipment
             return data;
         }
 
-        public static BufferList<EquippedItem<TItemId>> QueryEquipmentSlots<TGameContext, TItemId>(this ISlottedEquipment<TGameContext, TItemId> equipment,
+        public static BufferList<EquippedItem<TItemId>> QueryEquipmentSlots< TItemId>(this ISlottedEquipment< TItemId> equipment,
                                                                                                    BufferList<EquippedItem<TItemId>> data = null)
             where TItemId : IEntityKey
         {

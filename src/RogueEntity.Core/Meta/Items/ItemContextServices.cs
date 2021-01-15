@@ -5,18 +5,18 @@ namespace RogueEntity.Core.Meta.Items
 {
     public static class ItemContextServices
     {
-        public static IServiceResolver ConfigureEntityType<TGameContext, TEntity>(this IServiceResolver serviceResolver, IBulkDataStorageMetaData<TEntity> meta)
+        public static IServiceResolver ConfigureEntityType<TEntity>(this IServiceResolver serviceResolver, IBulkDataStorageMetaData<TEntity> meta)
             where TEntity : IBulkDataStorageKey<TEntity>
         {
-            if (!serviceResolver.TryResolve(out IItemContextBackend<TGameContext, TEntity> actorBackend))
+            if (!serviceResolver.TryResolve(out IItemContextBackend<TEntity> actorBackend))
             {
-                actorBackend = new ItemContextBackend<TGameContext, TEntity>(meta);
+                actorBackend = new ItemContextBackend<TEntity>(meta);
                 serviceResolver.Store(actorBackend);
                 serviceResolver.Store(actorBackend.ItemResolver);
                 serviceResolver.Store(actorBackend.EntityMetaData);
             }
 
-            if (!serviceResolver.TryResolve(out IItemResolver<TGameContext, TEntity> _))
+            if (!serviceResolver.TryResolve(out IItemResolver<TEntity> _))
             {
                 serviceResolver.Store(actorBackend.ItemResolver);
             }

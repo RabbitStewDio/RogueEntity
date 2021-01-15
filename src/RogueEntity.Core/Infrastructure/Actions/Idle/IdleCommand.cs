@@ -1,4 +1,4 @@
-﻿using RogueEntity.Core.Infrastructure.Commands;
+﻿using RogueEntity.Core.Inputs.Commands;
 
 namespace RogueEntity.Core.Infrastructure.Actions.Idle
 {

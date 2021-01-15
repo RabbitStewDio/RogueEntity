@@ -77,18 +77,17 @@ namespace RogueEntity.Core.Tests.Sensing.Cache
         [Test]
         public void ValidateMapConnection()
         {
-            var sps = new SensePropertiesSystem<SenseMappingTestContext, VisionSense>(4, 4);
+            var sps = new SensePropertiesSystem<VisionSense>(4, 4);
             
-            var ctx = new SenseMappingTestContext();
             var cache = new SenseStateCache(2, 4, 4);    
-            var conn = new SensePropertiesConnectorSystem<SenseMappingTestContext, VisionSense>(sps, cache);
+            var conn = new SensePropertiesConnectorSystem<VisionSense>(sps, cache);
             
             cache.ActivateGlobalCacheLayer(TestMapLayers.One);
             cache.ActivateGlobalCacheLayer(TestMapLayers.Two);
             cache.ActivateTrackedSenseSource(typeof(VisionSense));
             cache.ActivateTrackedSenseSource(typeof(TouchSense));
             
-            conn.Start(ctx);
+            conn.Start();
             sps.OnPositionDirty(this, new PositionDirtyEventArgs(new Position(10, 10, 10, 1)));
             
             cache.TryGetGlobalSenseCache(out var globalCacheView).Should().BeTrue();

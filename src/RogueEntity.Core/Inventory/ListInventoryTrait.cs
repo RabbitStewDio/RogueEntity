@@ -10,23 +10,23 @@ using RogueEntity.Core.Meta.ItemTraits;
 
 namespace RogueEntity.Core.Inventory
 {
-    public class ListInventoryTrait<TGameContext, TOwnerId, TItemId> : IReferenceItemTrait<TGameContext, TOwnerId>,
-                                                                       IItemComponentTrait<TGameContext, TOwnerId, IInventory<TGameContext, TItemId>>,
-                                                                       IItemComponentTrait<TGameContext, TOwnerId, IContainerView<TItemId>>,
-                                                                       IItemComponentInformationTrait<TGameContext, TOwnerId, InventoryWeight>
+    public class ListInventoryTrait< TOwnerId, TItemId> : IReferenceItemTrait< TOwnerId>,
+                                                                       IItemComponentTrait< TOwnerId, IInventory< TItemId>>,
+                                                                       IItemComponentTrait< TOwnerId, IContainerView<TItemId>>,
+                                                                       IItemComponentInformationTrait< TOwnerId, InventoryWeight>
         where TOwnerId : IEntityKey
         where TItemId : IEntityKey
     {
         static readonly EqualityComparer<TOwnerId> Comparer = EqualityComparer<TOwnerId>.Default;
         readonly IBulkDataStorageMetaData<TItemId> itemIdMetaData;
-        readonly IItemResolver<TGameContext, TItemId> itemResolver;
+        readonly IItemResolver< TItemId> itemResolver;
         readonly Weight defaultCarryWeight;
 
         public ItemTraitId Id => "Core.Inventory.ListInventory";
         public int Priority => 100;
 
         public ListInventoryTrait([NotNull] IBulkDataStorageMetaData<TItemId> itemIdMetaData,
-                                  [NotNull] IItemResolver<TGameContext, TItemId> itemResolver,
+                                  [NotNull] IItemResolver< TItemId> itemResolver,
                                   Weight defaultCarryWeight = default)
         {
             this.itemIdMetaData = itemIdMetaData ?? throw new ArgumentNullException(nameof(itemIdMetaData));
@@ -34,22 +34,22 @@ namespace RogueEntity.Core.Inventory
             this.defaultCarryWeight = defaultCarryWeight;
         }
 
-        public IReferenceItemTrait<TGameContext, TOwnerId> CreateInstance()
+        public IReferenceItemTrait< TOwnerId> CreateInstance()
         {
             return this;
         }
 
-        protected virtual ListInventoryData<TOwnerId, TItemId> CreateInitialValue(TGameContext c, TOwnerId actor)
+        protected virtual ListInventoryData<TOwnerId, TItemId> CreateInitialValue( TOwnerId actor)
         {
             return new ListInventoryData<TOwnerId, TItemId>(actor, defaultCarryWeight);
         }
 
-        public virtual void Initialize(IEntityViewControl<TOwnerId> v, TGameContext context, TOwnerId k, IItemDeclaration item)
+        public virtual void Initialize(IEntityViewControl<TOwnerId> v, TOwnerId k, IItemDeclaration item)
         {
-            v.AssignOrReplace(k, CreateInitialValue(context, k));
+            v.AssignOrReplace(k, CreateInitialValue(k));
         }
 
-        public virtual void Apply(IEntityViewControl<TOwnerId> v, TGameContext context, TOwnerId k, IItemDeclaration item)
+        public virtual void Apply(IEntityViewControl<TOwnerId> v, TOwnerId k, IItemDeclaration item)
         {
         }
 
@@ -67,16 +67,15 @@ namespace RogueEntity.Core.Inventory
 
         [SuppressMessage("ReSharper", "UnusedParameter.Global")]
         protected virtual bool ValidateData(IEntityViewControl<TOwnerId> entityViewControl,
-                                            TGameContext context,
                                             in TOwnerId itemReference,
                                             in ListInventoryData<TOwnerId, TItemId> data)
         {
             return Comparer.Equals(data.OwnerData, itemReference);
         }
 
-        protected bool TryUpdateData(IEntityViewControl<TOwnerId> v, TGameContext context, TOwnerId k, in ListInventoryData<TOwnerId, TItemId> t, out TOwnerId changedK)
+        protected bool TryUpdateData(IEntityViewControl<TOwnerId> v, TOwnerId k, in ListInventoryData<TOwnerId, TItemId> t, out TOwnerId changedK)
         {
-            if (!ValidateData(v, context, k, in t))
+            if (!ValidateData(v, k, in t))
             {
                 changedK = k;
                 return false;
@@ -93,13 +92,13 @@ namespace RogueEntity.Core.Inventory
             return false;
         }
 
-        public bool TryRemove(IEntityViewControl<TOwnerId> v, TGameContext context, TOwnerId k, out TOwnerId changedK)
+        public bool TryRemove(IEntityViewControl<TOwnerId> v, TOwnerId k, out TOwnerId changedK)
         {
             changedK = k;
             return false;
         }
 
-        public bool TryQuery(IEntityViewControl<TOwnerId> v, TGameContext context, TOwnerId k, out InventoryWeight t)
+        public bool TryQuery(IEntityViewControl<TOwnerId> v, TOwnerId k, out InventoryWeight t)
         {
             if (TryQueryData(v, k, out ListInventoryData<TOwnerId, TItemId> inventory))
             {
@@ -111,11 +110,11 @@ namespace RogueEntity.Core.Inventory
             return false;
         }
 
-        public bool TryQuery(IEntityViewControl<TOwnerId> v, TGameContext context, TOwnerId k, out IContainerView<TItemId> t)
+        public bool TryQuery(IEntityViewControl<TOwnerId> v, TOwnerId k, out IContainerView<TItemId> t)
         {
             if (TryQueryData(v, k, out ListInventoryData<TOwnerId, TItemId> data))
             {
-                t = new ListInventory<TGameContext, TOwnerId, TItemId>(itemIdMetaData, itemResolver, data);
+                t = new ListInventory< TOwnerId, TItemId>(itemIdMetaData, itemResolver, data);
                 return true;
             }
 
@@ -123,11 +122,11 @@ namespace RogueEntity.Core.Inventory
             return false;
         }
 
-        public bool TryQuery(IEntityViewControl<TOwnerId> v, TGameContext context, TOwnerId k, out IInventory<TGameContext, TItemId> t)
+        public bool TryQuery(IEntityViewControl<TOwnerId> v, TOwnerId k, out IInventory< TItemId> t)
         {
             if (TryQueryData(v, k, out ListInventoryData<TOwnerId, TItemId> data))
             {
-                t = new ListInventory<TGameContext, TOwnerId, TItemId>(itemIdMetaData, itemResolver, data);
+                t = new ListInventory< TOwnerId, TItemId>(itemIdMetaData, itemResolver, data);
                 return true;
             }
 
@@ -135,21 +134,21 @@ namespace RogueEntity.Core.Inventory
             return false;
         }
 
-        public bool TryUpdate(IEntityViewControl<TOwnerId> v, TGameContext context, TOwnerId k, in IContainerView<TItemId> t, out TOwnerId changedK)
+        public bool TryUpdate(IEntityViewControl<TOwnerId> v, TOwnerId k, in IContainerView<TItemId> t, out TOwnerId changedK)
         {
             changedK = k;
             return false;
         }
 
-        public bool TryUpdate(IEntityViewControl<TOwnerId> v, TGameContext context, TOwnerId k, in IInventory<TGameContext, TItemId> t, out TOwnerId changedK)
+        public bool TryUpdate(IEntityViewControl<TOwnerId> v, TOwnerId k, in IInventory< TItemId> t, out TOwnerId changedK)
         {
-            if (!(t is ListInventory<TGameContext, TOwnerId, TItemId> inv))
+            if (!(t is ListInventory< TOwnerId, TItemId> inv))
             {
                 changedK = k;
                 return false;
             }
 
-            if (TryUpdateData(v, context, k, inv.Data, out changedK))
+            if (TryUpdateData(v, k, inv.Data, out changedK))
             {
                 return true;
             }

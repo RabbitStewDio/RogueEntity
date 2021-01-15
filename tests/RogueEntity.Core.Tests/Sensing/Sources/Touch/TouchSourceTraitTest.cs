@@ -13,7 +13,7 @@ using RogueEntity.Core.Positioning.Algorithms;
 namespace RogueEntity.Core.Tests.Sensing.Sources.Touch
 {
     [TestFixture]
-    public class TouchSourceTraitTest : ItemComponentTraitTestBase<SenseMappingTestContext, ActorReference, TouchSourceDefinition, TouchSenseTrait<SenseMappingTestContext, ActorReference>>
+    public class TouchSourceTraitTest : ItemComponentTraitTestBase<ActorReference, TouchSourceDefinition, TouchSenseTrait<ActorReference>>
     {
         readonly TouchSenseReceptorPhysicsConfiguration physics;
 
@@ -22,9 +22,8 @@ namespace RogueEntity.Core.Tests.Sensing.Sources.Touch
             physics = new TouchSenseReceptorPhysicsConfiguration(new LinearDecaySensePhysics(DistanceCalculation.Chebyshev));
         }
 
-        protected override SenseMappingTestContext CreateContext()
+        protected override void SetUpPrepare()
         {
-            var context = new SenseMappingTestContext();
             EntityRegistry.RegisterNonConstructable<TouchSourceDefinition>();
             EntityRegistry.RegisterNonConstructable<SenseSourceState<TouchSense>>();
             EntityRegistry.RegisterFlag<ObservedSenseSource<TouchSense>>();
@@ -34,12 +33,11 @@ namespace RogueEntity.Core.Tests.Sensing.Sources.Touch
             EntityRegistry.RegisterNonConstructable<SensoryReceptorState<TouchSense, TouchSense>>();
             EntityRegistry.RegisterNonConstructable<SingleLevelSenseDirectionMapData<TouchSense, TouchSense>>();
             EntityRegistry.RegisterFlag<SenseReceptorDirtyFlag<TouchSense, TouchSense>>();
-            return context;
         }
 
-        protected override TouchSenseTrait<SenseMappingTestContext, ActorReference> CreateTrait()
+        protected override TouchSenseTrait<ActorReference> CreateTrait()
         {
-            return new TouchSenseTrait<SenseMappingTestContext, ActorReference>(physics);
+            return new TouchSenseTrait<ActorReference>(physics);
         }
 
         protected override IItemComponentTestDataFactory<TouchSourceDefinition> ProduceTestData(EntityRelations<ActorReference> relations)

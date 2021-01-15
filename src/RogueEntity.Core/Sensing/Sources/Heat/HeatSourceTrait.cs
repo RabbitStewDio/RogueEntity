@@ -10,8 +10,8 @@ using RogueEntity.Core.Sensing.Common;
 
 namespace RogueEntity.Core.Sensing.Sources.Heat
 {
-    public class HeatSourceTrait<TGameContext, TItemId> : SenseSourceTraitBase<TGameContext, TItemId, TemperatureSense, HeatSourceDefinition>,
-                                                          IItemComponentTrait<TGameContext, TItemId, Temperature>
+    public class HeatSourceTrait<TItemId> : SenseSourceTraitBase<TItemId, TemperatureSense, HeatSourceDefinition>,
+                                            IItemComponentTrait<TItemId, Temperature>
         where TItemId : IEntityKey
     {
         public override ItemTraitId Id => "Core.Item.Temperature";
@@ -25,14 +25,14 @@ namespace RogueEntity.Core.Sensing.Sources.Heat
             this.physicsConfiguration = physicsConfiguration ?? throw new ArgumentNullException(nameof(physicsConfiguration));
             this.baseTemperature = baseTemperature;
         }
-        
+
         protected override bool TryGetInitialValue(out HeatSourceDefinition senseDefinition)
         {
             if (baseTemperature.TryGetValue(out var value))
             {
                 senseDefinition = new HeatSourceDefinition(new SenseSourceDefinition(physicsConfiguration.HeatPhysics.DistanceMeasurement,
                                                                                      physicsConfiguration.HeatPhysics.AdjacencyRule,
-                                                                                     value.ToKelvin()), true);                
+                                                                                     value.ToKelvin()), true);
                 return true;
             }
 
@@ -40,9 +40,9 @@ namespace RogueEntity.Core.Sensing.Sources.Heat
             return false;
         }
 
-        public bool TryQuery(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, out Temperature t)
+        public bool TryQuery(IEntityViewControl<TItemId> v, TItemId k, out Temperature t)
         {
-            if (TryQuery(v, context, k, out HeatSourceDefinition d))
+            if (TryQuery(v, k, out HeatSourceDefinition d))
             {
                 t = Temperature.FromKelvin(d.SenseDefinition.Intensity);
                 return true;
@@ -52,17 +52,17 @@ namespace RogueEntity.Core.Sensing.Sources.Heat
             return false;
         }
 
-        public bool TryUpdate(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, in Temperature t, out TItemId changedK)
+        public bool TryUpdate(IEntityViewControl<TItemId> v, TItemId k, in Temperature t, out TItemId changedK)
         {
-            if (TryQuery(v, context, k, out HeatSourceDefinition h))
+            if (TryQuery(v, k, out HeatSourceDefinition h))
             {
-                return TryUpdate(v, context, k, h.WithSenseSource(h.SenseDefinition.WithIntensity(t.ToKelvin())), out changedK);
+                return TryUpdate(v, k, h.WithSenseSource(h.SenseDefinition.WithIntensity(t.ToKelvin())), out changedK);
             }
 
             var val = new HeatSourceDefinition(new SenseSourceDefinition(physicsConfiguration.HeatPhysics.DistanceMeasurement,
                                                                          physicsConfiguration.HeatPhysics.AdjacencyRule,
                                                                          t.ToKelvin()), true);
-            return TryUpdate(v, context, k, in val, out changedK);
+            return TryUpdate(v, k, in val, out changedK);
         }
 
         public override IEnumerable<EntityRoleInstance> GetEntityRoles()

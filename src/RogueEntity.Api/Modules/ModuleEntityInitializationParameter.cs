@@ -5,16 +5,16 @@ using RogueEntity.Api.Services;
 
 namespace RogueEntity.Api.Modules
 {
-    public readonly struct ModuleEntityInitializationParameter<TGameContext, TEntityId>
+    public readonly struct ModuleEntityInitializationParameter<TEntityId>
         where TEntityId : IEntityKey
     {
         public readonly IModuleEntityInformation EntityInformation;
         public readonly IServiceResolver ServiceResolver;
-        public readonly IModuleContentDeclarations<TGameContext, TEntityId> ContentDeclarations;
+        public readonly IModuleContentDeclarations<TEntityId> ContentDeclarations;
 
         public ModuleEntityInitializationParameter([NotNull] IModuleEntityInformation entityInformation,
                                                    [NotNull] IServiceResolver serviceResolver,
-                                                   [NotNull] IModuleContentDeclarations<TGameContext, TEntityId> contentDeclarations)
+                                                   [NotNull] IModuleContentDeclarations<TEntityId> contentDeclarations)
         {
             EntityInformation = entityInformation ?? throw new ArgumentNullException(nameof(entityInformation));
             ServiceResolver = serviceResolver ?? throw new ArgumentNullException(nameof(serviceResolver));

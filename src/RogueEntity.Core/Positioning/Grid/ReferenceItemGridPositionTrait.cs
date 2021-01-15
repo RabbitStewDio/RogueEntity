@@ -12,23 +12,24 @@ using Serilog;
 
 namespace RogueEntity.Core.Positioning.Grid
 {
-    public class ReferenceItemGridPositionTrait<TGameContext, TItemId> : IReferenceItemTrait<TGameContext, TItemId>,
-                                                                         IItemComponentTrait<TGameContext, TItemId, Position>,
-                                                                         IItemComponentTrait<TGameContext, TItemId, EntityGridPosition>,
-                                                                         IItemComponentInformationTrait<TGameContext, TItemId, EntityGridPositionChangedMarker>,
-                                                                         IItemComponentDesignTimeInformationTrait<MapLayerPreference>,
-                                                                         IItemComponentInformationTrait<TGameContext, TItemId, MapLayerPreference>,
-                                                                         IItemComponentInformationTrait<TGameContext, TItemId, MapContainerEntityMarker>
+    public class ReferenceItemGridPositionTrait<TItemId> : IReferenceItemTrait<TItemId>,
+                                                           IItemComponentTrait<TItemId, Position>,
+                                                           IItemComponentTrait<TItemId, EntityGridPosition>,
+                                                           IItemComponentInformationTrait<TItemId, EntityGridPositionChangedMarker>,
+                                                           IItemComponentDesignTimeInformationTrait<MapLayerPreference>,
+                                                           IItemComponentInformationTrait<TItemId, MapLayerPreference>,
+                                                           IItemComponentInformationTrait<TItemId, MapContainerEntityMarker>
         where TItemId : IEntityKey
     {
-        readonly IItemResolver<TGameContext, TItemId> itemResolver;
+        readonly IItemResolver<TItemId> itemResolver;
         readonly MapLayerPreference layerPreference;
-        readonly ILogger logger = SLog.ForContext<ReferenceItemGridPositionTrait<TGameContext, TItemId>>();
+        readonly ILogger logger = SLog.ForContext<ReferenceItemGridPositionTrait<TItemId>>();
         readonly IGridMapContext<TItemId> gridContext;
 
-        public ReferenceItemGridPositionTrait([NotNull] IItemResolver<TGameContext, TItemId> itemResolver,
-                                              [NotNull] IGridMapContext<TItemId> gridContext, 
-                                              MapLayer layer, params MapLayer[] layers)
+        public ReferenceItemGridPositionTrait([NotNull] IItemResolver<TItemId> itemResolver,
+                                              [NotNull] IGridMapContext<TItemId> gridContext,
+                                              MapLayer layer,
+                                              params MapLayer[] layers)
         {
             this.itemResolver = itemResolver ?? throw new ArgumentNullException(nameof(itemResolver));
             this.gridContext = gridContext ?? throw new ArgumentNullException(nameof(gridContext));
@@ -41,7 +42,7 @@ namespace RogueEntity.Core.Positioning.Grid
         public ItemTraitId Id { get; }
         public int Priority { get; }
 
-        public IReferenceItemTrait<TGameContext, TItemId> CreateInstance()
+        public IReferenceItemTrait<TItemId> CreateInstance()
         {
             return this;
         }
@@ -52,16 +53,15 @@ namespace RogueEntity.Core.Positioning.Grid
             return true;
         }
 
-        public void Initialize(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, IItemDeclaration item)
+        public void Initialize(IEntityViewControl<TItemId> v, TItemId k, IItemDeclaration item)
         {
             v.AssignComponent(k, EntityGridPosition.Invalid);
         }
 
-        public void Apply(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, IItemDeclaration item)
-        {
-        }
+        public void Apply(IEntityViewControl<TItemId> v, TItemId k, IItemDeclaration item)
+        { }
 
-        public bool TryQuery(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, out EntityGridPosition t)
+        public bool TryQuery(IEntityViewControl<TItemId> v, TItemId k, out EntityGridPosition t)
         {
             if (v.IsValid(k) &&
                 v.GetComponent(k, out t))
@@ -73,7 +73,7 @@ namespace RogueEntity.Core.Positioning.Grid
             return false;
         }
 
-        public bool TryQuery(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, out Position t)
+        public bool TryQuery(IEntityViewControl<TItemId> v, TItemId k, out Position t)
         {
             if (v.IsValid(k) &&
                 v.GetComponent(k, out EntityGridPosition p))
@@ -86,7 +86,7 @@ namespace RogueEntity.Core.Positioning.Grid
             return false;
         }
 
-        public bool TryQuery(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, out MapContainerEntityMarker t)
+        public bool TryQuery(IEntityViewControl<TItemId> v, TItemId k, out MapContainerEntityMarker t)
         {
             if (v.IsValid(k) && v.GetComponent(k, out EntityGridPosition _))
             {
@@ -98,7 +98,7 @@ namespace RogueEntity.Core.Positioning.Grid
             return false;
         }
 
-        public bool TryQuery(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, out EntityGridPositionChangedMarker t)
+        public bool TryQuery(IEntityViewControl<TItemId> v, TItemId k, out EntityGridPositionChangedMarker t)
         {
             if (v.IsValid(k) && v.GetComponent(k, out t))
             {
@@ -109,19 +109,21 @@ namespace RogueEntity.Core.Positioning.Grid
             return false;
         }
 
-        public bool TryQuery(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, out MapLayerPreference t)
+        public bool TryQuery(IEntityViewControl<TItemId> v, TItemId k, out MapLayerPreference t)
         {
             t = layerPreference;
             return true;
         }
 
-        public bool TryUpdate(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, in Position t, out TItemId changedK)
+        public bool TryUpdate(IEntityViewControl<TItemId> v, TItemId k, in Position t, out TItemId changedK)
         {
-            return TryUpdate(v, context, k, EntityGridPosition.From(t), out changedK);
+            return TryUpdate(v, k, EntityGridPosition.From(t), out changedK);
         }
 
-        public bool TryUpdate(IEntityViewControl<TItemId> v, TGameContext context, TItemId k,
-                              in EntityGridPosition desiredPosition, out TItemId changedK)
+        public bool TryUpdate(IEntityViewControl<TItemId> v,
+                              TItemId k,
+                              in EntityGridPosition desiredPosition,
+                              out TItemId changedK)
         {
             changedK = k;
 
@@ -202,14 +204,14 @@ namespace RogueEntity.Core.Positioning.Grid
             return true;
         }
 
-        bool IItemComponentTrait<TGameContext, TItemId, EntityGridPosition>.TryRemove(IEntityViewControl<TItemId> entityRegistry, TGameContext context, TItemId k, out TItemId changedItem)
+        bool IItemComponentTrait<TItemId, EntityGridPosition>.TryRemove(IEntityViewControl<TItemId> entityRegistry, TItemId k, out TItemId changedItem)
         {
-            return TryUpdate(entityRegistry, context, k, EntityGridPosition.Invalid, out changedItem);
+            return TryUpdate(entityRegistry, k, EntityGridPosition.Invalid, out changedItem);
         }
 
-        public bool TryRemove(IEntityViewControl<TItemId> entityRegistry, TGameContext context, TItemId k, out TItemId changedItem)
+        public bool TryRemove(IEntityViewControl<TItemId> entityRegistry, TItemId k, out TItemId changedItem)
         {
-            return TryUpdate(entityRegistry, context, k, EntityGridPosition.Invalid, out changedItem);
+            return TryUpdate(entityRegistry, k, EntityGridPosition.Invalid, out changedItem);
         }
 
         void WarnNotAcceptableLayer(TItemId targetItem, EntityGridPosition p)

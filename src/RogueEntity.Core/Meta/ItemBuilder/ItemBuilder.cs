@@ -3,12 +3,11 @@ using RogueEntity.Api.ItemTraits;
 
 namespace RogueEntity.Core.Meta.ItemBuilder
 {
-    public sealed class ItemBuilder<TGameContext, TItemId> : ItemBuilderBase<TGameContext, TItemId, ItemBuilder<TGameContext, TItemId>>
+    public sealed class ItemBuilder<TItemId> : ItemBuilderBase<TItemId, ItemBuilder<TItemId>>
         where TItemId : IEntityKey
     {
-        public ItemBuilder(TGameContext context,
-                           IItemResolver<TGameContext, TItemId> resolver,
-                           TItemId reference) : base(context, resolver, reference)
+        public ItemBuilder(IItemResolver<TItemId> resolver,
+                           TItemId reference) : base(resolver, reference)
         {
         }
     }

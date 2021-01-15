@@ -54,18 +54,18 @@ namespace RogueEntity.Core.Tests.Sensing.Sources.Smell
 
         SmellPhysicsConfiguration physics;
 
-        protected override ReferenceItemDeclaration<SenseMappingTestContext, ItemReference> AttachTrait(ReferenceItemDeclaration<SenseMappingTestContext, ItemReference> decl)
+        protected override ReferenceItemDeclaration<ItemReference> AttachTrait(ReferenceItemDeclaration<ItemReference> decl)
         {
             switch (decl.Id.Id)
             {
                 case "SenseSource-Active-10":
-                    decl.WithTrait(new SmellSourceTrait<SenseMappingTestContext, ItemReference>(physics));
+                    decl.WithTrait(new SmellSourceTrait<ItemReference>(physics));
                     break;
                 case "SenseSource-Active-5":
-                    decl.WithTrait(new SmellSourceTrait<SenseMappingTestContext, ItemReference>(physics));
+                    decl.WithTrait(new SmellSourceTrait<ItemReference>(physics));
                     break;
                 case "SenseSource-Inactive-5":
-                    decl.WithTrait(new SmellSourceTrait<SenseMappingTestContext, ItemReference>(physics));
+                    decl.WithTrait(new SmellSourceTrait<ItemReference>(physics));
                     break;
             }
 
@@ -87,8 +87,8 @@ namespace RogueEntity.Core.Tests.Sensing.Sources.Smell
         protected override void PrepareItems(ItemReference active10, ItemReference active5, ItemReference inactive)
         {
             base.PrepareItems(active10, active5, inactive);
-            context.ItemResolver.TryUpdateData(active10, context, new SmellSource(10, "NoiseA"), out _);
-            context.ItemResolver.TryUpdateData(active5, context, new SmellSource(5, "NoiseB"), out _);
+            context.ItemResolver.TryUpdateData(active10, new SmellSource(10, "NoiseA"), out _);
+            context.ItemResolver.TryUpdateData(active5, new SmellSource(5, "NoiseB"), out _);
         }
 
         [Test]

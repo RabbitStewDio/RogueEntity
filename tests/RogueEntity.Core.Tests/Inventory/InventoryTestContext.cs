@@ -5,27 +5,27 @@ using RogueEntity.Core.Meta.Items;
 
 namespace RogueEntity.Core.Tests.Inventory
 {
-    public class InventoryTestContext : IItemContext<InventoryTestContext, ItemReference>,
-                                        IItemContext<InventoryTestContext, ActorReference>
+    public class InventoryTestContext : IItemContext<ItemReference>,
+                                        IItemContext<ActorReference>
     {
-        readonly ItemContextBackend<InventoryTestContext, ItemReference> items;
-        readonly ItemContextBackend<InventoryTestContext, ActorReference> actors;
+        readonly ItemContextBackend<ItemReference> items;
+        readonly ItemContextBackend<ActorReference> actors;
 
         public InventoryTestContext()
         {
-            items = new ItemContextBackend<InventoryTestContext, ItemReference>(new ItemReferenceMetaData());
-            actors = new ItemContextBackend<InventoryTestContext, ActorReference>(new ActorReferenceMetaData());
+            items = new ItemContextBackend<ItemReference>(new ItemReferenceMetaData());
+            actors = new ItemContextBackend<ActorReference>(new ActorReferenceMetaData());
         }
 
         public EntityRegistry<ItemReference> ItemEntities => items.EntityRegistry;
-        public IItemResolver<InventoryTestContext, ItemReference> ItemResolver => items.ItemResolver;
-        public IItemRegistryBackend<InventoryTestContext, ItemReference> ItemRegistry => items.ItemRegistry;
+        public IItemResolver<ItemReference> ItemResolver => items.ItemResolver;
+        public IItemRegistryBackend<ItemReference> ItemRegistry => items.ItemRegistry;
 
         public EntityRegistry<ActorReference> ActorEntities => actors.EntityRegistry;
-        public IItemResolver<InventoryTestContext, ActorReference> ActorResolver => actors.ItemResolver;
-        public IItemRegistryBackend<InventoryTestContext, ActorReference> ActorRegistry => actors.ItemRegistry;
+        public IItemResolver<ActorReference> ActorResolver => actors.ItemResolver;
+        public IItemRegistryBackend<ActorReference> ActorRegistry => actors.ItemRegistry;
 
-        IItemResolver<InventoryTestContext, ItemReference> IItemContext<InventoryTestContext, ItemReference>.ItemResolver => ItemResolver;
-        IItemResolver<InventoryTestContext, ActorReference> IItemContext<InventoryTestContext, ActorReference>.ItemResolver => ActorResolver;
+        IItemResolver<ItemReference> IItemContext<ItemReference>.ItemResolver => ItemResolver;
+        IItemResolver<ActorReference> IItemContext<ActorReference>.ItemResolver => ActorResolver;
     }
 }

@@ -10,7 +10,7 @@ namespace RogueEntity.Core.Sensing.Cache
         void RegisterCacheLayer(MapLayer layer);
     }
     
-    public class SenseCacheSetUpSystem<TGameContext>: ISenseCacheSetupSystem
+    public class SenseCacheSetUpSystem: ISenseCacheSetupSystem
     {
         readonly Lazy<SenseStateCache> cacheProvider;
         readonly HashSet<MapLayer> layers;
@@ -33,7 +33,7 @@ namespace RogueEntity.Core.Sensing.Cache
             senses.Add(typeof(TSense));
         }
 
-        public void Start(TGameContext context)
+        public void Start()
         {
             foreach (var layer in layers)
             {
@@ -46,7 +46,7 @@ namespace RogueEntity.Core.Sensing.Cache
             }
         }
         
-        public void Stop(TGameContext context)
+        public void Stop()
         {
         }
     }

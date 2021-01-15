@@ -6,99 +6,99 @@ namespace RogueEntity.Core.Sensing.Resistance
 {
     public static class SensoryResistanceTraitDeclaration
     {
-        public static BulkItemDeclarationBuilder<TGameContext, TItemId> WithSensoryResistance<TGameContext, TItemId, TSense>(this BulkItemDeclarationBuilder<TGameContext, TItemId> builder,
+        public static BulkItemDeclarationBuilder< TItemId> WithSensoryResistance< TItemId, TSense>(this BulkItemDeclarationBuilder< TItemId> builder,
                                                                                                                              SensoryResistance<TSense> resistance)
             where TItemId : IEntityKey
         {
-            builder.Declaration.WithTrait(new SensoryResistanceTrait<TGameContext, TItemId, TSense>(resistance));
+            builder.Declaration.WithTrait(new SensoryResistanceTrait< TItemId, TSense>(resistance));
             return builder;
         }
 
-        public static ReferenceItemDeclarationBuilder<TGameContext, TItemId> WithSensoryResistance<TGameContext, TItemId, TSense>(this ReferenceItemDeclarationBuilder<TGameContext, TItemId> builder,
+        public static ReferenceItemDeclarationBuilder< TItemId> WithSensoryResistance< TItemId, TSense>(this ReferenceItemDeclarationBuilder< TItemId> builder,
                                                                                                                                   SensoryResistance<TSense> resistance)
             where TItemId : IEntityKey
         {
-            builder.Declaration.WithTrait(new SensoryResistanceTrait<TGameContext, TItemId, TSense>(resistance));
+            builder.Declaration.WithTrait(new SensoryResistanceTrait< TItemId, TSense>(resistance));
             return builder;
         }
 
-        public static BulkItemDeclarationBuilder<TGameContext, TItemId> WithLightResistance<TGameContext, TItemId>(this BulkItemDeclarationBuilder<TGameContext, TItemId> builder,
+        public static BulkItemDeclarationBuilder< TItemId> WithLightResistance< TItemId>(this BulkItemDeclarationBuilder< TItemId> builder,
                                                                                                                    Percentage pct)
             where TItemId : IEntityKey
         {
-            builder.Declaration.WithTrait(new SensoryResistanceTrait<TGameContext, TItemId, VisionSense>(pct));
+            builder.Declaration.WithTrait(new SensoryResistanceTrait< TItemId, VisionSense>(pct));
             return builder;
         }
 
-        public static ReferenceItemDeclarationBuilder<TGameContext, TItemId> WithLightResistance<TGameContext, TItemId>(this ReferenceItemDeclarationBuilder<TGameContext, TItemId> builder,
+        public static ReferenceItemDeclarationBuilder< TItemId> WithLightResistance< TItemId>(this ReferenceItemDeclarationBuilder< TItemId> builder,
                                                                                                                         Percentage pct)
             where TItemId : IEntityKey
         {
-            builder.Declaration.WithTrait(new SensoryResistanceTrait<TGameContext, TItemId, VisionSense>(pct));
+            builder.Declaration.WithTrait(new SensoryResistanceTrait< TItemId, VisionSense>(pct));
             return builder;
         }
 
-        public static BulkItemDeclarationBuilder<TGameContext, TItemId> WithHeatResistance<TGameContext, TItemId>(this BulkItemDeclarationBuilder<TGameContext, TItemId> builder,
+        public static BulkItemDeclarationBuilder< TItemId> WithHeatResistance< TItemId>(this BulkItemDeclarationBuilder< TItemId> builder,
                                                                                                                   Percentage pct)
             where TItemId : IEntityKey
         {
-            builder.Declaration.WithTrait(new SensoryResistanceTrait<TGameContext, TItemId, TemperatureSense>(pct));
+            builder.Declaration.WithTrait(new SensoryResistanceTrait< TItemId, TemperatureSense>(pct));
             return builder;
         }
 
-        public static ReferenceItemDeclarationBuilder<TGameContext, TItemId> WithHeatResistance<TGameContext, TItemId>(this ReferenceItemDeclarationBuilder<TGameContext, TItemId> builder,
+        public static ReferenceItemDeclarationBuilder< TItemId> WithHeatResistance< TItemId>(this ReferenceItemDeclarationBuilder< TItemId> builder,
                                                                                                                        Percentage pct)
             where TItemId : IEntityKey
         {
-            builder.Declaration.WithTrait(new SensoryResistanceTrait<TGameContext, TItemId, TemperatureSense>(pct));
+            builder.Declaration.WithTrait(new SensoryResistanceTrait< TItemId, TemperatureSense>(pct));
             return builder;
         }
 
-        public static BulkItemDeclarationBuilder<TGameContext, TItemId> WithSmellResistance<TGameContext, TItemId>(this BulkItemDeclarationBuilder<TGameContext, TItemId> builder,
+        public static BulkItemDeclarationBuilder< TItemId> WithSmellResistance< TItemId>(this BulkItemDeclarationBuilder< TItemId> builder,
                                                                                                                    Percentage pct)
             where TItemId : IEntityKey
         {
-            builder.Declaration.WithTrait(new SensoryResistanceTrait<TGameContext, TItemId, SmellSense>(pct));
+            builder.Declaration.WithTrait(new SensoryResistanceTrait< TItemId, SmellSense>(pct));
             return builder;
         }
 
-        public static ReferenceItemDeclarationBuilder<TGameContext, TItemId> WithSmellResistance<TGameContext, TItemId>(this ReferenceItemDeclarationBuilder<TGameContext, TItemId> builder,
+        public static ReferenceItemDeclarationBuilder< TItemId> WithSmellResistance< TItemId>(this ReferenceItemDeclarationBuilder< TItemId> builder,
                                                                                                                         Percentage pct)
             where TItemId : IEntityKey
         {
-            builder.Declaration.WithTrait(new SensoryResistanceTrait<TGameContext, TItemId, SmellSense>(pct));
+            builder.Declaration.WithTrait(new SensoryResistanceTrait< TItemId, SmellSense>(pct));
             return builder;
         }
 
-        public static BulkItemDeclarationBuilder<TGameContext, TItemId> WithNoiseResistance<TGameContext, TItemId>(this BulkItemDeclarationBuilder<TGameContext, TItemId> builder,
+        public static BulkItemDeclarationBuilder< TItemId> WithNoiseResistance< TItemId>(this BulkItemDeclarationBuilder< TItemId> builder,
                                                                                                                    Percentage pct)
             where TItemId : IEntityKey
         {
-            builder.Declaration.WithTrait(new SensoryResistanceTrait<TGameContext, TItemId, NoiseSense>(pct));
+            builder.Declaration.WithTrait(new SensoryResistanceTrait< TItemId, NoiseSense>(pct));
             return builder;
         }
 
-        public static ReferenceItemDeclarationBuilder<TGameContext, TItemId> WithNoiseResistance<TGameContext, TItemId>(this ReferenceItemDeclarationBuilder<TGameContext, TItemId> builder,
+        public static ReferenceItemDeclarationBuilder< TItemId> WithNoiseResistance< TItemId>(this ReferenceItemDeclarationBuilder< TItemId> builder,
                                                                                                                         Percentage pct)
             where TItemId : IEntityKey
         {
-            builder.Declaration.WithTrait(new SensoryResistanceTrait<TGameContext, TItemId, NoiseSense>(pct));
+            builder.Declaration.WithTrait(new SensoryResistanceTrait< TItemId, NoiseSense>(pct));
             return builder;
         }
         
-        public static BulkItemDeclarationBuilder<TGameContext, TItemId> WithTouchResistance<TGameContext, TItemId>(this BulkItemDeclarationBuilder<TGameContext, TItemId> builder,
+        public static BulkItemDeclarationBuilder< TItemId> WithTouchResistance< TItemId>(this BulkItemDeclarationBuilder< TItemId> builder,
                                                                                                                    Percentage pct)
             where TItemId : IEntityKey
         {
-            builder.Declaration.WithTrait(new SensoryResistanceTrait<TGameContext, TItemId, TouchSense>(pct));
+            builder.Declaration.WithTrait(new SensoryResistanceTrait< TItemId, TouchSense>(pct));
             return builder;
         }
 
-        public static ReferenceItemDeclarationBuilder<TGameContext, TItemId> WithTouchResistance<TGameContext, TItemId>(this ReferenceItemDeclarationBuilder<TGameContext, TItemId> builder,
+        public static ReferenceItemDeclarationBuilder< TItemId> WithTouchResistance< TItemId>(this ReferenceItemDeclarationBuilder< TItemId> builder,
                                                                                                                         Percentage pct)
             where TItemId : IEntityKey
         {
-            builder.Declaration.WithTrait(new SensoryResistanceTrait<TGameContext, TItemId, TouchSense>(pct));
+            builder.Declaration.WithTrait(new SensoryResistanceTrait< TItemId, TouchSense>(pct));
             return builder;
         }
     }

@@ -1,15 +1,15 @@
 ﻿using FluentAssertions;
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Api.Utils;
+using RogueEntity.Core.Meta.EntityKeys;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Positioning.MapLayers;
 using RogueEntity.Core.Tests.Meta.Items;
-using RogueEntity.Core.Meta.EntityKeys;
 
-namespace RogueEntity.Core.Tests.Positioning
+namespace RogueEntity.Core.Tests.Positioning.Grid
 {
-    public class BulkItemGridPositionTraitTest: ItemComponentTraitTestBase<TestGridPositionContext, ItemReference, EntityGridPosition, BulkItemGridPositionTrait<TestGridPositionContext, ItemReference>>
+    public class BulkItemGridPositionTraitTest: ItemComponentTraitTestBase<ItemReference, EntityGridPosition, BulkItemGridPositionTrait<ItemReference>>
     {
         readonly MapLayer itemLayer;
 
@@ -27,28 +27,31 @@ namespace RogueEntity.Core.Tests.Positioning
                 ;
         }
 
-        protected override TestGridPositionContext CreateContext()
+        protected override void SetUpPrepare()
         {
-            return new TestGridPositionContext().WithMapLayer(itemLayer, new DefaultGridMapDataContext<ItemReference>(itemLayer, 100, 100));
+            Context = new TestGridPositionContext().WithMapLayer(itemLayer, new DefaultGridMapDataContext<ItemReference>(itemLayer, 100, 100));
+            
         }
 
-        protected override BulkItemGridPositionTrait<TestGridPositionContext, ItemReference> CreateTrait()
+        public TestGridPositionContext Context { get; set; }
+
+        protected override BulkItemGridPositionTrait<ItemReference> CreateTrait()
         {
-            return new BulkItemGridPositionTrait<TestGridPositionContext, ItemReference>(new ItemReferenceMetaData(), ItemResolver, Context, itemLayer);
+            return new BulkItemGridPositionTrait<ItemReference>(new ItemReferenceMetaData(), ItemResolver, Context, itemLayer);
         }
 
         protected override void Validate_Apply(ItemDeclarationId itemId)
         {
-            var item = ItemResolver.Instantiate(Context, itemId);
+            var item = ItemResolver.Instantiate(itemId);
             var testData = ProduceTestData(ProduceItemRelations(item));
             if (testData.UpdateAllowed)
             {
-                ItemResolver.TryUpdateData(item, Context, testData.ChangedValue, out item).Should().BeTrue($"because {item} has been successfully updated.");
-                ItemResolver.TryQueryData(item, Context, out EntityGridPosition _).Should().BeFalse();
+                ItemResolver.TryUpdateData(item, testData.ChangedValue, out item).Should().BeTrue($"because {item} has been successfully updated.");
+                ItemResolver.TryQueryData(item, out EntityGridPosition _).Should().BeFalse();
                 QueryMapData(testData.ChangedValue).Should().Be(item);
             }
 
-            ItemResolver.Apply(item, Context);
+            ItemResolver.Apply(item);
 
             testData.TryGetApplyValue(out _).Should().BeTrue();
             QueryMapData(testData.ChangedValue).Should().Be(item, "because apply should not reset existing data.");
@@ -56,21 +59,21 @@ namespace RogueEntity.Core.Tests.Positioning
 
         protected override void Validate_Update(ItemDeclarationId itemId)
         {
-            var item = ItemResolver.Instantiate(Context, itemId);
+            var item = ItemResolver.Instantiate(itemId);
             var testData = ProduceTestData(ProduceItemRelations(item));
 
             testData.UpdateAllowed.Should().BeTrue();
 
             // We can write the data
-            ItemResolver.TryUpdateData(item, Context, testData.ChangedValue, out item).Should().BeTrue();
+            ItemResolver.TryUpdateData(item, testData.ChangedValue, out item).Should().BeTrue();
             // but we cannot query it. Bulk items do not have entity system data stores, so they
             // only exist implicitly inside the map itself.
-            ItemResolver.TryQueryData(item, Context, out EntityGridPosition _).Should().BeFalse();
+            ItemResolver.TryQueryData(item, out EntityGridPosition _).Should().BeFalse();
             QueryMapData(testData.ChangedValue).Should().Be(item);
 
             if (testData.TryGetInvalid(out var invalid))
             {
-                ItemResolver.TryUpdateData(item, Context, invalid, out item).Should().BeFalse();
+                ItemResolver.TryUpdateData(item, invalid, out item).Should().BeFalse();
                 QueryMapData(testData.ChangedValue).Should().Be(item);
             }
         }

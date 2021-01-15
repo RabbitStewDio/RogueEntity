@@ -1,3 +1,4 @@
+using NUnit.Framework;
 using RogueEntity.Core.Meta.ItemTraits;
 using RogueEntity.Core.Sensing;
 using RogueEntity.Core.Sensing.Common;
@@ -12,8 +13,9 @@ using RogueEntity.Core.Positioning.Algorithms;
 
 namespace RogueEntity.Core.Tests.Sensing.Receptor.InfraVision
 {
-    public class InfraVisionReceptorTraitTest : ItemComponentTraitTestBase<SenseMappingTestContext, ActorReference, SensoryReceptorData<VisionSense, TemperatureSense>,
-        InfraVisionSenseTrait<SenseMappingTestContext, ActorReference>>
+    [TestFixture]
+    public class InfraVisionReceptorTraitTest : ItemComponentTraitTestBase<ActorReference, SensoryReceptorData<VisionSense, TemperatureSense>,
+        InfraVisionSenseTrait<ActorReference>>
     {
         readonly HeatPhysicsConfiguration physics;
 
@@ -22,9 +24,8 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.InfraVision
             physics = new HeatPhysicsConfiguration(new LinearDecaySensePhysics(DistanceCalculation.Chebyshev), Temperature.FromCelsius(0));
         }
 
-        protected override SenseMappingTestContext CreateContext()
+        protected override void SetUpPrepare()
         {
-            var context = new SenseMappingTestContext();
             EntityRegistry.RegisterNonConstructable<HeatSourceDefinition>();
             EntityRegistry.RegisterNonConstructable<SenseSourceState<TemperatureSense>>();
             EntityRegistry.RegisterFlag<ObservedSenseSource<TemperatureSense>>();
@@ -34,14 +35,12 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.InfraVision
             EntityRegistry.RegisterNonConstructable<SensoryReceptorState<VisionSense, TemperatureSense>>();
             EntityRegistry.RegisterNonConstructable<SingleLevelSenseDirectionMapData<VisionSense, TemperatureSense>>();
             EntityRegistry.RegisterFlag<SenseReceptorDirtyFlag<VisionSense, TemperatureSense>>();
-
-            return context;
         }
 
-        protected override InfraVisionSenseTrait<SenseMappingTestContext, ActorReference> CreateTrait()
+        protected override InfraVisionSenseTrait<ActorReference> CreateTrait()
         {
             var phy = new InfraVisionSenseReceptorPhysicsConfiguration(physics);
-            return new InfraVisionSenseTrait<SenseMappingTestContext, ActorReference>(phy, 1.9f);
+            return new InfraVisionSenseTrait<ActorReference>(phy, 1.9f);
         }
 
         protected override IItemComponentTestDataFactory<SensoryReceptorData<VisionSense, TemperatureSense>> ProduceTestData(EntityRelations<ActorReference> relations)

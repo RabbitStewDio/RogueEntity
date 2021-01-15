@@ -45,14 +45,18 @@ namespace RogueEntity.Core.Tests.Modules
 
     public class ModuleFixture : ModuleBase
     {
-        public ModuleFixture(string id, params ModuleDependency[] deps)
+        readonly ModuleContext context;
+
+        public ModuleFixture(ModuleContext context, string id, params ModuleDependency[] deps)
         {
+            this.context = context;
             Id = id;
             DeclareDependencies(deps);
         }
 
 
-        protected void InitializeEntity<TEntity>(ModuleContext context, IModuleInitializer<ModuleContext> initializer) where TEntity: IEntityKey
+        protected void InitializeEntity<TEntity>(IModuleInitializer initializer)
+            where TEntity : IEntityKey
         {
             context.RegisterEntity(Id, typeof(TEntity));
         }
@@ -63,12 +67,13 @@ namespace RogueEntity.Core.Tests.Modules
         [Test]
         public void TestLinearModules()
         {
-            var ms = new ModuleSystem<ModuleContext>(new DefaultServiceResolver());
-            ms.AddModule(new ModuleFixture("Base"));
-            ms.AddModule(new ModuleFixture("Mid", ModuleDependency.Of("Base")));
-
             var context = new ModuleContext();
-            ms.Initialize(context);
+
+            var ms = new ModuleSystem(new DefaultServiceResolver());
+            ms.AddModule(new ModuleFixture(context, "Base"));
+            ms.AddModule(new ModuleFixture(context, "Mid", ModuleDependency.Of("Base")));
+
+            ms.Initialize();
 
             Console.WriteLine("Order[0]: " + context.RegisteredContent.ExtendToString());
             Console.WriteLine("Order[1]: " + context.RegisteredStuff.ExtendToString());
@@ -80,52 +85,55 @@ namespace RogueEntity.Core.Tests.Modules
         [Test]
         public void TestParallelModules()
         {
-            var ms = new ModuleSystem<ModuleContext>(new DefaultServiceResolver());
-            ms.AddModule(new ModuleFixture("Base"));
-            ms.AddModule(new ModuleFixture("Mid-A", ModuleDependency.Of("Base")));
-            ms.AddModule(new ModuleFixture("Mid-B", ModuleDependency.Of("Base")));
-
             var context = new ModuleContext();
-            ms.Initialize(context);
-            
+
+            var ms = new ModuleSystem(new DefaultServiceResolver());
+            ms.AddModule(new ModuleFixture(context, "Base"));
+            ms.AddModule(new ModuleFixture(context, "Mid-A", ModuleDependency.Of("Base")));
+            ms.AddModule(new ModuleFixture(context, "Mid-B", ModuleDependency.Of("Base")));
+
+            ms.Initialize();
+
             Console.WriteLine("Order[0]: " + context.RegisteredContent.ExtendToString());
             Console.WriteLine("Order[1]: " + context.RegisteredStuff.ExtendToString());
 
             context.RegisteredContent.Should().ContainInOrder("Base", "Mid-A", "Mid-B", "Content");
-            context.RegisteredStuff.Should().ContainInOrder(
-                ("Base", typeof(EntityKey)),
-                ("Base", typeof(ItemReference)), 
-                ("Mid-A", typeof(ItemReference)),
-                ("Mid-B", typeof(EntityKey)));
+            context.RegisteredStuff.Should()
+                   .ContainInOrder(
+                       ("Base", typeof(EntityKey)),
+                       ("Base", typeof(ItemReference)),
+                       ("Mid-A", typeof(ItemReference)),
+                       ("Mid-B", typeof(EntityKey)));
         }
 
         [Test]
         public void TestMissingModule()
         {
-            var ms = new ModuleSystem<ModuleContext>(new DefaultServiceResolver());
-            ms.AddModule(new ModuleFixture("Base"));
-            ms.AddModule(new ModuleFixture("Mid-A", ModuleDependency.Of("Base")));
-            ms.AddModule(new ModuleFixture("Content", 
-                                           ModuleDependency.Of("Mid-A"), 
+            var context = new ModuleContext();
+            
+            var ms = new ModuleSystem(new DefaultServiceResolver());
+            ms.AddModule(new ModuleFixture(context, "Base"));
+            ms.AddModule(new ModuleFixture(context, "Mid-A", ModuleDependency.Of("Base")));
+            ms.AddModule(new ModuleFixture(context, "Content",
+                                           ModuleDependency.Of("Mid-A"),
                                            ModuleDependency.Of("Mid-B")));
 
-            var context = new ModuleContext();
-            ms.Invoking(m => m.Initialize(context)).Should().ThrowExactly<ModuleInitializationException>();
+            ms.Invoking(m => m.Initialize()).Should().ThrowExactly<ModuleInitializationException>();
         }
 
         [Test]
         public void TestCircularDependencies()
         {
-            var ms = new ModuleSystem<ModuleContext>(new DefaultServiceResolver());
-            ms.AddModule(new ModuleFixture("Base", ModuleDependency.Of("Content")));
-            ms.AddModule(new ModuleFixture("Mid-A", ModuleDependency.Of("Base")));
-            ms.AddModule(new ModuleFixture("Content", 
-                                           ModuleDependency.Of("Mid-A"), 
+            var context = new ModuleContext();
+            
+            var ms = new ModuleSystem(new DefaultServiceResolver());
+            ms.AddModule(new ModuleFixture(context, "Base", ModuleDependency.Of("Content")));
+            ms.AddModule(new ModuleFixture(context, "Mid-A", ModuleDependency.Of("Base")));
+            ms.AddModule(new ModuleFixture(context, "Content",
+                                           ModuleDependency.Of("Mid-A"),
                                            ModuleDependency.Of("Mid-B")));
 
-            var context = new ModuleContext();
-            ms.Invoking(m => m.Initialize(context)).Should().ThrowExactly<ModuleInitializationException>();
+            ms.Invoking(m => m.Initialize()).Should().ThrowExactly<ModuleInitializationException>();
         }
-
     }
 }

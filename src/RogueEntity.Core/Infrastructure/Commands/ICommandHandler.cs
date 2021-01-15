@@ -1,4 +1,5 @@
 ﻿using EnTTSharp.Entities;
+using RogueEntity.Core.Inputs.Commands;
 
 namespace RogueEntity.Core.Infrastructure.Commands
 {
@@ -7,10 +8,9 @@ namespace RogueEntity.Core.Infrastructure.Commands
     ///   by other systems. Most commonly this schedules an action for a player character
     ///   to perform.
     /// </summary>
-    public interface ICommandHandler<in TGameContext, TActorId> where TActorId : IEntityKey
+    public interface ICommandHandler<TActorId> where TActorId : IEntityKey
     {
         bool Invoke(IEntityViewControl<TActorId> v,
-                    TGameContext context,
                     TActorId entity,
                     ICommand command);
 

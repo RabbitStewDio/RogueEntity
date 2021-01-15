@@ -253,7 +253,7 @@ namespace RogueEntity.Core.Tests.Sensing.Common
             var resistanceMap = ParseMap(resistanceMapText, out var roomArea);
             Console.WriteLine("Using room layout \n" + TestHelpers.PrintMap(resistanceMap, roomArea));
 
-            var directionalityMapSystem = new SensoryResistanceDirectionalitySystem<object, VisionSense>(resistanceMap.As3DMap(0));
+            var directionalityMapSystem = new SensoryResistanceDirectionalitySystem< VisionSense>(resistanceMap.As3DMap(0));
             directionalityMapSystem.Process();
             directionalityMapSystem.ResultView.TryGetView(0, out var directionalityMap);
 

@@ -8,19 +8,19 @@ using RogueEntity.Core.Movement.MovementModes;
 
 namespace RogueEntity.Core.Movement.Cost
 {
-    public class PathfindingMovementCostFactorsTrait<TGameContext, TActorId> : IItemComponentInformationTrait<TGameContext, TActorId, PathfindingMovementCostFactors>,
-                                                                               IBulkItemTrait<TGameContext, TActorId>,
-                                                                               IReferenceItemTrait<TGameContext, TActorId>
+    public class PathfindingMovementCostFactorsTrait< TActorId> : IItemComponentInformationTrait< TActorId, PathfindingMovementCostFactors>,
+                                                                               IBulkItemTrait< TActorId>,
+                                                                               IReferenceItemTrait< TActorId>
         where TActorId : IEntityKey
     {
-        readonly BufferList<IItemComponentInformationTrait<TGameContext, TActorId, MovementCost>> sourceTraits;
+        readonly BufferList<IItemComponentInformationTrait< TActorId, MovementCost>> sourceTraits;
         readonly List<MovementCost> movementCosts;
         bool movementCostsValid;
         bool traitsValid;
 
         public PathfindingMovementCostFactorsTrait()
         {
-            sourceTraits = new BufferList<IItemComponentInformationTrait<TGameContext, TActorId, MovementCost>>();
+            sourceTraits = new BufferList<IItemComponentInformationTrait< TActorId, MovementCost>>();
             movementCosts = new List<MovementCost>();
         }
 
@@ -37,7 +37,7 @@ namespace RogueEntity.Core.Movement.Cost
             return Enumerable.Empty<EntityRelationInstance>();
         }
 
-        public bool TryQuery(IEntityViewControl<TActorId> v, TGameContext context, TActorId k, out PathfindingMovementCostFactors t)
+        public bool TryQuery(IEntityViewControl<TActorId> v,  TActorId k, out PathfindingMovementCostFactors t)
         {
 
             if (movementCostsValid)
@@ -49,7 +49,7 @@ namespace RogueEntity.Core.Movement.Cost
             movementCosts.Clear();
             foreach (var trait in sourceTraits)
             {
-                if (trait.TryQuery(v, context, k, out var movementCost))
+                if (trait.TryQuery(v,  k, out var movementCost))
                 {
                     movementCosts.Add(movementCost);
                 }
@@ -60,9 +60,9 @@ namespace RogueEntity.Core.Movement.Cost
             return movementCosts.Count > 0;
         }
 
-        PathfindingMovementCostFactorsTrait<TGameContext, TActorId> CreateInstance() => new PathfindingMovementCostFactorsTrait<TGameContext, TActorId>();
+        PathfindingMovementCostFactorsTrait< TActorId> CreateInstance() => new PathfindingMovementCostFactorsTrait< TActorId>();
 
-        public TActorId Initialize(TGameContext context, IItemDeclaration item, TActorId reference)
+        public TActorId Initialize( IItemDeclaration item, TActorId reference)
         {
             if (!traitsValid)
             {
@@ -73,23 +73,23 @@ namespace RogueEntity.Core.Movement.Cost
             return reference;
         }
 
-        public void Initialize(IEntityViewControl<TActorId> v, TGameContext context, TActorId k, IItemDeclaration item)
+        public void Initialize(IEntityViewControl<TActorId> v,  TActorId k, IItemDeclaration item)
         {
-            Initialize(context, item, k);
+            Initialize( item, k);
         }
 
-        public void Apply(IEntityViewControl<TActorId> v, TGameContext context, TActorId k, IItemDeclaration item)
+        public void Apply(IEntityViewControl<TActorId> v,  TActorId k, IItemDeclaration item)
         {
             movementCosts.Clear();
             movementCostsValid = false;
         }
 
-        IBulkItemTrait<TGameContext, TActorId> IBulkItemTrait<TGameContext, TActorId>.CreateInstance()
+        IBulkItemTrait< TActorId> IBulkItemTrait< TActorId>.CreateInstance()
         {
             return CreateInstance();
         }
 
-        IReferenceItemTrait<TGameContext, TActorId> IReferenceItemTrait<TGameContext, TActorId>.CreateInstance()
+        IReferenceItemTrait< TActorId> IReferenceItemTrait< TActorId>.CreateInstance()
         {
             return CreateInstance();
         }

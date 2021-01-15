@@ -10,16 +10,16 @@ using Serilog;
 
 namespace RogueEntity.Api.Modules.Initializers
 {
-    public class ModuleSystemPhaseInitContent<TGameContext>
+    public class ModuleSystemPhaseInitContent
     {
-        static readonly ILogger Logger = SLog.ForContext<ModuleSystem<TGameContext>>();
+        static readonly ILogger Logger = SLog.ForContext<ModuleSystem>();
 
         readonly IServiceResolver serviceResolver;
-        readonly GlobalModuleEntityInformation<TGameContext> moduleInfo;
-        readonly ModuleInitializer<TGameContext> initializer;
-        readonly ReadOnlyListWrapper<ModuleRecord<TGameContext>> orderedModules;
+        readonly GlobalModuleEntityInformation moduleInfo;
+        readonly ModuleInitializer initializer;
+        readonly ReadOnlyListWrapper<ModuleRecord> orderedModules;
 
-        public ModuleSystemPhaseInitContent(ModuleSystemPhaseInitModuleResult<TGameContext> previousResult,
+        public ModuleSystemPhaseInitContent(ModuleSystemPhaseInitModuleResult previousResult,
                                             IServiceResolver serviceResolver)
         {
             this.serviceResolver = serviceResolver;
@@ -64,10 +64,10 @@ namespace RogueEntity.Api.Modules.Initializers
 
         class ModuleEntityActivator : IModuleEntityActivatorCallback
         {
-            readonly GlobalModuleEntityInformation<TGameContext> moduleInfo;
-            readonly ModuleInitializer<TGameContext> initializer;
+            readonly GlobalModuleEntityInformation moduleInfo;
+            readonly ModuleInitializer initializer;
 
-            public ModuleEntityActivator(GlobalModuleEntityInformation<TGameContext> moduleInfo, ModuleInitializer<TGameContext> initializer)
+            public ModuleEntityActivator(GlobalModuleEntityInformation moduleInfo, ModuleInitializer initializer)
             {
                 this.moduleInfo = moduleInfo;
                 this.initializer = initializer;
@@ -84,9 +84,9 @@ namespace RogueEntity.Api.Modules.Initializers
             }
         }
 
-        static List<ModuleContentInitializerDelegate<TGameContext>> CollectContentInitializers(ModuleBase module)
+        static List<ModuleContentInitializerDelegate> CollectContentInitializers(ModuleBase module)
         {
-            var actions = new List<ModuleContentInitializerDelegate<TGameContext>>();
+            var actions = new List<ModuleContentInitializerDelegate>();
             foreach (var m in module.GetType().GetMethods(BindingFlags.Instance | BindingFlags.NonPublic))
             {
                 var attr = m.GetCustomAttribute<ContentInitializerAttribute>();
@@ -95,27 +95,14 @@ namespace RogueEntity.Api.Modules.Initializers
                     continue;
                 }
 
-                if (m.IsSameAction(typeof(ModuleInitializationParameter).MakeByRefType(), typeof(IModuleInitializer<TGameContext>)))
+                if (m.IsSameAction(typeof(ModuleInitializationParameter).MakeByRefType(), typeof(IModuleInitializer)))
                 {
-                    actions.Add((ModuleContentInitializerDelegate<TGameContext>)Delegate.CreateDelegate(typeof(ModuleContentInitializerDelegate<TGameContext>), module, m));
+                    actions.Add((ModuleContentInitializerDelegate)Delegate.CreateDelegate(typeof(ModuleContentInitializerDelegate), module, m));
                     Logger.Verbose("Found plain module initializer {Method}", m);
                     continue;
                 }
 
-                if (!m.IsSameGenericAction(new[] {typeof(TGameContext)},
-                                           out var genericMethod, out var errorHint,
-                                           typeof(ModuleInitializationParameter).MakeByRefType(), typeof(IModuleInitializer<TGameContext>)))
-                {
-                    if (!string.IsNullOrEmpty(errorHint))
-                    {
-                        throw new ArgumentException(errorHint);
-                    }
-
-                    throw new ArgumentException($"Expected a method with signature 'void XXX(IServiceResolver, IModuleInitializer<TGameContext>), but found {m} in module {module.Id}");
-                }
-
-                Logger.Verbose("Found generic content initializer {Method}", genericMethod);
-                actions.Add((ModuleContentInitializerDelegate<TGameContext>)Delegate.CreateDelegate(typeof(ModuleContentInitializerDelegate<TGameContext>), module, genericMethod));
+                throw new ArgumentException($"Expected a method with signature 'void XXX(IServiceResolver, IModuleInitializer), but found {m} in module {module.Id}");
             }
 
             return actions;

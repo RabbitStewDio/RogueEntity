@@ -7,10 +7,10 @@ using RogueEntity.Api.Services;
 
 namespace RogueEntity.Api.Modules
 {
-    public partial class ModuleSystem<TGameContext>
+    public partial class ModuleSystem
     {
-        IGameLoopSystemInformation<TGameContext> InitializeSystems(IModuleInitializationData<TGameContext> moduleInitializer,
-                                                                   GlobalModuleEntityInformation<TGameContext> globalModuleEntityInformation)
+        IGameLoopSystemInformation InitializeSystems(IModuleInitializationData moduleInitializer,
+                                                                   GlobalModuleEntityInformation globalModuleEntityInformation)
         {
             var globalSystems = CollectGlobalSystems(moduleInitializer);
             InitializeGlobalSystems(globalModuleEntityInformation, globalSystems);
@@ -24,9 +24,9 @@ namespace RogueEntity.Api.Modules
             return registrations;
         }
 
-        static IEnumerable<IGlobalSystemDeclaration<TGameContext>> CollectGlobalSystems(IModuleInitializationData<TGameContext> moduleInitializer)
+        static IEnumerable<IGlobalSystemDeclaration> CollectGlobalSystems(IModuleInitializationData moduleInitializer)
         {
-            var globalSystems = new Dictionary<EntitySystemId, IGlobalSystemDeclaration<TGameContext>>();
+            var globalSystems = new Dictionary<EntitySystemId, IGlobalSystemDeclaration>();
             foreach (var globalSystem in moduleInitializer.GlobalSystems)
             {
                 if (globalSystems.TryGetValue(globalSystem.Id, out var entry))
@@ -43,8 +43,8 @@ namespace RogueEntity.Api.Modules
             return globalSystems.Values;
         }
 
-        void InitializeGlobalSystems(GlobalModuleEntityInformation<TGameContext> globalModuleEntityInformation,
-                                     IEnumerable<IGlobalSystemDeclaration<TGameContext>> globalSystems)
+        void InitializeGlobalSystems(GlobalModuleEntityInformation globalModuleEntityInformation,
+                                     IEnumerable<IGlobalSystemDeclaration> globalSystems)
         {
             var mip = new ModuleInitializationParameter(globalModuleEntityInformation, serviceResolver);
             foreach (var globalSystem in globalSystems.OrderBy(e => e.InsertionOrder))
@@ -61,22 +61,22 @@ namespace RogueEntity.Api.Modules
             }
         }
 
-        class EntitySystemRegistrationHandler : IModuleEntityInitializationCallback<TGameContext>
+        class EntitySystemRegistrationHandler : IModuleEntityInitializationCallback
         {
-            readonly GlobalModuleEntityInformation<TGameContext> globalInformation;
+            readonly GlobalModuleEntityInformation globalInformation;
             readonly IServiceResolver serviceResolver;
-            readonly ModuleEntitySystemRegistrations<TGameContext> registrations;
+            readonly ModuleEntitySystemRegistrations registrations;
 
-            public EntitySystemRegistrationHandler(GlobalModuleEntityInformation<TGameContext> globalInformation,
+            public EntitySystemRegistrationHandler(GlobalModuleEntityInformation globalInformation,
                                                    IServiceResolver serviceResolver,
-                                                   ModuleEntitySystemRegistrations<TGameContext> registrations)
+                                                   ModuleEntitySystemRegistrations registrations)
             {
                 this.globalInformation = globalInformation;
                 this.serviceResolver = serviceResolver;
                 this.registrations = registrations;
             }
 
-            public void PerformInitialization<TEntityId>(IModuleInitializationData<TGameContext, TEntityId> moduleContext)
+            public void PerformInitialization<TEntityId>(IModuleInitializationData<TEntityId> moduleContext)
                 where TEntityId : IEntityKey
             {
                 if (!globalInformation.TryGetModuleEntityInformation<TEntityId>(out var mi))
@@ -86,7 +86,7 @@ namespace RogueEntity.Api.Modules
                 }
 
                 var mip = new ModuleInitializationParameter(mi, serviceResolver);
-                var ctx = serviceResolver.Resolve<IItemContextBackend<TGameContext, TEntityId>>();
+                var ctx = serviceResolver.Resolve<IItemContextBackend<TEntityId>>();
 
                 var sortedEntries = CollectEntitySystemDeclarations(moduleContext);
                 foreach (var system in sortedEntries)
@@ -116,11 +116,11 @@ namespace RogueEntity.Api.Modules
                 }
             }
 
-            static List<IEntitySystemDeclaration<TGameContext, TEntityId>>
-                CollectEntitySystemDeclarations<TEntityId>(IModuleInitializationData<TGameContext, TEntityId> moduleContext)
+            static List<IEntitySystemDeclaration<TEntityId>>
+                CollectEntitySystemDeclarations<TEntityId>(IModuleInitializationData<TEntityId> moduleContext)
                 where TEntityId : IEntityKey
             {
-                var entitySystems = new Dictionary<EntitySystemId, IEntitySystemDeclaration<TGameContext, TEntityId>>();
+                var entitySystems = new Dictionary<EntitySystemId, IEntitySystemDeclaration<TEntityId>>();
                 foreach (var system in moduleContext.EntitySystems)
                 {
                     if (entitySystems.TryGetValue(system.Id, out var entry))

@@ -226,10 +226,10 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Vision
             this.physics = new VisionSenseReceptorPhysicsConfiguration(sourcePhysics);
         }
 
-        protected override Action<SenseMappingTestContext> CreateCopyAction()
+        protected override Action CreateCopyAction()
         {
             var builder = context.ItemEntityRegistry.BuildSystem()
-                                 .WithContext<SenseMappingTestContext>();
+                                 .WithoutContext();
 
             var omniSystem = new SenseReceptorBlitterSystem<VisionSense, VisionSense>(senseSystem, new DefaultRadiationSenseReceptorBlitter());
             return builder.WithOutputParameter<SensoryReceptorState<VisionSense, VisionSense>>()
@@ -242,27 +242,27 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Vision
             return (sourcePhysics.CreateLightPropagationAlgorithm(), sourcePhysics.LightPhysics);
         }
 
-        protected override ReferenceItemDeclaration<SenseMappingTestContext, ItemReference> AttachTrait(ReferenceItemDeclaration<SenseMappingTestContext, ItemReference> decl)
+        protected override ReferenceItemDeclaration<ItemReference> AttachTrait(ReferenceItemDeclaration<ItemReference> decl)
         {
             switch (decl.Id.Id)
             {
                 case "SenseReceptor-Active-10":
-                    decl.WithTrait(new VisionSenseTrait<SenseMappingTestContext, ItemReference>(physics, 10));
+                    decl.WithTrait(new VisionSenseTrait<ItemReference>(physics, 10));
                     return decl;
                 case "SenseReceptor-Active-5":
-                    decl.WithTrait(new VisionSenseTrait<SenseMappingTestContext, ItemReference>(physics, 5));
+                    decl.WithTrait(new VisionSenseTrait<ItemReference>(physics, 5));
                     return decl;
                 case "SenseReceptor-Inactive-5":
-                    decl.WithTrait(new VisionSenseTrait<SenseMappingTestContext, ItemReference>(physics, 5, false));
+                    decl.WithTrait(new VisionSenseTrait<ItemReference>(physics, 5, false));
                     return decl;
                 case "SenseSource-Active-10":
-                    decl.WithTrait(new LightSourceTrait<SenseMappingTestContext, ItemReference>(sourcePhysics, 10));
+                    decl.WithTrait(new LightSourceTrait<ItemReference>(sourcePhysics, 10));
                     return decl;
                 case "SenseSource-Active-5":
-                    decl.WithTrait(new LightSourceTrait<SenseMappingTestContext, ItemReference>(sourcePhysics, 5));
+                    decl.WithTrait(new LightSourceTrait<ItemReference>(sourcePhysics, 5));
                     return decl;
                 case "SenseSource-Inactive-5":
-                    decl.WithTrait(new LightSourceTrait<SenseMappingTestContext, ItemReference>(sourcePhysics, 5, false));
+                    decl.WithTrait(new LightSourceTrait<ItemReference>(sourcePhysics, 5, false));
                     return decl;
                 default:
                     throw new ArgumentException();

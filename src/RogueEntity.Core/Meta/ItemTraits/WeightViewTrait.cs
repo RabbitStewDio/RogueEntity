@@ -6,28 +6,28 @@ using RogueEntity.Core.Meta.Items;
 
 namespace RogueEntity.Core.Meta.ItemTraits
 {
-    public class WeightViewTrait<TGameContext, TItemId> : StatelessItemComponentTraitBase<TGameContext, TItemId, WeightView>
+    public class WeightViewTrait< TItemId> : StatelessItemComponentTraitBase< TItemId, WeightView>
         where TItemId : IEntityKey
     {
-        readonly IItemResolver<TGameContext, TItemId> itemResolver;
+        readonly IItemResolver< TItemId> itemResolver;
 
-        public WeightViewTrait(IItemResolver<TGameContext, TItemId> itemResolver) : base("Core.Common.WeightView", 50000)
+        public WeightViewTrait(IItemResolver< TItemId> itemResolver) : base("Core.Common.WeightView", 50000)
         {
             this.itemResolver = itemResolver;
         }
 
-        public override bool TryQuery(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, out WeightView t)
+        public override bool TryQuery(IEntityViewControl<TItemId> v, TItemId k, out WeightView t)
         {
-            var stackCount = itemResolver.QueryStackSize(k, context);
-            var itemWeight = itemResolver.QueryBaseWeight(k, context);
+            var stackCount = itemResolver.QueryStackSize(k);
+            var itemWeight = itemResolver.QueryBaseWeight(k);
             var inventoryWeight = Weight.Empty;
             
             if (itemResolver.TryResolve(k, out var declaration))
             {
-                var traits = declaration.QueryAll<IItemComponentInformationTrait<TGameContext, TItemId, InventoryWeight>>();
+                var traits = declaration.QueryAll<IItemComponentInformationTrait< TItemId, InventoryWeight>>();
                 foreach (var tr in traits)
                 {
-                    if (tr.TryQuery(v, context, k, out var iv))
+                    if (tr.TryQuery(v, k, out var iv))
                     {
                         inventoryWeight += iv.Weight;
                     }
@@ -38,7 +38,7 @@ namespace RogueEntity.Core.Meta.ItemTraits
             return true;
         }
 
-        protected override WeightView GetData(TGameContext context, TItemId k)
+        protected override WeightView GetData(TItemId k)
         {
             throw new InvalidOperationException("This should never be callable.");
         }

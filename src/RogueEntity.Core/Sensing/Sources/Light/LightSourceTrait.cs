@@ -8,7 +8,7 @@ using RogueEntity.Core.Utils;
 
 namespace RogueEntity.Core.Sensing.Sources.Light
 {
-    public class LightSourceTrait<TGameContext, TItemId> : SenseSourceTraitBase<TGameContext, TItemId, VisionSense, LightSourceDefinition>
+    public class LightSourceTrait< TItemId> : SenseSourceTraitBase< TItemId, VisionSense, LightSourceDefinition>
         where TItemId : IEntityKey
     {
         readonly ILightPhysicsConfiguration lightPhysics;

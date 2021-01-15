@@ -6,8 +6,8 @@ using RogueEntity.Core.Meta.Items;
 
 namespace RogueEntity.Core.Meta.ItemTraits
 {
-    public sealed class DurabilityTrait<TContext, TItemId> : IItemComponentTrait<TContext, TItemId, Durability>,
-                                                             IReferenceItemTrait<TContext, TItemId>
+    public sealed class DurabilityTrait< TItemId> : IItemComponentTrait< TItemId, Durability>,
+                                                             IReferenceItemTrait< TItemId>
         where TItemId : IEntityKey
     {
         readonly Durability baseValue;
@@ -28,22 +28,21 @@ namespace RogueEntity.Core.Meta.ItemTraits
         public int Priority { get; }
 
 
-        public void Initialize(IEntityViewControl<TItemId> v, TContext context, TItemId k, IItemDeclaration item)
+        public void Initialize(IEntityViewControl<TItemId> v, TItemId k, IItemDeclaration item)
         {
             v.AssignOrReplace(k, in baseValue);
         }
 
-        public void Apply(IEntityViewControl<TItemId> v, TContext context, TItemId k, IItemDeclaration item)
+        public void Apply(IEntityViewControl<TItemId> v, TItemId k, IItemDeclaration item)
         {
         }
 
-        public bool TryQuery(IEntityViewControl<TItemId> v, TContext context, TItemId k, out Durability t)
+        public bool TryQuery(IEntityViewControl<TItemId> v, TItemId k, out Durability t)
         {
             return v.GetComponent(k, out t);
         }
 
         public bool TryUpdate(IEntityViewControl<TItemId> v,
-                              TContext context,
                               TItemId k,
                               in Durability t,
                               out TItemId changedK)
@@ -53,13 +52,13 @@ namespace RogueEntity.Core.Meta.ItemTraits
             return true;
         }
 
-        public bool TryRemove(IEntityViewControl<TItemId> entityRegistry, TContext context, TItemId k, out TItemId changedItem)
+        public bool TryRemove(IEntityViewControl<TItemId> entityRegistry, TItemId k, out TItemId changedItem)
         {
             changedItem = k;
             return false;
         }
 
-        IReferenceItemTrait<TContext, TItemId> IReferenceItemTrait<TContext, TItemId>.CreateInstance()
+        IReferenceItemTrait< TItemId> IReferenceItemTrait< TItemId>.CreateInstance()
         {
             return this;
         }

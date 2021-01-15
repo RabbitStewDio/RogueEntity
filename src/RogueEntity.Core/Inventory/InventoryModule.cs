@@ -37,15 +37,15 @@ namespace RogueEntity.Core.Inventory
         }
 
         [EntityRelationInitializer("Relation.Core.Inventory")]
-        protected void InitializeContainerEntities<TGameContext, TActorId, TItemId>(in ModuleEntityInitializationParameter<TGameContext, TActorId> initParameter,
-                                                                                    IModuleInitializer<TGameContext> initializer,
+        protected void InitializeContainerEntities< TActorId, TItemId>(in ModuleEntityInitializationParameter< TActorId> initParameter,
+                                                                                    IModuleInitializer initializer,
                                                                                     EntityRelation r)
             where TActorId : IEntityKey
             where TItemId : IEntityKey
         {
             var entityContext = initializer.DeclareEntityContext<TActorId>();
             entityContext.Register(ContainerComponentId, -19000, RegisterEntities<TActorId, TItemId>);
-            entityContext.Register(CascadingDestructionSystemId, 100_000_000, RegisterCascadingDestruction<TGameContext, TActorId, TItemId>);
+            entityContext.Register(CascadingDestructionSystemId, 100_000_000, RegisterCascadingDestruction< TActorId, TItemId>);
         }
 
         void RegisterEntities<TActorId, TItemId>(in ModuleInitializationParameter initParameter,
@@ -56,16 +56,16 @@ namespace RogueEntity.Core.Inventory
             registry.RegisterNonConstructable<ListInventoryData<TActorId, TItemId>>();
         }
 
-        void RegisterCascadingDestruction<TGameContext, TActorId, TItemId>(in ModuleInitializationParameter initParameter,
-                                                                           IGameLoopSystemRegistration<TGameContext> context,
+        void RegisterCascadingDestruction< TActorId, TItemId>(in ModuleInitializationParameter initParameter,
+                                                                           IGameLoopSystemRegistration context,
                                                                            EntityRegistry<TActorId> registry)
             where TActorId : IEntityKey
             where TItemId : IEntityKey
         {
-            var itemResolver = initParameter.ServiceResolver.Resolve<IItemResolver<TGameContext, TItemId>>();
-            var system = new DestroyContainerContentsSystem<TGameContext, TActorId, TItemId>(itemResolver);
+            var itemResolver = initParameter.ServiceResolver.Resolve<IItemResolver< TItemId>>();
+            var system = new DestroyContainerContentsSystem< TActorId, TItemId>(itemResolver);
             var action = registry.BuildSystem()
-                                 .WithContext<TGameContext>()
+                                 .WithoutContext()
                                  .WithInputParameter<DestroyedMarker, ListInventoryData<TActorId, TItemId>>()
                                  .CreateSystem(system.MarkDestroyedContainerEntities);
             context.AddInitializationStepHandler(action);

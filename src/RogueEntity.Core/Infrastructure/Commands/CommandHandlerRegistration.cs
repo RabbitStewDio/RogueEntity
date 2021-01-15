@@ -2,27 +2,28 @@
 using System.Collections.Generic;
 using EnTTSharp.Entities;
 using RogueEntity.Api.Utils;
+using RogueEntity.Core.Inputs.Commands;
 using Serilog;
 
 namespace RogueEntity.Core.Infrastructure.Commands
 {
-    public class CommandHandlerRegistration<TGameContext, TActorId> : ICommandHandlerRegistration<TGameContext, TActorId>
+    public class CommandHandlerRegistration< TActorId> : ICommandHandlerRegistration< TActorId>
         where TActorId : IEntityKey
     {
-        readonly ILogger logger = SLog.ForContext<CommandHandlerRegistration<TGameContext, TActorId>>();
-        readonly List<ICommandHandler<TGameContext, TActorId>> processors;
+        readonly ILogger logger = SLog.ForContext<CommandHandlerRegistration< TActorId>>();
+        readonly List<ICommandHandler< TActorId>> processors;
 
         public CommandHandlerRegistration()
         {
-            processors = new List<ICommandHandler<TGameContext, TActorId>>();
+            processors = new List<ICommandHandler< TActorId>>();
         }
 
-        public void Register(ICommandHandler<TGameContext, TActorId> p)
+        public void Register(ICommandHandler< TActorId> p)
         {
             processors.Add(p ?? throw new ArgumentNullException());
         }
 
-        public bool TryGetProcessor(ICommand commandId, out ICommandHandler<TGameContext, TActorId> p)
+        public bool TryGetProcessor(ICommand commandId, out ICommandHandler< TActorId> p)
         {
             foreach (var pr in processors)
             {

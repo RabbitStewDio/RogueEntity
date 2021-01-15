@@ -142,7 +142,7 @@ namespace RogueEntity.Core.GridProcessing.Transforms
             dirtyMap.MarkClean();
         }
 
-        public void MarkCleanSystem<TGameContext>(TGameContext ctx)
+        public void MarkCleanSystem()
         {
             dirtyMap.MarkClean();
         }

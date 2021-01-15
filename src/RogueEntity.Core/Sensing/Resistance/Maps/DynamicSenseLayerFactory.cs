@@ -9,28 +9,28 @@ using RogueEntity.Core.Utils.DataViews;
 
 namespace RogueEntity.Core.Sensing.Resistance.Maps
 {
-    public class DynamicSenseLayerFactory<TGameContext, TItemId, TSense> : DynamicGridAggregateLayerFactoryBase<TGameContext,TItemId, SensoryResistance<TSense>>
+    public class DynamicSenseLayerFactory<TItemId, TSense> : DynamicGridAggregateLayerFactoryBase<TItemId, SensoryResistance<TSense>>
         where TItemId : IEntityKey
     {
-        readonly IItemResolver<TGameContext, TItemId> itemContext;
+        readonly IItemResolver<TItemId> itemContext;
 
-        public DynamicSenseLayerFactory(MapLayer layer, 
+        public DynamicSenseLayerFactory(MapLayer layer,
                                         [NotNull] IGridMapContext<TItemId> mapContext,
-                                        [NotNull] IItemResolver<TGameContext, TItemId> itemContext): base(layer, mapContext)
+                                        [NotNull] IItemResolver<TItemId> itemContext) : base(layer, mapContext)
         {
             this.itemContext = itemContext ?? throw new ArgumentNullException(nameof(itemContext));
         }
 
-        protected override IAggregationPropertiesDataProcessor<TGameContext, SensoryResistance<TSense>> CreateDataProcessor(MapLayer layer, int zLayer, DynamicDataViewConfiguration config)
+        protected override IAggregationPropertiesDataProcessor<SensoryResistance<TSense>> CreateDataProcessor(MapLayer layer, int zLayer, DynamicDataViewConfiguration config)
         {
-            return new SensePropertiesDataProcessor<TGameContext, TItemId, TSense>(layer,
-                                                                                   MapContext,
-                                                                                   itemContext,
-                                                                                   zLayer,
-                                                                                   config.OffsetX,
-                                                                                   config.OffsetY,
-                                                                                   config.TileSizeX,
-                                                                                   config.TileSizeY);
+            return new SensePropertiesDataProcessor<TItemId, TSense>(layer,
+                                                                     MapContext,
+                                                                     itemContext,
+                                                                     zLayer,
+                                                                     config.OffsetX,
+                                                                     config.OffsetY,
+                                                                     config.TileSizeX,
+                                                                     config.TileSizeY);
         }
     }
 }

@@ -6,19 +6,18 @@ using Serilog;
 
 namespace RogueEntity.Core.Infrastructure.Actions
 {
-    public class CommandProcessorSystem<TGameContext, TActorId>
+    public class CommandProcessorSystem<TActorId>
         where TActorId : IEntityKey
     {
-        readonly ILogger logger = SLog.ForContext<CommandProcessorSystem<TGameContext, TActorId>>();
-        readonly ICommandHandlerRegistration<TGameContext, TActorId> commandHandler;
+        readonly ILogger logger = SLog.ForContext<CommandProcessorSystem<TActorId>>();
+        readonly ICommandHandlerRegistration<TActorId> commandHandler;
 
-        public CommandProcessorSystem(ICommandHandlerRegistration<TGameContext, TActorId> commandHandler)
+        public CommandProcessorSystem(ICommandHandlerRegistration<TActorId> commandHandler)
         {
             this.commandHandler = commandHandler;
         }
 
-        public void ProcessActions(IEntityViewControl<TActorId> v, 
-                                   TGameContext context,
+        public void ProcessActions(IEntityViewControl<TActorId> v,
                                    TActorId entity,
                                    in CommandQueueComponent commandQueue,
                                    in IdleMarker idleConstraint)
@@ -34,8 +33,8 @@ namespace RogueEntity.Core.Infrastructure.Actions
                 return;
             }
 
-            processor.Invoke(v, context, entity, command);
-            if (!v.GetComponent<ScheduledActionPlan<TGameContext, TActorId>>(entity, out var ap) ||
+            processor.Invoke(v, entity, command);
+            if (!v.GetComponent<ScheduledActionPlan<TActorId>>(entity, out var ap) ||
                 ap.Empty)
             {
                 logger.Information("Processor rejected command {CommandId}", command.Id);

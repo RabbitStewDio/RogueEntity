@@ -12,10 +12,10 @@ using Serilog;
 
 namespace RogueEntity.Core.GridProcessing.LayerAggregation
 {
-    public abstract class GridAggregationPropertiesDataProcessor<TGameContext, TItemId, TAggregateType> : IAggregationPropertiesDataProcessor<TGameContext, TAggregateType>
+    public abstract class GridAggregationPropertiesDataProcessor<TItemId, TAggregateType> : IAggregationPropertiesDataProcessor<TAggregateType>
         where TItemId : IEntityKey
     {
-        static readonly ILogger Logger = SLog.ForContext<GridAggregationPropertiesDataProcessor<TGameContext, TItemId, TAggregateType>>();
+        static readonly ILogger Logger = SLog.ForContext<GridAggregationPropertiesDataProcessor<TItemId, TAggregateType>>();
 
         readonly Action<TileProcessingParameters> processFastDelegate;
         readonly IGridMapContext<TItemId> mapContext;
@@ -61,7 +61,7 @@ namespace RogueEntity.Core.GridProcessing.LayerAggregation
             dirtyMap.Clear();
         }
 
-        public bool Process(TGameContext context)
+        public bool Process()
         {
             activeTilesCache.Clear();
 
@@ -71,11 +71,11 @@ namespace RogueEntity.Core.GridProcessing.LayerAggregation
                 return false;
             }
 
-            ProcessRawData(context, mapData);
+            ProcessRawData(mapData);
             return true;
         }
 
-        void ProcessRawData(TGameContext context, IReadOnlyDynamicDataView2D<TItemId> mapData)
+        void ProcessRawData(IReadOnlyDynamicDataView2D<TItemId> mapData)
         {
             var tc = mapData.GetActiveTiles(activeTilesCache);
             processingFastParameterCache.Clear();
@@ -93,12 +93,12 @@ namespace RogueEntity.Core.GridProcessing.LayerAggregation
                 if (mapData.TryGetData(bounds.X, bounds.Y, out var tile) &&
                     writableDataView.TryGetWriteAccess(bounds.X, bounds.Y, out var resultTile, DataViewCreateMode.CreateMissing))
                 {
-                    processingFastParameterCache.Add(new TileProcessingParameters(bounds, context, mapData, tile, resultTile));
+                    processingFastParameterCache.Add(new TileProcessingParameters(bounds, mapData, tile, resultTile));
                 }
             }
 
             dirtyAfterCreation = false;
-            
+
             if (processingFastParameterCache.Count == 0)
             {
                 return;
@@ -111,32 +111,27 @@ namespace RogueEntity.Core.GridProcessing.LayerAggregation
         protected readonly struct TileProcessingParameters
         {
             public readonly Rectangle Bounds;
-            public readonly TGameContext Context;
             public readonly IReadOnlyDynamicDataView2D<TItemId> DataView;
             public readonly IReadOnlyBoundedDataView<TItemId> TileDataView;
             public readonly IBoundedDataView<TAggregateType> ResultTile;
 
             public TileProcessingParameters(Rectangle bounds,
-                                            TGameContext context,
                                             IReadOnlyDynamicDataView2D<TItemId> dataView,
                                             IReadOnlyBoundedDataView<TItemId> tileDataView,
                                             IBoundedDataView<TAggregateType> resultTile)
             {
                 Bounds = bounds;
-                Context = context;
                 DataView = dataView;
                 TileDataView = tileDataView;
                 ResultTile = resultTile;
             }
 
             public void Deconstruct(out Rectangle bounds,
-                                    out TGameContext context,
                                     out IReadOnlyDynamicDataView2D<TItemId> dataView,
                                     out IReadOnlyBoundedDataView<TItemId> tileDataView,
                                     out IBoundedDataView<TAggregateType> resultTile)
             {
                 bounds = Bounds;
-                context = Context;
                 dataView = DataView;
                 tileDataView = TileDataView;
                 resultTile = ResultTile;

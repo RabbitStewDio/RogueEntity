@@ -6,7 +6,7 @@ using RogueEntity.Core.Movement.MovementModes;
 
 namespace RogueEntity.Core.Movement.CostModifier
 {
-    public class RelativeMovementCostModifierTrait<TContext, TItemId, TMovementMode>: StatelessItemComponentTraitBase<TContext, TItemId, RelativeMovementCostModifier<TMovementMode>>
+    public class RelativeMovementCostModifierTrait< TItemId, TMovementMode>: StatelessItemComponentTraitBase< TItemId, RelativeMovementCostModifier<TMovementMode>>
         where TItemId : IEntityKey
     {
         readonly RelativeMovementCostModifier<TMovementMode> sensoryResistance;
@@ -16,7 +16,7 @@ namespace RogueEntity.Core.Movement.CostModifier
             this.sensoryResistance = movementCostModifier;
         }
 
-        protected override RelativeMovementCostModifier<TMovementMode> GetData(TContext context, TItemId k)
+        protected override RelativeMovementCostModifier<TMovementMode> GetData(TItemId k)
         {
             return sensoryResistance;
         }

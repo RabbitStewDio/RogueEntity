@@ -9,9 +9,9 @@ namespace RogueEntity.Api.GameLoops
     {
         static readonly ILogger Logger = SLog.ForContext(typeof(GameLoopExtensions)); 
         
-        public static IGameLoop<TGameContext> BuildFixedTimeStepLoop<TGameContext>(this IGameLoopSystemInformation<TGameContext> t, int maxSteps, TimeSpan deltaTime)
+        public static IGameLoop BuildFixedTimeStepLoop(this IGameLoopSystemInformation t, int maxSteps, TimeSpan deltaTime)
         {
-            var s = new FixedTimeStepGameLoop<TGameContext>(maxSteps, deltaTime);
+            var s = new FixedTimeStepGameLoop(maxSteps, deltaTime);
             foreach (var entry in t.InitializationEntries)
             {
                 Logger.Debug("Adding Initialization Step {StepName}", entry.ToString());
@@ -51,9 +51,9 @@ namespace RogueEntity.Api.GameLoops
             return s;
         }
         
-        public static IGameLoop<TGameContext> BuildRealTimeStepLoop<TGameContext>(this IGameLoopSystemInformation<TGameContext> t, int fps, Optional<TimeSpan> fixedStepTime = default)
+        public static IGameLoop BuildRealTimeStepLoop(this IGameLoopSystemInformation t, int fps, Optional<TimeSpan> fixedStepTime = default)
         {
-            var s = new RealTimeGameLoop<TGameContext>(fps, fixedStepTime);
+            var s = new RealTimeGameLoop(fps, fixedStepTime);
             foreach (var entry in t.InitializationEntries)
             {
                 Logger.Debug("Adding Initialization Step {StepName}", entry.ToString());

@@ -7,8 +7,8 @@ namespace RogueEntity.Api.Modules.Attributes
     ///   Used to set up aspects of an entity role. Entity roles are bound to an entity registry.
     ///
     ///   <![CDATA[
-    ///   void InitializeItemRole<TGameContext, TItemId>(IServiceResolver serviceResolver, 
-    ///                                                  IModuleInitializer<TGameContext> initializer,
+    ///   void InitializeItemRole<TItemId>(IServiceResolver serviceResolver, 
+    ///                                                  IModuleInitializer initializer,
     ///                                                  EntityRole r)
     ///    ]]>
     /// </summary>

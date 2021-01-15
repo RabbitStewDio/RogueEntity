@@ -12,8 +12,8 @@ using RogueEntity.Core.Positioning.Algorithms;
 
 namespace RogueEntity.Core.Tests.Sensing.Receptor.Smell
 {
-    public class SmellReceptorTraitTest : ItemComponentTraitTestBase<SenseMappingTestContext, ActorReference, SensoryReceptorData<SmellSense, SmellSense>,
-        SmellDirectionSenseTrait<SenseMappingTestContext, ActorReference>>
+    public class SmellReceptorTraitTest : ItemComponentTraitTestBase<ActorReference, SensoryReceptorData<SmellSense, SmellSense>,
+        SmellDirectionSenseTrait<ActorReference>>
     {
         readonly SmellSenseReceptorPhysicsConfiguration physics;
 
@@ -25,9 +25,8 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Smell
             );
         }
 
-        protected override SenseMappingTestContext CreateContext()
+        protected override void SetUpPrepare()
         {
-            var context = new SenseMappingTestContext();
             EntityRegistry.RegisterNonConstructable<SmellSourceDefinition>();
             EntityRegistry.RegisterNonConstructable<SenseSourceState<SmellSense>>();
             EntityRegistry.RegisterFlag<ObservedSenseSource<SmellSense>>();
@@ -37,13 +36,11 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Smell
             EntityRegistry.RegisterNonConstructable<SensoryReceptorState<SmellSense, SmellSense>>();
             EntityRegistry.RegisterNonConstructable<SingleLevelSenseDirectionMapData<SmellSense, SmellSense>>();
             EntityRegistry.RegisterFlag<SenseReceptorDirtyFlag<SmellSense, SmellSense>>();
-
-            return context;
         }
 
-        protected override SmellDirectionSenseTrait<SenseMappingTestContext, ActorReference> CreateTrait()
+        protected override SmellDirectionSenseTrait<ActorReference> CreateTrait()
         {
-            return new SmellDirectionSenseTrait<SenseMappingTestContext, ActorReference>(physics, 1.9f);
+            return new SmellDirectionSenseTrait<ActorReference>(physics, 1.9f);
         }
 
         protected override IItemComponentTestDataFactory<SensoryReceptorData<SmellSense, SmellSense>> ProduceTestData(EntityRelations<ActorReference> relations)

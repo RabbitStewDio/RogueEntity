@@ -13,7 +13,7 @@ namespace RogueEntity.Core.GridProcessing.LayerAggregation
         event EventHandler<PositionDirtyEventArgs> PositionDirty;
     }
 
-    public interface IAggregationPropertiesDataProcessor<TGameContext, TSourceType>
+    public interface IAggregationPropertiesDataProcessor< TSourceType>
     {
         MapLayer Layer { get; }
         int ZPosition { get; }
@@ -22,13 +22,13 @@ namespace RogueEntity.Core.GridProcessing.LayerAggregation
 
         void MarkDirty(int posGridX, int posGridY);
         void ResetDirtyFlags();
-        bool Process(TGameContext context);
+        bool Process();
     }
 
-    public interface IAggregationPropertiesLayer<TGameContext, TSourceType>
+    public interface IAggregationPropertiesLayer< TSourceType>
     {
         bool IsDefined(MapLayer layer);
-        void AddProcess(MapLayer layer, IAggregationPropertiesDataProcessor<TGameContext, TSourceType> p);
+        void AddProcess(MapLayer layer, IAggregationPropertiesDataProcessor< TSourceType> p);
         void RemoveLayer(MapLayer layer);
     }
 
@@ -39,23 +39,23 @@ namespace RogueEntity.Core.GridProcessing.LayerAggregation
         public IReadOnlyDynamicDataView3D<TAggregateType> ResultView { get; }
     }
 
-    public interface IAggregationLayerSystemBackend<TGameContext, TSourceType>
+    public interface IAggregationLayerSystemBackend< TSourceType>
     {
         void OnPositionDirty(object source, PositionDirtyEventArgs args);
 
         public DynamicDataViewConfiguration ViewConfiguration { get; }
 
-        void AddSenseLayerFactory(IAggregationLayerController<TGameContext, TSourceType> layerHandler);
+        void AddSenseLayerFactory(IAggregationLayerController< TSourceType> layerHandler);
 
-        bool TryGetSenseLayer(int z, out IAggregationPropertiesLayer<TGameContext, TSourceType> data);
-        IAggregationPropertiesLayer<TGameContext, TSourceType> GetOrCreate(int z);
+        bool TryGetSenseLayer(int z, out IAggregationPropertiesLayer< TSourceType> data);
+        IAggregationPropertiesLayer< TSourceType> GetOrCreate(int z);
         void Remove(int z);
     }
     
-    public interface IAggregationLayerController<TGameContext, TSourceType>
+    public interface IAggregationLayerController< TSourceType>
     {
-        void Start(TGameContext context, IAggregationLayerSystemBackend<TGameContext, TSourceType> system);
-        void PrepareLayers(TGameContext ctx, IAggregationLayerSystemBackend<TGameContext, TSourceType> system);
-        void Stop(TGameContext context, IAggregationLayerSystemBackend<TGameContext, TSourceType> system);
+        void Start(IAggregationLayerSystemBackend< TSourceType> system);
+        void PrepareLayers(IAggregationLayerSystemBackend< TSourceType> system);
+        void Stop(IAggregationLayerSystemBackend< TSourceType> system);
     }
 }

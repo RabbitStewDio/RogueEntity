@@ -2,9 +2,9 @@ using EnTTSharp.Entities;
 
 namespace RogueEntity.Api.Modules.Helpers
 {
-    public interface IModuleEntityInitializationCallback<TGameContext>
+    public interface IModuleEntityInitializationCallback
     {
-        void PerformInitialization<TEntityId>(IModuleInitializationData<TGameContext, TEntityId> moduleContext)
+        void PerformInitialization<TEntityId>(IModuleInitializationData<TEntityId> moduleContext)
             where TEntityId : IEntityKey;
     }
 }

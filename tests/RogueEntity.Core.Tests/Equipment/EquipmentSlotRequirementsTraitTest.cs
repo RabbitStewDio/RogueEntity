@@ -6,7 +6,7 @@ using RogueEntity.Core.Tests.Meta.Items;
 namespace RogueEntity.Core.Tests.Equipment
 {
     [TestFixture]
-    public class EquipmentSlotRequirementsTraitTest : ItemComponentTraitTestBase<BasicItemContext, ItemReference, EquipmentSlotRequirements, EquipmentSlotRequirementsTrait<BasicItemContext, ItemReference>>
+    public class EquipmentSlotRequirementsTraitTest : ItemComponentTraitTestBase<ItemReference, EquipmentSlotRequirements, EquipmentSlotRequirementsTrait<ItemReference>>
     {
         readonly EquipmentSlotRegistry registry;
         readonly EquipmentSlot slotHead;
@@ -27,14 +27,9 @@ namespace RogueEntity.Core.Tests.Equipment
             registry.Register(slotLeftHand);
         }
 
-        protected override BasicItemContext CreateContext()
+        protected override EquipmentSlotRequirementsTrait<ItemReference> CreateTrait()
         {
-            return new BasicItemContext();
-        }
-
-        protected override EquipmentSlotRequirementsTrait<BasicItemContext, ItemReference> CreateTrait()
-        {
-            return new EquipmentSlotRequirementsTrait<BasicItemContext, ItemReference>(EquipmentSlotRequirements.Create().WithRequiredSlots(slotHead).WithAcceptableSlots(slotLeftHand));
+            return new EquipmentSlotRequirementsTrait<ItemReference>(EquipmentSlotRequirements.Create().WithRequiredSlots(slotHead).WithAcceptableSlots(slotLeftHand));
         }
 
         protected override IItemComponentTestDataFactory<EquipmentSlotRequirements> ProduceTestData(EntityRelations<ItemReference> relations)

@@ -7,15 +7,13 @@ using RogueEntity.Core.Meta.Items;
 
 namespace RogueEntity.Core.Tests.Meta.Items
 {
-    public abstract class ItemComponentInformationTraitTestBase<TGameContext, TItemId, TData, TItemTrait>: ItemComponentSerializationTestBase<TGameContext, TItemId, TData>
+    public abstract class ItemComponentInformationTraitTestBase<TItemId, TData, TItemTrait>: ItemComponentSerializationTestBase<TItemId, TData>
         where TItemId : IBulkDataStorageKey<TItemId>
-        where TItemTrait : IItemComponentInformationTrait<TGameContext, TItemId, TData>
+        where TItemTrait : IItemComponentInformationTrait<TItemId, TData>
     {
         protected static readonly ItemDeclarationId BulkItemId = "Bulk-TestSubject";
         protected static readonly ItemDeclarationId ReferenceItemId = "Reference-TestSubject";
 
-        TGameContext context;
-        protected override TGameContext Context => context;
         protected TItemTrait SubjectTrait { get; private set; }
 
         protected override List<ItemDeclarationId> ActiveItems { get; }
@@ -26,7 +24,6 @@ namespace RogueEntity.Core.Tests.Meta.Items
             EnableSerializationTest = true;
         }
         
-        protected abstract TGameContext CreateContext();
         protected abstract TItemTrait CreateTrait();
 
         [SetUp]
@@ -34,19 +31,19 @@ namespace RogueEntity.Core.Tests.Meta.Items
         {
             ActiveItems.Clear();
             base.SetUpItems();
-            context = CreateContext();
+            SetUpPrepare();
 
-            EntityRegistry.RegisterNonConstructable<ItemDeclarationHolder<TGameContext, TItemId>>();
+            EntityRegistry.RegisterNonConstructable<ItemDeclarationHolder<TItemId>>();
 
             SubjectTrait = CreateTrait();
 
-            if (SubjectTrait is IBulkItemTrait<TGameContext, TItemId> bulkTrait)
+            if (SubjectTrait is IBulkItemTrait<TItemId> bulkTrait)
             {
                 ItemRegistry.Register(CreateBulkItemDeclaration(bulkTrait));
                 ActiveItems.Add(BulkItemId);
             }
 
-            if (SubjectTrait is IReferenceItemTrait<TGameContext, TItemId> refTrait)
+            if (SubjectTrait is IReferenceItemTrait<TItemId> refTrait)
             {
                 ItemRegistry.Register(CreateReferenceItemDeclaration(refTrait));
                 ActiveItems.Add(ReferenceItemId);
@@ -65,16 +62,17 @@ namespace RogueEntity.Core.Tests.Meta.Items
             SetUpOverride();
         }
 
+        protected virtual void SetUpPrepare() {}
         protected virtual void SetUpOverride() {}
 
-        protected virtual BulkItemDeclaration<TGameContext, TItemId> CreateBulkItemDeclaration(IBulkItemTrait<TGameContext, TItemId> bulkTrait)
+        protected virtual BulkItemDeclaration<TItemId> CreateBulkItemDeclaration(IBulkItemTrait<TItemId> bulkTrait)
         {
-            return new BulkItemDeclaration<TGameContext, TItemId>(BulkItemId).WithTrait(bulkTrait);
+            return new BulkItemDeclaration<TItemId>(BulkItemId).WithTrait(bulkTrait);
         }
 
-        protected virtual ReferenceItemDeclaration<TGameContext, TItemId> CreateReferenceItemDeclaration(IReferenceItemTrait<TGameContext, TItemId> refTrait)
+        protected virtual ReferenceItemDeclaration<TItemId> CreateReferenceItemDeclaration(IReferenceItemTrait<TItemId> refTrait)
         {
-            return new ReferenceItemDeclaration<TGameContext, TItemId>(ReferenceItemId).WithTrait(refTrait);
+            return new ReferenceItemDeclaration<TItemId>(ReferenceItemId).WithTrait(refTrait);
         }
 
         [Test]
@@ -98,35 +96,35 @@ namespace RogueEntity.Core.Tests.Meta.Items
 
         protected virtual void Validate_Apply(ItemDeclarationId itemId)
         {
-            var item = ItemResolver.Instantiate(Context, itemId);
+            var item = ItemResolver.Instantiate(itemId);
             var testData = ProduceTestData(ProduceItemRelations(item));
 
-            ItemResolver.Apply(item, Context);
+            ItemResolver.Apply(item);
 
             if (testData.TryGetApplyValue(out var applyValue))
             {
-                ItemResolver.TryQueryData(item, Context, out TData data2).Should().BeTrue();
+                ItemResolver.TryQueryData(item, out TData data2).Should().BeTrue();
                 data2.Should().Be(applyValue, "because apply should not reset existing data.");
             }
             else
             {
-                ItemResolver.TryQueryData(item, Context, out TData _).Should().BeFalse();
+                ItemResolver.TryQueryData(item, out TData _).Should().BeFalse();
             }
         }
 
         protected virtual void Validate_Initialize(ItemDeclarationId itemId)
         {
-            var item = ItemResolver.Instantiate(Context, itemId);
+            var item = ItemResolver.Instantiate(itemId);
             var testData = ProduceTestData(ProduceItemRelations(item));
 
             if (testData.TryGetInitialValue(out var initialData))
             {
-                ItemResolver.TryQueryData(item, Context, out TData data).Should().BeTrue();
+                ItemResolver.TryQueryData(item, out TData data).Should().BeTrue();
                 data.Should().Be(initialData);
             }
             else
             {
-                ItemResolver.TryQueryData(item, Context, out TData _).Should().BeFalse();
+                ItemResolver.TryQueryData(item, out TData _).Should().BeFalse();
             }
         }
     }

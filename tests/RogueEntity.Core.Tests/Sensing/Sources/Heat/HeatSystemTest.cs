@@ -76,18 +76,18 @@ namespace RogueEntity.Core.Tests.Sensing.Sources.Heat
                                   physics);
         }
 
-        protected override ReferenceItemDeclaration<SenseMappingTestContext, ItemReference> AttachTrait(ReferenceItemDeclaration<SenseMappingTestContext, ItemReference> decl)
+        protected override ReferenceItemDeclaration<ItemReference> AttachTrait(ReferenceItemDeclaration<ItemReference> decl)
         {
             switch (decl.Id.Id)
             {
                 case "SenseSource-Active-10":
-                    decl.WithTrait(new HeatSourceTrait<SenseMappingTestContext, ItemReference>(physics, Temperature.FromCelsius(10)));
+                    decl.WithTrait(new HeatSourceTrait<ItemReference>(physics, Temperature.FromCelsius(10)));
                     break;
                 case "SenseSource-Active-5":
-                    decl.WithTrait(new HeatSourceTrait<SenseMappingTestContext, ItemReference>(physics, Temperature.FromCelsius(5)));
+                    decl.WithTrait(new HeatSourceTrait<ItemReference>(physics, Temperature.FromCelsius(5)));
                     break;
                 case "SenseSource-Inactive-5":
-                    decl.WithTrait(new HeatSourceTrait<SenseMappingTestContext, ItemReference>(physics));
+                    decl.WithTrait(new HeatSourceTrait<ItemReference>(physics));
                     break;
             }
 

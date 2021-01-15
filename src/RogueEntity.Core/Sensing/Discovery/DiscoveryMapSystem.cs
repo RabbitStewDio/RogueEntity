@@ -23,13 +23,12 @@ namespace RogueEntity.Core.Sensing.Discovery
         }
 
         [SuppressMessage("ReSharper", "UnusedParameter.Global")]
-        public void ExpandDiscoveredArea<TGameContext, TActorId, TReceptorSense, TSourceSense>(IEntityViewControl<TActorId> v,
-                                                                                               TGameContext context,
-                                                                                               TActorId k,
-                                                                                               in DiscoveryMapData map,
-                                                                                               in SensoryReceptorState<TReceptorSense, TSourceSense> receptor,
-                                                                                               in SingleLevelSenseDirectionMapData<TReceptorSense, TSourceSense> vision,
-                                                                                               in SenseReceptorDirtyFlag<TReceptorSense, TSourceSense> unused)
+        public void ExpandDiscoveredArea<TActorId, TReceptorSense, TSourceSense>(IEntityViewControl<TActorId> v,
+                                                                                 TActorId k,
+                                                                                 in DiscoveryMapData map,
+                                                                                 in SensoryReceptorState<TReceptorSense, TSourceSense> receptor,
+                                                                                 in SingleLevelSenseDirectionMapData<TReceptorSense, TSourceSense> vision,
+                                                                                 in SenseReceptorDirtyFlag<TReceptorSense, TSourceSense> unused)
             where TActorId : IEntityKey
             where TReceptorSense : ISense
             where TSourceSense : ISense

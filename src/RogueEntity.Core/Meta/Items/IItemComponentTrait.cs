@@ -2,10 +2,10 @@
 
 namespace RogueEntity.Core.Meta.Items
 {
-    public interface IItemComponentTrait<in TContext, TItemId, TComponent> : IItemComponentInformationTrait<TContext, TItemId, TComponent>
+    public interface IItemComponentTrait<TItemId, TComponent> : IItemComponentInformationTrait<TItemId, TComponent>
         where TItemId : IEntityKey
     {
-        bool TryUpdate(IEntityViewControl<TItemId> v, TContext context, TItemId k, in TComponent t, out TItemId changedK);
-        bool TryRemove(IEntityViewControl<TItemId> v, TContext context, TItemId k, out TItemId changedK);
+        bool TryUpdate(IEntityViewControl<TItemId> v, TItemId k, in TComponent t, out TItemId changedK);
+        bool TryRemove(IEntityViewControl<TItemId> v, TItemId k, out TItemId changedK);
     }
 }

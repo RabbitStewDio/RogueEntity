@@ -12,9 +12,9 @@ using RogueEntity.Core.Sensing.Sources.Touch;
 
 namespace RogueEntity.Core.Sensing.Receptors.Touch
 {
-    public sealed class TouchSenseTrait<TGameContext, TActorId>: SenseReceptorTraitBase<TGameContext, TActorId, TouchSense, TouchSense>,
-                                                             IItemComponentInformationTrait<TGameContext, TActorId, ITouchDirectionMap>,
-                                                             IItemComponentTrait<TGameContext, TActorId, TouchSourceDefinition>
+    public sealed class TouchSenseTrait<TActorId> : SenseReceptorTraitBase<TActorId, TouchSense, TouchSense>,
+                                                    IItemComponentInformationTrait<TActorId, ITouchDirectionMap>,
+                                                    IItemComponentTrait<TActorId, TouchSourceDefinition>
         where TActorId : IEntityKey
     {
         readonly ITouchReceptorPhysicsConfiguration touchPhysics;
@@ -25,21 +25,21 @@ namespace RogueEntity.Core.Sensing.Receptors.Touch
         }
 
         static float GetStandardIntensity(ITouchReceptorPhysicsConfiguration p) => p.TouchPhysics.DistanceMeasurement.MaximumStepDistance();
-        
+
         public override ItemTraitId Id => "Core.Sense.Receptor.Touch";
         public override int Priority => 100;
 
-        public override void Initialize(IEntityViewControl<TActorId> v, TGameContext context, TActorId k, IItemDeclaration item)
+        public override void Initialize(IEntityViewControl<TActorId> v, TActorId k, IItemDeclaration item)
         {
-            base.Initialize(v, context, k, item);
-            
+            base.Initialize(v, k, item);
+
             v.AssignComponent(k, new TouchSourceDefinition(new SenseSourceDefinition(touchPhysics.TouchPhysics.DistanceMeasurement,
                                                                                      touchPhysics.TouchPhysics.AdjacencyRule,
                                                                                      Intensity), true));
             v.AssignComponent(k, new SenseSourceState<TouchSense>(Optional.Empty(), SenseSourceDirtyState.UnconditionallyDirty, Position.Invalid));
         }
 
-        public override void Apply(IEntityViewControl<TActorId> v, TGameContext context, TActorId k, IItemDeclaration item)
+        public override void Apply(IEntityViewControl<TActorId> v, TActorId k, IItemDeclaration item)
         {
             if (v.HasComponent<TouchSourceDefinition>(k) && !v.HasComponent<SenseSourceState<TouchSense>>(k))
             {
@@ -47,16 +47,16 @@ namespace RogueEntity.Core.Sensing.Receptors.Touch
             }
         }
 
-        public bool TryQuery(IEntityViewControl<TActorId> v, TGameContext context, TActorId k, out TouchSourceDefinition t)
+        public bool TryQuery(IEntityViewControl<TActorId> v, TActorId k, out TouchSourceDefinition t)
         {
             return v.GetComponent(k, out t);
         }
 
-        public bool TryUpdate(IEntityViewControl<TActorId> v, TGameContext context, TActorId k, in TouchSourceDefinition t, out TActorId changedK)
+        public bool TryUpdate(IEntityViewControl<TActorId> v, TActorId k, in TouchSourceDefinition t, out TActorId changedK)
         {
             v.AssignOrReplace(k, in t);
             changedK = k;
-            
+
             if (!v.GetComponent(k, out SenseSourceState<TouchSense> s))
             {
                 s = new SenseSourceState<TouchSense>(Optional.Empty(), SenseSourceDirtyState.UnconditionallyDirty, Position.Invalid);
@@ -67,10 +67,11 @@ namespace RogueEntity.Core.Sensing.Receptors.Touch
                 s = s.WithDirtyState(SenseSourceDirtyState.UnconditionallyDirty);
                 v.ReplaceComponent(k, in s);
             }
+
             return true;
         }
 
-        public bool TryQuery(IEntityViewControl<TActorId> v, TGameContext context, TActorId k, out ITouchDirectionMap t)
+        public bool TryQuery(IEntityViewControl<TActorId> v, TActorId k, out ITouchDirectionMap t)
         {
             if (v.GetComponent(k, out SingleLevelSenseDirectionMapData<TouchSense, TouchSense> m))
             {

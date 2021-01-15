@@ -90,18 +90,18 @@ namespace RogueEntity.Core.Tests.Sensing.Map.InfraVision
             return new SensoryResistance<TemperatureSense>(Percentage.Of(f));
         }
 
-        protected override ReferenceItemDeclaration<SenseMappingTestContext, ItemReference> AttachTrait(ReferenceItemDeclaration<SenseMappingTestContext, ItemReference> decl)
+        protected override ReferenceItemDeclaration<ItemReference> AttachTrait(ReferenceItemDeclaration<ItemReference> decl)
         {
             switch (decl.Id.Id)
             {
                 case "SenseSource-Active-10":
-                    decl.WithTrait(new HeatSourceTrait<SenseMappingTestContext, ItemReference>(sourcePhysics, Temperature.FromCelsius(10)));
+                    decl.WithTrait(new HeatSourceTrait<ItemReference>(sourcePhysics, Temperature.FromCelsius(10)));
                     return decl;
                 case "SenseSource-Active-5":
-                    decl.WithTrait(new HeatSourceTrait<SenseMappingTestContext, ItemReference>(sourcePhysics, Temperature.FromCelsius(5)));
+                    decl.WithTrait(new HeatSourceTrait<ItemReference>(sourcePhysics, Temperature.FromCelsius(5)));
                     return decl;
                 case "SenseSource-Inactive-5":
-                    decl.WithTrait(new HeatSourceTrait<SenseMappingTestContext, ItemReference>(sourcePhysics));
+                    decl.WithTrait(new HeatSourceTrait<ItemReference>(sourcePhysics));
                     return decl;
                 default:
                     throw new ArgumentException();

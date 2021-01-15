@@ -44,9 +44,9 @@ namespace RogueEntity.Core.Movement.MovementModes
         }
 
         [InitializerCollector(InitializerCollectorType.Roles)]
-        public IEnumerable<ModuleEntityRoleInitializerInfo<TGameContext, TItemId>> CollectRoleInitializers<TGameContext, TItemId>(IServiceResolver serviceResolver,
-                                                                                                                                  IModuleEntityInformation entityInformation,
-                                                                                                                                  EntityRole role)
+        public IEnumerable<ModuleEntityRoleInitializerInfo<TItemId>> CollectRoleInitializers<TItemId>(IServiceResolver serviceResolver,
+                                                                                                      IModuleEntityInformation entityInformation,
+                                                                                                      EntityRole role)
             where TItemId : IEntityKey
         {
             if (role != MovementCostModifierSourceRole)
@@ -54,18 +54,18 @@ namespace RogueEntity.Core.Movement.MovementModes
                 yield break;
             }
 
-            yield return ModuleEntityRoleInitializerInfo.CreateFor<TGameContext, TItemId>(MovementCostModifierSourceRole,
-                                                                                          InitializeResistanceRole,
-                                                                                          $"{GetType().Name}#{nameof(InitializeResistanceRole)}")
+            yield return ModuleEntityRoleInitializerInfo.CreateFor<TItemId>(MovementCostModifierSourceRole,
+                                                                            InitializeResistanceRole,
+                                                                            $"{GetType().Name}#{nameof(InitializeResistanceRole)}")
                                                         .WithRequiredRoles(PositionModule.GridPositionedRole)
                                                         .WithRequiredRolesAnywhereInSystem(MovableActorRole);
         }
-        
+
         [FinalizerCollector(InitializerCollectorType.Relations)]
         [SuppressMessage("ReSharper", "UnusedTypeParameter", Justification = "TObject is part of a delegate definition.")]
-        public IEnumerable<ModuleEntityRelationInitializerInfo<TGameContext, TSource>> CollectRoleInitializers<TGameContext, TSource, TObject>(IServiceResolver serviceResolver,
-                                                                                                                                               IModuleEntityInformation entityInformation,
-                                                                                                                                               EntityRelation relation)
+        public IEnumerable<ModuleEntityRelationInitializerInfo<TSource>> CollectRoleInitializers<TSource, TObject>(IServiceResolver serviceResolver,
+                                                                                                                   IModuleEntityInformation entityInformation,
+                                                                                                                   EntityRelation relation)
             where TSource : IEntityKey
             where TObject : IEntityKey
         {
@@ -74,15 +74,15 @@ namespace RogueEntity.Core.Movement.MovementModes
                 yield break;
             }
 
-            yield return ModuleEntityRelationInitializerInfo.CreateFor<TGameContext, TSource>(ProvidesMovementCostDataRelation,
-                                                                                              FinalizePathfinderFromSourcesRelation,
-                                                                                              $"{GetType().Name}#{nameof(FinalizePathfinderFromSourcesRelation)}"
+            yield return ModuleEntityRelationInitializerInfo.CreateFor<TSource>(ProvidesMovementCostDataRelation,
+                                                                                FinalizePathfinderFromSourcesRelation,
+                                                                                $"{GetType().Name}#{nameof(FinalizePathfinderFromSourcesRelation)}"
             );
         }
 
-        protected void InitializeResistanceRole<TGameContext, TItemId>(in ModuleEntityInitializationParameter<TGameContext, TItemId> initParameter,
-                                                                       IModuleInitializer<TGameContext> initializer,
-                                                                       EntityRole role)
+        protected void InitializeResistanceRole<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
+                                                         IModuleInitializer initializer,
+                                                         EntityRole role)
             where TItemId : IEntityKey
         {
             var ctx = initializer.DeclareEntityContext<TItemId>();
@@ -93,21 +93,21 @@ namespace RogueEntity.Core.Movement.MovementModes
             ctx.Register(RegisterResistanceSystem, 500, RegisterResistanceSystemLifecycle);
         }
 
-        protected void FinalizePathfinderFromSourcesRelation<TGameContext, TItemId>(in ModuleEntityInitializationParameter<TGameContext, TItemId> initParameter,
-                                                                                      IModuleInitializer<TGameContext> initializer,
-                                                                                      EntityRelation relation)
+        protected void FinalizePathfinderFromSourcesRelation<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
+                                                                      IModuleInitializer initializer,
+                                                                      EntityRelation relation)
             where TItemId : IEntityKey
         {
             initializer.Register(RegisterPathfinderSourceConfigurationSystem, 500, RegisterPathfinderSources);
         }
 
-        void RegisterPathfinderSources<TGameContext>(in ModuleInitializationParameter initparameter,
-                                                     IGameLoopSystemRegistration<TGameContext> context)
+        void RegisterPathfinderSources(in ModuleInitializationParameter initparameter,
+                                       IGameLoopSystemRegistration context)
         {
             var serviceResolver = initparameter.ServiceResolver;
             GetOrCreateModeRegistry(serviceResolver).Register(GetMovementModeInstance());
-            
-            context.AddInitializationStepHandler(c =>
+
+            context.AddInitializationStepHandler(() =>
             {
                 if (serviceResolver.TryResolve(out IMovementDataCollector pathFinderSource))
                 {
@@ -121,41 +121,41 @@ namespace RogueEntity.Core.Movement.MovementModes
 
         protected abstract TMovementMode GetMovementModeInstance();
 
-        protected void RegisterResistanceSystemLifecycle<TGameContext, TItemId>(in ModuleInitializationParameter initParameter,
-                                                                                IGameLoopSystemRegistration<TGameContext> context,
-                                                                                EntityRegistry<TItemId> registry)
+        protected void RegisterResistanceSystemLifecycle<TItemId>(in ModuleInitializationParameter initParameter,
+                                                                  IGameLoopSystemRegistration context,
+                                                                  EntityRegistry<TItemId> registry)
             where TItemId : IEntityKey
         {
             var serviceResolver = initParameter.ServiceResolver;
-            var system = GetOrCreateMovementPropertiesSystem<TGameContext, TItemId>(serviceResolver);
+            var system = GetOrCreateMovementPropertiesSystem<TItemId>(serviceResolver);
             context.AddInitializationStepHandler(system.Start);
             context.AddDisposeStepHandler(system.Stop);
         }
 
-        protected void RegisterResistanceSystemExecution<TGameContext, TItemId>(in ModuleInitializationParameter initParameter,
-                                                                                IGameLoopSystemRegistration<TGameContext> context,
-                                                                                EntityRegistry<TItemId> registry)
+        protected void RegisterResistanceSystemExecution<TItemId>(in ModuleInitializationParameter initParameter,
+                                                                  IGameLoopSystemRegistration context,
+                                                                  EntityRegistry<TItemId> registry)
             where TItemId : IEntityKey
         {
             var serviceResolver = initParameter.ServiceResolver;
-            var system = GetOrCreateMovementPropertiesSystem<TGameContext, TItemId>(serviceResolver);
+            var system = GetOrCreateMovementPropertiesSystem<TItemId>(serviceResolver);
 
             context.AddInitializationStepHandler(system.ProcessSenseProperties);
             context.AddFixedStepHandlers(system.ProcessSenseProperties);
         }
 
-        protected void RegisterProcessInboundDirectionalitySystem<TGameContext, TItemId>(in ModuleInitializationParameter initParameter,
-                                                                                       IGameLoopSystemRegistration<TGameContext> context,
-                                                                                       EntityRegistry<TItemId> registry)
+        protected void RegisterProcessInboundDirectionalitySystem<TItemId>(in ModuleInitializationParameter initParameter,
+                                                                           IGameLoopSystemRegistration context,
+                                                                           EntityRegistry<TItemId> registry)
             where TItemId : IEntityKey
         {
             var serviceResolver = initParameter.ServiceResolver;
-            var system = GetOrCreateInboundDirectionalitySystem<TGameContext, TItemId>(serviceResolver);
+            var system = GetOrCreateInboundDirectionalitySystem<TItemId>(serviceResolver);
 
             if (!serviceResolver.TryResolve(out InboundDirectionalitySystemRegisteredMarker _))
             {
                 serviceResolver.Store(new InboundDirectionalitySystemRegisteredMarker());
-                context.AddInitializationStepHandler(c => system.MarkGloballyDirty(), nameof(system.MarkGloballyDirty));
+                context.AddInitializationStepHandler(system.MarkGloballyDirty, nameof(system.MarkGloballyDirty));
                 context.AddInitializationStepHandler(system.ProcessSystem, nameof(system.ProcessSystem));
                 context.AddInitializationStepHandler(system.MarkCleanSystem, nameof(system.MarkCleanSystem));
                 context.AddFixedStepHandlers(system.ProcessSystem, nameof(system.ProcessSystem));
@@ -163,18 +163,18 @@ namespace RogueEntity.Core.Movement.MovementModes
             }
         }
 
-        protected void RegisterProcessOutboundDirectionalitySystem<TGameContext, TItemId>(in ModuleInitializationParameter initParameter,
-                                                                                       IGameLoopSystemRegistration<TGameContext> context,
-                                                                                       EntityRegistry<TItemId> registry)
+        protected void RegisterProcessOutboundDirectionalitySystem<TItemId>(in ModuleInitializationParameter initParameter,
+                                                                            IGameLoopSystemRegistration context,
+                                                                            EntityRegistry<TItemId> registry)
             where TItemId : IEntityKey
         {
             var serviceResolver = initParameter.ServiceResolver;
-            var system = GetOrCreateOutboundDirectionalitySystem<TGameContext, TItemId>(serviceResolver);
+            var system = GetOrCreateOutboundDirectionalitySystem<TItemId>(serviceResolver);
 
             if (!serviceResolver.TryResolve(out OutboundDirectionalitySystemRegisteredMarker _))
             {
                 serviceResolver.Store(new OutboundDirectionalitySystemRegisteredMarker());
-                context.AddInitializationStepHandler(c => system.MarkGloballyDirty(), nameof(system.MarkGloballyDirty));
+                context.AddInitializationStepHandler(system.MarkGloballyDirty, nameof(system.MarkGloballyDirty));
                 context.AddInitializationStepHandler(system.ProcessSystem, nameof(system.ProcessSystem));
                 context.AddInitializationStepHandler(system.MarkCleanSystem, nameof(system.MarkCleanSystem));
                 context.AddFixedStepHandlers(system.ProcessSystem, nameof(system.ProcessSystem));
@@ -183,23 +183,23 @@ namespace RogueEntity.Core.Movement.MovementModes
         }
 
 
-        protected virtual RelativeMovementCostSystem<TGameContext, TMovementMode> GetOrCreateMovementPropertiesSystem<TGameContext, TEntityId>(IServiceResolver serviceResolver)
+        protected virtual RelativeMovementCostSystem<TMovementMode> GetOrCreateMovementPropertiesSystem<TEntityId>(IServiceResolver serviceResolver)
         {
-            if (serviceResolver.TryResolve(out RelativeMovementCostSystem<TGameContext, TMovementMode> system))
+            if (serviceResolver.TryResolve(out RelativeMovementCostSystem<TMovementMode> system))
             {
                 return system;
             }
 
             var gridConfig = serviceResolver.Resolve<IGridMapConfiguration<TEntityId>>();
-            system = new RelativeMovementCostSystem<TGameContext, TMovementMode>(gridConfig.OffsetX, gridConfig.OffsetY, gridConfig.TileSizeX, gridConfig.TileSizeY);
+            system = new RelativeMovementCostSystem<TMovementMode>(gridConfig.OffsetX, gridConfig.OffsetY, gridConfig.TileSizeX, gridConfig.TileSizeY);
 
             serviceResolver.Store(system);
-            serviceResolver.Store<IAggregationLayerSystemBackend<TGameContext, RelativeMovementCostModifier<TMovementMode>>>(system);
+            serviceResolver.Store<IAggregationLayerSystemBackend<RelativeMovementCostModifier<TMovementMode>>>(system);
             serviceResolver.Store<IRelativeMovementCostSystem<TMovementMode>>(system);
             return system;
         }
 
-        protected virtual InboundMovementDirectionalitySystem<TMovementMode> GetOrCreateInboundDirectionalitySystem<TGameContext, TItemId>(IServiceResolver serviceResolver)
+        protected virtual InboundMovementDirectionalitySystem<TMovementMode> GetOrCreateInboundDirectionalitySystem<TItemId>(IServiceResolver serviceResolver)
         {
             if (serviceResolver.TryResolve(out InboundMovementDirectionalitySystem<TMovementMode> system))
             {
@@ -208,7 +208,7 @@ namespace RogueEntity.Core.Movement.MovementModes
 
             if (!serviceResolver.TryResolve(out IRelativeMovementCostSystem<TMovementMode> data))
             {
-                data = GetOrCreateMovementPropertiesSystem<TGameContext, TItemId>(serviceResolver);
+                data = GetOrCreateMovementPropertiesSystem<TItemId>(serviceResolver);
             }
 
             system = new InboundMovementDirectionalitySystem<TMovementMode>(data.ResultView);
@@ -217,7 +217,7 @@ namespace RogueEntity.Core.Movement.MovementModes
             return system;
         }
 
-        protected virtual OutboundMovementDirectionalitySystem<TMovementMode> GetOrCreateOutboundDirectionalitySystem<TGameContext, TItemId>(IServiceResolver serviceResolver)
+        protected virtual OutboundMovementDirectionalitySystem<TMovementMode> GetOrCreateOutboundDirectionalitySystem<TItemId>(IServiceResolver serviceResolver)
         {
             if (serviceResolver.TryResolve(out OutboundMovementDirectionalitySystem<TMovementMode> system))
             {
@@ -226,7 +226,7 @@ namespace RogueEntity.Core.Movement.MovementModes
 
             if (!serviceResolver.TryResolve(out IRelativeMovementCostSystem<TMovementMode> data))
             {
-                data = GetOrCreateMovementPropertiesSystem<TGameContext, TItemId>(serviceResolver);
+                data = GetOrCreateMovementPropertiesSystem<TItemId>(serviceResolver);
             }
 
             system = new OutboundMovementDirectionalitySystem<TMovementMode>(data.ResultView);
@@ -247,7 +247,7 @@ namespace RogueEntity.Core.Movement.MovementModes
             r.Store<IMovementModeRegistry>(reg);
             return reg;
         }
-        
+
         protected void RegisterEntities<TItemId>(in ModuleInitializationParameter initParameter,
                                                  EntityRegistry<TItemId> registry)
             where TItemId : IEntityKey
@@ -256,11 +256,9 @@ namespace RogueEntity.Core.Movement.MovementModes
         }
 
         readonly struct InboundDirectionalitySystemRegisteredMarker
-        {
-        }
-        
+        { }
+
         readonly struct OutboundDirectionalitySystemRegisteredMarker
-        {
-        }
+        { }
     }
 }

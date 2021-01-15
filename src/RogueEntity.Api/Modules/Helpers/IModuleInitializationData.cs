@@ -4,15 +4,15 @@ using EnTTSharp.Entities;
 
 namespace RogueEntity.Api.Modules.Helpers
 {
-    public interface IModuleInitializationData<TGameContext, TEntityId>: IModuleContentDeclarations<TGameContext, TEntityId>
+    public interface IModuleInitializationData<TEntityId>: IModuleContentDeclarations<TEntityId>
         where TEntityId : IEntityKey
     {
-        IEnumerable<IEntitySystemDeclaration<TGameContext, TEntityId>> EntitySystems { get; }
+        IEnumerable<IEntitySystemDeclaration<TEntityId>> EntitySystems { get; }
     }
 
-    public interface IModuleInitializationData<TGameContext>
+    public interface IModuleInitializationData
     {
-        IEnumerable<IGlobalSystemDeclaration<TGameContext>> GlobalSystems { get; }
-        IEnumerable<(Type entityType, Action<IModuleEntityInitializationCallback<TGameContext>> callback)> EntityInitializers { get; }
+        IEnumerable<IGlobalSystemDeclaration> GlobalSystems { get; }
+        IEnumerable<(Type entityType, Action<IModuleEntityInitializationCallback> callback)> EntityInitializers { get; }
     }
 }

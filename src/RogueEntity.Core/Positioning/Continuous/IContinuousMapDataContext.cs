@@ -3,7 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace RogueEntity.Core.Positioning.Continuous
 {
     [SuppressMessage("ReSharper", "UnusedTypeParameter")]
-    public interface IContinuousMapDataContext<TGameContext, TItemId>
+    public interface IContinuousMapDataContext<TItemId>
     {
         bool TryGetItemAt(ContinuousMapPosition position, out TItemId itemAtPosition);
         bool TryUpdateItemPosition(TItemId itemId, in ContinuousMapPosition desiredPosition);

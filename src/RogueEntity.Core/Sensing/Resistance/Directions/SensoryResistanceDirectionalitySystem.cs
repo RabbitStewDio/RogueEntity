@@ -5,13 +5,13 @@ using RogueEntity.Core.Utils.DataViews;
 
 namespace RogueEntity.Core.Sensing.Resistance.Directions
 {
-    public class SensoryResistanceDirectionalitySystem<TGameContext, TSense> : AdjacencyGridTransformSystem<float>, ISensoryResistanceDirectionView<TSense>
+    public class SensoryResistanceDirectionalitySystem< TSense> : AdjacencyGridTransformSystem<float>, ISensoryResistanceDirectionView<TSense>
     {
         public SensoryResistanceDirectionalitySystem(IReadOnlyDynamicDataView3D<float> sourceData) : base(sourceData)
         {
         }
 
-        public void ProcessSystem(TGameContext x) => Process();
+        public void ProcessSystem() => Process();
 
         protected override bool IsMoveAllowed(in (IReadOnlyDynamicDataView2D<float> sourceData,
                                                   IReadOnlyBoundedDataView<float> sourceTile, int z) parameterData,

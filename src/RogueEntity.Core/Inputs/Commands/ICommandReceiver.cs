@@ -1,5 +1,3 @@
-using RogueEntity.Core.Infrastructure.Commands;
-
 namespace RogueEntity.Core.Inputs.Commands
 {
     /// <summary>
@@ -25,6 +23,7 @@ namespace RogueEntity.Core.Inputs.Commands
         /// 
         ///   Use this to validate command options.
         /// </summary>
+        /// <param name="actor"></param>
         /// <param name="command"></param>
         /// <typeparam name="TCommand"></typeparam>
         /// <returns></returns>

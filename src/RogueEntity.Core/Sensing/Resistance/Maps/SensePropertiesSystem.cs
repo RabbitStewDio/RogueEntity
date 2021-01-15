@@ -10,21 +10,17 @@ namespace RogueEntity.Core.Sensing.Resistance.Maps
     /// <typeparam name="TSense"></typeparam>
     [SuppressMessage("ReSharper", "UnusedTypeParameter", Justification = "Discriminator")]
     public interface ISensePropertiesDataView<TSense> : IAggregationLayerSystem<float>
-    {
-        
-    }
-    
-    
-    public class SensePropertiesSystem<TGameContext, TSense> : LayeredAggregationSystem<TGameContext, float, SensoryResistance<TSense>>, 
-                                                               ISensePropertiesDataView<TSense>
+    { }
+
+
+    public class SensePropertiesSystem<TSense> : LayeredAggregationSystem<float, SensoryResistance<TSense>>,
+                                                 ISensePropertiesDataView<TSense>
     {
         public SensePropertiesSystem(int tileWidth, int tileHeight) : base(SensePropertiesSystem.ProcessTile, tileWidth, tileHeight)
-        {
-        }
+        { }
 
         public SensePropertiesSystem(int offsetX, int offsetY, int tileSizeX, int tileSizeY) : base(SensePropertiesSystem.ProcessTile, offsetX, offsetY, tileSizeX, tileSizeY)
-        {
-        }
+        { }
     }
 
     public static class SensePropertiesSystem

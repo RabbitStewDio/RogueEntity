@@ -7,8 +7,8 @@ namespace RogueEntity.Api.Modules.Attributes
     ///    Used to mark methods that set up relations between two entity systems.
     ///
     /// <![CDATA[
-    ///         protected void InitializeContainerEntities<TGameContext, TActorId, TItemId>(IServiceResolver serviceResolver, 
-    ///                                                                                     IModuleInitializer<TGameContext> initializer,
+    ///         protected void InitializeContainerEntities<TActorId, TItemId>(IServiceResolver serviceResolver, 
+    ///                                                                                     IModuleInitializer initializer,
     ///                                                                                     EntityRelation r)
     /// ]]>
     /// </summary>

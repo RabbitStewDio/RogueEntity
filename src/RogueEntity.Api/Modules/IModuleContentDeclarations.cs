@@ -4,10 +4,10 @@ using RogueEntity.Api.ItemTraits;
 
 namespace RogueEntity.Api.Modules
 {
-    public interface IModuleContentDeclarations<TGameContext, TEntityId>
+    public interface IModuleContentDeclarations<TEntityId>
         where TEntityId : IEntityKey
     {
-        IEnumerable<(ModuleId declaringModule, IBulkItemDeclaration<TGameContext, TEntityId> itemDeclaration)> DeclaredBulkItems { get; }
-        IEnumerable<(ModuleId declaringModule, IReferenceItemDeclaration<TGameContext, TEntityId> itemDeclaration)> DeclaredReferenceItems { get; }
+        IEnumerable<(ModuleId declaringModule, IBulkItemDeclaration<TEntityId> itemDeclaration)> DeclaredBulkItems { get; }
+        IEnumerable<(ModuleId declaringModule, IReferenceItemDeclaration<TEntityId> itemDeclaration)> DeclaredReferenceItems { get; }
     }
 }

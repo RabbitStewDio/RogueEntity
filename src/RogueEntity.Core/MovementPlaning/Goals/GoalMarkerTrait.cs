@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace RogueEntity.Core.MovementPlaning.Goals
 {
-    public class GoalMarkerTrait<TGameContext, TItemId, TDiscriminator>: SimpleReferenceItemComponentTraitBase<TGameContext, TItemId, GoalMarker<TDiscriminator>>
+    public class GoalMarkerTrait< TItemId, TDiscriminator>: SimpleReferenceItemComponentTraitBase< TItemId, GoalMarker<TDiscriminator>>
         where TItemId : IEntityKey
     {
         readonly float goalStrength;
@@ -22,7 +22,7 @@ namespace RogueEntity.Core.MovementPlaning.Goals
             this.goalStrength = goalStrength;
         }
 
-        protected override GoalMarker<TDiscriminator> CreateInitialValue(TGameContext c, TItemId reference)
+        protected override GoalMarker<TDiscriminator> CreateInitialValue(TItemId reference)
         {
             return new GoalMarker<TDiscriminator>(goalStrength);
         }

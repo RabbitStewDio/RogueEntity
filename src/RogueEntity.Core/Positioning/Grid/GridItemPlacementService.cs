@@ -13,19 +13,19 @@ using RectangleRange = RogueEntity.Core.Utils.RectangleRange;
 
 namespace RogueEntity.Core.Positioning.Grid
 {
-    public class GridItemPlacementService<TGameContext, TItemId> : IItemPlacementService<TGameContext, TItemId>
+    public class GridItemPlacementService<TItemId> : IItemPlacementService<TItemId>
         where TItemId : IEntityKey
     {
         static readonly EqualityComparer<TItemId> Equality = EqualityComparer<TItemId>.Default;
-        static readonly ILogger logger = SLog.ForContext<GridItemPlacementService<TGameContext, TItemId>>();
+        static readonly ILogger logger = SLog.ForContext<GridItemPlacementService<TItemId>>();
         readonly MapLayerLookupDelegate mapLayerResolver;
         readonly IBulkDataStorageMetaData<TItemId> itemIdMetaData;
-        readonly IItemResolver<TGameContext, TItemId> itemResolver;
+        readonly IItemResolver<TItemId> itemResolver;
         readonly IGridMapContext<TItemId> mapContext;
 
         public GridItemPlacementService([NotNull] MapLayerLookupDelegate mapLayerResolver,
                                         [NotNull] IBulkDataStorageMetaData<TItemId> itemIdMetaData,
-                                        [NotNull] IItemResolver<TGameContext, TItemId> itemResolver,
+                                        [NotNull] IItemResolver<TItemId> itemResolver,
                                         [NotNull] IGridMapContext<TItemId> mapContext)
         {
             this.mapLayerResolver = mapLayerResolver ?? throw new ArgumentNullException(nameof(mapLayerResolver));
@@ -34,7 +34,7 @@ namespace RogueEntity.Core.Positioning.Grid
             this.itemIdMetaData = itemIdMetaData ?? throw new ArgumentNullException(nameof(itemIdMetaData));
         }
 
-        public bool TryFindAvailableItemSlot(TGameContext context, TItemId itemToBePlaced, in Position origin, out Position placementPos, int searchRadius = 10)
+        public bool TryFindAvailableItemSlot(TItemId itemToBePlaced, in Position origin, out Position placementPos, int searchRadius = 10)
         {
             if (origin.IsInvalid)
             {
@@ -59,7 +59,7 @@ namespace RogueEntity.Core.Positioning.Grid
                 return false;
             }
 
-            var itemStack = itemResolver.QueryStackSize(itemToBePlaced, context);
+            var itemStack = itemResolver.QueryStackSize(itemToBePlaced);
             var gx = origin.GridX;
             var gy = origin.GridY;
 
@@ -86,7 +86,7 @@ namespace RogueEntity.Core.Positioning.Grid
                         continue;
                     }
 
-                    var stackSize = itemResolver.QueryStackSize(itemAtPos, context);
+                    var stackSize = itemResolver.QueryStackSize(itemAtPos);
                     if (itemStack.Count + stackSize.Count < stackSize.MaximumStackSize)
                     {
                         return true;
@@ -98,7 +98,7 @@ namespace RogueEntity.Core.Positioning.Grid
             return false;
         }
 
-        public bool TryFindEmptyItemSlot(TGameContext context, in Position origin, out Position placementPos, int searchRadius = 10)
+        public bool TryFindEmptyItemSlot(in Position origin, out Position placementPos, int searchRadius = 10)
         {
             if (origin.IsInvalid)
             {
@@ -149,7 +149,7 @@ namespace RogueEntity.Core.Positioning.Grid
             return false;
         }
 
-        public bool TryRemoveItem(TGameContext context, in TItemId targetItem, in Position placementPos, bool forcePlacement = false)
+        public bool TryRemoveItem(in TItemId targetItem, in Position placementPos, bool forcePlacement = false)
         {
             if (placementPos.IsInvalid)
             {
@@ -174,19 +174,19 @@ namespace RogueEntity.Core.Positioning.Grid
             var existingItem = map[placementPos.GridX, placementPos.GridY];
             if (itemIdMetaData.IsReferenceEntity(targetItem) || !itemIdMetaData.IsSameBulkType(targetItem, existingItem))
             {
-                return TryReplaceItemInternal(context, targetItem, default, placementPos, forcePlacement, map, mapData);
+                return TryReplaceItemInternal(targetItem, default, placementPos, forcePlacement, map, mapData);
             }
 
-            var stackSize = itemResolver.QueryStackSize(targetItem, context);
+            var stackSize = itemResolver.QueryStackSize(targetItem);
             if (stackSize.MaximumStackSize == 1)
             {
-                return TryReplaceItemInternal(context, targetItem, default, placementPos, forcePlacement, map, mapData);
+                return TryReplaceItemInternal(targetItem, default, placementPos, forcePlacement, map, mapData);
             }
 
-            var existingStack = itemResolver.QueryStackSize(existingItem, context);
+            var existingStack = itemResolver.QueryStackSize(existingItem);
             existingStack.Take(stackSize.Count, out var resultStack, out var remainToBeTaken);
-            if (remainToBeTaken != 0 || 
-                !itemResolver.TryUpdateData(targetItem, context, resultStack, out var changedItem))
+            if (remainToBeTaken != 0 ||
+                !itemResolver.TryUpdateData(targetItem, resultStack, out var changedItem))
             {
                 // the stack at the map position does not contain enough items 
                 // to satisfy the requested stack size of targetItem' 
@@ -196,11 +196,11 @@ namespace RogueEntity.Core.Positioning.Grid
                 // Either way we are done here, we cannot proceed.
                 return false;
             }
-            
-            return TryReplaceItemInternal(context, existingItem, changedItem, placementPos, forcePlacement, map, mapData);
+
+            return TryReplaceItemInternal(existingItem, changedItem, placementPos, forcePlacement, map, mapData);
         }
 
-        public bool TryPlaceItem(TGameContext context, in TItemId targetItem, in Position placementPos, bool forcePlacement = false)
+        public bool TryPlaceItem(in TItemId targetItem, in Position placementPos, bool forcePlacement = false)
         {
             if (placementPos.IsInvalid)
             {
@@ -225,27 +225,27 @@ namespace RogueEntity.Core.Positioning.Grid
             var existingItem = map[placementPos.GridX, placementPos.GridY];
             if (itemIdMetaData.IsReferenceEntity(targetItem) || !itemIdMetaData.IsSameBulkType(targetItem, existingItem))
             {
-                return TryReplaceItemInternal(context, default, targetItem, placementPos, forcePlacement, map, mapData);
+                return TryReplaceItemInternal(default, targetItem, placementPos, forcePlacement, map, mapData);
             }
 
-            var stackSize = itemResolver.QueryStackSize(targetItem, context);
+            var stackSize = itemResolver.QueryStackSize(targetItem);
             if (stackSize.MaximumStackSize == 1)
             {
-                return TryReplaceItemInternal(context, default, targetItem, placementPos, forcePlacement, map, mapData);
+                return TryReplaceItemInternal(default, targetItem, placementPos, forcePlacement, map, mapData);
             }
 
-            var existingStack = itemResolver.QueryStackSize(existingItem, context);
+            var existingStack = itemResolver.QueryStackSize(existingItem);
             if (!stackSize.Merge(existingStack, out var resultStack) ||
-                !itemResolver.TryUpdateData(targetItem, context, resultStack, out var changedItem))
+                !itemResolver.TryUpdateData(targetItem, resultStack, out var changedItem))
             {
                 // cannot merge items
                 return false;
             }
 
-            return TryReplaceItemInternal(context, existingItem, changedItem, placementPos, forcePlacement, map, mapData);
+            return TryReplaceItemInternal(existingItem, changedItem, placementPos, forcePlacement, map, mapData);
         }
 
-        public bool TryReplaceItem(TGameContext context, in TItemId sourceItem, in TItemId targetItem, in Position p, bool forceMove = false)
+        public bool TryReplaceItem(in TItemId sourceItem, in TItemId targetItem, in Position p, bool forceMove = false)
         {
             if (p.IsInvalid)
             {
@@ -267,16 +267,15 @@ namespace RogueEntity.Core.Positioning.Grid
                 return false;
             }
 
-            return TryReplaceItemInternal(context, sourceItem, targetItem, p, forceMove, map, mapData);
+            return TryReplaceItemInternal(sourceItem, targetItem, p, forceMove, map, mapData);
         }
 
-        bool TryReplaceItemInternal(TGameContext context,
-                                           TItemId sourceItem,
-                                           TItemId targetItem,
-                                           Position p,
-                                           bool forceMove,
-                                           IView2D<TItemId> map,
-                                           IGridMapDataContext<TItemId> mapData)
+        bool TryReplaceItemInternal(TItemId sourceItem,
+                                    TItemId targetItem,
+                                    Position p,
+                                    bool forceMove,
+                                    IView2D<TItemId> map,
+                                    IGridMapDataContext<TItemId> mapData)
         {
             if (!Equality.Equals(sourceItem, map[p.GridX, p.GridY]))
             {
@@ -285,14 +284,14 @@ namespace RogueEntity.Core.Positioning.Grid
                 return false;
             }
 
-            if (itemResolver.TryUpdateData(sourceItem, context, EntityGridPosition.Invalid, out _))
+            if (itemResolver.TryUpdateData(sourceItem, EntityGridPosition.Invalid, out _))
             {
                 // ensure that bulk items have been cleared out correctly before attempting 
                 // to write the new data
                 var old = map[p.GridX, p.GridY];
                 map[p.GridX, p.GridY] = default;
 
-                if (itemResolver.TryUpdateData(targetItem, context, p, out _))
+                if (itemResolver.TryUpdateData(targetItem, p, out _))
                 {
                     mapData.MarkDirty(p);
                     return true;
@@ -315,7 +314,7 @@ namespace RogueEntity.Core.Positioning.Grid
                 return false;
             }
 
-            if (!itemResolver.TryQueryData(targetItem, context, out ImmobilityMarker _))
+            if (!itemResolver.TryQueryData(targetItem, out ImmobilityMarker _))
             {
                 map[p.GridX, p.GridY] = targetItem;
                 mapData.MarkDirty(p);

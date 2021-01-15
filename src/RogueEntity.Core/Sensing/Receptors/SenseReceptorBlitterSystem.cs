@@ -19,8 +19,7 @@ namespace RogueEntity.Core.Sensing.Receptors
             this.receptorBlitter = receptorBlitter ?? throw new ArgumentNullException(nameof(receptorBlitter));
         }
 
-        public void CopySenseSourcesToVisionField<TItemId, TGameContext>(IEntityViewControl<TItemId> v,
-                                                                         TGameContext context,
+        public void CopySenseSourcesToVisionField<TItemId>(IEntityViewControl<TItemId> v,
                                                                          TItemId k,
                                                                          in SensoryReceptorState<TTargetSense, TSourceSense> receptorState,
                                                                          ref SingleLevelSenseDirectionMapData<TTargetSense, TSourceSense> receptorSenseMap)

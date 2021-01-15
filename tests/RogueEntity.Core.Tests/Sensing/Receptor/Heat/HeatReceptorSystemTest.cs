@@ -255,10 +255,10 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Heat
             return (physics.CreateHeatSensorPropagationAlgorithm(), physics.HeatPhysics);
         }
 
-        protected override Action<SenseMappingTestContext> CreateCopyAction()
+        protected override Action CreateCopyAction()
         {
             var builder = context.ItemEntityRegistry.BuildSystem()
-                                 .WithContext<SenseMappingTestContext>();
+                                 .WithoutContext();
 
             var omniSystem = new SenseReceptorBlitterSystem<TemperatureSense, TemperatureSense>(senseSystem, new DefaultDirectionalSenseReceptorBlitter());
             return builder.WithInputParameter<SensoryReceptorState<TemperatureSense, TemperatureSense>>()
@@ -277,27 +277,27 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Heat
                                         sourcePhysics);
         }
 
-        protected override ReferenceItemDeclaration<SenseMappingTestContext, ItemReference> AttachTrait(ReferenceItemDeclaration<SenseMappingTestContext, ItemReference> decl)
+        protected override ReferenceItemDeclaration<ItemReference> AttachTrait(ReferenceItemDeclaration<ItemReference> decl)
         {
             switch (decl.Id.Id)
             {
                 case "SenseReceptor-Active-10":
-                    decl.WithTrait(new HeatDirectionSenseTrait<SenseMappingTestContext, ItemReference>(physics, 10));
+                    decl.WithTrait(new HeatDirectionSenseTrait<ItemReference>(physics, 10));
                     return decl;
                 case "SenseReceptor-Active-5":
-                    decl.WithTrait(new HeatDirectionSenseTrait<SenseMappingTestContext, ItemReference>(physics, 5));
+                    decl.WithTrait(new HeatDirectionSenseTrait<ItemReference>(physics, 5));
                     return decl;
                 case "SenseReceptor-Inactive-5":
-                    decl.WithTrait(new HeatDirectionSenseTrait<SenseMappingTestContext, ItemReference>(physics, 5, false));
+                    decl.WithTrait(new HeatDirectionSenseTrait<ItemReference>(physics, 5, false));
                     return decl;
                 case "SenseSource-Active-10":
-                    decl.WithTrait(new HeatSourceTrait<SenseMappingTestContext, ItemReference>(sourcePhysics, Temperature.FromCelsius(10)));
+                    decl.WithTrait(new HeatSourceTrait<ItemReference>(sourcePhysics, Temperature.FromCelsius(10)));
                     return decl;
                 case "SenseSource-Active-5":
-                    decl.WithTrait(new HeatSourceTrait<SenseMappingTestContext, ItemReference>(sourcePhysics, Temperature.FromCelsius(5)));
+                    decl.WithTrait(new HeatSourceTrait<ItemReference>(sourcePhysics, Temperature.FromCelsius(5)));
                     return decl;
                 case "SenseSource-Inactive-5":
-                    decl.WithTrait(new HeatSourceTrait<SenseMappingTestContext, ItemReference>(sourcePhysics));
+                    decl.WithTrait(new HeatSourceTrait<ItemReference>(sourcePhysics));
                     return decl;
                 default:
                     throw new ArgumentException();

@@ -5,7 +5,7 @@ using RogueEntity.Core.Meta.Items;
 
 namespace RogueEntity.Core.Infrastructure.Actions.Traits
 {
-    public class MovementPointsTrait<TGameContext, TActorId> : SimpleReferenceItemComponentTraitBase<TGameContext, TActorId, MovementPoints> 
+    public class MovementPointsTrait<TActorId> : SimpleReferenceItemComponentTraitBase<TActorId, MovementPoints>
         where TActorId : IEntityKey
     {
         readonly int initialValue;
@@ -15,7 +15,7 @@ namespace RogueEntity.Core.Infrastructure.Actions.Traits
             this.initialValue = initialValue;
         }
 
-        protected override MovementPoints CreateInitialValue(TGameContext c, TActorId reference)
+        protected override MovementPoints CreateInitialValue(TActorId reference)
         {
             return MovementPoints.From(initialValue);
         }

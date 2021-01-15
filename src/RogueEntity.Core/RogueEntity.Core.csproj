@@ -22,7 +22,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Effects\Uses\" />
     <Folder Include="MovementPlaning" />
   </ItemGroup>
 

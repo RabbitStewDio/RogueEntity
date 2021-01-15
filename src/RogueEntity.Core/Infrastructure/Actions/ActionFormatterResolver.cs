@@ -18,14 +18,13 @@ namespace RogueEntity.Core.Infrastructure.Actions
     ///   reference, but grants action authors the freedom to implement their own serialization
     ///   if desired.
     /// </summary>
-    /// <typeparam name="TContext"></typeparam>
     /// <typeparam name="TActorId"></typeparam>
-    public class ActionFormatterResolver<TContext, TActorId> : IFormatterResolver
+    public class ActionFormatterResolver< TActorId> : IFormatterResolver
         where TActorId : IEntityKey
     {
         public IMessagePackFormatter<T> GetFormatter<T>()
         {
-            if (typeof(IAction<TContext, TActorId>) == typeof(T))
+            if (typeof(IAction< TActorId>) == typeof(T))
             {
                 return (IMessagePackFormatter<T>)Default;
             }
@@ -35,9 +34,9 @@ namespace RogueEntity.Core.Infrastructure.Actions
 
         readonly BaseActionFormatter Default = new BaseActionFormatter();
 
-        class BaseActionFormatter : IMessagePackFormatter<IAction<TContext, TActorId>>
+        class BaseActionFormatter : IMessagePackFormatter<IAction< TActorId>>
         {
-            public void Serialize(ref MessagePackWriter writer, IAction<TContext, TActorId> value, MessagePackSerializerOptions options)
+            public void Serialize(ref MessagePackWriter writer, IAction< TActorId> value, MessagePackSerializerOptions options)
             {
                 if (value == null)
                 {
@@ -50,7 +49,7 @@ namespace RogueEntity.Core.Infrastructure.Actions
                 MessagePackSerializer.Serialize(value.GetType(), ref writer, value, options);
             }
 
-            public IAction<TContext, TActorId> Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
+            public IAction< TActorId> Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
             {
                 if (reader.TryReadNil())
                 {
@@ -64,12 +63,12 @@ namespace RogueEntity.Core.Infrastructure.Actions
                 }
                 var typeName = reader.ReadString();
                 var type = Type.GetType(typeName);
-                if (type == null || !typeof(IAction<TContext, TActorId>).IsAssignableFrom(type))
+                if (type == null || !typeof(IAction< TActorId>).IsAssignableFrom(type))
                 {
                     throw new MessagePackSerializationException($"Unable to load referenced action type {typeName}");
                 }
 
-                return (IAction<TContext, TActorId>) MessagePackSerializer.Deserialize(type, ref reader, options);
+                return (IAction< TActorId>) MessagePackSerializer.Deserialize(type, ref reader, options);
             }
         }
     }

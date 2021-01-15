@@ -13,14 +13,14 @@ namespace RogueEntity.Core.Tests.Meta.Items
     public class ItemDeclarationTest
     {
         BasicItemContext context;
-        ItemContextBackend<BasicItemContext, ItemReference> itemContext;
+        ItemContextBackend<ItemReference> itemContext;
 
         [SetUp]
         public void SetUp()
         {
             context = new BasicItemContext();
-            itemContext = new ItemContextBackend<BasicItemContext, ItemReference>(new ItemReferenceMetaData());
-            itemContext.EntityRegistry.RegisterNonConstructable<ItemDeclarationHolder<BasicItemContext, ItemReference>>();
+            itemContext = new ItemContextBackend<ItemReference>(new ItemReferenceMetaData());
+            itemContext.EntityRegistry.RegisterNonConstructable<ItemDeclarationHolder<ItemReference>>();
         }
 
         [Test]
@@ -28,12 +28,12 @@ namespace RogueEntity.Core.Tests.Meta.Items
         {
             var reg = itemContext.ItemRegistry;
 
-            var itemDeclaration = new BulkItemDeclaration<BasicItemContext, ItemReference>("bulkitem", "bulkitem.tag");
+            var itemDeclaration = new BulkItemDeclaration<ItemReference>("bulkitem", "bulkitem.tag");
             reg.Register(itemDeclaration);
             reg.TryGetBulkItemById("bulkitem", out _).Should().BeTrue();
             reg.TryGetItemById("bulkitem", out _).Should().BeTrue();
 
-            var itemId = itemContext.ItemResolver.Instantiate(context, reg.ReferenceItemById("bulkitem"));
+            var itemId = itemContext.ItemResolver.Instantiate(reg.ReferenceItemById("bulkitem"));
             itemId.IsEmpty.Should().BeFalse();
             itemId.IsReference.Should().BeFalse();
             itemId.BulkItemId.Should().Be(1);
@@ -45,12 +45,12 @@ namespace RogueEntity.Core.Tests.Meta.Items
         {
             var reg = itemContext.ItemRegistry;
 
-            var itemDeclaration = new ReferenceItemDeclaration<BasicItemContext, ItemReference>("refitem", "refitem.tag");
+            var itemDeclaration = new ReferenceItemDeclaration<ItemReference>("refitem", "refitem.tag");
             reg.Register(itemDeclaration);
             reg.TryGetBulkItemById("refitem", out _).Should().BeFalse();
             reg.TryGetItemById("refitem", out _).Should().BeTrue();
 
-            var itemId = itemContext.ItemResolver.Instantiate(context, reg.ReferenceItemById("refitem"));
+            var itemId = itemContext.ItemResolver.Instantiate(reg.ReferenceItemById("refitem"));
             itemId.IsEmpty.Should().BeFalse();
             itemId.IsReference.Should().BeTrue();
             itemId.BulkItemId.Should().Be(0);
@@ -64,7 +64,7 @@ namespace RogueEntity.Core.Tests.Meta.Items
         {
             var reg = itemContext.ItemRegistry;
 
-            Action act = () => itemContext.ItemResolver.Instantiate(context, reg.ReferenceItemById("refitem"));
+            Action act = () => itemContext.ItemResolver.Instantiate(reg.ReferenceItemById("refitem"));
             act.Should().Throw<ArgumentException>();
         }
 
@@ -83,7 +83,7 @@ namespace RogueEntity.Core.Tests.Meta.Items
             var baseTrait = new CallTracerReferenceTrait("reftrait", 20);
             var overrideTrait = new CallTracerReferenceTrait("reftrait", 10);
 
-            var itemDeclaration = new ReferenceItemDeclaration<BasicItemContext, ItemReference>("refitem", "refitem.tag");
+            var itemDeclaration = new ReferenceItemDeclaration<ItemReference>("refitem", "refitem.tag");
             itemDeclaration.WithTrait(baseTrait);
             itemDeclaration.WithTrait(overrideTrait);
 
@@ -96,7 +96,7 @@ namespace RogueEntity.Core.Tests.Meta.Items
             var baseTrait = new CallTracerBulkTrait("bulktrait", 20);
             var overrideTrait = new CallTracerBulkTrait("bulktrait", 10);
 
-            var itemDeclaration = new BulkItemDeclaration<BasicItemContext, ItemReference>("bulkitem", "bulkitem.tag");
+            var itemDeclaration = new BulkItemDeclaration<ItemReference>("bulkitem", "bulkitem.tag");
             itemDeclaration.WithTrait(baseTrait);
             itemDeclaration.WithTrait(overrideTrait);
 
@@ -109,7 +109,7 @@ namespace RogueEntity.Core.Tests.Meta.Items
             var baseTrait = new CallTracerBulkTrait("bulktrait", 20);
             var overrideTrait = new CallTracerBulkTrait("bulktrait", 10);
 
-            var itemDeclaration = new BulkItemDeclaration<BasicItemContext, ItemReference>("bulkitem", "bulkitem.tag");
+            var itemDeclaration = new BulkItemDeclaration<ItemReference>("bulkitem", "bulkitem.tag");
             itemDeclaration.WithTrait(overrideTrait);
             itemDeclaration.WithTrait(baseTrait);
 
@@ -123,16 +123,16 @@ namespace RogueEntity.Core.Tests.Meta.Items
 
             var itemTrait = new CallTracerReferenceTrait("reftrait", 10);
 
-            var itemDeclaration = new ReferenceItemDeclaration<BasicItemContext, ItemReference>("refitem", "refitem.tag");
+            var itemDeclaration = new ReferenceItemDeclaration<ItemReference>("refitem", "refitem.tag");
             itemDeclaration.WithTrait(itemTrait);
             reg.Register(itemDeclaration);
 
-            var item = itemContext.ItemResolver.Instantiate(context, "refitem");
+            var item = itemContext.ItemResolver.Instantiate("refitem");
 
             itemTrait.InitCallCount.Should().Be(1);
             itemTrait.ApplyCallCount.Should().Be(0);
 
-            itemContext.ItemResolver.Apply(item, context);
+            itemContext.ItemResolver.Apply(item);
 
             itemTrait.InitCallCount.Should().Be(1);
             itemTrait.ApplyCallCount.Should().Be(1);
@@ -144,20 +144,20 @@ namespace RogueEntity.Core.Tests.Meta.Items
             var reg = itemContext.ItemRegistry;
             var itemTrait = new CallTracerBulkTrait("bulktrait", 10);
 
-            var itemDeclaration = new BulkItemDeclaration<BasicItemContext, ItemReference>("bulkitem", "bulkitem.tag");
+            var itemDeclaration = new BulkItemDeclaration<ItemReference>("bulkitem", "bulkitem.tag");
             itemDeclaration.WithTrait(itemTrait);
             reg.Register(itemDeclaration);
 
-            var item = itemContext.ItemResolver.Instantiate(context, "bulkitem");
+            var item = itemContext.ItemResolver.Instantiate( "bulkitem");
 
             itemTrait.InitCallCount.Should().Be(1);
 
-            itemContext.ItemResolver.Apply(item, context);
+            itemContext.ItemResolver.Apply(item);
 
             itemTrait.InitCallCount.Should().Be(1);
         }
 
-        class CallTracerReferenceTrait : IReferenceItemTrait<BasicItemContext, ItemReference>
+        class CallTracerReferenceTrait : IReferenceItemTrait<ItemReference>
         {
             public CallTracerReferenceTrait(ItemTraitId id, int priority)
             {
@@ -170,17 +170,17 @@ namespace RogueEntity.Core.Tests.Meta.Items
             public int InitCallCount { get; private set; }
             public int ApplyCallCount { get; private set; }
 
-            public void Initialize(IEntityViewControl<ItemReference> v, BasicItemContext context, ItemReference k, IItemDeclaration item)
+            public void Initialize(IEntityViewControl<ItemReference> v, ItemReference k, IItemDeclaration item)
             {
                 InitCallCount += 1;
             }
 
-            public void Apply(IEntityViewControl<ItemReference> v, BasicItemContext context, ItemReference k, IItemDeclaration item)
+            public void Apply(IEntityViewControl<ItemReference> v, ItemReference k, IItemDeclaration item)
             {
                 ApplyCallCount += 1;
             }
 
-            public IReferenceItemTrait<BasicItemContext, ItemReference> CreateInstance()
+            public IReferenceItemTrait<ItemReference> CreateInstance()
             {
                 return new CallTracerReferenceTrait(Id, Priority);
             }
@@ -196,7 +196,7 @@ namespace RogueEntity.Core.Tests.Meta.Items
             }
         }
 
-        class CallTracerBulkTrait : IBulkItemTrait<BasicItemContext, ItemReference>
+        class CallTracerBulkTrait : IBulkItemTrait<ItemReference>
         {
             public CallTracerBulkTrait(ItemTraitId id, int priority)
             {
@@ -208,13 +208,13 @@ namespace RogueEntity.Core.Tests.Meta.Items
             public int Priority { get; }
             public int InitCallCount { get; private set; }
 
-            public ItemReference Initialize(BasicItemContext context, IItemDeclaration item, ItemReference reference)
+            public ItemReference Initialize(IItemDeclaration item, ItemReference reference)
             {
                 InitCallCount += 1;
                 return reference.WithData(Priority);
             }
 
-            public IBulkItemTrait<BasicItemContext, ItemReference> CreateInstance()
+            public IBulkItemTrait<ItemReference> CreateInstance()
             {
                 return new CallTracerBulkTrait(Id, Priority);
             }

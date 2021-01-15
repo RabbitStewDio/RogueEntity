@@ -30,32 +30,32 @@ namespace RogueEntity.Core.Sensing.Cache
         }
 
         [ModuleInitializer]
-        protected void InitializeSenseCacheSystem<TGameContext>(in ModuleInitializationParameter initParameter,
-                                                                IModuleInitializer<TGameContext> moduleInitializer)
+        protected void InitializeSenseCacheSystem(in ModuleInitializationParameter initParameter,
+                                                  IModuleInitializer moduleInitializer)
         {
             moduleInitializer.Register(SenseCacheResetId, 100, RegisterSenseCacheSystem);
         }
 
         [EntityRoleInitializer("Role.Core.Senses.Cache.InvalidationSource",
                                ConditionalRoles = new[] {"Role.Core.Position.GridPositioned"})]
-        protected void InitializeRole<TGameContext, TItemId>(in ModuleEntityInitializationParameter<TGameContext,TItemId> initParameter,
-                                                             IModuleInitializer<TGameContext> initializer,
-                                                             EntityRole role)
+        protected void InitializeRole<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
+                                               IModuleInitializer initializer,
+                                               EntityRole role)
             where TItemId : IEntityKey
         {
             var ctx = initializer.DeclareEntityContext<TItemId>();
             ctx.Register(SenseCacheLifecycleId, 0, RegisterSenseCacheLifeCycle);
         }
 
-        void RegisterSenseCacheLifeCycle<TGameContext, TItemId>(in ModuleInitializationParameter initParameter,
-                                                                IGameLoopSystemRegistration<TGameContext> context,
-                                                                EntityRegistry<TItemId> registry)
+        void RegisterSenseCacheLifeCycle<TItemId>(in ModuleInitializationParameter initParameter,
+                                                  IGameLoopSystemRegistration context,
+                                                  EntityRegistry<TItemId> registry)
             where TItemId : IEntityKey
         {
             var resolver = initParameter.ServiceResolver;
-            if (!resolver.TryResolve(out SenseCacheSetUpSystem<TGameContext> system))
+            if (!resolver.TryResolve(out SenseCacheSetUpSystem system))
             {
-                system = new SenseCacheSetUpSystem<TGameContext>(resolver.ResolveToReference<SenseStateCache>());
+                system = new SenseCacheSetUpSystem(resolver.ResolveToReference<SenseStateCache>());
                 resolver.Store(system);
                 resolver.Store<ISenseCacheSetupSystem>(system);
 
@@ -64,8 +64,8 @@ namespace RogueEntity.Core.Sensing.Cache
             }
         }
 
-        void RegisterSenseCacheSystem<TGameContext>(in ModuleInitializationParameter initParameter,
-                                                    IGameLoopSystemRegistration<TGameContext> context)
+        void RegisterSenseCacheSystem(in ModuleInitializationParameter initParameter,
+                                      IGameLoopSystemRegistration context)
         {
             var resolver = initParameter.ServiceResolver;
             if (!resolver.TryResolve(out SenseStateCache cache))
@@ -77,8 +77,8 @@ namespace RogueEntity.Core.Sensing.Cache
                 resolver.Store<IGlobalSenseStateCacheProvider>(cache);
             }
 
-            context.AddInitializationStepHandler(c => cache.MarkClean());
-            context.AddFixedStepHandlers(c => cache.MarkClean());
+            context.AddInitializationStepHandler(cache.MarkClean);
+            context.AddFixedStepHandlers(cache.MarkClean);
         }
     }
 }

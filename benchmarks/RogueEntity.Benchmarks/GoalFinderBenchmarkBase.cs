@@ -25,13 +25,11 @@ namespace RogueEntity.Benchmarks
 {
     public abstract class GoalFinderBenchmarkBase
     {
-        readonly object context = new object();
-
         readonly MapLayer layer = new MapLayer(1, "Default");
 
         readonly ItemDeclarationId goalEntitiyId = "goal-entity";
 
-        readonly ItemContextBackend<object, ItemReference> entities;
+        readonly ItemContextBackend<ItemReference> entities;
         readonly string id;
         readonly List<EntityGridPosition> positions;
         readonly SingleLevelGoalFinderSource pathfinderSource;
@@ -49,14 +47,14 @@ namespace RogueEntity.Benchmarks
             var mapContext = new DefaultGridPositionContextBackend<ItemReference>();
             mapContext.WithDefaultMapLayer(layer);
 
-            entities = new ItemContextBackend<object, ItemReference>(new ItemReferenceMetaData());
+            entities = new ItemContextBackend<ItemReference>(new ItemReferenceMetaData());
             entities.EntityRegistry.RegisterNonConstructable<EntityGridPosition>();
             entities.EntityRegistry.RegisterNonConstructable<EntityGridPositionChangedMarker>();
-            entities.EntityRegistry.RegisterNonConstructable<ItemDeclarationHolder<object, ItemReference>>();
+            entities.EntityRegistry.RegisterNonConstructable<ItemDeclarationHolder<ItemReference>>();
             entities.EntityRegistry.RegisterNonConstructable<GoalMarker<PerformanceGoal>>();
-            entities.ItemRegistry.Register(new ReferenceItemDeclaration<object, ItemReference>(goalEntitiyId)
-                                           .WithTrait(new ReferenceItemGridPositionTrait<object, ItemReference>(entities.ItemResolver, mapContext, layer))
-                                           .WithTrait(new GoalMarkerTrait<object, ItemReference, PerformanceGoal>(32)));
+            entities.ItemRegistry.Register(new ReferenceItemDeclaration< ItemReference>(goalEntitiyId)
+                                           .WithTrait(new ReferenceItemGridPositionTrait< ItemReference>(entities.ItemResolver, mapContext, layer))
+                                           .WithTrait(new GoalMarkerTrait< ItemReference, PerformanceGoal>(32)));
 
             queryRegistry = new SpatialQueryRegistry();
             queryRegistry.Register(new BruteForceSpatialQueryBackend<ItemReference>(entities.EntityRegistry));
@@ -117,10 +115,10 @@ namespace RogueEntity.Benchmarks
 
                 if (movementCostData[targetPosition.GridX, targetPosition.GridY] > 0.5)
                 {
-                    var ek = entities.ItemResolver.Instantiate(context, goalEntitiyId);
-                    if (!entities.ItemResolver.TryUpdateData(ek, context, targetPosition, out _))
+                    var ek = entities.ItemResolver.Instantiate( goalEntitiyId);
+                    if (!entities.ItemResolver.TryUpdateData(ek,  targetPosition, out _))
                     {
-                        entities.ItemResolver.TryUpdateData(ek, context, targetPosition, out _);
+                        entities.ItemResolver.TryUpdateData(ek,  targetPosition, out _);
                         throw new Exception($"Unable to position goal entity {positions.Count} at {targetPosition}");
                     }
 
@@ -143,10 +141,10 @@ namespace RogueEntity.Benchmarks
         void ValidateWorkingCondition()
         {
             var targetPosition = EntityGridPosition.OfRaw(layer.LayerId, 0, 11);
-            var ek = entities.ItemResolver.Instantiate(context, goalEntitiyId);
-            if (!entities.ItemResolver.TryUpdateData(ek, context, targetPosition, out _))
+            var ek = entities.ItemResolver.Instantiate( goalEntitiyId);
+            if (!entities.ItemResolver.TryUpdateData(ek,  targetPosition, out _))
             {
-                entities.ItemResolver.TryUpdateData(ek, context, targetPosition, out _);
+                entities.ItemResolver.TryUpdateData(ek,  targetPosition, out _);
                 throw new Exception($"Unable to position goal entity {positions.Count} at {targetPosition}");
             }
             

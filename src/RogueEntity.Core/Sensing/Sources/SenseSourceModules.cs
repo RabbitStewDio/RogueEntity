@@ -30,22 +30,21 @@ namespace RogueEntity.Core.Sensing.Sources
         ///    Performs the necessary setup to feed sensory resistance data from items stored on a grid map into the sensory resistance aggregator. 
         /// </summary>
         /// <param name="layers"></param>
-        /// <typeparam name="TGameContext"></typeparam>
         /// <typeparam name="TItemId"></typeparam>
         /// <typeparam name="TSense"></typeparam>
         /// <returns></returns>
-        public static EntitySystemRegistrationDelegate<TGameContext, TItemId> RegisterSenseResistanceSourceLayer<TGameContext, TItemId, TSense>(ReadOnlyListWrapper<MapLayer> layers)
+        public static EntitySystemRegistrationDelegate< TItemId> RegisterSenseResistanceSourceLayer< TItemId, TSense>(ReadOnlyListWrapper<MapLayer> layers)
             where TItemId : IEntityKey
         {
             void RegisterItemResistanceSystemConfiguration(in ModuleInitializationParameter initParameter,
-                                                           IGameLoopSystemRegistration<TGameContext> context,
+                                                           IGameLoopSystemRegistration context,
                                                            EntityRegistry<TItemId> registry)
             {
                 var serviceResolver = initParameter.ServiceResolver;
-                var itemContext = serviceResolver.Resolve<IItemResolver<TGameContext, TItemId>>();
+                var itemContext = serviceResolver.Resolve<IItemResolver< TItemId>>();
                 var mapContext = serviceResolver.Resolve<IGridMapContext<TItemId>>();
                 
-                var factory = serviceResolver.Resolve<IAggregationLayerSystemBackend<TGameContext, SensoryResistance<TSense>>>();
+                var factory = serviceResolver.Resolve<IAggregationLayerSystemBackend< SensoryResistance<TSense>>>();
                 var cache = serviceResolver.Resolve<ISenseCacheSetupSystem>();
                 foreach (var layer in layers)
                 {

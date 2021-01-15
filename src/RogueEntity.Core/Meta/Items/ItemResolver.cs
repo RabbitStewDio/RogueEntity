@@ -4,13 +4,13 @@ using RogueEntity.Core.Meta.Base;
 
 namespace RogueEntity.Core.Meta.Items
 {
-    public class ItemResolver<TGameContext, TItemId> : IItemResolver<TGameContext, TItemId>
+    public class ItemResolver<TItemId> : IItemResolver<TItemId>
         where TItemId : IBulkDataStorageKey<TItemId>
     {
-        readonly ItemRegistry<TGameContext, TItemId> registry;
+        readonly ItemRegistry<TItemId> registry;
         readonly EntityRegistry<TItemId> entityRegistry;
 
-        public ItemResolver(ItemRegistry<TGameContext, TItemId> registry, 
+        public ItemResolver(ItemRegistry<TItemId> registry, 
                             EntityRegistry<TItemId> entityRegistry)
         {
             this.registry = registry;
@@ -19,29 +19,28 @@ namespace RogueEntity.Core.Meta.Items
 
         public IItemRegistry ItemRegistry => registry;
 
-        public TItemId Instantiate(TGameContext context, IItemDeclaration item)
+        public TItemId Instantiate(IItemDeclaration item)
         {
-            if (item is IBulkItemDeclaration<TGameContext, TItemId> bulkItem)
+            if (item is IBulkItemDeclaration<TItemId> bulkItem)
             {
-                return InstantiateBulkItem(context, bulkItem);
+                return InstantiateBulkItem(bulkItem);
             }
 
-            return InstantiateReferenceItem(context, (IReferenceItemDeclaration<TGameContext, TItemId>)item);
+            return InstantiateReferenceItem((IReferenceItemDeclaration<TItemId>)item);
         }
 
-        TItemId InstantiateReferenceItem(TGameContext context, IReferenceItemDeclaration<TGameContext, TItemId> itemDeclaration)
+        TItemId InstantiateReferenceItem(IReferenceItemDeclaration<TItemId> itemDeclaration)
         {
             var entity = entityRegistry.Create();
-            entityRegistry.AssignComponent(entity, new ItemDeclarationHolder<TGameContext, TItemId>(itemDeclaration));
-            itemDeclaration.Initialize(entityRegistry, context, entity);
+            entityRegistry.AssignComponent(entity, new ItemDeclarationHolder<TItemId>(itemDeclaration));
+            itemDeclaration.Initialize(entityRegistry, entity);
             return entity;
         }
 
-        TItemId InstantiateBulkItem(TGameContext context,
-                                    IBulkItemDeclaration<TGameContext, TItemId> item)
+        TItemId InstantiateBulkItem(IBulkItemDeclaration<TItemId> item)
         {
             var id = registry.GenerateBulkItemId(item);
-            return item.Initialize(context, id);
+            return item.Initialize(id);
         }
 
         public bool TryResolve(in TItemId itemRef, out IItemDeclaration item)
@@ -50,7 +49,7 @@ namespace RogueEntity.Core.Meta.Items
             {
                 if (entityRegistry.IsValid(itemRef))
                 {
-                    if (entityRegistry.GetComponent(itemRef, out ItemDeclarationHolder<TGameContext, TItemId> ri))
+                    if (entityRegistry.GetComponent(itemRef, out ItemDeclarationHolder<TItemId> ri))
                     {
                         item = ri.ItemDeclaration;
                         return true;
@@ -93,11 +92,11 @@ namespace RogueEntity.Core.Meta.Items
             return false;
         }
 
-        public bool TryQueryData<TData>(TItemId itemRef, TGameContext context, out TData data)
+        public bool TryQueryData<TData>(TItemId itemRef, out TData data)
         {
-            if (TryQueryTrait<IItemComponentInformationTrait<TGameContext, TItemId, TData>>(itemRef, out var trait))
+            if (TryQueryTrait<IItemComponentInformationTrait<TItemId, TData>>(itemRef, out var trait))
             {
-                return trait.TryQuery(entityRegistry, context, itemRef, out data);
+                return trait.TryQuery(entityRegistry, itemRef, out data);
             }
 
             data = default;
@@ -105,24 +104,23 @@ namespace RogueEntity.Core.Meta.Items
         }
 
         public bool TryUpdateData<TData>(TItemId itemRef,
-                                         TGameContext context,
                                          in TData data,
                                          out TItemId changedItem)
         {
-            if (TryQueryTrait<IItemComponentTrait<TGameContext, TItemId, TData>>(itemRef, out var trait))
+            if (TryQueryTrait<IItemComponentTrait<TItemId, TData>>(itemRef, out var trait))
             {
-                return trait.TryUpdate(entityRegistry, context, itemRef, in data, out changedItem);
+                return trait.TryUpdate(entityRegistry, itemRef, in data, out changedItem);
             }
 
             changedItem = itemRef;
             return false;
         }
 
-        public bool TryRemoveData<TData>(TItemId itemRef, TGameContext context, out TItemId changedItem)
+        public bool TryRemoveData<TData>(TItemId itemRef,  out TItemId changedItem)
         {
-            if (TryQueryTrait<IItemComponentTrait<TGameContext, TItemId, TData>>(itemRef, out var trait))
+            if (TryQueryTrait<IItemComponentTrait<TItemId, TData>>(itemRef, out var trait))
             {
-                return trait.TryRemove(entityRegistry, context, itemRef, out changedItem);
+                return trait.TryRemove(entityRegistry, itemRef, out changedItem);
             }
 
             changedItem = itemRef;
@@ -175,7 +173,7 @@ namespace RogueEntity.Core.Meta.Items
             return item;
         }
 
-        public void Apply(TItemId item, TGameContext context)
+        public void Apply(TItemId item)
         {
             if (!item.IsReference)
             {
@@ -184,9 +182,9 @@ namespace RogueEntity.Core.Meta.Items
 
             if (entityRegistry.IsValid(item))
             {
-                if (entityRegistry.GetComponent(item, out ItemDeclarationHolder<TGameContext, TItemId> ri))
+                if (entityRegistry.GetComponent(item, out ItemDeclarationHolder<TItemId> ri))
                 {
-                    ri.ItemDeclaration.Apply(entityRegistry, context, item);
+                    ri.ItemDeclaration.Apply(entityRegistry, item);
                 }
             }
         }

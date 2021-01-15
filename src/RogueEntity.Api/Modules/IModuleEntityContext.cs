@@ -4,7 +4,7 @@ using RogueEntity.Api.Modules.Helpers;
 
 namespace RogueEntity.Api.Modules
 {
-    public interface IModuleEntityContext<TGameContext, TEntityId>
+    public interface IModuleEntityContext<TEntityId>
         where TEntityId : IEntityKey
     {
         void Register(EntitySystemId id,
@@ -13,20 +13,20 @@ namespace RogueEntity.Api.Modules
 
         void Register(EntitySystemId id,
                       int priority,
-                      EntitySystemRegistrationDelegate<TGameContext, TEntityId> entitySystemRegistration = null);
+                      EntitySystemRegistrationDelegate<TEntityId> entitySystemRegistration = null);
     }
 
-    public interface IModuleContentContext<TGameContext, TEntityId>
+    public interface IModuleContentContext<TEntityId>
         where TEntityId : IEntityKey
     {
-        bool TryGetDefinedBulkItem(ItemDeclarationId id, out IBulkItemDeclaration<TGameContext, TEntityId> item);
-        bool TryGetDefinedReferenceItem(ItemDeclarationId id, out IReferenceItemDeclaration<TGameContext, TEntityId> item);
+        bool TryGetDefinedBulkItem(ItemDeclarationId id, out IBulkItemDeclaration<TEntityId> item);
+        bool TryGetDefinedReferenceItem(ItemDeclarationId id, out IReferenceItemDeclaration<TEntityId> item);
 
-        void DefineBulkItemTemplate(IBulkItemDeclaration<TGameContext, TEntityId> item);
-        void DefineReferenceItemTemplate(IReferenceItemDeclaration<TGameContext, TEntityId> item);
+        void DefineBulkItemTemplate(IBulkItemDeclaration<TEntityId> item);
+        void DefineReferenceItemTemplate(IReferenceItemDeclaration<TEntityId> item);
 
-        ItemDeclarationId Activate(IBulkItemDeclaration<TGameContext, TEntityId> item);
-        ItemDeclarationId Activate(IReferenceItemDeclaration<TGameContext, TEntityId> item);
+        ItemDeclarationId Activate(IBulkItemDeclaration<TEntityId> item);
+        ItemDeclarationId Activate(IReferenceItemDeclaration<TEntityId> item);
 
         void DeclareTraitRoles<TItemTrait>(params EntityRole[] roles);
         void DeclareTraitRelations<TItemTrait>(params EntityRelation[] relations);

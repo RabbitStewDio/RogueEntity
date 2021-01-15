@@ -21,13 +21,13 @@ namespace RogueEntity.Core.Infrastructure.Actions.Schedule
                 return (IMessagePackFormatter<T>) existing;
             }
 
-            if (typeof(T).GetGenericTypeDefinition() != typeof(ScheduledActionPlan<,>))
+            if (typeof(T).GetGenericTypeDefinition() != typeof(ScheduledActionPlan<>))
             {
                 return null;
             }
 
             var genericArgs = typeof(T).GetGenericArguments();
-            var formatter = typeof(ScheduledActionPlanMessageFormatter<,>).MakeGenericType(genericArgs);
+            var formatter = typeof(ScheduledActionPlanMessageFormatter<>).MakeGenericType(genericArgs);
             var instance = Activator.CreateInstance(formatter);
             cache[typeof(T)] = instance;
             return (IMessagePackFormatter<T>)instance;

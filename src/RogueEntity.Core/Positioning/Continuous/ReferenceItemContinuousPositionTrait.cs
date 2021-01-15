@@ -10,24 +10,27 @@ using Serilog;
 
 namespace RogueEntity.Core.Positioning.Continuous
 {
-    public class ReferenceItemContinuousPositionTrait<TGameContext, TItemId> : IReferenceItemTrait<TGameContext, TItemId>,
-                                                                               IItemComponentTrait<TGameContext, TItemId, Position>,
-                                                                               IItemComponentTrait<TGameContext, TItemId, ContinuousMapPosition>,
-                                                                               IItemComponentInformationTrait<TGameContext, TItemId, ContinuousMapPositionChangedMarker>,
-                                                                               IItemComponentInformationTrait<TGameContext, TItemId, MapLayerPreference>,
-                                                                               IItemComponentDesignTimeInformationTrait<MapLayerPreference>,
-                                                                               IItemComponentInformationTrait<TGameContext, TItemId, MapContainerEntityMarker>
+    public class ReferenceItemContinuousPositionTrait<TItemId> : IReferenceItemTrait<TItemId>,
+                                                                 IItemComponentTrait<TItemId, Position>,
+                                                                 IItemComponentTrait<TItemId, ContinuousMapPosition>,
+                                                                 IItemComponentInformationTrait<TItemId, ContinuousMapPositionChangedMarker>,
+                                                                 IItemComponentInformationTrait<TItemId, MapLayerPreference>,
+                                                                 IItemComponentDesignTimeInformationTrait<MapLayerPreference>,
+                                                                 IItemComponentInformationTrait<TItemId, MapContainerEntityMarker>
         where TItemId : IEntityKey
-        where TGameContext : IContinuousMapContext<TGameContext, TItemId>
     {
-        readonly IItemResolver<TGameContext, TItemId> itemResolver;
+        readonly IContinuousMapContext<TItemId> context;
+        readonly IItemResolver<TItemId> itemResolver;
         readonly MapLayerPreference layerPreference;
-        readonly ILogger logger = SLog.ForContext<ReferenceItemContinuousPositionTrait<TGameContext, TItemId>>();
+        readonly ILogger logger = SLog.ForContext<ReferenceItemContinuousPositionTrait<TItemId>>();
 
-        public ReferenceItemContinuousPositionTrait(IItemResolver<TGameContext, TItemId> itemResolver, 
-                                                    MapLayer layer, params MapLayer[] layers)
+        public ReferenceItemContinuousPositionTrait(IItemResolver<TItemId> itemResolver,
+                                                    IContinuousMapContext<TItemId> context,
+                                                    MapLayer layer,
+                                                    params MapLayer[] layers)
         {
             this.itemResolver = itemResolver;
+            this.context = context;
             Id = "ReferenceItem.Generic.Position.Continuous";
             Priority = 100;
 
@@ -37,7 +40,7 @@ namespace RogueEntity.Core.Positioning.Continuous
         public ItemTraitId Id { get; }
         public int Priority { get; }
 
-        public IReferenceItemTrait<TGameContext, TItemId> CreateInstance()
+        public IReferenceItemTrait<TItemId> CreateInstance()
         {
             return this;
         }
@@ -48,15 +51,13 @@ namespace RogueEntity.Core.Positioning.Continuous
             return true;
         }
 
-        public void Initialize(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, IItemDeclaration item)
-        {
-        }
+        public void Initialize(IEntityViewControl<TItemId> v, TItemId k, IItemDeclaration item)
+        { }
 
-        public void Apply(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, IItemDeclaration item)
-        {
-        }
+        public void Apply(IEntityViewControl<TItemId> v, TItemId k, IItemDeclaration item)
+        { }
 
-        public bool TryQuery(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, out ContinuousMapPosition t)
+        public bool TryQuery(IEntityViewControl<TItemId> v, TItemId k, out ContinuousMapPosition t)
         {
             if (v.IsValid(k) &&
                 v.GetComponent(k, out t))
@@ -68,7 +69,7 @@ namespace RogueEntity.Core.Positioning.Continuous
             return false;
         }
 
-        public bool TryQuery(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, out Position t)
+        public bool TryQuery(IEntityViewControl<TItemId> v, TItemId k, out Position t)
         {
             if (v.IsValid(k) &&
                 v.GetComponent(k, out ContinuousMapPosition p))
@@ -81,7 +82,7 @@ namespace RogueEntity.Core.Positioning.Continuous
             return false;
         }
 
-        public bool TryQuery(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, out ContinuousMapPositionChangedMarker t)
+        public bool TryQuery(IEntityViewControl<TItemId> v, TItemId k, out ContinuousMapPositionChangedMarker t)
         {
             if (v.IsValid(k) && v.GetComponent(k, out t))
             {
@@ -92,13 +93,13 @@ namespace RogueEntity.Core.Positioning.Continuous
             return false;
         }
 
-        public bool TryQuery(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, out MapLayerPreference t)
+        public bool TryQuery(IEntityViewControl<TItemId> v, TItemId k, out MapLayerPreference t)
         {
             t = layerPreference;
             return true;
         }
 
-        public bool TryQuery(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, out MapContainerEntityMarker t)
+        public bool TryQuery(IEntityViewControl<TItemId> v, TItemId k, out MapContainerEntityMarker t)
         {
             if (v.IsValid(k) && v.GetComponent(k, out ContinuousMapPosition _))
             {
@@ -110,23 +111,25 @@ namespace RogueEntity.Core.Positioning.Continuous
             return false;
         }
 
-        bool IItemComponentTrait<TGameContext, TItemId, ContinuousMapPosition>.TryRemove(IEntityViewControl<TItemId> entityRegistry, TGameContext context, TItemId k, out TItemId changedItem)
+        bool IItemComponentTrait<TItemId, ContinuousMapPosition>.TryRemove(IEntityViewControl<TItemId> entityRegistry, TItemId k, out TItemId changedItem)
         {
-            return TryUpdate(entityRegistry, context, k, ContinuousMapPosition.Invalid, out changedItem);
+            return TryUpdate(entityRegistry, k, ContinuousMapPosition.Invalid, out changedItem);
         }
 
-        bool IItemComponentTrait<TGameContext, TItemId, Position>.TryRemove(IEntityViewControl<TItemId> entityRegistry, TGameContext context, TItemId k, out TItemId changedItem)
+        bool IItemComponentTrait<TItemId, Position>.TryRemove(IEntityViewControl<TItemId> entityRegistry, TItemId k, out TItemId changedItem)
         {
-            return TryUpdate(entityRegistry, context, k, ContinuousMapPosition.Invalid, out changedItem);
+            return TryUpdate(entityRegistry, k, ContinuousMapPosition.Invalid, out changedItem);
         }
 
-        public bool TryUpdate(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, in Position t, out TItemId changedK)
+        public bool TryUpdate(IEntityViewControl<TItemId> v, TItemId k, in Position t, out TItemId changedK)
         {
-            return TryUpdate(v, context, k, ContinuousMapPosition.From(t), out changedK);
+            return TryUpdate(v, k, ContinuousMapPosition.From(t), out changedK);
         }
 
-        public bool TryUpdate(IEntityViewControl<TItemId> v, TGameContext context, TItemId k,
-                              in ContinuousMapPosition desiredPosition, out TItemId changedK)
+        public bool TryUpdate(IEntityViewControl<TItemId> v,
+                              TItemId k,
+                              in ContinuousMapPosition desiredPosition,
+                              out TItemId changedK)
         {
             changedK = k;
 
@@ -232,6 +235,5 @@ namespace RogueEntity.Core.Positioning.Continuous
         {
             return Enumerable.Empty<EntityRelationInstance>();
         }
-        
     }
 }

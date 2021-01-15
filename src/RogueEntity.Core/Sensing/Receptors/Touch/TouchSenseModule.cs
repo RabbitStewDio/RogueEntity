@@ -26,10 +26,10 @@ namespace RogueEntity.Core.Sensing.Receptors.Touch
 
             RequireRole(SenseReceptorActorRole).WithImpliedRole(TouchSourceModule.SenseSourceRole);
         }
-        
-        protected override void RegisterCalculateDirectionalSystem<TGameContext, TItemId>(in ModuleInitializationParameter initParameter,
-                                                                                          IGameLoopSystemRegistration<TGameContext> context,
-                                                                                          EntityRegistry<TItemId> registry)
+
+        protected override void RegisterCalculateDirectionalSystem<TItemId>(in ModuleInitializationParameter initParameter,
+                                                                            IGameLoopSystemRegistration context,
+                                                                            EntityRegistry<TItemId> registry)
         {
             RegisterCalculateUniDirectionalSystem(in initParameter, context, registry);
         }

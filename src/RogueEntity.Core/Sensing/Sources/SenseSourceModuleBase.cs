@@ -76,42 +76,42 @@ namespace RogueEntity.Core.Sensing.Sources
         }
 
         [InitializerCollector(InitializerCollectorType.Roles)]
-        public IEnumerable<ModuleEntityRoleInitializerInfo<TGameContext, TItemId>> CollectRoleInitializers<TGameContext, TItemId>(IServiceResolver serviceResolver,
-                                                                                                                                  IModuleEntityInformation entityInformation,
-                                                                                                                                  EntityRole role)
+        public IEnumerable<ModuleEntityRoleInitializerInfo<TItemId>> CollectRoleInitializers<TItemId>(IServiceResolver serviceResolver,
+                                                                                                      IModuleEntityInformation entityInformation,
+                                                                                                      EntityRole role)
             where TItemId : IEntityKey
         {
             if (role == SenseSourceRole)
             {
-                yield return ModuleEntityRoleInitializerInfo.CreateFor<TGameContext, TItemId>
+                yield return ModuleEntityRoleInitializerInfo.CreateFor<TItemId>
                     (SenseSourceRole, InitializeSenseSourceRole);
 
                 // activate for any sense source that is also grid positioned
-                yield return ModuleEntityRoleInitializerInfo.CreateFor<TGameContext, TItemId>(SenseSourceRole, InitializeSenseSourceCollectionGrid)
+                yield return ModuleEntityRoleInitializerInfo.CreateFor<TItemId>(SenseSourceRole, InitializeSenseSourceCollectionGrid)
                                                             .WithRequiredRoles(PositionModule.GridPositionedRole);
 
                 // activate for any sense source that is also continuously positioned
-                yield return ModuleEntityRoleInitializerInfo.CreateFor<TGameContext, TItemId>(SenseSourceRole, InitializeSenseSourceCollectionContinuous)
+                yield return ModuleEntityRoleInitializerInfo.CreateFor<TItemId>(SenseSourceRole, InitializeSenseSourceCollectionContinuous)
                                                             .WithRequiredRoles(PositionModule.ContinuousPositionedRole);
 
                 // all sense sources make use of the sense-cache.
-                yield return ModuleEntityRoleInitializerInfo.CreateFor<TGameContext, TItemId>(SenseSourceRole, InitializeSenseCache)
+                yield return ModuleEntityRoleInitializerInfo.CreateFor<TItemId>(SenseSourceRole, InitializeSenseCache)
                                                             .WithRequiredRoles(PositionModule.GridPositionedRole);
             }
 
             if (role == ResistanceDataProviderRole)
             {
-                yield return ModuleEntityRoleInitializerInfo.CreateFor<TGameContext, TItemId>(ResistanceDataProviderRole, InitializeResistanceEntities);
-                yield return ModuleEntityRoleInitializerInfo.CreateFor<TGameContext, TItemId>(ResistanceDataProviderRole, InitializeResistanceRole)
+                yield return ModuleEntityRoleInitializerInfo.CreateFor<TItemId>(ResistanceDataProviderRole, InitializeResistanceEntities);
+                yield return ModuleEntityRoleInitializerInfo.CreateFor<TItemId>(ResistanceDataProviderRole, InitializeResistanceRole)
                                                             .WithRequiredRoles(PositionModule.GridPositionedRole)
                                                             .WithRequiredRelations(NeedSenseResistanceRelation);
             }
         }
 
         [FinalizerCollector(InitializerCollectorType.Roles)]
-        public IEnumerable<ModuleEntityRoleInitializerInfo<TGameContext, TItemId>> CollectRoleFinalizers<TGameContext, TItemId>(IServiceResolver serviceResolver,
-                                                                                                                                IModuleEntityInformation entityInformation,
-                                                                                                                                EntityRole role)
+        public IEnumerable<ModuleEntityRoleInitializerInfo<TItemId>> CollectRoleFinalizers<TItemId>(IServiceResolver serviceResolver,
+                                                                                                    IModuleEntityInformation entityInformation,
+                                                                                                    EntityRole role)
             where TItemId : IEntityKey
         {
             if (role != ResistanceDataProviderRole)
@@ -121,14 +121,14 @@ namespace RogueEntity.Core.Sensing.Sources
 
             if (entityInformation.HasRelation(ResistanceDataProviderRole, NeedSenseResistanceRelation))
             {
-                yield return ModuleEntityRoleInitializerInfo.CreateFor<TGameContext, TItemId>(ResistanceDataProviderRole, InitializeResistanceRelation)
+                yield return ModuleEntityRoleInitializerInfo.CreateFor<TItemId>(ResistanceDataProviderRole, InitializeResistanceRelation)
                                                             .WithRequiredRoles(PositionModule.GridPositionedRole);
             }
         }
 
-        void InitializeResistanceRelation<TGameContext, TItemId>(in ModuleEntityInitializationParameter<TGameContext, TItemId> initParameter,
-                                                                 IModuleInitializer<TGameContext> initializer,
-                                                                 EntityRole role)
+        void InitializeResistanceRelation<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
+                                                   IModuleInitializer initializer,
+                                                   EntityRole role)
             where TItemId : IEntityKey
         {
             var moduleContext = initParameter.ContentDeclarations;
@@ -137,7 +137,7 @@ namespace RogueEntity.Core.Sensing.Sources
             foreach (var bi in moduleContext.DeclaredBulkItems)
             {
                 if (bi.itemDeclaration.TryQuery(out IItemComponentDesignTimeInformationTrait<MapLayerPreference> layerPref) &&
-                    bi.itemDeclaration.HasItemComponent<TGameContext, TItemId, SensoryResistance<TSense>>() &&
+                    bi.itemDeclaration.HasItemComponent<TItemId, SensoryResistance<TSense>>() &&
                     layerPref.TryQuery(out var layerPreferences))
                 {
                     layers.UnionWith(layerPreferences.AcceptableLayers);
@@ -148,12 +148,12 @@ namespace RogueEntity.Core.Sensing.Sources
 
             var mapLayers = layers.ToList();
             Logger.Debug("{Sense} will use map layers {Layers} as resistance source for {EntityId}", typeof(TSense), mapLayers, typeof(TItemId));
-            ctx.Register(systemId, 1100, SenseSourceModules.RegisterSenseResistanceSourceLayer<TGameContext, TItemId, TSense>(mapLayers));
+            ctx.Register(systemId, 1100, SenseSourceModules.RegisterSenseResistanceSourceLayer<TItemId, TSense>(mapLayers));
         }
 
-        protected void InitializeSenseSourceRole<TGameContext, TItemId>(in ModuleEntityInitializationParameter<TGameContext, TItemId> initParameter,
-                                                                        IModuleInitializer<TGameContext> initializer,
-                                                                        EntityRole role)
+        protected void InitializeSenseSourceRole<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
+                                                          IModuleInitializer initializer,
+                                                          EntityRole role)
             where TItemId : IEntityKey
         {
             var ctx = initializer.DeclareEntityContext<TItemId>();
@@ -166,18 +166,18 @@ namespace RogueEntity.Core.Sensing.Sources
             ctx.Register(SenseCacheLifecycleId, 500, RegisterSenseResistanceCacheLifeCycle);
         }
 
-        protected void InitializeSenseSourceCollectionGrid<TGameContext, TItemId>(in ModuleEntityInitializationParameter<TGameContext, TItemId> initParameter,
-                                                                                  IModuleInitializer<TGameContext> initializer,
-                                                                                  EntityRole role)
+        protected void InitializeSenseSourceCollectionGrid<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
+                                                                    IModuleInitializer initializer,
+                                                                    EntityRole role)
             where TItemId : IEntityKey
         {
             var ctx = initializer.DeclareEntityContext<TItemId>();
             ctx.Register(CollectionGridSystemId, 55000, RegisterCollectSenseSourceGridSystem);
         }
 
-        protected void InitializeSenseSourceCollectionContinuous<TGameContext, TItemId>(in ModuleEntityInitializationParameter<TGameContext, TItemId> initParameter,
-                                                                                        IModuleInitializer<TGameContext> initializer,
-                                                                                        EntityRole role)
+        protected void InitializeSenseSourceCollectionContinuous<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
+                                                                          IModuleInitializer initializer,
+                                                                          EntityRole role)
             where TItemId : IEntityKey
         {
             var ctx = initializer.DeclareEntityContext<TItemId>();
@@ -185,29 +185,29 @@ namespace RogueEntity.Core.Sensing.Sources
         }
 
         [SuppressMessage("ReSharper", "UnusedTypeParameter")]
-        protected void InitializeSenseCache<TGameContext, TItemId>(in ModuleEntityInitializationParameter<TGameContext, TItemId> initParameter,
-                                                                   IModuleInitializer<TGameContext> initializer,
-                                                                   EntityRole role)
+        protected void InitializeSenseCache<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
+                                                     IModuleInitializer initializer,
+                                                     EntityRole role)
             where TItemId : IEntityKey
         {
-            if (initParameter.ServiceResolver.TryResolve(out SenseCacheSetUpSystem<TGameContext> o))
+            if (initParameter.ServiceResolver.TryResolve(out SenseCacheSetUpSystem o))
             {
                 o.RegisterSense<TSense>();
             }
         }
 
-        protected void InitializeResistanceEntities<TGameContext, TItemId>(in ModuleEntityInitializationParameter<TGameContext, TItemId> initParameter,
-                                                                           IModuleInitializer<TGameContext> initializer,
-                                                                           EntityRole role)
+        protected void InitializeResistanceEntities<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
+                                                             IModuleInitializer initializer,
+                                                             EntityRole role)
             where TItemId : IEntityKey
         {
             var ctx = initializer.DeclareEntityContext<TItemId>();
             ctx.Register(RegisterResistanceEntitiesId, 0, RegisterResistanceEntities);
         }
 
-        protected void InitializeResistanceRole<TGameContext, TItemId>(in ModuleEntityInitializationParameter<TGameContext, TItemId> initParameter,
-                                                                       IModuleInitializer<TGameContext> initializer,
-                                                                       EntityRole role)
+        protected void InitializeResistanceRole<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
+                                                         IModuleInitializer initializer,
+                                                         EntityRole role)
             where TItemId : IEntityKey
         {
             // The sense resistance system is only needed if there is at least one sense source of this type active.
@@ -218,51 +218,51 @@ namespace RogueEntity.Core.Sensing.Sources
             ctx.Register(ExecuteResistanceSystem, 52000, RegisterProcessSenseDirectionalitySystem);
         }
 
-        protected void RegisterResistanceSystemLifecycle<TGameContext, TItemId>(in ModuleInitializationParameter initParameter,
-                                                                                IGameLoopSystemRegistration<TGameContext> context,
-                                                                                EntityRegistry<TItemId> registry)
+        protected void RegisterResistanceSystemLifecycle<TItemId>(in ModuleInitializationParameter initParameter,
+                                                                  IGameLoopSystemRegistration context,
+                                                                  EntityRegistry<TItemId> registry)
             where TItemId : IEntityKey
         {
             var serviceResolver = initParameter.ServiceResolver;
-            var system = GetOrCreateSensePropertiesSystem<TGameContext, TItemId>(serviceResolver);
+            var system = GetOrCreateSensePropertiesSystem<TItemId>(serviceResolver);
             context.AddInitializationStepHandler(system.Start);
             context.AddDisposeStepHandler(system.Stop);
         }
 
 
-        protected void RegisterResistanceSystemExecution<TGameContext, TItemId>(in ModuleInitializationParameter initParameter,
-                                                                                IGameLoopSystemRegistration<TGameContext> context,
-                                                                                EntityRegistry<TItemId> registry)
+        protected void RegisterResistanceSystemExecution<TItemId>(in ModuleInitializationParameter initParameter,
+                                                                  IGameLoopSystemRegistration context,
+                                                                  EntityRegistry<TItemId> registry)
             where TItemId : IEntityKey
         {
             var serviceResolver = initParameter.ServiceResolver;
-            var system = GetOrCreateSensePropertiesSystem<TGameContext, TItemId>(serviceResolver);
+            var system = GetOrCreateSensePropertiesSystem<TItemId>(serviceResolver);
 
             context.AddInitializationStepHandler(system.ProcessSenseProperties);
             context.AddFixedStepHandlers(system.ProcessSenseProperties);
         }
 
-        protected void RegisterPrepareSenseSourceSystem<TGameContext, TItemId>(in ModuleInitializationParameter initParameter,
-                                                                               IGameLoopSystemRegistration<TGameContext> context,
-                                                                               EntityRegistry<TItemId> registry)
+        protected void RegisterPrepareSenseSourceSystem<TItemId>(in ModuleInitializationParameter initParameter,
+                                                                 IGameLoopSystemRegistration context,
+                                                                 EntityRegistry<TItemId> registry)
             where TItemId : IEntityKey
         {
             var serviceResolver = initParameter.ServiceResolver;
-            var ls = GetOrCreateSenseSourceSystem<TGameContext, TItemId>(serviceResolver);
+            var ls = GetOrCreateSenseSourceSystem<TItemId>(serviceResolver);
             context.AddInitializationStepHandler(ls.EnsureSenseCacheAvailable, nameof(ls.EnsureSenseCacheAvailable));
             context.AddInitializationStepHandler(ls.BeginSenseCalculation, nameof(ls.BeginSenseCalculation));
             context.AddFixedStepHandlers(ls.BeginSenseCalculation, nameof(ls.BeginSenseCalculation));
         }
 
-        protected void RegisterCollectSenseSourceGridSystem<TGameContext, TItemId>(in ModuleInitializationParameter initParameter,
-                                                                                   IGameLoopSystemRegistration<TGameContext> context,
-                                                                                   EntityRegistry<TItemId> registry)
+        protected void RegisterCollectSenseSourceGridSystem<TItemId>(in ModuleInitializationParameter initParameter,
+                                                                     IGameLoopSystemRegistration context,
+                                                                     EntityRegistry<TItemId> registry)
             where TItemId : IEntityKey
         {
             var serviceResolver = initParameter.ServiceResolver;
-            var ls = GetOrCreateSenseSourceSystem<TGameContext, TItemId>(serviceResolver);
+            var ls = GetOrCreateSenseSourceSystem<TItemId>(serviceResolver);
             var system = registry.BuildSystem()
-                                 .WithContext<TGameContext>()
+                                 .WithoutContext()
                                  .WithInputParameter<TSenseSourceDefinition, EntityGridPosition>()
                                  .WithOutputParameter<SenseSourceState<TSense>>()
                                  .CreateSystem(ls.FindDirtySenseSources);
@@ -270,15 +270,15 @@ namespace RogueEntity.Core.Sensing.Sources
             context.AddFixedStepHandlers(system);
         }
 
-        protected void RegisterCollectSenseSourceContinuousSystem<TGameContext, TItemId>(in ModuleInitializationParameter initParameter,
-                                                                                         IGameLoopSystemRegistration<TGameContext> context,
-                                                                                         EntityRegistry<TItemId> registry)
+        protected void RegisterCollectSenseSourceContinuousSystem<TItemId>(in ModuleInitializationParameter initParameter,
+                                                                           IGameLoopSystemRegistration context,
+                                                                           EntityRegistry<TItemId> registry)
             where TItemId : IEntityKey
         {
             var serviceResolver = initParameter.ServiceResolver;
-            var ls = GetOrCreateSenseSourceSystem<TGameContext, TItemId>(serviceResolver);
+            var ls = GetOrCreateSenseSourceSystem<TItemId>(serviceResolver);
             var system = registry.BuildSystem()
-                                 .WithContext<TGameContext>()
+                                 .WithoutContext()
                                  .WithInputParameter<TSenseSourceDefinition, ContinuousMapPosition>()
                                  .WithOutputParameter<SenseSourceState<TSense>>()
                                  .CreateSystem(ls.FindDirtySenseSources);
@@ -286,16 +286,16 @@ namespace RogueEntity.Core.Sensing.Sources
             context.AddFixedStepHandlers(system);
         }
 
-        protected void RegisterCalculateSenseSourceStateSystem<TGameContext, TItemId>(in ModuleInitializationParameter initParameter,
-                                                                                      IGameLoopSystemRegistration<TGameContext> context,
-                                                                                      EntityRegistry<TItemId> registry)
+        protected void RegisterCalculateSenseSourceStateSystem<TItemId>(in ModuleInitializationParameter initParameter,
+                                                                        IGameLoopSystemRegistration context,
+                                                                        EntityRegistry<TItemId> registry)
             where TItemId : IEntityKey
         {
             var serviceResolver = initParameter.ServiceResolver;
-            var ls = GetOrCreateSenseSourceSystem<TGameContext, TItemId>(serviceResolver);
+            var ls = GetOrCreateSenseSourceSystem<TItemId>(serviceResolver);
             var refreshLocalSenseState =
                 registry.BuildSystem()
-                        .WithContext<TGameContext>()
+                        .WithoutContext()
                         .WithInputParameter<TSenseSourceDefinition, SenseDirtyFlag<TSense>, ObservedSenseSource<TSense>>()
                         .WithOutputParameter<SenseSourceState<TSense>>()
                         .CreateSystem(ls.RefreshLocalSenseState);
@@ -304,41 +304,41 @@ namespace RogueEntity.Core.Sensing.Sources
             context.AddFixedStepHandlers(refreshLocalSenseState);
         }
 
-        protected void RegisterCleanUpSystem<TGameContext, TItemId>(in ModuleInitializationParameter initParameter,
-                                                                    IGameLoopSystemRegistration<TGameContext> context,
-                                                                    EntityRegistry<TItemId> registry)
+        protected void RegisterCleanUpSystem<TItemId>(in ModuleInitializationParameter initParameter,
+                                                      IGameLoopSystemRegistration context,
+                                                      EntityRegistry<TItemId> registry)
             where TItemId : IEntityKey
         {
             var serviceResolver = initParameter.ServiceResolver;
-            var ls = GetOrCreateSenseSourceSystem<TGameContext, TItemId>(serviceResolver);
+            var ls = GetOrCreateSenseSourceSystem<TItemId>(serviceResolver);
 
             var resetSystem = registry.BuildSystem()
-                                      .WithContext<TGameContext>()
+                                      .WithoutContext()
                                       .WithInputParameter<TSenseSourceDefinition, SenseDirtyFlag<TSense>>()
                                       .WithOutputParameter<SenseSourceState<TSense>>()
                                       .CreateSystem(ls.ResetSenseSourceCacheState);
-            
+
             context.AddInitializationStepHandler(resetSystem, nameof(ls.ResetSenseSourceCacheState));
             context.AddFixedStepHandlers(resetSystem, nameof(ls.ResetSenseSourceCacheState));
-            
+
             context.AddInitializationStepHandler(ls.EndSenseCalculation, nameof(ls.EndSenseCalculation));
             context.AddFixedStepHandlers(ls.EndSenseCalculation, nameof(ls.EndSenseCalculation));
-            
+
             context.AddDisposeStepHandler(ls.ShutDown, nameof(ls.ShutDown));
         }
 
-        protected void RegisterProcessSenseDirectionalitySystem<TGameContext, TItemId>(in ModuleInitializationParameter initParameter,
-                                                                                       IGameLoopSystemRegistration<TGameContext> context,
-                                                                                       EntityRegistry<TItemId> registry)
+        protected void RegisterProcessSenseDirectionalitySystem<TItemId>(in ModuleInitializationParameter initParameter,
+                                                                         IGameLoopSystemRegistration context,
+                                                                         EntityRegistry<TItemId> registry)
             where TItemId : IEntityKey
         {
             var serviceResolver = initParameter.ServiceResolver;
-            var system = GetOrCreateDirectionalitySystem<TGameContext, TItemId>(serviceResolver);
+            var system = GetOrCreateDirectionalitySystem<TItemId>(serviceResolver);
 
             if (!serviceResolver.TryResolve(out SenseDirectionalitySystemRegisteredMarker<TSense> _))
             {
                 serviceResolver.Store(new SenseDirectionalitySystemRegisteredMarker<TSense>());
-                context.AddInitializationStepHandler(c => system.MarkGloballyDirty(), nameof(system.MarkGloballyDirty));
+                context.AddInitializationStepHandler(system.MarkGloballyDirty, nameof(system.MarkGloballyDirty));
                 context.AddInitializationStepHandler(system.ProcessSystem, nameof(system.ProcessSystem));
                 context.AddInitializationStepHandler(system.MarkCleanSystem, nameof(system.MarkCleanSystem));
                 context.AddFixedStepHandlers(system.ProcessSystem, nameof(system.ProcessSystem));
@@ -346,17 +346,17 @@ namespace RogueEntity.Core.Sensing.Sources
             }
         }
 
-        protected void RegisterSenseResistanceCacheLifeCycle<TGameContext, TItemId>(in ModuleInitializationParameter initParameter,
-                                                                                    IGameLoopSystemRegistration<TGameContext> context,
-                                                                                    EntityRegistry<TItemId> registry)
+        protected void RegisterSenseResistanceCacheLifeCycle<TItemId>(in ModuleInitializationParameter initParameter,
+                                                                      IGameLoopSystemRegistration context,
+                                                                      EntityRegistry<TItemId> registry)
             where TItemId : IEntityKey
         {
             var resolver = initParameter.ServiceResolver;
             // Ensure that the connection is only made once. The sense properties system will
             // forward all invalidation events to the sense cache.
-            if (!resolver.TryResolve(out SensePropertiesConnectorSystem<TGameContext, TSense> system))
+            if (!resolver.TryResolve(out SensePropertiesConnectorSystem<TSense> system))
             {
-                if (!resolver.TryResolve(out SensePropertiesSystem<TGameContext, TSense> sensePropertiesSystem))
+                if (!resolver.TryResolve(out SensePropertiesSystem<TSense> sensePropertiesSystem))
                 {
                     Logger.Verbose("Not registering SensePropertiesConnector. No Sense Properties System defined.");
                 }
@@ -367,7 +367,7 @@ namespace RogueEntity.Core.Sensing.Sources
                     return;
                 }
 
-                system = new SensePropertiesConnectorSystem<TGameContext, TSense>(sensePropertiesSystem, cacheProvider);
+                system = new SensePropertiesConnectorSystem<TSense>(sensePropertiesSystem, cacheProvider);
                 resolver.Store(system);
 
                 context.AddInitializationStepHandler(system.Start, nameof(system.Start));
@@ -375,41 +375,41 @@ namespace RogueEntity.Core.Sensing.Sources
             }
         }
 
-        protected virtual SensePropertiesSystem<TGameContext, TSense> GetOrCreateSensePropertiesSystem<TGameContext, TEntityId>(IServiceResolver serviceResolver)
+        protected virtual SensePropertiesSystem<TSense> GetOrCreateSensePropertiesSystem<TEntityId>(IServiceResolver serviceResolver)
         {
-            if (serviceResolver.TryResolve(out SensePropertiesSystem<TGameContext, TSense> system))
+            if (serviceResolver.TryResolve(out SensePropertiesSystem<TSense> system))
             {
                 return system;
             }
 
             var gridConfig = serviceResolver.Resolve<IGridMapConfiguration<TEntityId>>();
-            system = new SensePropertiesSystem<TGameContext, TSense>(gridConfig.OffsetX, gridConfig.OffsetY, gridConfig.TileSizeX, gridConfig.TileSizeY);
+            system = new SensePropertiesSystem<TSense>(gridConfig.OffsetX, gridConfig.OffsetY, gridConfig.TileSizeX, gridConfig.TileSizeY);
 
             serviceResolver.Store(system);
-            serviceResolver.Store<IAggregationLayerSystemBackend<TGameContext, SensoryResistance<TSense>>>(system);
+            serviceResolver.Store<IAggregationLayerSystemBackend<SensoryResistance<TSense>>>(system);
             serviceResolver.Store<ISensePropertiesDataView<TSense>>(system);
             return system;
         }
 
-        protected virtual SensoryResistanceDirectionalitySystem<TGameContext, TSense> GetOrCreateDirectionalitySystem<TGameContext, TItemId>(IServiceResolver serviceResolver)
+        protected virtual SensoryResistanceDirectionalitySystem<TSense> GetOrCreateDirectionalitySystem<TItemId>(IServiceResolver serviceResolver)
         {
-            if (serviceResolver.TryResolve(out SensoryResistanceDirectionalitySystem<TGameContext, TSense> system))
+            if (serviceResolver.TryResolve(out SensoryResistanceDirectionalitySystem<TSense> system))
             {
                 return system;
             }
 
             if (!serviceResolver.TryResolve(out ISensePropertiesDataView<TSense> data))
             {
-                data = GetOrCreateSensePropertiesSystem<TGameContext, TItemId>(serviceResolver);
+                data = GetOrCreateSensePropertiesSystem<TItemId>(serviceResolver);
             }
 
-            system = new SensoryResistanceDirectionalitySystem<TGameContext, TSense>(data.ResultView);
+            system = new SensoryResistanceDirectionalitySystem<TSense>(data.ResultView);
             serviceResolver.Store(system);
             serviceResolver.Store<ISensoryResistanceDirectionView<TSense>>(system);
             return system;
         }
 
-        protected virtual SenseSourceSystem<TSense, TSenseSourceDefinition> GetOrCreateSenseSourceSystem<TGameContext, TItemId>(IServiceResolver serviceResolver)
+        protected virtual SenseSourceSystem<TSense, TSenseSourceDefinition> GetOrCreateSenseSourceSystem<TItemId>(IServiceResolver serviceResolver)
         {
             var physicsConfig = GetOrCreateSensePhysics(serviceResolver);
             if (serviceResolver.TryResolve(out SenseSourceSystem<TSense, TSenseSourceDefinition> ls))
@@ -419,7 +419,7 @@ namespace RogueEntity.Core.Sensing.Sources
 
             if (!serviceResolver.TryResolve(out ISensoryResistanceDirectionView<TSense> senseDirections))
             {
-                senseDirections = GetOrCreateDirectionalitySystem<TGameContext, TItemId>(serviceResolver);
+                senseDirections = GetOrCreateDirectionalitySystem<TItemId>(serviceResolver);
             }
 
             var senseProperties = serviceResolver.ResolveToReference<ISensePropertiesDataView<TSense>>().Map(l => l.ResultView);

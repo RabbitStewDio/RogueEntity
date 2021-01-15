@@ -7,7 +7,7 @@ using RogueEntity.Core.Positioning;
 namespace RogueEntity.Core.Sensing.Cache
 {
     [SuppressMessage("ReSharper", "UnusedTypeParameter", Justification = "Discriminator")]
-    public class SensePropertiesConnectorSystem<TGameContext, TSense>
+    public class SensePropertiesConnectorSystem<TSense>
     {
         readonly IAggregationLayerSystem<float> sensePropertiesSystem;
         readonly SenseStateCache cache;
@@ -19,12 +19,12 @@ namespace RogueEntity.Core.Sensing.Cache
             this.cache = cache ?? throw new ArgumentNullException(nameof(cache));
         }
 
-        public void Start(TGameContext context)
+        public void Start()
         {
             this.sensePropertiesSystem.PositionDirty += OnSensePropertiesDirty;
         }
-        
-        public void Stop(TGameContext context)
+
+        public void Stop()
         {
             this.sensePropertiesSystem.PositionDirty += OnSensePropertiesDirty;
         }

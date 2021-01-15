@@ -27,8 +27,8 @@ namespace RogueEntity.Core.Sensing.Receptors.Smell
             RequireRole(SenseReceptorActorRole);
         }
 
-        protected override void RegisterCalculateDirectionalSystem<TGameContext, TItemId>(in ModuleInitializationParameter initParameter,
-                                                                                          IGameLoopSystemRegistration<TGameContext> context,
+        protected override void RegisterCalculateDirectionalSystem<TItemId>(in ModuleInitializationParameter initParameter,
+                                                                                          IGameLoopSystemRegistration context,
                                                                                           EntityRegistry<TItemId> registry)
         {
             RegisterCalculateUniDirectionalSystem(in initParameter, context, registry);

@@ -7,35 +7,35 @@ namespace RogueEntity.Core.Inventory
 {
     public static class ListInventoryTraitDeclarations
     {
-        public readonly struct InventoryDeclarationBuilder<TGameContext, TContainerEntityId>
+        public readonly struct InventoryDeclarationBuilder< TContainerEntityId>
             where TContainerEntityId : IEntityKey
         {
-            readonly ReferenceItemDeclarationBuilder<TGameContext, TContainerEntityId> builder;
+            readonly ReferenceItemDeclarationBuilder< TContainerEntityId> builder;
             readonly Weight defaultCarryWeight;
 
-            public InventoryDeclarationBuilder(ReferenceItemDeclarationBuilder<TGameContext, TContainerEntityId> builder, Weight defaultCarryWeight)
+            public InventoryDeclarationBuilder(ReferenceItemDeclarationBuilder< TContainerEntityId> builder, Weight defaultCarryWeight)
             {
                 this.builder = builder;
                 this.defaultCarryWeight = defaultCarryWeight;
             }
 
-            public ReferenceItemDeclarationBuilder<TGameContext, TContainerEntityId> Of<TContentEntityId>()
+            public ReferenceItemDeclarationBuilder< TContainerEntityId> Of<TContentEntityId>()
                 where TContentEntityId : IEntityKey
             {
-                var resolver = builder.ServiceResolver.Resolve<IItemResolver<TGameContext, TContentEntityId>>();
+                var resolver = builder.ServiceResolver.Resolve<IItemResolver< TContentEntityId>>();
                 var meta = builder.ServiceResolver.Resolve<IBulkDataStorageMetaData<TContentEntityId>>();
-                var trait = new ListInventoryTrait<TGameContext, TContainerEntityId, TContentEntityId>(meta, resolver, defaultCarryWeight);
+                var trait = new ListInventoryTrait< TContainerEntityId, TContentEntityId>(meta, resolver, defaultCarryWeight);
                 builder.Declaration.WithTrait(trait);
                 return builder;
             }
         }
 
-        public static InventoryDeclarationBuilder<TGameContext, TContainerEntityId>
-            WithInventory<TGameContext, TContainerEntityId>(this ReferenceItemDeclarationBuilder<TGameContext, TContainerEntityId> builder,
+        public static InventoryDeclarationBuilder< TContainerEntityId>
+            WithInventory< TContainerEntityId>(this ReferenceItemDeclarationBuilder< TContainerEntityId> builder,
                                                                               Weight defaultCarryWeight = default)
             where TContainerEntityId : IEntityKey
         {
-            return new InventoryDeclarationBuilder<TGameContext, TContainerEntityId>(builder, defaultCarryWeight);
+            return new InventoryDeclarationBuilder< TContainerEntityId>(builder, defaultCarryWeight);
         }
     }
 }

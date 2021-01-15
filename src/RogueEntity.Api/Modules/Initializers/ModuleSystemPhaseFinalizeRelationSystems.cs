@@ -12,15 +12,15 @@ using Serilog;
 
 namespace RogueEntity.Api.Modules.Initializers
 {
-    public class ModuleSystemPhaseFinalizeRelationSystems<TGameContext> : IModuleEntityInitializationCallback<TGameContext>
+    public class ModuleSystemPhaseFinalizeRelationSystems : IModuleEntityInitializationCallback
     {
-        static readonly ILogger Logger = SLog.ForContext<ModuleSystem<TGameContext>>();
-        readonly GlobalModuleEntityInformation<TGameContext> entityInfo;
+        static readonly ILogger Logger = SLog.ForContext<ModuleSystem>();
+        readonly GlobalModuleEntityInformation entityInfo;
         readonly IServiceResolver serviceResolver;
-        readonly ModuleInitializer<TGameContext> moduleInitializer;
+        readonly ModuleInitializer moduleInitializer;
         ModuleBase currentModule;
 
-        public ModuleSystemPhaseFinalizeRelationSystems(in ModuleSystemPhaseInitModuleResult<TGameContext> p,
+        public ModuleSystemPhaseFinalizeRelationSystems(in ModuleSystemPhaseInitModuleResult p,
                                                         IServiceResolver serviceResolver)
         {
             this.serviceResolver = serviceResolver;
@@ -28,7 +28,7 @@ namespace RogueEntity.Api.Modules.Initializers
             this.moduleInitializer = p.ModuleInitializer;
         }
 
-        public void InitializeModuleRelations(List<ModuleRecord<TGameContext>> orderedModules)
+        public void InitializeModuleRelations(List<ModuleRecord> orderedModules)
         {
             foreach (var mod in orderedModules)
             {
@@ -56,14 +56,14 @@ namespace RogueEntity.Api.Modules.Initializers
             }
         }
 
-        void IModuleEntityInitializationCallback<TGameContext>.PerformInitialization<TEntityId>(IModuleInitializationData<TGameContext, TEntityId> moduleContext)
+        void IModuleEntityInitializationCallback.PerformInitialization<TEntityId>(IModuleInitializationData<TEntityId> moduleContext)
         {
             if (!entityInfo.TryGetModuleEntityInformation<TEntityId>(out var mi))
             {
                 return;
             }
 
-            var moduleInitializerParams = new ModuleEntityInitializationParameter<TGameContext, TEntityId>(mi, serviceResolver, moduleContext);
+            var moduleInitializerParams = new ModuleEntityInitializationParameter<TEntityId>(mi, serviceResolver, moduleContext);
 
             foreach (var relation in mi.Relations)
             {
@@ -94,7 +94,7 @@ namespace RogueEntity.Api.Modules.Initializers
             }
         }
 
-        public bool IsValidRelation<TEntityId>(ModuleEntityRelationInitializerInfo<TGameContext, TEntityId> r, IModuleEntityInformation mi, EntityRelation relation)
+        public bool IsValidRelation<TEntityId>(ModuleEntityRelationInitializerInfo<TEntityId> r, IModuleEntityInformation mi, EntityRelation relation)
             where TEntityId : IEntityKey
         {
             if (r.Relation != relation)
@@ -121,14 +121,14 @@ namespace RogueEntity.Api.Modules.Initializers
             return true;
         }
 
-        List<ModuleEntityRelationInitializerInfo<TGameContext, TEntityId>> CollectRelationInitializers<TEntityId>(Type targetType,
+        List<ModuleEntityRelationInitializerInfo<TEntityId>> CollectRelationInitializers<TEntityId>(Type targetType,
                                                                                                                   ModuleBase module,
                                                                                                                   IModuleEntityInformation mi,
                                                                                                                   EntityRelation relation)
             where TEntityId : IEntityKey
         {
             var subjectType = typeof(TEntityId);
-            var retval = new List<ModuleEntityRelationInitializerInfo<TGameContext, TEntityId>>();
+            var retval = new List<ModuleEntityRelationInitializerInfo<TEntityId>>();
 
             var methodInfos = module.GetType().GetMethods(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
 
@@ -140,22 +140,22 @@ namespace RogueEntity.Api.Modules.Initializers
                     continue;
                 }
 
-                if (!m.IsSameGenericFunction(new[] {typeof(TGameContext), subjectType, targetType},
+                if (!m.IsSameGenericFunction(new[] {subjectType, targetType},
                                              out var genericMethod, out var errorHint,
-                                             typeof(IEnumerable<ModuleEntityRelationInitializerInfo<TGameContext, TEntityId>>),
+                                             typeof(IEnumerable<ModuleEntityRelationInitializerInfo<TEntityId>>),
                                              typeof(IServiceResolver), typeof(IModuleEntityInformation), typeof(EntityRelation)))
                 {
                     if (string.IsNullOrEmpty(errorHint))
                     {
                         throw new ArgumentException(
-                            $"Expected a generic method with signature 'IEnumerable<ModuleEntityRoleInitializerInfo<TGameContext, TEntityId, TRelationTargetId>> Declare<TGameContext, TEntityId>(IServiceResolver, IModuleInitializer<TGameContext>, EntityRelation), but found {m} in module {module.Id}");
+                            $"Expected a generic method with signature 'IEnumerable<ModuleEntityRoleInitializerInfo<TEntityId, TRelationTargetId>> Declare<TEntityId>(IServiceResolver, IModuleInitializer, EntityRelation), but found {m} in module {module.Id}");
                     }
 
                     Logger.Information("Generic constraints on module {Module} with method {Method} do not match. {errorHint}", module.Id, m, errorHint);
                     continue;
                 }
 
-                if (genericMethod.Invoke(module, new object[] {serviceResolver, mi, relation}) is IEnumerable<ModuleEntityRelationInitializerInfo<TGameContext, TEntityId>> list)
+                if (genericMethod.Invoke(module, new object[] {serviceResolver, mi, relation}) is IEnumerable<ModuleEntityRelationInitializerInfo<TEntityId>> list)
                 {
                     retval.AddRange(list);
                 }
@@ -174,14 +174,14 @@ namespace RogueEntity.Api.Modules.Initializers
                     continue;
                 }
 
-                if (!m.IsSameGenericAction(new[] {typeof(TGameContext), subjectType, targetType},
+                if (!m.IsSameGenericAction(new[] {subjectType, targetType},
                                            out var genericMethod, out var errorHint,
-                                           typeof(ModuleEntityInitializationParameter<TGameContext, TEntityId>).MakeByRefType(), typeof(IModuleInitializer<TGameContext>), typeof(EntityRelation)))
+                                           typeof(ModuleEntityInitializationParameter<TEntityId>).MakeByRefType(), typeof(IModuleInitializer), typeof(EntityRelation)))
                 {
                     if (string.IsNullOrEmpty(errorHint))
                     {
                         throw new ArgumentException(
-                            $"Expected a generic method with signature 'void XXX<TGameContext, TEntityId, TRelationTargetId>(ModuleEntityInitializationParameter ByRef, IModuleInitializer<TGameContext>, EntityRole), but found {m} in module {module.Id}");
+                            $"Expected a generic method with signature 'void XXX<TEntityId, TRelationTargetId>(ModuleEntityInitializationParameter ByRef, IModuleInitializer, EntityRole), but found {m} in module {module.Id}");
                     }
 
                     Logger.Information("Generic constraints on module {Module} with method {Method} do not match. {errorHint}", module.Id, m, errorHint);
@@ -189,8 +189,8 @@ namespace RogueEntity.Api.Modules.Initializers
                 }
 
                 Logger.Verbose("Invoking role initializer {Method}", genericMethod);
-                var initializer = (ModuleEntityRelationInitializerDelegate<TGameContext, TEntityId>)
-                    Delegate.CreateDelegate(typeof(ModuleEntityRelationInitializerDelegate<TGameContext, TEntityId>), module, genericMethod);
+                var initializer = (ModuleEntityRelationInitializerDelegate<TEntityId>)
+                    Delegate.CreateDelegate(typeof(ModuleEntityRelationInitializerDelegate<TEntityId>), module, genericMethod);
                 retval.Add(ModuleEntityRelationInitializerInfo.CreateFor(relation, initializer)
                                                               .WithRequiredSubjectRoles(attr.ConditionalSubjectRoles.Select(e => new EntityRole(e)).ToArray())
                                                               .WithRequiredTargetRoles(attr.ConditionalObjectRoles.Select(e => new EntityRole(e)).ToArray())

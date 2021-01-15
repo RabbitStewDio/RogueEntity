@@ -3,7 +3,7 @@ using EnTTSharp.Entities;
 
 namespace RogueEntity.Core.Infrastructure.Actions.Idle
 {
-    public class IdleAction<TGameContext, TActorId> : IAction<TGameContext, TActorId> 
+    public class IdleAction<TActorId> : IAction<TActorId> 
         where TActorId : IEntityKey
     {
         readonly int turns;
@@ -13,7 +13,7 @@ namespace RogueEntity.Core.Infrastructure.Actions.Idle
             this.turns = turns;
         }
 
-        public ActionResult Perform(IEntityViewControl<TActorId> v, TGameContext context, TActorId k, out int actionCost)
+        public ActionResult Perform(IEntityViewControl<TActorId> v, TActorId k, out int actionCost)
         {
             if (!v.IsValid(k))
             {

@@ -5,9 +5,9 @@ using RogueEntity.Api.ItemTraits;
 
 namespace RogueEntity.Core.Meta.Items
 {
-    public abstract class StatelessItemComponentTraitBase<TGameContext, TItemId, TData> : IItemComponentTrait<TGameContext, TItemId, TData>,
-                                                                                          IBulkItemTrait<TGameContext, TItemId>, 
-                                                                                          IReferenceItemTrait<TGameContext, TItemId> 
+    public abstract class StatelessItemComponentTraitBase<TItemId, TData> : IItemComponentTrait<TItemId, TData>,
+                                                                            IBulkItemTrait<TItemId>,
+                                                                            IReferenceItemTrait<TItemId>
         where TItemId : IEntityKey
 
     {
@@ -20,54 +20,52 @@ namespace RogueEntity.Core.Meta.Items
         public ItemTraitId Id { get; }
         public int Priority { get; }
 
-        protected abstract TData GetData(TGameContext context, TItemId k);
+        protected abstract TData GetData(TItemId k);
 
-        TItemId IBulkItemTrait<TGameContext, TItemId>.Initialize(TGameContext context, IItemDeclaration item, TItemId reference)
+        TItemId IBulkItemTrait<TItemId>.Initialize(IItemDeclaration item, TItemId reference)
         {
             return reference;
         }
 
-        void IReferenceItemTrait<TGameContext, TItemId>.Initialize(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, IItemDeclaration item)
-        {
-        }
+        void IReferenceItemTrait<TItemId>.Initialize(IEntityViewControl<TItemId> v, TItemId k, IItemDeclaration item)
+        { }
 
-        public virtual void Apply(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, IItemDeclaration item)
-        {
-        }
+        public virtual void Apply(IEntityViewControl<TItemId> v, TItemId k, IItemDeclaration item)
+        { }
 
-        public virtual bool TryQuery(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, out TData t)
+        public virtual bool TryQuery(IEntityViewControl<TItemId> v, TItemId k, out TData t)
         {
-            t = GetData(context, k);
+            t = GetData(k);
             return true;
         }
 
-        public bool TryUpdate(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, in TData t, out TItemId changedK)
+        public bool TryUpdate(IEntityViewControl<TItemId> v, TItemId k, in TData t, out TItemId changedK)
         {
             changedK = k;
             return false;
         }
 
-        public bool TryRemove(IEntityViewControl<TItemId> entityRegistry, TGameContext context, TItemId k, out TItemId changedItem)
+        public bool TryRemove(IEntityViewControl<TItemId> entityRegistry, TItemId k, out TItemId changedItem)
         {
             changedItem = k;
             return false;
         }
 
-        protected virtual StatelessItemComponentTraitBase<TGameContext, TItemId, TData> CreateInstance()
+        protected virtual StatelessItemComponentTraitBase<TItemId, TData> CreateInstance()
         {
             return this;
         }
 
-        IBulkItemTrait<TGameContext, TItemId> IBulkItemTrait<TGameContext, TItemId>.CreateInstance()
+        IBulkItemTrait<TItemId> IBulkItemTrait<TItemId>.CreateInstance()
         {
             return CreateInstance();
         }
 
-        IReferenceItemTrait<TGameContext, TItemId> IReferenceItemTrait<TGameContext, TItemId>.CreateInstance()
+        IReferenceItemTrait<TItemId> IReferenceItemTrait<TItemId>.CreateInstance()
         {
             return CreateInstance();
         }
-        
+
         public abstract IEnumerable<EntityRoleInstance> GetEntityRoles();
 
         public virtual IEnumerable<EntityRelationInstance> GetEntityRelations()

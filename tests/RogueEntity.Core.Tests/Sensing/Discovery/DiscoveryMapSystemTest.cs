@@ -132,7 +132,7 @@ namespace RogueEntity.Core.Tests.Sensing.Discovery
         ItemDeclarationId senseReceptorActive5;
 
         protected SenseMappingTestContext context;
-        List<Action<SenseMappingTestContext>> senseSystemActions;
+        List<Action> senseSystemActions;
         DiscoveryMapSystem senseSystem;
 
 
@@ -140,7 +140,7 @@ namespace RogueEntity.Core.Tests.Sensing.Discovery
         public void SetUp()
         {
             context = new SenseMappingTestContext();
-            context.ItemEntityRegistry.RegisterNonConstructable<ItemDeclarationHolder<SenseMappingTestContext, ItemReference>>();
+            context.ItemEntityRegistry.RegisterNonConstructable<ItemDeclarationHolder<ItemReference>>();
             context.ItemEntityRegistry.RegisterNonConstructable<EntityGridPosition>();
             context.ItemEntityRegistry.RegisterNonConstructable<EntityGridPositionChangedMarker>();
             context.ItemEntityRegistry.RegisterFlag<ImmobilityMarker>();
@@ -171,17 +171,17 @@ namespace RogueEntity.Core.Tests.Sensing.Discovery
             var noiseSensePhysics =
                 new NoiseSenseReceptorPhysicsConfiguration(new NoisePhysicsConfiguration(new LinearDecaySensePhysics(DistanceCalculation.Chebyshev)), new FloodFillWorkingDataSource());
 
-            senseReceptorActive10 = context.ItemRegistry.Register(new ReferenceItemDeclaration<SenseMappingTestContext, ItemReference>("SenseReceptor-Active-10")
-                                                                  .WithTrait(new ReferenceItemGridPositionTrait<SenseMappingTestContext, ItemReference>(
+            senseReceptorActive10 = context.ItemRegistry.Register(new ReferenceItemDeclaration<ItemReference>("SenseReceptor-Active-10")
+                                                                  .WithTrait(new ReferenceItemGridPositionTrait<ItemReference>(
                                                                                  context.ItemResolver, context, TestMapLayers.One))
-                                                                  .WithTrait(new DiscoveryMapTrait<SenseMappingTestContext, ItemReference>())
-                                                                  .WithTrait(new InfraVisionSenseTrait<SenseMappingTestContext, ItemReference>(visionSensePhysics, 10))
+                                                                  .WithTrait(new DiscoveryMapTrait<ItemReference>())
+                                                                  .WithTrait(new InfraVisionSenseTrait<ItemReference>(visionSensePhysics, 10))
             );
-            senseReceptorActive5 = context.ItemRegistry.Register(new ReferenceItemDeclaration<SenseMappingTestContext, ItemReference>("SenseReceptor-Active-5")
+            senseReceptorActive5 = context.ItemRegistry.Register(new ReferenceItemDeclaration<ItemReference>("SenseReceptor-Active-5")
                                                                  .WithTrait(
-                                                                     new ReferenceItemGridPositionTrait<SenseMappingTestContext, ItemReference>(context.ItemResolver, context, TestMapLayers.One))
-                                                                 .WithTrait(new DiscoveryMapTrait<SenseMappingTestContext, ItemReference>())
-                                                                 .WithTrait(new NoiseDirectionSenseTrait<SenseMappingTestContext, ItemReference>(noiseSensePhysics, 10))
+                                                                     new ReferenceItemGridPositionTrait<ItemReference>(context.ItemResolver, context, TestMapLayers.One))
+                                                                 .WithTrait(new DiscoveryMapTrait<ItemReference>())
+                                                                 .WithTrait(new NoiseDirectionSenseTrait<ItemReference>(noiseSensePhysics, 10))
             );
 
             senseSystem = new DiscoveryMapSystem();
@@ -192,11 +192,11 @@ namespace RogueEntity.Core.Tests.Sensing.Discovery
             mapData.TryGetWritableView(0, out _, DataViewCreateMode.CreateMissing).Should().BeTrue();
         }
 
-        protected virtual List<Action<SenseMappingTestContext>> CreateSystemActions()
+        protected virtual List<Action> CreateSystemActions()
         {
-            var builder = context.ItemEntityRegistry.BuildSystem().WithContext<SenseMappingTestContext>();
+            var builder = context.ItemEntityRegistry.BuildSystem().WithoutContext();
 
-            return new List<Action<SenseMappingTestContext>>
+            return new List<Action>
             {
                 builder.WithInputParameter<DiscoveryMapData,
                            SensoryReceptorState<VisionSense, TemperatureSense>,
@@ -254,8 +254,8 @@ namespace RogueEntity.Core.Tests.Sensing.Discovery
         /// <param name="active5"></param>
         protected virtual void PrepareReceptorItems(ItemReference active10, ItemReference active5)
         {
-            context.ItemResolver.TryUpdateData(active10, context, EntityGridPosition.Of(TestMapLayers.One, 26, 4), out _).Should().BeTrue();
-            context.ItemResolver.TryUpdateData(active5, context, EntityGridPosition.Of(TestMapLayers.One, 7, 9), out _).Should().BeTrue();
+            context.ItemResolver.TryUpdateData(active10,  EntityGridPosition.Of(TestMapLayers.One, 26, 4), out _).Should().BeTrue();
+            context.ItemResolver.TryUpdateData(active5,  EntityGridPosition.Of(TestMapLayers.One, 7, 9), out _).Should().BeTrue();
 
             context.ItemEntityRegistry.AssignComponent<SenseReceptorDirtyFlag<VisionSense, TemperatureSense>>(active10);
             context.ItemEntityRegistry.AssignComponent<SenseReceptorDirtyFlag<NoiseSense, NoiseSense>>(active5);
@@ -281,18 +281,18 @@ namespace RogueEntity.Core.Tests.Sensing.Discovery
             var expectedMapActorB = SenseTestHelpers.ParseBool(expectedSenseMapActorB, out _);
             var expectedMapActorAMoved = SenseTestHelpers.ParseBool(expectedSenseMapAfterMoveA, out _);
 
-            var active10 = context.ItemResolver.Instantiate(context, senseReceptorActive10);
-            var active5 = context.ItemResolver.Instantiate(context, senseReceptorActive5);
+            var active10 = context.ItemResolver.Instantiate( senseReceptorActive10);
+            var active5 = context.ItemResolver.Instantiate( senseReceptorActive5);
 
             PrepareReceptorItems(active10, active5);
 
             foreach (var s in this.senseSystemActions)
             {
-                s(context);
+                s();
             }
 
-            context.ItemResolver.TryQueryData(active10, context, out IDiscoveryMap m1).Should().BeTrue();
-            context.ItemResolver.TryQueryData(active5, context, out IDiscoveryMap m2).Should().BeTrue();
+            context.ItemResolver.TryQueryData(active10,  out IDiscoveryMap m1).Should().BeTrue();
+            context.ItemResolver.TryQueryData(active5,  out IDiscoveryMap m2).Should().BeTrue();
 
             m1.TryGetMap(0, out var mapA).Should().BeTrue();
             m2.TryGetMap(0, out var mapB).Should().BeTrue();
@@ -308,7 +308,7 @@ namespace RogueEntity.Core.Tests.Sensing.Discovery
             TestHelpers.AssertEquals(mapB, expectedMapActorB, activeTestArea);
 
             // reposition the actor... 
-            context.ItemResolver.TryUpdateData(active10, context, EntityGridPosition.Of(TestMapLayers.One, 14, 8), out _).Should().BeTrue();
+            context.ItemResolver.TryUpdateData(active10,  EntityGridPosition.Of(TestMapLayers.One, 14, 8), out _).Should().BeTrue();
             // .. update the sense map (that would be computed by the sense-receptor system ...
             context.ItemEntityRegistry.AssignOrReplace(active10, new SensoryReceptorState<VisionSense, TemperatureSense>(ComputeDummySourceData(5),
                                                                                                                          SenseSourceDirtyState.Active, Position.Of(TestMapLayers.One, 14, 8), 10));
@@ -316,7 +316,7 @@ namespace RogueEntity.Core.Tests.Sensing.Discovery
             // .. and remap the discovered area.
             foreach (var s in this.senseSystemActions)
             {
-                s(context);
+                s();
             }
 
             Console.WriteLine("Computed Discovery Map Actor A (10) after move:");

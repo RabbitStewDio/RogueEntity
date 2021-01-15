@@ -4,17 +4,17 @@ using RogueEntity.Api.ItemTraits;
 
 namespace RogueEntity.Api.Modules.Helpers
 {
-    public delegate void ModuleInitializerDelegate<TGameContext>(in ModuleInitializationParameter initParameter, IModuleInitializer<TGameContext> context);
+    public delegate void ModuleInitializerDelegate(in ModuleInitializationParameter initParameter, IModuleInitializer context);
 
-    public delegate void ModuleContentInitializerDelegate<TGameContext>(in ModuleInitializationParameter initParameter, IModuleInitializer<TGameContext> context);
+    public delegate void ModuleContentInitializerDelegate(in ModuleInitializationParameter initParameter, IModuleInitializer context);
 
-    public delegate void ModuleEntityRoleInitializerDelegate<TGameContext, TEntityId>(in ModuleEntityInitializationParameter<TGameContext, TEntityId> initParameter,
-                                                                                      IModuleInitializer<TGameContext> context,
+    public delegate void ModuleEntityRoleInitializerDelegate<TEntityId>(in ModuleEntityInitializationParameter<TEntityId> initParameter,
+                                                                                      IModuleInitializer context,
                                                                                       EntityRole role)
         where TEntityId : IEntityKey;
 
-    public delegate void ModuleEntityRelationInitializerDelegate<TGameContext, TEntityId>(in ModuleEntityInitializationParameter<TGameContext, TEntityId> initParameter,
-                                                                                          IModuleInitializer<TGameContext> context,
+    public delegate void ModuleEntityRelationInitializerDelegate<TEntityId>(in ModuleEntityInitializationParameter<TEntityId> initParameter,
+                                                                                          IModuleInitializer context,
                                                                                           EntityRelation role)
         where TEntityId : IEntityKey;
 
@@ -22,11 +22,11 @@ namespace RogueEntity.Api.Modules.Helpers
                                                                EntityRegistry<TEntityId> registry)
         where TEntityId : IEntityKey;
 
-    public delegate void EntitySystemRegistrationDelegate<TGameContext, TEntityId>(in ModuleInitializationParameter initParameter,
-                                                                                   IGameLoopSystemRegistration<TGameContext> context,
-                                                                                   EntityRegistry<TEntityId> registry)
+    public delegate void EntitySystemRegistrationDelegate<TEntityId>(in ModuleInitializationParameter initParameter,
+                                                                     IGameLoopSystemRegistration context,
+                                                                     EntityRegistry<TEntityId> registry)
         where TEntityId : IEntityKey;
 
-    public delegate void GlobalSystemRegistrationDelegate<TGameContext>(in ModuleInitializationParameter initParameter,
-                                                                        IGameLoopSystemRegistration<TGameContext> context);
+    public delegate void GlobalSystemRegistrationDelegate(in ModuleInitializationParameter initParameter,
+                                                          IGameLoopSystemRegistration context);
 }

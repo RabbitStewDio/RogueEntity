@@ -5,16 +5,16 @@ using RogueEntity.Api.Modules.Helpers;
 
 namespace RogueEntity.Api.Modules.Initializers
 {
-    public class ModuleSystemPhaseInit<TGameContext>
+    public class ModuleSystemPhaseInit
     {
-        readonly IReadOnlyDictionary<ModuleId, ModuleRecord<TGameContext>> modulesById;
+        readonly IReadOnlyDictionary<ModuleId, ModuleRecord> modulesById;
 
-        public ModuleSystemPhaseInit(IReadOnlyDictionary<ModuleId, ModuleRecord<TGameContext>> modulesById)
+        public ModuleSystemPhaseInit(IReadOnlyDictionary<ModuleId, ModuleRecord> modulesById)
         {
             this.modulesById = modulesById;
         }
 
-        public List<ModuleRecord<TGameContext>> CreateModulesSortedByInitOrder()
+        public List<ModuleRecord> CreateModulesSortedByInitOrder()
         {
             PopulateModuleDependencies();
             var dependencyRoots = CollectRootLevelModules(modulesById.Values);
@@ -68,7 +68,7 @@ namespace RogueEntity.Api.Modules.Initializers
             }
         }
 
-        void AddModuleDependencyFromRoleUsage(ModuleRecord<TGameContext> requestingModule, EntityRole role)
+        void AddModuleDependencyFromRoleUsage(ModuleRecord requestingModule, EntityRole role)
         {
             if (!requestingModule.Module.RequiredRoles.Contains(role))
             {
@@ -89,9 +89,9 @@ namespace RogueEntity.Api.Modules.Initializers
         }
 
         
-        IEnumerable<ModuleRecord<TGameContext>> CollectRootLevelModules(IEnumerable<ModuleRecord<TGameContext>> contentModulePool)
+        IEnumerable<ModuleRecord> CollectRootLevelModules(IEnumerable<ModuleRecord> contentModulePool)
         {
-            var openModules = new List<ModuleRecord<TGameContext>>();
+            var openModules = new List<ModuleRecord>();
             foreach (var m in contentModulePool)
             {
                 if (m.IsUsedAsDependency)
@@ -119,14 +119,14 @@ namespace RogueEntity.Api.Modules.Initializers
         /// <param name="open"></param>
         /// <param name="diagnostics"></param>
         /// <returns></returns>
-        List<ModuleRecord<TGameContext>> ComputeModuleOrder(IEnumerable<ModuleRecord<TGameContext>> open, Stack<ModuleId> diagnostics = null)
+        List<ModuleRecord> ComputeModuleOrder(IEnumerable<ModuleRecord> open, Stack<ModuleId> diagnostics = null)
         {
             if (diagnostics == null)
             {
                 diagnostics = new Stack<ModuleId>();
             }
 
-            var result = new List<ModuleRecord<TGameContext>>();
+            var result = new List<ModuleRecord>();
             foreach (var o in open)
             {
                 if (diagnostics.Contains(o.ModuleId))

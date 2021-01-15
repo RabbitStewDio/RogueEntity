@@ -5,20 +5,19 @@ namespace RogueEntity.Core.Meta.Items
 {
     public static class ItemExtensions
     {
-        public static bool HasItemComponent<TGameContext, TItemId, TData>(this IItemDeclaration item)
+        public static bool HasItemComponent<TItemId, TData>(this IItemDeclaration item)
             where TItemId : IEntityKey
         {
-            return item.TryQuery(out IItemComponentInformationTrait<TGameContext, TItemId, TData> _);
+            return item.TryQuery(out IItemComponentInformationTrait<TItemId, TData> _);
         }
 
-        public static TItemId Instantiate<TGameContext, TItemId>(this IItemResolver<TGameContext, TItemId> resolver,
-                                                                 TGameContext context,
-                                                                 ItemDeclarationId id)
+        public static TItemId Instantiate<TItemId>(this IItemResolver<TItemId> resolver,
+                                                   ItemDeclarationId id)
             where TItemId : IEntityKey
 
         {
             var item = resolver.ItemRegistry.ReferenceItemById(id);
-            return resolver.Instantiate(context, item);
+            return resolver.Instantiate(item);
         }
     }
 }

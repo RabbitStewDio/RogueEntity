@@ -234,10 +234,10 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Noise
             this.physics = new NoiseSenseReceptorPhysicsConfiguration(sourcePhysics, new FloodFillWorkingDataSource());
         }
 
-        protected override Action<SenseMappingTestContext> CreateCopyAction()
+        protected override Action CreateCopyAction()
         {
             var builder = context.ItemEntityRegistry.BuildSystem()
-                                 .WithContext<SenseMappingTestContext>();
+                                 .WithoutContext();
 
             var omniSystem = new SenseReceptorBlitterSystem<NoiseSense, NoiseSense>(senseSystem, new DefaultDirectionalSenseReceptorBlitter());
             return builder.WithInputParameter<SensoryReceptorState<NoiseSense, NoiseSense>>()
@@ -255,27 +255,27 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Noise
             return (physics.CreateNoiseSensorPropagationAlgorithm(), physics.NoisePhysics);
         }
 
-        protected override ReferenceItemDeclaration<SenseMappingTestContext, ItemReference> AttachTrait(ReferenceItemDeclaration<SenseMappingTestContext, ItemReference> decl)
+        protected override ReferenceItemDeclaration<ItemReference> AttachTrait(ReferenceItemDeclaration<ItemReference> decl)
         {
             switch (decl.Id.Id)
             {
                 case "SenseReceptor-Active-10":
-                    decl.WithTrait(new NoiseDirectionSenseTrait<SenseMappingTestContext, ItemReference>(physics, 10));
+                    decl.WithTrait(new NoiseDirectionSenseTrait<ItemReference>(physics, 10));
                     return decl;
                 case "SenseReceptor-Active-5":
-                    decl.WithTrait(new NoiseDirectionSenseTrait<SenseMappingTestContext, ItemReference>(physics, 5));
+                    decl.WithTrait(new NoiseDirectionSenseTrait<ItemReference>(physics, 5));
                     return decl;
                 case "SenseReceptor-Inactive-5":
-                    decl.WithTrait(new NoiseDirectionSenseTrait<SenseMappingTestContext, ItemReference>(physics, 5, false));
+                    decl.WithTrait(new NoiseDirectionSenseTrait<ItemReference>(physics, 5, false));
                     return decl;
                 case "SenseSource-Active-10":
-                    decl.WithTrait(new NoiseSourceTrait<SenseMappingTestContext, ItemReference>(sourcePhysics));
+                    decl.WithTrait(new NoiseSourceTrait<ItemReference>(sourcePhysics));
                     return decl;
                 case "SenseSource-Active-5":
-                    decl.WithTrait(new NoiseSourceTrait<SenseMappingTestContext, ItemReference>(sourcePhysics));
+                    decl.WithTrait(new NoiseSourceTrait<ItemReference>(sourcePhysics));
                     return decl;
                 case "SenseSource-Inactive-5":
-                    decl.WithTrait(new NoiseSourceTrait<SenseMappingTestContext, ItemReference>(sourcePhysics));
+                    decl.WithTrait(new NoiseSourceTrait<ItemReference>(sourcePhysics));
                     return decl;
                 default:
                     throw new ArgumentException();
@@ -284,8 +284,8 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Noise
 
         protected override void PrepareSourceItems(ItemReference active10, ItemReference active5, ItemReference inactive)
         {
-            context.ItemResolver.TryUpdateData(active10, context, new NoiseClip(10, "Strength10"), out _).Should().BeTrue();
-            context.ItemResolver.TryUpdateData(active5, context, new NoiseClip(5, "Strength5"), out _).Should().BeTrue();
+            context.ItemResolver.TryUpdateData(active10,  new NoiseClip(10, "Strength10"), out _).Should().BeTrue();
+            context.ItemResolver.TryUpdateData(active5,  new NoiseClip(5, "Strength5"), out _).Should().BeTrue();
             base.PrepareSourceItems(active10, active5, inactive);
         }
 

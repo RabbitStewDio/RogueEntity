@@ -7,69 +7,70 @@ namespace RogueEntity.Core.Movement.Cost
 {
     public static class MovementCostItemDeclarations
     {
-        public static MovementCostBulkItemBuilder<TGameContext, TItemId> WithMovement<TGameContext, TItemId>(this BulkItemDeclarationBuilder<TGameContext, TItemId> builder)
+        public static MovementCostBulkItemBuilder<TItemId> WithMovement<TItemId>(this BulkItemDeclarationBuilder<TItemId> builder)
             where TItemId : IBulkDataStorageKey<TItemId>
         {
-            return new MovementCostBulkItemBuilder<TGameContext, TItemId> (builder);
+            return new MovementCostBulkItemBuilder<TItemId>(builder);
         }
 
-        public static MovementCostReferenceItemBuilder<TGameContext, TItemId> WithMovement<TGameContext, TItemId>(this ReferenceItemDeclarationBuilder<TGameContext, TItemId> builder)
+        public static MovementCostReferenceItemBuilder<TItemId> WithMovement<TItemId>(this ReferenceItemDeclarationBuilder<TItemId> builder)
             where TItemId : IEntityKey
         {
-            return new MovementCostReferenceItemBuilder<TGameContext, TItemId>(builder);
+            return new MovementCostReferenceItemBuilder<TItemId>(builder);
         }
 
-        public readonly struct MovementCostReferenceItemBuilder<TGameContext, TItemId>
+        public readonly struct MovementCostReferenceItemBuilder<TItemId>
             where TItemId : IEntityKey
         {
-            readonly ReferenceItemDeclarationBuilder<TGameContext, TItemId> builder;
+            readonly ReferenceItemDeclarationBuilder<TItemId> builder;
 
-            public MovementCostReferenceItemBuilder(ReferenceItemDeclarationBuilder<TGameContext, TItemId> builder)
+            public MovementCostReferenceItemBuilder(ReferenceItemDeclarationBuilder<TItemId> builder)
             {
                 this.builder = builder;
             }
 
-            public ReferenceItemDeclarationBuilder<TGameContext, TItemId> AsPointCost<TMovementMode>(TMovementMode m, DistanceCalculation c, float unitCost, int preference = 0)
+            public ReferenceItemDeclarationBuilder<TItemId> AsPointCost<TMovementMode>(TMovementMode m, DistanceCalculation c, float unitCost, int preference = 0)
                 where TMovementMode : IMovementMode
             {
-                this.builder.WithTrait(new MovementPointCostReferenceItemTrait<TGameContext, TItemId, TMovementMode>(m, c, unitCost, preference));
-                this.builder.WithTrait(new PathfindingMovementCostFactorsTrait<TGameContext, TItemId>());
+                this.builder.WithTrait(new MovementPointCostReferenceItemTrait<TItemId, TMovementMode>(m, c, unitCost, preference));
+                this.builder.WithTrait(new PathfindingMovementCostFactorsTrait<TItemId>());
                 return builder;
             }
-            public ReferenceItemDeclarationBuilder<TGameContext, TItemId> AsVelocity<TMovementMode>(TMovementMode m, DistanceCalculation c, float unitCost, int preference = 0)
+
+            public ReferenceItemDeclarationBuilder<TItemId> AsVelocity<TMovementMode>(TMovementMode m, DistanceCalculation c, float unitCost, int preference = 0)
                 where TMovementMode : IMovementMode
             {
-                this.builder.WithTrait(new MovementVelocityReferenceItemTrait<TGameContext, TItemId, TMovementMode>(m, c, unitCost, preference));
-                this.builder.WithTrait(new PathfindingMovementCostFactorsTrait<TGameContext, TItemId>());
+                this.builder.WithTrait(new MovementVelocityReferenceItemTrait<TItemId, TMovementMode>(m, c, unitCost, preference));
+                this.builder.WithTrait(new PathfindingMovementCostFactorsTrait<TItemId>());
                 return builder;
             }
         }
 
-        public readonly struct MovementCostBulkItemBuilder<TGameContext, TItemId>
+        public readonly struct MovementCostBulkItemBuilder<TItemId>
             where TItemId : IBulkDataStorageKey<TItemId>
         {
-            readonly BulkItemDeclarationBuilder<TGameContext, TItemId> builder;
+            readonly BulkItemDeclarationBuilder<TItemId> builder;
 
-            public MovementCostBulkItemBuilder(BulkItemDeclarationBuilder<TGameContext, TItemId> builder)
+            public MovementCostBulkItemBuilder(BulkItemDeclarationBuilder<TItemId> builder)
             {
                 this.builder = builder;
             }
 
-            public BulkItemDeclarationBuilder<TGameContext, TItemId> AsPointCost<TMovementMode>(TMovementMode m, DistanceCalculation c, float unitCost, int preference = 0)
+            public BulkItemDeclarationBuilder<TItemId> AsPointCost<TMovementMode>(TMovementMode m, DistanceCalculation c, float unitCost, int preference = 0)
                 where TMovementMode : IMovementMode
             {
-                this.builder.WithTrait(new MovementPointCostBulkItemTrait<TGameContext, TItemId, TMovementMode>(m, c, unitCost, preference));
-                this.builder.WithTrait(new PathfindingMovementCostFactorsTrait<TGameContext, TItemId>());
+                this.builder.WithTrait(new MovementPointCostBulkItemTrait<TItemId, TMovementMode>(m, c, unitCost, preference));
+                this.builder.WithTrait(new PathfindingMovementCostFactorsTrait<TItemId>());
                 return builder;
             }
-            public BulkItemDeclarationBuilder<TGameContext, TItemId> AsVelocity<TMovementMode>(TMovementMode m, DistanceCalculation c, float unitCost, int preference = 0)
+
+            public BulkItemDeclarationBuilder<TItemId> AsVelocity<TMovementMode>(TMovementMode m, DistanceCalculation c, float unitCost, int preference = 0)
                 where TMovementMode : IMovementMode
             {
-                this.builder.WithTrait(new MovementVelocityBulkItemTrait<TGameContext, TItemId, TMovementMode>(m, c, unitCost, preference));
-                this.builder.WithTrait(new PathfindingMovementCostFactorsTrait<TGameContext, TItemId>());
+                this.builder.WithTrait(new MovementVelocityBulkItemTrait<TItemId, TMovementMode>(m, c, unitCost, preference));
+                this.builder.WithTrait(new PathfindingMovementCostFactorsTrait<TItemId>());
                 return builder;
             }
         }
-
     }
 }

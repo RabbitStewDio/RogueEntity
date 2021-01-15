@@ -10,17 +10,16 @@ namespace RogueEntity.Core.Meta.Items
     ///   A simple wrapper/holder for reference item declarations stored in the EntityRegistry.
     ///   This wrapper simplifies the serialization and deserialization.
     /// </summary>
-    /// <typeparam name="TGameContext"></typeparam>
     /// <typeparam name="TItemId"></typeparam>
     [EntityComponent(EntityConstructor.NonConstructable)]
     [EntityBinarySerialization]
     [DataContract]
-    public readonly struct ItemDeclarationHolder<TGameContext, TItemId>
+    public readonly struct ItemDeclarationHolder<TItemId>
         where TItemId : IEntityKey
     {
-        public readonly IReferenceItemDeclaration<TGameContext, TItemId> ItemDeclaration;
+        public readonly IReferenceItemDeclaration<TItemId> ItemDeclaration;
 
-        public ItemDeclarationHolder(IReferenceItemDeclaration<TGameContext, TItemId> itemDeclaration)
+        public ItemDeclarationHolder(IReferenceItemDeclaration<TItemId> itemDeclaration)
         {
             this.ItemDeclaration = itemDeclaration;
         }

@@ -10,29 +10,26 @@ namespace RogueEntity.Core.Equipment
     ///   A slotted equipment system that allows to equip items into one ore more predefined slots.
     ///   This system enables RPG style inventories. 
     /// </summary>
-    /// <typeparam name="TGameContext"></typeparam>
     /// <typeparam name="TItemId"></typeparam>
-    public interface ISlottedEquipment<TGameContext, TItemId> : IEnumerable<EquippedItem<TItemId>>,
-                                                                IEquatable<ISlottedEquipment<TGameContext, TItemId>>
+    public interface ISlottedEquipment<TItemId> : IEnumerable<EquippedItem<TItemId>>,
+                                                  IEquatable<ISlottedEquipment<TItemId>>
         where TItemId : IEntityKey
     {
         ReadOnlyListWrapper<EquipmentSlot> AvailableSlots { get; }
         Weight TotalWeight { get; }
         Weight MaximumCarryWeight { get; }
-        
-        bool TryQuery(EquipmentSlot slot, out EquippedItem<TItemId> item);
-        bool TryUnequipItem(TGameContext context, TItemId item, out EquipmentSlot slot);
-        bool TryUnequipItemAt(TGameContext context, TItemId item, EquipmentSlot slot);
 
-        bool TryEquipItem(TGameContext context,
-                          TItemId item,
+        bool TryQuery(EquipmentSlot slot, out EquippedItem<TItemId> item);
+        bool TryUnequipItem(TItemId item, out EquipmentSlot slot);
+        bool TryUnequipItemAt(TItemId item, EquipmentSlot slot);
+
+        bool TryEquipItem(TItemId item,
                           out TItemId remainderItem,
                           Optional<EquipmentSlot> desiredSlot,
                           out EquipmentSlot actualSlot,
                           bool ignoreWeightLimits = false);
 
-        bool TryReEquipItem(TGameContext context,
-                            in TItemId targetItem,
+        bool TryReEquipItem(in TItemId targetItem,
                             EquipmentSlot slot);
     }
 }

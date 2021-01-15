@@ -5,17 +5,17 @@ namespace RogueEntity.Core.Positioning
 {
     public static class PositionItemDeclarations
     {
-        public static BulkItemDeclarationBuilder<TGameContext, TItemId> AsImmobile<TGameContext, TItemId>(this BulkItemDeclarationBuilder<TGameContext, TItemId> builder)
+        public static BulkItemDeclarationBuilder< TItemId> AsImmobile< TItemId>(this BulkItemDeclarationBuilder< TItemId> builder)
             where TItemId : IEntityKey
         {
-            builder.Declaration.WithTrait(new ImmobilityMarkerTrait<TGameContext, TItemId>());
+            builder.Declaration.WithTrait(new ImmobilityMarkerTrait< TItemId>());
             return builder;
         }
 
-        public static ReferenceItemDeclarationBuilder<TGameContext, TItemId> AsImmobile<TGameContext, TItemId>(this ReferenceItemDeclarationBuilder<TGameContext, TItemId> builder)
+        public static ReferenceItemDeclarationBuilder< TItemId> AsImmobile< TItemId>(this ReferenceItemDeclarationBuilder< TItemId> builder)
             where TItemId : IEntityKey
         {
-            builder.Declaration.WithTrait(new ImmobilityMarkerTrait<TGameContext, TItemId>());
+            builder.Declaration.WithTrait(new ImmobilityMarkerTrait< TItemId>());
             return builder;
         }
         

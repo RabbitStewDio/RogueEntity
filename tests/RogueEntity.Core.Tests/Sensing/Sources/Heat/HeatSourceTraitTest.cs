@@ -12,7 +12,7 @@ using RogueEntity.Core.Positioning.Algorithms;
 namespace RogueEntity.Core.Tests.Sensing.Sources.Heat
 {
     [TestFixture]
-    public class HeatSourceTraitTest : ItemComponentTraitTestBase<SenseMappingTestContext, ActorReference, HeatSourceDefinition, HeatSourceTrait<SenseMappingTestContext, ActorReference>>
+    public class HeatSourceTraitTest : ItemComponentTraitTestBase<ActorReference, HeatSourceDefinition, HeatSourceTrait<ActorReference>>
     {
         readonly HeatPhysicsConfiguration physics;
 
@@ -21,19 +21,17 @@ namespace RogueEntity.Core.Tests.Sensing.Sources.Heat
             physics = new HeatPhysicsConfiguration(new LinearDecaySensePhysics(DistanceCalculation.Chebyshev), Temperature.FromCelsius(20));
         }
 
-        protected override SenseMappingTestContext CreateContext()
+        protected override void SetUpPrepare()
         {
-            var context = new SenseMappingTestContext();
             EntityRegistry.RegisterNonConstructable<HeatSourceDefinition>();
             EntityRegistry.RegisterNonConstructable<SenseSourceState<TemperatureSense>>();
             EntityRegistry.RegisterFlag<ObservedSenseSource<TemperatureSense>>();
             EntityRegistry.RegisterFlag<SenseDirtyFlag<TemperatureSense>>();
-            return context;
         }
 
-        protected override HeatSourceTrait<SenseMappingTestContext, ActorReference> CreateTrait()
+        protected override HeatSourceTrait<ActorReference> CreateTrait()
         {
-            return new HeatSourceTrait<SenseMappingTestContext, ActorReference>(physics);
+            return new HeatSourceTrait<ActorReference>(physics);
         }
 
         protected override IItemComponentTestDataFactory<HeatSourceDefinition> ProduceTestData(EntityRelations<ActorReference> relations)

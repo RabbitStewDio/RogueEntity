@@ -2,36 +2,31 @@ using RogueEntity.Core.Positioning.MapLayers;
 
 namespace RogueEntity.Core.Positioning
 {
-    public interface IItemPlacementServiceContext<TGameContext, TItemId>
+    public interface IItemPlacementServiceContext<TItemId>
     {
-        bool TryGetItemPlacementService(MapLayer layer, out IItemPlacementService<TGameContext, TItemId> service);
+        bool TryGetItemPlacementService(MapLayer layer, out IItemPlacementService<TItemId> service);
     }
 
-    public interface IItemPlacementService<TGameContext, TItemId>
+    public interface IItemPlacementService<TItemId>
     {
-        bool TryFindAvailableItemSlot(TGameContext context,
-                                      TItemId itemToBePlaced,
+        bool TryFindAvailableItemSlot(TItemId itemToBePlaced,
                                       in Position origin,
                                       out Position placementPos,
                                       int searchRadius = 10);
 
-        bool TryFindEmptyItemSlot(TGameContext context,
-                                  in Position origin,
+        bool TryFindEmptyItemSlot(in Position origin,
                                   out Position placementPos,
                                   int searchRadius = 10);
 
-        bool TryRemoveItem(TGameContext context,
-                           in TItemId targetItem,
+        bool TryRemoveItem(in TItemId targetItem,
                            in Position placementPos,
                            bool forcePlacement = false);
 
-        bool TryPlaceItem(TGameContext context,
-                          in TItemId targetItem,
+        bool TryPlaceItem(in TItemId targetItem,
                           in Position placementPos,
                           bool forcePlacement = false);
 
-        bool TryReplaceItem(TGameContext context,
-                            in TItemId sourceItem,
+        bool TryReplaceItem(in TItemId sourceItem,
                             in TItemId targetItem,
                             in Position p,
                             bool forceMove = false);

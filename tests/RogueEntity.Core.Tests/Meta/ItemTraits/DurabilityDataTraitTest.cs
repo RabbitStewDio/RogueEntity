@@ -4,20 +4,15 @@ using RogueEntity.Core.Meta.EntityKeys;
 
 namespace RogueEntity.Core.Tests.Meta.ItemTraits
 {
-    public class DurabilityDataTraitTest : ItemComponentTraitTestBase<BasicItemContext, ItemReference, Durability, DurabilityTrait<BasicItemContext, ItemReference>>
+    public class DurabilityDataTraitTest : ItemComponentTraitTestBase<ItemReference, Durability, DurabilityTrait<ItemReference>>
     {
         public DurabilityDataTraitTest() : base(new ItemReferenceMetaData())
         {
         }
 
-        protected override BasicItemContext CreateContext()
+        protected override DurabilityTrait<ItemReference> CreateTrait()
         {
-            return new BasicItemContext();
-        }
-
-        protected override DurabilityTrait<BasicItemContext, ItemReference> CreateTrait()
-        {
-            return new DurabilityTrait<BasicItemContext, ItemReference>(1, 100);
+            return new DurabilityTrait<ItemReference>(1, 100);
         }
 
         protected override IItemComponentTestDataFactory<Durability> ProduceTestData(EntityRelations<ItemReference> relations)

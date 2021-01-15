@@ -1,5 +1,6 @@
 ﻿using MessagePack;
 using MessagePack.Formatters;
+using RogueEntity.Core.Inputs.Commands;
 
 namespace RogueEntity.Core.Infrastructure.Commands
 {

@@ -22,18 +22,18 @@ namespace RogueEntity.Simple.BoxPusher
         }
 
         [ModuleInitializer]
-        void InitializeModule<TGameContext>(in ModuleInitializationParameter mip, IModuleInitializer<TGameContext> initializer)
+        void InitializeModule(in ModuleInitializationParameter mip, IModuleInitializer initializer)
         {
             mip.ServiceResolver.ConfigureLightPhysics();
-            mip.ServiceResolver.ConfigureEntityType<TGameContext, ActorReference>(ActorReferenceMetaData.Instance);
-            mip.ServiceResolver.ConfigureEntityType<TGameContext, ItemReference>(ItemReferenceMetaData.Instance);
+            mip.ServiceResolver.ConfigureEntityType(ActorReferenceMetaData.Instance);
+            mip.ServiceResolver.ConfigureEntityType(ItemReferenceMetaData.Instance);
 
             mip.ServiceResolver.GetOrCreateGridMapContext<ItemReference>();
             mip.ServiceResolver.GetOrCreateGridMapContext<ActorReference>();
         }
 
         [ContentInitializer]
-        void InitializeContent<TGameContext>(in ModuleInitializationParameter mip, IModuleInitializer<TGameContext> initializer)
+        void InitializeContent(in ModuleInitializationParameter mip, IModuleInitializer initializer)
 
         {
             var serviceResolver = mip.ServiceResolver;
@@ -60,7 +60,7 @@ namespace RogueEntity.Simple.BoxPusher
 
             var actorContext = initializer.DeclareContentContext<ActorReference>();
             actorContext.Activate(actorContext.CreateReferenceEntityBuilder(serviceResolver)
-                                              .DefinePlayer<TGameContext, ActorReference, ItemReference>()
+                                              .DefinePlayer<ActorReference, ItemReference>()
                                               .WithMovement()
                                               .AsPointCost(WalkingMovement.Instance, DistanceCalculation.Euclid, 1)
                                               .Declaration);

@@ -11,14 +11,12 @@ namespace RogueEntity.Simple.Demo.BoxPusher
         {
             Log.Debug("Starting");
 
-            var context = new BoxPusherContext();
+            var serviceResolver = new DefaultServiceResolver();
 
-            var serviceResolver = new DefaultServiceResolver().WithService(context);
-
-            var ms = new ModuleSystem<BoxPusherContext>(serviceResolver);
+            var ms = new ModuleSystem(serviceResolver);
             ms.ScanForModules("BoxPusher");
 
-            var e = ms.Initialize(context).BuildRealTimeStepLoop(30);
+            var e = ms.Initialize().BuildRealTimeStepLoop(30);
             serviceResolver.Store(e.TimeSource);
 
             serviceResolver.ValidatePromisesCanResolve();

@@ -7,9 +7,9 @@ using RogueEntity.Core.Tests.Meta.Items;
 namespace RogueEntity.Core.Tests.Movement.CostModifier
 {
     [TestFixture]
-    public class RelativeMovementCostModifierTraitTest : ItemComponentInformationTraitTestBase<object, ItemReference,
+    public class RelativeMovementCostModifierTraitTest : ItemComponentInformationTraitTestBase<ItemReference,
         RelativeMovementCostModifier<WalkingMovement>,
-        RelativeMovementCostModifierTrait<object, ItemReference, WalkingMovement>>
+        RelativeMovementCostModifierTrait<ItemReference, WalkingMovement>>
     {
         public RelativeMovementCostModifierTraitTest() : base(new ItemReferenceMetaData())
         {
@@ -20,14 +20,9 @@ namespace RogueEntity.Core.Tests.Movement.CostModifier
             return new ItemComponentTestDataFactory<RelativeMovementCostModifier<WalkingMovement>>(0.50f);
         }
 
-        protected override object CreateContext()
+        protected override RelativeMovementCostModifierTrait<ItemReference, WalkingMovement> CreateTrait()
         {
-            return new object();
-        }
-
-        protected override RelativeMovementCostModifierTrait<object, ItemReference, WalkingMovement> CreateTrait()
-        {
-            return new RelativeMovementCostModifierTrait<object, ItemReference, WalkingMovement>(0.50f);
+            return new RelativeMovementCostModifierTrait<ItemReference, WalkingMovement>(0.50f);
         }
     }
 }

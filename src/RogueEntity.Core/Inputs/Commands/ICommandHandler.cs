@@ -1,5 +1,3 @@
-using RogueEntity.Core.Infrastructure.Commands;
-
 namespace RogueEntity.Core.Inputs.Commands
 {
     public interface ICommandHandler<TActor, TCommand> : ICommandHandler

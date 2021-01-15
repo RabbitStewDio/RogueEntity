@@ -17,38 +17,37 @@ namespace RogueEntity.Core.Equipment
     ///   Items that can be equipped must contain a EquipmentSlotRequirements data
     ///   trait.
     /// </summary>
-    /// <typeparam name="TGameContext"></typeparam>
     /// <typeparam name="TOwnerId"></typeparam>
     /// <typeparam name="TItemId"></typeparam>
-    public class SlottedEquipment<TGameContext, TOwnerId, TItemId> : ISlottedEquipment<TGameContext, TItemId>
+    public class SlottedEquipment<TOwnerId, TItemId> : ISlottedEquipment<TItemId>
         where TItemId : IEntityKey
     {
-        static readonly ILogger Logger = SLog.ForContext<SlottedEquipment<TGameContext, TOwnerId, TItemId>>();
+        static readonly ILogger Logger = SLog.ForContext<SlottedEquipment<TOwnerId, TItemId>>();
         static readonly EqualityComparer<TItemId> ItemEquality = EqualityComparer<TItemId>.Default;
-        readonly IItemResolver<TGameContext, TItemId> itemResolver;
+        readonly IItemResolver<TItemId> itemResolver;
         readonly IBulkDataStorageMetaData<TItemId> itemIdMetaData;
         SlottedEquipmentData<TItemId> equippedItems;
 
         public SlottedEquipment([NotNull] IBulkDataStorageMetaData<TItemId> itemIdMetaData,
-                                [NotNull] IItemResolver<TGameContext, TItemId> itemResolver,
+                                [NotNull] IItemResolver<TItemId> itemResolver,
                                 ReadOnlyListWrapper<EquipmentSlot> availableSlots,
                                 SlottedEquipmentData<TItemId> equippedItems,
                                 Weight maximumCarryWeight)
         {
             this.itemResolver = itemResolver ?? throw new ArgumentNullException(nameof(itemResolver));
             this.itemIdMetaData = itemIdMetaData ?? throw new ArgumentNullException(nameof(itemIdMetaData));
-            
+
             this.equippedItems = equippedItems;
             this.MaximumCarryWeight = maximumCarryWeight;
             AvailableSlots = availableSlots;
         }
 
-        public SlottedEquipment<TGameContext, TOwnerId, TItemId> RefreshWeight(TGameContext context)
+        public SlottedEquipment<TOwnerId, TItemId> RefreshWeight()
         {
             var weight = Weight.Empty;
             foreach (var item in equippedItems.Items)
             {
-                weight += itemResolver.QueryWeight(item, context).TotalWeight;
+                weight += itemResolver.QueryWeight(item).TotalWeight;
             }
 
             TotalWeight = weight;
@@ -63,9 +62,9 @@ namespace RogueEntity.Core.Equipment
 
         public bool TryQuery(EquipmentSlot slot, out EquippedItem<TItemId> item) => equippedItems.TryGetValue(slot, out item);
 
-        public bool TryUnequipItem(TGameContext context, TItemId item, out EquipmentSlot slot)
+        public bool TryUnequipItem(TItemId item, out EquipmentSlot slot)
         {
-            if (!itemResolver.TryQueryData(item, context, out EquipmentSlotRequirements req))
+            if (!itemResolver.TryQueryData(item, out EquipmentSlotRequirements req))
             {
                 slot = default;
                 return false;
@@ -78,7 +77,7 @@ namespace RogueEntity.Core.Equipment
             }
 
             slot = itemEquipped.PrimarySlot;
-            return TryUnequipItemAt(context, item, itemEquipped.PrimarySlot);
+            return TryUnequipItemAt(item, itemEquipped.PrimarySlot);
         }
 
         bool TryFindItem(TItemId item, EquipmentSlotRequirements req, out EquippedItem<TItemId> result)
@@ -107,9 +106,9 @@ namespace RogueEntity.Core.Equipment
             return false;
         }
 
-        public bool TryUnequipItemAt(TGameContext context, TItemId item, EquipmentSlot slot)
+        public bool TryUnequipItemAt(TItemId item, EquipmentSlot slot)
         {
-            if (!itemResolver.TryQueryData(item, context, out EquipmentSlotRequirements req))
+            if (!itemResolver.TryQueryData(item, out EquipmentSlotRequirements req))
             {
                 return false;
             }
@@ -126,24 +125,22 @@ namespace RogueEntity.Core.Equipment
                 return false;
             }
 
-            var itemWeight = itemResolver.QueryWeight(item, context).TotalWeight;
+            var itemWeight = itemResolver.QueryWeight(item).TotalWeight;
             equippedItems = equippedItems.Remove(equippedItem, req, out var removedItems, out slot);
             TotalWeight -= itemWeight;
             return removedItems;
         }
 
-        public bool TryEquipItem(TGameContext context,
-                                 TItemId item,
+        public bool TryEquipItem(TItemId item,
                                  out TItemId remainderItem,
                                  Optional<EquipmentSlot> desiredSlot,
                                  out EquipmentSlot actualSlot,
                                  bool ignoreWeightLimits = false)
         {
-            return TryEquipItemInternal(context, item, out remainderItem, desiredSlot, out actualSlot, ignoreWeightLimits);
+            return TryEquipItemInternal(item, out remainderItem, desiredSlot, out actualSlot, ignoreWeightLimits);
         }
 
-        bool TryEquipItemInternal(TGameContext context,
-                                  TItemId item,
+        bool TryEquipItemInternal(TItemId item,
                                   out TItemId remainderItem,
                                   Optional<EquipmentSlot> desiredSlot,
                                   out EquipmentSlot actualSlot,
@@ -154,7 +151,7 @@ namespace RogueEntity.Core.Equipment
                 // reference items are always non-stackable, so we can treat it like an atomic unit.
 
                 remainderItem = default;
-                if (itemResolver.TryQueryData(item, context, out IContainerEntityMarker _))
+                if (itemResolver.TryQueryData(item, out IContainerEntityMarker _))
                 {
                     Logger.Verbose("Unable to equip reference item {item} as it is already contained in another container", item);
                     // This item should not be on a map right now.
@@ -164,7 +161,7 @@ namespace RogueEntity.Core.Equipment
                 }
 
                 // The item has no map position. That is good, it makes the job easy.
-                if (TryEquipItemSingleItem(context, item, desiredSlot, out actualSlot, ignoreWeightLimits))
+                if (TryEquipItemSingleItem( item, desiredSlot, out actualSlot, ignoreWeightLimits))
                 {
                     return true;
                 }
@@ -172,7 +169,7 @@ namespace RogueEntity.Core.Equipment
                 return false;
             }
 
-            var stack = itemResolver.QueryStackSize(item, context);
+            var stack = itemResolver.QueryStackSize(item);
             if (stack.Count == 0)
             {
                 Logger.Verbose("Unable to equip item {item} as it has an empty stack.", item);
@@ -184,7 +181,7 @@ namespace RogueEntity.Core.Equipment
             if (stack.MaximumStackSize == 1)
             {
                 // Single item, non-stackable, so we can treat it like an atomic unit.
-                if (TryEquipItemSingleItem(context, item, desiredSlot, out actualSlot, ignoreWeightLimits))
+                if (TryEquipItemSingleItem(item, desiredSlot, out actualSlot, ignoreWeightLimits))
                 {
                     remainderItem = default;
                     return true;
@@ -195,7 +192,7 @@ namespace RogueEntity.Core.Equipment
                 return false;
             }
 
-            if (!itemResolver.TryQueryData(item, context, out EquipmentSlotRequirements req))
+            if (!itemResolver.TryQueryData(item, out EquipmentSlotRequirements req))
             {
                 Logger.Verbose("Unable to equip item {item} as it cannot be equipped.", item);
                 actualSlot = default;
@@ -214,7 +211,7 @@ namespace RogueEntity.Core.Equipment
             if (!Data.TryGetValue(actualSlot, out var equippedItem))
             {
                 // desired slot is not occupied, so lets just try to fill it as if it is not stacked.
-                if (TryEquipItemSingleItem(context, item, desiredSlot, out actualSlot, ignoreWeightLimits))
+                if (TryEquipItemSingleItem(item, desiredSlot, out actualSlot, ignoreWeightLimits))
                 {
                     remainderItem = default;
                     return true;
@@ -234,7 +231,7 @@ namespace RogueEntity.Core.Equipment
             }
 
             // attempt to  merge the stack.
-            var existingStack = itemResolver.QueryStackSize(equippedItem.Reference, context);
+            var existingStack = itemResolver.QueryStackSize(equippedItem.Reference);
             if (existingStack.Count == existingStack.MaximumStackSize)
             {
                 Logger.Verbose("The stacking item already equipped has a full stack. Unable to add more.");
@@ -244,10 +241,10 @@ namespace RogueEntity.Core.Equipment
             }
 
             var combinedStack = existingStack.Add(stack.Count, out var remainingItems);
-            if (itemResolver.TryUpdateData(item, context, combinedStack, out var resultingItem) &&
-                itemResolver.TryUpdateData(item, context, stack.WithCount(remainingItems), out remainderItem))
+            if (itemResolver.TryUpdateData(item, combinedStack, out var resultingItem) &&
+                itemResolver.TryUpdateData(item, stack.WithCount(remainingItems), out remainderItem))
             {
-                if (TryEquipItemsStackedItem(context, resultingItem, desiredSlot, out actualSlot, ignoreWeightLimits, equippedItem))
+                if (TryEquipItemsStackedItem(resultingItem, desiredSlot, out actualSlot, ignoreWeightLimits, equippedItem))
                 {
                     return true;
                 }
@@ -263,22 +260,21 @@ namespace RogueEntity.Core.Equipment
             return false;
         }
 
-        bool TryEquipItemsStackedItem(TGameContext context,
-                                      TItemId item,
+        bool TryEquipItemsStackedItem(TItemId item,
                                       Optional<EquipmentSlot> desiredSlot,
                                       out EquipmentSlot actualSlot,
                                       bool ignoreWeight,
                                       EquippedItem<TItemId> currentlyEquippedItem
             )
         {
-            if (!itemResolver.TryQueryData(item, context, out EquipmentSlotRequirements req))
+            if (!itemResolver.TryQueryData(item, out EquipmentSlotRequirements req))
             {
                 actualSlot = default;
                 return false;
             }
 
-            var existingWeight = itemResolver.QueryWeight(currentlyEquippedItem.Reference, context).TotalWeight;
-            var itemWeight = itemResolver.QueryWeight(item, context).TotalWeight;
+            var existingWeight = itemResolver.QueryWeight(currentlyEquippedItem.Reference).TotalWeight;
+            var itemWeight = itemResolver.QueryWeight(item).TotalWeight;
             var totalWeight = TotalWeight - existingWeight;
             if (!ignoreWeight && (totalWeight + itemWeight > MaximumCarryWeight))
             {
@@ -303,13 +299,12 @@ namespace RogueEntity.Core.Equipment
             return false;
         }
 
-        bool TryEquipItemSingleItem(TGameContext context,
-                                    TItemId item,
+        bool TryEquipItemSingleItem(TItemId item,
                                     Optional<EquipmentSlot> desiredSlot,
                                     out EquipmentSlot actualSlot,
                                     bool ignoreWeight)
         {
-            var itemWeight = itemResolver.QueryWeight(item, context).TotalWeight;
+            var itemWeight = itemResolver.QueryWeight(item).TotalWeight;
             if (!ignoreWeight)
             {
                 if (TotalWeight + itemWeight > MaximumCarryWeight)
@@ -320,7 +315,7 @@ namespace RogueEntity.Core.Equipment
                 }
             }
 
-            if (!itemResolver.TryQueryData(item, context, out EquipmentSlotRequirements req))
+            if (!itemResolver.TryQueryData(item, out EquipmentSlotRequirements req))
             {
                 Logger.Verbose("Unable to equip item {item} as this item cannot be equipped", item);
                 actualSlot = default;
@@ -373,11 +368,10 @@ namespace RogueEntity.Core.Equipment
             get { return ref equippedItems; }
         }
 
-        public bool TryReEquipItem(TGameContext context,
-                                   in TItemId targetItem,
+        public bool TryReEquipItem(in TItemId targetItem,
                                    EquipmentSlot slot)
         {
-            return TryEquipItemSingleItem(context, targetItem, slot, out _, true);
+            return TryEquipItemSingleItem(targetItem, slot, out _, true);
         }
 
         public Dictionary<EquipmentSlot, EquippedItem<TItemId>>.ValueCollection.Enumerator GetEnumerator()
@@ -395,7 +389,7 @@ namespace RogueEntity.Core.Equipment
             return GetEnumerator();
         }
 
-        public bool Equals(ISlottedEquipment<TGameContext, TItemId> other)
+        public bool Equals(ISlottedEquipment<TItemId> other)
         {
             if (ReferenceEquals(null, other))
             {
@@ -447,7 +441,7 @@ namespace RogueEntity.Core.Equipment
                 return false;
             }
 
-            return Equals((ISlottedEquipment<TGameContext, TItemId>)obj);
+            return Equals((ISlottedEquipment<TItemId>)obj);
         }
 
         public override int GetHashCode()
@@ -456,12 +450,12 @@ namespace RogueEntity.Core.Equipment
             return 0;
         }
 
-        public static bool operator ==(SlottedEquipment<TGameContext, TOwnerId, TItemId> left, SlottedEquipment<TGameContext, TOwnerId, TItemId> right)
+        public static bool operator ==(SlottedEquipment<TOwnerId, TItemId> left, SlottedEquipment<TOwnerId, TItemId> right)
         {
             return Equals(left, right);
         }
 
-        public static bool operator !=(SlottedEquipment<TGameContext, TOwnerId, TItemId> left, SlottedEquipment<TGameContext, TOwnerId, TItemId> right)
+        public static bool operator !=(SlottedEquipment<TOwnerId, TItemId> left, SlottedEquipment<TOwnerId, TItemId> right)
         {
             return !Equals(left, right);
         }

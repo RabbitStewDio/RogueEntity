@@ -247,10 +247,10 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Smell
         }
 
 
-        protected override Action<SenseMappingTestContext> CreateCopyAction()
+        protected override Action CreateCopyAction()
         {
             var builder = context.ItemEntityRegistry.BuildSystem()
-                                 .WithContext<SenseMappingTestContext>();
+                                 .WithoutContext();
 
             var omniSystem = new SenseReceptorBlitterSystem<SmellSense, SmellSense>(senseSystem, new DefaultDirectionalSenseReceptorBlitter());
             return builder.WithInputParameter<SensoryReceptorState<SmellSense, SmellSense>>()
@@ -258,27 +258,27 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Smell
                           .CreateSystem(omniSystem.CopySenseSourcesToVisionField);
         }
 
-        protected override ReferenceItemDeclaration<SenseMappingTestContext, ItemReference> AttachTrait(ReferenceItemDeclaration<SenseMappingTestContext, ItemReference> decl)
+        protected override ReferenceItemDeclaration<ItemReference> AttachTrait(ReferenceItemDeclaration<ItemReference> decl)
         {
             switch (decl.Id.Id)
             {
                 case "SenseReceptor-Active-10":
-                    decl.WithTrait(new SmellDirectionSenseTrait<SenseMappingTestContext, ItemReference>(physics, 10));
+                    decl.WithTrait(new SmellDirectionSenseTrait<ItemReference>(physics, 10));
                     return decl;
                 case "SenseReceptor-Active-5":
-                    decl.WithTrait(new SmellDirectionSenseTrait<SenseMappingTestContext, ItemReference>(physics, 5));
+                    decl.WithTrait(new SmellDirectionSenseTrait<ItemReference>(physics, 5));
                     return decl;
                 case "SenseReceptor-Inactive-5":
-                    decl.WithTrait(new SmellDirectionSenseTrait<SenseMappingTestContext, ItemReference>(physics, 5, false));
+                    decl.WithTrait(new SmellDirectionSenseTrait<ItemReference>(physics, 5, false));
                     return decl;
                 case "SenseSource-Active-10":
-                    decl.WithTrait(new SmellSourceTrait<SenseMappingTestContext, ItemReference>(sourcePhysics));
+                    decl.WithTrait(new SmellSourceTrait<ItemReference>(sourcePhysics));
                     return decl;
                 case "SenseSource-Active-5":
-                    decl.WithTrait(new SmellSourceTrait<SenseMappingTestContext, ItemReference>(sourcePhysics));
+                    decl.WithTrait(new SmellSourceTrait<ItemReference>(sourcePhysics));
                     return decl;
                 case "SenseSource-Inactive-5":
-                    decl.WithTrait(new SmellSourceTrait<SenseMappingTestContext, ItemReference>(sourcePhysics));
+                    decl.WithTrait(new SmellSourceTrait<ItemReference>(sourcePhysics));
                     return decl;
                 default:
                     throw new ArgumentException();
@@ -287,8 +287,8 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Smell
 
         protected override void PrepareSourceItems(ItemReference active10, ItemReference active5, ItemReference inactive)
         {
-            context.ItemResolver.TryUpdateData(active10, context, new SmellSource(10, "Strength10"), out _).Should().BeTrue();
-            context.ItemResolver.TryUpdateData(active5, context, new SmellSource(5, "Strength5"), out _).Should().BeTrue();
+            context.ItemResolver.TryUpdateData(active10,  new SmellSource(10, "Strength10"), out _).Should().BeTrue();
+            context.ItemResolver.TryUpdateData(active5,  new SmellSource(5, "Strength5"), out _).Should().BeTrue();
             base.PrepareSourceItems(active10, active5, inactive);
         }
 

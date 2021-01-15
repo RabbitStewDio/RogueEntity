@@ -13,8 +13,8 @@ using RogueEntity.Core.Tests.Meta.Items;
 namespace RogueEntity.Core.Tests.Movement.Cost
 {
     [TestFixture]
-    public class PathfindingMovementCostFactorsTraitTest : ItemComponentInformationTraitTestBase<object, ItemReference, PathfindingMovementCostFactors,
-        PathfindingMovementCostFactorsTrait<object, ItemReference>>
+    public class PathfindingMovementCostFactorsTraitTest : ItemComponentInformationTraitTestBase<ItemReference, PathfindingMovementCostFactors,
+        PathfindingMovementCostFactorsTrait<ItemReference>>
     {
         public PathfindingMovementCostFactorsTraitTest() : base(new ItemReferenceMetaData())
         {
@@ -28,48 +28,43 @@ namespace RogueEntity.Core.Tests.Movement.Cost
             }));
         }
 
-        protected override object CreateContext()
-        {
-            return new object();
-        }
-
         protected override void SetUpOverride()
         {
             EntityRegistry.RegisterNonConstructable<MovementPointCost<WalkingMovement>>();
         }
 
-        protected override PathfindingMovementCostFactorsTrait<object, ItemReference> CreateTrait()
+        protected override PathfindingMovementCostFactorsTrait<ItemReference> CreateTrait()
         {
-            return new PathfindingMovementCostFactorsTrait<object, ItemReference>();
+            return new PathfindingMovementCostFactorsTrait<ItemReference>();
         }
 
-        protected override BulkItemDeclaration<object, ItemReference> CreateBulkItemDeclaration(IBulkItemTrait<object, ItemReference> bulkTrait)
+        protected override BulkItemDeclaration<ItemReference> CreateBulkItemDeclaration(IBulkItemTrait<ItemReference> bulkTrait)
         {
             return base.CreateBulkItemDeclaration(bulkTrait)
-                       .WithTrait(new MovementPointCostBulkItemTrait<object, ItemReference, WalkingMovement>(WalkingMovement.Instance, DistanceCalculation.Chebyshev, 10, 0));
+                       .WithTrait(new MovementPointCostBulkItemTrait<ItemReference, WalkingMovement>(WalkingMovement.Instance, DistanceCalculation.Chebyshev, 10, 0));
         }
 
-        protected override ReferenceItemDeclaration<object, ItemReference> CreateReferenceItemDeclaration(IReferenceItemTrait<object, ItemReference> refTrait)
+        protected override ReferenceItemDeclaration<ItemReference> CreateReferenceItemDeclaration(IReferenceItemTrait<ItemReference> refTrait)
         {
             return base.CreateReferenceItemDeclaration(refTrait)
-                       .WithTrait(new MovementPointCostReferenceItemTrait<object, ItemReference, WalkingMovement>(WalkingMovement.Instance, DistanceCalculation.Chebyshev, 10, 0));
+                       .WithTrait(new MovementPointCostReferenceItemTrait<ItemReference, WalkingMovement>(WalkingMovement.Instance, DistanceCalculation.Chebyshev, 10, 0));
         }
 
         [Test]
         public void TestAccumulation()
         {
-            ItemRegistry.Register(new BulkItemDeclaration<object, ItemReference>("Blah")
+            ItemRegistry.Register(new BulkItemDeclaration<ItemReference>("Blah")
                                   .WithTrait(CreateTrait())
-                                  .WithTrait(new MovementPointCostBulkItemTrait<object, ItemReference, WalkingMovement>(WalkingMovement.Instance,
+                                  .WithTrait(new MovementPointCostBulkItemTrait<ItemReference, WalkingMovement>(WalkingMovement.Instance,
                                                                                                                         DistanceCalculation.Euclid, 10, 10))
-                                  .WithTrait(new MovementPointCostBulkItemTrait<object, ItemReference, SwimmingMovement>(SwimmingMovement.Instance,
+                                  .WithTrait(new MovementPointCostBulkItemTrait<ItemReference, SwimmingMovement>(SwimmingMovement.Instance,
                                                                                                                          DistanceCalculation.Manhattan, 10, 0))
-                                  .WithTrait(new MovementPointCostBulkItemTrait<object, ItemReference, EtherealMovement>(EtherealMovement.Instance,
+                                  .WithTrait(new MovementPointCostBulkItemTrait<ItemReference, EtherealMovement>(EtherealMovement.Instance,
                                                                                                                          DistanceCalculation.Chebyshev, 15, -10))
             );
 
-            var item = ItemResolver.Instantiate(Context, "Blah");
-            ItemResolver.TryQueryData(item, Context, out PathfindingMovementCostFactors factors).Should().BeTrue();
+            var item = ItemResolver.Instantiate("Blah");
+            ItemResolver.TryQueryData(item, out PathfindingMovementCostFactors factors).Should().BeTrue();
             factors.Should()
                    .Be(new PathfindingMovementCostFactors(new List<MovementCost>()
                    {

@@ -16,8 +16,7 @@ namespace RogueEntity.SadCons
             this.sharedState = new MapConsoleState();
         }
 
-        public void Initialize<TGameContext, TPlayerEntity>(TGameContext context,
-                                                            IServiceResolver services)
+        public void Initialize<TPlayerEntity>(IServiceResolver services)
             where TPlayerEntity : IEntityKey
         {
             this.backend.Components.Clear();

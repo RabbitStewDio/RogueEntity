@@ -1,42 +1,41 @@
 ﻿using System;
-using System.Collections.Generic;
 using EnTTSharp.Entities;
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Api.Utils;
 
 namespace RogueEntity.Core.Meta.Items
 {
-    public class BulkItemDeclaration<TContext, TItemId> : ItemDeclaration<TContext>, IBulkItemDeclaration<TContext, TItemId> 
+    public class BulkItemDeclaration<TItemId> : ItemDeclaration, IBulkItemDeclaration<TItemId> 
         where TItemId : IEntityKey
     {
-        readonly TraitRegistration<IBulkItemTrait<TContext, TItemId>> traitRegistration;
+        readonly TraitRegistration<IBulkItemTrait<TItemId>> traitRegistration;
 
         public BulkItemDeclaration(ItemDeclarationId id) : this(id, id.Id) {}
 
         public BulkItemDeclaration(ItemDeclarationId id, string tag) :
             base(id, tag)
         {
-            traitRegistration = new TraitRegistration<IBulkItemTrait<TContext, TItemId>>(TraitComparer.Default);
+            traitRegistration = new TraitRegistration<IBulkItemTrait<TItemId>>(TraitComparer.Default);
         }
 
-        public BulkItemDeclaration<TContext, TItemId> WithTrait(IBulkItemTrait<TContext, TItemId> trait)
+        public BulkItemDeclaration<TItemId> WithTrait(IBulkItemTrait<TItemId> trait)
         {
             EnsureSingleInstanceOfBulkDataTrait(trait);
             traitRegistration.Add(trait);
             return this;
         }
 
-        public BulkItemDeclaration<TContext, TItemId> WithoutTrait<TTrait>()
+        public BulkItemDeclaration<TItemId> WithoutTrait<TTrait>()
         {
             traitRegistration.Remove<TTrait>();
             return this;
         }
 
-        void EnsureSingleInstanceOfBulkDataTrait(IBulkItemTrait<TContext, TItemId> trait)
+        void EnsureSingleInstanceOfBulkDataTrait(IBulkItemTrait<TItemId> trait)
         {
-            if (trait is IBulkDataTrait<TContext, TItemId>)
+            if (trait is IBulkDataTrait<TItemId>)
             {
-                if (traitRegistration.TryQuery<IBulkDataTrait<TContext, TItemId>>(out _))
+                if (traitRegistration.TryQuery<IBulkDataTrait<TItemId>>(out _))
                 {
                     throw new ArgumentException("Only one bulk data trait can be added to an item.");
                 }
@@ -53,11 +52,11 @@ namespace RogueEntity.Core.Meta.Items
             return traitRegistration.QueryAll(cache);
         }
 
-        public virtual TItemId Initialize(TContext context, TItemId itemReference)
+        public virtual TItemId Initialize(TItemId itemReference)
         {
             foreach (var itemTrait in traitRegistration)
             {
-                itemReference = itemTrait.Initialize(context, this, itemReference);
+                itemReference = itemTrait.Initialize(this, itemReference);
             }
 
             return itemReference;

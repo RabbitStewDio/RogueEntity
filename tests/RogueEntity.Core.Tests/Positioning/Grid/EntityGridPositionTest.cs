@@ -1,9 +1,9 @@
-using System;
 using FluentAssertions;
 using NUnit.Framework;
 using RogueEntity.Core.Positioning.Grid;
+using System;
 
-namespace RogueEntity.Core.Tests.Positioning
+namespace RogueEntity.Core.Tests.Positioning.Grid
 {
     public class EntityGridPositionTest
     {

@@ -7,28 +7,28 @@ using RogueEntity.Api.ItemTraits;
 
 namespace RogueEntity.Core.Meta.Items
 {
-    public class ItemDeclarationHolderMessagePackFormatter<TGameContext, TItemId> : IMessagePackFormatter<ItemDeclarationHolder<TGameContext, TItemId>> 
+    public class ItemDeclarationHolderMessagePackFormatter<TItemId> : IMessagePackFormatter<ItemDeclarationHolder<TItemId>> 
         where TItemId : IEntityKey
     {
-        readonly IItemResolver<TGameContext, TItemId> itemResolver;
+        readonly IItemResolver<TItemId> itemResolver;
 
-        public ItemDeclarationHolderMessagePackFormatter([NotNull] IItemResolver<TGameContext, TItemId> itemResolver)
+        public ItemDeclarationHolderMessagePackFormatter([NotNull] IItemResolver<TItemId> itemResolver)
         {
             this.itemResolver = itemResolver ?? throw new ArgumentNullException(nameof(itemResolver));
         }
 
-        public void Serialize(ref MessagePackWriter writer, ItemDeclarationHolder<TGameContext, TItemId> value, MessagePackSerializerOptions options)
+        public void Serialize(ref MessagePackWriter writer, ItemDeclarationHolder<TItemId> value, MessagePackSerializerOptions options)
         {
             writer.Write(value.Id);
         }
 
-        public ItemDeclarationHolder<TGameContext, TItemId> Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
+        public ItemDeclarationHolder<TItemId> Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
         {
             var id = reader.ReadString();
             var itemRaw = itemResolver.ItemRegistry.ReferenceItemById(id);
-            if (itemRaw is IReferenceItemDeclaration<TGameContext, TItemId> item)
+            if (itemRaw is IReferenceItemDeclaration<TItemId> item)
             {
-                return new ItemDeclarationHolder<TGameContext, TItemId>(item);
+                return new ItemDeclarationHolder<TItemId>(item);
             }
 
             throw new MessagePackSerializationException($"Unable to resolve reference item with id '{id}'");

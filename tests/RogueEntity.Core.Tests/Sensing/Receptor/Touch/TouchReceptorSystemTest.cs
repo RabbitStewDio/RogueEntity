@@ -124,10 +124,10 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Touch
             this.physics = new TouchSenseReceptorPhysicsConfiguration(LinearDecaySensePhysics.For(DistanceCalculation.Chebyshev));
         }
 
-        protected override Action<SenseMappingTestContext> CreateCopyAction()
+        protected override Action CreateCopyAction()
         {
             var builder = context.ItemEntityRegistry.BuildSystem()
-                                 .WithContext<SenseMappingTestContext>();
+                                 .WithoutContext();
 
             var omniSystem = new SenseReceptorBlitterSystem<TouchSense, TouchSense>(senseSystem, new DefaultRadiationSenseReceptorBlitter());
             return builder.WithInputParameter<SensoryReceptorState<TouchSense, TouchSense>>()
@@ -135,18 +135,18 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Touch
                           .CreateSystem(omniSystem.CopySenseSourcesToVisionField);
         }
 
-        protected override ReferenceItemDeclaration<SenseMappingTestContext, ItemReference> AttachTrait(ReferenceItemDeclaration<SenseMappingTestContext, ItemReference> decl)
+        protected override ReferenceItemDeclaration<ItemReference> AttachTrait(ReferenceItemDeclaration<ItemReference> decl)
         {
             switch (decl.Id.Id)
             {
                 case "SenseReceptor-Active-10":
-                    decl.WithTrait(new TouchSenseTrait<SenseMappingTestContext, ItemReference>(physics));
+                    decl.WithTrait(new TouchSenseTrait<ItemReference>(physics));
                     return decl;
                 case "SenseReceptor-Active-5":
-                    decl.WithTrait(new TouchSenseTrait<SenseMappingTestContext, ItemReference>(physics));
+                    decl.WithTrait(new TouchSenseTrait<ItemReference>(physics));
                     return decl;
                 case "SenseReceptor-Inactive-5":
-                    decl.WithTrait(new TouchSenseTrait<SenseMappingTestContext, ItemReference>(physics, false));
+                    decl.WithTrait(new TouchSenseTrait<ItemReference>(physics, false));
                     return decl;
                 case "SenseSource-Active-10":
                     return decl;

@@ -8,8 +8,8 @@ using RogueEntity.Core.Sensing.Common;
 
 namespace RogueEntity.Core.Sensing.Sources.Smell
 {
-    public class SmellSourceTrait<TGameContext, TItemId>: SenseSourceTraitBase<TGameContext, TItemId, SmellSense, SmellSourceDefinition>,
-                                                          IItemComponentTrait<TGameContext, TItemId, SmellSource>
+    public class SmellSourceTrait<TItemId> : SenseSourceTraitBase<TItemId, SmellSense, SmellSourceDefinition>,
+                                             IItemComponentTrait<TItemId, SmellSource>
         where TItemId : IEntityKey
     {
         public override ItemTraitId Id => "Core.Item.SmellSource";
@@ -28,7 +28,7 @@ namespace RogueEntity.Core.Sensing.Sources.Smell
             return false;
         }
 
-        public bool TryQuery(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, out SmellSource t)
+        public bool TryQuery(IEntityViewControl<TItemId> v, TItemId k, out SmellSource t)
         {
             if (v.GetComponent(k, out SmellSourceDefinition d))
             {
@@ -40,12 +40,12 @@ namespace RogueEntity.Core.Sensing.Sources.Smell
             return false;
         }
 
-        public bool TryUpdate(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, in SmellSource t, out TItemId changedK)
+        public bool TryUpdate(IEntityViewControl<TItemId> v, TItemId k, in SmellSource t, out TItemId changedK)
         {
-            return TryUpdate(v, context, k, 
-                             new SmellSourceDefinition(new SenseSourceDefinition(physics.SmellPhysics.DistanceMeasurement, 
-                                                                                     physics.SmellPhysics.AdjacencyRule, 
-                                                                                     t.Intensity), t, true), out changedK);
+            return TryUpdate(v, k,
+                             new SmellSourceDefinition(new SenseSourceDefinition(physics.SmellPhysics.DistanceMeasurement,
+                                                                                 physics.SmellPhysics.AdjacencyRule,
+                                                                                 t.Intensity), t, true), out changedK);
         }
 
         public override IEnumerable<EntityRoleInstance> GetEntityRoles()

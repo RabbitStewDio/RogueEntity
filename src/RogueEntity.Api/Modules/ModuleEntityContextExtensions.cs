@@ -6,14 +6,13 @@ namespace RogueEntity.Api.Modules
 {
     public static class ModuleEntityContextExtensions
     {
-        static void EmptyInitializer<TGameContext, TEntityId>(in ModuleInitializationParameter initParameter,
-                                                              IGameLoopSystemRegistration<TGameContext> context,
+        static void EmptyInitializer<TEntityId>(in ModuleInitializationParameter initParameter,
+                                                              IGameLoopSystemRegistration context,
                                                               EntityRegistry<TEntityId> registry)
             where TEntityId : IEntityKey
-        {
-        }
+        { }
 
-        public static EntitySystemRegistrationDelegate<TGameContext, TEntityId> Empty<TGameContext, TEntityId>(this IModuleEntityContext<TGameContext, TEntityId> ctx)
+        public static EntitySystemRegistrationDelegate<TEntityId> Empty<TEntityId>(this IModuleEntityContext<TEntityId> ctx)
             where TEntityId : IEntityKey
         {
             return EmptyInitializer;

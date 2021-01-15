@@ -6,7 +6,7 @@ using RogueEntity.Core.Positioning.MapLayers;
 
 namespace RogueEntity.Core.Movement.CostModifier.Map
 {
-    public class RelativeMovementCostSystem<TGameContext, TMovementType> : LayeredAggregationSystem<TGameContext, float, RelativeMovementCostModifier<TMovementType>>,
+    public class RelativeMovementCostSystem< TMovementType> : LayeredAggregationSystem< float, RelativeMovementCostModifier<TMovementType>>,
                                                                            IRelativeMovementCostSystem<TMovementType>
     {
         public RelativeMovementCostSystem(int tileWidth, int tileHeight) : base(RelativeMovementCostSystem.ProcessTile, tileWidth, tileHeight)
@@ -46,13 +46,13 @@ namespace RogueEntity.Core.Movement.CostModifier.Map
             }
         }
 
-        public static void AddLayer<TGameContext, TItemId, TMovementMode>(this IAggregationLayerSystemBackend<TGameContext, RelativeMovementCostModifier<TMovementMode>> system,
+        public static void AddLayer< TItemId, TMovementMode>(this IAggregationLayerSystemBackend< RelativeMovementCostModifier<TMovementMode>> system,
                                                                           IGridMapContext<TItemId> mapContext,
-                                                                          IItemResolver<TGameContext, TItemId> itemContext,
+                                                                          IItemResolver< TItemId> itemContext,
                                                                           MapLayer mapLayer)
             where TItemId : IEntityKey
         {
-            system.AddSenseLayerFactory(new RelativeMovementCostLayerFactory<TGameContext, TItemId, TMovementMode>(mapLayer, mapContext, itemContext));
+            system.AddSenseLayerFactory(new RelativeMovementCostLayerFactory< TItemId, TMovementMode>(mapLayer, mapContext, itemContext));
         }
     }
 }

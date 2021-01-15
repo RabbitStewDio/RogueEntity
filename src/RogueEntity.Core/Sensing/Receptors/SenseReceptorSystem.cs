@@ -83,9 +83,7 @@ namespace RogueEntity.Core.Sensing.Receptors
         /// <summary>
         ///   To be called once during initialization.
         /// </summary>
-        /// <param name="context"></param>
-        /// <typeparam name="TGameContext"></typeparam>
-        public void EnsureSenseCacheAvailable<TGameContext>(TGameContext context)
+        public void EnsureSenseCacheAvailable()
         {
             var provider = senseCacheProvider.Value;
             if (provider.TryGetSenseCache<TSourceSense>(out var cache))
@@ -116,7 +114,7 @@ namespace RogueEntity.Core.Sensing.Receptors
         /// <summary>
         ///  Step 0: Clear any previously left-over state
         /// </summary>
-        public void BeginSenseCalculation<TGameContext>(TGameContext ctx)
+        public void BeginSenseCalculation()
         {
             currentTime = timeSource.Value.FixedStepTime;
         }
@@ -125,20 +123,17 @@ namespace RogueEntity.Core.Sensing.Receptors
         ///   Step 1: Collect all sense receptors currently active in the game.
         /// </summary>
         /// <param name="v"></param>
-        /// <param name="context"></param>
         /// <param name="k"></param>
         /// <param name="definition"></param>
         /// <param name="state"></param>
         /// <param name="pos"></param>
         /// <typeparam name="TItemId"></typeparam>
-        /// <typeparam name="TGameContext"></typeparam>
         /// <typeparam name="TPosition"></typeparam>
-        public void CollectReceptor<TItemId, TGameContext, TPosition>(IEntityViewControl<TItemId> v,
-                                                                      TGameContext context,
-                                                                      TItemId k,
-                                                                      in SensoryReceptorData<TReceptorSense, TSourceSense> definition,
-                                                                      in TPosition pos,
-                                                                      ref SensoryReceptorState<TReceptorSense, TSourceSense> state)
+        public void CollectReceptor<TItemId, TPosition>(IEntityViewControl<TItemId> v,
+                                                        TItemId k,
+                                                        in SensoryReceptorData<TReceptorSense, TSourceSense> definition,
+                                                        in TPosition pos,
+                                                        ref SensoryReceptorState<TReceptorSense, TSourceSense> state)
             where TItemId : IEntityKey
             where TPosition : IPosition<TPosition>
         {
@@ -234,18 +229,15 @@ namespace RogueEntity.Core.Sensing.Receptors
         ///            at least one sense source.
         /// </summary>
         /// <param name="v"></param>
-        /// <param name="context"></param>
         /// <param name="k"></param>
         /// <param name="senseDefinition"></param>
         /// <param name="senseState"></param>
         /// <typeparam name="TItemId"></typeparam>
-        /// <typeparam name="TGameContext"></typeparam>
         /// <typeparam name="TSenseSource"></typeparam>
-        public void CollectObservedSenseSource<TItemId, TGameContext, TSenseSource>(IEntityViewControl<TItemId> v,
-                                                                                    TGameContext context,
-                                                                                    TItemId k,
-                                                                                    in TSenseSource senseDefinition,
-                                                                                    in SenseSourceState<TSourceSense> senseState)
+        public void CollectObservedSenseSource<TItemId, TSenseSource>(IEntityViewControl<TItemId> v,
+                                                                      TItemId k,
+                                                                      in TSenseSource senseDefinition,
+                                                                      in SenseSourceState<TSourceSense> senseState)
             where TItemId : IEntityKey
             where TSenseSource : ISenseDefinition
         {
@@ -284,19 +276,16 @@ namespace RogueEntity.Core.Sensing.Receptors
         ///   stores the lit area in a local map. This can safely run in parallel.
         /// </summary>
         /// <param name="v"></param>
-        /// <param name="context"></param>
         /// <param name="k"></param>
         /// <param name="definition"></param>
         /// <param name="state"></param>
         /// <param name="dirtyMarker"></param>
         /// <typeparam name="TItemId"></typeparam>
-        /// <typeparam name="TGameContext"></typeparam>
-        public void RefreshLocalReceptorState<TItemId, TGameContext>(IEntityViewControl<TItemId> v,
-                                                                     TGameContext context,
-                                                                     TItemId k,
-                                                                     in SensoryReceptorData<TReceptorSense, TSourceSense> definition,
-                                                                     in SenseReceptorDirtyFlag<TReceptorSense, TSourceSense> dirtyMarker,
-                                                                     ref SensoryReceptorState<TReceptorSense, TSourceSense> state)
+        public void RefreshLocalReceptorState<TItemId>(IEntityViewControl<TItemId> v,
+                                                       TItemId k,
+                                                       in SensoryReceptorData<TReceptorSense, TSourceSense> definition,
+                                                       in SenseReceptorDirtyFlag<TReceptorSense, TSourceSense> dirtyMarker,
+                                                       ref SensoryReceptorState<TReceptorSense, TSourceSense> state)
             where TItemId : IEntityKey
         {
             var pos = state.LastPosition;
@@ -331,19 +320,16 @@ namespace RogueEntity.Core.Sensing.Receptors
         ///   Step 3: Mark sense receptors as clean
         /// </summary>
         /// <param name="v"></param>
-        /// <param name="context"></param>
         /// <param name="k"></param>
         /// <param name="definition"></param>
         /// <param name="state"></param>
         /// <param name="dirty"></param>
         /// <typeparam name="TItemId"></typeparam>
-        /// <typeparam name="TGameContext"></typeparam>
-        public void ResetReceptorCacheState<TItemId, TGameContext>(IEntityViewControl<TItemId> v,
-                                                                   TGameContext context,
-                                                                   TItemId k,
-                                                                   in SensoryReceptorData<TReceptorSense, TSourceSense> definition,
-                                                                   in SenseReceptorDirtyFlag<TReceptorSense, TSourceSense> dirty,
-                                                                   ref SensoryReceptorState<TReceptorSense, TSourceSense> state)
+        public void ResetReceptorCacheState<TItemId>(IEntityViewControl<TItemId> v,
+                                                     TItemId k,
+                                                     in SensoryReceptorData<TReceptorSense, TSourceSense> definition,
+                                                     in SenseReceptorDirtyFlag<TReceptorSense, TSourceSense> dirty,
+                                                     ref SensoryReceptorState<TReceptorSense, TSourceSense> state)
             where TItemId : IEntityKey
         {
             if (definition.Enabled && state.State != SenseSourceDirtyState.Active)
@@ -361,15 +347,12 @@ namespace RogueEntity.Core.Sensing.Receptors
         ///   Step 4 - Mark sense sources as clean
         /// </summary>
         /// <param name="v"></param>
-        /// <param name="context"></param>
         /// <param name="k"></param>
         /// <param name="dirty"></param>
         /// <typeparam name="TItemId"></typeparam>
-        /// <typeparam name="TGameContext"></typeparam>
-        public void ResetSenseSourceObservedState<TItemId, TGameContext>(IEntityViewControl<TItemId> v,
-                                                                         TGameContext context,
-                                                                         TItemId k,
-                                                                         in ObservedSenseSource<TSourceSense> dirty)
+        public void ResetSenseSourceObservedState<TItemId>(IEntityViewControl<TItemId> v,
+                                                           TItemId k,
+                                                           in ObservedSenseSource<TSourceSense> dirty)
             where TItemId : IEntityKey
         {
             v.RemoveComponent<ObservedSenseSource<TSourceSense>>(k);
@@ -378,7 +361,7 @@ namespace RogueEntity.Core.Sensing.Receptors
         /// <summary>
         ///  Step 5: Clear the collected sense sources
         /// </summary>
-        public void EndSenseCalculation<TGameContext>(TGameContext ctx)
+        public void EndSenseCalculation()
         {
             zLevelBuffer.Clear();
             foreach (var l in activeLightsPerLevel)

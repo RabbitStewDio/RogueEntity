@@ -10,15 +10,15 @@ using Serilog;
 
 namespace RogueEntity.Api.Modules.Initializers
 {
-    public readonly struct ModuleSystemPhaseInitModuleResult<TGameContext>
+    public readonly struct ModuleSystemPhaseInitModuleResult
     {
-        public readonly ModuleInitializer<TGameContext> ModuleInitializer;
-        public readonly GlobalModuleEntityInformation<TGameContext> EntityInformation;
-        public readonly ReadOnlyListWrapper<ModuleRecord<TGameContext>> OrderedModules;
+        public readonly ModuleInitializer ModuleInitializer;
+        public readonly GlobalModuleEntityInformation EntityInformation;
+        public readonly ReadOnlyListWrapper<ModuleRecord> OrderedModules;
 
-        public ModuleSystemPhaseInitModuleResult(ModuleInitializer<TGameContext> moduleInitializer,
-                                                 GlobalModuleEntityInformation<TGameContext> entityInformation,
-                                                 ReadOnlyListWrapper<ModuleRecord<TGameContext>> orderedModules)
+        public ModuleSystemPhaseInitModuleResult(ModuleInitializer moduleInitializer,
+                                                 GlobalModuleEntityInformation entityInformation,
+                                                 ReadOnlyListWrapper<ModuleRecord> orderedModules)
         {
             this.ModuleInitializer = moduleInitializer;
             this.EntityInformation = entityInformation;
@@ -26,9 +26,9 @@ namespace RogueEntity.Api.Modules.Initializers
         }
     }
 
-    public class ModuleSystemPhaseInitModule<TGameContext>
+    public class ModuleSystemPhaseInitModule
     {
-        static readonly ILogger Logger = SLog.ForContext<ModuleSystem<TGameContext>>();
+        static readonly ILogger Logger = SLog.ForContext<ModuleSystem>();
         readonly IServiceResolver serviceResolver;
 
         public ModuleSystemPhaseInitModule([NotNull] IServiceResolver serviceResolver)
@@ -36,27 +36,27 @@ namespace RogueEntity.Api.Modules.Initializers
             this.serviceResolver = serviceResolver ?? throw new ArgumentNullException(nameof(serviceResolver));
         }
 
-        public ModuleSystemPhaseInitModuleResult<TGameContext> PerformModuleInitialization(ReadOnlyListWrapper<ModuleRecord<TGameContext>> orderedModules,
-                                                                                           ModuleSystemPhaseInit<TGameContext> initPhase)
+        public ModuleSystemPhaseInitModuleResult PerformModuleInitialization(ReadOnlyListWrapper<ModuleRecord> orderedModules,
+                                                                             ModuleSystemPhaseInit initPhase)
         {
-            var moduleInitializer = new ModuleInitializer<TGameContext>();
-            var globalInformation = new GlobalModuleEntityInformation<TGameContext>();
+            var moduleInitializer = new ModuleInitializer();
+            var globalInformation = new GlobalModuleEntityInformation();
             while (true)
             {
                 InitializeModule(moduleInitializer, globalInformation, orderedModules);
                 var newModules = initPhase.CreateModulesSortedByInitOrder();
-                
+
                 if (ApiExtensions.EqualsList(orderedModules, newModules))
                 {
                     // module initialization done.
-                    return new ModuleSystemPhaseInitModuleResult<TGameContext>(moduleInitializer, globalInformation, newModules);
+                    return new ModuleSystemPhaseInitModuleResult(moduleInitializer, globalInformation, newModules);
                 }
             }
         }
 
-        List<ModuleInitializerDelegate<TGameContext>> CollectModuleInitializers(ModuleBase module)
+        List<ModuleInitializerDelegate> CollectModuleInitializers(ModuleBase module)
         {
-            var actions = new List<ModuleInitializerDelegate<TGameContext>>();
+            var actions = new List<ModuleInitializerDelegate>();
             foreach (var m in module.GetType().GetMethods(BindingFlags.Instance | BindingFlags.NonPublic))
             {
                 var attr = m.GetCustomAttribute<ModuleInitializerAttribute>();
@@ -65,36 +65,23 @@ namespace RogueEntity.Api.Modules.Initializers
                     continue;
                 }
 
-                if (m.IsSameAction(typeof(ModuleInitializationParameter).MakeByRefType(), typeof(IModuleInitializer<TGameContext>)))
+                if (m.IsSameAction(typeof(ModuleInitializationParameter).MakeByRefType(), typeof(IModuleInitializer)))
                 {
-                    actions.Add((ModuleInitializerDelegate<TGameContext>)Delegate.CreateDelegate(typeof(ModuleInitializerDelegate<TGameContext>), module, m));
+                    actions.Add((ModuleInitializerDelegate)Delegate.CreateDelegate(typeof(ModuleInitializerDelegate), module, m));
                     Logger.Verbose("Found plain module initializer {Method}", m);
                     continue;
                 }
 
-                if (!m.IsSameGenericAction(new[] {typeof(TGameContext)},
-                                           out var genericMethod, out var errorHint,
-                                           typeof(ModuleInitializationParameter).MakeByRefType(), typeof(IModuleInitializer<TGameContext>)))
-                {
-                    if (!string.IsNullOrEmpty(errorHint))
-                    {
-                        throw new ArgumentException(errorHint);
-                    }
-
-                    throw new ArgumentException(
-                        $"Expected a method with signature 'void XXX(ModuleInitializationParameter by ref, IModuleInitializer<TGameContext>), but found {m} in module {module.Id}");
-                }
-
-                Logger.Verbose("Found generic module initializer {Method}", genericMethod);
-                actions.Add((ModuleInitializerDelegate<TGameContext>)Delegate.CreateDelegate(typeof(ModuleInitializerDelegate<TGameContext>), module, genericMethod));
+                throw new ArgumentException(
+                    $"Expected a method with signature 'void XXX(ModuleInitializationParameter by ref, IModuleInitializer), but found {m} in module {module.Id}");
             }
 
             return actions;
         }
 
-        void InitializeModule(ModuleInitializer<TGameContext> initializer,
-                              GlobalModuleEntityInformation<TGameContext> globalInformation,
-                              ReadOnlyListWrapper<ModuleRecord<TGameContext>> orderedModules)
+        void InitializeModule(ModuleInitializer initializer,
+                              GlobalModuleEntityInformation globalInformation,
+                              ReadOnlyListWrapper<ModuleRecord> orderedModules)
         {
             var mip = new ModuleInitializationParameter(globalInformation, serviceResolver);
             foreach (var mod in orderedModules)

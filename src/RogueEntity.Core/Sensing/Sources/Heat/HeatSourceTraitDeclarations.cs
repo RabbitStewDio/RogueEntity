@@ -7,12 +7,12 @@ namespace RogueEntity.Core.Sensing.Sources.Heat
 {
     public static class HeatSourceTraitDeclarations
     {
-        public static ReferenceItemDeclarationBuilder<TGameContext, TItemId> WithHeatSource<TGameContext, TItemId>(this ReferenceItemDeclarationBuilder<TGameContext, TItemId> builder,
+        public static ReferenceItemDeclarationBuilder< TItemId> WithHeatSource< TItemId>(this ReferenceItemDeclarationBuilder< TItemId> builder,
                                                                                                                    Optional<Temperature> temperature)
             where TItemId : IEntityKey
         {
             var physics = builder.ServiceResolver.Resolve<IHeatPhysicsConfiguration>();
-            var trait = new HeatSourceTrait<TGameContext, TItemId>(physics, temperature);
+            var trait = new HeatSourceTrait< TItemId>(physics, temperature);
             builder.Declaration.WithTrait(trait);
             return builder;
         }

@@ -19,7 +19,7 @@ namespace RogueEntity.Core.Meta.Base
             this.entityRegistry = entityRegistry ?? throw new ArgumentNullException(nameof(entityRegistry));
         }
 
-        public void DeleteMarkedEntities<TGameContext>(TGameContext _)
+        public void DeleteMarkedEntities()
         {
             Logger.Debug("HELLO WORLD " + typeof(TEntity));
             var en = entityRegistry.PersistentView<DestroyedMarker>();
@@ -37,33 +37,30 @@ namespace RogueEntity.Core.Meta.Base
                 EntityKeyListPool.Release(x);
             }
         }
-        
-        public static void SchedulePreviouslyMarkedItemsForDestruction<TGameContext>(IEntityViewControl<TEntity> v,
-                                                                                     TGameContext _,
-                                                                                     TEntity k,
-                                                                                     in CascadingDestroyedMarker m)
+
+        public static void SchedulePreviouslyMarkedItemsForDestruction(IEntityViewControl<TEntity> v,
+                                                                       TEntity k,
+                                                                       in CascadingDestroyedMarker m)
         {
             Logger.Debug("Activate destruction for inventory item {inventoryItem}", k);
             v.AssignOrReplace(k, new DestroyedMarker());
             v.RemoveComponent<CascadingDestroyedMarker>(k);
         }
-
     }
 
-    public class DestroyContainerContentsSystem<TGameContext, TContainerEntity, TItemId>
+    public class DestroyContainerContentsSystem<TContainerEntity, TItemId>
         where TItemId : IEntityKey
         where TContainerEntity : IEntityKey
     {
-        static readonly ILogger Logger = SLog.ForContext<DestroyContainerContentsSystem<TGameContext, TContainerEntity, TItemId>>();
-        readonly IItemResolver<TGameContext, TItemId> itemContext;
+        static readonly ILogger Logger = SLog.ForContext<DestroyContainerContentsSystem<TContainerEntity, TItemId>>();
+        readonly IItemResolver<TItemId> itemContext;
 
-        public DestroyContainerContentsSystem([NotNull] IItemResolver<TGameContext, TItemId> itemContext)
+        public DestroyContainerContentsSystem([NotNull] IItemResolver<TItemId> itemContext)
         {
             this.itemContext = itemContext ?? throw new ArgumentNullException(nameof(itemContext));
         }
 
         public void MarkDestroyedContainerEntities<TInventory>(IEntityViewControl<TContainerEntity> v,
-                                                               TGameContext context,
                                                                TContainerEntity k,
                                                                in DestroyedMarker m,
                                                                in TInventory inventory)

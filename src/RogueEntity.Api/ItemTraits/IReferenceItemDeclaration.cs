@@ -2,9 +2,9 @@
 
 namespace RogueEntity.Api.ItemTraits
 {
-    public interface IReferenceItemDeclaration<TContext, TItemId> : IItemDeclaration where TItemId : IEntityKey
+    public interface IReferenceItemDeclaration<TItemId> : IItemDeclaration where TItemId : IEntityKey
     {
-        void Apply(IEntityViewControl<TItemId> v, TContext context, TItemId k);
-        void Initialize(IEntityViewControl<TItemId> v, TContext context, TItemId k);
+        void Apply(IEntityViewControl<TItemId> v, TItemId k);
+        void Initialize(IEntityViewControl<TItemId> v, TItemId k);
     }
 }

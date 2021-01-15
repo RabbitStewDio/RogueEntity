@@ -1,22 +1,20 @@
 ﻿using EnTTSharp.Entities;
-using EnTTSharp.Entities.Pools;
 
 namespace RogueEntity.Api.ItemTraits
 {
-    public interface IItemResolver<TGameContext, TItemId> where TItemId: IEntityKey
+    public interface IItemResolver<TItemId> where TItemId: IEntityKey
     {
         IItemRegistry ItemRegistry { get; }
 
         bool TryResolve(in TItemId itemRef, out IItemDeclaration item);
 
-        TItemId Instantiate(TGameContext context, IItemDeclaration item);
+        TItemId Instantiate(IItemDeclaration item);
 
         bool TryQueryTrait<TItemData>(TItemId itemRef, out TItemData data) where TItemData: IItemTrait;
 
-        bool TryQueryData<TData>(TItemId itemRef, TGameContext context, out TData data);
+        bool TryQueryData<TData>(TItemId itemRef, out TData data);
 
         bool TryUpdateData<TData>(TItemId itemRef,
-                                  TGameContext context,
                                   in TData data,
                                   out TItemId changedItem);
 
@@ -29,14 +27,13 @@ namespace RogueEntity.Api.ItemTraits
         ///   regardless of whether the data itself has been removed previously.
         /// </summary>
         /// <param name="itemRef"></param>
-        /// <param name="context"></param>
         /// <param name="changedItem"></param>
         /// <typeparam name="TData"></typeparam>
         /// <returns></returns>
-        bool TryRemoveData<TData>(TItemId itemRef, TGameContext context, out TItemId changedItem);
+        bool TryRemoveData<TData>(TItemId itemRef, out TItemId changedItem);
 
         void DiscardUnusedItem(in TItemId item);
-        void Apply(TItemId reference, TGameContext context);
+        void Apply(TItemId reference);
         TItemId Destroy(in TItemId item);
         TItemId DestroyNext(in TItemId item);
     }

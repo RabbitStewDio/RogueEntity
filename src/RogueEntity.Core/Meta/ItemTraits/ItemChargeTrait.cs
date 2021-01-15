@@ -5,7 +5,7 @@ using RogueEntity.Core.Meta.Items;
 
 namespace RogueEntity.Core.Meta.ItemTraits
 {
-    public sealed class ItemChargeTrait<TGameContext, TItemId> : SimpleReferenceItemComponentTraitBase<TGameContext, TItemId, ItemCharge>
+    public sealed class ItemChargeTrait<TItemId> : SimpleReferenceItemComponentTraitBase<TItemId, ItemCharge>
         where TItemId : IEntityKey
     {
         readonly ItemCharge initialCharge;
@@ -15,42 +15,40 @@ namespace RogueEntity.Core.Meta.ItemTraits
             initialCharge = new ItemCharge(charge, maxCharge);
         }
 
-        protected override ItemCharge CreateInitialValue(TGameContext c, TItemId reference)
+        protected override ItemCharge CreateInitialValue(TItemId reference)
         {
             return initialCharge;
         }
 
         protected override bool ValidateData(IEntityViewControl<TItemId> v,
-                                             TGameContext context,
                                              in TItemId itemReference,
                                              in ItemCharge data)
         {
             return data.Count < initialCharge.MaximumCharge;
         }
 
-        public override bool TryRemove(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, out TItemId changedItem)
+        public override bool TryRemove(IEntityViewControl<TItemId> v, TItemId k, out TItemId changedItem)
         {
-            if (TryQuery(v, context, k, out var existingData))
+            if (TryQuery(v, k, out var existingData))
             {
-                return TryUpdate(v, context, k, existingData.WithCount(0), out changedItem);
+                return TryUpdate(v, k, existingData.WithCount(0), out changedItem);
             }
 
             changedItem = k;
             return false;
         }
 
-        public override void Apply(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, IItemDeclaration item)
-        {
-        }
+        public override void Apply(IEntityViewControl<TItemId> v, TItemId k, IItemDeclaration item)
+        { }
 
         public override IEnumerable<EntityRoleInstance> GetEntityRoles()
         {
             yield return CoreModule.ItemRole.Instantiate<TItemId>();
         }
     }
-    
-    public sealed class ItemChargeBulkTrait<TGameContext, TItemId> : SimpleBulkItemComponentTraitBase<TGameContext, TItemId, ItemCharge>,
-                                                                 IBulkDataTrait<TGameContext, TItemId>
+
+    public sealed class ItemChargeBulkTrait<TItemId> : SimpleBulkItemComponentTraitBase<TItemId, ItemCharge>,
+                                                       IBulkDataTrait<TItemId>
         where TItemId : IBulkDataStorageKey<TItemId>
     {
         readonly ItemCharge initialCharge;
@@ -60,19 +58,18 @@ namespace RogueEntity.Core.Meta.ItemTraits
             initialCharge = new ItemCharge(charge, maxCharge);
         }
 
-        protected override ItemCharge CreateInitialValue(TGameContext c, TItemId reference)
+        protected override ItemCharge CreateInitialValue(TItemId reference)
         {
             return initialCharge;
         }
 
-        protected override bool TryQueryBulkData(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, out ItemCharge t)
+        protected override bool TryQueryBulkData(IEntityViewControl<TItemId> v, TItemId k, out ItemCharge t)
         {
             t = initialCharge.WithCount(k.Data);
             return true;
         }
 
         protected override bool ValidateData(IEntityViewControl<TItemId> v,
-                                             TGameContext context,
                                              in TItemId itemReference,
                                              in ItemCharge data)
         {
@@ -92,11 +89,11 @@ namespace RogueEntity.Core.Meta.ItemTraits
             return false;
         }
 
-        public override bool TryRemove(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, out TItemId changedItem)
+        public override bool TryRemove(IEntityViewControl<TItemId> v, TItemId k, out TItemId changedItem)
         {
-            if (TryQuery(v, context, k, out var existingData))
+            if (TryQuery(v, k, out var existingData))
             {
-                return TryUpdate(v, context, k, existingData.WithCount(0), out changedItem);
+                return TryUpdate(v, k, existingData.WithCount(0), out changedItem);
             }
 
             changedItem = k;

@@ -59,18 +59,18 @@ namespace RogueEntity.Core.Tests.Sensing.Sources.Noise
             return (physics.CreateNoisePropagationAlgorithm(), physics.NoisePhysics);
         }
 
-        protected override ReferenceItemDeclaration<SenseMappingTestContext, ItemReference> AttachTrait(ReferenceItemDeclaration<SenseMappingTestContext, ItemReference> decl)
+        protected override ReferenceItemDeclaration<ItemReference> AttachTrait(ReferenceItemDeclaration<ItemReference> decl)
         {
             switch (decl.Id.Id)
             {
                 case "SenseSource-Active-10":
-                    decl.WithTrait(new NoiseSourceTrait<SenseMappingTestContext, ItemReference>(physics));
+                    decl.WithTrait(new NoiseSourceTrait<ItemReference>(physics));
                     break;
                 case "SenseSource-Active-5":
-                    decl.WithTrait(new NoiseSourceTrait<SenseMappingTestContext, ItemReference>(physics));
+                    decl.WithTrait(new NoiseSourceTrait<ItemReference>(physics));
                     break;
                 case "SenseSource-Inactive-5":
-                    decl.WithTrait(new NoiseSourceTrait<SenseMappingTestContext, ItemReference>(physics));
+                    decl.WithTrait(new NoiseSourceTrait<ItemReference>(physics));
                     break;
             }
 
@@ -87,8 +87,8 @@ namespace RogueEntity.Core.Tests.Sensing.Sources.Noise
         protected override void PrepareItems(ItemReference active10, ItemReference active5, ItemReference inactive)
         {
             base.PrepareItems(active10, active5, inactive);
-            context.ItemResolver.TryUpdateData(active10, context, new NoiseClip(10, "NoiseA"), out _);
-            context.ItemResolver.TryUpdateData(active5, context, new NoiseClip(5, "NoiseB"), out _);
+            context.ItemResolver.TryUpdateData(active10, new NoiseClip(10, "NoiseA"), out _);
+            context.ItemResolver.TryUpdateData(active5, new NoiseClip(5, "NoiseB"), out _);
         }
 
         [Test]

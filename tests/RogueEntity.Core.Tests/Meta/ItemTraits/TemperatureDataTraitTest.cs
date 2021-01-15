@@ -4,7 +4,7 @@ using RogueEntity.Core.Meta.EntityKeys;
 
 namespace RogueEntity.Core.Tests.Meta.ItemTraits
 {
-    public class TemperatureDataTraitTest : ItemComponentTraitTestBase<BasicItemContext, ItemReference, Temperature, TemperatureTrait<BasicItemContext, ItemReference>>
+    public class TemperatureDataTraitTest : ItemComponentTraitTestBase<ItemReference, Temperature, TemperatureTrait<ItemReference>>
     {
 
         public TemperatureDataTraitTest(): base(new ItemReferenceMetaData())
@@ -12,14 +12,9 @@ namespace RogueEntity.Core.Tests.Meta.ItemTraits
             EnableSerializationTest = false; // Temperature is currently implemented as purely static data that is not serialized as it is never changing.
         }
 
-        protected override BasicItemContext CreateContext()
+        protected override TemperatureTrait<ItemReference> CreateTrait()
         {
-            return new BasicItemContext();
-        }
-
-        protected override TemperatureTrait<BasicItemContext, ItemReference> CreateTrait()
-        {
-            return new TemperatureTrait<BasicItemContext, ItemReference>(Temperature.FromCelsius(30));
+            return new TemperatureTrait<ItemReference>(Temperature.FromCelsius(30));
         }
 
         protected override IItemComponentTestDataFactory<Temperature> ProduceTestData(EntityRelations<ItemReference> relations)

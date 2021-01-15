@@ -14,20 +14,20 @@ namespace RogueEntity.Core.Movement.CostModifier
 
     public static class RelativeMovementCostModifierItemDeclarations
     {
-        public static BulkItemDeclarationBuilder<TGameContext, TItemId> 
-            WithMovementCostModifier<TGameContext, TItemId, TMovementMode>(this BulkItemDeclarationBuilder<TGameContext, TItemId> builder,
+        public static BulkItemDeclarationBuilder< TItemId> 
+            WithMovementCostModifier< TItemId, TMovementMode>(this BulkItemDeclarationBuilder< TItemId> builder,
                                                                            RelativeMovementCostModifier<TMovementMode> m)
             where TItemId : IBulkDataStorageKey<TItemId>
         {
-            return builder.WithTrait(new RelativeMovementCostModifierTrait<TGameContext, TItemId, TMovementMode>(m));
+            return builder.WithTrait(new RelativeMovementCostModifierTrait< TItemId, TMovementMode>(m));
         }
 
-        public static ReferenceItemDeclarationBuilder<TGameContext, TItemId> 
-            WithMovementCostModifier<TGameContext, TItemId, TMovementMode>(this ReferenceItemDeclarationBuilder<TGameContext, TItemId> builder,
+        public static ReferenceItemDeclarationBuilder< TItemId> 
+            WithMovementCostModifier< TItemId, TMovementMode>(this ReferenceItemDeclarationBuilder< TItemId> builder,
                                                                            RelativeMovementCostModifier<TMovementMode> m)
             where TItemId : IEntityKey
         {
-            return builder.WithTrait(new RelativeMovementCostModifierTrait<TGameContext, TItemId, TMovementMode>(m));
+            return builder.WithTrait(new RelativeMovementCostModifierTrait< TItemId, TMovementMode>(m));
         }
     }
 }

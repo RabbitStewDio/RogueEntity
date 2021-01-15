@@ -4,7 +4,7 @@ using RogueEntity.Api.Utils;
 
 namespace RogueEntity.Api.ItemTraits
 {
-    public abstract class ItemDeclaration<TGameContext> : IEquatable<ItemDeclaration<TGameContext>>, IItemDeclaration
+    public abstract class ItemDeclaration : IEquatable<ItemDeclaration>, IItemDeclaration
     {
         public string Tag { get; }
         public ItemDeclarationId Id { get; }
@@ -20,7 +20,7 @@ namespace RogueEntity.Api.ItemTraits
 
         public abstract BufferList<TTrait> QueryAll<TTrait>(BufferList<TTrait> cache = null) where TTrait : IItemTrait;
 
-        public bool Equals(ItemDeclaration<TGameContext> other)
+        public bool Equals(ItemDeclaration other)
         {
             if (ReferenceEquals(null, other))
             {
@@ -52,7 +52,7 @@ namespace RogueEntity.Api.ItemTraits
                 return false;
             }
 
-            return Equals((ItemDeclaration<TGameContext>) obj);
+            return Equals((ItemDeclaration) obj);
         }
 
         public override int GetHashCode()
@@ -60,12 +60,12 @@ namespace RogueEntity.Api.ItemTraits
             return (Id != null ? Id.GetHashCode() : 0);
         }
 
-        public static bool operator ==(ItemDeclaration<TGameContext> left, ItemDeclaration<TGameContext> right)
+        public static bool operator ==(ItemDeclaration left, ItemDeclaration right)
         {
             return Equals(left, right);
         }
 
-        public static bool operator !=(ItemDeclaration<TGameContext> left, ItemDeclaration<TGameContext> right)
+        public static bool operator !=(ItemDeclaration left, ItemDeclaration right)
         {
             return !Equals(left, right);
         }

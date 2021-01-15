@@ -21,8 +21,7 @@ namespace RogueEntity.Api.GameLoops
     ///   This class represents an component system registration. It also contains supporting
     ///   functionality to measure execution times.
     /// </summary>
-    /// <typeparam name="TGameContext"></typeparam>
-    public class ActionSystemEntry<TGameContext>
+    public class ActionSystemEntry
     {
         readonly struct ActionSystemTime
         {
@@ -43,15 +42,15 @@ namespace RogueEntity.Api.GameLoops
             }
         }
         
-        static readonly ILogger Logger = SLog.ForContext<ActionSystemEntry<TGameContext>>();
+        static readonly ILogger Logger = SLog.ForContext<ActionSystemEntry>();
 
         readonly string text;
-        readonly Action<TGameContext> action;
+        readonly Action action;
         readonly Stopwatch frameCounter;
         readonly Stopwatch performanceCounter;
         int invocationCount;
 
-        public ActionSystemEntry(Action<TGameContext> action, ISystemDeclaration d, int declarationOrder, string context)
+        public ActionSystemEntry(Action action, ISystemDeclaration d, int declarationOrder, string context)
         {
             this.action = action;
             this.Name = d.Id;
@@ -69,14 +68,14 @@ namespace RogueEntity.Api.GameLoops
             }
         }
 
-        public void PerformAction(TGameContext context, ActionSystemExecutionContext contextName)
+        public void PerformAction(ActionSystemExecutionContext contextName)
         {
             invocationCount += 1;
             frameCounter.Restart();
             performanceCounter.Start();
             try
             {
-                action(context);
+                action();
                 Logger.Verbose("[{Context}] Processed {Handler} ({HandleTime} / {TotalTime})",
                                contextName, ToString(), 
                                new ActionSystemTime(invocationCount, frameCounter.Elapsed.TotalMilliseconds, performanceCounter.Elapsed.TotalMilliseconds));

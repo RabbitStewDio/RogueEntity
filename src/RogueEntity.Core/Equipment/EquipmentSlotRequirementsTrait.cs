@@ -5,7 +5,7 @@ using RogueEntity.Core.Meta.Items;
 
 namespace RogueEntity.Core.Equipment
 {
-    public class EquipmentSlotRequirementsTrait<TGameContext, TItemId> : StatelessItemComponentTraitBase<TGameContext, TItemId, EquipmentSlotRequirements> 
+    public class EquipmentSlotRequirementsTrait<TItemId> : StatelessItemComponentTraitBase<TItemId, EquipmentSlotRequirements> 
         where TItemId : IEntityKey
     {
         readonly EquipmentSlotRequirements r;
@@ -15,7 +15,7 @@ namespace RogueEntity.Core.Equipment
             this.r = r;
         }
 
-        protected override EquipmentSlotRequirements GetData(TGameContext context, TItemId k)
+        protected override EquipmentSlotRequirements GetData(TItemId k)
         {
             return r;
         }

@@ -8,23 +8,22 @@ using RogueEntity.Core.Utils.DataViews;
 
 namespace RogueEntity.Core.GridProcessing.LayerAggregation
 {
-    public class LayeredAggregationSystem<TGameContext, TAggregationType, TSourceType> : IAggregationLayerSystem<TAggregationType>,
-                                                                                         IAggregationLayerSystemBackend<TGameContext, TSourceType>,
-                                                                                         IReadOnlyDynamicDataView3D<TAggregationType>
+    public class LayeredAggregationSystem<TAggregationType, TSourceType> : IAggregationLayerSystem<TAggregationType>,
+                                                                           IAggregationLayerSystemBackend<TSourceType>,
+                                                                           IReadOnlyDynamicDataView3D<TAggregationType>
     {
         public event EventHandler<PositionDirtyEventArgs> PositionDirty;
         public event EventHandler<DynamicDataView3DEventArgs<TAggregationType>> ViewCreated;
         public event EventHandler<DynamicDataView3DEventArgs<TAggregationType>> ViewExpired;
 
-        readonly AggregationLayerStore<TGameContext, TAggregationType, TSourceType> resultDataView;
-        readonly List<IAggregationLayerController<TGameContext, TSourceType>> layerFactories2;
+        readonly AggregationLayerStore<TAggregationType, TSourceType> resultDataView;
+        readonly List<IAggregationLayerController<TSourceType>> layerFactories2;
         readonly Action<AggregationProcessingParameter<TAggregationType, TSourceType>> aggregatorFunction;
 
         public LayeredAggregationSystem(Action<AggregationProcessingParameter<TAggregationType, TSourceType>> aggregator,
                                         int tileWidth,
                                         int tileHeight) : this(aggregator, 0, 0, tileWidth, tileHeight)
-        {
-        }
+        { }
 
         public LayeredAggregationSystem([NotNull] Action<AggregationProcessingParameter<TAggregationType, TSourceType>> aggregator,
                                         int offsetX,
@@ -37,8 +36,8 @@ namespace RogueEntity.Core.GridProcessing.LayerAggregation
             this.OffsetY = offsetY;
             this.TileSizeX = tileSizeX;
             this.TileSizeY = tileSizeY;
-            this.resultDataView = new AggregationLayerStore<TGameContext, TAggregationType, TSourceType>();
-            this.layerFactories2 = new List<IAggregationLayerController<TGameContext, TSourceType>>();
+            this.resultDataView = new AggregationLayerStore<TAggregationType, TSourceType>();
+            this.layerFactories2 = new List<IAggregationLayerController<TSourceType>>();
         }
 
         public int OffsetX { get; }
@@ -54,19 +53,19 @@ namespace RogueEntity.Core.GridProcessing.LayerAggregation
             }
         }
 
-        public void Start(TGameContext context)
+        public void Start()
         {
             foreach (var lf in layerFactories2)
             {
-                lf.Start(context, this);
+                lf.Start(this);
             }
         }
 
-        public void Stop(TGameContext context)
+        public void Stop()
         {
             foreach (var lf in layerFactories2)
             {
-                lf.Stop(context, this);
+                lf.Stop(this);
             }
 
             foreach (var l in resultDataView.ZLayers)
@@ -87,14 +86,14 @@ namespace RogueEntity.Core.GridProcessing.LayerAggregation
             return buffer;
         }
 
-        public void ProcessSenseProperties(TGameContext context)
+        public void ProcessSenseProperties()
         {
             foreach (var lf in layerFactories2)
             {
-                lf.PrepareLayers(context, this);
+                lf.PrepareLayers(this);
             }
 
-            resultDataView.Process(context);
+            resultDataView.Process();
         }
 
         public bool TryGetView(int z, out IReadOnlyDynamicDataView2D<TAggregationType> data)
@@ -116,7 +115,7 @@ namespace RogueEntity.Core.GridProcessing.LayerAggregation
             resultDataView.RemoveLayer(z);
         }
 
-        public bool TryGetSenseLayer(int z, out IAggregationPropertiesLayer<TGameContext, TSourceType> data)
+        public bool TryGetSenseLayer(int z, out IAggregationPropertiesLayer<TSourceType> data)
         {
             if (resultDataView.TryGetLayer(z, out var dataImpl))
             {
@@ -128,19 +127,19 @@ namespace RogueEntity.Core.GridProcessing.LayerAggregation
             return false;
         }
 
-        public IAggregationPropertiesLayer<TGameContext, TSourceType> GetOrCreate(int z)
+        public IAggregationPropertiesLayer<TSourceType> GetOrCreate(int z)
         {
             if (resultDataView.TryGetLayer(z, out var dataImpl))
             {
                 return dataImpl;
             }
 
-            dataImpl = new AggregatePropertiesLayer<TGameContext, TAggregationType, TSourceType>(z, aggregatorFunction, OffsetX, OffsetY, TileSizeX, TileSizeY);
+            dataImpl = new AggregatePropertiesLayer<TAggregationType, TSourceType>(z, aggregatorFunction, OffsetX, OffsetY, TileSizeX, TileSizeY);
             resultDataView.DefineLayer(z, dataImpl);
             return dataImpl;
         }
 
-        public void AddSenseLayerFactory(IAggregationLayerController<TGameContext, TSourceType> layerHandler)
+        public void AddSenseLayerFactory(IAggregationLayerController<TSourceType> layerHandler)
         {
             layerFactories2.Add(layerHandler);
         }

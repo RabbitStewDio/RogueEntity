@@ -7,27 +7,25 @@ using RogueEntity.Core.Meta.Items;
 
 namespace RogueEntity.Core.Infrastructure.Actions.Traits
 {
-    public class ScheduledActionTrait<TGameContext, TActorId> : IReferenceItemTrait<TGameContext, TActorId>,
-                                                                IItemComponentTrait<TGameContext, TActorId, ScheduledAction<TGameContext, TActorId>> 
+    public class ScheduledActionTrait<TActorId> : IReferenceItemTrait<TActorId>,
+                                                  IItemComponentTrait<TActorId, ScheduledAction<TActorId>>
         where TActorId : IEntityKey
     {
         public ItemTraitId Id => "Core.Action.ScheduleActionQuery";
         public int Priority => 0;
 
-        public IReferenceItemTrait<TGameContext, TActorId> CreateInstance()
+        public IReferenceItemTrait<TActorId> CreateInstance()
         {
             return this;
         }
 
-        public void Initialize(IEntityViewControl<TActorId> v, TGameContext context, TActorId k, IItemDeclaration item)
-        {
-        }
+        public void Initialize(IEntityViewControl<TActorId> v, TActorId k, IItemDeclaration item)
+        { }
 
-        public void Apply(IEntityViewControl<TActorId> v, TGameContext context, TActorId k, IItemDeclaration item)
-        {
-        }
+        public void Apply(IEntityViewControl<TActorId> v, TActorId k, IItemDeclaration item)
+        { }
 
-        public bool TryQuery(IEntityViewControl<TActorId> v, TGameContext context, TActorId k, out ScheduledAction<TGameContext, TActorId> t)
+        public bool TryQuery(IEntityViewControl<TActorId> v, TActorId k, out ScheduledAction<TActorId> t)
         {
             if (v.GetComponent(k, out t))
 
@@ -37,16 +35,15 @@ namespace RogueEntity.Core.Infrastructure.Actions.Traits
 
             t = default;
             return false;
-
         }
 
-        public bool TryUpdate(IEntityViewControl<TActorId> v, TGameContext context, TActorId k, in ScheduledAction<TGameContext, TActorId> t, out TActorId changedK)
+        public bool TryUpdate(IEntityViewControl<TActorId> v, TActorId k, in ScheduledAction<TActorId> t, out TActorId changedK)
         {
             changedK = k;
             return false;
         }
 
-        public bool TryRemove(IEntityViewControl<TActorId> entityRegistry, TGameContext context, TActorId k, out TActorId changedItem)
+        public bool TryRemove(IEntityViewControl<TActorId> entityRegistry, TActorId k, out TActorId changedItem)
         {
             changedItem = k;
             return false;

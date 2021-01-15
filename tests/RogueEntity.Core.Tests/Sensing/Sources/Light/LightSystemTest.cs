@@ -60,18 +60,18 @@ namespace RogueEntity.Core.Tests.Sensing.Sources.Light
             return (physics.CreateLightPropagationAlgorithm(), physics.LightPhysics);
         }
 
-        protected override ReferenceItemDeclaration<SenseMappingTestContext, ItemReference> AttachTrait(ReferenceItemDeclaration<SenseMappingTestContext, ItemReference> decl)
+        protected override ReferenceItemDeclaration<ItemReference> AttachTrait(ReferenceItemDeclaration<ItemReference> decl)
         {
             switch (decl.Id.Id)
             {
                 case "SenseSource-Active-10":
-                    decl.WithTrait(new LightSourceTrait<SenseMappingTestContext, ItemReference>(physics, 10));
+                    decl.WithTrait(new LightSourceTrait<ItemReference>(physics, 10));
                     break;
                 case "SenseSource-Active-5":
-                    decl.WithTrait(new LightSourceTrait<SenseMappingTestContext, ItemReference>(physics, 5));
+                    decl.WithTrait(new LightSourceTrait<ItemReference>(physics, 5));
                     break;
                 case "SenseSource-Inactive-5":
-                    decl.WithTrait(new LightSourceTrait<SenseMappingTestContext, ItemReference>(physics, 5, false));
+                    decl.WithTrait(new LightSourceTrait<ItemReference>(physics, 5, false));
                     break;
             }
 

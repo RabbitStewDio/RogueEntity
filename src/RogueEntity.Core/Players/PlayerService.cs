@@ -12,19 +12,18 @@ namespace RogueEntity.Core.Players
     /// <summary>
     ///    A basic player service that manages a single observer for every player. 
     /// </summary>
-    /// <typeparam name="TGameContext"></typeparam>
     /// <typeparam name="TEntity"></typeparam>
-    public class PlayerService<TGameContext, TEntity> : IPlayerService<TEntity>
+    public class PlayerService<TEntity> : IPlayerService<TEntity>
         where TEntity : IEntityKey
     {
-        readonly IItemResolver<TGameContext, TEntity> itemResolver;
+        readonly IItemResolver<TEntity> itemResolver;
         readonly IEntityView<TEntity, PlayerTag> playerEntities;
         readonly IEntityView<TEntity, PlayerObserver> playerObservers;
         readonly ItemDeclarationId playerItemId;
         readonly Dictionary<PlayerTag, PlayerData> playerDataByGuid;
         readonly Dictionary<TEntity, PlayerData> playerDataByEntityKey;
 
-        public PlayerService([NotNull] IItemResolver<TGameContext, TEntity> itemResolver,
+        public PlayerService([NotNull] IItemResolver<TEntity> itemResolver,
                              [NotNull] IEntityView<TEntity, PlayerTag> playerEntities,
                              [NotNull] IEntityView<TEntity, PlayerObserver> playerObservers,
                              ItemDeclarationId playerItemId)
@@ -158,7 +157,7 @@ namespace RogueEntity.Core.Players
                 return pd;
             }
 
-            var playerEntity = itemResolver.Instantiate(default, playerItemId);
+            var playerEntity = itemResolver.Instantiate(playerItemId);
             var playerData = new PlayerData(playerEntity, playerTag, active);
             playerDataByGuid[playerTag] = playerData;
             playerDataByEntityKey[playerEntity] = playerData;

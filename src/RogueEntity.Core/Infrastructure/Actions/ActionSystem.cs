@@ -6,23 +6,23 @@ using Serilog;
 
 namespace RogueEntity.Core.Infrastructure.Actions
 {
-    public class ActionSystem<TGameContext, TActorId>
+    public class ActionSystem< TActorId>
         where TActorId : IEntityKey
     {
-        static readonly ILogger Logger = SLog.ForContext<ActionSystem<TGameContext, TActorId>>();
+        static readonly ILogger Logger = SLog.ForContext<ActionSystem< TActorId>>();
 
-        protected virtual bool Ready(IEntityViewControl<TActorId> v, TActorId k, TGameContext context, in ActionPoints points)
+        protected virtual bool Ready(IEntityViewControl<TActorId> v, TActorId k,  in ActionPoints points)
         {
             return points.CanPerformActions();
         }
 
-        protected virtual bool Ready(IEntityViewControl<TActorId> v, TActorId k, TGameContext context, in MovementPoints points)
+        protected virtual bool Ready(IEntityViewControl<TActorId> v, TActorId k,  in MovementPoints points)
         {
             return points.CanPerformActions();
         }
 
-        public virtual void FetchNextAction(IEntityViewControl<TActorId> v, TGameContext context, TActorId k,
-                                            in ScheduledActionPlan<TGameContext, TActorId> plan,
+        public virtual void FetchNextAction(IEntityViewControl<TActorId> v,  TActorId k,
+                                            in ScheduledActionPlan< TActorId> plan,
                                             in IdleMarker idleMarker)
         {
             if (plan.TryDequeue(out var action))
@@ -33,7 +33,6 @@ namespace RogueEntity.Core.Infrastructure.Actions
         }
 
         public virtual void MaintainActionPointStatus(IEntityViewControl<TActorId> v, 
-                                                      TGameContext context, 
                                                       TActorId k,
                                                       in ActionPoints ap)
         {
@@ -48,7 +47,6 @@ namespace RogueEntity.Core.Infrastructure.Actions
         }
 
         public virtual void MaintainMovementPointStatus(IEntityViewControl<TActorId> v, 
-                                                        TGameContext context, 
                                                         TActorId k,
                                                         in MovementPoints ap)
         {
@@ -68,19 +66,17 @@ namespace RogueEntity.Core.Infrastructure.Actions
         ///   points.
         /// </summary>
         /// <param name="v"></param>
-        /// <param name="context"></param>
         /// <param name="k"></param>
         /// <param name="action"></param>
         public virtual void RunUnifiedSystem(IEntityViewControl<TActorId> v,
-                                             TGameContext context,
                                              TActorId k,
-                                             in ScheduledAction<TGameContext, TActorId> action)
+                                             in ScheduledAction< TActorId> action)
         {
             var nextAction = action;
             var actionCost = 0;
             while (actionCost == 0)
             {
-                if (!RunAction(v, context, k, in nextAction, out actionCost, out var actionResult))
+                if (!RunAction(v,  k, in nextAction, out actionCost, out var actionResult))
                 {
                     return;
                 }
@@ -90,14 +86,14 @@ namespace RogueEntity.Core.Infrastructure.Actions
                     return;
                 }
 
-                if (v.GetComponent(k, out ScheduledActionPlan<TGameContext, TActorId> plan) && plan.TryDequeue(out nextAction))
+                if (v.GetComponent(k, out ScheduledActionPlan< TActorId> plan) && plan.TryDequeue(out nextAction))
                 {
                     v.ReplaceComponent(k, nextAction.WithPreviousResult(actionResult));
                     v.RemoveComponent<IdleMarker>(k);
                 }
                 else
                 {
-                    v.RemoveComponent<ScheduledAction<TGameContext, TActorId>>(k);
+                    v.RemoveComponent<ScheduledAction< TActorId>>(k);
                     v.AssignOrReplace<IdleMarker>(k);
                     return;
                 }
@@ -109,13 +105,11 @@ namespace RogueEntity.Core.Infrastructure.Actions
         ///   This is useful if you want actions to have a separate cool down from movements.
         /// </summary>
         /// <param name="v"></param>
-        /// <param name="context"></param>
         /// <param name="k"></param>
         /// <param name="action"></param>
         public virtual void RunSplitSystem(IEntityViewControl<TActorId> v,
-                                           TGameContext context,
                                            TActorId k,
-                                           in ScheduledAction<TGameContext, TActorId> action)
+                                           in ScheduledAction< TActorId> action)
         {
             var nextAction = action;
             var actionCost = 0;
@@ -124,14 +118,14 @@ namespace RogueEntity.Core.Infrastructure.Actions
                 ActionResult actionResult;
                 if (nextAction.NextAction.IsMovement)
                 {
-                    if (!RunMovement(v, context, k, in nextAction, out actionCost, out actionResult))
+                    if (!RunMovement(v,  k, in nextAction, out actionCost, out actionResult))
                     {
                         return;
                     }
                 }
                 else
                 {
-                    if (!RunAction(v, context, k, in nextAction, out actionCost, out actionResult))
+                    if (!RunAction(v,  k, in nextAction, out actionCost, out actionResult))
                     {
                         return;
                     }
@@ -142,7 +136,7 @@ namespace RogueEntity.Core.Infrastructure.Actions
                     return;
                 }
 
-                if (v.GetComponent(k, out ScheduledActionPlan<TGameContext, TActorId> plan) && 
+                if (v.GetComponent(k, out ScheduledActionPlan< TActorId> plan) && 
                     plan.TryDequeue(out nextAction))
                 {
                     v.ReplaceComponent(k, nextAction.WithPreviousResult(actionResult));
@@ -150,15 +144,15 @@ namespace RogueEntity.Core.Infrastructure.Actions
                 }
                 else
                 {
-                    v.RemoveComponent<ScheduledAction<TGameContext, TActorId>>(k);
+                    v.RemoveComponent<ScheduledAction< TActorId>>(k);
                     v.AssignOrReplace<IdleMarker>(k);
                     return;
                 }
             }
         }
 
-        bool RunMovement(IEntityViewControl<TActorId> v, TGameContext context, TActorId k,
-                         in ScheduledAction<TGameContext, TActorId> action,
+        bool RunMovement(IEntityViewControl<TActorId> v,  TActorId k,
+                         in ScheduledAction< TActorId> action,
                          out int actionCost,
                          out ActionResult actionResult)
         {
@@ -169,14 +163,14 @@ namespace RogueEntity.Core.Infrastructure.Actions
                 return false;
             }
 
-            if (!Ready(v, k, context, in points))
+            if (!Ready(v, k,  in points))
             { 
                 Logger.Debug("{Entity}:{points} - Not ready to run any movement.", k, points);
                 actionResult = default;
                 return false;
             }
 
-            actionResult = action.NextAction.Perform(v, context, k, out actionCost);
+            actionResult = action.NextAction.Perform(v,  k, out actionCost);
             Logger.Debug("{Entity}:{points} - Running {Action} with {cost} movement point cost and resulted {ActionResult}",
                          k, points, action.NextAction, actionCost, actionResult);
 
@@ -188,7 +182,7 @@ namespace RogueEntity.Core.Infrastructure.Actions
             return true;
         }
 
-        bool RunAction(IEntityViewControl<TActorId> v, TGameContext context, TActorId k, in ScheduledAction<TGameContext, TActorId> action,
+        bool RunAction(IEntityViewControl<TActorId> v,  TActorId k, in ScheduledAction< TActorId> action,
                        out int actionCost,
                        out ActionResult actionResult)
         {
@@ -199,14 +193,14 @@ namespace RogueEntity.Core.Infrastructure.Actions
                 return false;
             }
 
-            if (!Ready(v, k, context, in points))
+            if (!Ready(v, k,  in points))
             {
                 Logger.Debug("{Entity}:{points} - Not ready to run any action.", k, points);
                 actionResult = default;
                 return false;
             }
 
-            actionResult = action.NextAction.Perform(v, context, k, out actionCost);
+            actionResult = action.NextAction.Perform(v,  k, out actionCost);
             Logger.Debug("{Entity}:{points} - Running {Action} with {cost} action point cost and resulted {actionResult}",
                          k, points, action.NextAction, actionCost, actionResult);
 
@@ -228,7 +222,7 @@ namespace RogueEntity.Core.Infrastructure.Actions
             return context.Configuration.HasFlag(CoreModule.CoreModule.UnifiedActionSystemProperty);
         }
 
-        public static bool IsReadyToAct<TGameContext, TActorId>(this TGameContext context, TActorId actor)
+        public static bool IsReadyToAct< TActorId>(this TGameContext context, TActorId actor)
             where TGameContext : IGameContext, IMapContext, IGameContext<TGameContext>, IFactionContext
         {
             if (context.ActorResolver.TryQueryData(actor, context, out ActionPoints ap))
@@ -240,7 +234,7 @@ namespace RogueEntity.Core.Infrastructure.Actions
             return true;
         }
 
-        public static bool IsReadyToMove<TGameContext, TActorId>(this TGameContext context, TActorId actor)
+        public static bool IsReadyToMove< TActorId>(this TGameContext context, TActorId actor)
             where TGameContext : IGameContext, IMapContext, IGameContext<TGameContext>, IFactionContext
         {
             if (context.IsUnifiedActionSystem())

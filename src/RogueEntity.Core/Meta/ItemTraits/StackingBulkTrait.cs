@@ -7,8 +7,8 @@ using RogueEntity.Core.Meta.Items;
 
 namespace RogueEntity.Core.Meta.ItemTraits
 {
-    public class StackingBulkTrait<TContext, TItemId> : IItemComponentTrait<TContext, TItemId, StackCount>,
-                                                        IBulkDataTrait<TContext, TItemId>
+    public class StackingBulkTrait< TItemId> : IItemComponentTrait< TItemId, StackCount>,
+                                                        IBulkDataTrait< TItemId>
         where TItemId : IBulkDataStorageKey<TItemId>
     {
         readonly ushort stackSize;
@@ -29,17 +29,17 @@ namespace RogueEntity.Core.Meta.ItemTraits
         public ItemTraitId Id { get; }
         public int Priority { get; }
 
-        public IBulkItemTrait<TContext, TItemId> CreateInstance()
+        public IBulkItemTrait< TItemId> CreateInstance()
         {
             return this;
         }
 
-        public virtual TItemId Initialize(TContext context, IItemDeclaration item, TItemId reference)
+        public virtual TItemId Initialize(IItemDeclaration item, TItemId reference)
         {
             return reference.WithData(initialCount);
         }
 
-        public bool TryQuery(IEntityViewControl<TItemId> v, TContext context, TItemId k, out StackCount t)
+        public bool TryQuery(IEntityViewControl<TItemId> v,  TItemId k, out StackCount t)
         {
             if (k.IsReference)
             {
@@ -51,7 +51,7 @@ namespace RogueEntity.Core.Meta.ItemTraits
             return true;
         }
 
-        public bool TryUpdate(IEntityViewControl<TItemId> v, TContext context, TItemId k, in StackCount t, out TItemId changedK)
+        public bool TryUpdate(IEntityViewControl<TItemId> v, TItemId k, in StackCount t, out TItemId changedK)
         {
             if (t.MaximumStackSize > stackSize || t.Count > t.MaximumStackSize)
             {
@@ -76,7 +76,7 @@ namespace RogueEntity.Core.Meta.ItemTraits
             return true;
         }
 
-        public bool TryRemove(IEntityViewControl<TItemId> entityRegistry, TContext context, TItemId k, out TItemId changedItem)
+        public bool TryRemove(IEntityViewControl<TItemId> entityRegistry,  TItemId k, out TItemId changedItem)
         {
             changedItem = k;
             return false;

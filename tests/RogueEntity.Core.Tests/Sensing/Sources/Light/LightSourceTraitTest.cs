@@ -11,7 +11,7 @@ using RogueEntity.Core.Positioning.Algorithms;
 namespace RogueEntity.Core.Tests.Sensing.Sources.Light
 {
     [TestFixture]
-    public class LightSourceTraitTest : ItemComponentTraitTestBase<SenseMappingTestContext, ActorReference, LightSourceDefinition, LightSourceTrait<SenseMappingTestContext, ActorReference>>
+    public class LightSourceTraitTest : ItemComponentTraitTestBase<ActorReference, LightSourceDefinition, LightSourceTrait<ActorReference>>
     {
         readonly LightPhysicsConfiguration physics;
 
@@ -20,19 +20,17 @@ namespace RogueEntity.Core.Tests.Sensing.Sources.Light
             physics = new LightPhysicsConfiguration(new LinearDecaySensePhysics(DistanceCalculation.Chebyshev));
         }
 
-        protected override SenseMappingTestContext CreateContext()
+        protected override void SetUpPrepare()
         {
-            var context = new SenseMappingTestContext();
             EntityRegistry.RegisterNonConstructable<LightSourceDefinition>();
             EntityRegistry.RegisterNonConstructable<SenseSourceState<VisionSense>>();
             EntityRegistry.RegisterFlag<ObservedSenseSource<VisionSense>>();
             EntityRegistry.RegisterFlag<SenseDirtyFlag<VisionSense>>();
-            return context;
         }
 
-        protected override LightSourceTrait<SenseMappingTestContext, ActorReference> CreateTrait()
+        protected override LightSourceTrait<ActorReference> CreateTrait()
         {
-            return new LightSourceTrait<SenseMappingTestContext, ActorReference>(physics, 0.5f, 0.3f, 1.9f, true);
+            return new LightSourceTrait<ActorReference>(physics, 0.5f, 0.3f, 1.9f, true);
         }
 
         protected override IItemComponentTestDataFactory<LightSourceDefinition> ProduceTestData(EntityRelations<ActorReference> relations)

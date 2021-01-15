@@ -25,7 +25,7 @@ namespace RogueEntity.Core.Sensing.Map.InfraVision
         public static readonly EntitySystemId ReceptorPreparationSystemId = "Systems.Core.Senses.Map.Temperature.Prepare";
         public static readonly EntitySystemId ReceptorCollectSystemId = "Systems.Core.Senses.Map.Temperature.Collect";
         public static readonly EntitySystemId ReceptorComputeSystemId = "Systems.Core.Senses.Map.Temperature.Compute";
-        public static readonly EntitySystemId ReceptorApplySystemId = "Systems.Core.Senses.Map.Temperature.ApplyReceptorFieldOfView";
+        public static readonly EntitySystemId ReceptorFinalizeSystemId = "Systems.Core.Senses.Map.Light.Finalize";
 
         public InfraVisionMapModule()
         {
@@ -43,8 +43,8 @@ namespace RogueEntity.Core.Sensing.Map.InfraVision
         }
 
         [ModuleInitializer]
-        protected void InitializeSenseCacheSystem<TGameContext>(in ModuleInitializationParameter initParameter,
-                                                                IModuleInitializer<TGameContext> moduleInitializer)
+        protected void InitializeSenseCacheSystem(in ModuleInitializationParameter initParameter,
+                                                  IModuleInitializer moduleInitializer)
         {
             if (!IsServiceEnabled(initParameter.ServiceResolver))
             {
@@ -58,19 +58,20 @@ namespace RogueEntity.Core.Sensing.Map.InfraVision
         }
 
         [EntityRoleInitializer("Role.Core.Senses.Source.Temperature")]
-        protected void InitializeSenseCollection<TGameContext, TItemId>(in ModuleEntityInitializationParameter<TGameContext,TItemId> initParameter,
-                                                                        IModuleInitializer<TGameContext> initializer,
-                                                                        EntityRole role)
+        protected void InitializeSenseCollection<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
+                                                          IModuleInitializer initializer,
+                                                          EntityRole role)
             where TItemId : IEntityKey
         {
             if (!IsServiceEnabled(initParameter.ServiceResolver))
             {
                 return;
             }
-            
+
             var ctx = initializer.DeclareEntityContext<TItemId>();
             ctx.Register(ReceptorCollectSystemId, 5750, RegisterCollectSenseSourcesSystem);
             ctx.Register(ReceptorComputeSystemId, 5850, RegisterComputeSenseMapSystem);
+            ctx.Register(ReceptorFinalizeSystemId, 5950, RegisterFinalizeSenseMapSystem);
         }
 
         bool IsServiceEnabled(IServiceResolver serviceResolver)
@@ -78,9 +79,9 @@ namespace RogueEntity.Core.Sensing.Map.InfraVision
             return serviceResolver.TryResolve(out IConfiguration config) && config.GetValue("RogueEntity:Core:Sensing:Map:InfraVision:Enabled", false);
         }
 
-        void RegisterCollectSenseSourcesSystem<TGameContext, TItemId>(in ModuleInitializationParameter initParameter,
-                                                                      IGameLoopSystemRegistration<TGameContext> context,
-                                                                      EntityRegistry<TItemId> registry)
+        void RegisterCollectSenseSourcesSystem<TItemId>(in ModuleInitializationParameter initParameter,
+                                                        IGameLoopSystemRegistration context,
+                                                        EntityRegistry<TItemId> registry)
             where TItemId : IEntityKey
         {
             var resolver = initParameter.ServiceResolver;
@@ -88,7 +89,7 @@ namespace RogueEntity.Core.Sensing.Map.InfraVision
 
             var system =
                 registry.BuildSystem()
-                        .WithContext<TGameContext>()
+                        .WithoutContext()
                         .WithInputParameter<HeatSourceDefinition, SenseSourceState<TemperatureSense>>()
                         .CreateSystem(hs.CollectSenseSources);
 
@@ -96,20 +97,32 @@ namespace RogueEntity.Core.Sensing.Map.InfraVision
             context.AddFixedStepHandlers(system);
         }
 
-        void RegisterComputeSenseMapSystem<TGameContext, TItemId>(in ModuleInitializationParameter initParameter,
-                                                                  IGameLoopSystemRegistration<TGameContext> context,
-                                                                  EntityRegistry<TItemId> registry)
+        void RegisterComputeSenseMapSystem<TItemId>(in ModuleInitializationParameter initParameter,
+                                                    IGameLoopSystemRegistration context,
+                                                    EntityRegistry<TItemId> registry)
             where TItemId : IEntityKey
         {
             var resolver = initParameter.ServiceResolver;
             var hs = GetOrCreate(resolver);
 
-            context.AddInitializationStepHandler(c => hs.ProcessSenseMap(registry));
-            context.AddFixedStepHandlers(c => hs.ProcessSenseMap(registry));
+            context.AddInitializationStepHandler(() => hs.ProcessSenseMap(registry));
+            context.AddFixedStepHandlers(() => hs.ProcessSenseMap(registry));
         }
 
-        void RegisterShutdownHook<TGameContext>(in ModuleInitializationParameter initParameter,
-                                                 IGameLoopSystemRegistration<TGameContext> context)
+        void RegisterFinalizeSenseMapSystem<TItemId>(in ModuleInitializationParameter initParameter,
+                                                     IGameLoopSystemRegistration context,
+                                                     EntityRegistry<TItemId> registry)
+            where TItemId : IEntityKey
+        {
+            var resolver = initParameter.ServiceResolver;
+            var hs = GetOrCreate(resolver);
+
+            context.AddInitializationStepHandler(hs.EndSenseCalculation);
+            context.AddFixedStepHandlers(hs.EndSenseCalculation);
+        }
+
+        void RegisterShutdownHook(in ModuleInitializationParameter initParameter,
+                                  IGameLoopSystemRegistration context)
         {
             var resolver = initParameter.ServiceResolver;
             var hs = GetOrCreate(resolver);
@@ -135,7 +148,7 @@ namespace RogueEntity.Core.Sensing.Map.InfraVision
                 {
                     throw new InvalidOperationException("There is neither a heat-physics nor a infra-vision physics configuration defined");
                 }
-                
+
                 physics = new InfraVisionSenseReceptorPhysicsConfiguration(sourcePhysics);
             }
 

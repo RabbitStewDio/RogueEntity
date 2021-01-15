@@ -6,7 +6,7 @@ using RogueEntity.Core.Meta.Items;
 
 namespace RogueEntity.Core.Infrastructure.Commands
 {
-    public class CommandReceiverTrait<TGameContext, TActorId> : IReferenceItemTrait<TGameContext, TActorId> 
+    public class CommandReceiverTrait< TActorId> : IReferenceItemTrait< TActorId> 
         where TActorId : IEntityKey
     {
         public CommandReceiverTrait()
@@ -18,18 +18,18 @@ namespace RogueEntity.Core.Infrastructure.Commands
         public ItemTraitId Id { get; }
         public int Priority { get; }
 
-        public IReferenceItemTrait<TGameContext, TActorId> CreateInstance()
+        public IReferenceItemTrait< TActorId> CreateInstance()
         {
             return this;
         }
 
-        public void Initialize(IEntityViewControl<TActorId> v, TGameContext context, TActorId k, IItemDeclaration item)
+        public void Initialize(IEntityViewControl<TActorId> v, TActorId k, IItemDeclaration item)
         {
             v.AssignComponent<IdleMarker>(k);
             v.AssignComponent<CommandQueueComponent>(k);
         }
 
-        public void Apply(IEntityViewControl<TActorId> v, TGameContext context, TActorId k, IItemDeclaration item)
+        public void Apply(IEntityViewControl<TActorId> v, TActorId k, IItemDeclaration item)
         {
         }
         

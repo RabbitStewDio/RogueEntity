@@ -11,20 +11,20 @@ using Serilog;
 
 namespace RogueEntity.Api.Modules.Initializers
 {
-    public class ModuleSystemPhaseDeclareContent<TGameContext> : IModuleEntityInitializationCallback<TGameContext>
+    public class ModuleSystemPhaseDeclareContent : IModuleEntityInitializationCallback
     {
-        static readonly ILogger Logger = SLog.ForContext<ModuleSystem<TGameContext>>();
-        readonly IReadOnlyDictionary<ModuleId, ModuleRecord<TGameContext>> modulesById;
+        static readonly ILogger Logger = SLog.ForContext<ModuleSystem>();
+        readonly IReadOnlyDictionary<ModuleId, ModuleRecord> modulesById;
         readonly IServiceResolver serviceResolver;
-        readonly ModuleInitializer<TGameContext> moduleInitializer;
-        readonly GlobalModuleEntityInformation<TGameContext> entityInformation;
+        readonly ModuleInitializer moduleInitializer;
+        readonly GlobalModuleEntityInformation entityInformation;
 
         readonly Dictionary<EntityRoleInstance, Dictionary<ItemDeclarationId, (ModuleId, List<ItemTraitId>)>> roles;
         readonly Dictionary<EntityRelationInstance, Dictionary<ItemDeclarationId, (ModuleId, List<ItemTraitId>)>> relations;
 
-        public ModuleSystemPhaseDeclareContent(ModuleSystemPhaseInitModuleResult<TGameContext> state,
+        public ModuleSystemPhaseDeclareContent(ModuleSystemPhaseInitModuleResult state,
                                                IServiceResolver serviceResolver,
-                                               IReadOnlyDictionary<ModuleId, ModuleRecord<TGameContext>> modulesById)
+                                               IReadOnlyDictionary<ModuleId, ModuleRecord> modulesById)
         {
             this.serviceResolver = serviceResolver;
             this.modulesById = modulesById;
@@ -43,7 +43,7 @@ namespace RogueEntity.Api.Modules.Initializers
             }
         }
 
-        void IModuleEntityInitializationCallback<TGameContext>.PerformInitialization<TEntityId>(IModuleInitializationData<TGameContext, TEntityId> moduleContext)
+        void IModuleEntityInitializationCallback.PerformInitialization<TEntityId>(IModuleInitializationData<TEntityId> moduleContext)
         {
             DeclareUniqueItems(moduleContext);
             AddRolesFromTraits<TEntityId>();
@@ -92,7 +92,7 @@ namespace RogueEntity.Api.Modules.Initializers
         }
 
         void AddModuleDependencyFromTraits(IReadOnlyDictionary<ItemDeclarationId, (ModuleId, List<ItemTraitId>)> rk,
-                                           IEnumerable<ModuleRecord<TGameContext>> declaringModules)
+                                           IEnumerable<ModuleRecord> declaringModules)
         {
             var declaringModulesList = declaringModules.ToList();
             foreach (var x in rk)
@@ -126,10 +126,10 @@ namespace RogueEntity.Api.Modules.Initializers
             roleSet.RecordRole(role, messageTemplate, messageParameter);
         }
 
-        void DeclareUniqueItems<TEntityId>(IModuleInitializationData<TGameContext, TEntityId> moduleContext)
+        void DeclareUniqueItems<TEntityId>(IModuleInitializationData<TEntityId> moduleContext)
             where TEntityId : IEntityKey
         {
-            var ctx = serviceResolver.Resolve<IItemContextBackend<TGameContext, TEntityId>>();
+            var ctx = serviceResolver.Resolve<IItemContextBackend<TEntityId>>();
             var items = new Dictionary<ItemDeclarationId, (ModuleId, IItemDeclaration)>();
             foreach (var (mod, b) in moduleContext.DeclaredBulkItems)
             {
@@ -149,7 +149,7 @@ namespace RogueEntity.Api.Modules.Initializers
             }
         }
 
-        IEnumerable<ModuleRecord<TGameContext>> FindDeclaringModule(EntityRole role)
+        IEnumerable<ModuleRecord> FindDeclaringModule(EntityRole role)
         {
             // find module that declared this 
             foreach (var dep in modulesById.Values)
@@ -161,7 +161,7 @@ namespace RogueEntity.Api.Modules.Initializers
             }
         }
 
-        IEnumerable<ModuleRecord<TGameContext>> FindDeclaringModule(EntityRelation relation)
+        IEnumerable<ModuleRecord> FindDeclaringModule(EntityRelation relation)
         {
             // find module that declared this 
             foreach (var dep in modulesById.Values)
@@ -196,14 +196,14 @@ namespace RogueEntity.Api.Modules.Initializers
             }
         }
 
-        class RegisterRelationTargetCallback : IModuleEntityInitializationCallback<TGameContext>
+        class RegisterRelationTargetCallback : IModuleEntityInitializationCallback
         {
             readonly EntityRole role;
             readonly string messageTemplate;
             readonly object[] messageParameter;
-            readonly GlobalModuleEntityInformation<TGameContext> entityInformation;
+            readonly GlobalModuleEntityInformation entityInformation;
 
-            public RegisterRelationTargetCallback([NotNull] GlobalModuleEntityInformation<TGameContext> entityInformation,
+            public RegisterRelationTargetCallback([NotNull] GlobalModuleEntityInformation entityInformation,
                                                   EntityRole role,
                                                   string messageTemplate,
                                                   params object[] messageParameter)
@@ -214,7 +214,7 @@ namespace RogueEntity.Api.Modules.Initializers
                 this.messageParameter = messageParameter;
             }
 
-            public void PerformInitialization<TTarget>(IModuleInitializationData<TGameContext, TTarget> moduleContext)
+            public void PerformInitialization<TTarget>(IModuleInitializationData<TTarget> moduleContext)
                 where TTarget : IEntityKey
             {
                 var roleSet = this.entityInformation.CreateEntityInformation<TTarget>();

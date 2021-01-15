@@ -15,7 +15,7 @@ namespace RogueEntity.Core.Movement.CostModifier.Directions
                                                       AdjacencyRule adjacencyRule = AdjacencyRule.EightWay) : base(sourceData, adjacencyRule)
         { }
 
-        public void ProcessSystem<TGameContext>(TGameContext x) => Process();
+        public void ProcessSystem() => Process();
 
         protected override bool IsMoveAllowed(in (IReadOnlyDynamicDataView2D<float> sourceData,
                                                   IReadOnlyBoundedDataView<float> sourceTile, int z) parameterData,

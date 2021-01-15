@@ -6,25 +6,24 @@ using RogueEntity.Core.Meta.EntityKeys;
 
 namespace RogueEntity.Core.Tests.Meta.Items
 {
-    public abstract class ReferenceItemComponentTraitTestBase<TGameContext, TItemId, TData, TItemTrait>
+    public abstract class ReferenceItemComponentTraitTestBase<TItemId, TData, TItemTrait>
         where TItemId : IBulkDataStorageKey<TItemId>
-        where TItemTrait: IReferenceItemTrait<TGameContext, TItemId>, IItemComponentTrait<TGameContext, TItemId, TData>
+        where TItemTrait: IReferenceItemTrait<TItemId>, IItemComponentTrait<TItemId, TData>
     {
         protected static readonly ItemDeclarationId ItemId = "TestSubject";
 
-        protected TGameContext Context { get; private set; }
         protected TItemTrait subjectTrait;
 
         [SetUp]
         public void SetUp()
         {
-            Context = CreateContext();
+            SetUpPrepare();
 
-            EntityRegistry.RegisterNonConstructable<IReferenceItemDeclaration<BasicItemContext, ItemReference>>();
+            EntityRegistry.RegisterNonConstructable<IReferenceItemDeclaration<ItemReference>>();
 
             subjectTrait = CreateTrait();
             
-            ItemRegistry.Register(new ReferenceItemDeclaration<TGameContext, TItemId>(ItemId).WithTrait(subjectTrait));
+            ItemRegistry.Register(new ReferenceItemDeclaration<TItemId>(ItemId).WithTrait(subjectTrait));
 
             if (!EntityRegistry.IsManaged<TData>())
             {
@@ -32,10 +31,13 @@ namespace RogueEntity.Core.Tests.Meta.Items
             }
         }
 
-        protected abstract EntityRegistry<TItemId> EntityRegistry { get; }
-        protected abstract ItemRegistry<TGameContext, TItemId> ItemRegistry { get; }
+        protected virtual void SetUpPrepare()
+        {
+        }
 
-        protected abstract TGameContext CreateContext();
+        protected abstract EntityRegistry<TItemId> EntityRegistry { get; }
+        protected abstract ItemRegistry<TItemId> ItemRegistry { get; }
+
         protected abstract TItemTrait CreateTrait();
     }
 }

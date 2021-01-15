@@ -8,7 +8,7 @@ using RogueEntity.Api.Utils;
 
 namespace RogueEntity.Api.Modules
 {
-    public partial class ModuleSystem<TGameContext>
+    public partial class ModuleSystem
     {
         /// <summary>
         ///    Records the existence of a module.
@@ -39,7 +39,7 @@ namespace RogueEntity.Api.Modules
 
             Logger.Debug("Registered module {ModuleId}", module.Id);
 
-            var moduleRecord = new ModuleRecord<TGameContext>(module);
+            var moduleRecord = new ModuleRecord(module);
             modulesById[module.Id] = moduleRecord;
         }
 
@@ -100,7 +100,7 @@ namespace RogueEntity.Api.Modules
             return domainSpec.Contains(moduleDomain);
         }
 
-        static string PrintModuleDependencyList(ReadOnlyListWrapper<ModuleRecord<TGameContext>> orderedRecords)
+        static string PrintModuleDependencyList(ReadOnlyListWrapper<ModuleRecord> orderedRecords)
         {
             StringBuilder b = new StringBuilder();
             foreach (var r in orderedRecords)

@@ -11,7 +11,7 @@ using RogueEntity.Core.Positioning.Algorithms;
 
 namespace RogueEntity.Core.Tests.Sensing.Sources.Noise
 {
-    public class NoiseSourceTraitTest: ItemComponentTraitTestBase<SenseMappingTestContext, ActorReference, NoiseClip, NoiseSourceTrait<SenseMappingTestContext, ActorReference>>
+    public class NoiseSourceTraitTest: ItemComponentTraitTestBase<ActorReference, NoiseClip, NoiseSourceTrait<ActorReference>>
     {
         readonly NoisePhysicsConfiguration physics;
 
@@ -20,19 +20,17 @@ namespace RogueEntity.Core.Tests.Sensing.Sources.Noise
             physics = new NoisePhysicsConfiguration(new LinearDecaySensePhysics(DistanceCalculation.Chebyshev));
         }
 
-        protected override SenseMappingTestContext CreateContext()
+        protected override void SetUpPrepare()
         {
-            var context = new SenseMappingTestContext();
             EntityRegistry.RegisterNonConstructable<NoiseSourceDefinition>();
             EntityRegistry.RegisterNonConstructable<SenseSourceState<NoiseSense>>();
             EntityRegistry.RegisterFlag<ObservedSenseSource<NoiseSense>>();
             EntityRegistry.RegisterFlag<SenseDirtyFlag<NoiseSense>>();
-            return context;
         }
 
-        protected override NoiseSourceTrait<SenseMappingTestContext, ActorReference> CreateTrait()
+        protected override NoiseSourceTrait<ActorReference> CreateTrait()
         {
-            return new NoiseSourceTrait<SenseMappingTestContext, ActorReference>(physics);
+            return new NoiseSourceTrait<ActorReference>(physics);
         }
 
         protected override IItemComponentTestDataFactory<NoiseClip> ProduceTestData(EntityRelations<ActorReference> relations)

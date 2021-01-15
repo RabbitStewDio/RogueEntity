@@ -12,8 +12,8 @@ using RogueEntity.Core.Positioning.Algorithms;
 
 namespace RogueEntity.Core.Tests.Sensing.Receptor.Noise
 {
-    public class NoiseReceptorTraitTest : ItemComponentTraitTestBase<SenseMappingTestContext, ActorReference, SensoryReceptorData<NoiseSense, NoiseSense>,
-        NoiseDirectionSenseTrait<SenseMappingTestContext, ActorReference>>
+    public class NoiseReceptorTraitTest : ItemComponentTraitTestBase<ActorReference, SensoryReceptorData<NoiseSense, NoiseSense>,
+        NoiseDirectionSenseTrait<ActorReference>>
     {
         readonly NoiseSenseReceptorPhysicsConfiguration physics;
 
@@ -25,9 +25,8 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Noise
             );
         }
 
-        protected override SenseMappingTestContext CreateContext()
+        protected override void SetUpPrepare()
         {
-            var context = new SenseMappingTestContext();
             EntityRegistry.RegisterNonConstructable<NoiseSourceDefinition>();
             EntityRegistry.RegisterNonConstructable<SenseSourceState<NoiseSense>>();
             EntityRegistry.RegisterFlag<ObservedSenseSource<NoiseSense>>();
@@ -37,13 +36,11 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Noise
             EntityRegistry.RegisterNonConstructable<SensoryReceptorState<NoiseSense, NoiseSense>>();
             EntityRegistry.RegisterNonConstructable<SingleLevelSenseDirectionMapData<NoiseSense, NoiseSense>>();
             EntityRegistry.RegisterFlag<SenseReceptorDirtyFlag<NoiseSense, NoiseSense>>();
-
-            return context;
         }
 
-        protected override NoiseDirectionSenseTrait<SenseMappingTestContext, ActorReference> CreateTrait()
+        protected override NoiseDirectionSenseTrait<ActorReference> CreateTrait()
         {
-            return new NoiseDirectionSenseTrait<SenseMappingTestContext, ActorReference>(physics, 1.9f);
+            return new NoiseDirectionSenseTrait<ActorReference>(physics, 1.9f);
         }
 
         protected override IItemComponentTestDataFactory<SensoryReceptorData<NoiseSense, NoiseSense>> ProduceTestData(EntityRelations<ActorReference> relations)

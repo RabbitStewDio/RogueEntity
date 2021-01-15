@@ -1,7 +1,7 @@
 namespace RogueEntity.Api.Modules.Helpers
 {
-    public interface IGlobalSystemDeclaration<TGameContext>: ISystemDeclaration
+    public interface IGlobalSystemDeclaration: ISystemDeclaration
     {
-        GlobalSystemRegistrationDelegate<TGameContext> SystemRegistration { get; }
+        GlobalSystemRegistrationDelegate SystemRegistration { get; }
     }
 }

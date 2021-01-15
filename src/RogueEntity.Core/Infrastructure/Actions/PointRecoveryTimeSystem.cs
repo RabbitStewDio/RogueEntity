@@ -5,19 +5,24 @@ using Serilog;
 
 namespace RogueEntity.Core.Infrastructure.Actions
 {
-    public static class PointRecoveryTimeSystem
+    public class PointRecoveryTimeSystem
     {
         static readonly ILogger Logger = SLog.ForContext(typeof(PointRecoveryTimeSystem));
+        ITimeContext timeContext;
 
-        public static void Update<TGameContext, TActorId>(IEntityViewControl<TActorId> v, TGameContext context, 
-                                                          TActorId key, 
-                                                          in ActionPointRecoveryTime timer,
-                                                          in ActionPoints actionPoints) 
-            where TGameContext: ITimeContext 
+        public PointRecoveryTimeSystem(ITimeContext timeContext)
+        {
+            this.timeContext = timeContext;
+        }
+
+        public void Update<TActorId>(IEntityViewControl<TActorId> v,
+                                            TActorId key,
+                                            in ActionPointRecoveryTime timer,
+                                            in ActionPoints actionPoints)
             where TActorId : IEntityKey
         {
-            var turn = context.TimeSource.FixedStepTime;
-            if (timer.IsReady(turn) && 
+            var turn = timeContext.TimeSource.FixedStepTime;
+            if (timer.IsReady(turn) &&
                 actionPoints.TryRecover(timer.ActionPointsRecovery, out var next))
             {
                 var time = timer.Recover(turn);
@@ -27,6 +32,7 @@ namespace RogueEntity.Core.Infrastructure.Actions
                 {
                     v.WriteBack(key, in next);
                 }
+
                 v.WriteBack(key, in time);
             }
             else
@@ -35,15 +41,14 @@ namespace RogueEntity.Core.Infrastructure.Actions
             }
         }
 
-        public static void Update<TGameContext, TActorId>(IEntityViewControl<TActorId> v, TGameContext context,
-                                                          TActorId key, 
-                                                          in MovementPointRecoveryTime timer,
-                                                          in MovementPoints movementPoints) 
-            where TGameContext: ITimeContext 
+        public void Update<TActorId>(IEntityViewControl<TActorId> v,
+                                            TActorId key,
+                                            in MovementPointRecoveryTime timer,
+                                            in MovementPoints movementPoints)
             where TActorId : IEntityKey
         {
-            var turn = context.TimeSource.FixedStepTime;
-            if (timer.IsReady(turn) && 
+            var turn = timeContext.TimeSource.FixedStepTime;
+            if (timer.IsReady(turn) &&
                 movementPoints.TryRecover(timer.MovementPointsRecovery, out var next))
             {
                 var time = timer.Recover(turn);
@@ -54,6 +59,7 @@ namespace RogueEntity.Core.Infrastructure.Actions
                 {
                     v.WriteBack(key, in next);
                 }
+
                 v.WriteBack(key, in time);
             }
             else

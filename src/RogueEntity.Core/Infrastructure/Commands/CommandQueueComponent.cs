@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Runtime.Serialization;
 using EnTTSharp.Entities.Attributes;
 using MessagePack;
+using RogueEntity.Core.Inputs.Commands;
 
 namespace RogueEntity.Core.Infrastructure.Commands
 {

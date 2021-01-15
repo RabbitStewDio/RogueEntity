@@ -9,22 +9,22 @@ using RogueEntity.Core.Sensing.Common;
 
 namespace RogueEntity.Core.Sensing.Sources
 {
-    public abstract class SenseSourceTraitBase<TGameContext, TItemId, TSense, TSenseDefinition> : IReferenceItemTrait<TGameContext, TItemId>,
-                                                                                                  IItemComponentTrait<TGameContext, TItemId, TSenseDefinition>
+    public abstract class SenseSourceTraitBase<TItemId, TSense, TSenseDefinition> : IReferenceItemTrait<TItemId>,
+                                                                                    IItemComponentTrait<TItemId, TSenseDefinition>
         where TItemId : IEntityKey
         where TSenseDefinition : ISenseDefinition
     {
         public abstract ItemTraitId Id { get; }
         public abstract int Priority { get; }
 
-        public IReferenceItemTrait<TGameContext, TItemId> CreateInstance()
+        public IReferenceItemTrait<TItemId> CreateInstance()
         {
             return this;
         }
 
         protected abstract bool TryGetInitialValue(out TSenseDefinition senseDefinition);
 
-        public void Initialize(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, IItemDeclaration item)
+        public void Initialize(IEntityViewControl<TItemId> v, TItemId k, IItemDeclaration item)
         {
             if (TryGetInitialValue(out var senseDefinition))
             {
@@ -33,7 +33,7 @@ namespace RogueEntity.Core.Sensing.Sources
             }
         }
 
-        public void Apply(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, IItemDeclaration item)
+        public void Apply(IEntityViewControl<TItemId> v, TItemId k, IItemDeclaration item)
         {
             if (!v.GetComponent(k, out TSenseDefinition _))
             {
@@ -47,12 +47,12 @@ namespace RogueEntity.Core.Sensing.Sources
             }
         }
 
-        public bool TryQuery(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, out TSenseDefinition t)
+        public bool TryQuery(IEntityViewControl<TItemId> v, TItemId k, out TSenseDefinition t)
         {
             return v.GetComponent(k, out t);
         }
 
-        public bool TryUpdate(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, in TSenseDefinition t, out TItemId changedK)
+        public bool TryUpdate(IEntityViewControl<TItemId> v, TItemId k, in TSenseDefinition t, out TItemId changedK)
         {
             v.AssignOrReplace(k, t);
 
@@ -71,7 +71,7 @@ namespace RogueEntity.Core.Sensing.Sources
             return true;
         }
 
-        public bool TryRemove(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, out TItemId changedK)
+        public bool TryRemove(IEntityViewControl<TItemId> v, TItemId k, out TItemId changedK)
         {
             v.RemoveComponent<TSenseDefinition>(k);
             v.RemoveComponent<SenseSourceState<TSense>>(k);

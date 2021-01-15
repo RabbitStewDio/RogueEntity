@@ -7,20 +7,20 @@ using Serilog;
 
 namespace RogueEntity.Api.Modules.Initializers
 {
-    public class ModuleSystemPhaseResolveRoles<TGameContext> : IModuleEntityInitializationCallback<TGameContext>
+    public class ModuleSystemPhaseResolveRoles : IModuleEntityInitializationCallback
     {
-        static readonly ILogger Logger = SLog.ForContext<ModuleSystem<TGameContext>>();
-        readonly GlobalModuleEntityInformation<TGameContext> entityInfo;
+        static readonly ILogger Logger = SLog.ForContext<ModuleSystem>();
+        readonly GlobalModuleEntityInformation entityInfo;
         ModuleBase currentModule;
-        ModuleInitializer<TGameContext> moduleInitializer;
+        ModuleInitializer moduleInitializer;
 
-        public ModuleSystemPhaseResolveRoles(in ModuleSystemPhaseInitModuleResult<TGameContext> p)
+        public ModuleSystemPhaseResolveRoles(in ModuleSystemPhaseInitModuleResult p)
         {
             entityInfo = p.EntityInformation;
             moduleInitializer = p.ModuleInitializer;
         }
 
-        public void Process(ReadOnlyListWrapper<ModuleRecord<TGameContext>> orderedModules)
+        public void Process(ReadOnlyListWrapper<ModuleRecord> orderedModules)
         {
             CollectDeclaredRoles(orderedModules);
             ResolveEquivalenceRoles(orderedModules);
@@ -55,7 +55,7 @@ namespace RogueEntity.Api.Modules.Initializers
             }
         }
 
-        void CollectDeclaredRoles(ReadOnlyListWrapper<ModuleRecord<TGameContext>> open,
+        void CollectDeclaredRoles(ReadOnlyListWrapper<ModuleRecord> open,
                                   Stack<ModuleId> diagnostics = null)
         {
             if (diagnostics == null)
@@ -91,7 +91,7 @@ namespace RogueEntity.Api.Modules.Initializers
             }
         }
 
-        void IModuleEntityInitializationCallback<TGameContext>.PerformInitialization<TEntityId>(IModuleInitializationData<TGameContext, TEntityId> moduleContext)
+        void IModuleEntityInitializationCallback.PerformInitialization<TEntityId>(IModuleInitializationData<TEntityId> moduleContext)
         {
             var roleSet = entityInfo.CreateEntityInformation<TEntityId>();
             var subject = typeof(TEntityId);
@@ -143,7 +143,7 @@ namespace RogueEntity.Api.Modules.Initializers
             }
         }
 
-        void ResolveEquivalenceRoles(ReadOnlyListWrapper<ModuleRecord<TGameContext>> open)
+        void ResolveEquivalenceRoles(ReadOnlyListWrapper<ModuleRecord> open)
         {
             for (var index = open.Count - 1; index >= 0; index--)
             {

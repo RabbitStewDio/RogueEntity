@@ -1,3 +1,4 @@
+using NUnit.Framework;
 using RogueEntity.Core.Meta.ItemTraits;
 using RogueEntity.Core.Sensing;
 using RogueEntity.Core.Sensing.Common;
@@ -13,8 +14,8 @@ using RogueEntity.Core.Positioning.Algorithms;
 
 namespace RogueEntity.Core.Tests.Sensing.Receptor.Heat
 {
-    public class HeatReceptorTraitTest : ItemComponentTraitTestBase<SenseMappingTestContext, ActorReference, SensoryReceptorData<TemperatureSense, TemperatureSense>,
-        HeatDirectionSenseTrait<SenseMappingTestContext, ActorReference>>
+    [TestFixture]
+    public class HeatReceptorTraitTest : ItemComponentTraitTestBase<ActorReference, SensoryReceptorData<TemperatureSense, TemperatureSense>, HeatDirectionSenseTrait<ActorReference>>
     {
         readonly HeatSenseReceptorPhysicsConfiguration physics;
 
@@ -26,9 +27,8 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Heat
             );
         }
 
-        protected override SenseMappingTestContext CreateContext()
+        protected override void SetUpPrepare()
         {
-            var context = new SenseMappingTestContext();
             EntityRegistry.RegisterNonConstructable<HeatSourceDefinition>();
             EntityRegistry.RegisterNonConstructable<SenseSourceState<TemperatureSense>>();
             EntityRegistry.RegisterFlag<ObservedSenseSource<TemperatureSense>>();
@@ -38,13 +38,11 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Heat
             EntityRegistry.RegisterNonConstructable<SensoryReceptorState<TemperatureSense, TemperatureSense>>();
             EntityRegistry.RegisterNonConstructable<SingleLevelSenseDirectionMapData<TemperatureSense, TemperatureSense>>();
             EntityRegistry.RegisterFlag<SenseReceptorDirtyFlag<TemperatureSense, TemperatureSense>>();
-
-            return context;
         }
 
-        protected override HeatDirectionSenseTrait<SenseMappingTestContext, ActorReference> CreateTrait()
+        protected override HeatDirectionSenseTrait<ActorReference> CreateTrait()
         {
-            return new HeatDirectionSenseTrait<SenseMappingTestContext, ActorReference>(physics, 1.9f);
+            return new HeatDirectionSenseTrait<ActorReference>(physics, 1.9f);
         }
 
         protected override IItemComponentTestDataFactory<SensoryReceptorData<TemperatureSense, TemperatureSense>> ProduceTestData(EntityRelations<ActorReference> relations)

@@ -1,26 +1,27 @@
 ﻿using System;
 using EnTTSharp.Entities;
 using RogueEntity.Api.ItemTraits;
+using RogueEntity.Core.Inputs.Commands;
 
 namespace RogueEntity.Core.Infrastructure.Commands
 {
-    public abstract class CommandHandlerBase<TGameContext, TActorId, TCommand> : ICommandHandler<TGameContext, TActorId> 
+    public abstract class CommandHandlerBase<TActorId, TCommand> : ICommandHandler<TActorId>
         where TActorId : IEntityKey
-        where TCommand: ICommand
+        where TCommand : ICommand
     {
-        public bool Invoke(IEntityViewControl<TActorId> v, TGameContext context, TActorId entity, ICommand command)
+        public bool Invoke(IEntityViewControl<TActorId> v, TActorId entity, ICommand command)
         {
             if (!(command is TCommand m))
             {
                 throw new InvalidCastException("Given command is not a valid command for this handler");
             }
 
-            if (!v.GetComponent(entity, out IReferenceItemDeclaration<TGameContext, TActorId> entityInfo))
+            if (!v.GetComponent(entity, out IReferenceItemDeclaration<TActorId> entityInfo))
             {
                 throw new InvalidOperationException("Not an actor entity.");
             }
 
-            return Invoke(context, entity, entityInfo, m);
+            return Invoke(entity, entityInfo, m);
         }
 
         public bool CanHandle(ICommand commandId)
@@ -28,10 +29,8 @@ namespace RogueEntity.Core.Infrastructure.Commands
             return commandId is TCommand;
         }
 
-        protected abstract bool Invoke(TGameContext context, 
-                                       TActorId actorKey,
-                                       IReferenceItemDeclaration<TGameContext, TActorId> actorData, 
+        protected abstract bool Invoke(TActorId actorKey,
+                                       IReferenceItemDeclaration<TActorId> actorData,
                                        TCommand command);
-
     }
 }

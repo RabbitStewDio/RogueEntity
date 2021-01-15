@@ -8,43 +8,43 @@ using Serilog;
 
 namespace RogueEntity.Api.Modules.Helpers
 {
-    public class ModuleEntitySystemRegistrations<TGameContext> : IGameLoopSystemRegistration<TGameContext>, 
-                                                                 IGameLoopSystemInformation<TGameContext>
+    public class ModuleEntitySystemRegistrations : IGameLoopSystemRegistration,
+                                                   IGameLoopSystemInformation
     {
-        static readonly ILogger Logger = SLog.ForContext<ModuleEntitySystemRegistrations<TGameContext>>();
+        static readonly ILogger Logger = SLog.ForContext<ModuleEntitySystemRegistrations>();
         ISystemDeclaration CurrentSystem { get; set; }
         string contextPattern;
 
-        readonly List<ActionSystemEntry<TGameContext>> initializationEntries;
-        readonly List<ActionSystemEntry<TGameContext>> preFixedStepEntries;
-        readonly List<ActionSystemEntry<TGameContext>> fixedStepEntries;
-        readonly List<ActionSystemEntry<TGameContext>> lateFixedStepEntries;
-        readonly List<ActionSystemEntry<TGameContext>> variableStepEntries;
-        readonly List<ActionSystemEntry<TGameContext>> lateVariableStepEntries;
-        readonly List<ActionSystemEntry<TGameContext>> disposeEntries;
+        readonly List<ActionSystemEntry> initializationEntries;
+        readonly List<ActionSystemEntry> preFixedStepEntries;
+        readonly List<ActionSystemEntry> fixedStepEntries;
+        readonly List<ActionSystemEntry> lateFixedStepEntries;
+        readonly List<ActionSystemEntry> variableStepEntries;
+        readonly List<ActionSystemEntry> lateVariableStepEntries;
+        readonly List<ActionSystemEntry> disposeEntries;
 
         public ModuleEntitySystemRegistrations()
         {
-            initializationEntries = new List<ActionSystemEntry<TGameContext>>();
-            preFixedStepEntries = new List<ActionSystemEntry<TGameContext>>();
-            fixedStepEntries = new List<ActionSystemEntry<TGameContext>>();
-            lateFixedStepEntries = new List<ActionSystemEntry<TGameContext>>();
-            variableStepEntries = new List<ActionSystemEntry<TGameContext>>();
-            lateVariableStepEntries = new List<ActionSystemEntry<TGameContext>>();
-            disposeEntries = new List<ActionSystemEntry<TGameContext>>();
+            initializationEntries = new List<ActionSystemEntry>();
+            preFixedStepEntries = new List<ActionSystemEntry>();
+            fixedStepEntries = new List<ActionSystemEntry>();
+            lateFixedStepEntries = new List<ActionSystemEntry>();
+            variableStepEntries = new List<ActionSystemEntry>();
+            lateVariableStepEntries = new List<ActionSystemEntry>();
+            disposeEntries = new List<ActionSystemEntry>();
         }
 
-        public void EnterContext(IGlobalSystemDeclaration<TGameContext> d)
+        public void EnterContext(IGlobalSystemDeclaration d)
         {
             Logger.Debug("Processing global system {SystemId} in module {ModuleId}", d.Id, d.DeclaringModule);
             CurrentSystem = d;
             contextPattern = "#";
         }
 
-        public void EnterContext<TEntity>(IEntitySystemDeclaration<TGameContext, TEntity> d)
+        public void EnterContext<TEntity>(IEntitySystemDeclaration<TEntity> d)
             where TEntity : IEntityKey
         {
-            Logger.Debug("Processing entity system {SystemId} in module {ModuleId} for {EntityId}", d.Id , d.DeclaringModule, typeof(TEntity));
+            Logger.Debug("Processing entity system {SystemId} in module {ModuleId} for {EntityId}", d.Id, d.DeclaringModule, typeof(TEntity));
             CurrentSystem = d;
             contextPattern = typeof(TEntity).Name;
         }
@@ -55,86 +55,86 @@ namespace RogueEntity.Api.Modules.Helpers
             contextPattern = null;
         }
 
-        ActionSystemEntry<TGameContext> Wrap(Action<TGameContext> c, string description, int order)
+        ActionSystemEntry Wrap(Action c, string description, int order)
         {
             var d = string.IsNullOrEmpty(description) ? "" : "|" + description;
-            return new ActionSystemEntry<TGameContext>(c, CurrentSystem, order, $"{contextPattern}{d}");
+            return new ActionSystemEntry(c, CurrentSystem, order, $"{contextPattern}{d}");
         }
 
-        void AddEntry(List<ActionSystemEntry<TGameContext>> entries,
-                      Action<TGameContext> c,
+        void AddEntry(List<ActionSystemEntry> entries,
+                      Action c,
                       string description)
         {
             var entry = Wrap(c, description, entries.Count);
             entries.Add(entry);
         }
 
-        public void AddInitializationStepHandler(Action<TGameContext> c, string description = null)
+        public void AddInitializationStepHandler(Action c, string description = null)
         {
             AddEntry(initializationEntries, c, description);
         }
 
-        public void AddPreFixedStepHandlers(Action<TGameContext> c, string description = null)
+        public void AddPreFixedStepHandlers(Action c, string description = null)
         {
             AddEntry(preFixedStepEntries, c, description);
         }
 
-        public void AddFixedStepHandlers(Action<TGameContext> c, string description = null)
+        public void AddFixedStepHandlers(Action c, string description = null)
         {
             AddEntry(fixedStepEntries, c, description);
         }
 
-        public void AddLateFixedStepHandlers(Action<TGameContext> c, string description = null)
+        public void AddLateFixedStepHandlers(Action c, string description = null)
         {
             AddEntry(lateFixedStepEntries, c, description);
         }
 
-        public void AddVariableStepHandlers(Action<TGameContext> c, string description = null)
+        public void AddVariableStepHandlers(Action c, string description = null)
         {
             AddEntry(variableStepEntries, c, description);
         }
 
-        public void AddLateVariableStepHandlers(Action<TGameContext> c, string description = null)
+        public void AddLateVariableStepHandlers(Action c, string description = null)
         {
             AddEntry(lateVariableStepEntries, c, description);
         }
 
-        public void AddDisposeStepHandler(Action<TGameContext> c, string description = null)
+        public void AddDisposeStepHandler(Action c, string description = null)
         {
             AddEntry(disposeEntries, c, description);
         }
 
-        public IEnumerable<ActionSystemEntry<TGameContext>> InitializationEntries
+        public IEnumerable<ActionSystemEntry> InitializationEntries
         {
             get { return initializationEntries.OrderBy(e => (e.Priority, e.DeclarationOrder)); }
         }
 
-        public IEnumerable<ActionSystemEntry<TGameContext>> PreFixedStepEntries
+        public IEnumerable<ActionSystemEntry> PreFixedStepEntries
         {
             get { return preFixedStepEntries.OrderBy(e => (e.Priority, e.DeclarationOrder)); }
         }
 
-        public IEnumerable<ActionSystemEntry<TGameContext>> FixedStepEntries
+        public IEnumerable<ActionSystemEntry> FixedStepEntries
         {
             get { return fixedStepEntries.OrderBy(e => (e.Priority, e.DeclarationOrder)); }
         }
 
-        public IEnumerable<ActionSystemEntry<TGameContext>> LateFixedStepEntries
+        public IEnumerable<ActionSystemEntry> LateFixedStepEntries
         {
             get { return lateFixedStepEntries.OrderBy(e => (e.Priority, e.DeclarationOrder)); }
         }
 
-        public IEnumerable<ActionSystemEntry<TGameContext>> VariableStepEntries
+        public IEnumerable<ActionSystemEntry> VariableStepEntries
         {
             get { return variableStepEntries.OrderBy(e => (e.Priority, e.DeclarationOrder)); }
         }
 
-        public IEnumerable<ActionSystemEntry<TGameContext>> LateVariableStepEntries
+        public IEnumerable<ActionSystemEntry> LateVariableStepEntries
         {
             get { return lateVariableStepEntries.OrderBy(e => (e.Priority, e.DeclarationOrder)); }
         }
 
-        public IEnumerable<ActionSystemEntry<TGameContext>> DisposeEntries
+        public IEnumerable<ActionSystemEntry> DisposeEntries
         {
             get { return disposeEntries.OrderBy(e => (e.Priority, e.DeclarationOrder)); }
         }

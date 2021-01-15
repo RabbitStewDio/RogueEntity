@@ -5,7 +5,7 @@ using RogueEntity.Core.Meta.Items;
 
 namespace RogueEntity.Core.Infrastructure.Actions.Traits
 {
-    public class MovementPointRecoveryTimeTrait<TGameContext, TActorId> : SimpleReferenceItemComponentTraitBase<TGameContext, TActorId, MovementPointRecoveryTime>
+    public class MovementPointRecoveryTimeTrait< TActorId> : SimpleReferenceItemComponentTraitBase< TActorId, MovementPointRecoveryTime>
         where TActorId : IBulkDataStorageKey<TActorId>
     {
         readonly ActionPointRecoveryDefinition recoveryDefinition;
@@ -15,12 +15,12 @@ namespace RogueEntity.Core.Infrastructure.Actions.Traits
             this.recoveryDefinition = recoveryDefinition;
         }
 
-        protected override MovementPointRecoveryTime CreateInitialValue(TGameContext c, TActorId actor)
+        protected override MovementPointRecoveryTime CreateInitialValue(TActorId actor)
         {
             return new MovementPointRecoveryTime(recoveryDefinition.Magnitude, recoveryDefinition.Frequency, 0);
         }
 
-        public override void Apply(IEntityViewControl<TActorId> v, TGameContext context, TActorId k, IItemDeclaration item)
+        public override void Apply(IEntityViewControl<TActorId> v, TActorId k, IItemDeclaration item)
         {
         }
 

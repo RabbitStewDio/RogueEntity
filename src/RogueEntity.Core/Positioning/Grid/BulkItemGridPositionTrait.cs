@@ -13,22 +13,23 @@ using Serilog;
 
 namespace RogueEntity.Core.Positioning.Grid
 {
-    public class BulkItemGridPositionTrait<TGameContext, TItemId> : IBulkItemTrait<TGameContext, TItemId>,
-                                                                    IItemComponentTrait<TGameContext, TItemId, EntityGridPosition>,
-                                                                    IItemComponentDesignTimeInformationTrait<MapLayerPreference>,
-                                                                    IItemComponentInformationTrait<TGameContext, TItemId, MapLayerPreference>
+    public class BulkItemGridPositionTrait<TItemId> : IBulkItemTrait<TItemId>,
+                                                      IItemComponentTrait<TItemId, EntityGridPosition>,
+                                                      IItemComponentDesignTimeInformationTrait<MapLayerPreference>,
+                                                      IItemComponentInformationTrait<TItemId, MapLayerPreference>
         where TItemId : IBulkDataStorageKey<TItemId>
     {
         readonly IBulkDataStorageMetaData<TItemId> itemIdMetaData;
-        readonly IItemResolver<TGameContext, TItemId> itemResolver;
-        readonly ILogger logger = SLog.ForContext<BulkItemGridPositionTrait<TGameContext, TItemId>>();
+        readonly IItemResolver<TItemId> itemResolver;
+        readonly ILogger logger = SLog.ForContext<BulkItemGridPositionTrait<TItemId>>();
         readonly MapLayerPreference layerPreference;
         readonly IGridMapContext<TItemId> gridMapContext;
 
-        public BulkItemGridPositionTrait([NotNull] IBulkDataStorageMetaData<TItemId> itemIdMetaData, 
-                                         [NotNull] IItemResolver<TGameContext, TItemId> itemResolver,
+        public BulkItemGridPositionTrait([NotNull] IBulkDataStorageMetaData<TItemId> itemIdMetaData,
+                                         [NotNull] IItemResolver<TItemId> itemResolver,
                                          [NotNull] IGridMapContext<TItemId> gridMapContext,
-                                         MapLayer layer, params MapLayer[] layers)
+                                         MapLayer layer,
+                                         params MapLayer[] layers)
         {
             this.itemIdMetaData = itemIdMetaData ?? throw new ArgumentNullException(nameof(itemIdMetaData));
             this.itemResolver = itemResolver ?? throw new ArgumentNullException(nameof(itemResolver));
@@ -42,26 +43,26 @@ namespace RogueEntity.Core.Positioning.Grid
         public ItemTraitId Id { get; }
         public int Priority { get; }
 
-        public IBulkItemTrait<TGameContext, TItemId> CreateInstance()
+        public IBulkItemTrait<TItemId> CreateInstance()
         {
             return this;
         }
 
-        public bool TryQuery(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, out MapLayerPreference t)
+        public bool TryQuery(IEntityViewControl<TItemId> v, TItemId k, out MapLayerPreference t)
         {
             t = layerPreference;
             return true;
         }
 
-        public bool TryQuery(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, out EntityGridPosition t)
+        public bool TryQuery(IEntityViewControl<TItemId> v, TItemId k, out EntityGridPosition t)
         {
             t = default;
             return false;
         }
 
-        bool IItemComponentTrait<TGameContext, TItemId, EntityGridPosition>.TryRemove(IEntityViewControl<TItemId> entityRegistry, TGameContext context, TItemId k, out TItemId changedItem)
+        bool IItemComponentTrait<TItemId, EntityGridPosition>.TryRemove(IEntityViewControl<TItemId> entityRegistry, TItemId k, out TItemId changedItem)
         {
-            return TryUpdate(entityRegistry, context, k, EntityGridPosition.Invalid, out changedItem);
+            return TryUpdate(entityRegistry, k, EntityGridPosition.Invalid, out changedItem);
         }
 
         public bool TryQuery(out MapLayerPreference t)
@@ -70,8 +71,10 @@ namespace RogueEntity.Core.Positioning.Grid
             return true;
         }
 
-        public bool TryUpdate(IEntityViewControl<TItemId> v, TGameContext context, TItemId targetItem,
-                              in EntityGridPosition p, out TItemId changedK)
+        public bool TryUpdate(IEntityViewControl<TItemId> v,
+                              TItemId targetItem,
+                              in EntityGridPosition p,
+                              out TItemId changedK)
         {
             if (targetItem.IsReference)
             {
@@ -115,10 +118,10 @@ namespace RogueEntity.Core.Positioning.Grid
                 return false;
             }
 
-            var stackSizeOnMap = itemResolver.QueryStackSize(itemAtPos, context);
-            var stackSizeNew = itemResolver.QueryStackSize(targetItem, context);
+            var stackSizeOnMap = itemResolver.QueryStackSize(itemAtPos);
+            var stackSizeNew = itemResolver.QueryStackSize(targetItem);
             if (stackSizeOnMap.Merge(stackSizeNew, out var mergedStack) &&
-                itemResolver.TryUpdateData(itemAtPos, context, in mergedStack, out var changedRef))
+                itemResolver.TryUpdateData(itemAtPos, in mergedStack, out var changedRef))
             {
                 map[p.GridX, p.GridY] = changedRef;
                 changedK = changedRef;
@@ -141,7 +144,7 @@ namespace RogueEntity.Core.Positioning.Grid
             }
         }
 
-        public TItemId Initialize(TGameContext context, IItemDeclaration item, TItemId reference)
+        public TItemId Initialize(IItemDeclaration item, TItemId reference)
         {
             return reference;
         }

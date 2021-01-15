@@ -10,9 +10,8 @@ namespace RogueEntity.Core.Meta.ItemTraits
     ///    that items do not change their inherent weight. Chests and other container items can still
     ///    gain weight if needed. 
     /// </summary>
-    /// <typeparam name="TGameContext"></typeparam>
     /// <typeparam name="TItemId"></typeparam>
-    public class WeightTrait<TGameContext, TItemId> : StatelessItemComponentTraitBase<TGameContext, TItemId, Weight>
+    public class WeightTrait< TItemId> : StatelessItemComponentTraitBase< TItemId, Weight>
         where TItemId : IEntityKey
     {
         readonly Weight baseWeight;
@@ -22,7 +21,7 @@ namespace RogueEntity.Core.Meta.ItemTraits
             this.baseWeight = baseWeight;
         }
 
-        protected override Weight GetData(TGameContext context, TItemId k)
+        protected override Weight GetData(TItemId k)
         {
             return baseWeight;
         }

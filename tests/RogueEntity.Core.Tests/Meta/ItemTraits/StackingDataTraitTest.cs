@@ -4,20 +4,15 @@ using RogueEntity.Core.Meta.EntityKeys;
 
 namespace RogueEntity.Core.Tests.Meta.ItemTraits
 {
-    public class StackingDataTraitTest : ItemComponentTraitTestBase<BasicItemContext, ItemReference, StackCount, StackingBulkTrait<BasicItemContext, ItemReference>>
+    public class StackingDataTraitTest : ItemComponentTraitTestBase<ItemReference, StackCount, StackingBulkTrait<ItemReference>>
     {
         public StackingDataTraitTest() : base(new ItemReferenceMetaData())
         {
         }
 
-        protected override BasicItemContext CreateContext()
+        protected override StackingBulkTrait<ItemReference> CreateTrait()
         {
-            return new BasicItemContext();
-        }
-
-        protected override StackingBulkTrait<BasicItemContext, ItemReference> CreateTrait()
-        {
-            return new StackingBulkTrait<BasicItemContext, ItemReference>(1, 100);
+            return new StackingBulkTrait<ItemReference>(1, 100);
         }
 
         protected override IItemComponentTestDataFactory<StackCount> ProduceTestData(EntityRelations<ItemReference> relations)

@@ -1,12 +1,7 @@
-using JetBrains.Annotations;
 using Microsoft.Extensions.ObjectPool;
-using RogueEntity.Core.Directionality;
 using RogueEntity.Core.Movement;
 using RogueEntity.Core.MovementPlaning.Goals;
 using RogueEntity.Core.Positioning.SpatialQueries;
-using RogueEntity.Core.Utils.DataViews;
-using System;
-using System.Collections.Generic;
 
 namespace RogueEntity.Core.MovementPlaning.GoalFinding.SingleLevel
 {

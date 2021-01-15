@@ -6,12 +6,12 @@ namespace RogueEntity.Core.Sensing.Receptors.Touch
 {
     public static class TouchSenseTraitDeclarations
     {
-        public static ReferenceItemDeclarationBuilder<TGameContext, TItemId> WithTouchSense<TGameContext, TItemId>(this ReferenceItemDeclarationBuilder<TGameContext, TItemId> builder,
+        public static ReferenceItemDeclarationBuilder< TItemId> WithTouchSense< TItemId>(this ReferenceItemDeclarationBuilder< TItemId> builder,
                                                                                                                    bool enabled = true)
             where TItemId : IEntityKey
         {
             var physics = builder.ServiceResolver.GetOrCreateTouchPhysics();
-            var trait = new TouchSenseTrait<TGameContext, TItemId>(physics, enabled);
+            var trait = new TouchSenseTrait< TItemId>(physics, enabled);
             builder.Declaration.WithTrait(trait);
             return builder;
         }

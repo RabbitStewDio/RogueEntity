@@ -5,7 +5,7 @@ using RogueEntity.Core.Meta.Items;
 
 namespace RogueEntity.Core.Meta.ItemTraits
 {
-    public class TemperatureTrait<TContext, TItemId>: StatelessItemComponentTraitBase<TContext, TItemId, Temperature>
+    public class TemperatureTrait<TItemId>: StatelessItemComponentTraitBase<TItemId, Temperature>
         where TItemId : IEntityKey
     {
         readonly Temperature temperature;
@@ -15,7 +15,7 @@ namespace RogueEntity.Core.Meta.ItemTraits
             this.temperature = temperature;
         }
 
-        protected override Temperature GetData(TContext context, TItemId k)
+        protected override Temperature GetData(TItemId k)
         {
             return temperature;
         }

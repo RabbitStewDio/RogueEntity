@@ -8,8 +8,8 @@ using RogueEntity.Core.Sensing.Common;
 
 namespace RogueEntity.Core.Sensing.Sources.Noise
 {
-    public class NoiseSourceTrait<TGameContext, TItemId> : SenseSourceTraitBase<TGameContext, TItemId, NoiseSense, NoiseSourceDefinition>,
-                                                           IItemComponentTrait<TGameContext, TItemId, NoiseClip>
+    public class NoiseSourceTrait<TItemId> : SenseSourceTraitBase<TItemId, NoiseSense, NoiseSourceDefinition>,
+                                             IItemComponentTrait<TItemId, NoiseClip>
         where TItemId : IEntityKey
     {
         public override ItemTraitId Id => "Core.Item.NoiseSource";
@@ -28,7 +28,7 @@ namespace RogueEntity.Core.Sensing.Sources.Noise
             return false;
         }
 
-        public bool TryQuery(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, out NoiseClip t)
+        public bool TryQuery(IEntityViewControl<TItemId> v,  TItemId k, out NoiseClip t)
         {
             if (v.GetComponent(k, out NoiseSourceDefinition d))
             {
@@ -40,9 +40,9 @@ namespace RogueEntity.Core.Sensing.Sources.Noise
             return false;
         }
 
-        public bool TryUpdate(IEntityViewControl<TItemId> v, TGameContext context, TItemId k, in NoiseClip t, out TItemId changedK)
+        public bool TryUpdate(IEntityViewControl<TItemId> v, TItemId k, in NoiseClip t, out TItemId changedK)
         {
-            return TryUpdate(v, context, k, new NoiseSourceDefinition(new SenseSourceDefinition(physics.NoisePhysics.DistanceMeasurement,
+            return TryUpdate(v, k, new NoiseSourceDefinition(new SenseSourceDefinition(physics.NoisePhysics.DistanceMeasurement,
                                                                                                 physics.NoisePhysics.AdjacencyRule,
                                                                                                 t.Intensity), t, true), out changedK);
         }

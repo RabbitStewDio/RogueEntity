@@ -48,7 +48,7 @@ namespace RogueEntity.Api.Modules
         {
             return declaredRoles.TryGetValue(typeof(TEntityId), out roleRecord);
         }
-        
+
         public bool TryGetRelationById(string id, out EntityRelation relation)
         {
             foreach (var r in requiredRelations)
@@ -145,12 +145,11 @@ namespace RogueEntity.Api.Modules
             moduleDependencies.AddRange(dependencies);
         }
 
-        public virtual void ProcessDeclaredSystems<TGameContext, TEntityId>(in ModuleInitializationParameter p,
-                                                                            IModuleInitializationData<TGameContext, TEntityId> moduleContext,
-                                                                            IModuleInitializer<TGameContext> initializer)
+        public virtual void ProcessDeclaredSystems<TEntityId>(in ModuleInitializationParameter p,
+                                                              IModuleInitializationData<TEntityId> moduleContext,
+                                                              IModuleInitializer initializer)
             where TEntityId : IEntityKey
-        {
-        }
+        { }
     }
 
 

@@ -86,18 +86,18 @@ namespace RogueEntity.Core.Tests.Sensing.Map.Light
             return new SensoryResistance<VisionSense>(Percentage.Of(f));
         }
 
-        protected override ReferenceItemDeclaration<SenseMappingTestContext, ItemReference> AttachTrait(ReferenceItemDeclaration<SenseMappingTestContext, ItemReference> decl)
+        protected override ReferenceItemDeclaration<ItemReference> AttachTrait(ReferenceItemDeclaration<ItemReference> decl)
         {
             switch (decl.Id.Id)
             {
                 case "SenseSource-Active-10":
-                    decl.WithTrait(new LightSourceTrait<SenseMappingTestContext, ItemReference>(sourcePhysics, 10));
+                    decl.WithTrait(new LightSourceTrait<ItemReference>(sourcePhysics, 10));
                     return decl;
                 case "SenseSource-Active-5":
-                    decl.WithTrait(new LightSourceTrait<SenseMappingTestContext, ItemReference>(sourcePhysics, 5));
+                    decl.WithTrait(new LightSourceTrait<ItemReference>(sourcePhysics, 5));
                     return decl;
                 case "SenseSource-Inactive-5":
-                    decl.WithTrait(new LightSourceTrait<SenseMappingTestContext, ItemReference>(sourcePhysics, 5, false));
+                    decl.WithTrait(new LightSourceTrait<ItemReference>(sourcePhysics, 5, false));
                     return decl;
                 default:
                     throw new ArgumentException();

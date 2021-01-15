@@ -45,14 +45,14 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor
         protected DynamicDataView3D<float> senseProperties;
         protected DynamicDataView3D<float> receptorSenseProperties;
         protected SenseStateCache senseCache;
-        List<Action<SenseMappingTestContext>> senseSystemActions;
+        List<Action> senseSystemActions;
 
         protected SensoryResistance<TSourceSense> Convert(float f) => new SensoryResistance<TSourceSense>(f);
 
-        protected abstract ReferenceItemDeclaration<SenseMappingTestContext, ItemReference> AttachTrait(ReferenceItemDeclaration<SenseMappingTestContext, ItemReference> decl);
+        protected abstract ReferenceItemDeclaration<ItemReference> AttachTrait(ReferenceItemDeclaration<ItemReference> decl);
 
-        protected SensoryResistanceDirectionalitySystem<SenseMappingTestContext, TSourceSense> directionalitySourceSystem;
-        protected SensoryResistanceDirectionalitySystem<SenseMappingTestContext, TReceptorSense> directionalityReceptorSystem;
+        protected SensoryResistanceDirectionalitySystem<TSourceSense> directionalitySourceSystem;
+        protected SensoryResistanceDirectionalitySystem<TReceptorSense> directionalityReceptorSystem;
 
         protected abstract (ISensePropagationAlgorithm, ISensePhysics) GetOrCreateReceptorSensePhysics();
 
@@ -74,7 +74,7 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor
             //lightPhysics = new LightPhysicsConfiguration(LinearDecaySensePhysics.For(DistanceCalculation.Chebyshev));
 
             context = new SenseMappingTestContext();
-            context.ItemEntityRegistry.RegisterNonConstructable<ItemDeclarationHolder<SenseMappingTestContext, ItemReference>>();
+            context.ItemEntityRegistry.RegisterNonConstructable<ItemDeclarationHolder<ItemReference>>();
             context.ItemEntityRegistry.RegisterNonConstructable<TSenseSourceDefinition>();
             context.ItemEntityRegistry.RegisterNonConstructable<SenseSourceState<TSourceSense>>();
             context.ItemEntityRegistry.RegisterFlag<ObservedSenseSource<TSourceSense>>();
@@ -87,27 +87,27 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor
             context.ItemEntityRegistry.RegisterNonConstructable<SingleLevelSenseDirectionMapData<TReceptorSense, TSourceSense>>();
             context.ItemEntityRegistry.RegisterFlag<SenseReceptorDirtyFlag<TReceptorSense, TSourceSense>>();
 
-            senseSourceActive10 = context.ItemRegistry.Register(new ReferenceItemDeclaration<SenseMappingTestContext, ItemReference>("SenseSource-Active-10")
-                                                                .WithTrait(new ReferenceItemGridPositionTrait<SenseMappingTestContext, ItemReference>(context.ItemResolver, context, TestMapLayers.One))
+            senseSourceActive10 = context.ItemRegistry.Register(new ReferenceItemDeclaration<ItemReference>("SenseSource-Active-10")
+                                                                .WithTrait(new ReferenceItemGridPositionTrait<ItemReference>(context.ItemResolver, context, TestMapLayers.One))
                                                                 .DoWith(x => AttachTrait(x)));
-            senseSourceActive5 = context.ItemRegistry.Register(new ReferenceItemDeclaration<SenseMappingTestContext, ItemReference>("SenseSource-Active-5")
-                                                               .WithTrait(new ReferenceItemGridPositionTrait<SenseMappingTestContext, ItemReference>(context.ItemResolver, context, TestMapLayers.One))
+            senseSourceActive5 = context.ItemRegistry.Register(new ReferenceItemDeclaration<ItemReference>("SenseSource-Active-5")
+                                                               .WithTrait(new ReferenceItemGridPositionTrait<ItemReference>(context.ItemResolver, context, TestMapLayers.One))
                                                                .DoWith(x => AttachTrait(x)));
-            senseSourceInactive5 = context.ItemRegistry.Register(new ReferenceItemDeclaration<SenseMappingTestContext, ItemReference>("SenseSource-Inactive-5")
+            senseSourceInactive5 = context.ItemRegistry.Register(new ReferenceItemDeclaration<ItemReference>("SenseSource-Inactive-5")
                                                                  .WithTrait(
-                                                                     new ReferenceItemGridPositionTrait<SenseMappingTestContext, ItemReference>(context.ItemResolver, context, TestMapLayers.One))
+                                                                     new ReferenceItemGridPositionTrait<ItemReference>(context.ItemResolver, context, TestMapLayers.One))
                                                                  .DoWith(x => AttachTrait(x)));
 
-            senseReceptorActive10 = context.ItemRegistry.Register(new ReferenceItemDeclaration<SenseMappingTestContext, ItemReference>("SenseReceptor-Active-10")
-                                                                  .WithTrait(new ReferenceItemGridPositionTrait<SenseMappingTestContext, ItemReference>(
+            senseReceptorActive10 = context.ItemRegistry.Register(new ReferenceItemDeclaration<ItemReference>("SenseReceptor-Active-10")
+                                                                  .WithTrait(new ReferenceItemGridPositionTrait<ItemReference>(
                                                                                  context.ItemResolver, context, TestMapLayers.One))
                                                                   .DoWith(x => AttachTrait(x)));
-            senseReceptorActive5 = context.ItemRegistry.Register(new ReferenceItemDeclaration<SenseMappingTestContext, ItemReference>("SenseReceptor-Active-5")
+            senseReceptorActive5 = context.ItemRegistry.Register(new ReferenceItemDeclaration<ItemReference>("SenseReceptor-Active-5")
                                                                  .WithTrait(
-                                                                     new ReferenceItemGridPositionTrait<SenseMappingTestContext, ItemReference>(context.ItemResolver, context, TestMapLayers.One))
+                                                                     new ReferenceItemGridPositionTrait<ItemReference>(context.ItemResolver, context, TestMapLayers.One))
                                                                  .DoWith(x => AttachTrait(x)));
-            senseReceptorInactive5 = context.ItemRegistry.Register(new ReferenceItemDeclaration<SenseMappingTestContext, ItemReference>("SenseReceptor-Inactive-5")
-                                                                   .WithTrait(new ReferenceItemGridPositionTrait<SenseMappingTestContext, ItemReference>(
+            senseReceptorInactive5 = context.ItemRegistry.Register(new ReferenceItemDeclaration<ItemReference>("SenseReceptor-Inactive-5")
+                                                                   .WithTrait(new ReferenceItemGridPositionTrait<ItemReference>(
                                                                                   context.ItemResolver, context, TestMapLayers.One))
                                                                    .DoWith(x => AttachTrait(x)));
 
@@ -116,12 +116,12 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor
             receptorSenseProperties = new DynamicDataView3D<float>();
             senseCache = new SenseStateCache(2, 64, 64);
 
-            directionalityReceptorSystem = new SensoryResistanceDirectionalitySystem<SenseMappingTestContext, TReceptorSense>(receptorSenseProperties);
-            directionalitySourceSystem = new SensoryResistanceDirectionalitySystem<SenseMappingTestContext, TSourceSense>(senseProperties);
+            directionalityReceptorSystem = new SensoryResistanceDirectionalitySystem<TReceptorSense>(receptorSenseProperties);
+            directionalitySourceSystem = new SensoryResistanceDirectionalitySystem<TSourceSense>(senseProperties);
 
             senseSystem = CreateSystem();
             senseSourceSystem = CreateSourceSystem();
-            senseSystem.EnsureSenseCacheAvailable(context);
+            senseSystem.EnsureSenseCacheAvailable();
 
             senseSystemActions = CreateSystemActions();
 
@@ -143,12 +143,13 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor
                                                                                physics.sensePhysics);
         }
 
-        protected virtual List<Action<SenseMappingTestContext>> CreateSystemActions()
+        protected virtual List<Action> CreateSystemActions()
         {
             var ls = senseSystem;
             var ss = senseSourceSystem;
-            var builder = context.ItemEntityRegistry.BuildSystem().WithContext<SenseMappingTestContext>();
-            return new List<Action<SenseMappingTestContext>>
+            var builder = context.ItemEntityRegistry.BuildSystem()
+                                 .WithoutContext();
+            return new List<Action>
             {
                 ls.EnsureSenseCacheAvailable,
                 ss.EnsureSenseCacheAvailable,
@@ -188,20 +189,20 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor
             };
         }
 
-        protected abstract Action<SenseMappingTestContext> CreateCopyAction();
+        protected abstract Action CreateCopyAction();
 
         protected virtual void PrepareSourceItems(ItemReference active10, ItemReference active5, ItemReference inactive)
         {
-            context.ItemResolver.TryUpdateData(active10, context, EntityGridPosition.Of(TestMapLayers.One, 26, 7), out _).Should().BeTrue();
-            context.ItemResolver.TryUpdateData(active5, context, EntityGridPosition.Of(TestMapLayers.One, 8, 9), out _).Should().BeTrue();
-            context.ItemResolver.TryUpdateData(inactive, context, EntityGridPosition.Of(TestMapLayers.One, 11, 13), out _).Should().BeTrue();
+            context.ItemResolver.TryUpdateData(active10,  EntityGridPosition.Of(TestMapLayers.One, 26, 7), out _).Should().BeTrue();
+            context.ItemResolver.TryUpdateData(active5,  EntityGridPosition.Of(TestMapLayers.One, 8, 9), out _).Should().BeTrue();
+            context.ItemResolver.TryUpdateData(inactive,  EntityGridPosition.Of(TestMapLayers.One, 11, 13), out _).Should().BeTrue();
         }
 
         protected virtual void PrepareReceptorItems(ItemReference active10, ItemReference active5, ItemReference inactive)
         {
-            context.ItemResolver.TryUpdateData(active10, context, EntityGridPosition.Of(TestMapLayers.One, 26, 4), out _).Should().BeTrue();
-            context.ItemResolver.TryUpdateData(active5, context, EntityGridPosition.Of(TestMapLayers.One, 7, 9), out _).Should().BeTrue();
-            context.ItemResolver.TryUpdateData(inactive, context, EntityGridPosition.Of(TestMapLayers.One, 13, 13), out _).Should().BeTrue();
+            context.ItemResolver.TryUpdateData(active10,  EntityGridPosition.Of(TestMapLayers.One, 26, 4), out _).Should().BeTrue();
+            context.ItemResolver.TryUpdateData(active5,  EntityGridPosition.Of(TestMapLayers.One, 7, 9), out _).Should().BeTrue();
+            context.ItemResolver.TryUpdateData(inactive,  EntityGridPosition.Of(TestMapLayers.One, 13, 13), out _).Should().BeTrue();
         }
 
         protected void PerformTest(string id, string sourceText, string expectedPerceptionResult, string expectedSenseMap, string expectedSenseMapDirections)
@@ -209,20 +210,20 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor
             senseProperties.GetOrCreate(0).ImportData(SenseTestHelpers.ParseMap(sourceText, out var activeTestArea));
             receptorSenseProperties.GetOrCreate(0).ImportData(SenseTestHelpers.ParseMap(sourceText, out _));
 
-            var sourceActive10 = context.ItemResolver.Instantiate(context, senseSourceActive10);
-            var sourceActive5 = context.ItemResolver.Instantiate(context, senseSourceActive5);
-            var sourceInactive = context.ItemResolver.Instantiate(context, senseSourceInactive5);
+            var sourceActive10 = context.ItemResolver.Instantiate( senseSourceActive10);
+            var sourceActive5 = context.ItemResolver.Instantiate( senseSourceActive5);
+            var sourceInactive = context.ItemResolver.Instantiate( senseSourceInactive5);
 
-            var active10 = context.ItemResolver.Instantiate(context, senseReceptorActive10);
-            var active5 = context.ItemResolver.Instantiate(context, senseReceptorActive5);
-            var inactive = context.ItemResolver.Instantiate(context, senseReceptorInactive5);
+            var active10 = context.ItemResolver.Instantiate( senseReceptorActive10);
+            var active5 = context.ItemResolver.Instantiate( senseReceptorActive5);
+            var inactive = context.ItemResolver.Instantiate( senseReceptorInactive5);
 
             PrepareSourceItems(sourceActive10, sourceActive5, sourceInactive);
             PrepareReceptorItems(active10, active5, inactive);
 
             foreach (var a in senseSystemActions)
             {
-                a(context);
+                a();
             }
 
             context.ItemEntityRegistry.GetComponent(active10, out SensoryReceptorState<TReceptorSense, TSourceSense> va).Should().BeTrue();

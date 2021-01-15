@@ -8,22 +8,16 @@ using RogueEntity.Core.Meta.EntityKeys;
 namespace RogueEntity.Core.Tests.Sensing.Resistance
 {
     [TestFixture]
-    public class SensoryResistanceTraitTest : ItemComponentTraitTestBase<BasicItemContext, ItemReference, SensoryResistance<VisionSense>,
-        SensoryResistanceTrait<BasicItemContext, ItemReference, VisionSense>>
+    public class SensoryResistanceTraitTest : ItemComponentTraitTestBase<ItemReference, SensoryResistance<VisionSense>, SensoryResistanceTrait<ItemReference, VisionSense>>
     {
         public SensoryResistanceTraitTest(): base(new ItemReferenceMetaData())
         {
             EnableSerializationTest = false; // Temperature is currently implemented as purely static data that is not serialized as it is never changing.
         }
 
-        protected override BasicItemContext CreateContext()
+        protected override SensoryResistanceTrait<ItemReference, VisionSense> CreateTrait()
         {
-            return new BasicItemContext();
-        }
-
-        protected override SensoryResistanceTrait<BasicItemContext, ItemReference, VisionSense> CreateTrait()
-        {
-            return new SensoryResistanceTrait<BasicItemContext, ItemReference, VisionSense>(Percentage.Of(0.5f));
+            return new SensoryResistanceTrait<ItemReference, VisionSense>(Percentage.Of(0.5f));
         }
 
         protected override IItemComponentTestDataFactory<SensoryResistance<VisionSense>> ProduceTestData(EntityRelations<ItemReference> relations)

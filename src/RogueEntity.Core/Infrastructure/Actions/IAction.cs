@@ -8,17 +8,21 @@ namespace RogueEntity.Core.Infrastructure.Actions
         ///   The action was performed as intended.
         /// </summary>
         Success,
+
         /// <summary>
         ///   The action was not performed and no retries should be attempted.
         /// </summary>
         Failure,
+
         /// <summary>
         ///   The action was not performed but another retry should be attempted.
         /// </summary>
         Pending
     }
 
-    public interface IAction<in TContext, TActorId> where TActorId : IEntityKey
+
+    public interface IAction<TActorId>
+        where TActorId : IEntityKey
     {
         bool IsMovement { get; }
 
@@ -31,9 +35,8 @@ namespace RogueEntity.Core.Infrastructure.Actions
         /// </summary>
         /// <param name="v"></param>
         /// <param name="k"></param>
-        /// <param name="context"></param>
         /// <param name="actionCost">the action-point cost of the activity.</param>
         /// <returns>An indication on whether the action has completed (either successfully or non-successfully)</returns>
-        ActionResult Perform(IEntityViewControl<TActorId> v, TContext context, TActorId k, out int actionCost);
+        ActionResult Perform(IEntityViewControl<TActorId> v, TActorId k, out int actionCost);
     }
 }

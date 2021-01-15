@@ -8,40 +8,42 @@ using RogueEntity.Core.Meta.Items;
 
 namespace RogueEntity.Core.Inventory
 {
-    public sealed class RandomizedInventoryTrait<TGameContext, TOwnerId, TItemId> : IReferenceItemTrait<TGameContext, TOwnerId>
-        where TGameContext : IEntityRandomGeneratorSource
+    public sealed class RandomizedInventoryTrait< TOwnerId, TItemId> : IReferenceItemTrait< TOwnerId>
         where TOwnerId : IEntityKey, IRandomSeedSource
         where TItemId : IEntityKey
     {
-        readonly IItemResolver<TGameContext, TOwnerId> ownerResolver;
-        readonly IItemResolver<TGameContext, TItemId> itemResolver;
+        readonly IEntityRandomGeneratorSource randomGenerator;
+        readonly IItemResolver< TOwnerId> ownerResolver;
+        readonly IItemResolver< TItemId> itemResolver;
         readonly ReadOnlyListWrapper<InventoryLootEntry> itemPool;
 
-        public RandomizedInventoryTrait(IItemResolver<TGameContext, TOwnerId> ownerResolver,
-                                        IItemResolver<TGameContext, TItemId> itemResolver,
+        public RandomizedInventoryTrait(IItemResolver< TOwnerId> ownerResolver,
+                                        IItemResolver< TItemId> itemResolver,
+                                        IEntityRandomGeneratorSource randomGenerator,
                                         params InventoryLootEntry[] items)
         {
             this.ownerResolver = ownerResolver;
             this.itemResolver = itemResolver;
+            this.randomGenerator = randomGenerator;
             this.itemPool = new List<InventoryLootEntry>(items);
         }
 
         public ItemTraitId Id => "Core.Inventory.RandomContent";
         public int Priority => 10000;
 
-        public IReferenceItemTrait<TGameContext, TOwnerId> CreateInstance()
+        public IReferenceItemTrait< TOwnerId> CreateInstance()
         {
             return this;
         }
 
-        public void Initialize(IEntityViewControl<TOwnerId> v, TGameContext context, TOwnerId k, IItemDeclaration actor)
+        public void Initialize(IEntityViewControl<TOwnerId> v, TOwnerId k, IItemDeclaration actor)
         {
-            if (!ownerResolver.TryQueryData(k, context, out IInventory<TGameContext, TItemId> inventory))
+            if (!ownerResolver.TryQueryData(k, out IInventory< TItemId> inventory))
             {
                 return;
             }
 
-            var rng = context.RandomGenerator(k, 0);
+            var rng = randomGenerator.RandomGenerator(k, 0);
             foreach (var i in itemPool)
             {
                 if (rng.Next() >= i.Probability)
@@ -49,21 +51,21 @@ namespace RogueEntity.Core.Inventory
                     continue;
                 }
 
-                var item = itemResolver.Build(context, i.Item)
+                var item = itemResolver.Build(i.Item)
                                        .WithRandomizedProperties(rng)
                                        .ToItemReference;
 
-                if (!inventory.TryAddItem(context, item, out var remains) ||
+                if (!inventory.TryAddItem(item, out var remains) ||
                     !remains.IsEmpty)
                 {
                     itemResolver.DiscardUnusedItem(remains);
                 }
             }
 
-            ownerResolver.TryUpdateData(k, context, in inventory, out _);
+            ownerResolver.TryUpdateData(k, in inventory, out _);
         }
 
-        public void Apply(IEntityViewControl<TOwnerId> v, TGameContext context, TOwnerId k, IItemDeclaration item)
+        public void Apply(IEntityViewControl<TOwnerId> v, TOwnerId k, IItemDeclaration item)
         {
         }
 
