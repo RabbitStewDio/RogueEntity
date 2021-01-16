@@ -1,7 +1,8 @@
 using EnTTSharp.Entities;
-using RogueEntity.Api.Services;
 using RogueEntity.Core.Players;
 using SadConsole;
+using System;
+using Console = SadConsole.Console;
 
 namespace RogueEntity.SadCons
 {
@@ -14,14 +15,21 @@ namespace RogueEntity.SadCons
         {
             this.backend = backend;
             this.sharedState = new MapConsoleState();
+            this.sharedState.PlayerId = new PlayerTag(PlayerIds.SinglePlayer);
         }
 
-        public void Initialize<TPlayerEntity>(IServiceResolver services)
+        public PlayerTag PlayerId
+        {
+            get => sharedState.PlayerId;
+            set => sharedState.PlayerId = value;
+        }
+
+        public void Initialize<TPlayerEntity>(IPlayerService<TPlayerEntity> playerService)
             where TPlayerEntity : IEntityKey
         {
-            this.backend.Components.Clear();
-            this.backend.Components.Add(new MapConsoleMouseHandler<TPlayerEntity>(sharedState,
-                                                                                  services.Resolve<IPlayerService<TPlayerEntity>>()));
+            this.backend.Components.RemoveAll();
+            this.backend.Components.Add(new MapConsoleMouseHandler<TPlayerEntity>(sharedState, playerService));
+            this.backend.Components.Add(new MapConsoleKeyboardHandler<TPlayerEntity>(sharedState, playerService));
         }
     }
 }

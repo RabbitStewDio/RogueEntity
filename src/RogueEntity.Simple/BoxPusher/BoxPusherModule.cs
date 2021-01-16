@@ -6,6 +6,7 @@ using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Movement.Cost;
 using RogueEntity.Core.Movement.CostModifier;
 using RogueEntity.Core.Movement.MovementModes.Walking;
+using RogueEntity.Core.Players;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Algorithms;
 using RogueEntity.Core.Sensing.Sources.Light;
@@ -34,7 +35,6 @@ namespace RogueEntity.Simple.BoxPusher
 
         [ContentInitializer]
         void InitializeContent(in ModuleInitializationParameter mip, IModuleInitializer initializer)
-
         {
             var serviceResolver = mip.ServiceResolver;
             var ctx = initializer.DeclareContentContext<ItemReference>();
@@ -59,11 +59,13 @@ namespace RogueEntity.Simple.BoxPusher
                             .Declaration);
 
             var actorContext = initializer.DeclareContentContext<ActorReference>();
-            actorContext.Activate(actorContext.CreateReferenceEntityBuilder(serviceResolver)
+            var playerId = actorContext.Activate(actorContext.CreateReferenceEntityBuilder(serviceResolver)
                                               .DefinePlayer<ActorReference, ItemReference>()
                                               .WithMovement()
                                               .AsPointCost(WalkingMovement.Instance, DistanceCalculation.Euclid, 1)
                                               .Declaration);
+            
+            mip.ServiceResolver.Store<IPlayerServiceConfiguration>(new PlayerServiceConfiguration(playerId));
         }
     }
 }

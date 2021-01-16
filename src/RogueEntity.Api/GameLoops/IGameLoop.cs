@@ -24,12 +24,12 @@ namespace RogueEntity.Api.GameLoops
         void AddDisposeStepHandler(Action c, string description = null);
     }
 
-    public interface IGameLoop
+    public interface IGameLoop: IDisposable
     {
         void Initialize(Func<bool> isWaitingForInputDelegate = null);
         void Update(TimeSpan absoluteTime);
         ITimeSource TimeSource { get; }
-
+        
         event EventHandler<WorldStepEventArgs> FixStepProgress;
         event EventHandler<WorldStepEventArgs> VariableStepProgress;
     }

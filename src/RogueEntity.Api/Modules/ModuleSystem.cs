@@ -6,6 +6,7 @@ using RogueEntity.Api.Modules.Initializers;
 using RogueEntity.Api.Services;
 using RogueEntity.Api.Utils;
 using Serilog;
+using System.Linq;
 
 namespace RogueEntity.Api.Modules
 {
@@ -67,6 +68,8 @@ namespace RogueEntity.Api.Modules
             // Recompute module dependencies.
             var orderedModulesAfterContent = initPhase.CreateModulesSortedByInitOrder();
             Logger.Debug("After content declaration - Modules in order: \n{Modules}", PrintModuleDependencyList(orderedModulesAfterContent));
+            Logger.Debug("Entity Roles: {Roles}", string.Join(",", phase2Result.EntityInformation.Roles));
+            Logger.Debug("Entity Relations: {Relations}", string.Join(",", phase2Result.EntityInformation.Relations));
 
             // 5. Now start initializing trait systems for each entity role.
             var phase6 = new ModuleSystemPhaseDeclareRoleSystems(phase2Result, serviceResolver);

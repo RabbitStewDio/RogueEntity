@@ -57,7 +57,7 @@ namespace RogueEntity.Core.Positioning.Grid
         public bool TryQuery(IEntityViewControl<TItemId> v, TItemId k, out EntityGridPosition t)
         {
             t = default;
-            return false;
+            return true;
         }
 
         bool IItemComponentTrait<TItemId, EntityGridPosition>.TryRemove(IEntityViewControl<TItemId> entityRegistry, TItemId k, out TItemId changedItem)

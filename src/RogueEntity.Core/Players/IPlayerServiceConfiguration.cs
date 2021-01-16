@@ -6,4 +6,14 @@ namespace RogueEntity.Core.Players
     {
         ItemDeclarationId PlayerId { get; }
     }
+
+    public class PlayerServiceConfiguration : IPlayerServiceConfiguration
+    {
+        public PlayerServiceConfiguration(ItemDeclarationId playerId)
+        {
+            PlayerId = playerId;
+        }
+
+        public ItemDeclarationId PlayerId { get; }
+    }
 }

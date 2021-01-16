@@ -23,10 +23,10 @@ namespace RogueEntity.Core.Tests.Positioning.Grid
 
         protected override IItemComponentTestDataFactory<EntityGridPosition> ProduceTestData(EntityRelations<ItemReference> relations)
         {
-            return new ItemComponentTestDataFactory<EntityGridPosition>(Optional.Empty(),
+            return new ItemComponentTestDataFactory<EntityGridPosition>(EntityGridPosition.Invalid,
                                                                         EntityGridPosition.Of(itemLayer, 10, 10, 10),
                                                                         EntityGridPosition.Of(itemLayer, 10, 20, 10))
-                    .WithRemovedResult(Optional.Empty())
+                    .WithRemovedResult(EntityGridPosition.Invalid)
                 ;
         }
 
@@ -96,7 +96,8 @@ namespace RogueEntity.Core.Tests.Positioning.Grid
             var testData = ProduceTestData(ProduceItemRelations(item));
 
             ItemResolver.TryRemoveData<EntityGridPosition>(item, out item).Should().BeTrue();
-            ItemResolver.TryQueryData(item, out EntityGridPosition _).Should().BeFalse();
+            ItemResolver.TryQueryData(item, out EntityGridPosition p).Should().BeTrue();
+            p.Should().Be(EntityGridPosition.Invalid);
 
             ItemResolver.TryUpdateData(item, testData.ChangedValue, out item).Should().BeTrue();
             ItemResolver.TryRemoveData<EntityGridPosition>(item, out item).Should().BeTrue();

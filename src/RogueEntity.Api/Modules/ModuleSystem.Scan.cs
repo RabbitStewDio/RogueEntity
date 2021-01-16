@@ -48,13 +48,22 @@ namespace RogueEntity.Api.Modules
             var assemblies = AppDomain.CurrentDomain.GetAssemblies().ToList();
             foreach (var assembly in assemblies)
             {
-                ScanForModules(assembly, domain);
+                try
+                {
+                    ScanForModules(assembly, domain);
+                }
+                catch (ReflectionTypeLoadException e)
+                {
+                    Logger.Information(e, "Unable to load assembly {Assembly}", assembly.FullName);
+                }
             }
         }
-
+        
         public void ScanForModules(Assembly assembly, params string[] domain)
         {
             domain ??= new string[0];
+            Logger.Verbose("Processing assembly {Assembly}", assembly.FullName);
+            
             foreach (var typeInfo in assembly.DefinedTypes)
             {
                 if (!typeof(ModuleBase).IsAssignableFrom(typeInfo))
@@ -64,11 +73,13 @@ namespace RogueEntity.Api.Modules
 
                 if (typeInfo.IsAbstract || typeInfo.IsGenericType)
                 {
+                    Logger.Verbose("Skipping abstract or generic module {Module}", typeInfo.FullName);
                     continue;
                 }
 
                 if (!(Activator.CreateInstance(typeInfo) is ModuleBase module))
                 {
+                    Logger.Verbose("Unable to auto-register module {Module} - Default Constructor is missing", typeInfo.FullName);
                     continue;
                 }
 
@@ -78,6 +89,10 @@ namespace RogueEntity.Api.Modules
                 if (DomainMatches(domain, moduleDomain))
                 {
                     AddModule(module);
+                }
+                else
+                {
+                    Logger.Verbose("Skipping foreign domain module {Module}", typeInfo.FullName);
                 }
             }
         }

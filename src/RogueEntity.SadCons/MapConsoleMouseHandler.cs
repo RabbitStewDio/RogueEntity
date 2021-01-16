@@ -1,9 +1,11 @@
 ﻿using EnTTSharp.Entities;
+using JetBrains.Annotations;
 using RogueEntity.Api.Utils;
 using RogueEntity.Core.Players;
 using RogueEntity.Core.Utils;
 using SadConsole.Components;
 using SadConsole.Input;
+using System;
 
 namespace RogueEntity.SadCons
 {
@@ -14,21 +16,29 @@ namespace RogueEntity.SadCons
         readonly IPlayerService<TPlayerEntity> playerService;
         Optional<PlayerTag> player;
 
-        public MapConsoleMouseHandler(MapConsoleState sharedConsoleState,
-                                      IPlayerService<TPlayerEntity> playerService)
+        public MapConsoleMouseHandler([NotNull] MapConsoleState sharedConsoleState,
+                                      [NotNull] IPlayerService<TPlayerEntity> playerService)
         {
-            this.sharedConsoleState = sharedConsoleState;
-            this.playerService = playerService;
+            this.sharedConsoleState = sharedConsoleState ?? throw new ArgumentNullException(nameof(sharedConsoleState));
+            this.playerService = playerService ?? throw new ArgumentNullException(nameof(playerService));
+            this.playerService.PlayerActivated += OnPlayerActivated;
+            this.playerService.PlayerDeactivated += OnPlayerDeactivated;
         }
 
-        public void OnPlayerActivated(PlayerTag playerId)
+        void OnPlayerActivated(object sender, PlayerEventArgs<TPlayerEntity> e)
         {
-            this.player = playerId;
+            if (e.PlayerId == sharedConsoleState.PlayerId)
+            {
+                this.player = e.PlayerId;
+            }
         }
 
-        public void OnPlayerDeactivated()
+        public void OnPlayerDeactivated(object sender, PlayerEventArgs<TPlayerEntity> e)
         {
-            this.player = Optional.Empty();
+            if (e.PlayerId == sharedConsoleState.PlayerId)
+            {
+                this.player = Optional.Empty();
+            }
         }
 
         public override void ProcessMouse(SadConsole.Console console,

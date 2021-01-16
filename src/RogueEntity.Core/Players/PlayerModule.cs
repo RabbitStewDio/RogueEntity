@@ -24,6 +24,12 @@ namespace RogueEntity.Core.Players
 
         public PlayerModule()
         {
+            Id = "Core.Player";
+            Author = "RogueEntity.Core";
+            Name = "RogueEntity Core Module - Equipment";
+            Description = "Provides base classes and behaviours for equipping items";
+            IsFrameworkModule = true;
+            
             DeclareDependency(ModuleDependency.Of(CoreModule.ModuleId));
 
             RequireRole(PlayerRole).WithImpliedRole(CoreModule.EntityRole);
@@ -121,6 +127,8 @@ namespace RogueEntity.Core.Players
                                             registry.PersistentView<PlayerTag>(),
                                             registry.PersistentView<PlayerObserver>(),
                                             conf.PlayerId);
+            r.Store(ps);
+            r.Store<IPlayerService<TItemId>>(ps);
             return true;
         }
     }
