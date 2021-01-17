@@ -3,7 +3,6 @@ using RogueEntity.Api.ItemTraits;
 using RogueEntity.Core.Meta.Base;
 using RogueEntity.Core.Meta.ItemBuilder;
 using RogueEntity.Core.Meta.ItemTraits;
-using RogueEntity.Core.Players;
 
 namespace RogueEntity.Core.Meta
 {
@@ -31,14 +30,6 @@ namespace RogueEntity.Core.Meta
             where TItemId : IEntityKey
         {
             return new ContentDeclarationBuilder<TItemId>(builder);
-        }
-
-        public static ReferenceItemDeclarationBuilder<TItemId> AsPlayer<TItemId>(this ReferenceItemDeclarationBuilder<TItemId> builder)
-            where TItemId : IEntityKey
-        {
-            var trait = new PlayerTrait<TItemId>();
-            builder.Declaration.WithTrait(trait);
-            return builder;
         }
 
         public static ReferenceItemDeclarationBuilder<TItemId> WithWeight<TItemId>(this ReferenceItemDeclarationBuilder<TItemId> builder, Weight weight)
