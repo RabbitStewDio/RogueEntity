@@ -34,7 +34,19 @@ namespace RogueEntity.Api.ItemTraits
 
         void DiscardUnusedItem(in TItemId item);
         void Apply(TItemId reference);
+        
+        /// <summary>
+        ///   Destroys the given entity at the end of the current turn.
+        /// </summary>
+        /// <param name="item"></param>
+        /// <returns></returns>
         TItemId Destroy(in TItemId item);
+        
+        /// <summary>
+        ///   Destroys the given entity at the end of the next turn.
+        /// </summary>
+        /// <param name="item"></param>
+        /// <returns></returns>
         TItemId DestroyNext(in TItemId item);
     }
 }

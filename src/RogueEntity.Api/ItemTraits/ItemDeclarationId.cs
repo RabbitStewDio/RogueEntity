@@ -12,6 +12,10 @@ namespace RogueEntity.Api.ItemTraits
         [Key(0)]
         public readonly string Id;
 
+        [IgnoreDataMember]
+        [IgnoreMember]
+        public bool IsInvalid => Id == null;
+        
         [SerializationConstructor]
         public ItemDeclarationId(string id)
         {
