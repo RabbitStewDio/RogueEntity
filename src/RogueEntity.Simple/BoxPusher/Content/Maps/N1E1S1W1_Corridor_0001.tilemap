@@ -1,0 +1,30 @@
+﻿Name: Junction Corridor
+Type: MapFragment
+Size: 
+    Width: 11
+    Height: 11
+
+Tags: 
+    - Corridor
+
+Properties:
+    Generator: CaveDungeon
+    Class: Exploration
+    MirrorAxis: Both
+    Connections: N1E1S1W1
+
+Symbols:
+    w: [ground, wall]
+    .: [ground]
+---
+wwww...wwww
+wwww...wwww
+www.....www
+ww.......ww
+....ww...ww
+...www.....
+..wwww.....
+wwwww...www
+wwww...wwww
+wwww...wwww
+wwww...wwww

@@ -1,5 +1,7 @@
+using RogueEntity.Api.ItemTraits;
 using RogueEntity.Api.Modules;
 using RogueEntity.Api.Modules.Attributes;
+using RogueEntity.Api.Services;
 using RogueEntity.Core.Meta.EntityKeys;
 using RogueEntity.Core.Meta.ItemBuilder;
 using RogueEntity.Core.Meta.Items;
@@ -9,7 +11,9 @@ using RogueEntity.Core.Movement.MovementModes.Walking;
 using RogueEntity.Core.Players;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Algorithms;
+using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Sensing.Sources.Light;
+using RogueEntity.Generator;
 using static RogueEntity.Core.Movement.CostModifier.MovementCostModifiers;
 
 namespace RogueEntity.Simple.BoxPusher
@@ -29,8 +33,12 @@ namespace RogueEntity.Simple.BoxPusher
             mip.ServiceResolver.ConfigureEntityType(ActorReferenceMetaData.Instance);
             mip.ServiceResolver.ConfigureEntityType(ItemReferenceMetaData.Instance);
 
-            mip.ServiceResolver.GetOrCreateGridMapContext<ItemReference>();
-            mip.ServiceResolver.GetOrCreateGridMapContext<ActorReference>();
+            mip.ServiceResolver.GetOrCreateDefaultGridMapContext<ItemReference>()
+               .WithDefaultMapLayer(BoxPusherMapLayers.Floor)
+               .WithDefaultMapLayer(BoxPusherMapLayers.Items);
+
+            mip.ServiceResolver.GetOrCreateDefaultGridMapContext<ActorReference>()
+               .WithDefaultMapLayer(BoxPusherMapLayers.Actors);
         }
 
         [ContentInitializer]
@@ -60,12 +68,21 @@ namespace RogueEntity.Simple.BoxPusher
 
             var actorContext = initializer.DeclareContentContext<ActorReference>();
             var playerId = actorContext.Activate(actorContext.CreateReferenceEntityBuilder(serviceResolver)
-                                              .DefinePlayer<ActorReference, ItemReference>()
-                                              .WithMovement()
-                                              .AsPointCost(WalkingMovement.Instance, DistanceCalculation.Euclid, 1)
-                                              .Declaration);
-            
+                                                             .DefinePlayer<ActorReference, ItemReference>()
+                                                             .WithMovement()
+                                                             .AsPointCost(WalkingMovement.Instance, DistanceCalculation.Euclid, 1)
+                                                             .Declaration);
+
             mip.ServiceResolver.Store<IPlayerServiceConfiguration>(new PlayerServiceConfiguration(playerId));
+        }
+
+        static void APITest(IServiceResolver r)
+        {
+            MapBuilder b = new MapBuilder();
+            b.WithLayer(BoxPusherMapLayers.Floor, r.Resolve<IItemResolver<ItemReference>>(), r.Resolve<IGridMapContext<ItemReference>>());
+            b.WithLayer(BoxPusherMapLayers.Items, r.Resolve<IItemResolver<ItemReference>>(), r.Resolve<IGridMapContext<ItemReference>>());
+            b.WithLayer(BoxPusherMapLayers.Actors, r.Resolve<IItemResolver<ActorReference>>(), r.Resolve<IGridMapContext<ActorReference>>());
+            
         }
     }
 }

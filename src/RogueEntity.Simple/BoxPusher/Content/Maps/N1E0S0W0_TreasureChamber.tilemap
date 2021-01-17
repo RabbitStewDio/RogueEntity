@@ -1,0 +1,35 @@
+﻿Name: TreasureChamber_0001
+Type: MapFragment
+Size: 
+    Width: 11
+    Height: 11
+    
+Tags: 
+    - Treasure
+
+Properties:
+    MirrorAxis: Both
+    Connections: N1E0S0W0
+    Generator: CaveDungeon
+    Class: Greed
+    
+Symbols:
+    w: [ground, wall]
+    .: [ground]
+    d: [ground, door.iron.closed]
+    g: [ground, item.coin]
+    t: [ground, item.torch]
+    ?: [ground, '', mob.rat]
+---
+wwwwwdwwwww
+w..?...?..w
+w.t.....t.w
+w.g.ggg...w
+w...g.ggg.w
+w..g.gggg.w
+w..gg.g.?.w
+w.gggggg..w
+w.t.ggg.t.w
+w..?......w
+wwwwwwwwwww
+

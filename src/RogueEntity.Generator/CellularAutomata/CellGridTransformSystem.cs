@@ -107,8 +107,6 @@ namespace RogueEntity.Generator.CellularAutomata
             }
         }
 
-        // bool IsCellAlive(IReadOnlyDynamicDataView2D<TEntity> v, int x, int y) => EqualityComparer.Equals(v[x, y], cellAliveMarker);
-
         int CountNeighbours(IReadOnlyBoundedDataView<TEntity> b,
                             IReadOnlyDynamicDataView2D<TEntity> n,
                             int x,

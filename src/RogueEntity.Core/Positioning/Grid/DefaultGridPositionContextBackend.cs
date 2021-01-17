@@ -54,6 +54,11 @@ namespace RogueEntity.Core.Positioning.Grid
             return this;
         }
 
+        public DefaultGridPositionContextBackend<TItemId> WithDefaultMapLayer(MapLayer layer)
+        {
+            return WithMapLayer(layer, new DefaultGridMapDataContext<TItemId>(layer, OffsetX, OffsetY, TileSizeX, TileSizeY));
+        }
+
         public DefaultGridPositionContextBackend<TItemId> WithDefaultMapLayer(MapLayer layer, DynamicDataViewConfiguration conf)
         {
             return WithMapLayer(layer, new DefaultGridMapDataContext<TItemId>(layer, conf));

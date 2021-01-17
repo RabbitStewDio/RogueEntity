@@ -1,0 +1,31 @@
+﻿Name: Vertical Corridor
+Type: MapFragment
+Size: 
+    Width: 11
+    Height: 11
+
+Tags: 
+    - Corridor
+
+Properties:
+    Generator: CaveDungeon
+    Class: Exploration
+    MirrorAxis: Both
+    Connections: N1E0S1W0
+
+Symbols:
+    w: [ground, wall]
+    .: [ground]
+
+---
+wwwww...www
+wwww....www
+wwww...wwww
+wwww.....ww
+ww....w...w
+ww...ww..ww
+ww...ww..ww
+www..w..www
+ww.....wwww
+wwww...wwww
+wwww....www

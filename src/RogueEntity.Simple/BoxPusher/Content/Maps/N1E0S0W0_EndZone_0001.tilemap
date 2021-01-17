@@ -1,0 +1,36 @@
+﻿Name: EndZone_0001
+Type: MapFragment
+Size: 
+    Width: 11
+    Height: 11
+    
+Tags: 
+    - ExitPoint
+
+Properties:
+    MirrorAxis: Both
+    Connections: N1E0S0W0
+    Generator: CaveDungeon
+    Class: Fear
+    
+Symbols:
+    w: [ground, wall]
+    .: [ground]
+    d: [ground, door.*.closed]
+    '>': [ground, stairs.down]
+    t: [ground, item.torch]
+    g: [ground, '', mob.goblin.grunt]
+    G: [ground, '', mob.goblin.lord]
+---
+wwwwwdwwwww
+w.........w
+w.t.....t.w
+w...g.....w
+w.....G...w
+w....>....w
+w.........w
+w....g....w
+w.t.....t.w
+w.........w
+wwwwwwwwwww
+

@@ -1,0 +1,40 @@
+﻿Name: GoblinNest_0001
+Type: MapFragment
+Size: 
+    Width: 11
+    Height: 11
+    
+Tags: 
+    - MonsterNest
+    - Class_Fear
+    - Type_CaveDungeon
+
+Properties:
+    MirrorAxis: Both
+    Connections: N0E0S0W1
+    Generator: CaveDungeon
+    Class: Fear
+    
+Symbols:
+    w: [ground, wall]
+    .: [ground]
+    d: [ground, door.*.closed]
+    H: [ground, item.nest.goblin]
+    t: [ground, item.torch]
+    G: [ground, '', mob.goblin.lord]
+    g: [ground, '', mob.goblin.grunt]
+    $: [ground, item.coin]
+
+---
+wwwwwwwwwww
+w.$$$.....w
+w.G.H.g...w
+wwwwwww...w
+w...g.w.r.w
+d....Hw..tw
+w....wwwdww
+wwwdww....w
+w......gHgw
+w.......g.w
+wwwwwwwwwww
+

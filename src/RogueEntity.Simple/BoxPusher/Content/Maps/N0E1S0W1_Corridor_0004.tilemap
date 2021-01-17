@@ -1,0 +1,30 @@
+﻿Name: Horizontal Corridor
+Type: MapFragment
+Size: 
+    Width: 11
+    Height: 11
+
+Tags: 
+    - Corridor
+
+Properties:
+    Generator: CaveDungeon
+    Class: Exploration
+    MirrorAxis: Both
+    Connections: N0E1S0W1
+
+Symbols:
+    w: [ground, wall]
+    .: [ground]
+---
+wwwwwwwwwww
+wwwwwwwwwww
+wwwwwwwwwww
+wwww......w
+..ww..ww...
+......www..
+ww..www...w
+ww...ww..ww
+www.....www
+wwwwwwwwwww
+wwwwwwwwwww

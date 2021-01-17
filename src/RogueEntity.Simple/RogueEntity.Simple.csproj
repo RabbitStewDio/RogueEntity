@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\RogueEntity.Core\RogueEntity.Core.csproj" />
+    <ProjectReference Include="..\RogueEntity.Generator\RogueEntity.Generator.csproj" />
   </ItemGroup>
 
   <ItemGroup>

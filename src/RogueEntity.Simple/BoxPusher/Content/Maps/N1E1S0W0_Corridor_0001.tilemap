@@ -1,0 +1,27 @@
+﻿Name: Edge Corridor
+Type: MapFragment
+Size: 
+    Width: 11
+    Height: 11
+Tags: 
+    - Corridor
+Properties:
+    Generator: CaveDungeon
+    Class: Exploration
+    MirrorAxis: Both
+    Connections: N1E1S0W0
+Symbols:
+    w: [ground, wall]
+    .: [ground]
+---
+wwww...wwww
+www....wwww
+www.....www
+ww.....wwww
+ww.....ww..
+www........
+wwww.......
+wwwwww...ww
+wwwww...www
+wwwwwwwwwww
+wwwwwwwwwww
