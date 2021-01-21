@@ -199,7 +199,7 @@ namespace RogueEntity.Core.Equipment
             if (req.AcceptableSlots.Count == 0 &&
                 req.RequiredSlots.Count == 0)
             {
-                Logger.Verbose("Equipment requirements for item are empty.");
+                Logger.Verbose("Equipment requirements for item are empty");
                 return false;
             }
 
@@ -208,13 +208,13 @@ namespace RogueEntity.Core.Equipment
                 if (!req.AcceptableSlots.Contains(desiredSlotValue) &&
                     !req.RequiredSlots.Contains(desiredSlotValue))
                 {
-                    Logger.Verbose("Desired slot {desiredSlotValue} is not valid for the given item.", desiredSlotValue);
+                    Logger.Verbose("Desired slot {DesiredSlotValue} is not valid for the given item", desiredSlotValue);
                     return false;
                 }
 
                 if (IsSlotOccupied(desiredSlotValue))
                 {
-                    Logger.Verbose("Desired slot {desiredSlotValue} is already occupied.", desiredSlotValue);
+                    Logger.Verbose("Desired slot {DesiredSlotValue} is already occupied", desiredSlotValue);
                     return false;
                 }
             }
@@ -223,7 +223,7 @@ namespace RogueEntity.Core.Equipment
             {
                 if (IsSlotOccupied(r))
                 {
-                    Logger.Verbose("Required slot {r} already occupied.", desiredSlotValue);
+                    Logger.Verbose("Required slot {Slot} already occupied", desiredSlotValue);
                     return false;
                 }
             }
@@ -241,7 +241,7 @@ namespace RogueEntity.Core.Equipment
                 }
             }
 
-            Logger.Verbose("All acceptable slots {r} are already occupied.", desiredSlotValue);
+            Logger.Verbose("All acceptable slots {Slot} are already occupied", desiredSlotValue);
             return false;
         }
 
@@ -276,7 +276,7 @@ namespace RogueEntity.Core.Equipment
             if (req.AcceptableSlots.Count == 0 &&
                 req.RequiredSlots.Count == 0)
             {
-                Logger.Verbose("Equipment requirements for item {item} are empty.", bulkItem);
+                Logger.Verbose("Equipment requirements for item {Item} are empty", bulkItem);
                 acceptedSlot = default;
                 return false;
             }
@@ -287,7 +287,7 @@ namespace RogueEntity.Core.Equipment
             {
                 if (!IsSlotAvailableForBulkItem(meta, r, bulkItem, out var usedSlot))
                 {
-                    Logger.Verbose("A required slot {slot} for item {item} is already occupied by an incompatible item.", r, bulkItem);
+                    Logger.Verbose("A required slot {Slot} for item {Item} is already occupied by an incompatible item", r, bulkItem);
                     return false;
                 }
 
@@ -298,7 +298,7 @@ namespace RogueEntity.Core.Equipment
                 }
                 else if (acceptedSlot != usedSlot)
                 {
-                    Logger.Verbose("A required slot {slot} for item {item} is already occupied by a different item of the same type.", r, bulkItem);
+                    Logger.Verbose("A required slot {Slot} for item {Item} is already occupied by a different item of the same type", r, bulkItem);
                     return false;
                 }
             }
@@ -309,13 +309,13 @@ namespace RogueEntity.Core.Equipment
                     !req.RequiredSlots.Contains(desiredSlotValue))
                 {
                     // filter out garbage inputs.
-                    Logger.Verbose("Given desired slot does not match the item's available slots.", bulkItem);
+                    Logger.Verbose("Given desired slot does not match the available slots defined for bulk item {BulkItem}", bulkItem);
                     return false;
                 }
 
                 if (!IsSlotAvailableForBulkItem(meta, desiredSlotValue, bulkItem, out var usedPrimarySlot))
                 {
-                    Logger.Verbose("A desired slot for item {item} is already occupied by an incompatible item.", bulkItem);
+                    Logger.Verbose("A desired slot for item {Item} is already occupied by an incompatible item", bulkItem);
                     return false;
                 }
 
@@ -325,7 +325,7 @@ namespace RogueEntity.Core.Equipment
                 }
                 else if (usedPrimarySlot.TryGetValue(out var usedSlotValue) && acceptedSlot != usedSlotValue)
                 {
-                    Logger.Verbose("A desired slot for item {item} is already occupied by a different item of the same type.", bulkItem);
+                    Logger.Verbose("A desired slot for item {Item} is already occupied by a different item of the same type", bulkItem);
                     return false;
                 }
 
@@ -353,7 +353,7 @@ namespace RogueEntity.Core.Equipment
 
                     if (slotVal == acceptedSlot)
                     {
-                        Logger.Verbose("A conflicting bulk item has been found and occupies the same primary slot.");
+                        Logger.Verbose("A conflicting bulk item has been found and occupies the same primary slot");
                         return false;
                     }
                 }
@@ -385,7 +385,7 @@ namespace RogueEntity.Core.Equipment
                 }
             }
 
-            Logger.Verbose("A unoccupied acceptable slot for item {item} was not found.", bulkItem);
+            Logger.Verbose("A unoccupied acceptable slot for item {Item} was not found", bulkItem);
             return false;
         }
 

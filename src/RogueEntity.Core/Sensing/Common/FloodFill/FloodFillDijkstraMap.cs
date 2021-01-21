@@ -9,14 +9,11 @@ using RogueEntity.Core.Positioning.Algorithms;
 using RogueEntity.Core.Sensing.Common.Physics;
 using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.DataViews;
-using Serilog;
 
 namespace RogueEntity.Core.Sensing.Common.FloodFill
 {
     public class FloodFillDijkstraMap : DijkstraGridBase<Unit>
     {
-        static readonly ILogger Logger = SLog.ForContext<FloodFillDijkstraMap>();
-        
         bool valid;
         IReadOnlyDynamicDataView2D<float> resistanceMap;
         IReadOnlyDynamicDataView2D<DirectionalityInformation> directionalityView;
@@ -43,8 +40,6 @@ namespace RogueEntity.Core.Sensing.Common.FloodFill
                                                   [NotNull] IReadOnlyDynamicDataView2D<DirectionalityInformation> directionalityView)
         {
             var radius = sensePhysics.SignalRadiusForIntensity(intensity);
-            // Console.WriteLine("Using Origin: " + origin + " Radius: " + radius);
-            
             var radiusInt = (int)Math.Ceiling(radius);
             var result = new FloodFillDijkstraMap(radiusInt, radiusInt);
             result.Configure(in sense, intensity, in origin, sensePhysics, resistanceMap, directionalityView);
@@ -69,7 +64,6 @@ namespace RogueEntity.Core.Sensing.Common.FloodFill
             var radiusInt = (int)Math.Ceiling(radius);
             this.Resize(Rectangle.WithRadius(0, 0, radiusInt, radiusInt));
             this.directionData = DirectionalityLookup.Get(Sense.AdjacencyRule);
-            Console.WriteLine($"Using adjacency rule {Sense.AdjacencyRule}");
             this.valid = true;
         }
 
@@ -163,7 +157,6 @@ namespace RogueEntity.Core.Sensing.Common.FloodFill
             var signalStrength = SensePhysics.SignalStrengthAtDistance((float) ((intensity - stepOriginCost) + distanceForStep), radius);
             var totalCost = intensity * signalStrength * (1 - resistance);
             totalPathCost = totalCost;
-            // Logger.Debug("EdgeCost: For {Position} is O:{Origin} {Total}", targetPoint, stepOriginCost, totalCost);
             return true;
         }
     }

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace RogueEntity.Api.GameLoops
+namespace RogueEntity.Core.Infrastructure.GameLoops
 {
     public readonly struct FixedTimeStep : IEquatable<FixedTimeStep>
     {

@@ -8,10 +8,8 @@ using RogueEntity.Core.Meta.EntityKeys;
 
 namespace RogueEntity.Core.Tests.Sensing
 {
-    public class SenseMappingTestContext : //IItemContext<ActorReference>,
-                                           IItemContext<ItemReference>,
-                                           IGridMapContext<ItemReference>,
-                                           IGridMapContext<ActorReference>
+    public class SenseMappingTestContext : IItemContext<ItemReference>,
+                                           IGridMapContext<ItemReference>
     {
         readonly ItemContextBackend<ItemReference> itemBackend;
         readonly IGridMapContext<ItemReference> itemMap;
@@ -21,12 +19,16 @@ namespace RogueEntity.Core.Tests.Sensing
         {
             itemBackend = new ItemContextBackend<ItemReference>(new ItemReferenceMetaData());
             itemMap = new DefaultGridPositionContextBackend<ItemReference>()
-                .WithDefaultMapLayer(TestMapLayers.One)
-                .WithDefaultMapLayer(TestMapLayers.Two);
+                      .WithDefaultMapLayer(TestMapLayers.One)
+                      .WithDefaultMapLayer(TestMapLayers.Two);
+
+            ItemPlacementService = new GridItemPlacementService<ItemReference>(itemBackend.ItemResolver, itemMap);
 
             actorMap = new DefaultGridPositionContextBackend<ActorReference>()
                 .WithDefaultMapLayer(TestMapLayers.Three);
         }
+
+        public GridItemPlacementService<ItemReference> ItemPlacementService { get; }
 
         int IGridMapConfiguration<ItemReference>.OffsetX => itemMap.OffsetX;
 
@@ -35,19 +37,6 @@ namespace RogueEntity.Core.Tests.Sensing
         int IGridMapConfiguration<ItemReference>.TileSizeX => itemMap.TileSizeX;
 
         int IGridMapConfiguration<ItemReference>.TileSizeY => itemMap.TileSizeY;
-
-        int IGridMapConfiguration<ActorReference>.OffsetX =>  actorMap.OffsetX;
-
-        int IGridMapConfiguration<ActorReference>.OffsetY =>  actorMap.OffsetY;
-
-        int IGridMapConfiguration<ActorReference>.TileSizeX =>  actorMap.TileSizeX;
-
-        int IGridMapConfiguration<ActorReference>.TileSizeY => actorMap.TileSizeY;
-
-        ReadOnlyListWrapper<MapLayer> IGridMapContext<ActorReference>.GridLayers()
-        {
-            return actorMap.GridLayers();
-        }
 
         ReadOnlyListWrapper<MapLayer> IGridMapContext<ItemReference>.GridLayers()
         {
@@ -64,14 +53,14 @@ namespace RogueEntity.Core.Tests.Sensing
             return actorMap.TryGetGridDataFor(layer, out data);
         }
 
+        bool IGridMapContext<ItemReference>.TryGetGridDataFor(byte layerId, out IGridMapDataContext<ItemReference> data)
+        {
+            return itemMap.TryGetGridDataFor(layerId, out data);
+        }
+
         bool IGridMapContext<ItemReference>.TryGetGridDataFor(MapLayer layer, out IGridMapDataContext<ItemReference> data)
         {
             return itemMap.TryGetGridDataFor(layer, out data);
-        }
-
-        bool IGridMapContext<ActorReference>.TryGetGridDataFor(MapLayer layer, out IGridMapDataContext<ActorReference> data)
-        {
-            return actorMap.TryGetGridDataFor(layer, out data);
         }
 
         public IItemRegistryBackend<ItemReference> ItemRegistry

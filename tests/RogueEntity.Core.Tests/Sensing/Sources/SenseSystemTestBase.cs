@@ -104,13 +104,13 @@ namespace RogueEntity.Core.Tests.Sensing.Sources
             context.ItemEntityRegistry.RegisterFlag<ImmobilityMarker>();
 
             senseActive10 = context.ItemRegistry.Register(new ReferenceItemDeclaration<ItemReference>("SenseSource-Active-10")
-                                                          .WithTrait(new ReferenceItemGridPositionTrait<ItemReference>(context.ItemResolver, context, TestMapLayers.One))
+                                                          .WithTrait(new ReferenceItemGridPositionTrait<ItemReference>(TestMapLayers.One))
                                                           .DoWith(x => AttachTrait(x)));
             senseActive5 = context.ItemRegistry.Register(new ReferenceItemDeclaration<ItemReference>("SenseSource-Active-5")
-                                                         .WithTrait(new ReferenceItemGridPositionTrait<ItemReference>(context.ItemResolver, context, TestMapLayers.One))
+                                                         .WithTrait(new ReferenceItemGridPositionTrait<ItemReference>(TestMapLayers.One))
                                                          .DoWith(x => AttachTrait(x)));
             senseInactive5 = context.ItemRegistry.Register(new ReferenceItemDeclaration<ItemReference>("SenseSource-Inactive-5")
-                                                           .WithTrait(new ReferenceItemGridPositionTrait<ItemReference>(context.ItemResolver, context, TestMapLayers.One))
+                                                           .WithTrait(new ReferenceItemGridPositionTrait<ItemReference>(TestMapLayers.One))
                                                            .DoWith(x => AttachTrait(x)));
 
             timeSource = new TestTimeSource();
@@ -148,9 +148,9 @@ namespace RogueEntity.Core.Tests.Sensing.Sources
             context.ItemEntityRegistry.AssignComponent(active10, new ObservedSenseSource<TSense>());
             context.ItemEntityRegistry.AssignComponent(inactive, new ObservedSenseSource<TSense>());
 
-            context.ItemResolver.TryUpdateData(active10, EntityGridPosition.Of(TestMapLayers.One, 3, 4), out _);
-            context.ItemResolver.TryUpdateData(active5, EntityGridPosition.Of(TestMapLayers.One, 8, 9), out _);
-            context.ItemResolver.TryUpdateData(inactive, EntityGridPosition.Of(TestMapLayers.One, 5, 5), out _);
+            context.ItemPlacementService.TryPlaceItem(active10, Position.Of(TestMapLayers.One, 3, 4));
+            context.ItemPlacementService.TryPlaceItem(active5, Position.Of(TestMapLayers.One, 8, 9));
+            context.ItemPlacementService.TryPlaceItem(inactive, Position.Of(TestMapLayers.One, 5, 5));
         }
 
         protected void PerformTest(string id, string sourceText, string expectedResultText)

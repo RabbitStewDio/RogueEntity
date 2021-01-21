@@ -1,4 +1,3 @@
-using RogueEntity.Api.ItemTraits;
 using RogueEntity.Api.Modules;
 using RogueEntity.Api.Modules.Attributes;
 using RogueEntity.Api.Services;
@@ -11,7 +10,6 @@ using RogueEntity.Core.Movement.MovementModes.Walking;
 using RogueEntity.Core.Players;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Algorithms;
-using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Sensing.Sources.Light;
 using RogueEntity.Generator;
 using static RogueEntity.Core.Movement.CostModifier.MovementCostModifiers;
@@ -30,15 +28,31 @@ namespace RogueEntity.Simple.BoxPusher
         void InitializeModule(in ModuleInitializationParameter mip, IModuleInitializer initializer)
         {
             mip.ServiceResolver.ConfigureLightPhysics();
-            mip.ServiceResolver.ConfigureEntityType(ActorReferenceMetaData.Instance);
-            mip.ServiceResolver.ConfigureEntityType(ItemReferenceMetaData.Instance);
 
+            mip.ServiceResolver.ConfigureEntityType(ItemReferenceMetaData.Instance);
             mip.ServiceResolver.GetOrCreateDefaultGridMapContext<ItemReference>()
                .WithDefaultMapLayer(BoxPusherMapLayers.Floor)
                .WithDefaultMapLayer(BoxPusherMapLayers.Items);
 
+            var itemPlacementContext = new ItemPlacementServiceContext<ItemReference>()
+                                       .WithLayer(BoxPusherMapLayers.Floor,
+                                                  mip.ServiceResolver.GetOrCreateGridItemPlacementService<ItemReference>(),
+                                                  mip.ServiceResolver.GetOrCreateGridItemPlacementLocationService<ItemReference>())
+                                       .WithLayer(BoxPusherMapLayers.Items, 
+                                                  mip.ServiceResolver.GetOrCreateGridItemPlacementService<ItemReference>(),
+                                                  mip.ServiceResolver.GetOrCreateGridItemPlacementLocationService<ItemReference>());
+            mip.ServiceResolver.Store<IItemPlacementServiceContext<ItemReference>>(itemPlacementContext);
+
+
+            mip.ServiceResolver.ConfigureEntityType(ActorReferenceMetaData.Instance);
             mip.ServiceResolver.GetOrCreateDefaultGridMapContext<ActorReference>()
                .WithDefaultMapLayer(BoxPusherMapLayers.Actors);
+
+            var actorPlacementContext = new ItemPlacementServiceContext<ActorReference>()
+                .WithLayer(BoxPusherMapLayers.Actors, 
+                           mip.ServiceResolver.GetOrCreateGridItemPlacementService<ActorReference>(),
+                           mip.ServiceResolver.GetOrCreateGridItemPlacementLocationService<ActorReference>());
+            mip.ServiceResolver.Store<IItemPlacementServiceContext<ActorReference>>(actorPlacementContext);
         }
 
         [ContentInitializer]
@@ -74,15 +88,6 @@ namespace RogueEntity.Simple.BoxPusher
                                                              .Declaration);
 
             mip.ServiceResolver.Store<IPlayerServiceConfiguration>(new PlayerServiceConfiguration(playerId));
-        }
-
-        static void APITest(IServiceResolver r)
-        {
-            MapBuilder b = new MapBuilder();
-            b.WithLayer(BoxPusherMapLayers.Floor, r.Resolve<IItemResolver<ItemReference>>(), r.Resolve<IGridMapContext<ItemReference>>());
-            b.WithLayer(BoxPusherMapLayers.Items, r.Resolve<IItemResolver<ItemReference>>(), r.Resolve<IGridMapContext<ItemReference>>());
-            b.WithLayer(BoxPusherMapLayers.Actors, r.Resolve<IItemResolver<ActorReference>>(), r.Resolve<IGridMapContext<ActorReference>>());
-            
         }
     }
 }

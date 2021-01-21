@@ -393,7 +393,7 @@ namespace RogueEntity.Api.Modules.Helpers
                         logArgs[0] = entityType;
                         logArgs[1] = s.Id;
                         args.CopyTo(logArgs, 2);
-                        Logger.Debug("Entity {EntityType} requires role {Role}" + messageTemplateFragment, logArgs);
+                        Logger.Debug("Entity {EntityType} requires role {Role} {AdditionalContext}", entityType, s.Id, string.Format(messageTemplateFragment, args));
                     }
                 }
 

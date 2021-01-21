@@ -108,7 +108,7 @@ namespace RogueEntity.Core.Players
                 return true;
             }
 
-            if (r.TryResolve(out IPlayerService<TItemId> otherService))
+            if (r.TryResolve(out IPlayerService<TItemId> _))
             {
                 ps = default;
                 return false;

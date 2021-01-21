@@ -1,34 +1,53 @@
-using RogueEntity.Core.Positioning.MapLayers;
-
 namespace RogueEntity.Core.Positioning
 {
-    public interface IItemPlacementServiceContext<TItemId>
-    {
-        bool TryGetItemPlacementService(MapLayer layer, out IItemPlacementService<TItemId> service);
-    }
-
+    /// <summary>
+    ///   Encapsulates all primitive operations that place (bulk and reference) entities 
+    ///   into a map.
+    /// </summary>
+    /// <typeparam name="TItemId"></typeparam>
     public interface IItemPlacementService<TItemId>
     {
-        bool TryFindAvailableItemSlot(TItemId itemToBePlaced,
-                                      in Position origin,
-                                      out Position placementPos,
-                                      int searchRadius = 10);
-
-        bool TryFindEmptyItemSlot(in Position origin,
-                                  out Position placementPos,
-                                  int searchRadius = 10);
-
+        /// <summary>
+        ///   Tries to remove the target item from the map. The item will not be destroyed
+        ///   in the process. Use this to place items into containers or generally leave
+        ///   them outside of the physical realm.
+        /// </summary>
+        /// <param name="targetItem"></param>
+        /// <param name="placementPos"></param>
+        /// <returns></returns>
         bool TryRemoveItem(in TItemId targetItem,
-                           in Position placementPos,
-                           bool forcePlacement = false);
+                           in Position placementPos);
 
+        /// <summary>
+        ///    Places an item at the given placement position. It is assumed and strongly
+        ///    recommended that the item has not been placed elsewhere (and is validated for
+        ///    reference items).
+        /// </summary>
+        /// <param name="targetItem"></param>
+        /// <param name="placementPos"></param>
+        /// <returns></returns>
         bool TryPlaceItem(in TItemId targetItem,
-                          in Position placementPos,
-                          bool forcePlacement = false);
+                          in Position placementPos);
 
-        bool TryReplaceItem(in TItemId sourceItem,
-                            in TItemId targetItem,
-                            in Position p,
-                            bool forceMove = false);
+        /// <summary>
+        ///    Places an item at the given placement position. It is assumed and strongly
+        ///    recommended that the item has not been placed elsewhere (and is validated for
+        ///    reference items).
+        /// </summary>
+        /// <param name="item"></param>
+        /// <param name="currentPos"></param>
+        /// <param name="placementPos"></param>
+        /// <returns></returns>
+        bool TryMoveItem(in TItemId item,
+                         in Position currentPos,
+                         in Position placementPos);
+
+        /// <summary>
+        ///    Swaps the source entity with the target entity (which is expected to be located at the given position).
+        /// </summary>
+        bool TrySwapItem(in TItemId sourceItem,
+                         in Position sourcePosition,
+                         in TItemId targetItem,
+                         in Position targetPosition);
     }
 }

@@ -358,12 +358,12 @@ namespace RogueEntity.Core.Sensing.Sources
             {
                 if (!resolver.TryResolve(out SensePropertiesSystem<TSense> sensePropertiesSystem))
                 {
-                    Logger.Verbose("Not registering SensePropertiesConnector. No Sense Properties System defined.");
+                    Logger.Verbose("Not registering SensePropertiesConnector. No Sense Properties System defined");
                 }
 
                 if (!resolver.TryResolve(out SenseStateCache cacheProvider))
                 {
-                    Logger.Warning("Not registering SensePropertiesConnector. No SenseStateCache defined.");
+                    Logger.Warning("Not registering SensePropertiesConnector. No SenseStateCache defined");
                     return;
                 }
 

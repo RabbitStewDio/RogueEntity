@@ -6,17 +6,6 @@ using Serilog;
 
 namespace RogueEntity.Api.GameLoops
 {
-    public enum ActionSystemExecutionContext
-    {
-        Initialization = 0,
-        PrepareFixedStep = 1,
-        FixedStep = 2,
-        LateFixedStep = 3,
-        VariableStep = 4,
-        LateVariableStep = 5,
-        ShutDown = -1,
-    }
-    
     /// <summary>
     ///   This class represents an component system registration. It also contains supporting
     ///   functionality to measure execution times.
@@ -76,7 +65,7 @@ namespace RogueEntity.Api.GameLoops
             try
             {
                 action();
-                Logger.Verbose("[{Context}] Processed {Handler} ({HandleTime} / {TotalTime})",
+                Logger.Verbose("[{Context}] Processed {Handler} ({HandleTime})",
                                contextName, ToString(), 
                                new ActionSystemTime(invocationCount, frameCounter.Elapsed.TotalMilliseconds, performanceCounter.Elapsed.TotalMilliseconds));
             }

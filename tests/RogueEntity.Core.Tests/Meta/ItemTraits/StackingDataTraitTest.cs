@@ -1,4 +1,6 @@
-﻿using RogueEntity.Core.Meta.ItemTraits;
+﻿using FluentAssertions;
+using NUnit.Framework;
+using RogueEntity.Core.Meta.ItemTraits;
 using RogueEntity.Core.Tests.Meta.Items;
 using RogueEntity.Core.Meta.EntityKeys;
 
@@ -21,6 +23,14 @@ namespace RogueEntity.Core.Tests.Meta.ItemTraits
                                                                 StackCount.Of(20, 100), 
                                                                 StackCount.Of(100, 100))
                 .WithRemoveProhibited();
+        }
+
+        [Test]
+        public void Adding()
+        {
+            var newStack = StackCount.Of(1, 50).Add(40, out _);
+            newStack.Count.Should().Be(41);
+            newStack.MaximumStackSize.Should().Be(50);
         }
     }
 }

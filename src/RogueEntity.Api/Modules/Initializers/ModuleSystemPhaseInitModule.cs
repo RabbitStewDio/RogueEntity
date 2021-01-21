@@ -69,7 +69,7 @@ namespace RogueEntity.Api.Modules.Initializers
                 {
                     var moduleInitializerDelegate = (ModuleInitializerDelegate)Delegate.CreateDelegate(typeof(ModuleInitializerDelegate), module, m);
                     actions.Add(moduleInitializerDelegate);
-                    Logger.Verbose("Found plain module initializer {Method}", m);
+                    Logger.Verbose("Found plain module initializer {Method}", m.Name);
                     continue;
                 }
 

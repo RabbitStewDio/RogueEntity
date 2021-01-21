@@ -113,7 +113,7 @@ namespace RogueEntity.Api.Modules.Initializers
                             $"Expected a generic method with signature 'IEnumerable<ModuleEntityRoleInitializerInfo<TEntityId>> DeclareInitializers<TEntityId>(IServiceResolver, IModuleInitializer, EntityRole), but found {m} in module {module.Id}");
                     }
 
-                    Logger.Information("Generic constraints on module {Module} with method {Method} do not match. {errorHint}", module.Id, m, errorHint);
+                    Logger.Information("Generic constraints on module {Module} with method {Method} do not match. {ErrorHint}", module.Id, m.Name, errorHint);
                     continue;
                 }
 
@@ -148,11 +148,11 @@ namespace RogueEntity.Api.Modules.Initializers
                             $"Expected a generic method with signature 'void XXX<TEntityId>(ModuleInitializationParameter ByRef, IModuleInitializer, EntityRole), but found {m} in module {module.Id}");
                     }
 
-                    Logger.Information("Generic constraints on module {Module} with method {Method} do not match. {errorHint}", module.Id, m, errorHint);
+                    Logger.Information("Generic constraints on module {Module} with method {Method} do not match. {ErrorHint}", module.Id, m.Name, errorHint);
                     continue;
                 }
 
-                Logger.Verbose("Invoking role initializer {Method}", genericMethod);
+                Logger.Verbose("Invoking role initializer {Method}", genericMethod.Name);
                 var initializer = (ModuleEntityRoleInitializerDelegate<TEntityId>)
                     Delegate.CreateDelegate(typeof(ModuleEntityRoleInitializerDelegate<TEntityId>), module, genericMethod);
                 retval.Add(ModuleEntityRoleInitializerInfo.CreateFor(role, initializer, "<Reflect> " +module.GetType() + "#" + genericMethod.Name)

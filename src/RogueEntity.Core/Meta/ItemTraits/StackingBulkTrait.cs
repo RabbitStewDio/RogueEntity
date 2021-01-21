@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using EnTTSharp.Entities;
 using RogueEntity.Api.ItemTraits;
+using RogueEntity.Api.Utils;
 using RogueEntity.Core.Meta.Items;
 
 namespace RogueEntity.Core.Meta.ItemTraits
@@ -20,10 +21,20 @@ namespace RogueEntity.Core.Meta.ItemTraits
 
         public StackingBulkTrait(ushort initialCount, ushort stackSize)
         {
+            if (stackSize <= 0 || stackSize >= ushort.MaxValue)
+            {
+                throw new ArgumentOutOfRangeException(nameof(stackSize));
+            }
+
+            if (initialCount <= 0 || initialCount > stackSize)
+            {
+                throw new ArgumentOutOfRangeException(nameof(initialCount));
+            }
+            
             Id = "ItemTrait.Bulk.Generic.Stacking";
             Priority = 100;
-            this.stackSize = stackSize;
-            this.initialCount = initialCount;
+            this.stackSize = (ushort) (stackSize - 1);
+            this.initialCount = (ushort)(initialCount - 1);
         }
 
         public ItemTraitId Id { get; }
@@ -43,19 +54,24 @@ namespace RogueEntity.Core.Meta.ItemTraits
         {
             if (k.IsReference)
             {
-                t = StackCount.Of(1).WithCount(1);
+                t = StackCount.Of(1, 1);
                 return true;
             }
 
-            t = StackCount.Of(stackSize).WithCount(k.Data);
+            t = StackCount.OfRaw(k.Data.ClampToUnsignedShort(), stackSize);
             return true;
         }
 
         public bool TryUpdate(IEntityViewControl<TItemId> v, TItemId k, in StackCount t, out TItemId changedK)
         {
-            if (t.MaximumStackSize > stackSize || t.Count > t.MaximumStackSize)
+            if (t.MaximumStackSize != (stackSize + 1))
             {
-                throw new ArgumentOutOfRangeException();
+                throw new ArgumentOutOfRangeException(nameof(t), $"StackCount {t} does not match expected maximum stack size {stackSize + 1}");
+            }
+            if (t.Count > t.MaximumStackSize ||
+                t.Count < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(t), $"Stack is invalid {t}");
             }
 
             if (k.IsReference)
@@ -70,7 +86,7 @@ namespace RogueEntity.Core.Meta.ItemTraits
             }
             else
             {
-                changedK = k.WithData(t.Count);
+                changedK = k.WithData(t.CountRaw);
             }
 
             return true;

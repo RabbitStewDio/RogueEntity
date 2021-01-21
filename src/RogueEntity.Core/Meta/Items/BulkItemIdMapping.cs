@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 using MessagePack;
@@ -29,7 +28,7 @@ namespace RogueEntity.Core.Meta.Items
 
         public BulkItemIdMapping(IBulkItemIdMapping copy): this()
         {
-            foreach (var c in copy)
+            foreach (var c in copy.Ids)
             {
                 if (copy.TryResolveBulkItem(c, out var id))
                 {
@@ -48,16 +47,6 @@ namespace RogueEntity.Core.Meta.Items
             return itemById.TryGetValue(id, out itemName);
         }
 
-        public Dictionary<int, ItemDeclarationId>.KeyCollection.Enumerator GetEnumerator() => itemById.Keys.GetEnumerator();
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
-
-        IEnumerator<int> IEnumerable<int>.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
+        public IEnumerable<int> Ids => itemById.Keys;
     }
 }

@@ -16,9 +16,7 @@ using RogueEntity.Core.Tests.Meta.Items;
 namespace RogueEntity.Core.Tests.Equipment
 {
     [TestFixture]
-    public class SlottedEquipmentTraitTest :
-        ItemComponentTraitTestBase<ActorReference, ISlottedEquipment<ItemReference>,
-            SlottedEquipmentTrait<ActorReference, ItemReference>>
+    public class SlottedEquipmentTraitTest : ItemComponentTraitTestBase<ActorReference, ISlottedEquipment<ItemReference>, SlottedEquipmentTrait<ActorReference, ItemReference>>
     {
         readonly ItemDeclarationId StackedBulkItem = "equipment.bulk.stacked";
         readonly ItemDeclarationId ReferenceItem = "equipment.reference";
@@ -29,7 +27,7 @@ namespace RogueEntity.Core.Tests.Equipment
         readonly EquipmentSlot slotRightHand;
         public EquipmentTestContext Context { get; private set; }
 
-        public SlottedEquipmentTraitTest(): base(new ActorReferenceMetaData())
+        public SlottedEquipmentTraitTest() : base(new ActorReferenceMetaData())
         {
             slotHead = new EquipmentSlot("slot.head", 0, "Head", "HEAD");
             slotLeftHand = new EquipmentSlot("slot.hand.left", 1, "Left Hand", "LHND");
@@ -57,7 +55,7 @@ namespace RogueEntity.Core.Tests.Equipment
         {
             var meta = new ItemReferenceMetaData();
             return new SlottedEquipmentTrait<ActorReference, ItemReference>(Context.ActorResolver, Context.ItemResolver, meta, Weight.Unlimited, slotHead, slotLeftHand,
-                                                                                                  slotRightHand);
+                                                                            slotRightHand);
         }
 
         protected override EntityComponentRegistration PerformEntityComponentRegistration(EntityRegistrationScanner scn)
@@ -103,20 +101,20 @@ namespace RogueEntity.Core.Tests.Equipment
 
             return new ItemComponentTestDataFactory<ISlottedEquipment<ItemReference>>(
                        new SlottedEquipment<ActorReference, ItemReference>(meta, Context.ItemResolver, slots,
-                                                                                                 SlottedEquipmentData<ItemReference>.Create(), Weight.Unlimited),
+                                                                           SlottedEquipmentData<ItemReference>.Create(), Weight.Unlimited),
                        new SlottedEquipment<ActorReference, ItemReference>(meta, Context.ItemResolver, slots,
-                                                                                                 SlottedEquipmentData<ItemReference>
-                                                                                                     .Create()
-                                                                                                     .Equip(Context.ItemResolver.Instantiate(StackedBulkItem),
-                                                                                                            slotHead, new List<EquipmentSlot> {slotHead}),
-                                                                                                 Weight.Unlimited),
+                                                                           SlottedEquipmentData<ItemReference>
+                                                                               .Create()
+                                                                               .Equip(Context.ItemResolver.Instantiate(StackedBulkItem),
+                                                                                      slotHead, new List<EquipmentSlot> {slotHead}),
+                                                                           Weight.Unlimited),
                        new SlottedEquipment<ActorReference, ItemReference>(meta, Context.ItemResolver, slots,
-                                                                                                 SlottedEquipmentData<ItemReference>
-                                                                                                     .Create()
-                                                                                                     .Equip(Context.ItemResolver.Instantiate(ReferenceItem),
-                                                                                                            slotLeftHand,
-                                                                                                            new List<EquipmentSlot> {slotLeftHand, slotRightHand}),
-                                                                                                 Weight.Unlimited))
+                                                                           SlottedEquipmentData<ItemReference>
+                                                                               .Create()
+                                                                               .Equip(Context.ItemResolver.Instantiate(ReferenceItem),
+                                                                                      slotLeftHand,
+                                                                                      new List<EquipmentSlot> {slotLeftHand, slotRightHand}),
+                                                                           Weight.Unlimited))
                    .WithoutInvalidResult()
                    .WithRemoveProhibited();
         }

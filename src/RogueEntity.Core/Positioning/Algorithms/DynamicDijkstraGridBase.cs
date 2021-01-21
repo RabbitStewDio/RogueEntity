@@ -87,7 +87,7 @@ namespace RogueEntity.Core.Positioning.Algorithms
             }
 
             lowestNode = openNodePosition;
-            Logger.Verbose("Evaluated {Count} nodes during rescan.", nodeCount);
+            Logger.Verbose("Evaluated {Count} nodes during rescan", nodeCount);
             return nodeCount > 0;
         }
 

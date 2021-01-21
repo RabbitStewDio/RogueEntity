@@ -1,7 +1,7 @@
-﻿using System;
-using RogueEntity.Api.Time;
+﻿using RogueEntity.Api.Time;
+using System;
 
-namespace RogueEntity.Api.GameLoops
+namespace RogueEntity.Core.Infrastructure.GameLoops
 {
     public class GameTimeProcessor
     {

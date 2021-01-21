@@ -46,24 +46,14 @@ namespace RogueEntity.Core.Tests.Positioning.Grid
             return mapBackend.GridLayers();
         }
 
+        public bool TryGetGridDataFor(byte layerId, out IGridMapDataContext<ItemReference> data)
+        {
+            return mapBackend.TryGetGridDataFor(layerId, out data);
+        }
+
         public bool TryGetGridDataFor(MapLayer layer, out IGridMapDataContext<ItemReference> data)
         {
             return mapBackend.TryGetGridDataFor(layer, out data);
         }
-
-        // public IItemRegistryBackend<TestGridPositionContext, ItemReference> ItemRegistry
-        // {
-        //     get { return itemContextBackend.ItemRegistry; }
-        // }
-        //
-        // public EntityRegistry<ItemReference> EntityRegistry
-        // {
-        //     get { return itemContextBackend.EntityRegistry; }
-        // }
-        //
-        // public IItemResolver<TestGridPositionContext, ItemReference> ItemResolver
-        // {
-        //     get { return itemContextBackend.ItemResolver; }
-        // }
     }
 }

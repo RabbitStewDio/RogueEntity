@@ -33,7 +33,7 @@ namespace RogueEntity.Core.Meta.Items
         {
             var buildRemoteMapping = new Dictionary<int, int>();
             var reverseMapping = BuildReverseMapping(localMapper);
-            foreach (var remoteId in remoteMapper)
+            foreach (var remoteId in remoteMapper.Ids)
             {
                 if (!remoteMapper.TryResolveBulkItem(remoteId, out var remoteType) ||
                     !reverseMapping.TryGetValue(remoteType, out var localId))
@@ -50,7 +50,7 @@ namespace RogueEntity.Core.Meta.Items
         static Dictionary<ItemDeclarationId, int> BuildReverseMapping(IBulkItemIdMapping m)
         {
             var retval = new Dictionary<ItemDeclarationId, int>();
-            foreach (var id in m)
+            foreach (var id in m.Ids)
             {
                 if (m.TryResolveBulkItem(id, out var v))
                 {

@@ -165,13 +165,13 @@ namespace RogueEntity.Core.Infrastructure.Actions
 
             if (!Ready(v, k,  in points))
             { 
-                Logger.Debug("{Entity}:{points} - Not ready to run any movement.", k, points);
+                Logger.Debug("{Entity}:{Points} - Not ready to run any movement", k, points);
                 actionResult = default;
                 return false;
             }
 
             actionResult = action.NextAction.Perform(v,  k, out actionCost);
-            Logger.Debug("{Entity}:{points} - Running {Action} with {cost} movement point cost and resulted {ActionResult}",
+            Logger.Debug("{Entity}:{Points} - Running {Action} with {Cost} movement point cost and resulted {ActionResult}",
                          k, points, action.NextAction, actionCost, actionResult);
 
             if (actionCost != 0)
@@ -195,13 +195,13 @@ namespace RogueEntity.Core.Infrastructure.Actions
 
             if (!Ready(v, k,  in points))
             {
-                Logger.Debug("{Entity}:{points} - Not ready to run any action.", k, points);
+                Logger.Debug("{Entity}:{Points} - Not ready to run any action", k, points);
                 actionResult = default;
                 return false;
             }
 
             actionResult = action.NextAction.Perform(v,  k, out actionCost);
-            Logger.Debug("{Entity}:{points} - Running {Action} with {cost} action point cost and resulted {actionResult}",
+            Logger.Debug("{Entity}:{Points} - Running {Action} with {Cost} action point cost and resulted {ActionResult}",
                          k, points, action.NextAction, actionCost, actionResult);
 
             if (actionCost != 0)

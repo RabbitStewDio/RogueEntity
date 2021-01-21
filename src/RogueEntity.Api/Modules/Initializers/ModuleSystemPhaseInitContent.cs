@@ -98,7 +98,7 @@ namespace RogueEntity.Api.Modules.Initializers
                 if (m.IsSameAction(typeof(ModuleInitializationParameter).MakeByRefType(), typeof(IModuleInitializer)))
                 {
                     actions.Add((ModuleContentInitializerDelegate)Delegate.CreateDelegate(typeof(ModuleContentInitializerDelegate), module, m));
-                    Logger.Verbose("Found plain module initializer {Method}", m);
+                    Logger.Verbose("Found plain module initializer {Method}", m.Name);
                     continue;
                 }
 

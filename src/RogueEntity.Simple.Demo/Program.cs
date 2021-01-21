@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Xna.Framework;
 using RogueEntity.Simple.Demo.BoxPusher;
 using SadConsole;
 using Serilog;

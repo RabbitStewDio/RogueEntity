@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Api.Utils;
@@ -30,6 +29,8 @@ namespace RogueEntity.Core.Meta.Items
             items = new List<IItemDeclaration>();
             bulkItemIdSequence = 1;
         }
+
+        public IBulkDataStorageMetaData<TItemId> EntityMetaData => itemIdMetaData;
 
         public TItemId GenerateBulkItemId(IBulkItemDeclaration<TItemId> item)
         {
@@ -179,15 +180,7 @@ namespace RogueEntity.Core.Meta.Items
 
         public IBulkItemIdMapping BulkItemMapping => this;
 
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
-
-        public IEnumerator<int> GetEnumerator()
-        {
-            return bulkItemReverseIndex.Keys.GetEnumerator();
-        }
+        public IEnumerable<int> Ids => bulkItemReverseIndex.Keys;
 
         public bool TryResolveBulkItem(int id, out ItemDeclarationId itemName)
         {

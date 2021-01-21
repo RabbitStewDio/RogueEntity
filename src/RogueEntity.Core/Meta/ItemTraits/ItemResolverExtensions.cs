@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using EnTTSharp.Entities;
 using RogueEntity.Api.ItemTraits;
 
@@ -7,15 +6,15 @@ namespace RogueEntity.Core.Meta.ItemTraits
 {
     public static class ItemResolverExtensions
     {
-        public static StackCount QueryStackSize< TItemId>(this IItemResolver< TItemId> resolver,
-                                                                       TItemId item)
+        public static StackCount QueryStackSize<TItemId>(this IItemResolver<TItemId> resolver,
+                                                         TItemId item)
             where TItemId : IEntityKey
         {
-            if (EqualityComparer<TItemId>.Default.Equals(item, default))
+            if (item.IsEmpty)
             {
-                return StackCount.Of(0);
+                throw new ArgumentException();
             }
-            
+
             if (resolver.TryQueryData(item, out StackCount p))
             {
                 return p;
@@ -24,8 +23,8 @@ namespace RogueEntity.Core.Meta.ItemTraits
             return StackCount.One;
         }
 
-        public static WeightView QueryWeight< TItemId>(this IItemResolver< TItemId> resolver,
-                                                                    TItemId item)
+        public static WeightView QueryWeight<TItemId>(this IItemResolver<TItemId> resolver,
+                                                      TItemId item)
             where TItemId : IEntityKey
         {
             if (resolver.TryQueryData(item, out WeightView p))
@@ -36,8 +35,8 @@ namespace RogueEntity.Core.Meta.ItemTraits
             return default;
         }
 
-        public static Weight QueryBaseWeight< TItemId>(this IItemResolver< TItemId> resolver, 
-                                                                    TItemId r) 
+        public static Weight QueryBaseWeight<TItemId>(this IItemResolver<TItemId> resolver,
+                                                      TItemId r)
             where TItemId : IEntityKey
         {
             if (resolver.TryQueryData(r, out Weight p))
@@ -48,11 +47,12 @@ namespace RogueEntity.Core.Meta.ItemTraits
             return default;
         }
 
-        public static bool SplitLargeStack< TItemId>(this IItemResolver< TItemId> itemResolver,
-                                                                  TItemId r, int count,
-                                                                  out TItemId taken,
-                                                                  out TItemId remainder,
-                                                                  out int remainingCount)
+        public static bool SplitLargeStack<TItemId>(this IItemResolver<TItemId> itemResolver,
+                                                    TItemId r,
+                                                    int count,
+                                                    out TItemId taken,
+                                                    out TItemId remainder,
+                                                    out int remainingCount)
             where TItemId : IEntityKey
         {
             if (count < 0)
@@ -84,12 +84,12 @@ namespace RogueEntity.Core.Meta.ItemTraits
             return false;
         }
 
-        public static bool SplitStack< TItemId>(this IItemResolver< TItemId> itemResolver,
-                                                             TItemId r,
-                                                             int count,
-                                                             out TItemId taken,
-                                                             out TItemId remainder,
-                                                             out int remainingCount)
+        public static bool SplitStack<TItemId>(this IItemResolver<TItemId> itemResolver,
+                                               TItemId r,
+                                               int count,
+                                               out TItemId taken,
+                                               out TItemId remainder,
+                                               out int remainingCount)
             where TItemId : IEntityKey
         {
             if (count < 0)
@@ -106,12 +106,12 @@ namespace RogueEntity.Core.Meta.ItemTraits
                 return false;
             }
 
-            if (!itemResolver.TryQueryData(r,  out StackCount p))
+            if (!itemResolver.TryQueryData(r, out StackCount p))
             {
                 // If not stackable assume a max-stack size of 1
                 taken = r;
                 remainder = default;
-                remainingCount = (ushort)(count - 1);
+                remainingCount = (count - 1);
                 return true;
             }
 
@@ -119,24 +119,32 @@ namespace RogueEntity.Core.Meta.ItemTraits
             {
                 taken = r;
                 remainder = default;
-                remainingCount = (ushort)(count - p.Count);
+                remainingCount = (count - p.Count);
                 return true;
             }
 
             // count < p.Count
 
-            var takenStack = p.Take(count, out var remainderStack, out var notApplied);
-            if (itemResolver.TryUpdateData(r,  in remainderStack, out remainder) &&
-                itemResolver.TryUpdateData(r,  in takenStack, out taken))
+            var takeResult = p.Take(count);
+            if (takeResult.ItemsLeftInStack.TryGetValue(out var remainderStack))
             {
-                remainingCount = (ushort)notApplied;
-                return true;
+                if (itemResolver.TryUpdateData(r, in remainderStack, out remainder) &&
+                    itemResolver.TryUpdateData(r, in takeResult.ItemsTakenFromStack, out taken))
+                {
+                    remainingCount = takeResult.ItemsNotAvailableInStack;
+                    return true;
+                }
+
+                taken = default;
+                remainder = r;
+                remainingCount = count;
+                return false;
             }
 
-            taken = default;
-            remainder = r;
-            remainingCount = count;
-            return false;
+            taken = r;
+            remainder = default;
+            remainingCount = takeResult.ItemsNotAvailableInStack;
+            return true;
         }
     }
 }

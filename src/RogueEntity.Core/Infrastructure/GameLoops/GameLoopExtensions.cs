@@ -1,9 +1,10 @@
-using System;
+using RogueEntity.Api.GameLoops;
 using RogueEntity.Api.Modules;
 using RogueEntity.Api.Utils;
 using Serilog;
+using System;
 
-namespace RogueEntity.Api.GameLoops
+namespace RogueEntity.Core.Infrastructure.GameLoops
 {
     public static class GameLoopExtensions
     {

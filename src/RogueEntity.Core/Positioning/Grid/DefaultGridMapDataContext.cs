@@ -21,7 +21,7 @@ namespace RogueEntity.Core.Positioning.Grid
         {
             this.Layer = layer;
         }
-        
+
         [UsedImplicitly] 
         public MapLayer Layer { get; }
 

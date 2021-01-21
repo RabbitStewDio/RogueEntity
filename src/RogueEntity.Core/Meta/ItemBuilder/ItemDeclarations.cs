@@ -18,14 +18,26 @@ namespace RogueEntity.Core.Meta.ItemBuilder
                                                                                                                 IServiceResolver serviceResolver)
             where TItemId : IEntityKey
         {
-            return new ItemDeclarationBuilderWithReferenceContext<TItemId>(ctx, serviceResolver);
+            return new ItemDeclarationBuilderWithReferenceContext<TItemId>(serviceResolver);
         }
 
         public static ItemDeclarationBuilderWithBulkContext<TItemId> CreateBulkEntityBuilder<TItemId>(this IModuleContentContext<TItemId> ctx,
                                                                                                       IServiceResolver serviceResolver)
             where TItemId : IBulkDataStorageKey<TItemId>
         {
-            return new ItemDeclarationBuilderWithBulkContext<TItemId>(ctx, serviceResolver);
+            return new ItemDeclarationBuilderWithBulkContext<TItemId>(serviceResolver);
+        }
+
+        public static ReferenceItemDeclarationBuilder<TItemId> AsBuilder<TItemId>(this ReferenceItemDeclaration<TItemId> item, IServiceResolver serviceResolver)
+            where TItemId : IEntityKey
+        {
+            return new ReferenceItemDeclarationBuilder<TItemId>(serviceResolver, item);
+        }
+        
+        public static BulkItemDeclarationBuilder<TItemId> AsBuilder<TItemId>(this BulkItemDeclaration<TItemId> item, IServiceResolver serviceResolver)
+            where TItemId : IEntityKey
+        {
+            return new BulkItemDeclarationBuilder<TItemId>(serviceResolver, item);
         }
     }
 
@@ -43,80 +55,59 @@ namespace RogueEntity.Core.Meta.ItemBuilder
         public ItemDeclarationBuilderWithReferenceContext<TItemId> ForEntity<TItemId>()
             where TItemId : IEntityKey
         {
-            return new ItemDeclarationBuilderWithReferenceContext<TItemId>(mod.DeclareContentContext<TItemId>(), serviceResolver);
+            mod.DeclareContentContext<TItemId>();
+            return new ItemDeclarationBuilderWithReferenceContext<TItemId>(serviceResolver);
         }
 
         public ItemDeclarationBuilderWithBulkContext<TItemId> ForBulkEntity<TItemId>()
             where TItemId : IBulkDataStorageKey<TItemId>
         {
-            return new ItemDeclarationBuilderWithBulkContext<TItemId>(mod.DeclareContentContext<TItemId>(), serviceResolver);
+            mod.DeclareContentContext<TItemId>();
+            return new ItemDeclarationBuilderWithBulkContext<TItemId>(serviceResolver);
         }
     }
 
     public readonly struct ItemDeclarationBuilderWithReferenceContext<TItemId>
         where TItemId : IEntityKey
     {
-        readonly IModuleContentContext<TItemId> entityContext;
         readonly IServiceResolver serviceResolver;
 
-        public ItemDeclarationBuilderWithReferenceContext(IModuleContentContext<TItemId> entityContext,
-                                                          IServiceResolver serviceResolver)
+        public ItemDeclarationBuilderWithReferenceContext(IServiceResolver serviceResolver)
         {
-            this.entityContext = entityContext;
             this.serviceResolver = serviceResolver;
         }
 
         public ReferenceItemDeclarationBuilder<TItemId> Define(ItemDeclarationId id, string tag = null)
         {
-            return new ReferenceItemDeclarationBuilder<TItemId>(entityContext, serviceResolver, new ReferenceItemDeclaration<TItemId>(id, tag));
+            return new ReferenceItemDeclarationBuilder<TItemId>(serviceResolver, new ReferenceItemDeclaration<TItemId>(id, tag));
         }
     }
 
     public readonly struct ItemDeclarationBuilderWithBulkContext<TItemId>
         where TItemId : IEntityKey
     {
-        readonly IModuleContentContext<TItemId> entityContext;
         readonly IServiceResolver serviceResolver;
 
-        public ItemDeclarationBuilderWithBulkContext(IModuleContentContext<TItemId> entityContext,
-                                                     IServiceResolver serviceResolver)
+        public ItemDeclarationBuilderWithBulkContext(IServiceResolver serviceResolver)
         {
-            this.entityContext = entityContext;
             this.serviceResolver = serviceResolver;
         }
 
         public BulkItemDeclarationBuilder<TItemId> Define(ItemDeclarationId id, string tag = null)
         {
-            return new BulkItemDeclarationBuilder<TItemId>(entityContext, serviceResolver, new BulkItemDeclaration<TItemId>(id, tag));
-        }
-
-        public BulkItemDeclarationBuilder<TItemId> RedefineAs(ItemDeclarationId id, ItemDeclarationId copyId, string tag = null)
-        {
-            var declaration = new BulkItemDeclaration<TItemId>(copyId, tag);
-            if (entityContext.TryGetDefinedBulkItem(id, out var bi))
-            {
-                foreach (var trait in bi.QueryAll<IBulkItemTrait<TItemId>>())
-                {
-                    declaration.WithTrait(trait);
-                }
-            }
-
-            return new BulkItemDeclarationBuilder<TItemId>(entityContext, serviceResolver, declaration);
+            return new BulkItemDeclarationBuilder<TItemId>(serviceResolver, new BulkItemDeclaration<TItemId>(id, tag));
         }
     }
 
     public readonly struct ReferenceItemDeclarationBuilder<TItemId>
         where TItemId : IEntityKey
     {
-        public readonly IModuleContentContext<TItemId> EntityContext;
         public readonly IServiceResolver ServiceResolver;
         public readonly ReferenceItemDeclaration<TItemId> Declaration;
 
-        public ReferenceItemDeclarationBuilder(IModuleContentContext<TItemId> entityContext,
-                                               IServiceResolver serviceResolver,
+        public ReferenceItemDeclarationBuilder(IServiceResolver serviceResolver,
                                                ReferenceItemDeclaration<TItemId> declaration)
         {
-            this.EntityContext = entityContext;
             this.ServiceResolver = serviceResolver;
             this.Declaration = declaration;
         }
@@ -131,15 +122,12 @@ namespace RogueEntity.Core.Meta.ItemBuilder
     public readonly struct BulkItemDeclarationBuilder<TItemId>
         where TItemId : IEntityKey
     {
-        public readonly IModuleContentContext<TItemId> EntityContext;
         public readonly IServiceResolver ServiceResolver;
         public readonly BulkItemDeclaration<TItemId> Declaration;
 
-        public BulkItemDeclarationBuilder(IModuleContentContext<TItemId> entityContext,
-                                          IServiceResolver serviceResolver,
+        public BulkItemDeclarationBuilder(IServiceResolver serviceResolver,
                                           BulkItemDeclaration<TItemId> declaration)
         {
-            this.EntityContext = entityContext;
             this.ServiceResolver = serviceResolver;
             this.Declaration = declaration;
         }

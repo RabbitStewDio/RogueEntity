@@ -4,6 +4,7 @@ namespace RogueEntity.Api.ItemTraits
 {
     public interface IItemResolver<TItemId> where TItemId: IEntityKey
     {
+        IBulkDataStorageMetaData<TItemId> EntityMetaData { get; }
         IItemRegistry ItemRegistry { get; }
 
         bool TryResolve(in TItemId itemRef, out IItemDeclaration item);

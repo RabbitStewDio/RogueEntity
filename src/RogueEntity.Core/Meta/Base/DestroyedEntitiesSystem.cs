@@ -21,14 +21,12 @@ namespace RogueEntity.Core.Meta.Base
 
         public void DeleteMarkedEntities()
         {
-            Logger.Debug("HELLO WORLD " + typeof(TEntity));
             var en = entityRegistry.PersistentView<DestroyedMarker>();
             var x = EntityKeyListPool.Reserve(en);
             try
             {
                 foreach (var v in x)
                 {
-                    Logger.Debug("Destroyed {item}", v);
                     entityRegistry.Destroy(v);
                 }
             }
@@ -42,7 +40,7 @@ namespace RogueEntity.Core.Meta.Base
                                                                        TEntity k,
                                                                        in CascadingDestroyedMarker m)
         {
-            Logger.Debug("Activate destruction for inventory item {inventoryItem}", k);
+            Logger.Debug("Activate destruction for inventory item {InventoryItem}", k);
             v.AssignOrReplace(k, new DestroyedMarker());
             v.RemoveComponent<CascadingDestroyedMarker>(k);
         }
@@ -66,10 +64,10 @@ namespace RogueEntity.Core.Meta.Base
                                                                in TInventory inventory)
             where TInventory : IContainerView<TItemId>
         {
-            Logger.Debug("Schedule destruction for contents of container {container} - " + typeof(TContainerEntity), k);
+            Logger.Debug("Schedule destruction for contents of container {Container} of type {ContainerType} ", k, typeof(TContainerEntity));
             foreach (var inventoryItem in inventory.Items)
             {
-                Logger.Debug("Schedule destruction for inventory item {inventoryItem}", inventoryItem);
+                Logger.Debug("Schedule destruction for inventory item {InventoryItem}", inventoryItem);
                 itemContext.DestroyNext(inventoryItem);
             }
         }

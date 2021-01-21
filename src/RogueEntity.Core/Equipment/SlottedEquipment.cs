@@ -153,7 +153,7 @@ namespace RogueEntity.Core.Equipment
                 remainderItem = default;
                 if (itemResolver.TryQueryData(item, out IContainerEntityMarker _))
                 {
-                    Logger.Verbose("Unable to equip reference item {item} as it is already contained in another container", item);
+                    Logger.Verbose("Unable to equip reference item {Item} as it is already contained in another container", item);
                     // This item should not be on a map right now.
                     // This item is misconfigured. 
                     actualSlot = default;
@@ -172,7 +172,7 @@ namespace RogueEntity.Core.Equipment
             var stack = itemResolver.QueryStackSize(item);
             if (stack.Count == 0)
             {
-                Logger.Verbose("Unable to equip item {item} as it has an empty stack.", item);
+                Logger.Verbose("Unable to equip item {Item} as it has an empty stack", item);
                 remainderItem = default;
                 actualSlot = default;
                 return false;
@@ -194,7 +194,7 @@ namespace RogueEntity.Core.Equipment
 
             if (!itemResolver.TryQueryData(item, out EquipmentSlotRequirements req))
             {
-                Logger.Verbose("Unable to equip item {item} as it cannot be equipped.", item);
+                Logger.Verbose("Unable to equip item {Item} as it cannot be equipped", item);
                 actualSlot = default;
                 remainderItem = default;
                 return false;
@@ -202,7 +202,7 @@ namespace RogueEntity.Core.Equipment
 
             if (!Data.IsBulkEquipmentSpaceAvailable(itemIdMetaData, req, item, desiredSlot, out actualSlot))
             {
-                Logger.Verbose("Unable to equip item {item} - Not enough space available.", item);
+                Logger.Verbose("Unable to equip item {Item} - Not enough space available", item);
                 actualSlot = default;
                 remainderItem = default;
                 return false;
@@ -234,16 +234,25 @@ namespace RogueEntity.Core.Equipment
             var existingStack = itemResolver.QueryStackSize(equippedItem.Reference);
             if (existingStack.Count == existingStack.MaximumStackSize)
             {
-                Logger.Verbose("The stacking item already equipped has a full stack. Unable to add more.");
+                Logger.Verbose("The stacking item already equipped has a full stack; Unable to add more items");
                 actualSlot = default;
                 remainderItem = default;
                 return false;
             }
 
             var combinedStack = existingStack.Add(stack.Count, out var remainingItems);
-            if (itemResolver.TryUpdateData(item, combinedStack, out var resultingItem) &&
-                itemResolver.TryUpdateData(item, stack.WithCount(remainingItems), out remainderItem))
+            
+            if (itemResolver.TryUpdateData(item, combinedStack, out var resultingItem))
             {
+                remainderItem = default;
+                if (remainingItems > 0 && !itemResolver.TryUpdateData(item, stack.WithCount(remainingItems), out remainderItem))
+                {
+                    // failed to update remaining item stack. Abort that operation.
+                    actualSlot = default;
+                    remainderItem = default;
+                    return false;
+                }
+                
                 if (TryEquipItemsStackedItem(resultingItem, desiredSlot, out actualSlot, ignoreWeightLimits, equippedItem))
                 {
                     return true;
@@ -309,7 +318,7 @@ namespace RogueEntity.Core.Equipment
             {
                 if (TotalWeight + itemWeight > MaximumCarryWeight)
                 {
-                    Logger.Verbose("Unable to equip item {item} as this would exceed the weight limits", item);
+                    Logger.Verbose("Unable to equip item {Item} as this would exceed the weight limits", item);
                     actualSlot = default;
                     return false;
                 }
@@ -317,7 +326,7 @@ namespace RogueEntity.Core.Equipment
 
             if (!itemResolver.TryQueryData(item, out EquipmentSlotRequirements req))
             {
-                Logger.Verbose("Unable to equip item {item} as this item cannot be equipped", item);
+                Logger.Verbose("Unable to equip item {Item} as this item cannot be equipped", item);
                 actualSlot = default;
                 return false;
             }
@@ -341,7 +350,7 @@ namespace RogueEntity.Core.Equipment
         {
             if (!currentEquippedItems.IsEquipmentSpaceAvailable(req, desiredSlot))
             {
-                Logger.Verbose("Unable to equip item {item} as there is no space available. Desired slot was {desiredSlot}", item, desiredSlot);
+                Logger.Verbose("Unable to equip item {Item} as there is no space available. Desired slot was {DesiredSlot}", item, desiredSlot);
                 actualSlot = default;
                 successResult = currentEquippedItems;
                 return false;
@@ -352,12 +361,12 @@ namespace RogueEntity.Core.Equipment
             if (currentEquippedItems.TryFindAvailableSlot(req, desiredSlot, out var primarySlot, slots) &&
                 currentEquippedItems.TryEquip(item, primarySlot, slots, out successResult))
             {
-                Logger.Verbose("Successfully stored item {item} at primary slot {desiredSlot}", item, desiredSlot);
+                Logger.Verbose("Successfully stored item {Item} at primary slot {DesiredSlot}", item, desiredSlot);
                 actualSlot = primarySlot;
                 return true;
             }
 
-            Logger.Verbose("Unable to store item {item} at primary slot {desiredSlot}. No available slot.", item, desiredSlot);
+            Logger.Verbose("Unable to store item {Item} at primary slot {DesiredSlot}. No available slot", item, desiredSlot);
             successResult = currentEquippedItems;
             actualSlot = default;
             return false;

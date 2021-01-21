@@ -12,13 +12,11 @@ namespace RogueEntity.Core.Tests.Meta.Items
 {
     public class ItemDeclarationTest
     {
-        BasicItemContext context;
         ItemContextBackend<ItemReference> itemContext;
 
         [SetUp]
         public void SetUp()
         {
-            context = new BasicItemContext();
             itemContext = new ItemContextBackend<ItemReference>(new ItemReferenceMetaData());
             itemContext.EntityRegistry.RegisterNonConstructable<ItemDeclarationHolder<ItemReference>>();
         }

@@ -126,28 +126,28 @@ namespace RogueEntity.Core.Tests.Inventory
         {
             // This should not fail with exceptions. 
 
-            var itemToAdd = Context.ItemResolver.Instantiate( ContentDeclaration);
-            Inventory.TryRemoveItemStack( itemToAdd, 0).Should().BeFalse();
-            Inventory.TryRemoveItem( ContentDeclaration, out _).Should().BeFalse();
+            var itemToAdd = Context.ItemResolver.Instantiate(ContentDeclaration);
+            Inventory.TryRemoveItemStack(itemToAdd, 0).Should().BeFalse();
+            Inventory.TryRemoveItem(ContentDeclaration, out _).Should().BeFalse();
         }
 
         [Test]
         public void Validate_AddItem_Non_Pickup()
         {
-            var itemToAdd = Context.ItemResolver.Instantiate( NonPickupContentDeclaration);
-            Inventory.TryAddItem( itemToAdd, out _).Should().BeFalse();
+            var itemToAdd = Context.ItemResolver.Instantiate(NonPickupContentDeclaration);
+            Inventory.TryAddItem(itemToAdd, out _).Should().BeFalse();
         }
 
         [Test]
         public void Validate_AddItem_ExceedWeight()
         {
-            var heavyItemToAdd = Context.ItemResolver.Instantiate( HeavyContentDeclaration);
-            var itemToAdd = Context.ItemResolver.Instantiate( ContentDeclaration);
-            Inventory.TryAddItem( heavyItemToAdd, out _).Should().BeTrue();
+            var heavyItemToAdd = Context.ItemResolver.Instantiate(HeavyContentDeclaration);
+            var itemToAdd = Context.ItemResolver.Instantiate(ContentDeclaration);
+            Inventory.TryAddItem(heavyItemToAdd, out _).Should().BeTrue();
             Inventory.TotalWeight.Should().Be(Weight.OfKiloGram(97.5f));
             Inventory.AvailableCarryWeight.Should().Be(Weight.OfKiloGram(2.5f));
 
-            Inventory.TryAddItem( itemToAdd, out _).Should().BeFalse();
+            Inventory.TryAddItem(itemToAdd, out _).Should().BeFalse();
             Inventory.TotalWeight.Should().Be(Weight.OfKiloGram(97.5f));
             Inventory.AvailableCarryWeight.Should().Be(Weight.OfKiloGram(2.5f));
         }
@@ -155,31 +155,38 @@ namespace RogueEntity.Core.Tests.Inventory
         [Test]
         public void Validate_AddStackingItem()
         {
-            var stackingItem = Context.ItemResolver.Instantiate( BulkContentDeclaration).WithData(50);
-            Inventory.TryAddItem( stackingItem, out var stackedRemainder).Should().BeTrue();
+            var stackingItem = Context.ItemResolver.Instantiate(BulkContentDeclaration).WithStackData(50);
+            Inventory.TryAddItem(stackingItem, out var stackedRemainder).Should().BeTrue();
             stackedRemainder.Should().Be(ItemReference.Empty);
             Inventory.TotalWeight.Should().Be(Weight.OfKiloGram(50f));
             Inventory.AvailableCarryWeight.Should().Be(Weight.OfKiloGram(50f));
 
-            Inventory.TryAddItem( stackingItem.WithData(60), out var stackedRemainder2).Should().BeTrue();
-            stackedRemainder2.Should().Be(stackingItem.WithData(10));
+            Inventory.TryAddItem(stackingItem.WithStackData(60), out var stackedRemainder2).Should().BeTrue();
+            stackedRemainder2.Should().Be(stackingItem.WithStackData(10));
             Inventory.TotalWeight.Should().Be(Weight.OfKiloGram(100f));
             Inventory.AvailableCarryWeight.Should().Be(Weight.OfKiloGram(0f));
 
-            Inventory.Items.Should().ContainInOrder(stackingItem.WithData(60), stackingItem.WithData(40));
+            Inventory.Items.Should().ContainInOrder(stackingItem.WithStackData(60), stackingItem.WithStackData(40));
         }
 
         [Test]
         public void Validate_AddStack_To_Existing()
         {
-            var stackingItem = Context.ItemResolver.Instantiate( BulkContentDeclaration).WithData(50);
-            Inventory.TryAddItem( stackingItem, out _).Should().BeTrue();
+            // Bulk item weighs 1 kg, adding 50 kgs. 
+            var stackingItem = Context.ItemResolver.Instantiate(BulkContentDeclaration).WithStackData(50);
+            Inventory.TryAddItem(stackingItem, out _).Should().BeTrue();
 
-            var contentItem = Context.ItemResolver.Instantiate( ContentDeclaration);
-            Inventory.TryAddItem( contentItem, out _).Should().BeTrue();
+            // Content item weighs 7.5 kg
+            var contentItem = Context.ItemResolver.Instantiate(ContentDeclaration);
+            Inventory.TryAddItem(contentItem, out _).Should().BeTrue();
 
-            Inventory.TryAddItem( stackingItem, out var remainder).Should().BeTrue();
-            remainder.Should().Be(stackingItem.WithData(8));
+            // Total inventory capacity is 100kg.
+            Inventory.TotalWeight.Should().Be(Weight.OfKiloGram(57.5f));
+            Inventory.AvailableCarryWeight.Should().Be(Weight.OfKiloGram(100 - 57.5f));
+            // leaves 42.5 kgs of available weight. That is 42 bulk items, leaving 0.5kg unused.
+            
+            Inventory.TryAddItem(stackingItem, out var remainder).Should().BeTrue();
+            remainder.Should().Be(stackingItem.WithStackData(8));
 
             Inventory.TotalWeight.Should().Be(Weight.OfKiloGram(99.5f));
             Inventory.AvailableCarryWeight.Should().Be(Weight.OfKiloGram(0.5f));
@@ -188,66 +195,66 @@ namespace RogueEntity.Core.Tests.Inventory
         [Test]
         public void Validate_RemoveItem()
         {
-            var stackingItem = Context.ItemResolver.Instantiate( BulkContentDeclaration).WithData(50);
-            var contentItem = Context.ItemResolver.Instantiate( ContentDeclaration);
-            Inventory.TryAddItem( stackingItem, out _).Should().BeTrue();
-            Inventory.TryAddItem( contentItem, out _).Should().BeTrue();
+            var stackingItem = Context.ItemResolver.Instantiate(BulkContentDeclaration).WithStackData(50);
+            var contentItem = Context.ItemResolver.Instantiate(ContentDeclaration);
+            Inventory.TryAddItem(stackingItem, out _).Should().BeTrue();
+            Inventory.TryAddItem(contentItem, out _).Should().BeTrue();
 
-            Inventory.TryRemoveItem( ContentDeclaration, out var itemRemoved).Should().BeTrue();
+            Inventory.TryRemoveItem(ContentDeclaration, out var itemRemoved).Should().BeTrue();
             itemRemoved.Should().Be(contentItem);
 
-            Inventory.TryRemoveItem( BulkContentDeclaration, out var itemRemovedBulk).Should().BeTrue();
-            itemRemovedBulk.Should().Be(stackingItem.WithData(1));
+            Inventory.TryRemoveItem(BulkContentDeclaration, out var itemRemovedBulk).Should().BeTrue();
+            itemRemovedBulk.Should().Be(stackingItem.WithStackData(1));
 
-            Inventory.Items.Should().ContainInOrder(stackingItem.WithData(49));
+            Inventory.Items.Should().ContainInOrder(stackingItem.WithStackData(49));
         }
 
         [Test]
         public void Validate_RemoveItem_PartialStack()
         {
-            var stackingItem = Context.ItemResolver.Instantiate( BulkContentDeclaration).WithData(60);
-            var contentItem = Context.ItemResolver.Instantiate( ContentDeclaration);
-            Inventory.TryAddItem( stackingItem, out _).Should().BeTrue();
-            Inventory.TryAddItem( contentItem, out _).Should().BeTrue();
-            Inventory.TryAddItem( stackingItem.WithData(15), out _).Should().BeTrue();
+            var stackingItem = Context.ItemResolver.Instantiate(BulkContentDeclaration).WithStackData(60);
+            var contentItem = Context.ItemResolver.Instantiate(ContentDeclaration);
+            Inventory.TryAddItem(stackingItem, out _).Should().BeTrue();
+            Inventory.TryAddItem(contentItem, out _).Should().BeTrue();
+            Inventory.TryAddItem(stackingItem.WithStackData(15), out _).Should().BeTrue();
 
-            Inventory.TryRemoveItemsInBulk( BulkContentDeclaration, 5).Should().ContainInOrder(stackingItem.WithData(5));
-            Inventory.Items.Should().ContainInOrder(stackingItem.WithData(60), contentItem, stackingItem.WithData(10));
-            Inventory.TryRemoveItemsInBulk( BulkContentDeclaration, 25).Should().ContainInOrder(stackingItem.WithData(10), stackingItem.WithData(15));
-            Inventory.Items.Should().ContainInOrder(stackingItem.WithData(45), contentItem);
-            Inventory.TryRemoveItemsInBulk( ContentDeclaration, 25).Should().ContainInOrder(contentItem);
-            Inventory.Items.Should().ContainInOrder(stackingItem.WithData(45));
-            Inventory.TryRemoveItemsInBulk( ContentDeclaration, 125).Should().BeEmpty();
-            Inventory.TryRemoveItemsInBulk( BulkContentDeclaration, 125).Should().ContainInOrder(stackingItem.WithData(45));
+            Inventory.TryRemoveItemsInBulk(BulkContentDeclaration, 5).Should().ContainInOrder(stackingItem.WithStackData(5));
+            Inventory.Items.Should().ContainInOrder(stackingItem.WithStackData(60), contentItem, stackingItem.WithStackData(10));
+            Inventory.TryRemoveItemsInBulk(BulkContentDeclaration, 25).Should().ContainInOrder(stackingItem.WithStackData(10), stackingItem.WithStackData(15));
+            Inventory.Items.Should().ContainInOrder(stackingItem.WithStackData(45), contentItem);
+            Inventory.TryRemoveItemsInBulk(ContentDeclaration, 25).Should().ContainInOrder(contentItem);
+            Inventory.Items.Should().ContainInOrder(stackingItem.WithStackData(45));
+            Inventory.TryRemoveItemsInBulk(ContentDeclaration, 125).Should().BeEmpty();
+            Inventory.TryRemoveItemsInBulk(BulkContentDeclaration, 125).Should().ContainInOrder(stackingItem.WithStackData(45));
             Inventory.Items.Should().BeEmpty();
         }
 
         [Test]
         public void Validate_Unable_To_Add_If_Already_In_Other_Container()
         {
-            var chest = Context.ItemResolver.Instantiate( ContainerDeclaration);
-            Context.ItemResolver.TryQueryData(chest,  out IInventory<ItemReference> chestInventory).Should().BeTrue();
+            var chest = Context.ItemResolver.Instantiate(ContainerDeclaration);
+            Context.ItemResolver.TryQueryData(chest, out IInventory<ItemReference> chestInventory).Should().BeTrue();
 
-            var contentItem = Context.ItemResolver.Instantiate( ContentDeclaration);
-            chestInventory.TryAddItem( contentItem, out _).Should().BeTrue();
+            var contentItem = Context.ItemResolver.Instantiate(ContentDeclaration);
+            chestInventory.TryAddItem(contentItem, out _).Should().BeTrue();
 
-            Inventory.TryAddItem( contentItem, out _).Should().BeFalse();
-            Inventory.TryAddItem( chest, out _).Should().BeTrue();
+            Inventory.TryAddItem(contentItem, out _).Should().BeFalse();
+            Inventory.TryAddItem(chest, out _).Should().BeTrue();
         }
 
         [Test]
         public void Validate_DestroyCascade()
         {
-            var chest = Context.ItemResolver.Instantiate( ContainerDeclaration);
-            var contentItem = Context.ItemResolver.Instantiate( ContentDeclaration);
+            var chest = Context.ItemResolver.Instantiate(ContainerDeclaration);
+            var contentItem = Context.ItemResolver.Instantiate(ContentDeclaration);
 
-            Context.ItemResolver.TryQueryData(chest,  out IInventory<ItemReference> chestInventory).Should().BeTrue();
-            chestInventory.TryAddItem( contentItem, out _).Should().BeTrue();
-            Context.ItemResolver.TryUpdateData(chest,  chestInventory, out _).Should().BeTrue();
-            
-            Inventory.TryAddItem( chest, out _).Should().BeTrue();
-            Context.ActorResolver.TryUpdateData(Owner,  (IInventory<ItemReference>)Inventory, out _).Should().BeTrue();
-            
+            Context.ItemResolver.TryQueryData(chest, out IInventory<ItemReference> chestInventory).Should().BeTrue();
+            chestInventory.TryAddItem(contentItem, out _).Should().BeTrue();
+            Context.ItemResolver.TryUpdateData(chest, chestInventory, out _).Should().BeTrue();
+
+            Inventory.TryAddItem(chest, out _).Should().BeTrue();
+            Context.ActorResolver.TryUpdateData(Owner, (IInventory<ItemReference>)Inventory, out _).Should().BeTrue();
+
 
             Context.ActorResolver.Destroy(Owner);
 
@@ -256,12 +263,12 @@ namespace RogueEntity.Core.Tests.Inventory
             Context.ActorEntities.IsValid(Owner).Should().BeFalse();
             Context.ItemEntities.IsValid(chest).Should().BeTrue();
             Context.ItemEntities.IsValid(contentItem).Should().BeTrue();
-            
+
             RunActionSystem(actions);
             Context.ActorEntities.IsValid(Owner).Should().BeFalse();
             Context.ItemEntities.IsValid(chest).Should().BeFalse();
             Context.ItemEntities.IsValid(contentItem).Should().BeTrue();
-            
+
             RunActionSystem(actions);
             Context.ActorEntities.IsValid(Owner).Should().BeFalse();
             Context.ItemEntities.IsValid(chest).Should().BeFalse();
@@ -276,38 +283,50 @@ namespace RogueEntity.Core.Tests.Inventory
                 a();
             }
         }
-        
+
 
         List<Action> CreateActionSystem()
         {
-            var dsa = new DestroyContainerContentsSystem<ActorReference, ItemReference>(Context.ItemResolver); 
-            var dsi = new DestroyContainerContentsSystem<ItemReference, ItemReference>(Context.ItemResolver); 
+            var dsa = new DestroyContainerContentsSystem<ActorReference, ItemReference>(Context.ItemResolver);
+            var dsi = new DestroyContainerContentsSystem<ItemReference, ItemReference>(Context.ItemResolver);
 
-            
+
             return new List<Action>
             {
                 // Any inventory item that had been marked for delayed destruction is now marked as destroyable.
                 Context.ActorEntities.BuildSystem()
                        .WithoutContext()
-                       .WithInputParameter<CascadingDestroyedMarker>().CreateSystem(DestroyedEntitiesSystem<ActorReference>.SchedulePreviouslyMarkedItemsForDestruction),
+                       .WithInputParameter<CascadingDestroyedMarker>()
+                       .CreateSystem(DestroyedEntitiesSystem<ActorReference>.SchedulePreviouslyMarkedItemsForDestruction),
                 Context.ItemEntities.BuildSystem()
                        .WithoutContext()
-                       .WithInputParameter<CascadingDestroyedMarker>().CreateSystem(DestroyedEntitiesSystem<ItemReference>.SchedulePreviouslyMarkedItemsForDestruction),
+                       .WithInputParameter<CascadingDestroyedMarker>()
+                       .CreateSystem(DestroyedEntitiesSystem<ItemReference>.SchedulePreviouslyMarkedItemsForDestruction),
 
-                
+
                 // any destroyed item that is a container must mark its remaining container contents as scheduled for destruction at the 
                 // next turn.
                 Context.ActorEntities.BuildSystem()
                        .WithoutContext()
-                       .WithInputParameter<DestroyedMarker, ListInventoryData<ActorReference, ItemReference>>().CreateSystem(dsa.MarkDestroyedContainerEntities),
+                       .WithInputParameter<DestroyedMarker, ListInventoryData<ActorReference, ItemReference>>()
+                       .CreateSystem(dsa.MarkDestroyedContainerEntities),
                 Context.ItemEntities.BuildSystem()
                        .WithoutContext()
-                       .WithInputParameter<DestroyedMarker, ListInventoryData<ItemReference, ItemReference>>().CreateSystem(dsi.MarkDestroyedContainerEntities),
+                       .WithInputParameter<DestroyedMarker, ListInventoryData<ItemReference, ItemReference>>()
+                       .CreateSystem(dsi.MarkDestroyedContainerEntities),
 
                 // Finally clean up any item marked as destroyed.
                 new DestroyedEntitiesSystem<ItemReference>(Context.ItemEntities).DeleteMarkedEntities,
                 new DestroyedEntitiesSystem<ActorReference>(Context.ActorEntities).DeleteMarkedEntities,
             };
+        }
+    }
+
+    static class TestItemStackExtensions
+    {
+        public static ItemReference WithStackData(this ItemReference r, int stackCount)
+        {
+            return r.WithData(stackCount - 1);
         }
     }
 }

@@ -19,6 +19,8 @@ namespace RogueEntity.Core.Meta.Items
 
         public IItemRegistry ItemRegistry => registry;
 
+        public IBulkDataStorageMetaData<TItemId> EntityMetaData => registry.EntityMetaData;
+
         public TItemId Instantiate(IItemDeclaration item)
         {
             if (item is IBulkItemDeclaration<TItemId> bulkItem)

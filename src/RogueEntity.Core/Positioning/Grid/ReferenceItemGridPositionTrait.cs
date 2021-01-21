@@ -1,38 +1,24 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using EnTTSharp.Entities;
-using JetBrains.Annotations;
 using RogueEntity.Api.ItemTraits;
-using RogueEntity.Api.Utils;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Positioning.MapLayers;
-using RogueEntity.Core.Utils.DataViews;
-using Serilog;
 
 namespace RogueEntity.Core.Positioning.Grid
 {
     public class ReferenceItemGridPositionTrait<TItemId> : IReferenceItemTrait<TItemId>,
-                                                           IItemComponentTrait<TItemId, Position>,
-                                                           IItemComponentTrait<TItemId, EntityGridPosition>,
-                                                           IItemComponentInformationTrait<TItemId, EntityGridPositionChangedMarker>,
+                                                           IItemComponentTrait<TItemId, EntityGridPositionUpdateMessage>,
                                                            IItemComponentDesignTimeInformationTrait<MapLayerPreference>,
                                                            IItemComponentInformationTrait<TItemId, MapLayerPreference>,
                                                            IItemComponentInformationTrait<TItemId, MapContainerEntityMarker>
         where TItemId : IEntityKey
     {
-        readonly IItemResolver<TItemId> itemResolver;
         readonly MapLayerPreference layerPreference;
-        readonly ILogger logger = SLog.ForContext<ReferenceItemGridPositionTrait<TItemId>>();
-        readonly IGridMapContext<TItemId> gridContext;
 
-        public ReferenceItemGridPositionTrait([NotNull] IItemResolver<TItemId> itemResolver,
-                                              [NotNull] IGridMapContext<TItemId> gridContext,
-                                              MapLayer layer,
+        public ReferenceItemGridPositionTrait(MapLayer layer,
                                               params MapLayer[] layers)
         {
-            this.itemResolver = itemResolver ?? throw new ArgumentNullException(nameof(itemResolver));
-            this.gridContext = gridContext ?? throw new ArgumentNullException(nameof(gridContext));
             Id = "ReferenceItem.Generic.Position.Grid";
             Priority = 100;
 
@@ -85,7 +71,7 @@ namespace RogueEntity.Core.Positioning.Grid
             t = default;
             return false;
         }
-
+        
         public bool TryQuery(IEntityViewControl<TItemId> v, TItemId k, out MapContainerEntityMarker t)
         {
             if (v.IsValid(k) && v.GetComponent(k, out EntityGridPosition _))
@@ -98,14 +84,22 @@ namespace RogueEntity.Core.Positioning.Grid
             return false;
         }
 
-        public bool TryQuery(IEntityViewControl<TItemId> v, TItemId k, out EntityGridPositionChangedMarker t)
+        public bool TryQuery(IEntityViewControl<TItemId> v, TItemId k, out EntityGridPositionUpdateMessage t)
         {
-            if (v.IsValid(k) && v.GetComponent(k, out t))
-            {
-                return true;
-            }
-
             t = default;
+            return false;
+        }
+
+        public bool TryUpdate(IEntityViewControl<TItemId> v, TItemId k, in EntityGridPositionUpdateMessage t, out TItemId changedK)
+        {
+            v.AssignOrReplace(k, t.Data);
+            changedK = k;
+            return true;
+        }
+
+        public bool TryRemove(IEntityViewControl<TItemId> v, TItemId k, out TItemId changedK)
+        {
+            changedK = k;
             return false;
         }
 
@@ -113,117 +107,6 @@ namespace RogueEntity.Core.Positioning.Grid
         {
             t = layerPreference;
             return true;
-        }
-
-        public bool TryUpdate(IEntityViewControl<TItemId> v, TItemId k, in Position t, out TItemId changedK)
-        {
-            return TryUpdate(v, k, EntityGridPosition.From(t), out changedK);
-        }
-
-        public bool TryUpdate(IEntityViewControl<TItemId> v,
-                              TItemId k,
-                              in EntityGridPosition desiredPosition,
-                              out TItemId changedK)
-        {
-            changedK = k;
-
-            if (!v.IsValid(k))
-            {
-                throw new ArgumentException("Given entity is no longer valid.");
-            }
-
-            if (!v.GetComponent(k, out EntityGridPosition previousPosition))
-            {
-                previousPosition = EntityGridPosition.Invalid;
-            }
-
-            if (previousPosition == desiredPosition)
-            {
-                logger.Verbose("No need to update item {ItemId}", k);
-                return true;
-            }
-
-            if (desiredPosition == EntityGridPosition.Invalid)
-            {
-                // was on map before, now no longer on map.
-                if (!layerPreference.IsAcceptable(previousPosition, out var previousLayerId) ||
-                    !gridContext.TryGetGridDataFor(previousLayerId, out var previousMapContext) ||
-                    !previousMapContext.TryGetWritableView(previousPosition.GridZ, out var previousMap))
-                {
-                    throw new ArgumentException("A previously set position was not accepted as layer target.");
-                }
-
-                previousMap[previousPosition.GridX, previousPosition.GridY] = default;
-                v.ReplaceComponent(k, EntityGridPosition.Invalid);
-                previousMapContext.MarkDirty(previousPosition);
-                logger.Verbose("Desired position is EntityGridPosition.Invalid, therefore removed item {Item} from map", k);
-                return true;
-            }
-
-            if (!layerPreference.IsAcceptable(desiredPosition, out var layerId))
-            {
-                WarnNotAcceptableLayer(k, desiredPosition);
-                return false;
-            }
-
-            if (!gridContext.TryGetGridDataFor(layerId, out var mapDataContext) ||
-                !mapDataContext.TryGetWritableView(desiredPosition.GridZ, out var targetMap, DataViewCreateMode.CreateMissing))
-            {
-                logger.Warning("Invalid layer {Layer} for unresolvable map data for item {ItemId}", layerId, k);
-                changedK = k;
-                return false;
-            }
-
-            var gridX = desiredPosition.GridX;
-            var gridY = desiredPosition.GridY;
-            if (!targetMap[gridX, gridY].IsEmpty)
-            {
-                // target position is not empty. We would overwrite 
-                // an existing actor.
-                logger.Verbose("Desired position is not empty for item {Item} at {Pos}", k, desiredPosition);
-                return false;
-            }
-
-            if (previousPosition != EntityGridPosition.Invalid)
-            {
-                if (!layerPreference.IsAcceptable(previousPosition, out var previousLayerId) ||
-                    !gridContext.TryGetGridDataFor(previousLayerId, out var previousItemMap) ||
-                    !previousItemMap.TryGetWritableView(previousPosition.GridZ, out var previousMap))
-                {
-                    throw new ArgumentException("A previously set position was not accepted as layer target.");
-                }
-
-                previousMap[previousPosition.GridX, previousPosition.GridY] = default;
-                previousItemMap.MarkDirty(previousPosition);
-            }
-
-            targetMap[gridX, gridY] = k;
-            v.AssignOrReplace(k, in desiredPosition);
-            mapDataContext.MarkDirty(desiredPosition);
-            logger.Verbose("Placed item {Item} at {Pos}", k, desiredPosition);
-            return true;
-        }
-
-        bool IItemComponentTrait<TItemId, EntityGridPosition>.TryRemove(IEntityViewControl<TItemId> entityRegistry, TItemId k, out TItemId changedItem)
-        {
-            return TryUpdate(entityRegistry, k, EntityGridPosition.Invalid, out changedItem);
-        }
-
-        public bool TryRemove(IEntityViewControl<TItemId> entityRegistry, TItemId k, out TItemId changedItem)
-        {
-            return TryUpdate(entityRegistry, k, EntityGridPosition.Invalid, out changedItem);
-        }
-
-        void WarnNotAcceptableLayer(TItemId targetItem, EntityGridPosition p)
-        {
-            if (itemResolver.TryResolve(targetItem, out var itemDef))
-            {
-                logger.Warning("Invalid layer {Layer} for item {ItemId}", p.LayerId, itemDef.Id);
-            }
-            else
-            {
-                logger.Warning("Invalid layer {Layer} for unresolvable item {ItemId}", p.LayerId, targetItem);
-            }
         }
 
         public IEnumerable<EntityRoleInstance> GetEntityRoles()

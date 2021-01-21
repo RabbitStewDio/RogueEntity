@@ -77,12 +77,12 @@ namespace RogueEntity.Core.Inventory
                     return true;
                 }
 
-                Logger.Warning("ItemReference {ItemReference} could not be marked as owned by this inventory.", r);
+                Logger.Warning("ItemReference {ItemReference} could not be marked as owned by this inventory", r);
                 return false;
             }
 
             var stackSize = itemResolver.QueryStackSize(r);
-            var itemCount = (int)stackSize.Count;
+            var itemCount = stackSize.Count;
             Data = Data.InsertAt(insertSlot, itemWeight * itemCount, r);
             return true;
         }
@@ -115,7 +115,7 @@ namespace RogueEntity.Core.Inventory
                 {
                     // This item should not be on a map right now.
                     // This item is misconfigured. 
-                    Logger.Warning("ItemReference {ItemReference} is still positioned on the map. Aborting AddItem operation to prevent item duplication.", r);
+                    Logger.Warning("ItemReference {ItemReference} is still positioned on the map. Aborting AddItem operation to prevent item duplication", r);
                     return false;
                 }
 
@@ -125,7 +125,7 @@ namespace RogueEntity.Core.Inventory
                     return true;
                 }
 
-                Logger.Warning("ItemReference {ItemReference} could not be marked as owned by this inventory.", r);
+                Logger.Warning("ItemReference {ItemReference} could not be marked as owned by this inventory", r);
                 return false;
             }
 
@@ -139,7 +139,7 @@ namespace RogueEntity.Core.Inventory
         {
             var itemWeight = itemResolver.QueryWeight(r).BaseWeight;
             var stackSize = itemResolver.QueryStackSize(r);
-            var desiredItemCount = (int)stackSize.Count;
+            var desiredItemCount = stackSize.Count;
             var itemsLeftToPickUp = ComputeItemsLeftToPickUp(r, ignoreWeight, itemWeight, desiredItemCount);
 
             if (itemsLeftToPickUp == 0)
@@ -179,7 +179,7 @@ namespace RogueEntity.Core.Inventory
 
             while (itemsLeftToPickUp > 0)
             {
-                var newStack = StackCount.Of(stackSize.MaximumStackSize).Add(itemsLeftToPickUp, out _);
+                var newStack = StackCount.Of(Math.Min(itemsLeftToPickUp, stackSize.MaximumStackSize), stackSize.MaximumStackSize);
                 if (!itemResolver.TryUpdateData(r, newStack, out var changedItem))
                 {
                     // unable to modify this item. Add it as a single instance.
@@ -216,7 +216,7 @@ namespace RogueEntity.Core.Inventory
             {
                 // Should not happen with all the precautions in the code. Items without stack-size
                 // have an implied stack size of 1, and should be caught by the previous two checks.
-                Logger.Warning("Unable to update stack count for bulk item. Remainder of item lost.");
+                Logger.Warning("Unable to update stack count for bulk item. Remainder of item lost");
                 remainder = default;
             }
 
@@ -272,7 +272,7 @@ namespace RogueEntity.Core.Inventory
             {
                 if (!itemResolver.TryRemoveData<ContainerEntityMarker<TOwnerId>>(itemRef, out _))
                 {
-                    Logger.Warning("ItemReference {ItemReference} could not be unmarked as owned by this inventory.", itemRef);
+                    Logger.Warning("ItemReference {ItemReference} could not be unmarked as owned by this inventory", itemRef);
                     return false;
                 }
             }
@@ -312,7 +312,7 @@ namespace RogueEntity.Core.Inventory
                         return true;
                     }
 
-                    Logger.Warning("ItemReference {ItemReference} could not be unmarked as owned by this inventory.", itemRef);
+                    Logger.Warning("ItemReference {ItemReference} could not be unmarked as owned by this inventory", itemRef);
                     removedItem = default;
                     return false;
                 }
@@ -378,7 +378,7 @@ namespace RogueEntity.Core.Inventory
                     }
                     else
                     {
-                        Logger.Warning("ItemReference {ItemReference} could not be unmarked as owned by this inventory.", itemRef);
+                        Logger.Warning("ItemReference {ItemReference} could not be unmarked as owned by this inventory", itemRef);
                     }
 
                     continue;
@@ -388,7 +388,7 @@ namespace RogueEntity.Core.Inventory
                 if (existingItemStackSize.Count == 0)
                 {
                     // cleanup inventory.
-                    Logger.Warning("Inventory contained stale zero-stack item {ItemReference}.", itemRef);
+                    Logger.Warning("Inventory contained stale zero-stack item {ItemReference}", itemRef);
                     Data = Data.RemoveAt(i, default);
                     continue;
                 }

@@ -6,7 +6,6 @@ using RogueEntity.Api.Modules.Initializers;
 using RogueEntity.Api.Services;
 using RogueEntity.Api.Utils;
 using Serilog;
-using System.Linq;
 
 namespace RogueEntity.Api.Modules
 {

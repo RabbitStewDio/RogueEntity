@@ -27,7 +27,7 @@ namespace RogueEntity.Api.Modules.Initializers
             this.entityInfo = p.EntityInformation;
             this.moduleInitializer = p.ModuleInitializer;
         }
-        
+
         public void InitializeModuleRoles(List<ModuleRecord> orderedModules)
         {
             foreach (var mod in orderedModules)
@@ -66,20 +66,20 @@ namespace RogueEntity.Api.Modules.Initializers
             }
 
             var moduleInitializerParams = new ModuleEntityInitializationParameter<TEntityId>(mi, serviceResolver, moduleContext);
-            
+
             foreach (var role in mi.Roles)
             {
                 foreach (var roleInitializer in CollectRoleInitializers<TEntityId>(currentModule, mi, role))
                 {
                     if (entityInfo.IsValidRole(roleInitializer, role))
                     {
-                        Logger.Debug("Invoking module initializer {SourceHint} for entity {Entity} with role {EntityRole}", 
+                        Logger.Debug("Invoking module initializer {SourceHint} for entity {Entity} with role {EntityRole}",
                                      roleInitializer.SourceHint, typeof(TEntityId), role);
                         roleInitializer.Initializer(in moduleInitializerParams, moduleInitializer, role);
                     }
                     else
                     {
-                        Logger.Debug("Skipping module initializer {SourceHint} for entity {Entity} with role {EntityRole}", 
+                        Logger.Debug("Skipping module initializer {SourceHint} for entity {Entity} with role {EntityRole}",
                                      roleInitializer.SourceHint, typeof(TEntityId), role);
                     }
                 }
@@ -113,7 +113,7 @@ namespace RogueEntity.Api.Modules.Initializers
                             $"Expected a generic method with signature 'IEnumerable<ModuleEntityRoleInitializerInfo<TEntityId>> DeclareInitializers<TEntityId>(IServiceResolver, IModuleInitializer, EntityRole), but found {m} in module {module.Id}");
                     }
 
-                    Logger.Information("Generic constraints on module {Module} with method {Method} do not match. {errorHint}", module.Id, m, errorHint);
+                    Logger.Information("Generic constraints on module {Module} with method {Method} do not match. {ErrorHint}", module.Id, m.Name, errorHint);
                     continue;
                 }
 
@@ -146,19 +146,20 @@ namespace RogueEntity.Api.Modules.Initializers
                             $"Expected a generic method with signature 'void XXX<TEntityId>(ModuleInitializationParameter ByRef, IModuleInitializer, EntityRole), but found {m} in module {module.Id}");
                     }
 
-                    Logger.Information("Generic constraints on module {Module} with method {Method} do not match. {errorHint}", module.Id, m, errorHint);
+                    Logger.Information("Generic constraints on module {Module} with method {Method} do not match. {ErrorHint}", module.Id, m.Name, errorHint);
                     continue;
                 }
 
-                Logger.Verbose("Invoking role initializer {Method}", genericMethod);
+                Logger.Verbose("Invoking role initializer {Method}", genericMethod.Name);
                 var initializer = (ModuleEntityRoleInitializerDelegate<TEntityId>)
                     Delegate.CreateDelegate(typeof(ModuleEntityRoleInitializerDelegate<TEntityId>), module, genericMethod);
-                retval.Add(ModuleEntityRoleInitializerInfo.CreateFor(role, initializer, "<Reflect> " +module.GetType() + "#" + genericMethod.Name)
+                retval.Add(ModuleEntityRoleInitializerInfo.CreateFor(role, initializer, "<Reflect> " + module.GetType() + "#" + genericMethod.Name)
                                                           .WithRequiredRolesAnywhereInSystem(attr.WithAnyRoles.Select(e => new EntityRole(e)).ToArray())
                                                           .WithRequiredRoles(attr.ConditionalRoles.Select(e => new EntityRole(e)).ToArray())
                                                           .WithRequiredRelations(entityInfo.ResolveRelationsById(attr.ConditionalRelations))
                 );
             }
+
             if (retval.Count == 0)
             {
                 Logger.Verbose("No role initializers defined for {Role} with subject {Subject}", role, entityType);

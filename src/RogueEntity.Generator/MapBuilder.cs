@@ -1,5 +1,7 @@
 using EnTTSharp.Entities;
+using JetBrains.Annotations;
 using RogueEntity.Api.ItemTraits;
+using RogueEntity.Api.Services;
 using RogueEntity.Api.Utils;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Positioning;
@@ -26,15 +28,21 @@ namespace RogueEntity.Generator
     public class MapBuilderLayer<TEntity>: EntityMapBuilderLayer
         where TEntity : IEntityKey
     {
+        [UsedImplicitly]
         readonly MapLayer layer;
         readonly IItemResolver<TEntity> resolver;
-        readonly IGridMapContext<TEntity> gridMapContext;
+        readonly IGridMapDataContext<TEntity> gridMapContext;
+        readonly IItemPlacementService<TEntity> placementService;
 
-        public MapBuilderLayer(MapLayer layer, IItemResolver<TEntity> resolver, IGridMapContext<TEntity> gridMapContext)
+        public MapBuilderLayer(MapLayer layer, 
+                               IItemResolver<TEntity> resolver, 
+                               IGridMapDataContext<TEntity> gridMapContext,
+                               IItemPlacementService<TEntity> placementService)
         {
             this.layer = layer;
             this.resolver = resolver;
             this.gridMapContext = gridMapContext;
+            this.placementService = placementService;
         }
 
 
@@ -58,14 +66,14 @@ namespace RogueEntity.Generator
 
         public override bool Clear(Position pos, IMapBuilderInstantiationLifter postProc = null)
         {
-            if (!gridMapContext.TryGetGridDataFor(layer, out var gridData))
-            {
-                return false;
-            }
-
-            if (gridData.TryGetView(pos.GridZ, out var view))
+            if (gridMapContext.TryGetView(pos.GridZ, out var view))
             {
                 var entity = view[pos.GridX, pos.GridY];
+                if (entity.IsEmpty)
+                {
+                    return true;
+                }
+                
                 if (postProc != null && resolver.TryResolve(entity, out var decl))
                 {
                     if (!postProc.ClearPreProcess(decl.Id, pos, resolver, ref entity))
@@ -73,9 +81,12 @@ namespace RogueEntity.Generator
                         return false;
                     }
                 }
-                
-                resolver.Destroy(entity);
-                return true;
+
+                if (placementService.TryRemoveItem(entity, pos))
+                {
+                    resolver.Destroy(entity);
+                    return true;
+                }
             }
 
             return false;
@@ -104,9 +115,18 @@ namespace RogueEntity.Generator
 
             reg = default;
             return false;
-        }  
+        }
+
+        public MapBuilder WithLayer<T>(in MapLayer mapLayer, IServiceResolver r)
+            where T : IEntityKey
+        {
+            return WithLayer(mapLayer, r.Resolve<IItemResolver<T>>(), r.Resolve<IGridMapContext<T>>(), r.Resolve<IItemPlacementServiceContext<T>>());
+        }
         
-        public void WithLayer<T>(in MapLayer mapLayer, IItemResolver<T> itemResolver, IGridMapContext<T> gridContext)
+        public MapBuilder WithLayer<T>(in MapLayer mapLayer, 
+                                       IItemResolver<T> itemResolver, 
+                                       IGridMapContext<T> gridContext,
+                                       IItemPlacementServiceContext<T> placementService)
             where T : IEntityKey
         {
             if (mapLayer == MapLayer.Indeterminate)
@@ -114,11 +134,15 @@ namespace RogueEntity.Generator
                 throw new ArgumentException();
             }
             
-            if (!layerProcessors.TryGetValue(mapLayer.LayerId, out var proc))
+            if (!layerProcessors.TryGetValue(mapLayer.LayerId, out _) && 
+                gridContext.TryGetGridDataFor(mapLayer, out var gridData) && 
+                placementService.TryGetItemPlacementService(mapLayer, out var ps))
             {
-                layerProcessors.Add(mapLayer.LayerId, new MapBuilderLayer<T>(mapLayer, itemResolver, gridContext));
+                layerProcessors.Add(mapLayer.LayerId, new MapBuilderLayer<T>(mapLayer, itemResolver, gridData, ps));
                 mapLayers.Add(mapLayer);
             }
+
+            return this;
         }
 
         public ReadOnlyListWrapper<MapLayer> Layers => mapLayers;

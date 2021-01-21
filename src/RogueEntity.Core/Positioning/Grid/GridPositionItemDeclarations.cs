@@ -10,19 +10,14 @@ namespace RogueEntity.Core.Positioning.Grid
         public static BulkItemDeclarationBuilder<TItemId> WithGridPosition<TItemId>(this BulkItemDeclarationBuilder<TItemId> builder, MapLayer layer, params MapLayer[] layers)
             where TItemId : IBulkDataStorageKey<TItemId>
         {
-            var itemMeta = builder.ServiceResolver.Resolve<IBulkDataStorageMetaData<TItemId>>();
-            var itemCtx = builder.ServiceResolver.Resolve<IItemResolver<TItemId>>();
-            var gridCtx = builder.ServiceResolver.Resolve<IGridMapContext<TItemId>>();
-            builder.Declaration.WithTrait(new BulkItemGridPositionTrait<TItemId>(itemMeta, itemCtx, gridCtx, layer, layers));
+            builder.Declaration.WithTrait(new BulkItemGridPositionTrait<TItemId>(layer, layers));
             return builder;
         }
 
         public static ReferenceItemDeclarationBuilder<TItemId> WithGridPosition<TItemId>(this ReferenceItemDeclarationBuilder<TItemId> builder, MapLayer layer, params MapLayer[] layers)
             where TItemId : IEntityKey
         {
-            var itemCtx = builder.ServiceResolver.Resolve<IItemResolver<TItemId>>();
-            var gridCtx = builder.ServiceResolver.Resolve<IGridMapContext<TItemId>>();
-            builder.Declaration.WithTrait(new ReferenceItemGridPositionTrait<TItemId>(itemCtx, gridCtx, layer, layers));
+            builder.Declaration.WithTrait(new ReferenceItemGridPositionTrait<TItemId>(layer, layers));
             return builder;
         }
     }

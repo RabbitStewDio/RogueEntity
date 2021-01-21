@@ -122,7 +122,7 @@ namespace RogueEntity.Core.Positioning.Algorithms
                 }
             }
 
-            Logger.Verbose("Evaluated {Count} nodes during rescan.", nodeCount);
+            Logger.Verbose("Evaluated {Count} nodes during rescan", nodeCount);
             NodesEvaluated = nodeCount;
             return nodeCount > 0;
         }

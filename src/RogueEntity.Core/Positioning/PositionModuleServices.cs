@@ -1,3 +1,5 @@
+using EnTTSharp.Entities;
+using RogueEntity.Api.ItemTraits;
 using RogueEntity.Api.Services;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Utils.DataViews;
@@ -53,7 +55,7 @@ namespace RogueEntity.Core.Positioning
             if (serviceResolver.TryResolve(out IGridMapContext<TEntityId> maybeMap))
             {
                 if (maybeMap is DefaultGridPositionContextBackend<TEntityId> defaultImpl)
-                {
+                { 
                     return defaultImpl;
                 }
 
@@ -67,6 +69,30 @@ namespace RogueEntity.Core.Positioning
             }
             serviceResolver.Store(created);
             return created;
+        }
+
+        public static GridItemPlacementService<TEntityId> GetOrCreateGridItemPlacementService<TEntityId>(this IServiceResolver serviceResolver)
+            where TEntityId : IEntityKey
+        {
+            if (serviceResolver.TryResolve(out GridItemPlacementService<TEntityId> gs))
+            {
+                return gs;
+            }
+
+            return new GridItemPlacementService<TEntityId>(serviceResolver.Resolve<IItemResolver<TEntityId>>(),
+                                                           serviceResolver.Resolve<IGridMapContext<TEntityId>>());
+        }
+
+        public static GridItemPlacementLocationService<TEntityId> GetOrCreateGridItemPlacementLocationService<TEntityId>(this IServiceResolver serviceResolver)
+            where TEntityId : IEntityKey
+        {
+            if (serviceResolver.TryResolve(out GridItemPlacementLocationService<TEntityId> gs))
+            {
+                return gs;
+            }
+
+            return new GridItemPlacementLocationService<TEntityId>(serviceResolver.Resolve<IItemResolver<TEntityId>>(),
+                                                                   serviceResolver.Resolve<IGridMapContext<TEntityId>>());
         }
     }
 }

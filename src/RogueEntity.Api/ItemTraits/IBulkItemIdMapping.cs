@@ -6,8 +6,9 @@ namespace RogueEntity.Api.ItemTraits
     ///  A small helper interface that allows queries of all declared bulk item declarations.
     ///  Used during serialization and deserialization.
     /// </summary>
-    public interface IBulkItemIdMapping: IEnumerable<int>
+    public interface IBulkItemIdMapping
     {
         bool TryResolveBulkItem(int id, out ItemDeclarationId itemName);
+        IEnumerable<int> Ids { get; }
     }
 }

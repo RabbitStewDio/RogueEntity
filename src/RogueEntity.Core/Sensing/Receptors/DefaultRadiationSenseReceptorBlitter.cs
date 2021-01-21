@@ -1,12 +1,16 @@
+using RogueEntity.Api.Utils;
 using System;
 using RogueEntity.Core.Sensing.Common;
 using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.DataViews;
+using Serilog;
 
 namespace RogueEntity.Core.Sensing.Receptors
 {
-    public class DefaultRadiationSenseReceptorBlitter: IRadiationSenseReceptorBlitter 
+    public class DefaultRadiationSenseReceptorBlitter: IRadiationSenseReceptorBlitter
     {
+        readonly ILogger Logger = SLog.ForContext<DefaultRadiationSenseReceptorBlitter>();
+        
         public void Blit(Rectangle bounds, 
                          Position2D sensePosition, 
                          Position2D receptorPosition,
@@ -29,10 +33,6 @@ namespace RogueEntity.Core.Sensing.Receptors
 
                 if (dir.IsObstructed)
                 {
-                    if (x == 26 && y == 6)
-                    {
-                        Console.WriteLine("HERE");
-                    }
                     // todo: Don't allow directly opposed stuff.
                     var directionFromReceptor = SenseDirectionStore.From(new Position2D(x, y) - receptorPosition).Direction;
 
@@ -42,7 +42,7 @@ namespace RogueEntity.Core.Sensing.Receptors
                         {
                             // if there is no overlapping directionality in the light emitted by the sense source
                             // and the receptor, then the light shines on an obstructed view and is not visible.
-                            Console.WriteLine($"{x}, {y} is blocked outright");
+                            Logger.Verbose("{X}, {Y} is blocked outright", x, y);
                             continue;
                         }
 
@@ -52,7 +52,7 @@ namespace RogueEntity.Core.Sensing.Receptors
                         {
                             if (IsBlocked(senseSource, x - sensePosition.X - dx.x, y - sensePosition.Y))
                             {
-                                Console.WriteLine($"{overlapping} - {x}, {y} is blocked horizontally at " + (x - dx.x) + ", " + (y));
+                                Logger.Verbose("{Overlapping} - {Position} is blocked horizontally at {BlockPosition}", overlapping, new Position2D(x, y), new Position2D(x - dx.x, y));
                                 continue;
                             }
                         }
@@ -60,7 +60,7 @@ namespace RogueEntity.Core.Sensing.Receptors
                         {
                             if (IsBlocked(senseSource, x - sensePosition.X, y - sensePosition.Y - dx.y))
                             {
-                                Console.WriteLine($"{overlapping} - {x}, {y} is blocked vertically at " + (x) + ", " + (y - dx.x));
+                                Logger.Verbose("{Overlapping} - {Position} is blocked horizontally at {BlockPosition}", overlapping, new Position2D(x, y), new Position2D(x, y - dx.y));
                                 continue;
                             }
                         }
@@ -79,8 +79,10 @@ namespace RogueEntity.Core.Sensing.Receptors
 
         bool IsBlocked(SenseSourceData senseSource, int x, int y)
         {
-            if (!senseSource.TryQuery(x, y, out var _, out var dir)) 
+            if (!senseSource.TryQuery(x, y, out var _, out var dir))
+            {
                 return true;
+            }
             return dir.IsObstructed;
         }
     }

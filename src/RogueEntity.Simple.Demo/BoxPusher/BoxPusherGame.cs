@@ -2,6 +2,7 @@ using Microsoft.Xna.Framework;
 using RogueEntity.Api.GameLoops;
 using RogueEntity.Api.Modules;
 using RogueEntity.Api.Services;
+using RogueEntity.Core.Infrastructure.GameLoops;
 using RogueEntity.Core.Infrastructure.Services;
 using RogueEntity.Core.Meta.EntityKeys;
 using RogueEntity.Core.Players;

@@ -10,6 +10,7 @@ using RogueEntity.Core.Movement.CostModifier.Directions;
 using RogueEntity.Core.Movement.MovementModes.Walking;
 using RogueEntity.Core.MovementPlaning.GoalFinding.SingleLevel;
 using RogueEntity.Core.MovementPlaning.Goals;
+using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Algorithms;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Positioning.SpatialQueries;
@@ -25,6 +26,7 @@ namespace RogueEntity.Core.Tests.Movement.GoalFinding
         ItemContextBackend<ItemReference> context;
         GoalRegistry goalRegistry;
         SpatialQueryRegistry spatialQueryRegistry;
+        GridItemPlacementService<ItemReference> itemPlacementService;
 
         const string EmptyRoom = @"
  // 9x9; an empty room
@@ -94,7 +96,7 @@ namespace RogueEntity.Core.Tests.Movement.GoalFinding
             context.EntityRegistry.RegisterNonConstructable<GoalMarker<TestGoal>>();
             context.ItemRegistry.Register(new ReferenceItemDeclaration<ItemReference>("Goal")
                                           .WithTrait(new GoalMarkerTrait<ItemReference, TestGoal>(10))
-                                          .WithTrait(new ReferenceItemGridPositionTrait<ItemReference>(context.ItemResolver, gridMapContext, TestMapLayers.One))
+                                          .WithTrait(new ReferenceItemGridPositionTrait<ItemReference>(TestMapLayers.One))
             );
 
             goalRegistry = new GoalRegistry();
@@ -102,6 +104,8 @@ namespace RogueEntity.Core.Tests.Movement.GoalFinding
 
             spatialQueryRegistry = new SpatialQueryRegistry();
             spatialQueryRegistry.Register(new BruteForceSpatialQueryBackend<ItemReference>(context.EntityRegistry));
+
+            itemPlacementService = new GridItemPlacementService<ItemReference>(context.ItemResolver, gridMapContext);
         }
 
 
@@ -130,6 +134,7 @@ namespace RogueEntity.Core.Tests.Movement.GoalFinding
             new TestCaseData(new PathFinderTestParameters(EmptyRoom, EmptyRoomResult, new Position2D(1, 1), (new Position2D(7, 7), 20), (new Position2D(7, 1), 10)))
                 .SetName(nameof(EmptyRoom) + " with 2 goals"),
         };
+
 
         [Test]
         [TestCaseSource(nameof(TestData))]
@@ -167,7 +172,8 @@ namespace RogueEntity.Core.Tests.Movement.GoalFinding
             var targetPosition = EntityGridPosition.Of(TestMapLayers.One, tx, ty);
             var target = context.ItemResolver.Instantiate("Goal");
             context.ItemResolver.TryUpdateData(target, new GoalMarker<TestGoal>(strength), out _).Should().BeTrue();
-            context.ItemResolver.TryUpdateData(target, targetPosition, out _).Should().BeTrue();
+
+            itemPlacementService.TryPlaceItem(target, Position.From(targetPosition)).Should().BeTrue();
         }
 
         SingleLevelGoalFinderSource CreateGoalFinderSource(DynamicDataView2D<float> resistanceMap, Rectangle bounds)

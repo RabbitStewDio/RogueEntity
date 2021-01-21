@@ -64,7 +64,6 @@ namespace RogueEntity.Core.GridProcessing.LayerAggregation
 
         public void MarkDirty(EntityGridPosition pos)
         {
-            Console.WriteLine("DIRTY!" + pos);
             if (pos.IsInvalid || pos.GridZ != z)
             {
                 return;

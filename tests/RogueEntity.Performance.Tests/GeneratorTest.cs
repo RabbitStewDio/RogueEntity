@@ -31,20 +31,4 @@ namespace RogueEntity.Performance.Tests
         }
 
     }
-
-    public class B0
-    {
-        public BIn1<T1> WithInput<T1>() => new BIn1<T1>();
-        public BIn2<T1, T2> WithInput<T1, T2>() => new BIn2<T1, T2>();
-    }
-
-    public class BIn1<T1>
-    {
-        public BIn2<T1, T2> WithInput<T2>() => new BIn2<T1, T2>();
-    }
-    
-    public class BIn2<T1, T2>
-    {
-        
-    }
 }

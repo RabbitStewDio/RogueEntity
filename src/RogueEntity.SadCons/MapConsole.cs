@@ -1,7 +1,6 @@
 using EnTTSharp.Entities;
 using RogueEntity.Core.Players;
 using SadConsole;
-using System;
 using Console = SadConsole.Console;
 
 namespace RogueEntity.SadCons

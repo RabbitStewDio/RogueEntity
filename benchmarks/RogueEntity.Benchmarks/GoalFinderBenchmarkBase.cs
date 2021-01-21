@@ -53,7 +53,7 @@ namespace RogueEntity.Benchmarks
             entities.EntityRegistry.RegisterNonConstructable<ItemDeclarationHolder<ItemReference>>();
             entities.EntityRegistry.RegisterNonConstructable<GoalMarker<PerformanceGoal>>();
             entities.ItemRegistry.Register(new ReferenceItemDeclaration< ItemReference>(goalEntitiyId)
-                                           .WithTrait(new ReferenceItemGridPositionTrait< ItemReference>(entities.ItemResolver, mapContext, layer))
+                                           .WithTrait(new ReferenceItemGridPositionTrait< ItemReference>(layer))
                                            .WithTrait(new GoalMarkerTrait< ItemReference, PerformanceGoal>(32)));
 
             queryRegistry = new SpatialQueryRegistry();
@@ -195,20 +195,6 @@ namespace RogueEntity.Benchmarks
                     if (result == PathFinderResult.NotFound)
                     {
                         notFound += 1;
-                    }
-                    // Console.WriteLine($"{i} = From {startPosition} to {targetPosition} = {result} + {string.Join(", ", resultPath.Select(e => e.Item1))}");
-                    if (i == -1)
-                    {
-                        if (pf is SingleLevelPathFinder spf)
-                        {
-                            var translatedDataView = spf.ProcessedNodes.TranslateBy(startPosition.GridX, startPosition.GridY);
-                            if (translatedDataView[startPosition.GridX, startPosition.GridY].State != AStarNode.NodeState.Closed)
-                            {
-                                throw new Exception();
-                            }
-                        }
-
-                        // Console.WriteLine(translatedDataView.ExtendToString(bounds, elementSeparator: "", elementStringifier: e => e.State == AStarNode.NodeState.Closed ? "@" : " "));
                     }
 
                     if (pf is IPathFinderPerformanceView pv)

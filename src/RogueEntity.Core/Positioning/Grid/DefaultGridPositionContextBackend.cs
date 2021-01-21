@@ -8,7 +8,7 @@ namespace RogueEntity.Core.Positioning.Grid
 {
     public class DefaultGridPositionContextBackend<TItemId> : IGridMapContext<TItemId>
     {
-        readonly Dictionary<MapLayer, IGridMapDataContext<TItemId>> mapLayerData;
+        readonly Dictionary<byte, IGridMapDataContext<TItemId>> mapLayerData;
         readonly List<MapLayer> mapLayers;
 
         public DefaultGridPositionContextBackend(): this(0, 0, 32, 32)
@@ -34,7 +34,7 @@ namespace RogueEntity.Core.Positioning.Grid
             TileSizeX = tileSizeX;
             TileSizeY = tileSizeY;
             mapLayers = new List<MapLayer>();
-            mapLayerData = new Dictionary<MapLayer, IGridMapDataContext<TItemId>>();
+            mapLayerData = new Dictionary<byte, IGridMapDataContext<TItemId>>();
         }
 
         public int OffsetX { get; }
@@ -44,13 +44,18 @@ namespace RogueEntity.Core.Positioning.Grid
 
         public DefaultGridPositionContextBackend<TItemId> WithMapLayer(MapLayer layer, IGridMapDataContext<TItemId> data)
         {
-            if (mapLayerData.ContainsKey(layer))
+            if (layer == MapLayer.Indeterminate)
+            {
+                throw new ArgumentException();
+            }
+            
+            if (mapLayerData.ContainsKey(layer.LayerId))
             {
                 throw new ArgumentException($"Layer {layer} has already been declared.");
             }
 
             mapLayers.Add(layer);
-            mapLayerData[layer] = data;
+            mapLayerData[layer.LayerId] = data;
             return this;
         }
 
@@ -69,7 +74,7 @@ namespace RogueEntity.Core.Positioning.Grid
             return WithMapLayer(layer, new DefaultGridMapDataContext<TItemId>(layer, offsetX, offsetY, tileWidth, tileHeight));
         }
         
-        public DefaultGridPositionContextBackend<TItemId> WithDefaultMapLayer(MapLayer layer, int tileWidth = 64, int tileHeight = 64)
+        public DefaultGridPositionContextBackend<TItemId> WithDefaultMapLayer(MapLayer layer, int tileWidth, int tileHeight)
         {
             return WithMapLayer(layer, new DefaultGridMapDataContext<TItemId>(layer, tileWidth, tileHeight));
         }
@@ -81,7 +86,12 @@ namespace RogueEntity.Core.Positioning.Grid
 
         public bool TryGetGridDataFor(MapLayer layer, out IGridMapDataContext<TItemId> data)
         {
-            return mapLayerData.TryGetValue(layer, out data);
+            return mapLayerData.TryGetValue(layer.LayerId, out data);
+        }
+
+        public bool TryGetGridDataFor(byte layerId, out IGridMapDataContext<TItemId> data)
+        {
+            return mapLayerData.TryGetValue(layerId, out data);
         }
     }
 }

@@ -2,30 +2,103 @@
 using System.Runtime.Serialization;
 using EnTTSharp.Entities.Attributes;
 using MessagePack;
+using RogueEntity.Api.Utils;
 
 namespace RogueEntity.Core.Meta.ItemTraits
 {
+    public readonly struct StackTakeResult : IEquatable<StackTakeResult>
+    {
+        public readonly StackCount ItemsTakenFromStack;
+        public readonly int ItemsNotAvailableInStack;
+        public readonly Optional<StackCount> ItemsLeftInStack;
+
+        public StackTakeResult(StackCount itemsTakenFromStack, 
+                               int itemsNotAvailableInStack, 
+                               Optional<StackCount> itemsLeftInStack)
+        {
+            ItemsTakenFromStack = itemsTakenFromStack;
+            ItemsNotAvailableInStack = itemsNotAvailableInStack;
+            ItemsLeftInStack = itemsLeftInStack;
+        }
+
+        public bool NotEnoughItemsInStack => ItemsNotAvailableInStack > 0;
+
+        public bool Equals(StackTakeResult other)
+        {
+            return ItemsTakenFromStack.Equals(other.ItemsTakenFromStack) && ItemsNotAvailableInStack == other.ItemsNotAvailableInStack && ItemsLeftInStack.Equals(other.ItemsLeftInStack);
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is StackTakeResult other && Equals(other);
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                var hashCode = ItemsTakenFromStack.GetHashCode();
+                hashCode = (hashCode * 397) ^ ItemsNotAvailableInStack;
+                hashCode = (hashCode * 397) ^ ItemsLeftInStack.GetHashCode();
+                return hashCode;
+            }
+        }
+
+        public static bool operator ==(StackTakeResult left, StackTakeResult right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(StackTakeResult left, StackTakeResult right)
+        {
+            return !left.Equals(right);
+        }
+    }
+    
+    
     [EntityComponent(EntityConstructor.NonConstructable)]
     [MessagePackObject]
     [DataContract]
     public readonly struct StackCount : IEquatable<StackCount>
     {
-        public static readonly StackCount One = new StackCount(1, 1);
-
-        StackCount(ushort count, ushort maximumStackSize)
-        {
-            this.Count = count;
-            this.MaximumStackSize = maximumStackSize;
-        }
-
         [DataMember(Order = 0)]
         [Key(0)]
-        public ushort Count { get; }
-
+        internal readonly ushort CountRaw;
+        
         [DataMember(Order = 1)]
         [Key(1)]
-        public ushort MaximumStackSize { get; }
+        readonly ushort maximumStackSize;
+        
+        public static readonly StackCount One = new StackCount(1, 1);
 
+        [SerializationConstructor]
+        StackCount(ushort countRaw, ushort maximumStackSize)
+        {
+            this.CountRaw = countRaw;
+            this.maximumStackSize = maximumStackSize;
+        }
+
+        StackCount(int count, int maximumStackSize)
+        {
+            if (count <= 0) throw new ArgumentException();
+            if (count > maximumStackSize) throw new ArgumentException();
+            
+            this.CountRaw = (count - 1).ClampToUnsignedShort();
+            this.maximumStackSize = (maximumStackSize - 1).ClampToUnsignedShort();
+        }
+
+        [IgnoreMember]
+        [IgnoreDataMember]
+        public int Count => CountRaw + 1;
+
+        [IgnoreMember]
+        [IgnoreDataMember]
+        public int MaximumStackSize => maximumStackSize + 1;
+
+        [IgnoreMember]
+        [IgnoreDataMember]
+        public bool IsFullStack => CountRaw == maximumStackSize;
+        
         /// <summary>
         ///   Removes the given number of elements from the item stack. The given stack
         ///   will be split between a stack of items taken (returned as return value)
@@ -38,59 +111,60 @@ namespace RogueEntity.Core.Meta.ItemTraits
         ///   In  that case you should perform some clean-up to remove the item reference.
         /// </summary>
         /// <param name="itemsToBeRemoved"></param>
-        /// <param name="remainingItemsInPlace"></param>
-        /// <param name="itemsLeftToBeRemoved"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentOutOfRangeException"></exception>
-        public StackCount Take(int itemsToBeRemoved, out StackCount remainingItemsInPlace, out int itemsLeftToBeRemoved)
+        public StackTakeResult Take(int itemsToBeRemoved)
         {
-            if (itemsToBeRemoved < 0)
+            if (itemsToBeRemoved <= 0)
             {
-                throw new ArgumentOutOfRangeException();
+                throw new ArgumentOutOfRangeException(nameof(itemsToBeRemoved), "itemsToBeRemoved must be a positive, non-zero integer");
             }
 
             if (itemsToBeRemoved > Count)
             {
-                itemsLeftToBeRemoved = itemsToBeRemoved - Count;
-                remainingItemsInPlace = new StackCount(0, MaximumStackSize);
-                return new StackCount(Count, MaximumStackSize);
+                var remainingItems = itemsToBeRemoved - Count;
+                return new StackTakeResult(new StackCount(Count, MaximumStackSize), remainingItems, default);
             }
 
-            itemsLeftToBeRemoved = 0;
-            remainingItemsInPlace = new StackCount((ushort)(Count - itemsToBeRemoved), MaximumStackSize);
-            return new StackCount((ushort) itemsToBeRemoved, MaximumStackSize);
+            if (itemsToBeRemoved == Count)
+            {
+                return new StackTakeResult(new StackCount(itemsToBeRemoved, MaximumStackSize), 0, default);
+            }
+            
+            var itemsLeftInStack = new StackCount(Count - itemsToBeRemoved, MaximumStackSize);
+            return new StackTakeResult(new StackCount(itemsToBeRemoved, MaximumStackSize), 0, itemsLeftInStack);
         }
 
-        public StackCount WithCount(int count)
+        public StackCount WithCount(int newCount)
         {
-            if (count < 0)
+            if (newCount < 1)
             {
-                count = 0;
+                throw new ArgumentOutOfRangeException(nameof(newCount), $"Stack size cannot be less than 1");
             }
-            if (count > MaximumStackSize)
+            if (newCount > MaximumStackSize)
             {
-                count = MaximumStackSize;
+                throw new ArgumentOutOfRangeException(nameof(newCount), $"Stack size cannot exceed maximum stack size of {MaximumStackSize}");
             }
-            return new StackCount((ushort) count, MaximumStackSize);
+            return new StackCount(newCount, MaximumStackSize);
         }
 
-        public StackCount Add(int count, out int notApplied)
+        public StackCount Add(int additionalItems, out int notApplied)
         {
-            if (count < 0)
+            if (additionalItems < 0)
             {
                 throw new ArgumentException();
             }
 
-            var total = this.Count + count;
+            var total = this.Count + additionalItems;
             notApplied = Math.Max(0, total - MaximumStackSize);
-            return new StackCount((ushort) Math.Min(total, MaximumStackSize), MaximumStackSize);
+            return new StackCount(Math.Min(total, MaximumStackSize), MaximumStackSize);
         }
 
         public bool Merge(in StackCount additionalStack, out StackCount result)
         {
             if (Count + additionalStack.Count <= MaximumStackSize)
             {
-                result = new StackCount((ushort) (Count + additionalStack.Count), MaximumStackSize);
+                result = new StackCount(Count + additionalStack.Count, MaximumStackSize);
                 return true;
             }
 
@@ -98,23 +172,29 @@ namespace RogueEntity.Core.Meta.ItemTraits
             return false;
         }
 
-        public static StackCount Of(ushort maxSize)
+        public static StackCount OfRaw(ushort count, ushort maxSize)
         {
-            return new StackCount(0, maxSize);
+            return new StackCount(count, maxSize);
         }
-
-        public static StackCount Of(ushort count, ushort maxSize)
+        
+        public static StackCount Of(int count, int maxSize)
         {
+            if (count <= 0)
+            {
+                throw new ArgumentOutOfRangeException();
+            }
+            
             if (count > maxSize)
             {
-                count = maxSize;
+                throw new ArgumentOutOfRangeException();
             }
+
             return new StackCount(count, maxSize);
         }
 
         public bool Equals(StackCount other)
         {
-            return Count == other.Count && MaximumStackSize == other.MaximumStackSize;
+            return CountRaw == other.CountRaw && maximumStackSize == other.maximumStackSize;
         }
 
         public override bool Equals(object obj)
@@ -126,7 +206,7 @@ namespace RogueEntity.Core.Meta.ItemTraits
         {
             unchecked
             {
-                return (Count.GetHashCode() * 397) ^ MaximumStackSize.GetHashCode();
+                return (CountRaw.GetHashCode() * 397) ^ maximumStackSize.GetHashCode();
             }
         }
 
