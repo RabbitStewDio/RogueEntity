@@ -1,14 +1,12 @@
 ﻿using JetBrains.Annotations;
 using RogueEntity.Api.Utils;
 using System.Collections.Generic;
-using System.Drawing;
 using System.IO;
 using System.Text;
 using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.Maps;
 using Serilog;
 using System;
-using System.Diagnostics.CodeAnalysis;
 using YamlDotNet.Core;
 using YamlDotNet.Core.Events;
 using YamlDotNet.Serialization;
@@ -23,27 +21,12 @@ namespace RogueEntity.Generator.MapFragments
         public delegate bool MapFragmentPostProcessor(in MapFragment mf, out MapFragment result);
 
         readonly List<MapFragmentPostProcessor> postProcessors;
-
-        /// <summary>
-        ///   Temporary object using during parsing. This object is instantiated via
-        ///   reflection and all setters are called via reflection. So shut up, Inspector.
-        /// </summary>
-        [UsedImplicitly]
-        [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Local")]
-        class MapFragmentParseInfo
-        {
-            public string Guid { get; set; }
-            public string Name { get; set; }
-            public string Type { get; set; }
-            public Size Size { get; set; }
-            public Dictionary<string, string> Properties { get; set; }
-            public Dictionary<char, List<string>> Symbols { get; set; }
-            public List<string> Tags { get; set; }
-        }
+        readonly Dictionary<string, MapFragmentParseInfo> processedTemplates;
 
         public MapFragmentParser()
         {
             this.postProcessors = new List<MapFragmentPostProcessor>();
+            this.processedTemplates = new Dictionary<string, MapFragmentParseInfo>();
         }
 
         public void AddPostProcessor([NotNull] MapFragmentPostProcessor p)
@@ -62,17 +45,84 @@ namespace RogueEntity.Generator.MapFragments
         }
 
         public ReadOnlyListWrapper<MapFragmentPostProcessor> PostProcessors => postProcessors;
-        
+
         public bool TryParseFromFile(string fileName, out MapFragment m)
         {
-            var text = File.ReadAllText(fileName, Encoding.UTF8);
+            var text = ReadAllText(fileName);
             return TryParse(text, out m, fileName);
         }
+
+        protected virtual string ReadAllText(string fileName)
+        {
+            return File.ReadAllText(fileName, Encoding.UTF8);
+        }
+
+        bool TryParseFragment(string templateName, string context, out MapFragmentParseInfo result, List<string> visitedContexts)
+        {
+            if (visitedContexts == null)
+            {
+                visitedContexts = new List<string>();
+            }
+            
+            if (string.IsNullOrWhiteSpace(context))
+            {
+                result = default;
+                return false;
+            }
+
+            var f = Resolve(context, templateName);
+            if (processedTemplates.TryGetValue(f, out result))
+            {
+                return true;
+            }
+            
+            if (visitedContexts.Contains(f))
+            {
+                Logger.Information("Detected a loop in template references at {Context} via {Evidence}", context, string.Join(", ", visitedContexts));
+                result = default;
+                return false;
+            }
+            
+
+            try
+            {
+                var data = ReadAllText(f);
+                var parser = new Parser(new StringReader(data));
+                parser.Consume<StreamStart>();
+                if (!parser.Accept<DocumentStart>(out _))
+                {
+                    Logger.Information("YAML structure from {Context} is empty", context);
+                    result = default;
+                    return false;
+                }
+
+                var deserializer = new DeserializerBuilder().Build();
+                result = deserializer.Deserialize<MapFragmentParseInfo>(parser);
+                if (!string.IsNullOrWhiteSpace(result.Template))
+                {
+                    if (!TryParseFragment(result.Template, context, out MapFragmentParseInfo mpi, visitedContexts))
+                    {
+                        result = MapFragmentParseInfo.Merge(mpi, result);
+                    }
+                }
+
+                processedTemplates[f] = result;
+                return true;
+            }
+            catch (SyntaxErrorException se)
+            {
+                Log.Error(se, "Failed to parse {Context}", f);
+                result = default;
+                return false;
+            }
+        }
+
+        protected virtual string Resolve(string context, string file) => Path.Combine(context, file);
 
         public bool TryParse(string data, out MapFragment mapFragment, string context = null)
         {
             var deserializer = new DeserializerBuilder()
-                               .Build();
+                .Build();
 
             try
             {
@@ -91,6 +141,17 @@ namespace RogueEntity.Generator.MapFragments
                     Logger.Information("{Context} had no YAML secondary document separators", context);
                     mapFragment = default;
                     return false;
+                }
+
+                if (!string.IsNullOrWhiteSpace(mapInfo.Template))
+                {
+                    if (!TryParseFragment(mapInfo.Template, context, out MapFragmentParseInfo mpi, new List<string>()))
+                    {
+                        mapFragment = default;
+                        return false;
+                    }
+                    
+                    mapInfo = MapFragmentParseInfo.Merge(mpi, mapInfo);
                 }
 
                 if (mapInfo.Size.Width == 0 || mapInfo.Size.Height == 0)
@@ -127,14 +188,14 @@ namespace RogueEntity.Generator.MapFragments
                         props.AddProperty(kv.Key, kv.Value);
                     }
                 }
-                
+
                 var mi = new MapFragmentInfo(mapInfo.Name, mapInfo.Type, props, mapInfo.Tags ?? EmptyTags);
                 if (!Guid.TryParse(mapInfo.Guid, out var id))
                 {
                     id = GuidUtility.Create(GuidUtility.UrlNamespace, mapInfo.Name);
                 }
-                
-                mapFragment = new MapFragment(id, mapData, mi, new TypedRuleProperties());
+
+                mapFragment = new MapFragment(id, mapData, mi, new TypedRuleProperties().With(new Dimension(mapInfo.Size.Width, mapInfo.Size.Height)));
 
                 for (var index = 0; index < postProcessors.Count; index++)
                 {
@@ -144,7 +205,7 @@ namespace RogueEntity.Generator.MapFragments
                         mapFragment = default;
                         return false;
                     }
-                    
+
                     mapFragment = result;
                 }
 

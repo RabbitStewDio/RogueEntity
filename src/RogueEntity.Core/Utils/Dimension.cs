@@ -4,6 +4,8 @@ namespace RogueEntity.Core.Utils
 {
     public readonly struct Dimension : IEquatable<Dimension>
     {
+        public static readonly Dimension Empty = default;
+        
         public readonly int Width;
         public readonly int Height;
 

@@ -20,7 +20,7 @@ namespace RogueEntity.Generator.MapFragments
         {
             Tags = new ReadOnlyListWrapper<string>(tags.Select(Normalize).ToList());
         }
-
+        
         static string Normalize(string arg)
         {
             if (string.IsNullOrEmpty(arg))
