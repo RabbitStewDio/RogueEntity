@@ -1,4 +1,5 @@
-﻿using System;
+﻿using RogueEntity.Api.Utils;
+using System;
 using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.Maps;
 
@@ -26,12 +27,18 @@ namespace RogueEntity.Generator.MapFragments
                 }
             }
 
-            var c = mf.Info.Connectivity.Swap(MapFragmentConnectivity.East, MapFragmentConnectivity.West);
+            if (!mf.Properties.TryGet(out MapFragmentConnectivity c))
+            {
+                return mf;
+            }
 
-            var props = mf.Info.Properties.Copy();
-            props.DefineProperty(ConnectivityProperty, c.AsPropertyString());
-            var nextInfo = new MapFragmentInfo(mf.Info.Name + "[V]", mf.Info.Type, c, props, mf.Info.Tags);
-            return new MapFragment(nextMapData, nextInfo);
+            mf = mf.WithName(mf.Info.Name + "[V]")
+                   .WithMapData(nextMapData);
+            
+            c = c.Swap(MapFragmentConnectivity.East, MapFragmentConnectivity.West);
+
+            var properties = mf.Properties.With(c);
+            return mf.WithProperties(properties);
         }
 
         /// <summary>
@@ -51,12 +58,38 @@ namespace RogueEntity.Generator.MapFragments
                 }
             }
 
-            var c = mf.Info.Connectivity.Swap(MapFragmentConnectivity.North, MapFragmentConnectivity.South);
+            mf = mf.WithName(mf.Info.Name + "[H]")
+                   .WithMapData(nextMapData);
+            if (!mf.Properties.TryGet(out MapFragmentConnectivity c))
+            {
+                return mf;
+            }
 
-            var props = mf.Info.Properties.Copy();
-            props.DefineProperty(ConnectivityProperty, c.AsPropertyString());
-            var nextInfo = new MapFragmentInfo(mf.Info.Name + "[H]", mf.Info.Type, c, props, mf.Info.Tags);
-            return new MapFragment(nextMapData, nextInfo);
+            c = c.Swap(MapFragmentConnectivity.North, MapFragmentConnectivity.South);
+
+            var properties = mf.Properties.With(c);
+            return mf.WithProperties(properties);
+
+        }
+
+        public static Optional<string> TryQueryTagRestrictions(this MapFragment f, MapFragmentConnectivity c)
+        {
+            if (!f.Properties.TryGet(out MapFragmentConnectivity self))
+            {
+                return Optional.Empty();
+            }
+
+            if (self.HasFlags(c))
+            {
+                if (f.Info.Properties.TryGetValue("Require_" + c, out string tagPattern))
+                {
+                    return Optional.ValueOf(tagPattern);
+                }
+
+                return Optional.ValueOf("");
+            }
+
+            return Optional.Empty();
         }
 
         public static MapFragmentConnectivity Swap(this MapFragmentConnectivity source, MapFragmentConnectivity a, MapFragmentConnectivity b)
@@ -66,6 +99,7 @@ namespace RogueEntity.Generator.MapFragments
             {
                 c |= b;
             }
+
             if (source.HasFlags(b))
             {
                 c |= a;
@@ -76,19 +110,19 @@ namespace RogueEntity.Generator.MapFragments
 
         public static MapFragmentMirror QueryMapFragmentMirror(this MapFragmentInfo m)
         {
-            if (m.Properties.TryGetValue(MirrorProperty, out string mraw))
+            if (m.Properties.TryGetValue(MirrorProperty, out string raw))
             {
-                if (mraw.Equals("Both", StringComparison.InvariantCultureIgnoreCase))
+                if (raw.Equals("Both", StringComparison.InvariantCultureIgnoreCase))
                 {
                     return MapFragmentMirror.Both;
                 }
 
-                if (mraw.Equals("Horizontal", StringComparison.InvariantCultureIgnoreCase))
+                if (raw.Equals("Horizontal", StringComparison.InvariantCultureIgnoreCase))
                 {
                     return MapFragmentMirror.Horizontal;
                 }
 
-                if (mraw.Equals("Vertical", StringComparison.InvariantCultureIgnoreCase))
+                if (raw.Equals("Vertical", StringComparison.InvariantCultureIgnoreCase))
                 {
                     return MapFragmentMirror.Vertical;
                 }

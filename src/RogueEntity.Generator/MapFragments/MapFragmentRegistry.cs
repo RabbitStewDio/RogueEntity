@@ -15,14 +15,14 @@ namespace RogueEntity.Generator.MapFragments
             fragments = new List<MapFragment>();
         }
 
-        public void LoadAll(string path)
+        public void LoadAll(MapFragmentParser parser, string path)
         {
             path = Path.GetFullPath(path);
             logger.Debug("Loading map fragments from {Path}", path);
             var files = Directory.GetFiles(path, "*.tilemap", SearchOption.AllDirectories);
             foreach (var f in files)
             {
-                if (MapFragmentParser.TryParseFromFile(f, out var frag))
+                if (parser.TryParseFromFile(f, out var frag))
                 {
                     logger.Debug("Loaded map fragment {File}", f);
                     Add(frag);

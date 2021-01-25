@@ -38,7 +38,7 @@ namespace RogueEntity.Api.ItemTraits
 
         public override string ToString()
         {
-            return $"Role({Id})";
+            return Id;
         }
     }
 }

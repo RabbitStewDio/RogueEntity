@@ -23,7 +23,7 @@ namespace RogueEntity.Core.Positioning
 
             return new DynamicDataViewConfiguration(0, 0, 32, 32);
         }
-        
+
         public static IGridMapContext<TEntityId> GetOrCreateGridMapContext<TEntityId>(this IServiceResolver serviceResolver)
         {
             return GetOrCreateGridMapContext<TEntityId>(serviceResolver, LookupDefaultConfiguration<TEntityId>(serviceResolver));
@@ -41,6 +41,7 @@ namespace RogueEntity.Core.Positioning
             {
                 serviceResolver.Store<IGridMapConfiguration<TEntityId>>(map);
             }
+
             serviceResolver.Store(map);
             return map;
         }
@@ -49,13 +50,13 @@ namespace RogueEntity.Core.Positioning
         {
             return GetOrCreateDefaultGridMapContext<TEntityId>(serviceResolver, LookupDefaultConfiguration<TEntityId>(serviceResolver));
         }
-        
+
         public static DefaultGridPositionContextBackend<TEntityId> GetOrCreateDefaultGridMapContext<TEntityId>(this IServiceResolver serviceResolver, DynamicDataViewConfiguration config)
         {
             if (serviceResolver.TryResolve(out IGridMapContext<TEntityId> maybeMap))
             {
                 if (maybeMap is DefaultGridPositionContextBackend<TEntityId> defaultImpl)
-                { 
+                {
                     return defaultImpl;
                 }
 
@@ -67,7 +68,8 @@ namespace RogueEntity.Core.Positioning
             {
                 serviceResolver.Store<IGridMapConfiguration<TEntityId>>(created);
             }
-            serviceResolver.Store(created);
+
+            serviceResolver.Store<IGridMapContext<TEntityId>>(created);
             return created;
         }
 
@@ -79,8 +81,10 @@ namespace RogueEntity.Core.Positioning
                 return gs;
             }
 
-            return new GridItemPlacementService<TEntityId>(serviceResolver.Resolve<IItemResolver<TEntityId>>(),
-                                                           serviceResolver.Resolve<IGridMapContext<TEntityId>>());
+            var r = new GridItemPlacementService<TEntityId>(serviceResolver.Resolve<IItemResolver<TEntityId>>(),
+                                                            serviceResolver.Resolve<IGridMapContext<TEntityId>>());
+            serviceResolver.Store(r);
+            return r;
         }
 
         public static GridItemPlacementLocationService<TEntityId> GetOrCreateGridItemPlacementLocationService<TEntityId>(this IServiceResolver serviceResolver)
@@ -91,8 +95,10 @@ namespace RogueEntity.Core.Positioning
                 return gs;
             }
 
-            return new GridItemPlacementLocationService<TEntityId>(serviceResolver.Resolve<IItemResolver<TEntityId>>(),
-                                                                   serviceResolver.Resolve<IGridMapContext<TEntityId>>());
+            var r = new GridItemPlacementLocationService<TEntityId>(serviceResolver.Resolve<IItemResolver<TEntityId>>(),
+                                                                    serviceResolver.Resolve<IGridMapContext<TEntityId>>());
+            serviceResolver.Store(r);
+            return r;
         }
     }
 }

@@ -9,11 +9,9 @@ namespace RogueEntity.Generator.MapFragments
         public readonly string Type;
         public readonly RuleProperties Properties;
         public readonly ReadOnlyListWrapper<string> Tags;
-        public readonly MapFragmentConnectivity Connectivity;
 
         public MapFragmentInfo(string name, 
                                string type,
-                               MapFragmentConnectivity connectivity, 
                                RuleProperties properties = default, 
                                ReadOnlyListWrapper<string> tags = default)
         {
@@ -21,22 +19,11 @@ namespace RogueEntity.Generator.MapFragments
             Type = type;
             Properties = properties ?? new RuleProperties();
             Tags = tags;
-            Connectivity = connectivity;
         }
 
-        public Optional<string> TryQueryTagRestrictions(MapFragmentConnectivity c)
+        public MapFragmentInfo WithName(string name)
         {
-            if (Connectivity.HasFlags(c))
-            {
-                if (Properties.TryGetValue("Require_" + c, out string tagPattern))
-                {
-                    return Optional.ValueOf(tagPattern);
-                }
-
-                return Optional.ValueOf("");
-            }
-
-            return Optional.Empty<string>();
+            return new MapFragmentInfo(name, Type, Properties, Tags);
         }
     }
 }

@@ -10,6 +10,7 @@ namespace RogueEntity.Core.Positioning.Grid
     public class ReferenceItemGridPositionTrait<TItemId> : IReferenceItemTrait<TItemId>,
                                                            IItemComponentTrait<TItemId, EntityGridPositionUpdateMessage>,
                                                            IItemComponentDesignTimeInformationTrait<MapLayerPreference>,
+                                                           IItemComponentInformationTrait<TItemId, EntityGridPosition>,
                                                            IItemComponentInformationTrait<TItemId, MapLayerPreference>,
                                                            IItemComponentInformationTrait<TItemId, MapContainerEntityMarker>
         where TItemId : IEntityKey

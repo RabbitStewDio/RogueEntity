@@ -78,7 +78,7 @@ namespace RogueEntity.Core.Positioning.Grid
                     return false;
                 }
 
-                if (!itemResolver.TryUpdateData(targetItem, EntityGridPosition.Invalid, out _))
+                if (!itemResolver.TryUpdateData(targetItem, EntityGridPositionUpdateMessage.From(EntityGridPosition.Invalid), out _))
                 {
                     Logger.Warning("Unable to update entity data for position update on entity {ExistingItem}", targetItem);
                     return false;
@@ -115,7 +115,7 @@ namespace RogueEntity.Core.Positioning.Grid
             }
 
             // Stackable bulk item. We reduced the stack by the number of items given.
-            
+
             if (takeResult.ItemsLeftInStack.TryGetValue(out var resultStack))
             {
                 if (!itemResolver.TryUpdateData(targetItem, resultStack, out var changedItem))
@@ -126,12 +126,12 @@ namespace RogueEntity.Core.Positioning.Grid
                     // Either way we are done here, we cannot proceed.
                     return false;
                 }
-                
+
                 existingItem = changedItem;
                 mapData.MarkDirty(placementPos);
                 return true;
             }
-            
+
             // The resulting item stack is empty, so we can fully discard the item from the map.
             existingItem = default;
             mapData.MarkDirty(placementPos);
@@ -243,9 +243,9 @@ namespace RogueEntity.Core.Positioning.Grid
                 return TryRemoveItem(item, currentPos);
             }
 
-            // a combined remove from currentPos and subsequence move to placement pos
             if (item.IsEmpty)
             {
+                // Nothing to move.
                 return true;
             }
 
@@ -281,7 +281,7 @@ namespace RogueEntity.Core.Positioning.Grid
                 return false;
             }
 
-            ref var targetItem = ref targetMap.TryGetForUpdate(placementPos.GridX, placementPos.GridY, ref defaultItem, out success);
+            ref var targetItem = ref targetMap.TryGetForUpdate(placementPos.GridX, placementPos.GridY, ref defaultItem, out success, DataViewCreateMode.CreateMissing);
             if (!success)
             {
                 Logger.Verbose("Unable to query map at target position {Position}", placementPos);
@@ -371,7 +371,7 @@ namespace RogueEntity.Core.Positioning.Grid
                 TItemId changedSourceItem;
                 if (takeResult.ItemsLeftInStack.TryGetValue(out var resultStack))
                 {
-                    if (!itemResolver.TryUpdateData(targetItem, resultStack, out changedSourceItem))
+                    if (!itemResolver.TryUpdateData(existingItem, resultStack, out changedSourceItem))
                     {
                         // for some unlikely reason we are not allowed to write the resulting stack back 
                         // to the item. 
@@ -381,6 +381,7 @@ namespace RogueEntity.Core.Positioning.Grid
                 else
                 {
                     // The existing stack has been fully consumed. This means we can clear that map position.
+                    // Note: That should actually be covered by the Equality test above.
                     changedSourceItem = default;
                 }
 
@@ -434,7 +435,7 @@ namespace RogueEntity.Core.Positioning.Grid
             {
                 return true;
             }
-            
+
             if (sourceItem.IsEmpty)
             {
                 return TryMoveItem(targetItem, targetPosition, sourcePosition);
@@ -487,38 +488,36 @@ namespace RogueEntity.Core.Positioning.Grid
 
             var sourceStackSize = itemResolver.QueryStackSize(sourceItem);
             var targetStackSize = itemResolver.QueryStackSize(targetItem);
-            
-            if (itemIdMetaData.IsReferenceEntity(sourceItem) || sourceStackSize.IsFullStack ||
-                itemIdMetaData.IsReferenceEntity(targetItem) || targetStackSize.IsFullStack)
+
+            var isExactSourceCell = Equality.Equals(sourceItem, sourceMapItem);
+            var isExactTargetCell = Equality.Equals(targetItem, targetMapItem);
+            if (isExactSourceCell || isExactTargetCell)
             {
                 // if either item is a reference item, a non-stackable bulk item or a full stack, we have to move the entire map cell. 
                 // This strict condition is luckily easy to test for.
-                
-                if (!Equality.Equals(sourceItem, sourceMapItem))
+
+                if (!isExactSourceCell)
                 {
                     Logger.Verbose("Precondition failed: Source item is not found at map position {SourcePosition}", sourcePosition);
                     return false;
                 }
 
-                if (!Equality.Equals(targetItem, targetMapItem))
+                if (!isExactTargetCell)
                 {
                     Logger.Verbose("Precondition failed: Target item is not found at map position {TargetPosition}", targetPosition);
                     return false;
                 }
 
-                if (itemIdMetaData.IsReferenceEntity(targetItem))
+                if (!itemResolver.TryUpdateData(targetItem, EntityGridPositionUpdateMessage.From(sourcePosition), out _))
                 {
-                    if (!itemResolver.TryUpdateData(sourceItem, EntityGridPositionUpdateMessage.From(targetPosition), out _))
-                    {
-                        Logger.Verbose("Execution failed: Unable to update entity data for source item {SourceItem}", sourceItem);
-                        return false;
-                    }
+                    Logger.Verbose("Execution failed: Unable to update entity data for target item {TargetItem}", targetItem);
+                    return false;
+                }
 
-                    if (!itemResolver.TryUpdateData(targetItem, EntityGridPositionUpdateMessage.From(sourcePosition), out _))
-                    {
-                        Logger.Verbose("Execution failed: Unable to update entity data for target item {TargetItem}", targetItem);
-                        return false;
-                    }
+                if (!itemResolver.TryUpdateData(sourceItem, EntityGridPositionUpdateMessage.From(targetPosition), out _))
+                {
+                    Logger.Verbose("Execution failed: Unable to update entity data for source item {SourceItem}", sourceItem);
+                    return false;
                 }
 
                 sourceMapItem = targetItem;
@@ -548,7 +547,7 @@ namespace RogueEntity.Core.Positioning.Grid
                 Logger.Verbose("Precondition failed: Source item type would exceed stack size");
                 return false;
             }
-            
+
             if (targetMapResultStack < 0 || targetMapResultStack > targetStackSize.MaximumStackSize)
             {
                 Logger.Verbose("Precondition failed: Target item type would exceed stack size");
@@ -567,7 +566,7 @@ namespace RogueEntity.Core.Positioning.Grid
                 targetMapContext.MarkDirty(targetPosition);
                 return true;
             }
-            
+
             return false;
         }
     }

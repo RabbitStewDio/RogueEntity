@@ -5,6 +5,7 @@ using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Positioning.MapLayers;
+using System;
 
 namespace RogueEntity.Generator.Tests
 {

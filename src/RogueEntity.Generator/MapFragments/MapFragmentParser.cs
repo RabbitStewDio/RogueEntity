@@ -1,5 +1,5 @@
-﻿using RogueEntity.Api.Utils;
-using System;
+﻿using JetBrains.Annotations;
+using RogueEntity.Api.Utils;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
@@ -7,21 +7,32 @@ using System.Text;
 using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.Maps;
 using Serilog;
+using System;
+using System.Diagnostics.CodeAnalysis;
 using YamlDotNet.Core;
 using YamlDotNet.Core.Events;
 using YamlDotNet.Serialization;
 
 namespace RogueEntity.Generator.MapFragments
 {
-    public static class MapFragmentParser
+    public class MapFragmentParser
     {
+        static readonly ILogger Logger = SLog.ForContext(typeof(MapFragmentParser));
         static readonly List<string> EmptyTags = new List<string>();
 
+        public delegate bool MapFragmentPostProcessor(in MapFragment mf, out MapFragment result);
+
+        readonly List<MapFragmentPostProcessor> postProcessors;
+
         /// <summary>
-        ///   Temporary object using during parsing.
+        ///   Temporary object using during parsing. This object is instantiated via
+        ///   reflection and all setters are called via reflection. So shut up, Inspector.
         /// </summary>
-        public class MapFragmentParseInfo
+        [UsedImplicitly]
+        [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Local")]
+        class MapFragmentParseInfo
         {
+            public string Guid { get; set; }
             public string Name { get; set; }
             public string Type { get; set; }
             public Size Size { get; set; }
@@ -30,127 +41,82 @@ namespace RogueEntity.Generator.MapFragments
             public List<string> Tags { get; set; }
         }
 
-        class OptionalNodeDeserializer : INodeDeserializer
+        public MapFragmentParser()
         {
-            readonly INodeDeserializer inner;
-
-            public OptionalNodeDeserializer(INodeDeserializer inner)
-            {
-                this.inner = inner;
-            }
-
-            public bool Deserialize(IParser reader,
-                                    Type expectedType,
-                                    Func<IParser, Type, object> nestedObjectDeserializer, out object value)
-            {
-                if (IsOptional(expectedType, out var innerType))
-                {
-                    if (!inner.Deserialize(reader, expectedType, nestedObjectDeserializer, out var rawValue))
-                    {
-                        value = default;
-                        return false;
-                    }
-
-                    return ConstructOptional(innerType, rawValue, out value);
-                }
-
-                return inner.Deserialize(reader, expectedType, nestedObjectDeserializer, out value);
-            }
-
-            bool ConstructOptional(Type t, object value, out object created)
-            {
-                if (!t.IsInstanceOfType(value))
-                {
-                    created = default;
-                    return false;
-                }
-
-                var mi = GetType().GetMethod(nameof(MakeOptional));
-                if (mi == null)
-                {
-                    created = default;
-                    return false;
-                }
-
-                created = mi.MakeGenericMethod(t).Invoke(this, new[] {value});
-                return true;
-            }
-
-            Optional<T> MakeOptional<T>(T value)
-            {
-                return Optional.ValueOf(value);
-            }
-
-            bool IsOptional(Type t, out Type innerType)
-            {
-                if (!t.IsGenericType)
-                {
-                    innerType = t;
-                    return false;
-                }
-
-                if (t.GetGenericTypeDefinition() == typeof(Optional<bool>).GetGenericTypeDefinition())
-                {
-                    innerType = t.GenericTypeArguments[0];
-                    return true;
-                }
-
-                innerType = t;
-                return false;
-            }
+            this.postProcessors = new List<MapFragmentPostProcessor>();
         }
 
-        public static bool TryParseFromFile(string fileName, out MapFragment m)
+        public void AddPostProcessor([NotNull] MapFragmentPostProcessor p)
+        {
+            if (p == null)
+            {
+                throw new ArgumentNullException(nameof(p));
+            }
+
+            this.postProcessors.Add(p);
+        }
+
+        public void RemovePostProcessor([NotNull] MapFragmentPostProcessor p)
+        {
+            this.postProcessors.Remove(p);
+        }
+
+        public ReadOnlyListWrapper<MapFragmentPostProcessor> PostProcessors => postProcessors;
+        
+        public bool TryParseFromFile(string fileName, out MapFragment m)
         {
             var text = File.ReadAllText(fileName, Encoding.UTF8);
             return TryParse(text, out m, fileName);
         }
 
-        public static bool TryParse(string data, out MapFragment m, string context = null)
+        public bool TryParse(string data, out MapFragment mapFragment, string context = null)
         {
             var deserializer = new DeserializerBuilder()
-                               // .WithNodeDeserializer(inner => new OptionalNodeDeserializer(inner),
-                               //                       s => s.InsteadOf<ObjectNodeDeserializer>())
                                .Build();
 
             try
             {
                 var parser = new Parser(new StringReader(data));
                 parser.Consume<StreamStart>();
-                if (!parser.Accept<DocumentStart>(out var startEvent))
+                if (!parser.Accept<DocumentStart>(out _))
                 {
-                    Log.Information("YAML structure from {Context} is empty.", context);
-                    m = default;
+                    Logger.Information("YAML structure from {Context} is empty", context);
+                    mapFragment = default;
                     return false;
                 }
 
                 var mapInfo = deserializer.Deserialize<MapFragmentParseInfo>(parser);
                 if (!parser.Accept<DocumentStart>(out var yamlStart))
                 {
-                    Log.Information("{Context} had no YAML secondary document separators.", context);
-                    m = default;
+                    Logger.Information("{Context} had no YAML secondary document separators", context);
+                    mapFragment = default;
                     return false;
                 }
 
                 if (mapInfo.Size.Width == 0 || mapInfo.Size.Height == 0)
                 {
-                    Log.Information("Empty map is not allowed.");
-                    m = default;
+                    Logger.Information("Empty map is not allowed");
+                    mapFragment = default;
                     return false;
                 }
 
                 if (mapInfo.Symbols == null || mapInfo.Symbols.Count == 0)
                 {
-                    Log.Information("Symbol declaration is mandatory.");
-                    m = default;
+                    Logger.Information("Symbol declaration is mandatory");
+                    mapFragment = default;
                     return false;
                 }
 
                 if (!ParseMapData(data.Substring(yamlStart.End.Index), mapInfo, out var mapData))
                 {
-                    Log.Information("Unable to parse map data payload.");
-                    m = default;
+                    Logger.Information("Unable to parse map data payload");
+                    mapFragment = default;
                     return false;
+                }
+
+                if (string.IsNullOrWhiteSpace(mapInfo.Name))
+                {
+                    mapInfo.Name = context ?? $"Auto-Generated-Name:{GuidUtility.Create(GuidUtility.UrlNamespace, data)}";
                 }
 
                 var props = new RuleProperties();
@@ -161,42 +127,65 @@ namespace RogueEntity.Generator.MapFragments
                         props.AddProperty(kv.Key, kv.Value);
                     }
                 }
-
-                if (!props.TryGetValue(MapFragmentExtensions.ConnectivityProperty, out string c))
+                
+                var mi = new MapFragmentInfo(mapInfo.Name, mapInfo.Type, props, mapInfo.Tags ?? EmptyTags);
+                if (!Guid.TryParse(mapInfo.Guid, out var id))
                 {
-                    Log.Error("Definition had no connectivity information");
-                    m = default;
-                    return false;
+                    id = GuidUtility.Create(GuidUtility.UrlNamespace, mapInfo.Name);
+                }
+                
+                mapFragment = new MapFragment(id, mapData, mi, new TypedRuleProperties());
+
+                for (var index = 0; index < postProcessors.Count; index++)
+                {
+                    var pp = postProcessors[index];
+                    if (!pp(mapFragment, out var result))
+                    {
+                        mapFragment = default;
+                        return false;
+                    }
+                    
+                    mapFragment = result;
                 }
 
-                var connectivity = MapFragmentExtensions.ParseMapFragmentConnectivity(c);
-
-                var mi = new MapFragmentInfo(mapInfo.Name, mapInfo.Type, connectivity, props, mapInfo.Tags ?? EmptyTags);
-                m = new MapFragment(mapData, mi);
                 return true;
             }
             catch (SyntaxErrorException se)
             {
                 Log.Error(se, "Failed to parse {Context}", context);
-                m = default;
+                mapFragment = default;
                 return false;
             }
         }
 
-        public static IEnumerable<string> GetLines(this string str, bool removeEmptyLines = false)
+        public static bool TryPostProcessConnectivity(in MapFragment f, out MapFragment result)
         {
-            using (var sr = new StringReader(str))
+            var props = f.Info.Properties;
+            if (!props.TryGetValue(MapFragmentExtensions.ConnectivityProperty, out string c))
             {
-                string line;
-                while ((line = sr.ReadLine()) != null)
-                {
-                    if (removeEmptyLines && string.IsNullOrWhiteSpace(line))
-                    {
-                        continue;
-                    }
+                Log.Error("Definition had no connectivity information");
+                result = default;
+                return false;
+            }
 
-                    yield return line;
+            var connectivity = MapFragmentExtensions.ParseMapFragmentConnectivity(c);
+            f.Properties.Define(connectivity);
+            result = f;
+            return true;
+        }
+
+        static IEnumerable<string> GetLines(string str, bool removeEmptyLines = false)
+        {
+            using var sr = new StringReader(str);
+            string line;
+            while ((line = sr.ReadLine()) != null)
+            {
+                if (removeEmptyLines && string.IsNullOrWhiteSpace(line))
+                {
+                    continue;
                 }
+
+                yield return line;
             }
         }
 
@@ -204,7 +193,7 @@ namespace RogueEntity.Generator.MapFragments
         {
             var mapWritable = new DenseMapData<MapFragmentTagDeclaration>(info.Size.Width, info.Size.Height);
             int y = 0;
-            foreach (var line in data.GetLines(true))
+            foreach (var line in GetLines(data, true))
             {
                 if (y >= mapWritable.Width)
                 {
@@ -219,20 +208,7 @@ namespace RogueEntity.Generator.MapFragments
                         continue;
                     }
 
-                    switch (value.Count)
-                    {
-                        case 0:
-                            continue;
-                        case 1:
-                            mapWritable[x, y] = new MapFragmentTagDeclaration(value[0], null, null);
-                            break;
-                        case 2:
-                            mapWritable[x, y] = new MapFragmentTagDeclaration(value[0], value[1], null);
-                            break;
-                        default:
-                            mapWritable[x, y] = new MapFragmentTagDeclaration(value[0], value[1], value[2]);
-                            break;
-                    }
+                    mapWritable[x, y] = new MapFragmentTagDeclaration(value);
                 }
 
                 y += 1;

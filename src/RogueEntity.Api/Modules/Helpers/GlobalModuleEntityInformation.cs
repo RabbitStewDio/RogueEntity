@@ -6,6 +6,7 @@ using RogueEntity.Api.ItemTraits;
 using RogueEntity.Api.Utils;
 using Serilog;
 using Serilog.Events;
+using System.Buffers;
 
 namespace RogueEntity.Api.Modules.Helpers
 {
@@ -393,7 +394,9 @@ namespace RogueEntity.Api.Modules.Helpers
                         logArgs[0] = entityType;
                         logArgs[1] = s.Id;
                         args.CopyTo(logArgs, 2);
-                        Logger.Debug("Entity {EntityType} requires role {Role} {AdditionalContext}", entityType, s.Id, string.Format(messageTemplateFragment, args));
+                        //
+                        // ReSharper disable once TemplateIsNotCompileTimeConstantProblem
+                        Logger.Debug("Entity {EntityType} requires role {Role}" + messageTemplateFragment, logArgs);
                     }
                 }
 

@@ -170,7 +170,7 @@ namespace RogueEntity.Core.Equipment
             }
 
             var stack = itemResolver.QueryStackSize(item);
-            if (stack.Count == 0)
+            if (stack.Count <= 0)
             {
                 Logger.Verbose("Unable to equip item {Item} as it has an empty stack", item);
                 remainderItem = default;
