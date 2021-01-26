@@ -357,7 +357,7 @@ namespace RogueEntity.Api.Utils
 
             return true;
         }
-
+        
         public static implicit operator ReadOnlyListWrapper<T>(List<T> raw) => new ReadOnlyListWrapper<T>(raw);
         public static implicit operator ReadOnlyListWrapper<T>(BufferList<T> raw) => new ReadOnlyListWrapper<T>(raw);
     }

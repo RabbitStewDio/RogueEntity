@@ -16,7 +16,7 @@ namespace RogueEntity.Generator.MapFragments
 {
     public class MapFragmentTool
     {
-        static readonly ILogger logger = SLog.ForContext(typeof(MapFragmentTool));
+        static readonly ILogger Logger = SLog.ForContext(typeof(MapFragmentTool));
 
         readonly MapBuilder builder;
         readonly IEntityRandomGeneratorSource randomContext;
@@ -30,14 +30,14 @@ namespace RogueEntity.Generator.MapFragments
             this.availableItems = PopulateItems(builder);
         }
 
-        Dictionary<byte, List<ItemDeclarationId>> PopulateItems(MapBuilder mapBuilder)
+        static Dictionary<byte, List<ItemDeclarationId>> PopulateItems(MapBuilder mapBuilder)
         {
             var result = new Dictionary<byte, List<ItemDeclarationId>>();
             foreach (var layer in mapBuilder.Layers)
             {
-                if (mapBuilder.TryGetItemRegistry(layer, out var itemRegistry))
+                if (mapBuilder.TryGetItemRegistry(layer, out var itemRegistryForLayer))
                 {
-                    result.Add(layer.LayerId, itemRegistry.Items.Select(item => item.Id).ToList());
+                    result.Add(layer.LayerId, itemRegistryForLayer.Items.Select(item => item.Id).ToList());
                 }
             }
 
@@ -59,14 +59,13 @@ namespace RogueEntity.Generator.MapFragments
             var layers = builder.Layers;
             var itemsPerLayer = new ItemDeclarationId[layers.Count];
 
-            foreach (var c in AreaRange.Of(f.MapData.Width, f.MapData.Height))
+            foreach (var c in AreaRange.Of(f.Size.Width, f.Size.Height))
             {
                 var entry = f.MapData[c.X, c.Y];
                 if (entry == MapFragmentTagDeclaration.Empty)
                 {
                     continue;
                 }
-
 
                 for (var i = 0; i < layers.Count; i++)
                 {
@@ -79,6 +78,7 @@ namespace RogueEntity.Generator.MapFragments
                     buffer = PopulateMatchingItems(layers[i], tag, buffer);
                     if (buffer.Count == 0)
                     {
+                        Logger.Warning("Unable to find matching items for requested tag pattern {Tag} in layer {Layer}", tag, layers[i]);
                         itemsPerLayer[i] = default;
                         continue;
                     }

@@ -1,29 +1,31 @@
-﻿using System;
-using EnTTSharp.Entities;
-using RogueEntity.Core.Infrastructure.Randomness.PCGSharp;
+﻿using EnTTSharp.Entities;
+using System.Runtime.CompilerServices;
 
 namespace RogueEntity.Core.Infrastructure.Randomness
 {
     public static class RandomContext
     {
-        public static ulong MakeSeed<TEntity>(TEntity entity,
-                                            int seedVariance) 
+        public static ulong MakeSeed<TEntity>(ulong baseSeed,
+                                              TEntity entity,
+                                              int seedVariance)
             where TEntity : IRandomSeedSource
         {
-            var retval = ((ulong)entity.AsRandomSeed()) << 32;
-            return retval + (ulong)seedVariance;
+            unchecked
+            {
+                var retval = baseSeed;
+                retval = Combine(retval, ((ulong)entity.AsRandomSeed()) << 32);
+                retval = Combine(retval, (ulong)seedVariance);
+                return retval;
+            }
         }
 
-        public static Func<double> DefaultRandomGenerator<TEntity>(TEntity entity,
-                                                                   int seedVariance) 
-            where TEntity : IRandomSeedSource
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static ulong Combine(ulong a, ulong b)
         {
-            var seed = MakeSeed(entity, seedVariance);
-            var r = new PCG(seed);
-            return r.NextDouble;
+            return (a * 499) ^ b;
         }
 
-        public static EntityRandomSeedSource<TEntityKey> ToRandomSeedSource<TEntityKey>(this TEntityKey k) 
+        public static EntityRandomSeedSource<TEntityKey> ToRandomSeedSource<TEntityKey>(this TEntityKey k)
             where TEntityKey : IEntityKey
         {
             return new EntityRandomSeedSource<TEntityKey>(k);

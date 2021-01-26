@@ -55,8 +55,7 @@ Symbols:
 
             result.Info.Name.Should().Be("Template");
             result.Info.Type.Should().Be("MapFragment");
-            result.Properties.TryGet(out Dimension size).Should().BeTrue();
-            size.Should().Be(new Dimension(3, 1));
+            result.Size.Should().Be(new Dimension(3, 1));
 
             result.Info.Tags.Should().BeEquivalentTo("Template", "Fragment");
             result.MapData[0, 0].Should().Be(new MapFragmentTagDeclaration("ground", "poison"));

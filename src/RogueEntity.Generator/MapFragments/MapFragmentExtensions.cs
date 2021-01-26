@@ -1,6 +1,7 @@
 ﻿using RogueEntity.Api.Utils;
 using System;
 using RogueEntity.Core.Utils;
+using RogueEntity.Core.Utils.DataViews;
 using RogueEntity.Core.Utils.Maps;
 
 namespace RogueEntity.Generator.MapFragments
@@ -18,12 +19,12 @@ namespace RogueEntity.Generator.MapFragments
         public static MapFragment MirrorVertically(this MapFragment mf)
         {
             var mapData = mf.MapData;
-            var nextMapData = new DenseMapData<MapFragmentTagDeclaration>(mapData.Width, mapData.Height);
-            for (var y = 0; y < mapData.Height; y += 1)
+            var nextMapData = new BoundedDataView<MapFragmentTagDeclaration>(new Rectangle(0, 0, mf.Size.Width, mf.Size.Height));
+            for (var y = 0; y < mf.Size.Height; y += 1)
             {
-                for (var x = 0; x < mapData.Width; x += 1)
+                for (var x = 0; x < mf.Size.Width; x += 1)
                 {
-                    nextMapData[x, y] = mapData[mapData.Width - x - 1, y];
+                    nextMapData[x, y] = mapData[mf.Size.Width - x - 1, y];
                 }
             }
 
@@ -33,7 +34,7 @@ namespace RogueEntity.Generator.MapFragments
             }
 
             mf = mf.WithName(mf.Info.Name + "[V]")
-                   .WithMapData(nextMapData);
+                   .WithMapData(nextMapData, mf.Size);
             
             c = c.Swap(MapFragmentConnectivity.East, MapFragmentConnectivity.West);
 
@@ -49,17 +50,17 @@ namespace RogueEntity.Generator.MapFragments
         public static MapFragment MirrorHorizontally(this MapFragment mf)
         {
             var mapData = mf.MapData;
-            var nextMapData = new DenseMapData<MapFragmentTagDeclaration>(mapData.Width, mapData.Height);
-            for (var y = 0; y < mapData.Height; y += 1)
+            var nextMapData = new BoundedDataView<MapFragmentTagDeclaration>(new Rectangle(0, 0, mf.Size.Width, mf.Size.Height));
+            for (var y = 0; y < mf.Size.Height; y += 1)
             {
-                for (var x = 0; x < mapData.Width; x += 1)
+                for (var x = 0; x < mf.Size.Width; x += 1)
                 {
-                    nextMapData[x, y] = mapData[x, mapData.Height - y - 1];
+                    nextMapData[x, y] = mapData[x, mf.Size.Height - y - 1];
                 }
             }
 
             mf = mf.WithName(mf.Info.Name + "[H]")
-                   .WithMapData(nextMapData);
+                   .WithMapData(nextMapData, mf.Size);
             if (!mf.Properties.TryGet(out MapFragmentConnectivity c))
             {
                 return mf;

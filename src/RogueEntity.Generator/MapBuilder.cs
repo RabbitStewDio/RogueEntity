@@ -1,98 +1,17 @@
 using EnTTSharp.Entities;
-using JetBrains.Annotations;
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Api.Services;
 using RogueEntity.Api.Utils;
-using RogueEntity.Core.Meta.Items;
+using RogueEntity.Core.Infrastructure.Randomness;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Positioning.MapLayers;
+using RogueEntity.Generator.MapFragments;
 using System;
 using System.Collections.Generic;
 
 namespace RogueEntity.Generator
 {
-    public interface IMapBuilderInstantiationLifter
-    {
-        public bool ClearPreProcess<TEntity>(ItemDeclarationId item, Position pos, IItemResolver<TEntity> itemResolver, ref TEntity entityKey) where TEntity: IEntityKey;
-        public bool InstantiatePostProcess<TEntity>(ItemDeclarationId item, Position pos, IItemResolver<TEntity> itemResolver, ref TEntity entityKey) where TEntity: IEntityKey;
-    }
-    
-    public abstract class EntityMapBuilderLayer
-    {
-        public abstract IItemRegistry ItemRegistry { get; }
-        public abstract bool Instantiate(ItemDeclarationId item, Position pos, IMapBuilderInstantiationLifter postProc = null);
-        public abstract bool Clear(Position pos, IMapBuilderInstantiationLifter postProc = null);
-    }
-
-    public class MapBuilderLayer<TEntity>: EntityMapBuilderLayer
-        where TEntity : IEntityKey
-    {
-        [UsedImplicitly]
-        readonly MapLayer layer;
-        readonly IItemResolver<TEntity> resolver;
-        readonly IGridMapDataContext<TEntity> gridMapContext;
-        readonly IItemPlacementService<TEntity> placementService;
-
-        public MapBuilderLayer(MapLayer layer, 
-                               IItemResolver<TEntity> resolver, 
-                               IGridMapDataContext<TEntity> gridMapContext,
-                               IItemPlacementService<TEntity> placementService)
-        {
-            this.layer = layer;
-            this.resolver = resolver;
-            this.gridMapContext = gridMapContext;
-            this.placementService = placementService;
-        }
-
-
-        public override IItemRegistry ItemRegistry => resolver.ItemRegistry;
-
-        public override bool Instantiate(ItemDeclarationId item, Position pos, IMapBuilderInstantiationLifter postProc = null)
-        {
-            var entity = resolver.Instantiate(item);
-            if (!resolver.TryUpdateData(entity, pos, out var changedEntity))
-            {
-                resolver.DiscardUnusedItem(entity);
-                return false;
-            }
-
-            if (postProc == null || postProc.InstantiatePostProcess(item, pos, resolver, ref changedEntity))
-            {
-                resolver.Apply(changedEntity);
-            }
-            return true;
-        }
-
-        public override bool Clear(Position pos, IMapBuilderInstantiationLifter postProc = null)
-        {
-            if (gridMapContext.TryGetView(pos.GridZ, out var view))
-            {
-                var entity = view[pos.GridX, pos.GridY];
-                if (entity.IsEmpty)
-                {
-                    return true;
-                }
-                
-                if (postProc != null && resolver.TryResolve(entity, out var decl))
-                {
-                    if (!postProc.ClearPreProcess(decl.Id, pos, resolver, ref entity))
-                    {
-                        return false;
-                    }
-                }
-
-                if (placementService.TryRemoveItem(entity, pos))
-                {
-                    resolver.Destroy(entity);
-                    return true;
-                }
-            }
-
-            return false;
-        }
-    }
-    
     public class MapBuilder
     {
         readonly Dictionary<byte, EntityMapBuilderLayer> layerProcessors;
@@ -176,6 +95,11 @@ namespace RogueEntity.Generator
             }
 
             return layer.Clear(pos, postProcessor);
+        }
+
+        public MapFragmentTool ForFragmentPlacement(IEntityRandomGeneratorSource randomContext)
+        {
+            return new MapFragmentTool(this, randomContext);
         }
     }
 }

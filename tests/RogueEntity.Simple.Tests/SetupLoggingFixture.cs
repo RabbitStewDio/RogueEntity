@@ -1,29 +1,28 @@
 ﻿using Microsoft.Extensions.Configuration;
 using NUnit.Framework;
 using Serilog;
+using System.Diagnostics.CodeAnalysis;
 
-namespace RogueEntity.Simple.Tests
+[SetUpFixture]
+[SuppressMessage("ReSharper", "CheckNamespace")]
+public class SetupLoggingFixture
 {
-    [SetUpFixture]
-    public class SetupLoggingFixture
+    [OneTimeSetUp]
+    public void RunBeforeAnyTests()
     {
-        [OneTimeSetUp]
-        public void RunBeforeAnyTests()
-        {
-            var configuration = new ConfigurationBuilder()
-                                .AddJsonFile("appsettings.json")
-                                .Build();
+        var configuration = new ConfigurationBuilder()
+                            .AddJsonFile("appsettings.json")
+                            .Build();
 
-            var logger = new LoggerConfiguration()
-                         .ReadFrom.Configuration(configuration)
-                         .CreateLogger();
-            Log.Logger = logger;
-        }
+        var logger = new LoggerConfiguration()
+                     .ReadFrom.Configuration(configuration)
+                     .CreateLogger();
+        Log.Logger = logger;
+    }
 
-        [OneTimeTearDown]
-        public void RunAfterAnyTests()
-        {
-            // ...
-        }
+    [OneTimeTearDown]
+    public void RunAfterAnyTests()
+    {
+        // ...
     }
 }

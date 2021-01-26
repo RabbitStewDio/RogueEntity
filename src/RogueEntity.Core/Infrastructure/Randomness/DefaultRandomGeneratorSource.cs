@@ -1,15 +1,20 @@
 using System;
 using Microsoft.Extensions.ObjectPool;
+using RogueEntity.Api.Time;
 using RogueEntity.Core.Infrastructure.Randomness.PCGSharp;
 
 namespace RogueEntity.Core.Infrastructure.Randomness
 {
-    public class DefaultRandomGeneratorSource: IEntityRandomGeneratorSource
+    public class DefaultRandomGeneratorSource : IEntityRandomGeneratorSource
     {
+        readonly int seed;
+        readonly Lazy<ITimeSource> timer;
         readonly DefaultObjectPool<Generator> pool;
 
-        public DefaultRandomGeneratorSource()
+        public DefaultRandomGeneratorSource(int seed, Lazy<ITimeSource> timer)
         {
+            this.seed = seed;
+            this.timer = timer;
             pool = new DefaultObjectPool<Generator>(new GeneratorPolicy(Return));
         }
 
@@ -17,16 +22,17 @@ namespace RogueEntity.Core.Infrastructure.Randomness
         {
             pool.Return(obj);
         }
-        
+
         public IRandomGenerator RandomGenerator<TSeedSource>(TSeedSource entity, int seedVariance)
             where TSeedSource : IRandomSeedSource
         {
             var generator = pool.Get();
-            generator.Activate(RandomContext.MakeSeed(entity, seedVariance));
+            ulong timeBasedSeed = RandomContext.Combine((ulong)this.seed << 32, (ulong)(timer.Value.FixedStepTime));
+            generator.Activate(RandomContext.MakeSeed(timeBasedSeed, entity, seedVariance));
             return generator;
         }
 
-        class Generator: IRandomGenerator
+        class Generator : IRandomGenerator
         {
             readonly PCG randomSource;
             readonly Action<Generator> pool;
@@ -43,7 +49,7 @@ namespace RogueEntity.Core.Infrastructure.Randomness
                 disposed = false;
                 randomSource.Initialize(seed);
             }
-            
+
             public void Dispose()
             {
                 if (!disposed)
@@ -58,8 +64,8 @@ namespace RogueEntity.Core.Infrastructure.Randomness
                 return randomSource.NextDouble();
             }
         }
-        
-        class GeneratorPolicy: IPooledObjectPolicy<Generator>
+
+        class GeneratorPolicy : IPooledObjectPolicy<Generator>
         {
             readonly Action<Generator> returnCallback;
 

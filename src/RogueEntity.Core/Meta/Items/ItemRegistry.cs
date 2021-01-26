@@ -1,4 +1,5 @@
-﻿using System;
+﻿using EnTTSharp.Entities;
+using System;
 using System.Collections.Generic;
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Api.Utils;
@@ -7,7 +8,7 @@ using Serilog;
 namespace RogueEntity.Core.Meta.Items
 {
     public class ItemRegistry<TItemId> : IItemRegistryBackend<TItemId>
-        where TItemId : IBulkDataStorageKey<TItemId>
+        where TItemId : IEntityKey
     {
         readonly IBulkDataStorageMetaData<TItemId> itemIdMetaData;
         readonly ILogger logger = SLog.ForContext<ItemRegistry<TItemId>>();
@@ -70,19 +71,17 @@ namespace RogueEntity.Core.Meta.Items
                 _ => throw new ArgumentException(nameof(itemDeclaration))
             };
         }
-        
+
         public ItemDeclarationId Register(IReferenceItemDeclaration<TItemId> itemDeclaration)
         {
             if (itemsById.ContainsKey(itemDeclaration.Id))
             {
                 logger.Information("Redeclaration of existing item {ItemId}", itemDeclaration.Id);
                 itemsById[itemDeclaration.Id] = itemDeclaration;
-                referenceItemsById[itemDeclaration.Id] = itemDeclaration;
             }
             else
             {
                 itemsById.Add(itemDeclaration.Id, itemDeclaration);
-                referenceItemsById.Add(itemDeclaration.Id, itemDeclaration);
             }
 
             if (bulkItems.TryGetValue(itemDeclaration.Id, out var reg))
@@ -90,6 +89,12 @@ namespace RogueEntity.Core.Meta.Items
                 var (internalId, _) = reg;
                 bulkItems.Remove(itemDeclaration.Id);
                 bulkItemReverseIndex.Remove(internalId);
+
+                referenceItemsById.Add(itemDeclaration.Id, itemDeclaration);
+            }
+            else
+            {
+                referenceItemsById[itemDeclaration.Id] = itemDeclaration;
             }
 
             items.Clear();
@@ -108,8 +113,6 @@ namespace RogueEntity.Core.Meta.Items
                 itemsById.Add(item.Id, item);
             }
 
-            referenceItemsById.Remove(item.Id);
-
             if (bulkItems.TryGetValue(item.Id, out var reg))
             {
                 var (iid, _) = reg;
@@ -118,6 +121,8 @@ namespace RogueEntity.Core.Meta.Items
             }
             else
             {
+                referenceItemsById.Remove(item.Id);
+
                 var internalId = (ushort)bulkItemIdSequence;
                 bulkItemIdSequence += 1;
                 bulkItems.Add(item.Id, (internalId, item));
@@ -153,7 +158,13 @@ namespace RogueEntity.Core.Meta.Items
 
         public bool TryResolveBulkItem(TItemId bulkIndex, out IBulkItemDeclaration<TItemId> item)
         {
-            return bulkItemReverseIndex.TryGetValue(bulkIndex.BulkItemId, out item);
+            if (itemIdMetaData.TryDeconstructBulkKey(bulkIndex, out var itemId, out _))
+            {
+                return bulkItemReverseIndex.TryGetValue(itemId, out item);
+            }
+
+            item = default;
+            return false;
         }
 
         public bool TryGetItemById(ItemDeclarationId id, out IItemDeclaration item)

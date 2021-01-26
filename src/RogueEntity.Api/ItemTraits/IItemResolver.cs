@@ -49,5 +49,13 @@ namespace RogueEntity.Api.ItemTraits
         /// <param name="item"></param>
         /// <returns></returns>
         TItemId DestroyNext(in TItemId item);
+
+        /// <summary>
+        ///   Returns true if this item is a reference item that has been marked as destroyed
+        ///   or that has been destroyed already.
+        /// </summary>
+        /// <param name="item"></param>
+        /// <returns></returns>
+        bool IsDestroyed(in TItemId item);
     }
 }

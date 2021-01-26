@@ -5,21 +5,23 @@ using RogueEntity.Core.Meta.Base;
 namespace RogueEntity.Core.Meta.Items
 {
     public class ItemResolver<TItemId> : IItemResolver<TItemId>
-        where TItemId : IBulkDataStorageKey<TItemId>
+        where TItemId : IEntityKey
     {
         readonly ItemRegistry<TItemId> registry;
         readonly EntityRegistry<TItemId> entityRegistry;
+        readonly IBulkDataStorageMetaData<TItemId> entityMetaData;
 
         public ItemResolver(ItemRegistry<TItemId> registry, 
                             EntityRegistry<TItemId> entityRegistry)
         {
             this.registry = registry;
             this.entityRegistry = entityRegistry;
+            this.entityMetaData = registry.EntityMetaData;
         }
 
         public IItemRegistry ItemRegistry => registry;
 
-        public IBulkDataStorageMetaData<TItemId> EntityMetaData => registry.EntityMetaData;
+        public IBulkDataStorageMetaData<TItemId> EntityMetaData => entityMetaData;
 
         public TItemId Instantiate(IItemDeclaration item)
         {
@@ -47,7 +49,7 @@ namespace RogueEntity.Core.Meta.Items
 
         public bool TryResolve(in TItemId itemRef, out IItemDeclaration item)
         {
-            if (itemRef.IsReference)
+            if (entityMetaData.IsReferenceEntity(itemRef))
             {
                 if (entityRegistry.IsValid(itemRef))
                 {
@@ -131,7 +133,7 @@ namespace RogueEntity.Core.Meta.Items
 
         public void DiscardUnusedItem(in TItemId item)
         {
-            if (!item.IsReference)
+            if (!entityMetaData.IsReferenceEntity(item))
             {
                 return;
             }
@@ -145,7 +147,7 @@ namespace RogueEntity.Core.Meta.Items
 
         public TItemId Destroy(in TItemId item)
         {
-            if (!item.IsReference)
+            if (!entityMetaData.IsReferenceEntity(item))
             {
                 return default;
             }
@@ -161,7 +163,7 @@ namespace RogueEntity.Core.Meta.Items
 
         public TItemId DestroyNext(in TItemId item)
         {
-            if (!item.IsReference)
+            if (!entityMetaData.IsReferenceEntity(item))
             {
                 return default;
             }
@@ -175,9 +177,26 @@ namespace RogueEntity.Core.Meta.Items
             return item;
         }
 
+        public bool IsDestroyed(in TItemId item)
+        {
+            if (!entityMetaData.IsReferenceEntity(item))
+            {
+                return false;
+            }
+
+            if (!entityRegistry.IsValid(item))
+            {
+                return true;
+            }
+
+            return entityRegistry.HasComponent<DestroyedMarker>(item) ||
+                   entityRegistry.HasComponent<CascadingDestroyedMarker>(item);
+
+        }
+
         public void Apply(TItemId item)
         {
-            if (!item.IsReference)
+            if (!entityMetaData.IsReferenceEntity(item))
             {
                 return;
             }

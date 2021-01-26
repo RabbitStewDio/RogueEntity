@@ -1,23 +1,25 @@
 ﻿using RogueEntity.Api.Utils;
 using RogueEntity.Core.Utils;
-using RogueEntity.Core.Utils.Maps;
+using RogueEntity.Core.Utils.DataViews;
 using System;
 
 namespace RogueEntity.Generator.MapFragments
 {
     public readonly struct MapFragment : IEquatable<MapFragment>
     {
-        public IReadOnlyMapData<MapFragmentTagDeclaration> MapData { get; }
+        public IReadOnlyView2D<MapFragmentTagDeclaration> MapData { get; }
         public MapFragmentInfo Info { get; }
         public TypedRuleProperties Properties { get; }
         public Guid Id { get; }
+        public Dimension Size { get; }
 
-        public MapFragment(Guid id, IReadOnlyMapData<MapFragmentTagDeclaration> mapData, MapFragmentInfo info, TypedRuleProperties properties)
+        public MapFragment(Guid id, IReadOnlyView2D<MapFragmentTagDeclaration> mapData, MapFragmentInfo info, Dimension size, TypedRuleProperties properties)
         {
             Id = id;
             Properties = properties;
             MapData = mapData;
             Info = info;
+            Size = size;
         }
 
         public override string ToString()
@@ -50,35 +52,35 @@ namespace RogueEntity.Generator.MapFragments
             return !left.Equals(right);
         }
 
-        public MapFragment WithMapData(IReadOnlyMapData<MapFragmentTagDeclaration> mapData, Optional<Guid> id = default)
+        public MapFragment WithMapData(IReadOnlyView2D<MapFragmentTagDeclaration> mapData, Dimension size, Optional<Guid> id = default)
         {
             if (id.TryGetValue(out var newId))
             {
-                return new MapFragment(newId, mapData, Info, Properties);
+                return new MapFragment(newId, mapData, Info, size, Properties);
             }
             
-            return new MapFragment(Id, mapData, Info, Properties);
+            return new MapFragment(Id, mapData, Info, size, Properties);
         }
         
         public MapFragment WithProperties(TypedRuleProperties properties, Optional<Guid> id = default)
         {
             if (id.TryGetValue(out var newId))
             {
-                return new MapFragment(newId, MapData, Info, properties);
+                return new MapFragment(newId, MapData, Info, Size, properties);
             }
             
-            return new MapFragment(Id, MapData, Info, properties);
+            return new MapFragment(Id, MapData, Info, Size, properties);
         }
         
         public MapFragment WithName(string name, Optional<Guid> id = default)
         {
             if (id.TryGetValue(out var newId))
             {
-                return new MapFragment(newId, MapData, Info.WithName(name), Properties);
+                return new MapFragment(newId, MapData, Info.WithName(name), Size, Properties);
             }
             
             var newIdFromName = GuidUtility.Create(GuidUtility.UrlNamespace, name);
-            return new MapFragment(newIdFromName, MapData, Info.WithName(name), Properties);
+            return new MapFragment(newIdFromName, MapData, Info.WithName(name), Size, Properties);
         }
     }
 }

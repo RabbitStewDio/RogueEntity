@@ -21,6 +21,5 @@ namespace RogueEntity.Core.Meta.Items
         IItemRegistryBackend<TItemId> IItemContextBackend<TItemId>.ItemRegistry => ItemRegistry;
         public EntityRegistry<TItemId> EntityRegistry { get; }
         public IItemResolver<TItemId> ItemResolver { get; }
-
     }
 }

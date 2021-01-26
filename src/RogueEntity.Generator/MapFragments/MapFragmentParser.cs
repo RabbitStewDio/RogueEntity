@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using RogueEntity.Core.Utils;
+using RogueEntity.Core.Utils.DataViews;
 using RogueEntity.Core.Utils.Maps;
 using Serilog;
 using System;
@@ -63,7 +64,7 @@ namespace RogueEntity.Generator.MapFragments
             {
                 visitedContexts = new List<string>();
             }
-            
+
             if (string.IsNullOrWhiteSpace(context))
             {
                 result = default;
@@ -75,14 +76,14 @@ namespace RogueEntity.Generator.MapFragments
             {
                 return true;
             }
-            
+
             if (visitedContexts.Contains(f))
             {
                 Logger.Information("Detected a loop in template references at {Context} via {Evidence}", context, string.Join(", ", visitedContexts));
                 result = default;
                 return false;
             }
-            
+
 
             try
             {
@@ -150,15 +151,8 @@ namespace RogueEntity.Generator.MapFragments
                         mapFragment = default;
                         return false;
                     }
-                    
-                    mapInfo = MapFragmentParseInfo.Merge(mpi, mapInfo);
-                }
 
-                if (mapInfo.Size.Width == 0 || mapInfo.Size.Height == 0)
-                {
-                    Logger.Information("Empty map is not allowed");
-                    mapFragment = default;
-                    return false;
+                    mapInfo = MapFragmentParseInfo.Merge(mpi, mapInfo);
                 }
 
                 if (mapInfo.Symbols == null || mapInfo.Symbols.Count == 0)
@@ -168,11 +162,34 @@ namespace RogueEntity.Generator.MapFragments
                     return false;
                 }
 
-                if (!ParseMapData(data.Substring(yamlStart.End.Index), mapInfo, out var mapData))
+                IReadOnlyView2D<MapFragmentTagDeclaration> mapData;
+                if (mapInfo.Size.Width == 0 && mapInfo.Size.Height == 0)
                 {
-                    Logger.Information("Unable to parse map data payload");
-                    mapFragment = default;
-                    return false;
+                    if (!ParseVariableSizeMapData(data.Substring(yamlStart.End.Index), mapInfo, out mapData, out var size))
+                    {
+                        Logger.Information("Unable to parse map data payload");
+                        mapFragment = default;
+                        return false;
+                    }
+
+                    mapInfo.Size = size;
+                }
+                else
+                {
+                    if (mapInfo.Size.Width == 0 || mapInfo.Size.Height == 0)
+                    {
+                        Logger.Information("Empty map is not allowed");
+                        mapFragment = default;
+                        return false;
+                    }
+
+
+                    if (!ParseKnownSizeMapData(data.Substring(yamlStart.End.Index), mapInfo, out mapData))
+                    {
+                        Logger.Information("Unable to parse map data payload");
+                        mapFragment = default;
+                        return false;
+                    }
                 }
 
                 if (string.IsNullOrWhiteSpace(mapInfo.Name))
@@ -195,7 +212,7 @@ namespace RogueEntity.Generator.MapFragments
                     id = GuidUtility.Create(GuidUtility.UrlNamespace, mapInfo.Name);
                 }
 
-                mapFragment = new MapFragment(id, mapData, mi, new TypedRuleProperties().With(new Dimension(mapInfo.Size.Width, mapInfo.Size.Height)));
+                mapFragment = new MapFragment(id, mapData, mi, new Dimension(mapInfo.Size.Width, mapInfo.Size.Height), new TypedRuleProperties());
 
                 for (var index = 0; index < postProcessors.Count; index++)
                 {
@@ -250,18 +267,22 @@ namespace RogueEntity.Generator.MapFragments
             }
         }
 
-        static bool ParseMapData(string data, MapFragmentParseInfo info, out IReadOnlyMapData<MapFragmentTagDeclaration> map)
+        static bool ParseKnownSizeMapData(string data, MapFragmentParseInfo info, out IReadOnlyView2D<MapFragmentTagDeclaration> map)
         {
-            var mapWritable = new DenseMapData<MapFragmentTagDeclaration>(info.Size.Width, info.Size.Height);
+            var width = info.Size.Width;
+            var height = info.Size.Height;
+            var mapWritable = new BoundedDataView<MapFragmentTagDeclaration>(new Rectangle(0, 0, width, height));
             int y = 0;
+
             foreach (var line in GetLines(data, true))
             {
-                if (y >= mapWritable.Width)
+                if (y >= height)
                 {
                     break;
                 }
 
-                for (var x = 0; x < line.Length && x < mapWritable.Width; x++)
+                var effectiveLength = Math.Min(line.Length, width);
+                for (var x = 0; x < effectiveLength; x += 1)
                 {
                     var c = line[x];
                     if (!info.Symbols.TryGetValue(c, out var value))
@@ -276,6 +297,34 @@ namespace RogueEntity.Generator.MapFragments
             }
 
             map = mapWritable;
+            return true;
+        }
+
+        static bool ParseVariableSizeMapData(string data, MapFragmentParseInfo info, out IReadOnlyView2D<MapFragmentTagDeclaration> map, out MapFragmentSize size)
+        {
+            var mapWritable = new DynamicDataView2D<MapFragmentTagDeclaration>(0, 0, 32, 32);
+            int lines = 0;
+            int columns = 0;
+
+            foreach (var line in GetLines(data, true))
+            {
+                columns = Math.Max(columns, line.Length);
+                for (var x = 0; x < line.Length; x += 1)
+                {
+                    var c = line[x];
+                    if (!info.Symbols.TryGetValue(c, out var value))
+                    {
+                        continue;
+                    }
+
+                    mapWritable[x, lines] = new MapFragmentTagDeclaration(value);
+                }
+
+                lines += 1;
+            }
+
+            map = mapWritable;
+            size = new MapFragmentSize(columns, lines);
             return true;
         }
     }

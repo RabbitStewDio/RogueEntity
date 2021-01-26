@@ -1,0 +1,23 @@
+Name: PlacementTest
+Type: MapFragment
+Size:
+  Width: 3
+  Height: 3
+
+Tags:
+  - Fragment
+
+Properties:
+  FragmentOnly: FragmentValue
+  TemplateOverride: FragmentOverrides
+
+Symbols:
+  ' ': []
+  .: [Bulk.Floor.1]
+  c: [Bulk.Floor.2, Bulk.Item.1]
+  x: [Bulk.Floor.3, Reference.Item.1]
+  '@': [Bulk.Floor.1, '', Actor]
+---
+. c
+c@.
+.xc

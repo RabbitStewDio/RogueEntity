@@ -11,4 +11,13 @@
     <ProjectReference Include="..\..\src\RogueEntity.Generator\RogueEntity.Generator.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="MapFragments\placement-test.mapfragment">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

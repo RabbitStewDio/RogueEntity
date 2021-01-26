@@ -14,7 +14,7 @@ namespace RogueEntity.Generator.Tests
         public void TestMaze()
         {
             var bounds = new Rectangle(0, 0, 32, 32);
-            var mg = new CAGridRunnerBuilder(new DefaultRandomGeneratorSource().FromConstantSeed(10), bounds, CARuleStrings.MazeGeneration);
+            var mg = new CAGridRunnerBuilder(new FixedRandomGeneratorSource().FromConstantSeed(10), bounds, CARuleStrings.MazeGeneration);
             var maze = mg.Generate('.', '#', 128);
             Console.WriteLine(maze.ExtendToString(bounds, elementSeparator: "", elementStringifier: e => $"{e}{e}"));
         }
@@ -23,7 +23,7 @@ namespace RogueEntity.Generator.Tests
         public void TestConway()
         {
             var bounds = new Rectangle(0, 0, 8, 8);
-            var mg = new CAGridRunnerBuilder(new DefaultRandomGeneratorSource().FromConstantSeed(10), bounds, CARuleStrings.Conway);
+            var mg = new CAGridRunnerBuilder(new FixedRandomGeneratorSource().FromConstantSeed(10), bounds, CARuleStrings.Conway);
             var maze = mg.Start('.', '#');
             maze.TryGetWritableView(out var view).Should().BeTrue();
             // Glider: 
@@ -52,7 +52,7 @@ namespace RogueEntity.Generator.Tests
         public void TestConway2()
         {
             var bounds = new Rectangle(0, 0, 8, 8);
-            var mg = new CAGridRunnerBuilder(new DefaultRandomGeneratorSource().FromConstantSeed(10), bounds, CARuleStrings.Conway);
+            var mg = new CAGridRunnerBuilder(new FixedRandomGeneratorSource().FromConstantSeed(10), bounds, CARuleStrings.Conway);
             var maze = mg.Start('.', '#');
             maze.TryGetWritableView(out var view).Should().BeTrue();
             // Glider: 

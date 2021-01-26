@@ -230,7 +230,7 @@ namespace RogueEntity.Core.Utils.DataViews
             {
                 if (!TryGet(x, y, out var result))
                 {
-                    throw new ArgumentOutOfRangeException();
+                    throw new ArgumentOutOfRangeException($"Coordinates ({x},{y}) are not valid for map with bounds {bounds}");
                 }
 
                 return result;
@@ -239,7 +239,7 @@ namespace RogueEntity.Core.Utils.DataViews
             {
                 if (!TrySet(x, y, in value))
                 {
-                    throw new ArgumentOutOfRangeException();
+                    throw new ArgumentOutOfRangeException($"Coordinates ({x},{y}) are not valid for map with bounds {bounds}");
                 }
             }
         }
