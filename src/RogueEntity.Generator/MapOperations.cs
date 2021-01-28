@@ -33,6 +33,16 @@ namespace RogueEntity.Generator
             return b;
         }
 
+        public static MapBuilder Draw(this MapBuilder b, MapLayer l, float z, Rectangle r, IMapBuilderInstantiationLifter postProcessor, params ItemDeclarationId[] items)
+        {
+            foreach (var pos in r.PerimeterPositions())
+            {
+                b.InstantiateAll(Position.Of(l, pos.X, pos.Y, z), postProcessor, items);
+            }
+
+            return b;
+        }
+
         public static MapBuilder InstantiateAll(this MapBuilder b, Position pos, params ItemDeclarationId[] items)
         {
             return InstantiateAll(b, pos, null, items);

@@ -136,7 +136,7 @@ namespace RogueEntity.Core.Sensing.Receptors
             ctx.Register(SenseSourceCollectionSystemId, 57500, RegisterCollectSenseSourcesSystem);
         }
 
-        protected void RegisterPrepareSystem<TItemId>(in ModuleInitializationParameter initParameter,
+        protected void RegisterPrepareSystem<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                       IGameLoopSystemRegistration context,
                                                       EntityRegistry<TItemId> registry)
             where TItemId : IEntityKey
@@ -148,7 +148,7 @@ namespace RogueEntity.Core.Sensing.Receptors
             context.AddFixedStepHandlers(ls.BeginSenseCalculation, nameof(ls.BeginSenseCalculation));
         }
 
-        protected void RegisterCollectReceptorsGridSystem<TItemId>(in ModuleInitializationParameter initParameter,
+        protected void RegisterCollectReceptorsGridSystem<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                                    IGameLoopSystemRegistration context,
                                                                    EntityRegistry<TItemId> registry)
             where TItemId : IEntityKey
@@ -166,7 +166,7 @@ namespace RogueEntity.Core.Sensing.Receptors
             context.AddFixedStepHandlers(system);
         }
 
-        protected void RegisterCollectReceptorsContinuousSystem<TItemId>(in ModuleInitializationParameter initParameter,
+        protected void RegisterCollectReceptorsContinuousSystem<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                                          IGameLoopSystemRegistration context,
                                                                          EntityRegistry<TItemId> registry)
             where TItemId : IEntityKey
@@ -184,7 +184,7 @@ namespace RogueEntity.Core.Sensing.Receptors
             context.AddFixedStepHandlers(system);
         }
 
-        protected void RegisterCollectSenseSourcesSystem<TItemId>(in ModuleInitializationParameter initParameter,
+        protected void RegisterCollectSenseSourcesSystem<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                                   IGameLoopSystemRegistration context,
                                                                   EntityRegistry<TItemId> registry)
             where TItemId : IEntityKey
@@ -199,7 +199,7 @@ namespace RogueEntity.Core.Sensing.Receptors
             context.AddFixedStepHandlers(system);
         }
 
-        protected void RegisterComputeReceptorFieldOfView<TItemId>(in ModuleInitializationParameter initParameter,
+        protected void RegisterComputeReceptorFieldOfView<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                                    IGameLoopSystemRegistration context,
                                                                    EntityRegistry<TItemId> registry)
             where TItemId : IEntityKey
@@ -219,12 +219,12 @@ namespace RogueEntity.Core.Sensing.Receptors
             context.AddFixedStepHandlers(refreshLocalSenseState);
         }
 
-        protected abstract void RegisterCalculateDirectionalSystem<TItemId>(in ModuleInitializationParameter initParameter,
+        protected abstract void RegisterCalculateDirectionalSystem<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                                             IGameLoopSystemRegistration context,
                                                                             EntityRegistry<TItemId> registry)
             where TItemId : IEntityKey;
 
-        protected void RegisterCalculateOmniDirectionalSystem<TItemId>(in ModuleInitializationParameter initParameter,
+        protected void RegisterCalculateOmniDirectionalSystem<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                                        IGameLoopSystemRegistration context,
                                                                        EntityRegistry<TItemId> registry)
             where TItemId : IEntityKey
@@ -249,7 +249,7 @@ namespace RogueEntity.Core.Sensing.Receptors
             context.AddFixedStepHandlers(system);
         }
 
-        protected void RegisterCalculateUniDirectionalSystem<TItemId>(in ModuleInitializationParameter initParameter,
+        protected void RegisterCalculateUniDirectionalSystem<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                                       IGameLoopSystemRegistration context,
                                                                       EntityRegistry<TItemId> registry)
             where TItemId : IEntityKey
@@ -276,7 +276,7 @@ namespace RogueEntity.Core.Sensing.Receptors
         }
 
 
-        protected void RegisterFinalizeSystem<TItemId>(in ModuleInitializationParameter initParameter,
+        protected void RegisterFinalizeSystem<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                        IGameLoopSystemRegistration context,
                                                        EntityRegistry<TItemId> registry)
             where TItemId : IEntityKey
@@ -365,7 +365,7 @@ namespace RogueEntity.Core.Sensing.Receptors
             return ls;
         }
 
-        protected void RegisterEntities<TItemId>(in ModuleInitializationParameter initParameter,
+        protected void RegisterEntities<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                  EntityRegistry<TItemId> registry)
             where TItemId : IEntityKey
         {

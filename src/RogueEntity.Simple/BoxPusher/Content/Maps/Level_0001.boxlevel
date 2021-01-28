@@ -1,0 +1,27 @@
+﻿Name: Level_0001
+Type: MapFragment
+    
+Tags: 
+    - EntryPoint
+
+Symbols:
+    w: [ground, wall]
+    .: [ground]
+    b: [ground, box]
+    o: [target]
+    O: [target, box]
+    *: [ground, '', player]
+    
+---
+....wwwww..........
+....w...w..........
+....wb..w..........
+..www..bww.........
+..w..b.b.w.........
+www.w.ww.w...wwwwww
+w...w.ww.wwwww..oow
+w.b..b..........oow
+wwwww.www.w*ww..oow
+....w.....wwwwwwwww
+....wwwwwww........
+

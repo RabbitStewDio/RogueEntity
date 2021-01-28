@@ -28,18 +28,18 @@ namespace RogueEntity.Core.Utils.DataViews
         }
 
         public static ref T TryGetRefForUpdate<T>(this IDynamicDataView2D<T> data,
-                                               ref IBoundedDataView<T> tile,
-                                               int x,
-                                               int y,
-                                               ref T defaultValue,
-                                               out bool success,
-                                               DataViewCreateMode mode = DataViewCreateMode.Nothing)
+                                                  ref IBoundedDataView<T> tile,
+                                                  int x,
+                                                  int y,
+                                                  ref T defaultValue,
+                                                  out bool success,
+                                                  DataViewCreateMode mode = DataViewCreateMode.Nothing)
         {
             if (tile != null)
             {
                 if (tile.Contains(x, y))
                 {
-                    return ref tile.TryGetForUpdate(x,y, ref defaultValue, out success);
+                    return ref tile.TryGetForUpdate(x, y, ref defaultValue, out success);
                 }
             }
 
@@ -50,7 +50,6 @@ namespace RogueEntity.Core.Utils.DataViews
 
             success = false;
             return ref defaultValue;
-
         }
 
 
@@ -104,8 +103,18 @@ namespace RogueEntity.Core.Utils.DataViews
 
         class DataViewWrapper3D<T> : IReadOnlyDynamicDataView3D<T>
         {
-            public event EventHandler<DynamicDataView3DEventArgs<T>> ViewCreated;
-            public event EventHandler<DynamicDataView3DEventArgs<T>> ViewExpired;
+            public event EventHandler<DynamicDataView3DEventArgs<T>> ViewCreated
+            {
+                add { }
+                remove { }
+            }
+
+            public event EventHandler<DynamicDataView3DEventArgs<T>> ViewExpired
+            {
+                add { }
+                remove { }
+            }
+
             readonly int z;
             readonly IReadOnlyDynamicDataView2D<T> backend;
 
@@ -154,7 +163,7 @@ namespace RogueEntity.Core.Utils.DataViews
                 get { return backend.TileSizeY; }
             }
         }
-        
+
         /// <summary>
         /// Allows stringifying the contents of a map view. Takes characters to
         /// surround the map printout, and each row, the method used to get the string representation

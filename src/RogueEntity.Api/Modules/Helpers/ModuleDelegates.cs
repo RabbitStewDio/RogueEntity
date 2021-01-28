@@ -18,11 +18,11 @@ namespace RogueEntity.Api.Modules.Helpers
                                                                                           EntityRelation role)
         where TEntityId : IEntityKey;
 
-    public delegate void EntityRegistrationDelegate<TEntityId>(in ModuleInitializationParameter initParameter,
+    public delegate void EntityRegistrationDelegate<TEntityId>(in ModuleEntityInitializationParameter<TEntityId> initParameter,
                                                                EntityRegistry<TEntityId> registry)
         where TEntityId : IEntityKey;
 
-    public delegate void EntitySystemRegistrationDelegate<TEntityId>(in ModuleInitializationParameter initParameter,
+    public delegate void EntitySystemRegistrationDelegate<TEntityId>(in ModuleEntityInitializationParameter<TEntityId> initParameter,
                                                                      IGameLoopSystemRegistration context,
                                                                      EntityRegistry<TEntityId> registry)
         where TEntityId : IEntityKey;

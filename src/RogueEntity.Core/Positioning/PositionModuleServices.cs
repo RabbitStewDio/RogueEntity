@@ -1,15 +1,20 @@
 using EnTTSharp.Entities;
 using RogueEntity.Api.ItemTraits;
+using RogueEntity.Api.Modules;
 using RogueEntity.Api.Services;
+using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Positioning.Grid;
+using RogueEntity.Core.Positioning.MapLayers;
+using RogueEntity.Core.Sensing.Resistance;
 using RogueEntity.Core.Utils.DataViews;
 using System;
+using System.Collections.Generic;
 
 namespace RogueEntity.Core.Positioning
 {
     public static class PositionModuleServices
     {
-        static DynamicDataViewConfiguration LookupDefaultConfiguration<TEntityId>(IServiceResolver serviceResolver)
+        public static DynamicDataViewConfiguration LookupDefaultConfiguration<TEntityId>(IServiceResolver serviceResolver)
         {
             if (serviceResolver.TryResolve(out IGridMapConfiguration<TEntityId> mapConfig))
             {
@@ -39,7 +44,7 @@ namespace RogueEntity.Core.Positioning
             map = new DefaultGridPositionContextBackend<TEntityId>(config);
             if (!serviceResolver.TryResolve(out IGridMapConfiguration<TEntityId> _))
             {
-                serviceResolver.Store<IGridMapConfiguration<TEntityId>>(map);
+                serviceResolver.Store<IGridMapConfiguration<TEntityId>>(new GridMapConfiguration<TEntityId>(config));
             }
 
             serviceResolver.Store(map);
@@ -66,7 +71,7 @@ namespace RogueEntity.Core.Positioning
             var created = new DefaultGridPositionContextBackend<TEntityId>(config);
             if (!serviceResolver.TryResolve(out IGridMapConfiguration<TEntityId> _))
             {
-                serviceResolver.Store<IGridMapConfiguration<TEntityId>>(created);
+                serviceResolver.Store<IGridMapConfiguration<TEntityId>>(new GridMapConfiguration<TEntityId>(config));
             }
 
             serviceResolver.Store<IGridMapContext<TEntityId>>(created);
@@ -100,5 +105,59 @@ namespace RogueEntity.Core.Positioning
             serviceResolver.Store(r);
             return r;
         }
+        
+        public static HashSet<MapLayer> CollectMapLayers<TItemId, TAdditionalComponent>(ModuleEntityInitializationParameter<TItemId> initParameter) where TItemId : IEntityKey
+        {
+            var moduleContext = initParameter.ContentDeclarations;
+            var layers = new HashSet<MapLayer>();
+            foreach (var bi in moduleContext.DeclaredBulkItems)
+            {
+                if (bi.itemDeclaration.TryQuery(out IItemComponentDesignTimeInformationTrait<MapLayerPreference> layerPref) &&
+                    bi.itemDeclaration.HasItemComponent<TItemId, TAdditionalComponent>() &&
+                    layerPref.TryQuery(out var layerPreferences))
+                {
+                    layers.UnionWith(layerPreferences.AcceptableLayers);
+                }
+            }
+
+            foreach (var bi in moduleContext.DeclaredReferenceItems)
+            {
+                if (bi.itemDeclaration.TryQuery(out IItemComponentDesignTimeInformationTrait<MapLayerPreference> layerPref) &&
+                    bi.itemDeclaration.HasItemComponent<TItemId, TAdditionalComponent>() &&
+                    layerPref.TryQuery(out var layerPreferences))
+                {
+                    layers.UnionWith(layerPreferences.AcceptableLayers);
+                }
+            }
+
+            return layers;
+        }
+
+        public static HashSet<MapLayer> CollectMapLayers<TItemId>(ModuleEntityInitializationParameter<TItemId> initParameter) where TItemId : IEntityKey
+        {
+            var moduleContext = initParameter.ContentDeclarations;
+            var layers = new HashSet<MapLayer>();
+            foreach (var bi in moduleContext.DeclaredBulkItems)
+            {
+                if (bi.itemDeclaration.TryQuery(out IItemComponentDesignTimeInformationTrait<MapLayerPreference> layerPref) &&
+                    layerPref.TryQuery(out var layerPreferences))
+                {
+                    layers.UnionWith(layerPreferences.AcceptableLayers);
+                }
+            }
+
+            foreach (var bi in moduleContext.DeclaredReferenceItems)
+            {
+                if (bi.itemDeclaration.TryQuery(out IItemComponentDesignTimeInformationTrait<MapLayerPreference> layerPref) &&
+                    layerPref.TryQuery(out var layerPreferences))
+                {
+                    layers.UnionWith(layerPreferences.AcceptableLayers);
+                }
+            }
+
+            return layers;
+        }
+
+
     }
 }

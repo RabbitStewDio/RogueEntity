@@ -34,9 +34,9 @@ namespace RogueEntity.Core.Equipment
         }
 
         [EntityRoleInitializer("Role.Core.Equipment.ContainedItem")]
-        protected void InitializeContainedItemRole< TItemId>(in ModuleEntityInitializationParameter< TItemId> initParameter,
-                                                                          IModuleInitializer initializer,
-                                                                          EntityRole r)
+        protected void InitializeContainedItemRole<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
+                                                            IModuleInitializer initializer,
+                                                            EntityRole r)
             where TItemId : IEntityKey
         {
             var entityContext = initializer.DeclareEntityContext<TItemId>();
@@ -44,42 +44,42 @@ namespace RogueEntity.Core.Equipment
         }
 
         [EntityRelationInitializer("Relation.Core.Equipment")]
-        protected void InitializeContainerEntities< TActorId, TItemId>(in ModuleEntityInitializationParameter< TActorId> initParameter,
-                                                                                    IModuleInitializer initializer,
-                                                                                    EntityRelation r)
+        protected void InitializeContainerEntities<TActorId, TItemId>(in ModuleEntityInitializationParameter<TActorId> initParameter,
+                                                                      IModuleInitializer initializer,
+                                                                      EntityRelation r)
             where TActorId : IEntityKey
             where TItemId : IEntityKey
         {
             var entityContext = initializer.DeclareEntityContext<TActorId>();
             entityContext.Register(ContainerComponentId, -19000, RegisterContainerEntities<TActorId, TItemId>);
-            entityContext.Register(CascadingDestructionSystemId, 100_000_000, RegisterCascadingDestruction< TActorId, TItemId>);
+            entityContext.Register(CascadingDestructionSystemId, 100_000_000, RegisterCascadingDestruction<TActorId, TItemId>);
         }
 
-        void RegisterCascadingDestruction< TActorId, TItemId>(in ModuleInitializationParameter initParameter,
-                                                                           IGameLoopSystemRegistration context,
-                                                                           EntityRegistry<TActorId> registry)
+        void RegisterCascadingDestruction<TActorId, TItemId>(in ModuleEntityInitializationParameter<TActorId> initParameter,
+                                                             IGameLoopSystemRegistration context,
+                                                             EntityRegistry<TActorId> registry)
             where TActorId : IEntityKey
             where TItemId : IEntityKey
         {
-            var itemResolver = initParameter.ServiceResolver.Resolve<IItemResolver< TItemId>>();
-            var system = new DestroyContainerContentsSystem< TActorId, TItemId>(itemResolver);
+            var itemResolver = initParameter.ServiceResolver.Resolve<IItemResolver<TItemId>>();
+            var system = new DestroyContainerContentsSystem<TActorId, TItemId>(itemResolver);
             var action = registry.BuildSystem()
                                  .WithoutContext()
                                  .WithInputParameter<DestroyedMarker, SlottedEquipmentData<TItemId>>()
                                  .CreateSystem(system.MarkDestroyedContainerEntities);
-            
+
             context.AddInitializationStepHandler(action);
             context.AddFixedStepHandlers(action);
         }
 
-        void RegisterContainedItemEntities<TItemId>(in ModuleInitializationParameter initParameter,
+        void RegisterContainedItemEntities<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                     EntityRegistry<TItemId> registry)
             where TItemId : IEntityKey
         {
             registry.RegisterNonConstructable<SlottedEquipmentData<TItemId>>();
         }
 
-        void RegisterContainerEntities<TActorId, TItemId>(in ModuleInitializationParameter initParameter,
+        void RegisterContainerEntities<TActorId, TItemId>(in ModuleEntityInitializationParameter<TActorId> initParameter,
                                                           EntityRegistry<TActorId> registry)
             where TActorId : IEntityKey
             where TItemId : IEntityKey

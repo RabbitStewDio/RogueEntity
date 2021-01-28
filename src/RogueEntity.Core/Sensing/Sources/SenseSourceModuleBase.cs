@@ -131,25 +131,15 @@ namespace RogueEntity.Core.Sensing.Sources
                                                    EntityRole role)
             where TItemId : IEntityKey
         {
-            var moduleContext = initParameter.ContentDeclarations;
-            var systemId = SenseSourceModules.CreateResistanceSourceSystemId<TSense>();
-            var layers = new HashSet<MapLayer>();
-            foreach (var bi in moduleContext.DeclaredBulkItems)
-            {
-                if (bi.itemDeclaration.TryQuery(out IItemComponentDesignTimeInformationTrait<MapLayerPreference> layerPref) &&
-                    bi.itemDeclaration.HasItemComponent<TItemId, SensoryResistance<TSense>>() &&
-                    layerPref.TryQuery(out var layerPreferences))
-                {
-                    layers.UnionWith(layerPreferences.AcceptableLayers);
-                }
-            }
-
-            var ctx = initializer.DeclareEntityContext<TItemId>();
-
+            var layers = PositionModuleServices.CollectMapLayers<TItemId, SensoryResistance<TSense>>(initParameter);
             var mapLayers = layers.ToList();
             Logger.Debug("{Sense} will use map layers {Layers} as resistance source for {EntityId}", typeof(TSense), mapLayers, typeof(TItemId));
+            
+            var systemId = SenseSourceModules.CreateResistanceSourceSystemId<TSense>();
+            var ctx = initializer.DeclareEntityContext<TItemId>();
             ctx.Register(systemId, 1100, SenseSourceModules.RegisterSenseResistanceSourceLayer<TItemId, TSense>(mapLayers));
         }
+
 
         protected void InitializeSenseSourceRole<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                           IModuleInitializer initializer,
@@ -218,7 +208,7 @@ namespace RogueEntity.Core.Sensing.Sources
             ctx.Register(ExecuteResistanceSystem, 52000, RegisterProcessSenseDirectionalitySystem);
         }
 
-        protected void RegisterResistanceSystemLifecycle<TItemId>(in ModuleInitializationParameter initParameter,
+        protected void RegisterResistanceSystemLifecycle<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                                   IGameLoopSystemRegistration context,
                                                                   EntityRegistry<TItemId> registry)
             where TItemId : IEntityKey
@@ -230,7 +220,7 @@ namespace RogueEntity.Core.Sensing.Sources
         }
 
 
-        protected void RegisterResistanceSystemExecution<TItemId>(in ModuleInitializationParameter initParameter,
+        protected void RegisterResistanceSystemExecution<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                                   IGameLoopSystemRegistration context,
                                                                   EntityRegistry<TItemId> registry)
             where TItemId : IEntityKey
@@ -242,7 +232,7 @@ namespace RogueEntity.Core.Sensing.Sources
             context.AddFixedStepHandlers(system.ProcessSenseProperties);
         }
 
-        protected void RegisterPrepareSenseSourceSystem<TItemId>(in ModuleInitializationParameter initParameter,
+        protected void RegisterPrepareSenseSourceSystem<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                                  IGameLoopSystemRegistration context,
                                                                  EntityRegistry<TItemId> registry)
             where TItemId : IEntityKey
@@ -254,7 +244,7 @@ namespace RogueEntity.Core.Sensing.Sources
             context.AddFixedStepHandlers(ls.BeginSenseCalculation, nameof(ls.BeginSenseCalculation));
         }
 
-        protected void RegisterCollectSenseSourceGridSystem<TItemId>(in ModuleInitializationParameter initParameter,
+        protected void RegisterCollectSenseSourceGridSystem<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                                      IGameLoopSystemRegistration context,
                                                                      EntityRegistry<TItemId> registry)
             where TItemId : IEntityKey
@@ -270,7 +260,7 @@ namespace RogueEntity.Core.Sensing.Sources
             context.AddFixedStepHandlers(system);
         }
 
-        protected void RegisterCollectSenseSourceContinuousSystem<TItemId>(in ModuleInitializationParameter initParameter,
+        protected void RegisterCollectSenseSourceContinuousSystem<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                                            IGameLoopSystemRegistration context,
                                                                            EntityRegistry<TItemId> registry)
             where TItemId : IEntityKey
@@ -286,7 +276,7 @@ namespace RogueEntity.Core.Sensing.Sources
             context.AddFixedStepHandlers(system);
         }
 
-        protected void RegisterCalculateSenseSourceStateSystem<TItemId>(in ModuleInitializationParameter initParameter,
+        protected void RegisterCalculateSenseSourceStateSystem<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                                         IGameLoopSystemRegistration context,
                                                                         EntityRegistry<TItemId> registry)
             where TItemId : IEntityKey
@@ -304,7 +294,7 @@ namespace RogueEntity.Core.Sensing.Sources
             context.AddFixedStepHandlers(refreshLocalSenseState);
         }
 
-        protected void RegisterCleanUpSystem<TItemId>(in ModuleInitializationParameter initParameter,
+        protected void RegisterCleanUpSystem<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                       IGameLoopSystemRegistration context,
                                                       EntityRegistry<TItemId> registry)
             where TItemId : IEntityKey
@@ -327,7 +317,7 @@ namespace RogueEntity.Core.Sensing.Sources
             context.AddDisposeStepHandler(ls.ShutDown, nameof(ls.ShutDown));
         }
 
-        protected void RegisterProcessSenseDirectionalitySystem<TItemId>(in ModuleInitializationParameter initParameter,
+        protected void RegisterProcessSenseDirectionalitySystem<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                                          IGameLoopSystemRegistration context,
                                                                          EntityRegistry<TItemId> registry)
             where TItemId : IEntityKey
@@ -346,7 +336,7 @@ namespace RogueEntity.Core.Sensing.Sources
             }
         }
 
-        protected void RegisterSenseResistanceCacheLifeCycle<TItemId>(in ModuleInitializationParameter initParameter,
+        protected void RegisterSenseResistanceCacheLifeCycle<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                                       IGameLoopSystemRegistration context,
                                                                       EntityRegistry<TItemId> registry)
             where TItemId : IEntityKey
@@ -436,7 +426,7 @@ namespace RogueEntity.Core.Sensing.Sources
 
         protected abstract (ISensePropagationAlgorithm, ISensePhysics) GetOrCreateSensePhysics(IServiceResolver resolver);
 
-        protected void RegisterSenseSourceEntities<TItemId>(in ModuleInitializationParameter initParameter,
+        protected void RegisterSenseSourceEntities<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                             EntityRegistry<TItemId> registry)
             where TItemId : IEntityKey
         {
@@ -446,7 +436,7 @@ namespace RogueEntity.Core.Sensing.Sources
             registry.RegisterFlag<SenseDirtyFlag<TSense>>();
         }
 
-        protected void RegisterResistanceEntities<TItemId>(in ModuleInitializationParameter initParameter,
+        protected void RegisterResistanceEntities<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                            EntityRegistry<TItemId> registry)
             where TItemId : IEntityKey
         {

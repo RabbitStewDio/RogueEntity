@@ -7,9 +7,9 @@ namespace RogueEntity.Core.Utils.DataViews
         public readonly Position2D Key;
         public readonly IReadOnlyBoundedDataView<T> Data;
 
-        public DynamicDataView2DEventArgs(IReadOnlyBoundedDataView<T> data)
+        public DynamicDataView2DEventArgs(Position2D key, IReadOnlyBoundedDataView<T> data)
         {
-            this.Key = data.Bounds.Position;
+            this.Key = key;
             this.Data = data;
         }
     }

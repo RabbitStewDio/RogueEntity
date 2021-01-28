@@ -30,14 +30,6 @@ namespace RogueEntity.Core.Tests.Sensing
 
         public GridItemPlacementService<ItemReference> ItemPlacementService { get; }
 
-        int IGridMapConfiguration<ItemReference>.OffsetX => itemMap.OffsetX;
-
-        int IGridMapConfiguration<ItemReference>.OffsetY => itemMap.OffsetY;
-
-        int IGridMapConfiguration<ItemReference>.TileSizeX => itemMap.TileSizeX;
-
-        int IGridMapConfiguration<ItemReference>.TileSizeY => itemMap.TileSizeY;
-
         ReadOnlyListWrapper<MapLayer> IGridMapContext<ItemReference>.GridLayers()
         {
             return itemMap.GridLayers();

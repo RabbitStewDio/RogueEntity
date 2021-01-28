@@ -85,7 +85,7 @@ namespace RogueEntity.Api.Modules
                     return;
                 }
 
-                var mip = new ModuleInitializationParameter(mi, serviceResolver);
+                var mip = new ModuleEntityInitializationParameter<TEntityId>(mi, serviceResolver, moduleContext);
                 var ctx = serviceResolver.Resolve<IItemContextBackend<TEntityId>>();
 
                 var sortedEntries = CollectEntitySystemDeclarations(moduleContext);

@@ -47,7 +47,7 @@ namespace RogueEntity.Core.Sensing.Cache
             ctx.Register(SenseCacheLifecycleId, 0, RegisterSenseCacheLifeCycle);
         }
 
-        void RegisterSenseCacheLifeCycle<TItemId>(in ModuleInitializationParameter initParameter,
+        void RegisterSenseCacheLifeCycle<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                   IGameLoopSystemRegistration context,
                                                   EntityRegistry<TItemId> registry)
             where TItemId : IEntityKey

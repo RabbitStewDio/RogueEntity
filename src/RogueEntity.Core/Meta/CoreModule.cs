@@ -41,9 +41,9 @@ namespace RogueEntity.Core.Meta
         }
 
         [EntityRoleInitializer("Role.Core.Item")]
-        protected void InitializeItemRole< TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
-                                                                 IModuleInitializer initializer,
-                                                                 EntityRole r)
+        protected void InitializeItemRole<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
+                                                   IModuleInitializer initializer,
+                                                   EntityRole r)
             where TItemId : IEntityKey
         {
             var entityContext = initializer.DeclareEntityContext<TItemId>();
@@ -51,9 +51,9 @@ namespace RogueEntity.Core.Meta
         }
 
         [EntityRoleInitializer("Role.Core.Entity")]
-        protected void InitializeEntityRole< TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
-                                                                   IModuleInitializer initializer,
-                                                                   EntityRole r)
+        protected void InitializeEntityRole<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
+                                                     IModuleInitializer initializer,
+                                                     EntityRole r)
             where TItemId : IEntityKey
         {
             var entityContext = initializer.DeclareEntityContext<TItemId>();
@@ -63,18 +63,18 @@ namespace RogueEntity.Core.Meta
         }
 
         [EntityRoleInitializer("Role.Core.ContainedItem")]
-        protected void InitializeContainedItemRole< TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
-                                                                          IModuleInitializer initializer,
-                                                                          EntityRole r)
+        protected void InitializeContainedItemRole<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
+                                                            IModuleInitializer initializer,
+                                                            EntityRole r)
             where TItemId : IEntityKey
         {
             var entityContext = initializer.DeclareEntityContext<TItemId>();
             entityContext.Register(ContainedComponentsId, -20_000, RegisterContainedItemComponents);
         }
 
-        void RegisterCascadingDestructionSystems< TItemId>(in ModuleInitializationParameter initParameter,
-                                                                        IGameLoopSystemRegistration context,
-                                                                        EntityRegistry<TItemId> registry)
+        void RegisterCascadingDestructionSystems<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
+                                                          IGameLoopSystemRegistration context,
+                                                          EntityRegistry<TItemId> registry)
             where TItemId : IEntityKey
         {
             var markCascades = registry.BuildSystem()
@@ -84,9 +84,9 @@ namespace RogueEntity.Core.Meta
             context.AddFixedStepHandlers(markCascades);
         }
 
-        void RegisterEntityCleanupSystems< TItemId>(in ModuleInitializationParameter initParameter,
-                                                                 IGameLoopSystemRegistration context,
-                                                                 EntityRegistry<TItemId> registry)
+        void RegisterEntityCleanupSystems<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
+                                                   IGameLoopSystemRegistration context,
+                                                   EntityRegistry<TItemId> registry)
             where TItemId : IEntityKey
         {
             var deleteMarkedEntitiesSystem = new DestroyedEntitiesSystem<TItemId>(registry);
@@ -94,7 +94,7 @@ namespace RogueEntity.Core.Meta
             context.AddFixedStepHandlers(deleteMarkedEntitiesSystem.DeleteMarkedEntities);
         }
 
-        void RegisterCoreComponents<TItemId>(in ModuleInitializationParameter initParameter,
+        void RegisterCoreComponents<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                              EntityRegistry<TItemId> registry)
             where TItemId : IEntityKey
         {
@@ -103,13 +103,13 @@ namespace RogueEntity.Core.Meta
             registry.RegisterFlag<CascadingDestroyedMarker>();
         }
 
-        void RegisterSharedItemComponents< TItemId>(in ModuleInitializationParameter initParameter,
-                                                                 EntityRegistry<TItemId> registry)
+        void RegisterSharedItemComponents<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
+                                                   EntityRegistry<TItemId> registry)
             where TItemId : IEntityKey
         {
             // All entities carry a reference to their trait declaration with them. This allows
             // systems to lookup traits and to perform actions on them.
-            registry.RegisterNonConstructable<ItemDeclarationHolder< TItemId>>();
+            registry.RegisterNonConstructable<ItemDeclarationHolder<TItemId>>();
 
             registry.RegisterNonConstructable<StackCount>();
             registry.RegisterNonConstructable<Weight>();
@@ -118,7 +118,7 @@ namespace RogueEntity.Core.Meta
             registry.RegisterNonConstructable<ItemCharge>();
         }
 
-        void RegisterContainedItemComponents<TItemId>(in ModuleInitializationParameter initParameter,
+        void RegisterContainedItemComponents<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                       EntityRegistry<TItemId> registry)
             where TItemId : IEntityKey
         {

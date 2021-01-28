@@ -79,7 +79,7 @@ namespace RogueEntity.Core.Sensing.Map.InfraVision
             return serviceResolver.TryResolve(out IConfiguration config) && config.GetValue("RogueEntity:Core:Sensing:Map:InfraVision:Enabled", false);
         }
 
-        void RegisterCollectSenseSourcesSystem<TItemId>(in ModuleInitializationParameter initParameter,
+        void RegisterCollectSenseSourcesSystem<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                         IGameLoopSystemRegistration context,
                                                         EntityRegistry<TItemId> registry)
             where TItemId : IEntityKey
@@ -97,7 +97,7 @@ namespace RogueEntity.Core.Sensing.Map.InfraVision
             context.AddFixedStepHandlers(system);
         }
 
-        void RegisterComputeSenseMapSystem<TItemId>(in ModuleInitializationParameter initParameter,
+        void RegisterComputeSenseMapSystem<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                     IGameLoopSystemRegistration context,
                                                     EntityRegistry<TItemId> registry)
             where TItemId : IEntityKey
@@ -109,7 +109,7 @@ namespace RogueEntity.Core.Sensing.Map.InfraVision
             context.AddFixedStepHandlers(() => hs.ProcessSenseMap(registry));
         }
 
-        void RegisterFinalizeSenseMapSystem<TItemId>(in ModuleInitializationParameter initParameter,
+        void RegisterFinalizeSenseMapSystem<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                      IGameLoopSystemRegistration context,
                                                      EntityRegistry<TItemId> registry)
             where TItemId : IEntityKey

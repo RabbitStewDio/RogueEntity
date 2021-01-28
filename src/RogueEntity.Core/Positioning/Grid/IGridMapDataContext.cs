@@ -11,11 +11,6 @@ namespace RogueEntity.Core.Positioning.Grid
         void MarkDirty<TPosition>(in TPosition position) where TPosition: IPosition<TPosition>;
     }
 
-    public interface IGridMapRawDataContext<TItemId>
-    {
-        bool TryGetRaw(int z, out IDynamicDataView2D<TItemId> data, MapAccess accessMode = MapAccess.ReadOnly);
-    }
-
     public static class GridMapDataContextExtensions
     {
         public static bool TryGet<TItemId, TPosition>(this IGridMapDataContext<TItemId> data, in TPosition pos, out TItemId d)

@@ -45,7 +45,7 @@ namespace RogueEntity.Core.Utils.DataViews
             var dataBounds = e.Key;
             if (index.TryGetValue(dataBounds, out var ownData))
             {
-                ViewExpired?.Invoke(this, new DynamicDataView2DEventArgs<TTarget>(ownData));
+                ViewExpired?.Invoke(this, new DynamicDataView2DEventArgs<TTarget>(dataBounds, ownData));
                 index.Remove(dataBounds);
             }
         }
@@ -82,7 +82,10 @@ namespace RogueEntity.Core.Utils.DataViews
 
         public bool TryGetData(int x, int y, out IReadOnlyBoundedDataView<TTarget> raw)
         {
-            if (index.TryGetValue(new Position2D(x, y), out var targetRaw))
+            var dx = DataViewPartitions.TileSplit(x, OffsetX, TileSizeX);
+            var dy = DataViewPartitions.TileSplit(y, OffsetY, TileSizeY);
+            var key = new Position2D(dx, dy);
+            if (index.TryGetValue(key, out var targetRaw))
             {
                 raw = targetRaw;
                 return true;
@@ -91,7 +94,7 @@ namespace RogueEntity.Core.Utils.DataViews
             if (source.TryGetData(x, y, out var sourceRaw))
             {
                 targetRaw = new TransformedBoundedDataView<TSource,TTarget>(sourceRaw, transformation);
-                index[new Position2D(x, y)] = targetRaw;
+                index[key] = targetRaw;
                 raw = targetRaw;
                 return true;
             }

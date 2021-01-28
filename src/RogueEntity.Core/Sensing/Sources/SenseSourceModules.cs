@@ -36,7 +36,7 @@ namespace RogueEntity.Core.Sensing.Sources
         public static EntitySystemRegistrationDelegate< TItemId> RegisterSenseResistanceSourceLayer< TItemId, TSense>(ReadOnlyListWrapper<MapLayer> layers)
             where TItemId : IEntityKey
         {
-            void RegisterItemResistanceSystemConfiguration(in ModuleInitializationParameter initParameter,
+            void RegisterItemResistanceSystemConfiguration(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                            IGameLoopSystemRegistration context,
                                                            EntityRegistry<TItemId> registry)
             {

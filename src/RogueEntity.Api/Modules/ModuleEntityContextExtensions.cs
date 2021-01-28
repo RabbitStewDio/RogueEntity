@@ -6,9 +6,9 @@ namespace RogueEntity.Api.Modules
 {
     public static class ModuleEntityContextExtensions
     {
-        static void EmptyInitializer<TEntityId>(in ModuleInitializationParameter initParameter,
-                                                              IGameLoopSystemRegistration context,
-                                                              EntityRegistry<TEntityId> registry)
+        static void EmptyInitializer<TEntityId>(in ModuleEntityInitializationParameter<TEntityId> initParameter,
+                                                IGameLoopSystemRegistration context,
+                                                EntityRegistry<TEntityId> registry)
             where TEntityId : IEntityKey
         { }
 

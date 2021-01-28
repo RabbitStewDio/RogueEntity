@@ -121,7 +121,7 @@ namespace RogueEntity.Core.Movement.MovementModes
 
         protected abstract TMovementMode GetMovementModeInstance();
 
-        protected void RegisterResistanceSystemLifecycle<TItemId>(in ModuleInitializationParameter initParameter,
+        protected void RegisterResistanceSystemLifecycle<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                                   IGameLoopSystemRegistration context,
                                                                   EntityRegistry<TItemId> registry)
             where TItemId : IEntityKey
@@ -132,7 +132,7 @@ namespace RogueEntity.Core.Movement.MovementModes
             context.AddDisposeStepHandler(system.Stop);
         }
 
-        protected void RegisterResistanceSystemExecution<TItemId>(in ModuleInitializationParameter initParameter,
+        protected void RegisterResistanceSystemExecution<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                                   IGameLoopSystemRegistration context,
                                                                   EntityRegistry<TItemId> registry)
             where TItemId : IEntityKey
@@ -144,7 +144,7 @@ namespace RogueEntity.Core.Movement.MovementModes
             context.AddFixedStepHandlers(system.ProcessSenseProperties);
         }
 
-        protected void RegisterProcessInboundDirectionalitySystem<TItemId>(in ModuleInitializationParameter initParameter,
+        protected void RegisterProcessInboundDirectionalitySystem<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                                            IGameLoopSystemRegistration context,
                                                                            EntityRegistry<TItemId> registry)
             where TItemId : IEntityKey
@@ -163,7 +163,7 @@ namespace RogueEntity.Core.Movement.MovementModes
             }
         }
 
-        protected void RegisterProcessOutboundDirectionalitySystem<TItemId>(in ModuleInitializationParameter initParameter,
+        protected void RegisterProcessOutboundDirectionalitySystem<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                                             IGameLoopSystemRegistration context,
                                                                             EntityRegistry<TItemId> registry)
             where TItemId : IEntityKey
@@ -248,7 +248,7 @@ namespace RogueEntity.Core.Movement.MovementModes
             return reg;
         }
 
-        protected void RegisterEntities<TItemId>(in ModuleInitializationParameter initParameter,
+        protected void RegisterEntities<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                  EntityRegistry<TItemId> registry)
             where TItemId : IEntityKey
         {

@@ -160,7 +160,7 @@ namespace RogueEntity.Core.Utils.DataViews
             
             var data = CreateDataViewInternal(dx, dy);
             
-            ViewCreated?.Invoke(this, new DynamicDataView2DEventArgs<T>(data));
+            ViewCreated?.Invoke(this, new DynamicDataView2DEventArgs<T>(new Position2D(dx, dy), data));
             return data;
         }
 
@@ -203,7 +203,7 @@ namespace RogueEntity.Core.Utils.DataViews
             var dy = DataViewPartitions.TileSplit(y, offsetY, tileSizeY);
             var data = CreateDataViewInternal(dx, dy);
             
-            ViewCreated?.Invoke(this, new DynamicDataView2DEventArgs<T>(data));
+            ViewCreated?.Invoke(this, new DynamicDataView2DEventArgs<T>(new Position2D(dx, dy), data));
 
             raw = data;
             return true;

@@ -1,40 +1,25 @@
+using RogueEntity.Api.Utils;
 using System;
 using System.Collections.Generic;
-using RogueEntity.Api.Utils;
 
 namespace RogueEntity.Core.Utils.DataViews
 {
-    public class DynamicDataView3D<T>: IDynamicDataView3D<T>
+    public class PooledDynamicDataView3D<T>: IDynamicDataView3D<T>
     {
+        readonly IBoundedDataViewPool<T> pool;
+        readonly Dictionary<int, PooledDynamicDataView2D<T>> index;
+
         public event EventHandler<DynamicDataView3DEventArgs<T>> ViewCreated;
         public event EventHandler<DynamicDataView3DEventArgs<T>> ViewExpired;
-        public int OffsetX { get; }
-        public int OffsetY { get; }
-        public int TileSizeX { get; }
-        public int TileSizeY { get; }
-        readonly Dictionary<int, IDynamicDataView2D<T>> index;
+        public int OffsetX => pool.TileConfiguration.OffsetX;
+        public int OffsetY => pool.TileConfiguration.OffsetY;
+        public int TileSizeX => pool.TileConfiguration.TileSizeX;
+        public int TileSizeY => pool.TileConfiguration.TileSizeY;
 
-        public DynamicDataView3D(): this(0, 0, 64, 64)
+        public PooledDynamicDataView3D(IBoundedDataViewPool<T> pool)
         {
-        }
-
-        public DynamicDataView3D(DynamicDataViewConfiguration config): this(config.OffsetX, config.OffsetY, config.TileSizeX, config.TileSizeY)
-        {
-        }
-
-        public DynamicDataView3D(int tileSizeX, int tileSizeY): this(0, 0, tileSizeX, tileSizeY)
-        {
-            
-        }
-        
-        public DynamicDataView3D(int offsetX, int offsetY, int tileSizeX, int tileSizeY)
-        {
-            OffsetX = offsetX;
-            OffsetY = offsetY;
-            TileSizeX = tileSizeX;
-            TileSizeY = tileSizeY;
-            
-            index = new Dictionary<int, IDynamicDataView2D<T>>();
+            this.pool = pool ?? throw new ArgumentNullException(nameof(pool));
+            this.index = new Dictionary<int, PooledDynamicDataView2D<T>>();
         }
 
         public bool RemoveView(int z)
@@ -75,7 +60,7 @@ namespace RogueEntity.Core.Utils.DataViews
                 return false;
             }
 
-            rdata = new DynamicDataView2D<T>(OffsetX, OffsetY, TileSizeX, TileSizeY);
+            rdata = new PooledDynamicDataView2D<T>(pool);
             index[z] = rdata;
             ViewCreated?.Invoke(this, new DynamicDataView3DEventArgs<T>(z, rdata));
             data = rdata;

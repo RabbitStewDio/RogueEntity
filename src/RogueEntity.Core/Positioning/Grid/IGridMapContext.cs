@@ -1,5 +1,6 @@
 ﻿using RogueEntity.Api.Utils;
 using RogueEntity.Core.Positioning.MapLayers;
+using RogueEntity.Core.Utils.DataViews;
 
 namespace RogueEntity.Core.Positioning.Grid
 {
@@ -8,7 +9,7 @@ namespace RogueEntity.Core.Positioning.Grid
     ///   across all maps derived from a given map context.
     /// </summary>
     /// <typeparam name="TItemId"></typeparam>
-    public interface IGridMapContext<TItemId>: IGridMapConfiguration<TItemId>
+    public interface IGridMapContext<TItemId>
     {
         ReadOnlyListWrapper<MapLayer> GridLayers();
         bool TryGetGridDataFor(MapLayer layer, out IGridMapDataContext<TItemId> data);

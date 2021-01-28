@@ -28,9 +28,9 @@ namespace RogueEntity.Core.Sensing.Receptors.InfraVision
             );
         }
 
-        protected override void RegisterCalculateDirectionalSystem<TItemId>(in ModuleInitializationParameter initParameter,
-                                                                                          IGameLoopSystemRegistration context,
-                                                                                          EntityRegistry<TItemId> registry)
+        protected override void RegisterCalculateDirectionalSystem<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
+                                                                            IGameLoopSystemRegistration context,
+                                                                            EntityRegistry<TItemId> registry)
         {
             RegisterCalculateOmniDirectionalSystem(in initParameter, context, registry);
         }

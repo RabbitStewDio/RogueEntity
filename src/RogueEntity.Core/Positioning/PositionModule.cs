@@ -34,20 +34,20 @@ namespace RogueEntity.Core.Positioning
             Name = "RogueEntity Core Module - Positioning";
             Description = "Provides support for positioning items in a grid or continuous coordinate system";
             IsFrameworkModule = true;
-            
+
             RequireRole(ContinuousPositionedRole).WithImpliedRole(PositionedRole).WithDependencyOn(CoreModule.ModuleId);
             RequireRole(GridPositionedRole).WithImpliedRole(PositionedRole).WithDependencyOn(CoreModule.ModuleId);
         }
 
         [EntityRoleInitializer("Role.Core.Position.Positionable")]
-        protected void InitializeCommon< TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter,
-                                                                IModuleInitializer initializer, 
-                                                                EntityRole role)
+        protected void InitializeCommon<TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter,
+                                                  IModuleInitializer initializer,
+                                                  EntityRole role)
             where TActorId : IEntityKey
         {
             var entityContext = initializer.DeclareEntityContext<TActorId>();
             entityContext.Register(RegisterCommonPositions, 0, RegisterCommonEntities);
-            
+
             if (!initParameter.ServiceResolver.TryResolve(out SpatialQueryRegistry r))
             {
                 r = new SpatialQueryRegistry();
@@ -57,16 +57,16 @@ namespace RogueEntity.Core.Positioning
         }
 
         [EntityRoleFinalizerAttribute("Role.Core.Position.Positionable")]
-        protected void FinalizePositionedRole< TActorId>(in ModuleEntityInitializationParameter< TActorId> initParameter,
-                                                                      IModuleInitializer initializer,
-                                                                      EntityRole role)
+        protected void FinalizePositionedRole<TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter,
+                                                        IModuleInitializer initializer,
+                                                        EntityRole role)
             where TActorId : IEntityKey
         {
             var ctx = initializer.DeclareEntityContext<TActorId>();
             ctx.Register(RegisterSpatialQuery, 9_999_999, RegisterSpatialQueryBruteForce);
         }
 
-        void RegisterSpatialQueryBruteForce<TActorId>(in ModuleInitializationParameter initParameter, EntityRegistry<TActorId> registry)
+        void RegisterSpatialQueryBruteForce<TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter, EntityRegistry<TActorId> registry)
             where TActorId : IEntityKey
         {
             if (!initParameter.ServiceResolver.TryResolve(out ISpatialQuery<TActorId> q))
@@ -82,9 +82,9 @@ namespace RogueEntity.Core.Positioning
         }
 
         [EntityRoleInitializer("Role.Core.Position.GridPositioned")]
-        protected void InitializeGridPositioned< TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter,
-                                                                        IModuleInitializer initializer,
-                                                                        EntityRole role)
+        protected void InitializeGridPositioned<TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter,
+                                                          IModuleInitializer initializer,
+                                                          EntityRole role)
             where TActorId : IEntityKey
         {
             var entityContext = initializer.DeclareEntityContext<TActorId>();
@@ -93,9 +93,9 @@ namespace RogueEntity.Core.Positioning
         }
 
         [EntityRoleInitializer("Role.Core.Position.ContinuousPositioned")]
-        protected void InitializeContinuousPositioned< TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter,
-                                                                              IModuleInitializer initializer,
-                                                                              EntityRole role)
+        protected void InitializeContinuousPositioned<TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter,
+                                                                IModuleInitializer initializer,
+                                                                EntityRole role)
             where TActorId : IEntityKey
         {
             var entityContext = initializer.DeclareEntityContext<TActorId>();
@@ -103,14 +103,14 @@ namespace RogueEntity.Core.Positioning
             entityContext.Register(RegisterClearContinuousPositionChangeTracker, 10, RegisterClearContinuousPositionChangeTrackers);
         }
 
-        void RegisterCommonEntities<TActorId>(in ModuleInitializationParameter initParameter,
+        void RegisterCommonEntities<TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter,
                                               EntityRegistry<TActorId> registry)
             where TActorId : IEntityKey
         {
             registry.RegisterNonConstructable<ImmobilityMarker>();
         }
 
-        void RegisterGridEntities<TActorId>(in ModuleInitializationParameter initParameter,
+        void RegisterGridEntities<TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter,
                                             EntityRegistry<TActorId> registry)
             where TActorId : IEntityKey
         {
@@ -118,7 +118,7 @@ namespace RogueEntity.Core.Positioning
             registry.RegisterNonConstructable<EntityGridPositionChangedMarker>();
         }
 
-        void RegisterContinuousEntities<TActorId>(in ModuleInitializationParameter initParameter,
+        void RegisterContinuousEntities<TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter,
                                                   EntityRegistry<TActorId> registry)
             where TActorId : IEntityKey
         {
@@ -126,9 +126,9 @@ namespace RogueEntity.Core.Positioning
             registry.RegisterNonConstructable<ContinuousMapPositionChangedMarker>();
         }
 
-        void RegisterClearGridPositionChangeTrackers< TActorId>(in ModuleInitializationParameter initParameter,
-                                                                             IGameLoopSystemRegistration context,
-                                                                             EntityRegistry<TActorId> registry)
+        void RegisterClearGridPositionChangeTrackers<TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter,
+                                                               IGameLoopSystemRegistration context,
+                                                               EntityRegistry<TActorId> registry)
             where TActorId : IEntityKey
         {
             void ClearGridPositionAction()
@@ -140,9 +140,9 @@ namespace RogueEntity.Core.Positioning
             EntityGridPositionChangedMarker.InstallChangeHandler(registry);
         }
 
-        void RegisterClearContinuousPositionChangeTrackers< TActorId>(in ModuleInitializationParameter initParameter,
-                                                                                   IGameLoopSystemRegistration context,
-                                                                                   EntityRegistry<TActorId> registry)
+        void RegisterClearContinuousPositionChangeTrackers<TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter,
+                                                                     IGameLoopSystemRegistration context,
+                                                                     EntityRegistry<TActorId> registry)
             where TActorId : IEntityKey
         {
             void ClearContinuousPositionAction()
@@ -153,6 +153,5 @@ namespace RogueEntity.Core.Positioning
             context.AddFixedStepHandlers(ClearContinuousPositionAction);
             ContinuousMapPositionChangedMarker.InstallChangeHandler(registry);
         }
-
     }
 }

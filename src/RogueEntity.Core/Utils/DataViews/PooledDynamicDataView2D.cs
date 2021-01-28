@@ -9,7 +9,7 @@ namespace RogueEntity.Core.Utils.DataViews
 {
     [DataContract]
     [MessagePackObject]
-    public class PooledDynamicDataView2D<T> : IDynamicDataView2D<T>
+    public class PooledDynamicDataView2D<T> : IDynamicDataView2D<T>, IPooledDataViewControl
     {
         public event EventHandler<DynamicDataView2DEventArgs<T>> ViewCreated;
         public event EventHandler<DynamicDataView2DEventArgs<T>> ViewExpired;
@@ -74,6 +74,21 @@ namespace RogueEntity.Core.Utils.DataViews
             return data;
         }
 
+        public BufferList<Rectangle> GetDirtyTiles(BufferList<Rectangle> data = null)
+        {
+            data = BufferList.PrepareBuffer(data);
+
+            foreach (var k in index.Values)
+            {
+                if (k.IsUsedForWriting)
+                {
+                    data.Add(k.Bounds);
+                }
+            }
+
+            return data;
+        }
+
         public void PrepareFrame(long time)
         {
             currentTime = time;
@@ -101,6 +116,18 @@ namespace RogueEntity.Core.Utils.DataViews
             }
         }
 
+        public void UnloadFrame(int x, int y)
+        {
+            var idx = tileConfiguration.TileIndex(x, y);
+            if (!index.TryGetValue(idx, out var data))
+            {
+                return;
+            }
+
+            ViewExpired?.Invoke(this, new DynamicDataView2DEventArgs<T>(idx, data));
+            index.Remove(idx);
+        }
+        
         public void ExpireFrames(long age)
         {
             expired.Clear();
@@ -111,7 +138,7 @@ namespace RogueEntity.Core.Utils.DataViews
                 e.CommitUseTimePeriod();
                 if ((currentTime - e.LastUsed) > age)
                 {
-                    ViewExpired?.Invoke(this, new DynamicDataView2DEventArgs<T>(e));
+                    ViewExpired?.Invoke(this, new DynamicDataView2DEventArgs<T>(entry.Key, e));
                     expired.Add(entry.Key);
                 }
             }
@@ -140,7 +167,7 @@ namespace RogueEntity.Core.Utils.DataViews
             data.MarkUsedForWriting();
 
             index[idx] = data;
-            ViewCreated?.Invoke(this, new DynamicDataView2DEventArgs<T>(data));
+            ViewCreated?.Invoke(this, new DynamicDataView2DEventArgs<T>(idx, data));
             activeBounds = default;
             return data;
         }
@@ -179,7 +206,7 @@ namespace RogueEntity.Core.Utils.DataViews
             data.MarkUsedForWriting();
 
             index[idx] = data;
-            ViewCreated?.Invoke(this, new DynamicDataView2DEventArgs<T>(data));
+            ViewCreated?.Invoke(this, new DynamicDataView2DEventArgs<T>(idx, data));
             activeBounds = default;
             raw = data;
             return true;

@@ -25,9 +25,9 @@ namespace RogueEntity.Core.Sensing.Receptors.Heat
             DeclareDependencies(ModuleDependency.Of(HeatSourceModule.ModuleId));
         }
 
-        protected override void RegisterCalculateDirectionalSystem<TItemId>(in ModuleInitializationParameter initParameter,
-                                                                                          IGameLoopSystemRegistration context,
-                                                                                          EntityRegistry<TItemId> registry)
+        protected override void RegisterCalculateDirectionalSystem<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
+                                                                            IGameLoopSystemRegistration context,
+                                                                            EntityRegistry<TItemId> registry)
         {
             RegisterCalculateUniDirectionalSystem(in initParameter, context, registry);
         }

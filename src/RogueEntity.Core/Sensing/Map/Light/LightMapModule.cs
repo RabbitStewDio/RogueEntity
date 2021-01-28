@@ -57,9 +57,9 @@ namespace RogueEntity.Core.Sensing.Map.Light
         }
 
         [EntityRoleInitializer("Role.Core.Senses.Source.Light")]
-        protected void InitializeSenseCollection< TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
-                                                                        IModuleInitializer initializer,
-                                                                        EntityRole role)
+        protected void InitializeSenseCollection<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
+                                                          IModuleInitializer initializer,
+                                                          EntityRole role)
             where TItemId : IEntityKey
         {
             if (!IsServiceEnabled(initParameter.ServiceResolver))
@@ -78,9 +78,9 @@ namespace RogueEntity.Core.Sensing.Map.Light
             return serviceResolver.TryResolve(out IConfiguration config) && config.GetValue("RogueEntity:Core:Sensing:Map:InfraVision:Enabled", false);
         }
 
-        void RegisterCollectSenseSourcesSystem< TItemId>(in ModuleInitializationParameter initParameter,
-                                                                      IGameLoopSystemRegistration context,
-                                                                      EntityRegistry<TItemId> registry)
+        void RegisterCollectSenseSourcesSystem<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
+                                                        IGameLoopSystemRegistration context,
+                                                        EntityRegistry<TItemId> registry)
             where TItemId : IEntityKey
         {
             var resolver = initParameter.ServiceResolver;
@@ -96,9 +96,9 @@ namespace RogueEntity.Core.Sensing.Map.Light
             context.AddFixedStepHandlers(system);
         }
 
-        void RegisterComputeSenseMapSystem< TItemId>(in ModuleInitializationParameter initParameter,
-                                                                  IGameLoopSystemRegistration context,
-                                                                  EntityRegistry<TItemId> registry)
+        void RegisterComputeSenseMapSystem<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
+                                                    IGameLoopSystemRegistration context,
+                                                    EntityRegistry<TItemId> registry)
             where TItemId : IEntityKey
         {
             var resolver = initParameter.ServiceResolver;
@@ -108,9 +108,9 @@ namespace RogueEntity.Core.Sensing.Map.Light
             context.AddFixedStepHandlers(() => hs.ProcessSenseMap(registry));
         }
 
-        void RegisterFinalizeSenseMapSystem< TItemId>(in ModuleInitializationParameter initParameter,
-                                                                  IGameLoopSystemRegistration context,
-                                                                  EntityRegistry<TItemId> registry)
+        void RegisterFinalizeSenseMapSystem<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
+                                                     IGameLoopSystemRegistration context,
+                                                     EntityRegistry<TItemId> registry)
             where TItemId : IEntityKey
         {
             var resolver = initParameter.ServiceResolver;

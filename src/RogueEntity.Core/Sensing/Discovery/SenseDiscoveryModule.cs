@@ -43,9 +43,9 @@ namespace RogueEntity.Core.Sensing.Discovery
         }
 
         [EntityRoleInitializer("Role.Core.Senses.DiscoveredArea")]
-        protected void Initialize< TActorId>(in ModuleEntityInitializationParameter< TActorId> initParameter,
-                                                          IModuleInitializer initializer,
-                                                          EntityRole role)
+        protected void Initialize<TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter,
+                                            IModuleInitializer initializer,
+                                            EntityRole role)
             where TActorId : IEntityKey
         {
             var ctx = initializer.DeclareEntityContext<TActorId>();
@@ -54,9 +54,9 @@ namespace RogueEntity.Core.Sensing.Discovery
 
         [EntityRoleInitializer("Role.Core.Senses.DiscoveredArea",
                                ConditionalRoles = new[] {"Role.Core.Senses.Receptor.Vision.ActorRole"})]
-        protected void InitializeVision< TActorId>(in ModuleEntityInitializationParameter< TActorId> initParameter,
-                                                                IModuleInitializer initializer,
-                                                                EntityRole role)
+        protected void InitializeVision<TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter,
+                                                  IModuleInitializer initializer,
+                                                  EntityRole role)
             where TActorId : IEntityKey
         {
             var ctx = initializer.DeclareEntityContext<TActorId>();
@@ -65,9 +65,9 @@ namespace RogueEntity.Core.Sensing.Discovery
 
         [EntityRoleInitializer("Role.Core.Senses.DiscoveredArea",
                                ConditionalRoles = new[] {"Role.Core.Senses.Receptor.InfraVision.ActorRole"})]
-        protected void InitializeInfraVision< TActorId>(in ModuleEntityInitializationParameter< TActorId> initParameter,
-                                                                     IModuleInitializer initializer,
-                                                                     EntityRole role)
+        protected void InitializeInfraVision<TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter,
+                                                       IModuleInitializer initializer,
+                                                       EntityRole role)
             where TActorId : IEntityKey
         {
             var ctx = initializer.DeclareEntityContext<TActorId>();
@@ -76,18 +76,18 @@ namespace RogueEntity.Core.Sensing.Discovery
 
         [EntityRoleInitializer("Role.Core.Senses.DiscoveredArea",
                                ConditionalRoles = new[] {"Role.Core.Senses.Receptor.Touch.ActorRole"})]
-        protected void InitializeTouch< TActorId>(in ModuleEntityInitializationParameter< TActorId> initParameter,
-                                                               IModuleInitializer initializer,
-                                                               EntityRole role)
+        protected void InitializeTouch<TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter,
+                                                 IModuleInitializer initializer,
+                                                 EntityRole role)
             where TActorId : IEntityKey
         {
             var ctx = initializer.DeclareEntityContext<TActorId>();
             ctx.Register(RegisterTouchSystem, 60_200, RegisterDiscoveryActionsTouch);
         }
 
-        void RegisterDiscoveryActionsVision< TActorId>(in ModuleInitializationParameter initParameter,
-                                                                    IGameLoopSystemRegistration context,
-                                                                    EntityRegistry<TActorId> registry)
+        void RegisterDiscoveryActionsVision<TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter,
+                                                      IGameLoopSystemRegistration context,
+                                                      EntityRegistry<TActorId> registry)
             where TActorId : IEntityKey
         {
             var serviceResolver = initParameter.ServiceResolver;
@@ -105,9 +105,9 @@ namespace RogueEntity.Core.Sensing.Discovery
             context.AddInitializationStepHandler(entitySystem);
         }
 
-        void RegisterDiscoveryActionsInfraVision< TActorId>(in ModuleInitializationParameter initParameter,
-                                                                         IGameLoopSystemRegistration context,
-                                                                         EntityRegistry<TActorId> registry)
+        void RegisterDiscoveryActionsInfraVision<TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter,
+                                                           IGameLoopSystemRegistration context,
+                                                           EntityRegistry<TActorId> registry)
             where TActorId : IEntityKey
         {
             var serviceResolver = initParameter.ServiceResolver;
@@ -125,9 +125,9 @@ namespace RogueEntity.Core.Sensing.Discovery
             context.AddInitializationStepHandler(entitySystem);
         }
 
-        void RegisterDiscoveryActionsTouch< TActorId>(in ModuleInitializationParameter initParameter,
-                                                                   IGameLoopSystemRegistration context,
-                                                                   EntityRegistry<TActorId> registry)
+        void RegisterDiscoveryActionsTouch<TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter,
+                                                     IGameLoopSystemRegistration context,
+                                                     EntityRegistry<TActorId> registry)
             where TActorId : IEntityKey
         {
             var serviceResolver = initParameter.ServiceResolver;
@@ -157,7 +157,7 @@ namespace RogueEntity.Core.Sensing.Discovery
             return s;
         }
 
-        void RegisterDiscoveryEntities<TActorId>(in ModuleInitializationParameter initParameter,
+        void RegisterDiscoveryEntities<TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter,
                                                  EntityRegistry<TActorId> registry)
             where TActorId : IEntityKey
         {

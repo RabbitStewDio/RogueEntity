@@ -179,7 +179,7 @@ namespace RogueEntity.Core.Utils.DataViews
                 e.MarkUsedAge();
                 if ((currentTime - e.LastUsed) > age)
                 {
-                    ViewExpired?.Invoke(this, new DynamicDataView2DEventArgs<bool>(e));
+                    ViewExpired?.Invoke(this, new DynamicDataView2DEventArgs<bool>(entry.Key, e));
                     expired.Add(entry.Key);
                 }
             }
@@ -208,15 +208,16 @@ namespace RogueEntity.Core.Utils.DataViews
         {
             var dx = DataViewPartitions.TileSplit(x, offsetX, tileSizeX);
             var dy = DataViewPartitions.TileSplit(y, offsetY, tileSizeY);
-            if (index.TryGetValue(new Position2D(dx, dy), out var data))
+            var key = new Position2D(dx, dy);
+            if (index.TryGetValue(key, out var data))
             {
                 data.MarkUsedForWriting();
                 return data;
             }
 
             data = new TrackedDataView(new Rectangle(dx * tileSizeX + offsetX, dy * tileSizeY + offsetY, tileSizeX, tileSizeY), currentTime);
-            index[new Position2D(dx, dy)] = data;
-            ViewCreated?.Invoke(this, new DynamicDataView2DEventArgs<bool>(data));
+            index[key] = data;
+            ViewCreated?.Invoke(this, new DynamicDataView2DEventArgs<bool>(key, data));
             activeBounds = default;
             return data;
 
@@ -269,8 +270,9 @@ namespace RogueEntity.Core.Utils.DataViews
             var dx = DataViewPartitions.TileSplit(x, offsetX, tileSizeX);
             var dy = DataViewPartitions.TileSplit(y, offsetY, tileSizeY);
             var dataRaw = new TrackedDataView(new Rectangle(dx * tileSizeX + offsetX, dy * tileSizeY + offsetY, tileSizeX, tileSizeY), currentTime);
-            index[new Position2D(dx, dy)] = dataRaw;
-            ViewCreated?.Invoke(this, new DynamicDataView2DEventArgs<bool>(dataRaw));
+            var key = new Position2D(dx, dy);
+            index[key] = dataRaw;
+            ViewCreated?.Invoke(this, new DynamicDataView2DEventArgs<bool>(key, dataRaw));
             activeBounds = default;
             
             data = dataRaw;

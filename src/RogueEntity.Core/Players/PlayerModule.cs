@@ -16,6 +16,8 @@ namespace RogueEntity.Core.Players
 {
     public class PlayerModule : ModuleBase
     {
+        public static readonly string ModuleId = "Core.Player";
+        
         public static readonly EntityRole PlayerRole = new EntityRole("Role.Core.Player");
         public static readonly EntityRole PlayerObserverRole = new EntityRole("Role.Core.PlayerObserver");
         public static readonly EntitySystemId PlayerComponentsId = "Entities.Core.Player";
@@ -24,10 +26,10 @@ namespace RogueEntity.Core.Players
 
         public PlayerModule()
         {
-            Id = "Core.Player";
+            Id = ModuleId;
             Author = "RogueEntity.Core";
-            Name = "RogueEntity Core Module - Equipment";
-            Description = "Provides base classes and behaviours for equipping items";
+            Name = "RogueEntity Core Module - Players and Observers";
+            Description = "Provides base classes and behaviours for declaring player and observer entities ";
             IsFrameworkModule = true;
             
             DeclareDependency(ModuleDependency.Of(CoreModule.ModuleId));
@@ -67,7 +69,7 @@ namespace RogueEntity.Core.Players
             entityContext.Register(RegisterPlayerObserverRefresh, 80_000, RegisterRefreshObservers<TItemId, EntityGridPosition>);
         }
 
-        void RegisterRefreshObservers<TItemId, TPosition>(in ModuleInitializationParameter initParameter,
+        void RegisterRefreshObservers<TItemId, TPosition>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                           IGameLoopSystemRegistration context,
                                                           EntityRegistry<TItemId> registry)
             where TItemId : IEntityKey
@@ -90,7 +92,7 @@ namespace RogueEntity.Core.Players
             context.AddLateFixedStepHandlers(action, nameof(playerService.RefreshObservers));
         }
 
-        void RegisterPlayerComponents<TItemId>(in ModuleInitializationParameter initParameter,
+        void RegisterPlayerComponents<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                EntityRegistry<TItemId> registry)
             where TItemId : IEntityKey
         {

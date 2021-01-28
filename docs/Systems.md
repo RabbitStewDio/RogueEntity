@@ -1,17 +1,24 @@
 Module Initialization phases:
 
-            < 10_000 : Entity Registrations
-    -10_000 -      0 : One Time Initialization
-          0 - 10_000 : Preparation Events
-     10_000 - 19_999 : Player/Creature action planing
-     20_000 - 29_999 : Player/Creature action execution
-     30_000 - 39_999 : Reserved as extension point.
-     40_000 - 49_999 : Apply Status Updates
-     50_000 - 59_999 : Sense Map and Light calculations
-     60_000 - 99_999 : Reserved as extension point.
-           > 100_000 : System Cleanup Events
+     before    -10_000 : Entity Registrations
+    -10_000 to       0 : One Time Initialization
+          0 to  10_000 : Preparation Events
+     10_000 to  19_999 : Player/Creature action planing
+     20_000 to  29_999 : Player/Creature action execution
+     30_000 to  34_999 : Reserved as extension point.
+     35_000 to  39_999 : Apply Status Updates
+     40_000 to  44_999 : Reserved as extension point.
+     45_000 to  49_999 : Content/Map Processing (Chunk loading etc.)
+     50_000 to  59_999 : Sense Map and Light calculations
+     60_000 to  99_999 : Reserved as extension point.
+    100_000 and beyond : System Cleanup Events
 
 
+Chunks:
+
+     47_000  - Mark observed map chunks as used.
+     48_000  - Unload chunks.
+     48_500  - Load chunks.
 
 Senses:
 
