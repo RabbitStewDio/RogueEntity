@@ -11,6 +11,9 @@
     <ProjectReference Include="..\..\..\EnTTSharp\src\EnTTSharp.Serialization.Binary\EnTTSharp.Serialization.Binary.csproj" />
     <ProjectReference Include="..\..\..\EnTTSharp\src\EnTTSharp.Serialization.Xml\EnTTSharp.Serialization.Xml.csproj" />
     <ProjectReference Include="..\RogueEntity.Api\RogueEntity.Api.csproj" />
+
+    <DotNetCliToolReference Include="dotnet-t4-project-tool" Version="2.0.5" />
+
   </ItemGroup>
 
   <ItemGroup>

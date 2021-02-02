@@ -21,10 +21,6 @@ using RogueEntity.Api.ItemTraits;
 
 
 
-
-
-
-
 namespace RogueEntity.EntityKeyGenerator.Sample
 {
     [EntityKey]
