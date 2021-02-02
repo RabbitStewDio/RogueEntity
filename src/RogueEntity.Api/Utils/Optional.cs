@@ -67,6 +67,9 @@ namespace RogueEntity.Api.Utils
         [DataMember(Order = 0)]
         public bool HasValue { get; }
 
+        [IgnoreDataMember]
+        public T Value => HasValue ? value : throw new InvalidOperationException(); 
+        
         IEnumerator IEnumerable.GetEnumerator()
         {
             return GetEnumerator();

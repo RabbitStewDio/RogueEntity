@@ -57,5 +57,7 @@ namespace RogueEntity.Api.ItemTraits
         /// <param name="item"></param>
         /// <returns></returns>
         bool IsDestroyed(in TItemId item);
+        
+        IReferenceEntityQueryProvider<TItemId> QueryProvider { get; }
     }
 }

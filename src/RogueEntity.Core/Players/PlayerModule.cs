@@ -18,11 +18,17 @@ namespace RogueEntity.Core.Players
     {
         public static readonly string ModuleId = "Core.Player";
         
+        public static readonly EntityRole PlayerSpawnPointRole = new EntityRole("Role.Core.Player.PlayerSpawnPoint");
         public static readonly EntityRole PlayerRole = new EntityRole("Role.Core.Player");
-        public static readonly EntityRole PlayerObserverRole = new EntityRole("Role.Core.PlayerObserver");
-        public static readonly EntitySystemId PlayerComponentsId = "Entities.Core.Player";
+        public static readonly EntityRole PlayerObserverRole = new EntityRole("Role.Core.Player.PlayerObserver");
 
-        public static readonly EntitySystemId RegisterPlayerObserverRefresh = "Systems.Core.Player.RefreshObservers";
+        public static readonly EntityRelation PlayerToSpawnPointRelation = new EntityRelation("Relation.Core.Player.PlayerToSpawnPoint", PlayerRole, PlayerSpawnPointRole, true);
+        
+        public static readonly EntitySystemId PlayerComponentsId = "Entities.Core.Player";
+        public static readonly EntitySystemId PlayerObserverComponentsId = "Entities.Core.PlayerObserver";
+        public static readonly EntitySystemId PlayerSpawnPointComponentsId = "Entities.Core.PlayerSpawnPoint";
+        public static readonly EntitySystemId RegisterPlayerObserverRefreshGridId = "Systems.Core.Player.RefreshObservers.Grid";
+        public static readonly EntitySystemId RegisterPlayerObserverRefreshContinuousId = "Systems.Core.Player.RefreshObservers.Continuous";
 
         public PlayerModule()
         {
@@ -34,7 +40,31 @@ namespace RogueEntity.Core.Players
             
             DeclareDependency(ModuleDependency.Of(CoreModule.ModuleId));
 
+            RequireRole(PlayerSpawnPointRole);
+            RequireRole(PlayerObserverRole);
             RequireRole(PlayerRole).WithImpliedRole(CoreModule.EntityRole);
+
+            RequireRelation(PlayerToSpawnPointRelation);
+        }
+
+        [EntityRoleInitializer("Role.Core.Player.PlayerSpawnPoint")]
+        protected void InitializePlayerSpawnPointRole<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
+                                                     IModuleInitializer initializer,
+                                                     EntityRole r)
+            where TItemId : IEntityKey
+        {
+            var entityContext = initializer.DeclareEntityContext<TItemId>();
+            entityContext.Register(PlayerSpawnPointComponentsId, -20_000, RegisterPlayerSpawnPointComponents);
+        }
+
+        [EntityRoleInitializer("Role.Core.Player.PlayerObserver")]
+        protected void InitializePlayerObserverRole<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
+                                                     IModuleInitializer initializer,
+                                                     EntityRole r)
+            where TItemId : IEntityKey
+        {
+            var entityContext = initializer.DeclareEntityContext<TItemId>();
+            entityContext.Register(PlayerObserverComponentsId, -20_000, RegisterPlayerObserverComponents);
         }
 
         [EntityRoleInitializer("Role.Core.Player")]
@@ -55,7 +85,7 @@ namespace RogueEntity.Core.Players
             where TItemId : IEntityKey
         {
             var entityContext = initializer.DeclareEntityContext<TItemId>();
-            entityContext.Register(RegisterPlayerObserverRefresh, 80_000, RegisterRefreshObservers<TItemId, ContinuousMapPosition>);
+            entityContext.Register(RegisterPlayerObserverRefreshContinuousId, 80_000, RegisterRefreshObservers<TItemId, ContinuousMapPosition>);
         }
 
         [EntityRoleInitializer("Role.Core.Player",
@@ -66,7 +96,7 @@ namespace RogueEntity.Core.Players
             where TItemId : IEntityKey
         {
             var entityContext = initializer.DeclareEntityContext<TItemId>();
-            entityContext.Register(RegisterPlayerObserverRefresh, 80_000, RegisterRefreshObservers<TItemId, EntityGridPosition>);
+            entityContext.Register(RegisterPlayerObserverRefreshGridId, 80_000, RegisterRefreshObservers<TItemId, EntityGridPosition>);
         }
 
         void RegisterRefreshObservers<TItemId, TPosition>(in ModuleEntityInitializationParameter<TItemId> initParameter,
@@ -97,7 +127,20 @@ namespace RogueEntity.Core.Players
             where TItemId : IEntityKey
         {
             registry.RegisterNonConstructable<PlayerTag>();
+        }
+
+        void RegisterPlayerObserverComponents<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
+                                               EntityRegistry<TItemId> registry)
+            where TItemId : IEntityKey
+        {
             registry.RegisterNonConstructable<PlayerObserver>();
+        }
+
+        void RegisterPlayerSpawnPointComponents<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
+                                               EntityRegistry<TItemId> registry)
+            where TItemId : IEntityKey
+        {
+            registry.RegisterNonConstructable<PlayerSpawnLocation>();
         }
 
         bool TryGetOrCreatePlayerService<TItemId>(IServiceResolver r,
@@ -125,10 +168,7 @@ namespace RogueEntity.Core.Players
                 throw new InvalidOperationException($"Player entity {conf.PlayerId} does not declare a PlayerTag trait");
             }
 
-            ps = new PlayerService<TItemId>(ir,
-                                            registry.PersistentView<PlayerTag>(),
-                                            registry.PersistentView<PlayerObserver>(),
-                                            conf.PlayerId);
+            ps = new PlayerService<TItemId>(registry.PersistentView<PlayerTag>());
             r.Store(ps);
             r.Store<IPlayerService<TItemId>>(ps);
             return true;

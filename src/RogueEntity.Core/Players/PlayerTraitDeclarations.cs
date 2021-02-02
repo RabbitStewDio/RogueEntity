@@ -8,16 +8,16 @@ namespace RogueEntity.Core.Players
         public static ReferenceItemDeclarationBuilder<TItemId> AsPlayer<TItemId>(this ReferenceItemDeclarationBuilder<TItemId> builder)
             where TItemId : IEntityKey
         {
-            var trait = new PlayerTrait<TItemId>();
-            builder.Declaration.WithTrait(trait);
+            builder.Declaration
+                   .WithTrait(new PlayerTrait<TItemId>())
+                   .WithTrait(new PlayerObserverTrait<TItemId>());
             return builder;
         }
 
         public static ReferenceItemDeclarationBuilder<TItemId> AsSpawnLocation<TItemId>(this ReferenceItemDeclarationBuilder<TItemId> builder)
             where TItemId : IEntityKey
         {
-            var trait = new PlayerSpawnLocationTrait<TItemId>();
-            builder.Declaration.WithTrait(trait);
+            builder.Declaration.WithTrait(new PlayerSpawnLocationTrait<TItemId>());
             return builder;
         }
 

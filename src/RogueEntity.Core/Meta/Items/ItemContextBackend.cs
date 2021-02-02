@@ -6,7 +6,7 @@ using RogueEntity.Api.ItemTraits;
 namespace RogueEntity.Core.Meta.Items
 {
     public class ItemContextBackend<TItemId>: IItemContextBackend<TItemId>
-        where TItemId : IBulkDataStorageKey<TItemId>
+        where TItemId : IEntityKey
     {
         public ItemContextBackend([NotNull] IBulkDataStorageMetaData<TItemId> meta)
         {

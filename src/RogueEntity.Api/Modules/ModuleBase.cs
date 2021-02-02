@@ -88,7 +88,6 @@ namespace RogueEntity.Api.Modules
             return new DeclareDependencyBuilder(this, r);
         }
 
-        [Obsolete]
         protected DeclareDependencyBuilder DeclareRelation<TSubject, TObject>(EntityRelation r)
         {
             if (!declaredRelations.TryGetValue(typeof(TSubject), out var record))

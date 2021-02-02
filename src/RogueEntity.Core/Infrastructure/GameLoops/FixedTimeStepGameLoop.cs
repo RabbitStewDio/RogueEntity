@@ -20,7 +20,6 @@ namespace RogueEntity.Core.Infrastructure.GameLoops
         readonly ILogger logger = SLog.ForContext<FixedTimeStepGameLoop>();
 
         readonly int maxFixStepsPerUpdate;
-        readonly Queue<Action> commands;
         readonly GameTimeProcessor timeProcessor;
 
         public FixedTimeStepGameLoop(int maxFixStepsPerUpdate, TimeSpan fixedDeltaTime)
@@ -28,7 +27,6 @@ namespace RogueEntity.Core.Infrastructure.GameLoops
             this.maxFixStepsPerUpdate = maxFixStepsPerUpdate;
             timeProcessor = new GameTimeProcessor(fixedDeltaTime);
 
-            commands = new Queue<Action>();
             PreFixedStepHandlers = new List<ActionSystemEntry>();
             FixedStepHandlers = new List<ActionSystemEntry>();
             LateFixedStepHandlers = new List<ActionSystemEntry>();
@@ -192,10 +190,5 @@ namespace RogueEntity.Core.Infrastructure.GameLoops
         }
 
         public GameTimeState TimeState { get; private set; }
-
-        public void Enqueue(Action command)
-        {
-            commands.Enqueue(command);
-        }
     }
 }

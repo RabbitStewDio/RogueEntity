@@ -1,27 +1,23 @@
 using EnTTSharp.Entities;
-using EnTTSharp.Entities.Attributes;
-using MessagePack;
+using EnTTSharp.Entities.Systems;
+using RogueEntity.Api.GameLoops;
+using RogueEntity.Api.ItemTraits;
 using RogueEntity.Api.Modules;
 using RogueEntity.Api.Modules.Attributes;
-using RogueEntity.Api.Services;
+using RogueEntity.Core;
+using RogueEntity.Core.Chunks;
+using RogueEntity.Core.Infrastructure.Randomness;
 using RogueEntity.Core.Meta.EntityKeys;
 using RogueEntity.Core.Meta.ItemBuilder;
-using RogueEntity.Core.Meta.Items;
-using RogueEntity.Core.Movement.Cost;
 using RogueEntity.Core.Movement.CostModifier;
 using RogueEntity.Core.Movement.MovementModes.Walking;
 using RogueEntity.Core.Players;
 using RogueEntity.Core.Positioning;
-using RogueEntity.Core.Positioning.Algorithms;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Sensing.Sources.Light;
-using RogueEntity.Core.Utils;
-using RogueEntity.Core.Utils.DataViews;
 using RogueEntity.Generator;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.Serialization;
+using RogueEntity.Generator.MapFragments;
+using RogueEntity.Simple.BoxPusher.ItemTraits;
 using static RogueEntity.Core.Movement.CostModifier.MovementCostModifiers;
 
 namespace RogueEntity.Simple.BoxPusher
@@ -29,40 +25,53 @@ namespace RogueEntity.Simple.BoxPusher
     [Module("BoxPusher")]
     public class BoxPusherModule : ModuleBase
     {
+        static readonly EntityRole BoxRole = new EntityRole("Role.BoxPusher.Box");
+        static readonly EntityRole TargetSpotRole = new EntityRole("Role.BoxPusher.TargetSpot");
+
+        static readonly EntityRelation BoxOccupiesTargetRelation = new EntityRelation("Relation.BoxPusher.BoxOccupiesTargetSpot", BoxRole, TargetSpotRole);
+        static readonly EntityRelation PlayerToBoxRelation = new EntityRelation("Relation.BoxPusher.PlayerCountingBoxes", PlayerModule.PlayerRole, BoxRole);
+
+        static readonly EntitySystemId BoxPusherBoxEntities = new EntitySystemId("Entities.BoxPusher.Box");
+        static readonly EntitySystemId BoxPusherTargetSpotEntities = new EntitySystemId("Entities.BoxPusher.TargetSpot");
+
+        static readonly EntitySystemId BoxPusherPlayerEntities = new EntitySystemId("Entities.BoxPusher.Player");
+        static readonly EntitySystemId BoxPusherInitializeWinSystem = new EntitySystemId("System.BoxPusher.WinSystem.Initialize");
+        static readonly EntitySystemId BoxPusherCollectTargetSpotsSystem = new EntitySystemId("System.BoxPusher.WinSystem.CollectTargetSpots");
+        static readonly EntitySystemId BoxPusherCollectBoxesSystem = new EntitySystemId("System.BoxPusher.WinSystem.CollectBoxes");
+        static readonly EntitySystemId BoxPusherFinalizeWinSystem = new EntitySystemId("System.BoxPusher.WinSystem.Finalize");
+
         public BoxPusherModule()
         {
             Id = "Game.BoxPusher";
+
+            DeclareDependencies(ModuleDependency.Of(PositionModule.ModuleId),
+                                ModuleDependency.Of(PlayerModule.ModuleId),
+                                ModuleDependency.Of(ChunkManagerModule.ModuleId));
+
+            DeclareRelation<ActorReference, ItemReference>(PlayerToBoxRelation);
+            DeclareRelation<ItemReference, ItemReference>(BoxOccupiesTargetRelation);
         }
 
         [ModuleInitializer]
         void InitializeModule(in ModuleInitializationParameter mip, IModuleInitializer initializer)
         {
             mip.ServiceResolver.ConfigureLightPhysics();
+            mip.ServiceResolver.ConfigureEntity(ItemReferenceMetaData.Instance, BoxPusherMapLayers.Floor, BoxPusherMapLayers.Items);
+            mip.ServiceResolver.ConfigureEntity(ActorReferenceMetaData.Instance, BoxPusherMapLayers.Actors);
 
-            mip.ServiceResolver.ConfigureEntityType(ItemReferenceMetaData.Instance);
-            mip.ServiceResolver.GetOrCreateDefaultGridMapContext<ItemReference>()
-               .WithDefaultMapLayer(BoxPusherMapLayers.Floor)
-               .WithDefaultMapLayer(BoxPusherMapLayers.Items);
+            var mapBuilder = new MapBuilder().WithLayer<ItemReference>(BoxPusherMapLayers.Floor, mip.ServiceResolver)
+                                             .WithLayer<ItemReference>(BoxPusherMapLayers.Items, mip.ServiceResolver)
+                                             .WithLayer<ActorReference>(BoxPusherMapLayers.Actors, mip.ServiceResolver);
+            var fragmentParser = new MapFragmentParser();
+            var mapLoader = new BoxPusherMapLevelDataSource(mapBuilder, fragmentParser, mip.ServiceResolver.Resolve<IEntityRandomGeneratorSource>());
+            mip.ServiceResolver.Store<IMapLevelDataSource<int>>(mapLoader);
+            mip.ServiceResolver.Store<IMapLevelDataSourceSystem>(mapLoader);
 
-            var itemPlacementContext = new ItemPlacementServiceContext<ItemReference>()
-                                       .WithLayer(BoxPusherMapLayers.Floor,
-                                                  mip.ServiceResolver.GetOrCreateGridItemPlacementService<ItemReference>(),
-                                                  mip.ServiceResolver.GetOrCreateGridItemPlacementLocationService<ItemReference>())
-                                       .WithLayer(BoxPusherMapLayers.Items, 
-                                                  mip.ServiceResolver.GetOrCreateGridItemPlacementService<ItemReference>(),
-                                                  mip.ServiceResolver.GetOrCreateGridItemPlacementLocationService<ItemReference>());
-            mip.ServiceResolver.Store<IItemPlacementServiceContext<ItemReference>>(itemPlacementContext);
-
-
-            mip.ServiceResolver.ConfigureEntityType(ActorReferenceMetaData.Instance);
-            mip.ServiceResolver.GetOrCreateDefaultGridMapContext<ActorReference>()
-               .WithDefaultMapLayer(BoxPusherMapLayers.Actors);
-
-            var actorPlacementContext = new ItemPlacementServiceContext<ActorReference>()
-                .WithLayer(BoxPusherMapLayers.Actors, 
-                           mip.ServiceResolver.GetOrCreateGridItemPlacementService<ActorReference>(),
-                           mip.ServiceResolver.GetOrCreateGridItemPlacementLocationService<ActorReference>());
-            mip.ServiceResolver.Store<IItemPlacementServiceContext<ActorReference>>(actorPlacementContext);
+            mip.ServiceResolver.Store(new BoxPusherWinConditionSystems());
+            mip.ServiceResolver.Store(BoxPusherLevelSystem<ActorReference, ItemReference>.Create(mip.ServiceResolver, BoxPusherMapLayers.Actors));
+            mip.ServiceResolver.Store<IPlayerManager<ActorReference, BoxPusherPlayerProfile>>(new InMemoryPlayerManager<ActorReference, BoxPusherPlayerProfile>(
+                                                                                                  mip.ServiceResolver.Resolve<IItemResolver<ActorReference>>(),
+                                                                                                  mip.ServiceResolver.ResolveToReference<IPlayerServiceConfiguration>()));
         }
 
         [ContentInitializer]
@@ -72,15 +81,13 @@ namespace RogueEntity.Simple.BoxPusher
             var ctx = initializer.DeclareContentContext<ItemReference>();
             ctx.Activate(ctx.CreateBulkEntityBuilder(serviceResolver)
                             .DefineWall()
-                            .WithMovementCostModifier(Blocked<WalkingMovement>())
                             .Declaration);
 
             ctx.Activate(ctx.CreateBulkEntityBuilder(serviceResolver)
                             .DefineFloor()
-                            .WithMovementCostModifier(For<WalkingMovement>(1))
                             .Declaration);
 
-            ctx.Activate(ctx.CreateBulkEntityBuilder(serviceResolver)
+            ctx.Activate(ctx.CreateReferenceEntityBuilder(serviceResolver)
                             .DefineFloorTargetZone()
                             .WithMovementCostModifier(For<WalkingMovement>(1))
                             .Declaration);
@@ -93,135 +100,117 @@ namespace RogueEntity.Simple.BoxPusher
             var actorContext = initializer.DeclareContentContext<ActorReference>();
             var playerId = actorContext.Activate(actorContext.CreateReferenceEntityBuilder(serviceResolver)
                                                              .DefinePlayer<ActorReference, ItemReference>()
-                                                             .WithMovement()
-                                                             .AsPointCost(WalkingMovement.Instance, DistanceCalculation.Euclid, 1)
                                                              .Declaration);
 
             mip.ServiceResolver.Store<IPlayerServiceConfiguration>(new PlayerServiceConfiguration(playerId));
         }
-    }
 
-    public class BoxPusherSystems
-    {
-        readonly IGridMapContext<ItemReference> map;
-        readonly IGridMapDataContext<ItemReference> itemLayer;
 
-        EntityGridPosition playerPosition;
-        HashSet<Position2D> targetSpots;
-        HashSet<Position2D> boxPositions;
-        IReadOnlyDynamicDataView2D<ItemReference> currentLevelMap;
-
-        public BoxPusherSystems(IGridMapContext<ItemReference> map)
+        [EntityRoleInitializer("Role.Core.Player",
+                               ConditionalRoles = new[] {"Role.Core.Position.GridPositioned"})]
+        public void InitializePlayer<TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter,
+                                               IModuleInitializer initializer,
+                                               EntityRole r)
+            where TActorId : IEntityKey
         {
-            this.map = map;
-            if (!map.TryGetGridDataFor(BoxPusherMapLayers.Items, out itemLayer))
-            {
-                throw new ArgumentException("Require 'ItemLayer@ in map");
-            }
+            var ctx = initializer.DeclareEntityContext<TActorId>();
+            ctx.Register(BoxPusherPlayerEntities, 40_000, RegisterPlayerEntities);
+            ctx.Register(BoxPusherInitializeWinSystem, 40_000, RegisterInitializeWinSystem);
+            ctx.Register(BoxPusherFinalizeWinSystem, 40_010, RegisterFinalizeWinSystem);
         }
 
-        public void StartCheckWinCondition()
+        [EntityRoleFinalizer("Role.BoxPusher.Box",
+                             ConditionalRoles = new[] {"Role.Core.Position.GridPositioned"})]
+        public void InitializeBox<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
+                                           IModuleInitializer initializer,
+                                           EntityRole r)
+            where TItemId : IEntityKey
         {
-            targetSpots.Clear();
-            boxPositions.Clear();
-            currentLevelMap = null;
-            playerPosition = default;
+            var ctx = initializer.DeclareEntityContext<TItemId>();
+            ctx.Register(BoxPusherBoxEntities, 40_000, RegisterBoxEntities);
+            ctx.Register(BoxPusherCollectBoxesSystem, 40_005, RegisterBoxWinConditionSystem);
         }
 
-        public void FindPlayer(IEntityViewControl<ActorReference> actors, ActorReference k, in EntityGridPosition pos, in PlayerTag playerTag)
+        [EntityRoleFinalizer("Role.BoxPusher.TargetSpot",
+                             ConditionalRoles = new[] {"Role.Core.Position.GridPositioned"})]
+        public void InitializeTargetSpot<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
+                                                  IModuleInitializer initializer,
+                                                  EntityRole r)
+            where TItemId : IEntityKey
         {
-            itemLayer.TryGetView(pos.GridZ, out currentLevelMap);
-            playerPosition = pos;
-        }
-        
-        public void CollectTargetSpots(IEntityViewControl<ItemReference> items, ItemReference k, in EntityGridPosition pos, in BoxPusherTargetFieldMarker targetMarker)
-        {
-            if (currentLevelMap == null)
-            {
-                return;
-            }
-
-            if (pos.IsInvalid || pos.GridZ != playerPosition.GridZ)
-            {
-                return;
-            }
-
-            targetSpots.Add(pos.ToGridXY());
-        }
-        
-        public void CollectBoxPositions(IEntityViewControl<ItemReference> items, ItemReference k, in EntityGridPosition pos, in BoxPusherBoxMarker targetMarker)
-        {
-            if (currentLevelMap == null)
-            {
-                return;
-            }
-
-            if (pos.IsInvalid || pos.GridZ != playerPosition.GridZ)
-            {
-                return;
-            }
-
-            boxPositions.Add(pos.ToGridXY());
+            var ctx = initializer.DeclareEntityContext<TItemId>();
+            ctx.Register(BoxPusherTargetSpotEntities, 40_000, RegisterTargetSpotEntities);
+            ctx.Register(BoxPusherCollectTargetSpotsSystem, 40_005, RegisterTargetSpotWinConditionSystem);
         }
 
-        public void FinishEvaluateWinCondition(IEntityViewControl<ActorReference> actors, ActorReference k, in EntityGridPosition pos, in PlayerTag playerTag)
+        void RegisterBoxWinConditionSystem<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter, IGameLoopSystemRegistration context, EntityRegistry<TItemId> registry)
+            where TItemId : IEntityKey
         {
-            if (boxPositions.SetEquals(targetSpots))
-            {
-                
-            }
-            
-        }
-    }
-
-    [MessagePackObject]
-    [DataContract]
-    public class BoxPusherLevelStats
-    {
-        [Key(0)]
-        [DataMember(Order=0)]
-        readonly Dictionary<int, LevelStats> levelStats;
-
-        public BoxPusherLevelStats()
-        {
-            this.levelStats = new Dictionary<int, LevelStats>();
+            var system = initParameter.ServiceResolver.Resolve<BoxPusherWinConditionSystems>();
+            var action = registry.BuildSystem()
+                                 .WithoutContext()
+                                 .WithInputParameter<EntityGridPosition>()
+                                 .WithInputParameter<BoxPusherBoxMarker>()
+                                 .CreateSystem(system.CollectBoxPositions);
+            context.AddFixedStepHandlers(action);
         }
 
-        internal BoxPusherLevelStats(Dictionary<int, LevelStats> levelStats)
+        void RegisterTargetSpotWinConditionSystem<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter, IGameLoopSystemRegistration context, EntityRegistry<TItemId> registry)
+            where TItemId : IEntityKey
         {
-            this.levelStats = levelStats;
+            var system = initParameter.ServiceResolver.Resolve<BoxPusherWinConditionSystems>();
+            var action = registry.BuildSystem()
+                                 .WithoutContext()
+                                 .WithInputParameter<EntityGridPosition>()
+                                 .WithInputParameter<BoxPusherTargetFieldMarker>()
+                                 .CreateSystem(system.CollectTargetSpots);
+            context.AddFixedStepHandlers(action);
         }
-    }
 
-    [MessagePackObject]
-    [DataContract]
-    public readonly struct LevelStats
-    {
-        [Key(0)]
-        [DataMember(Order=0)]
-        public readonly int Steps;
-        [Key(1)]
-        [DataMember(Order=1)]
-        public readonly bool ClearedOnce;
-        [Key(2)]
-        [DataMember(Order=2)]
-        public readonly bool ClearedNow;
-
-        public LevelStats(int steps, bool clearedOnce, bool clearedNow)
+        void RegisterBoxEntities<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter, EntityRegistry<TItemId> registry)
+            where TItemId : IEntityKey
         {
-            Steps = steps;
-            ClearedOnce = clearedOnce;
-            ClearedNow = clearedNow;
+            registry.RegisterFlag<BoxPusherBoxMarker>();
         }
-    }
-    
-    [EntityComponent(EntityConstructor.Flag)]
-    public readonly struct BoxPusherTargetFieldMarker
-    {
-    }
-    
-    [EntityComponent(EntityConstructor.Flag)]
-    public readonly struct BoxPusherBoxMarker
-    {
+
+        void RegisterTargetSpotEntities<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter, EntityRegistry<TItemId> registry)
+            where TItemId : IEntityKey
+        {
+            registry.RegisterFlag<BoxPusherTargetFieldMarker>();
+        }
+
+        void RegisterPlayerEntities<TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter, EntityRegistry<TActorId> registry)
+            where TActorId : IEntityKey
+        {
+            registry.RegisterNonConstructable<BoxPusherPlayerProfile>();
+        }
+
+        void RegisterFinalizeWinSystem<TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter, IGameLoopSystemRegistration context, EntityRegistry<TActorId> registry)
+            where TActorId : IEntityKey
+        {
+            var system = initParameter.ServiceResolver.Resolve<BoxPusherWinConditionSystems>();
+            var action = registry.BuildSystem()
+                                 .WithoutContext()
+                                 .WithInputParameter<EntityGridPosition>()
+                                 .WithInputParameter<PlayerTag>()
+                                 .WithInputParameter<BoxPusherPlayerProfile>()
+                                 .CreateSystem(system.FinishEvaluateWinCondition);
+            context.AddFixedStepHandlers(action);
+        }
+
+        void RegisterInitializeWinSystem<TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter, IGameLoopSystemRegistration context, EntityRegistry<TActorId> registry)
+            where TActorId : IEntityKey
+        {
+            var system = initParameter.ServiceResolver.Resolve<BoxPusherWinConditionSystems>();
+            var action = registry.BuildSystem()
+                                 .WithoutContext()
+                                 .WithInputParameter<EntityGridPosition>()
+                                 .WithInputParameter<PlayerTag>()
+                                 .WithInputParameter<BoxPusherPlayerProfile>()
+                                 .CreateSystem(system.FindPlayer);
+
+            context.AddFixedStepHandlers(system.StartCheckWinCondition);
+            context.AddFixedStepHandlers(action);
+        }
     }
 }

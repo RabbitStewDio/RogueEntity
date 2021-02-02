@@ -1,3 +1,4 @@
+using EnTTSharp.Entities;
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Api.Services;
 
@@ -6,7 +7,7 @@ namespace RogueEntity.Core.Meta.Items
     public static class ItemContextServices
     {
         public static IServiceResolver ConfigureEntityType<TEntity>(this IServiceResolver serviceResolver, IBulkDataStorageMetaData<TEntity> meta)
-            where TEntity : IBulkDataStorageKey<TEntity>
+            where TEntity : IEntityKey
         {
             if (!serviceResolver.TryResolve(out IItemContextBackend<TEntity> actorBackend))
             {

@@ -85,7 +85,7 @@ namespace RogueEntity.Api.Modules.Initializers
                 {
                     continue;
                 }
-                
+
                 RecordRoleFromItem<TEntityId>(role.Role, " as requested by {@Evidence}", CreateTraitEvidence(rk.Value));
                 AddModuleDependencyFromTraits(rk.Value, FindDeclaringModule(role.Role));
             }
@@ -138,14 +138,14 @@ namespace RogueEntity.Api.Modules.Initializers
 
             foreach (var r in moduleContext.DeclaredReferenceItems)
             {
-                items[r.Item2.Id] = r;
+                items[r.itemDeclaration.Id] = r;
             }
 
-            foreach (var (m, i) in items.Values)
+            foreach (var (moduleId, itemDeclaration) in items.Values)
             {
-                ctx.ItemRegistry.Register(i);
-                RegisterTraitDependencies(roles, i.GetEntityRoles(), i.Id, m);
-                RegisterTraitDependencies(relations, i.GetEntityRelations(), i.Id, m);
+                ctx.ItemRegistry.Register(itemDeclaration);
+                RegisterTraitDependencies(roles, itemDeclaration.GetEntityRoles(), itemDeclaration.Id, moduleId);
+                RegisterTraitDependencies(relations, itemDeclaration.GetEntityRelations(), itemDeclaration.Id, moduleId);
             }
         }
 
@@ -174,9 +174,9 @@ namespace RogueEntity.Api.Modules.Initializers
         }
 
         static void RegisterTraitDependencies<TKey>(Dictionary<TKey, Dictionary<ItemDeclarationId, (ModuleId, List<ItemTraitId>)>> dataStore,
-                                             IEnumerable<(ItemTraitId, TKey)> entries,
-                                             ItemDeclarationId sourceRef,
-                                             ModuleId moduleId)
+                                                    IEnumerable<(ItemTraitId, TKey)> entries,
+                                                    ItemDeclarationId sourceRef,
+                                                    ModuleId moduleId)
         {
             foreach (var (traitId, role) in entries)
             {

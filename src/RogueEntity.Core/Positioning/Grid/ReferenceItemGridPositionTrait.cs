@@ -11,6 +11,7 @@ namespace RogueEntity.Core.Positioning.Grid
                                                            IItemComponentTrait<TItemId, EntityGridPositionUpdateMessage>,
                                                            IItemComponentDesignTimeInformationTrait<MapLayerPreference>,
                                                            IItemComponentInformationTrait<TItemId, EntityGridPosition>,
+                                                           IItemComponentInformationTrait<TItemId, Position>,
                                                            IItemComponentInformationTrait<TItemId, MapLayerPreference>,
                                                            IItemComponentInformationTrait<TItemId, MapContainerEntityMarker>
         where TItemId : IEntityKey
@@ -48,6 +49,7 @@ namespace RogueEntity.Core.Positioning.Grid
         public void Apply(IEntityViewControl<TItemId> v, TItemId k, IItemDeclaration item)
         { }
 
+        
         public bool TryQuery(IEntityViewControl<TItemId> v, TItemId k, out EntityGridPosition t)
         {
             if (v.IsValid(k) &&

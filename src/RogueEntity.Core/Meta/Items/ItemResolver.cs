@@ -1,6 +1,7 @@
 ﻿using EnTTSharp.Entities;
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Core.Meta.Base;
+using System.Collections.Generic;
 
 namespace RogueEntity.Core.Meta.Items
 {
@@ -17,6 +18,7 @@ namespace RogueEntity.Core.Meta.Items
             this.registry = registry;
             this.entityRegistry = entityRegistry;
             this.entityMetaData = registry.EntityMetaData;
+            this.QueryProvider = new ReferenceEntityQueryProvider<TItemId>(this);
         }
 
         public IItemRegistry ItemRegistry => registry;
@@ -209,5 +211,66 @@ namespace RogueEntity.Core.Meta.Items
                 }
             }
         }
+
+        public IReferenceEntityQueryProvider<TItemId> QueryProvider { get; }
+
+
+        class ReferenceEntityQueryProvider<TEntityId> : IReferenceEntityQueryProvider<TEntityId>
+            where TEntityId : IEntityKey
+        {
+            readonly ItemResolver<TEntityId> resolver;
+
+            public ReferenceEntityQueryProvider(ItemResolver<TEntityId> resolver)
+            {
+                this.resolver = resolver;
+            }
+
+            public IEnumerable<TEntityId> QueryById(ItemDeclarationId id)
+            {
+                foreach (var e in resolver.entityRegistry)
+                {
+                    if (!resolver.entityRegistry.GetComponent(e, out ItemDeclarationHolder<TEntityId> c))
+                    {
+                        continue;
+                    }
+
+                    if (c.Id == id)
+                    {
+                        yield return e;
+                    }
+                }
+            }
+
+            public IEnumerable<(TEntityId, TEntityTraitA)> QueryByTrait<TEntityTraitA>()
+            {
+                foreach (var e in resolver.entityRegistry.View<TEntityTraitA>())
+                {
+                    if (!resolver.entityRegistry.GetComponent(e, out ItemDeclarationHolder<TEntityId> t) ||
+                        !resolver.entityRegistry.GetComponent(e, out TEntityTraitA ca))
+                    {
+                        continue;
+                    }
+
+                    yield return (e, ca);
+                }
+            }
+
+            public IEnumerable<(TEntityId, TEntityTraitA, TEntityTraitB)> QueryByTrait<TEntityTraitA, TEntityTraitB>()
+            {
+                foreach (var e in resolver.entityRegistry.View<TEntityTraitA>())
+                {
+                    if (!resolver.entityRegistry.GetComponent(e, out ItemDeclarationHolder<TEntityId> t) ||
+                        !resolver.entityRegistry.GetComponent(e, out TEntityTraitA ca) ||
+                        !resolver.entityRegistry.GetComponent(e, out TEntityTraitB cb))
+                    {
+                        continue;
+                    }
+
+                    yield return (e, ca, cb);
+                }
+                
+            }
+        }
+
     }
 }

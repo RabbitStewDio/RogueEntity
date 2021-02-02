@@ -16,6 +16,7 @@ namespace RogueEntity.Core.Chunks
         class LevelTrackingData
         {
             public bool Dirty;
+            public bool Unloaded;
             public bool CreateRequested;
             public bool WriteBackRequested;
 
@@ -38,12 +39,12 @@ namespace RogueEntity.Core.Chunks
         readonly Lazy<ITimeSource> timeSource;
         readonly int inactiveTimeOut;
         readonly int adjacentKeptAliveRange;
-        readonly Lazy<IMapLevelDataSource> levelDataSource;
-        
+        readonly Lazy<IMapLevelDataSource<int>> levelDataSource;
+
         int frameTime;
 
         public FullLevelChunkManager([NotNull] Lazy<ITimeSource> timeSource,
-                                     [NotNull] Lazy<IMapLevelDataSource> levelDataSource,
+                                     [NotNull] Lazy<IMapLevelDataSource<int>> levelDataSource,
                                      int adjacentKeptAliveRange = 0,
                                      int inactiveTimeOut = 1)
         {
@@ -66,13 +67,19 @@ namespace RogueEntity.Core.Chunks
             this.mapData = new List<IChunkManagerData>();
         }
 
+        public bool CanCreateLevel(int level)
+        {
+            return levelDataSource.Value.CanCreateLevel(level);
+        }
+
         public void Activate()
         {
-            levelDataSource.Value.LevelCreateComplete += OnLevelCreated; 
+            levelDataSource.Value.LevelCreateComplete += OnLevelCreated;
             levelDataSource.Value.LevelWriteBackComplete += OnLevelWrittenBack;
+            levelDataSource.Value.LevelUnloadComplete += OnLevelUnloaded;
 
             foreach (var m in mapData)
-            { 
+            {
                 m.ViewCreated += OnViewCreated;
                 m.ViewExpired += OnViewExpired;
                 m.ViewMarkedDirty += OnViewDirty;
@@ -104,8 +111,17 @@ namespace RogueEntity.Core.Chunks
                 m.Dispose();
             }
 
-            levelDataSource.Value.LevelCreateComplete -= OnLevelCreated; 
-            levelDataSource.Value.LevelWriteBackComplete -= OnLevelWrittenBack; 
+            levelDataSource.Value.LevelCreateComplete -= OnLevelCreated;
+            levelDataSource.Value.LevelWriteBackComplete -= OnLevelWrittenBack;
+            levelDataSource.Value.LevelUnloadComplete -= OnLevelUnloaded;
+        }
+
+        void OnLevelUnloaded(object sender, int e)
+        {
+            if (levelData.TryGetValue(e, out var ld))
+            {
+                ld.Unloaded = false;
+            }
         }
 
         void OnLevelCreated(object sender, int levelNumber)
@@ -114,16 +130,19 @@ namespace RogueEntity.Core.Chunks
             {
                 ld.CreateRequested = false;
             }
-            
+            else
+            {
+                ld = new LevelTrackingData(frameTime);
+                levelData[levelNumber] = ld;
+            }
         }
 
         void OnLevelWrittenBack(object sender, int levelNumber)
         {
             if (levelData.TryGetValue(levelNumber, out var ld))
             {
-                ld.CreateRequested = false;
+                ld.Dirty = false;
             }
-            
         }
 
         void OnViewDirty(object sender, int pos)
@@ -176,14 +195,15 @@ namespace RogueEntity.Core.Chunks
             {
                 return;
             }
-            
+
             MarkLayerActive(pos);
-        } 
+        }
 
         /// <summary>
         ///   Indirect Action Step 2: Process all active maps. The observer manager deals with this.
         /// </summary>
-        void MarkLayerActive<TPosition>(TPosition pos) where TPosition: IPosition<TPosition>
+        void MarkLayerActive<TPosition>(TPosition pos)
+            where TPosition : IPosition<TPosition>
         {
             if (pos.IsInvalid)
             {
@@ -223,7 +243,7 @@ namespace RogueEntity.Core.Chunks
                 {
                     continue;
                 }
-                
+
                 if ((data.LastActiveTime + inactiveTimeOut) >= frameTime)
                 {
                     continue;
@@ -234,7 +254,7 @@ namespace RogueEntity.Core.Chunks
                     // try write back
                     if (levelDataSource.Value.TryWriteBackMapLevel(z))
                     {
-                        
+                        continue;
                     }
                 }
 
@@ -258,6 +278,31 @@ namespace RogueEntity.Core.Chunks
 
                 levelData.Remove(l);
             }
+        }
+
+        public MapChunkLoadingResult TryLoadMap(int levelId)
+        {
+            if (this.levelData.TryGetValue(levelId, out var level))
+            {
+                if (level.CreateRequested)
+                {
+                    return MapChunkLoadingResult.LevelNotLoaded;
+                }
+                
+                level.MarkActiveAtTime(frameTime);
+                return MapChunkLoadingResult.Success;
+            }
+            
+            if (levelDataSource.Value.TryCreateMapLevel(levelId))
+            {
+                this.levelData[levelId] = new LevelTrackingData(frameTime)
+                {
+                    CreateRequested = true
+                };
+                return MapChunkLoadingResult.LevelNotLoaded;
+            }
+
+            return MapChunkLoadingResult.NoSuchLevel;
         }
     }
 }

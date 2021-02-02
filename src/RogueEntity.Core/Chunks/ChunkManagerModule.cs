@@ -32,61 +32,76 @@ namespace RogueEntity.Core.Chunks
             RequireRole(PlayerModule.PlayerObserverRole);
         }
 
-        [EntityRoleInitializer("Role.Core.Position.GridPositioned")]
-        protected void InitializeContainedItemRole<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
+        [EntityRoleInitializer("Role.Core.Player.PlayerObserver", 
+                               ConditionalRoles = new []{"Role.Core.Position.GridPositioned"})]
+        protected void InitializeGridPositionedPlayerObserverRole<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                             IModuleInitializer initializer,
                                                             EntityRole r)
             where TItemId : IEntityKey
         {
             var entityContext = initializer.DeclareEntityContext<TItemId>();
-            entityContext.Register(ProcessBeginMarkPhaseSystem, 100, RegisterBeginMarkPhaseSystem);
             entityContext.Register(ProcessGridPositionedObserversSystem, 47_000, RegisterProcessGridObserverPhase);
-            entityContext.Register(ProcessLoadChunksSystem, 48_500, RegisterLoadChunksSystem);
-            entityContext.Register(ProcessUnloadChunksSystem, 48_000, RegisterUnloadChunksSystem);
         }
 
-        void RegisterLoadChunksSystem<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter, IGameLoopSystemRegistration context, EntityRegistry<TItemId> registry)
-            where TItemId : IEntityKey
+        [ModuleInitializer]
+        protected void InitializePlayerObserverRole(in ModuleInitializationParameter initParameter,
+                                                             IModuleInitializer moduleInitializer)
+        {
+            moduleInitializer.Register(ProcessBeginMarkPhaseSystem, 100, RegisterBeginMarkPhaseSystem);
+            moduleInitializer.Register(ProcessLoadChunksSystem, 48_500, RegisterLoadChunksSystem);
+            moduleInitializer.Register(ProcessUnloadChunksSystem, 48_000, RegisterUnloadChunksSystem);
+        }
+        
+        void RegisterLoadChunksSystem(in ModuleInitializationParameter initParameter, IGameLoopSystemRegistration context)
         {
             if (initParameter.ServiceResolver.TryResolve(out IMapLevelDataSourceSystem system))
             {
                 context.AddInitializationStepHandler(system.LoadChunks);
+
+                context.AddLateFixedStepHandlers(system.LoadChunks);
+                context.AddLateVariableStepHandlers(system.LoadChunks);
             }
         }
 
-        void RegisterUnloadChunksSystem<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter, IGameLoopSystemRegistration context, EntityRegistry<TItemId> registry)
-            where TItemId : IEntityKey
+        void RegisterUnloadChunksSystem(in ModuleInitializationParameter initParameter, IGameLoopSystemRegistration context)
         {
             if (initParameter.ServiceResolver.TryResolve(out IMapLevelDataSourceSystem system))
             {
+                context.AddInitializationStepHandler(system.WriteChunks);
                 context.AddInitializationStepHandler(system.UnloadChunks);
+
+                context.AddLateVariableStepHandlers(system.WriteChunks);
+                context.AddLateVariableStepHandlers(system.UnloadChunks);
             }
         }
 
-        void RegisterBeginMarkPhaseSystem<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter, IGameLoopSystemRegistration context, EntityRegistry<TItemId> registry)
-            where TItemId : IEntityKey
+        void RegisterBeginMarkPhaseSystem(in ModuleInitializationParameter initParameter, IGameLoopSystemRegistration context)
         {
             var r = GetOrCreateChunkManager(initParameter.ServiceResolver);
-            
+
             context.AddInitializationStepHandler(r.Activate);
             context.AddDisposeStepHandler(r.Deactivate);
 
             context.AddInitializationStepHandler(r.BeginMarkPhase);
-            context.AddFixedStepHandlers(r.BeginMarkPhase);
+            context.AddLateVariableStepHandlers(r.BeginMarkPhase);
         }
-        
+
         void RegisterProcessGridObserverPhase<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter, IGameLoopSystemRegistration context, EntityRegistry<TItemId> registry)
             where TItemId : IEntityKey
         {
             var r = GetOrCreateChunkManager(initParameter.ServiceResolver);
-            
-            var processObserversSystem = registry.BuildSystem().WithoutContext().WithInputParameter<PlayerObserver>().WithInputParameter<EntityGridPosition>().CreateSystem(r.ProcessObservers);
+
+            var processObserversSystem = registry.BuildSystem()
+                                                 .WithoutContext()
+                                                 .WithInputParameter<PlayerObserver>()
+                                                 .WithInputParameter<EntityGridPosition>()
+                                                 .CreateSystem(r.ProcessObservers);
 
             context.AddInitializationStepHandler(processObserversSystem);
             context.AddInitializationStepHandler(r.FinalizeMarkPhase);
 
-            context.AddFixedStepHandlers(processObserversSystem);
-            context.AddFixedStepHandlers(r.FinalizeMarkPhase);
+            context.AddLateVariableStepHandlers(processObserversSystem);
+            context.AddLateVariableStepHandlers(r.FinalizeMarkPhase);
         }
 
         FullLevelChunkManager GetOrCreateChunkManager(IServiceResolver resolver)
@@ -97,7 +112,7 @@ namespace RogueEntity.Core.Chunks
             }
 
             mgr = new FullLevelChunkManager(resolver.ResolveToReference<ITimeSource>(),
-                                            resolver.ResolveToReference<IMapLevelDataSource>(), 1);
+                                            resolver.ResolveToReference<IMapLevelDataSource<int>>(), 1);
             resolver.Store(mgr);
             return mgr;
         }

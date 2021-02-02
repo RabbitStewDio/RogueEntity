@@ -1,8 +1,6 @@
 using EnTTSharp.Entities;
 using JetBrains.Annotations;
-using RogueEntity.Api.ItemTraits;
 using RogueEntity.Api.Utils;
-using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Positioning;
 using System;
 using System.Collections.Generic;
@@ -16,23 +14,13 @@ namespace RogueEntity.Core.Players
     public class PlayerService<TEntity> : IPlayerService<TEntity>
         where TEntity : IEntityKey
     {
-        readonly IItemResolver<TEntity> itemResolver;
         readonly IEntityView<TEntity, PlayerTag> playerEntities;
-        readonly IEntityView<TEntity, PlayerObserver> playerObservers;
-        readonly ItemDeclarationId playerItemId;
         readonly Dictionary<PlayerTag, PlayerData> playerDataByGuid;
         readonly Dictionary<TEntity, PlayerData> playerDataByEntityKey;
 
-        public PlayerService([NotNull] IItemResolver<TEntity> itemResolver,
-                             [NotNull] IEntityView<TEntity, PlayerTag> playerEntities,
-                             [NotNull] IEntityView<TEntity, PlayerObserver> playerObservers,
-                             ItemDeclarationId playerItemId)
+        public PlayerService([NotNull] IEntityView<TEntity, PlayerTag> playerEntities)
         {
-            this.itemResolver = itemResolver ?? throw new ArgumentNullException(nameof(itemResolver));
             this.playerEntities = playerEntities ?? throw new ArgumentNullException(nameof(playerEntities));
-            this.playerObservers = playerObservers ?? throw new ArgumentNullException(nameof(playerObservers));
-
-            this.playerItemId = playerItemId;
             this.playerDataByGuid = new Dictionary<PlayerTag, PlayerData>();
             this.playerDataByEntityKey = new Dictionary<TEntity, PlayerData>();
 
@@ -40,6 +28,9 @@ namespace RogueEntity.Core.Players
             this.playerEntities.Destroyed += OnPlayerDestroyed;
         }
 
+        public event EventHandler<PlayerEventArgs<TEntity>> PlayerActivated;
+        public event EventHandler<PlayerEventArgs<TEntity>> PlayerDeactivated;
+        
         /// <summary>
         ///   Service method. Updates Observer Entities.
         /// </summary>
@@ -73,7 +64,18 @@ namespace RogueEntity.Core.Players
                 return;
             }
 
-            GetOrCreate(playerTag, true);
+            if (!playerDataByEntityKey.TryGetValue(e, out var data))
+            {
+                data = new PlayerData(e, playerTag, false);
+                playerDataByGuid.Add(data.Tag, data);
+                playerDataByEntityKey.Add(e, data);
+            }
+
+            if (!data.Active)
+            {
+                data.Active = true;
+                PlayerActivated?.Invoke(this, new PlayerEventArgs<TEntity>(data.Tag, e));
+            }
         }
 
         void OnPlayerDestroyed(object sender, TEntity e)
@@ -84,13 +86,6 @@ namespace RogueEntity.Core.Players
                 playerDataByGuid.Remove(data.Tag);
                 playerDataByEntityKey.Remove(data.PlayerEntity);
             }
-        }
-
-        public (PlayerTag, TEntity) GetOrCreate(Guid playerId)
-        {
-            var playerTag = new PlayerTag(playerId);
-            var pd = GetOrCreate(playerTag, true);
-            return (pd.Tag, pd.PlayerEntity);
         }
 
         public BufferList<PlayerObserver> QueryObservers(PlayerTag player, BufferList<PlayerObserver> buffer = null)
@@ -144,31 +139,6 @@ namespace RogueEntity.Core.Players
             return false;
         }
 
-        PlayerData GetOrCreate(PlayerTag playerTag, bool active)
-        {
-            if (playerDataByGuid.TryGetValue(playerTag, out var pd))
-            {
-                if (!pd.Active)
-                {
-                    pd.Active = true;
-                    PlayerActivated?.Invoke(this, new PlayerEventArgs<TEntity>(playerTag, pd.PlayerEntity));
-                }
-
-                return pd;
-            }
-
-            var playerEntity = itemResolver.Instantiate(playerItemId);
-            var playerData = new PlayerData(playerEntity, playerTag, active);
-            playerDataByGuid[playerTag] = playerData;
-            playerDataByEntityKey[playerEntity] = playerData;
-            if (active)
-            {
-                PlayerActivated?.Invoke(this, new PlayerEventArgs<TEntity>(playerTag, playerEntity));
-            }
-
-            return playerData;
-        }
-
         class PlayerData
         {
             public TEntity PlayerEntity { get; }
@@ -186,8 +156,5 @@ namespace RogueEntity.Core.Players
                 Active = active;
             }
         }
-
-        public event EventHandler<PlayerEventArgs<TEntity>> PlayerActivated;
-        public event EventHandler<PlayerEventArgs<TEntity>> PlayerDeactivated;
     }
 }
