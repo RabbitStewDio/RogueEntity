@@ -25,6 +25,7 @@ namespace RogueEntity.Benchmarks
             // config.Add(new InliningDiagnoser(true, new[] {"EnTTSharp", "RogueEntity"}));
 
             // config.Add(ThreadingDiagnoser.Default);
+            // var summary = BenchmarkRunner.Run(typeof(MainClass).Assembly, config);
             var summary = BenchmarkRunner.Run(typeof(MainClass).Assembly, config);
             // Console.WriteLine(summary);
         }
