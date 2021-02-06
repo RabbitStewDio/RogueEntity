@@ -1,4 +1,5 @@
 using Microsoft.Xna.Framework;
+using RogueEntity.Core.Players;
 using RogueEntity.Core.Utils;
 using RogueEntity.SadCons.Controls;
 using SadConsole;
@@ -9,7 +10,7 @@ using Rectangle = RogueEntity.Core.Utils.Rectangle;
 
 namespace RogueEntity.SadCons
 {
-    public class GameShell : IConsoleContext
+    public abstract class GameShell<TProfile> : IConsoleContext
     {
         public event Action ConsoleResized;
 
@@ -17,12 +18,12 @@ namespace RogueEntity.SadCons
         protected Console ParentConsole { get; private set; }
 
         Dimension lastConsoleSize;
-        LoadGameContext loadGameContext;
 
         public GameShell()
         {
-            loadGameContext = new LoadGameContext();
         }
+
+        public LoadGameContext<TProfile> LoadProfileContext { get; private set; }
 
         Console IConsoleContext.Console => ParentConsole;
 
@@ -66,12 +67,17 @@ namespace RogueEntity.SadCons
             ControlsCanvas.Add(loadGameButton);
             ControlsCanvas.Add(quitGameButton);
 
-            loadGameContext.Initialize(this);
-
             InitializeOverride();
+            
+            LoadProfileContext = new LoadGameContext<TProfile>(ProfileManager);
+            LoadProfileContext.Initialize(this);
+
+            InitializeLateOverride();
 
             Show();
         }
+        
+        protected abstract IPlayerProfileManager<TProfile> ProfileManager { get; }
 
         public Rectangle Bounds => new Rectangle(ParentConsole.Position.X,
                                                  ParentConsole.Position.Y,
@@ -79,6 +85,9 @@ namespace RogueEntity.SadCons
                                                  ParentConsole.Height);
 
         protected virtual void InitializeOverride()
+        { }
+
+        protected virtual void InitializeLateOverride()
         { }
 
         void OnWindowResized(object sender, EventArgs e)
@@ -144,7 +153,7 @@ namespace RogueEntity.SadCons
 
         public virtual void OnLoadGame()
         {
-            loadGameContext.IsVisible = true;
+            LoadProfileContext.IsVisible = true;
         }
 
         public void OnQuitGame()

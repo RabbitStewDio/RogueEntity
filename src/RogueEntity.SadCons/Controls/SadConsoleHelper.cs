@@ -44,6 +44,7 @@ namespace RogueEntity.SadCons.Controls
                     Foreground.R = fg.R;
                     Foreground.G = fg.G;
                     Foreground.B = fg.B;
+                    Foreground.A = fg.A;
                     Foreground.CommandType = CommandTypes.Foreground;
                     stacks.AddSafe(Foreground);
                 }
@@ -53,6 +54,7 @@ namespace RogueEntity.SadCons.Controls
                     Background.R = bg.R;
                     Background.G = bg.G;
                     Background.B = bg.B;
+                    Background.A = bg.A;
                     Background.CommandType = CommandTypes.Background;
                     stacks.AddSafe(Background);
                 }

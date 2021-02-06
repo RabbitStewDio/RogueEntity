@@ -1,15 +1,18 @@
+using RogueEntity.Core.Players;
 using RogueEntity.SadCons;
-using SadConsole;
+using RogueEntity.Simple.BoxPusher.ItemTraits;
 
 namespace RogueEntity.Simple.Demo.BoxPusher
 {
-    public class BoxPusherGameShell : GameShell
+    public class BoxPusherGameShell : GameShell<BoxPusherPlayerProfile>
     {
-        BoxPusherGame game;
+        readonly BoxPusherGame game;
+        readonly BoxPusherProfileItemTheme itemTheme;
 
         public BoxPusherGameShell()
         {
             game = new BoxPusherGame();
+            itemTheme = new BoxPusherProfileItemTheme(3);
         }
 
         protected override void InitializeOverride()
@@ -17,11 +20,12 @@ namespace RogueEntity.Simple.Demo.BoxPusher
             game.InitializeSystems();
         }
 
-    }
+        protected override void InitializeLateOverride()
+        {
+            base.InitializeLateOverride();
+            LoadProfileContext.ListItemRenderer = itemTheme;
+        }
 
-    
-    public class LoadGameScreen
-    {
-        
+        protected override IPlayerProfileManager<BoxPusherPlayerProfile> ProfileManager => game.ProfileManager;
     }
 }

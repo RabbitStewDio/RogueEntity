@@ -3,10 +3,12 @@ using Microsoft.Xna.Framework.Input;
 using RogueEntity.Api.Utils;
 using SadConsole;
 using SadConsole.Controls;
+using SadConsole.Themes;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.Diagnostics;
 using System.Runtime.Serialization;
 
 namespace RogueEntity.SadCons.Controls
@@ -43,6 +45,8 @@ namespace RogueEntity.SadCons.Controls
         [DataMember(Name = "ListItemHeight")]
         int listItemHeight;
 
+        FlexibleListBoxItemTheme<T> itemTheme;
+
         /// <summary>
         /// An event that triggers when the <see cref="SelectedItem"/> changes.
         /// </summary>
@@ -56,7 +60,16 @@ namespace RogueEntity.SadCons.Controls
         /// <summary>
         /// The theme used by the listbox items.
         /// </summary>
-        public FlexibleListBoxItemTheme<T> ItemTheme { get; private set; }
+        [IgnoreDataMember]
+        public FlexibleListBoxItemTheme<T> ItemTheme
+        {
+            get => itemTheme;
+            set
+            {
+                itemTheme = value ?? throw new ArgumentNullException(nameof(value));
+                OnThemeChanged();
+            }
+        }
 
         /// <summary>
         /// Internal use only; used in rendering.
@@ -66,7 +79,7 @@ namespace RogueEntity.SadCons.Controls
         /// <summary>
         /// Used in rendering.
         /// </summary>
-        [DataMember(Name = "ScrollBar")]
+        [DataMember]
         public ScrollBar ScrollBar { get; private set; }
 
         /// <summary>
@@ -90,17 +103,6 @@ namespace RogueEntity.SadCons.Controls
         /// </summary>
         [DataMember]
         public bool SingleClickItemExecute { get; set; }
-
-        [IgnoreDataMember]
-        public int ListItemHeight
-        {
-            get => listItemHeight;
-            set
-            {
-                if (listItemHeight < 1) throw new ArgumentException();
-                listItemHeight = value;
-            }
-        }
 
         [DataMember]
         public ObservableCollection<T> Items { get; private set; }
@@ -187,19 +189,36 @@ namespace RogueEntity.SadCons.Controls
             }
         }
 
+        static FlexibleListBox()
+        {
+            var theme = new FlexibleListBoxTheme<T>(new ScrollBarTheme());
+            theme.DrawBorder = true;
+            Library.Default.SetControlTheme(typeof(FlexibleListBox<T>), theme);
+        }
+        
         /// <summary>
         /// Creates a new instance of the listbox control.
         /// </summary>
         public FlexibleListBox(int width, int height) : base(width, height)
         {
-            initialized = true;
+            ItemTheme = new FlexibleListBoxItemTheme<T>();
+            
             ScrollBarRenderLocation = new Point(width - 1, 0);
-            SetupScrollBar();
 
             Items = new ObservableCollection<T>();
             Items.CollectionChanged += Items_CollectionChanged;
 
-            ItemTheme = new FlexibleListBoxItemTheme<T>();
+            IsDirtyChanged += OnDirtyChanged;
+            initialized = true;
+            SetupScrollBar();
+        }
+
+        void OnDirtyChanged(object sender, EventArgs e)
+        {
+            // if (IsDirty)
+            // {
+            //     System.Console.WriteLine(new StackTrace());
+            // }
         }
 
         public FlexibleListBox(int width, int height, FlexibleListBoxItemTheme<T> itemTheme) : this(width, height) => ItemTheme = itemTheme;
@@ -275,6 +294,7 @@ namespace RogueEntity.SadCons.Controls
             //if (_hasFocus)
             if (info.IsKeyReleased(Keys.Up))
             {
+                System.Console.WriteLine("Input: Key Up");
                 var index = SelectedIndex;
                 if (index > 0)
                 {
@@ -294,6 +314,7 @@ namespace RogueEntity.SadCons.Controls
 
             if (info.IsKeyReleased(Keys.Down))
             {
+                System.Console.WriteLine("Input: Key Down");
                 var index = SelectedIndex;
                 if (index != Items.Count - 1)
                 {
@@ -309,6 +330,7 @@ namespace RogueEntity.SadCons.Controls
 
             if (info.IsKeyReleased(Keys.Enter))
             {
+                System.Console.WriteLine("Input: Enter");
                 if (selectedItem.HasValue)
                 {
                     OnItemAction();
@@ -335,7 +357,7 @@ namespace RogueEntity.SadCons.Controls
             {
                 // mouse is within the list ...
                 
-                var mouseRowRaw = (mouseControlPosition.Y - rowOffset) / ListItemHeight;
+                var mouseRowRaw = (mouseControlPosition.Y - rowOffset) / ItemTheme.ItemHeight;
                 if (IsScrollBarVisible)
                 {
                     HoveredListItemIndex = mouseRowRaw + ScrollBar.Value;
@@ -375,24 +397,26 @@ namespace RogueEntity.SadCons.Controls
                 mouseControlPosition.X >= rowOffset && mouseControlPosition.X < Width - columnOffsetEnd)
             {
                 Optional<T> oldItem = selectedItem;
-                var noItem = false;
-
                 if (IsScrollBarVisible)
                 {
-                    selectedIndex = mouseControlPosition.Y - rowOffset + ScrollBar.Value;
+                    var pos = mouseControlPosition.Y - rowOffset;
+                    selectedIndex = (pos + ScrollBar.Value) / ItemTheme.ItemHeight;
+                    System.Console.WriteLine($"Selecting {selectedIndex} based on mouse {pos}");
                     SelectedItem = Items[selectedIndex];
                 }
-                else if (mouseControlPosition.Y <= Items.Count - rowOffsetReverse)
+                else if (mouseControlPosition.Y <= (Items.Count * ItemTheme.ItemHeight) - rowOffsetReverse)
                 {
-                    selectedIndex = mouseControlPosition.Y - rowOffset;
+                    var pos = mouseControlPosition.Y - rowOffset;
+                    selectedIndex = pos / ItemTheme.ItemHeight;
+                    System.Console.WriteLine($"Selecting {selectedIndex} based on mouse {pos}");
                     SelectedItem = Items[selectedIndex];
                 }
                 else
                 {
-                    noItem = true;
+                    return;
                 }
 
-                if (!noItem && (SingleClickItemExecute || (doubleClicked && oldItem == SelectedItem)))
+                if ((SingleClickItemExecute || (doubleClicked && oldItem == SelectedItem)))
                 {
                     leftMouseLastClick = DateTime.MinValue;
                     OnItemAction();

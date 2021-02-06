@@ -1,5 +1,7 @@
 using MessagePack;
+using RogueEntity.Core.Utils;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.Serialization;
 
 namespace RogueEntity.Simple.BoxPusher.ItemTraits
@@ -22,6 +24,8 @@ namespace RogueEntity.Simple.BoxPusher.ItemTraits
             this.PlayerName = "<undefined>";
         }
 
+        public int MaxLevelComplete => levelStats.Where(x => x.Value.ClearedOnce).Select(x => x.Key).MaybeMax().GetOrElse(0);
+
         public BoxPusherPlayerProfile(string playerName): this()
         {
             PlayerName = playerName ?? "<undefined>";
@@ -34,7 +38,7 @@ namespace RogueEntity.Simple.BoxPusher.ItemTraits
             this.levelStats = levelStats;
         }
 
-        public void RecordLevelComplete(int level)
+        public BoxPusherPlayerProfile RecordLevelComplete(int level)
         {
             if (!this.levelStats.TryGetValue(level, out var stats))
             {
@@ -42,9 +46,10 @@ namespace RogueEntity.Simple.BoxPusher.ItemTraits
             }
 
             this.levelStats[level] = stats.Solved();
+            return this;
         }
         
-        public void RecordLevelProgress(int level)
+        public BoxPusherPlayerProfile RecordLevelProgress(int level)
         {
             if (!this.levelStats.TryGetValue(level, out var stats))
             {
@@ -52,8 +57,8 @@ namespace RogueEntity.Simple.BoxPusher.ItemTraits
             }
 
             this.levelStats[level] = stats.InProgress();
+            return this;
         }
-
 
         public bool IsComplete(int level)
         {

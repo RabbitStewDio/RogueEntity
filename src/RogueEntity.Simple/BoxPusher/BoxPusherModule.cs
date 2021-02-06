@@ -67,11 +67,26 @@ namespace RogueEntity.Simple.BoxPusher
             mip.ServiceResolver.Store<IMapLevelDataSource<int>>(mapLoader);
             mip.ServiceResolver.Store<IMapLevelDataSourceSystem>(mapLoader);
 
+            /*
+            var profileDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "RogueEntity/BoxPusher");
+            var profileDataRepoFact = new FileDataRepositoryFactory(profileDir, MessagePackSerializerOptions.Standard)
+                                      .WithKey(new GuidValueConverter())
+                                      .WithKey(new StringValueConverter());
+            
+            var profileManager = new DefaultPlayerProfileManager<BoxPusherPlayerProfile>(profileDataRepoFact.Create<Guid, BoxPusherPlayerProfile>("profiles"));
+            */
+            var profileManager = new InMemoryPlayerProfileManager<BoxPusherPlayerProfile>();
+            profileManager.TryCreatePlayer(new BoxPusherPlayerProfile("Duffy Duck"), out _, out _);
+            profileManager.TryCreatePlayer(new BoxPusherPlayerProfile("Bugs Bunny").RecordLevelComplete(1), out _, out _);
+            mip.ServiceResolver.Store<IPlayerProfileManager<BoxPusherPlayerProfile>>(profileManager);
+
             mip.ServiceResolver.Store(new BoxPusherWinConditionSystems());
             mip.ServiceResolver.Store(BoxPusherLevelSystem<ActorReference, ItemReference>.Create(mip.ServiceResolver, BoxPusherMapLayers.Actors));
-            mip.ServiceResolver.Store<IPlayerManager<ActorReference, BoxPusherPlayerProfile>>(new InMemoryPlayerManager<ActorReference, BoxPusherPlayerProfile>(
-                                                                                                  mip.ServiceResolver.Resolve<IItemResolver<ActorReference>>(),
-                                                                                                  mip.ServiceResolver.ResolveToReference<IPlayerServiceConfiguration>()));
+            mip.ServiceResolver.Store<IPlayerManager<ActorReference, BoxPusherPlayerProfile>>(
+                new InMemoryPlayerManager<ActorReference, BoxPusherPlayerProfile>(
+                    mip.ServiceResolver.Resolve<IItemResolver<ActorReference>>(),
+                    mip.ServiceResolver.ResolveToReference<IPlayerServiceConfiguration>(),
+                    profileManager));
         }
 
         [ContentInitializer]

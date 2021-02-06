@@ -1,4 +1,5 @@
-﻿using System.Collections.Concurrent;
+﻿using RogueEntity.Api.Utils;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
@@ -30,5 +31,49 @@ namespace RogueEntity.Core.Utils
 
             return r.IsMatch(str);
         }
+
+        public static Optional<T> MaybeMax<T>(this IEnumerable<T> e)
+        {
+            var cmp = Comparer<T>.Default;
+            using var en = e.GetEnumerator();
+            if (!en.MoveNext())
+            {
+                return Optional.Empty();
+            }
+
+            var value = en.Current;
+            while (en.MoveNext())
+            {
+                var maybeHigher = en.Current;
+                if (cmp.Compare(maybeHigher, value) > 0)
+                {
+                    value = maybeHigher;
+                }
+            }
+
+            return value;
+        } 
+        
+        public static Optional<T> MaybeMin<T>(this IEnumerable<T> e)
+        {
+            var cmp = Comparer<T>.Default;
+            using var en = e.GetEnumerator();
+            if (!en.MoveNext())
+            {
+                return Optional.Empty();
+            }
+
+            var value = en.Current;
+            while (en.MoveNext())
+            {
+                var maybeHigher = en.Current;
+                if (cmp.Compare(maybeHigher, value) < 0)
+                {
+                    value = maybeHigher;
+                }
+            }
+
+            return value;
+        } 
     }
 }

@@ -111,7 +111,7 @@ namespace RogueEntity.SadCons.Controls
             for (int renderedItem = itemOffset; renderedItem < listbox.Items.Count; renderedItem += 1)
             {
                 var relativeItem = renderedItem - itemOffset;
-                if (relativeItem * listbox.ListItemHeight > endingRow)
+                if (relativeItem * listbox.ItemTheme.ItemHeight > endingRow)
                 {
                     return;
                 }
@@ -142,8 +142,8 @@ namespace RogueEntity.SadCons.Controls
                     Helpers.SetFlag(ref state, ControlStates.Selected);
                 }
 
-                var renderAreaY = startingRow + relativeItem * listbox.ListItemHeight;
-                var renderAreaY2 = Math.Min(renderAreaY + listbox.ListItemHeight, endingRow);
+                var renderAreaY = startingRow + relativeItem * listbox.ItemTheme.ItemHeight;
+                var renderAreaY2 = Math.Min(renderAreaY + listbox.ItemTheme.ItemHeight, endingRow);
                 var bounds = new Rectangle(columnOffset, renderAreaY, columnEnd, renderAreaY2 - renderAreaY);
                 
                 listbox.ItemTheme.Draw(listbox.Surface, bounds, listbox.Items[renderedItem], state);

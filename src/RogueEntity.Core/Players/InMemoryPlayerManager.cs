@@ -3,96 +3,72 @@ using JetBrains.Annotations;
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Core.Meta.Items;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace RogueEntity.Core.Players
 {
     public class InMemoryPlayerManager<TEntity, TProfileData> : IPlayerManager<TEntity, TProfileData>
         where TEntity : IEntityKey
     {
+        readonly IPlayerProfileManager<TProfileData> profileManager;
         readonly IItemResolver<TEntity> itemResolver;
         readonly Lazy<IPlayerServiceConfiguration> playerItemId;
-        readonly Dictionary<Guid, PlayerRecord> records;
 
-        public InMemoryPlayerManager([NotNull] IItemResolver<TEntity> itemResolver, Lazy<IPlayerServiceConfiguration> playerItemId)
+        public InMemoryPlayerManager([NotNull] IItemResolver<TEntity> itemResolver,
+                                     [NotNull] Lazy<IPlayerServiceConfiguration> playerItemId,
+                                     [NotNull] IPlayerProfileManager<TProfileData> profileManager)
         {
             this.itemResolver = itemResolver ?? throw new ArgumentNullException(nameof(itemResolver));
-            this.playerItemId = playerItemId;
-            this.records = new Dictionary<Guid, PlayerRecord>();
+            this.playerItemId = playerItemId ?? throw new ArgumentNullException(nameof(playerItemId));
+            this.profileManager = profileManager ?? throw new ArgumentNullException(nameof(profileManager));
         }
 
         public bool TryActivatePlayer(Guid playerId, out PlayerTag playerTag, out TEntity playerEntity, out TProfileData playerProfile)
         {
-            if (records.TryGetValue(playerId, out var record))
+            if (!profileManager.TryLoadPlayerData(playerId, out playerProfile))
             {
-                var entities = itemResolver.QueryProvider.QueryById(playerItemId.Value.PlayerId);
-                playerTag = new PlayerTag(record.PlayerId);
-                foreach (var e in entities)
-                {
-                    if (!itemResolver.TryQueryData(e, out PlayerTag maybePlayerTag))
-                    {
-                        continue;
-                    }
-
-                    if (maybePlayerTag.Equals(playerTag))
-                    {
-                        playerEntity = e;
-                        playerProfile = record.ProfileData;
-                        return true;
-                    }
-                }
-                
-                playerEntity = itemResolver.Instantiate(playerItemId.Value.PlayerId);
-                playerProfile = record.ProfileData;
-                return true;
+                playerTag = default;
+                playerEntity = default;
+                return false;
             }
-
-            playerProfile = default;
-            playerEntity = default;
-            playerTag = default;
-            return false;
-        }
-
-        public bool TryCreatePlayer(in TProfileData profile, out PlayerTag playerTag, out TEntity playerEntity, out TProfileData profileData)
-        {
-            for (var trials = 0; trials < 100; trials += 1)
+            
+            var entities = itemResolver.QueryProvider.QueryById(playerItemId.Value.PlayerId);
+            playerTag = new PlayerTag(playerId);
+            foreach (var e in entities)
             {
-                var maybePlayerId = Guid.NewGuid();
-                if (!records.ContainsKey(maybePlayerId))
+                if (!itemResolver.TryQueryData(e, out PlayerTag maybePlayerTag))
                 {
-                    playerEntity = itemResolver.Instantiate(playerItemId.Value.PlayerId);
-                    playerTag = new PlayerTag(maybePlayerId);
-                    records.Add(maybePlayerId, new PlayerRecord(maybePlayerId, profile));
-                    profileData = profile;
+                    continue;
+                }
+
+                if (maybePlayerTag.Equals(playerTag))
+                {
+                    playerEntity = e;
                     return true;
                 }
             }
 
-            profileData = default;
-            playerTag = default;
-            playerEntity = default;
+            playerEntity = itemResolver.Instantiate(playerItemId.Value.PlayerId);
+            return true;
+        }
+
+        public bool TryDeactivatePlayer(Guid playerId)
+        {
+            var entities = itemResolver.QueryProvider.QueryById(playerItemId.Value.PlayerId);
+            var playerTag = new PlayerTag(playerId);
+            foreach (var e in entities)
+            {
+                if (!itemResolver.TryQueryData(e, out PlayerTag maybePlayerTag))
+                {
+                    continue;
+                }
+
+                if (maybePlayerTag.Equals(playerTag))
+                {
+                    itemResolver.Destroy(e);
+                    return true;
+                }
+            }
             return false;
         }
-
-        public bool TryDiscardPlayerState(Guid playerId)
-        {
-            return records.Remove(playerId);
-        }
-
-        public IReadOnlyList<(Guid playerId, TProfileData)> KnownPlayers => records.Values.Select(e => (playerId: e.PlayerId, profileData: e.ProfileData)).ToList();
-        
-        readonly struct PlayerRecord
-        {
-            public readonly Guid PlayerId;
-            public readonly TProfileData ProfileData;
-
-            public PlayerRecord(Guid playerId, TProfileData profileData)
-            {
-                this.PlayerId = playerId;
-                this.ProfileData = profileData;
-            }
-        }
-
     }
 }

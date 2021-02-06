@@ -2,16 +2,24 @@ using Microsoft.Xna.Framework;
 using SadConsole;
 using SadConsole.Controls;
 using SadConsole.Themes;
+using System;
 
 namespace RogueEntity.SadCons.Controls
 {
     public class FlexibleListBoxItemTheme<T> : ThemeStates
     {
-        readonly FlexibleCursor cursor;
+        protected readonly FlexibleCursor Cursor;
+        public int ItemHeight { get; }
 
-        public FlexibleListBoxItemTheme()
+        public FlexibleListBoxItemTheme(int itemHeight = 1)
         {
-            cursor = new FlexibleCursor();
+            if (itemHeight < 1)
+            {
+                throw new ArgumentException();
+            }
+
+            ItemHeight = itemHeight;
+            Cursor = new FlexibleCursor();
         }
 
         /// <inheritdoc />
@@ -30,30 +38,39 @@ namespace RogueEntity.SadCons.Controls
 
         public virtual void Draw(CellSurface surface, Rectangle area, T item, ControlStates itemState)
         {
-            cursor.AttachSurface(surface, area);
-            if (Helpers.HasFlag(itemState, ControlStates.Selected) && !Helpers.HasFlag(itemState, ControlStates.MouseOver))
-            {
-                cursor.PrintAppearance = Selected;
-            }
-            else
-            {
-                cursor.PrintAppearance = GetStateAppearance(itemState);
-            }
-
-            cursor.Position = area.Location;
             try
             {
-                DrawValue(cursor, area, item);
+                Cursor.AttachSurface(surface, area);
+                Cursor.AutomaticallyShiftRowsUp = false;
+                Cursor.Position = new Point(0, 0);
+                
+                if (Helpers.HasFlag(itemState, ControlStates.Selected) && !Helpers.HasFlag(itemState, ControlStates.MouseOver))
+                {
+                    Cursor.SetPrintAppearance(Selected);
+                }
+                else
+                {
+                    Cursor.SetPrintAppearance(GetStateAppearance(itemState));
+                }
+
+                surface.Fill(area, Cursor.PrintAppearance.Foreground, Cursor.PrintAppearance.Background, 0);
+
+                DrawValue(Cursor, area, item, itemState);
             }
             finally
             {
-                cursor.DetachSurface();
+                Cursor.DetachSurface();
             }
         }
 
-        protected virtual ColoredString FormatValue(FlexibleCursor cursor, Rectangle area, T item)
+        protected virtual ColoredString FormatValue(FlexibleCursor cursor, Rectangle area, T item, ControlStates state)
         {
             string value = $"{item}";
+            return FormatValueFromString(cursor, area, value);
+        }
+
+        protected ColoredString FormatValueFromString(FlexibleCursor cursor, Rectangle area, string value)
+        {
             if (value.Length < area.Width)
             {
                 value += new string(' ', area.Width - value.Length);
@@ -65,13 +82,13 @@ namespace RogueEntity.SadCons.Controls
 
             return cursor.PrepareColoredString(value);
         }
-        
-        protected virtual void DrawValue(FlexibleCursor cursor, Rectangle area, T item)
+
+        protected virtual void DrawValue(FlexibleCursor cursor, Rectangle area, T item, ControlStates state)
         {
-            cursor.Print(FormatValue(cursor, area, item));
+            cursor.Print(FormatValue(cursor, area, item, state));
         }
 
-        public new virtual object Clone() => new FlexibleListBoxItemTheme<T>()
+        public new virtual object Clone() => new FlexibleListBoxItemTheme<T>(ItemHeight)
         {
             Normal = Normal.Clone(),
             Disabled = Disabled.Clone(),

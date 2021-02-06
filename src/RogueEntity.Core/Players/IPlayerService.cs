@@ -1,20 +1,8 @@
 using RogueEntity.Api.Utils;
 using System;
-using System.Collections.Generic;
 
 namespace RogueEntity.Core.Players
 {
-    public interface IPlayerManager<TEntity, TProfileData>
-    {
-        bool TryActivatePlayer(Guid playerId, out PlayerTag playerTag, out TEntity playerEntity, out TProfileData profileData);
-
-        bool TryCreatePlayer(in TProfileData profile, out PlayerTag playerTag, out TEntity playerEntity, out TProfileData profileData);
-
-        bool TryDiscardPlayerState(Guid playerId);
-        
-        IReadOnlyList<(Guid playerId, TProfileData)> KnownPlayers { get; }
-    }
-    
     public interface IPlayerService<TEntity>
     {
         /// <summary>

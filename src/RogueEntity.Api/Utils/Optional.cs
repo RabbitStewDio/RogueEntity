@@ -121,6 +121,9 @@ namespace RogueEntity.Api.Utils
             }
         }
 
+        public T GetOrElse(T t) => HasValue ? value : t;
+        public T GetOrElse(Func<T> ft) => HasValue ? value : ft();
+
         public static bool operator ==(Optional<T> left, T right)
         {
             return left.Equals(right);

@@ -31,6 +31,7 @@ namespace RogueEntity.Simple.Demo.BoxPusher
 
         public IPlayerService<ActorReference> PlayerService { get; private set; }
         public IPlayerManager<ActorReference, BoxPusherPlayerProfile> PlayerManager { get; private set; }
+        public IPlayerProfileManager<BoxPusherPlayerProfile> ProfileManager { get; private set; }
         public IServiceResolver ServiceResolver { get; private set; }
 
         public BoxPusherGame()
@@ -53,12 +54,11 @@ namespace RogueEntity.Simple.Demo.BoxPusher
 
             PlayerService = ServiceResolver.Resolve<IPlayerService<ActorReference>>();
             PlayerManager = ServiceResolver.Resolve<IPlayerManager<ActorReference, BoxPusherPlayerProfile>>();
+            ProfileManager = ServiceResolver.Resolve<IPlayerProfileManager<BoxPusherPlayerProfile>>();
         }
         
         public Console InitializeRendering(int width, int height)
         {
-            gameLoop.Initialize();
-
             var console = new Console(width, height);
             console.FillWithRandomGarbage();
             
@@ -72,21 +72,12 @@ namespace RogueEntity.Simple.Demo.BoxPusher
         ///    or a new, randomly generated player id.
         /// </summary>
         /// <param name="playerProfileId"></param>
-        public bool LoadProfile(Guid playerProfileId)
+        public bool StartGame(Guid playerProfileId)
         {
             if (PlayerManager.TryActivatePlayer(playerProfileId, out var playerTag, out var playerEntityId, out var playerRecord))
             {
-                playerData = new PlayerData(playerTag, playerEntityId, playerRecord);
-                return true;
-            }
-
-            return false;
-        }
-
-        public bool CreateNewProfile(string profileName)
-        {
-            if (PlayerManager.TryCreatePlayer(new BoxPusherPlayerProfile(profileName), out var playerTag, out var playerEntityId, out var playerRecord))
-            {
+                gameLoop.Initialize();
+                
                 playerData = new PlayerData(playerTag, playerEntityId, playerRecord);
                 return true;
             }

@@ -16,14 +16,15 @@ namespace RogueEntity.SadCons.Controls
     /// </summary>
     public class FlexibleCursor
     {
+        static readonly ThreadLocal<ColoredGlyph> SpaceGlyphThreadVar = new ThreadLocal<ColoredGlyph>(() => new ColoredGlyph(), true);
+        static readonly ThreadLocal<ParseCommandStacks> ParseCommandStacksThreadVar = new ThreadLocal<ParseCommandStacks>(() => new ParseCommandStacks(), true);
         static readonly int DefaultCursorCharacter = 219;
         
         CellSurface editor;
         Cell cursorRenderCell;
         Point position;
         Rectangle bounds;
-
-
+        
         /// <summary>
         /// Cell used to render the cursor on the screen.
         /// </summary>
@@ -43,7 +44,7 @@ namespace RogueEntity.SadCons.Controls
         /// <summary>
         /// Appearance used when printing text.
         /// </summary>
-        public Cell PrintAppearance { get; set; }
+        public Cell PrintAppearance { get; }
 
         /// <summary>
         /// This effect is applied to each cell printed by the cursor.
@@ -82,28 +83,25 @@ namespace RogueEntity.SadCons.Controls
                 {
                     Point old = position;
 
-                    if (!(value.X < 0 || value.X >= bounds.Width))
-                    {
-                        position.X = value.X;
-                    }
-
-                    if (!(value.Y < 0 || value.Y >= bounds.Height))
-                    {
-                        position.Y = value.Y;
-                    }
-
+                    position.X = Math.Max(0, Math.Min(value.X, bounds.Width));
+                    position.Y = Math.Max(0, Math.Min(value.Y, bounds.Height));
+                    
                     if (position != old)
                     {
                         editor.IsDirty = true;
                     }
                 }
+                else
+                {
+                    position = value;
+                }
             }
         }
 
         /// <summary>
-        /// When true, prevents the any print method from breaking words up by spaces when wrapping lines.
+        /// When true, any print method will attempt to break lines at word boundaries (that is whole words are preserved).
         /// </summary>
-        public bool DisableWordBreak { get; set; }
+        public bool WordBreak { get; set; }
 
         /// <summary>
         /// Enables linux-like string parsing where a \n behaves like a \r\n.
@@ -144,19 +142,10 @@ namespace RogueEntity.SadCons.Controls
         /// <param name="console">The console this cursor will print on.</param>
         public FlexibleCursor(CellSurface console) : this(console, new Rectangle(0, 0, console.Width, console.Height)) {}
         
-        public FlexibleCursor(CellSurface console, Rectangle bounds)
+        public FlexibleCursor(CellSurface console, Rectangle bounds): this()
         {
             this.editor = console;
             this.bounds = Rectangle.Intersect(bounds, new Rectangle(0, 0, console.Width, console.Height));
-
-            IsEnabled = true;
-            IsVisible = false;
-            AutomaticallyShiftRowsUp = true;
-
-            PrintAppearance = new Cell(Color.White, Color.Black, 0);
-            CursorRenderCell = new Cell(Color.White, Color.Transparent, DefaultCursorCharacter);
-
-            ResetCursorEffect();
         }
 
         public FlexibleCursor()
@@ -164,6 +153,7 @@ namespace RogueEntity.SadCons.Controls
             IsEnabled = true;
             IsVisible = false;
             AutomaticallyShiftRowsUp = true;
+            UseLinuxLineEndings = true;
 
             PrintAppearance = new Cell(Color.White, Color.Black, 0);
             CursorRenderCell = new Cell(Color.White, Color.Transparent, DefaultCursorCharacter);
@@ -224,7 +214,9 @@ namespace RogueEntity.SadCons.Controls
         {
             if (editor != null)
             {
-                PrintAppearance = new Cell(editor.DefaultForeground, editor.DefaultBackground, 0);
+                PrintAppearance.Clear();
+                PrintAppearance.Background = editor.DefaultBackground;
+                PrintAppearance.Foreground = editor.DefaultForeground;
             }
             else
             {
@@ -239,17 +231,48 @@ namespace RogueEntity.SadCons.Controls
         /// </summary>
         /// <param name="appearance">The appearance to set.</param>
         /// <returns>This cursor object.</returns>
-        public FlexibleCursor SetPrintAppearance(Cell appearance)
+        public FlexibleCursor SetPrintAppearance([NotNull] Cell appearance)
         {
-            PrintAppearance = appearance;
+            PrintAppearance.CopyAppearanceFrom(appearance ?? throw new ArgumentNullException(nameof(appearance)));
             return this;
+        }
+
+        void PrintGlyph(char glyph)
+        {
+            var editorPosX = position.X + bounds.X;
+            var editorPosY = position.Y + bounds.Y;
+
+            var pos = editorPosY * editor.Width + editorPosX;
+            if (pos < 0 || pos >= editor.Cells.Length)
+            {
+                System.Console.WriteLine($"Error: {editorPosX},{editorPosY}");
+                return;
+            }
+            Cell cell = editor.Cells[editorPosY * editor.Width + editorPosX];
+            cell.CopyAppearanceFrom(PrintAppearance);
+            cell.Glyph = glyph;
+            
+            position.X += 1;
+            if (position.X >= bounds.Width)
+            {
+                CarriageReturn().LineFeed(AutomaticallyShiftRowsUp);
+            }
+
+            editor.IsDirty = true;
         }
         
         void PrintGlyph(ColoredGlyph glyph, ColoredString settings)
         {
             var editorPosX = position.X + bounds.X;
             var editorPosY = position.Y + bounds.Y;
-            Cell cell = editor.Cells[editorPosY * editor.Width + editorPosX];
+            
+            var pos = editorPosY * editor.Width + editorPosX;
+            if (pos < 0 || pos >= editor.Cells.Length)
+            {
+                return;
+            }
+
+            Cell cell = editor.Cells[pos];
 
             if (!PrintOnlyCharacterData)
             {
@@ -343,9 +366,6 @@ namespace RogueEntity.SadCons.Controls
 
             return coloredString;
         }
-
-        static readonly ThreadLocal<ColoredGlyph> SpaceGlyphThreadVar = new ThreadLocal<ColoredGlyph>(() => new ColoredGlyph(), true);
-        static readonly ThreadLocal<ParseCommandStacks> ParseCommandStacksThreadVar = new ThreadLocal<ParseCommandStacks>(() => new ParseCommandStacks(), true);
         
         public FlexibleCursor Print(ColoredString coloredString)
         {
@@ -372,10 +392,10 @@ namespace RogueEntity.SadCons.Controls
                 {
                     var wordSize = wordEnd - wordStart;
                     var availableSpaceOnLine = bounds.Width - position.X;
-                    if (!DisableWordBreak && wordSize > availableSpaceOnLine)
+                    if (WordBreak && position.X > 0 && wordSize > availableSpaceOnLine)
                     {
                         spaceGlyph.CopyAppearanceFrom(c);
-                        spaceGlyph.GlyphCharacter = ' ';
+                        spaceGlyph.GlyphCharacter = '.';
                         var padding = wordSize - availableSpaceOnLine;
                         for (var p = 0; p < padding; p += 1)
                         {
@@ -394,51 +414,56 @@ namespace RogueEntity.SadCons.Controls
                     containsNonWhiteSpace = false;
                 }
 
-                if (c.GlyphCharacter == '\n')
+                switch (c.GlyphCharacter)
                 {
-                    LineFeed(AutomaticallyShiftRowsUp);
-                    if (!previousWasCarriageReturn && UseLinuxLineEndings)
+                    case '\n':
                     {
-                        CarriageReturn();
+                        LineFeed(AutomaticallyShiftRowsUp);
+                        if (!previousWasCarriageReturn && UseLinuxLineEndings)
+                        {
+                            CarriageReturn();
+                            ignoreCarriageReturn = true;
+                        }
+
+                        wordStart += 1;
+                        break;
                     }
-
-                    ignoreCarriageReturn = true;
-                    continue;
-                }
-
-                if (c.GlyphCharacter == '\r')
-                {
-                    if (ignoreCarriageReturn)
+                    case '\r':
                     {
+                        if (ignoreCarriageReturn)
+                        {
+                            ignoreCarriageReturn = false;
+                        }
+                        else
+                        {
+                            CarriageReturn();
+                        }
+                        previousWasCarriageReturn = true;
+                        wordStart += 1;
+                        break;
+                    }
+                    case '\t':
+                    {
+                        previousWasCarriageReturn = false;
                         ignoreCarriageReturn = false;
+                    
+                        // go to next tab position
+                        position.X = ((position.X + 8) / 8) * 8;
+                        if (position.X > bounds.Width)
+                        {
+                            CarriageReturn().LineFeed(AutomaticallyShiftRowsUp);
+                        }
+                        wordStart += 1;
+                        break;
                     }
-                    else
-                    {
-                        CarriageReturn();
-                    }
-                    previousWasCarriageReturn = true;
-                    continue;
+                    default:
+                        PrintGlyph(c, coloredString);
+                        wordStart = index + 1;
+                        
+                        previousWasCarriageReturn = false;
+                        ignoreCarriageReturn = false;
+                        break;
                 }
-                else
-                {
-                    previousWasCarriageReturn = false;
-                    ignoreCarriageReturn = false;
-                }
-
-                if (c.GlyphCharacter == '\t')
-                {
-                    // go to next tab position
-                    position.X = ((position.X + 8) / 8) * 8;
-                    if (position.X > bounds.Width)
-                    {
-                        CarriageReturn().LineFeed(AutomaticallyShiftRowsUp);
-                    }
-                    continue;
-                }
-
-                PrintGlyph(c, coloredString);
-                position.X += 1;
-                wordStart = index + 1;
             }
 
             // Handle straggling characters that may be left behind from the loop above.
@@ -446,10 +471,10 @@ namespace RogueEntity.SadCons.Controls
             {
                 var wordSize = wordEnd - wordStart;
                 var availableSpaceOnLine = bounds.Width - position.X;
-                if (!DisableWordBreak && wordSize > availableSpaceOnLine)
+                if (WordBreak && position.X > 0 && wordSize > availableSpaceOnLine)
                 {
                     spaceGlyph.CopyAppearanceFrom(coloredString[wordStart]);
-                    spaceGlyph.GlyphCharacter = ' ';
+                    spaceGlyph.GlyphCharacter = '.';
                     var padding = wordSize - availableSpaceOnLine;
                     for (var p = 0; p < padding; p += 1)
                     {
@@ -463,6 +488,128 @@ namespace RogueEntity.SadCons.Controls
                     for (; wordStart < wordEnd; wordStart += 1)
                     {
                         PrintGlyph(coloredString[wordStart], coloredString);
+                    }
+                }
+            }
+
+            return this;
+        }
+        
+        public FlexibleCursor PrintPlain(string text)
+        {
+            int wordStart = 0;
+            int wordEnd = 0;
+
+            var ignoreCarriageReturn = false;
+            var previousWasCarriageReturn = false;
+
+            bool containsNonWhiteSpace = false;
+            for (var index = 0; index < text.Length; index++)
+            {
+                var c = text[index];
+                if (!char.IsWhiteSpace(c))
+                {
+                    containsNonWhiteSpace = true;
+                    wordEnd = index + 1;
+                    previousWasCarriageReturn = false;
+                    continue;
+                }
+
+                if (containsNonWhiteSpace)
+                {
+                    var wordSize = wordEnd - wordStart;
+                    var availableSpaceOnLine = bounds.Width - position.X;
+                    if (WordBreak && position.X > 0 && wordSize > availableSpaceOnLine)
+                    {
+                        var padding = wordSize - availableSpaceOnLine;
+                        for (var p = 0; p < padding; p += 1)
+                        {
+                            PrintGlyph(' ');
+                        }
+                    }
+
+                    while (wordStart != wordEnd)
+                    {
+                        for (; wordStart < wordEnd; wordStart += 1)
+                        {
+                            PrintGlyph(text[wordStart]);
+                        }
+                    }
+
+                    containsNonWhiteSpace = false;
+                }
+
+                switch (c)
+                {
+                    case '\n':
+                    {
+                        LineFeed(AutomaticallyShiftRowsUp);
+                        if (!previousWasCarriageReturn && UseLinuxLineEndings)
+                        {
+                            CarriageReturn();
+                        }
+
+                        ignoreCarriageReturn = true;
+                        break;
+                    }
+                    case '\r':
+                    {
+                        if (ignoreCarriageReturn)
+                        {
+                            ignoreCarriageReturn = false;
+                        }
+                        else
+                        {
+                            CarriageReturn();
+                        }
+                        previousWasCarriageReturn = true;
+                        break;
+                    }
+                    case '\t':
+                    {
+                        previousWasCarriageReturn = false;
+                        ignoreCarriageReturn = false;
+                        // go to next tab position
+                        position.X = ((position.X + 8) / 8) * 8;
+                        if (position.X > bounds.Width)
+                        {
+                            CarriageReturn().LineFeed(AutomaticallyShiftRowsUp);
+                        }
+                        break;
+                    }
+                    default:
+                    {
+                        previousWasCarriageReturn = false;
+                        ignoreCarriageReturn = false;
+                        PrintGlyph(c);
+                        position.X += 1;
+                        wordStart = index + 1;
+                        break;
+                    }
+                }
+
+            }
+
+            // Handle straggling characters that may be left behind from the loop above.
+            if (containsNonWhiteSpace)
+            {
+                var wordSize = wordEnd - wordStart;
+                var availableSpaceOnLine = bounds.Width - position.X;
+                if (WordBreak && position.X > 0 && wordSize > availableSpaceOnLine)
+                {
+                    var padding = wordSize - availableSpaceOnLine;
+                    for (var p = 0; p < padding; p += 1)
+                    {
+                        PrintGlyph(' ');
+                    }
+                    CarriageReturn().LineFeed(AutomaticallyShiftRowsUp);
+                }
+
+                while (wordStart != wordEnd)
+                {
+                    for (; wordStart < wordEnd; wordStart += 1)
+                    {
+                        PrintGlyph(text[wordStart]);
                     }
                 }
             }
@@ -660,7 +807,10 @@ namespace RogueEntity.SadCons.Controls
 
                 if (CursorEffect.UpdateCell(CursorRenderCell))
                 {
-                    editor.IsDirty = true;
+                    if (editor != null)
+                    {
+                        editor.IsDirty = true;
+                    }
                 }
             }
         }
