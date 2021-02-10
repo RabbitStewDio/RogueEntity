@@ -11,11 +11,11 @@ namespace RogueEntity.Core.Meta.Items
         where TItemId: IEntityKey
     {
         readonly IBulkDataStorageMetaData<TItemId> metaData;
-        readonly EntityKeyMapper<TItemId> entityKeyMapper;
+        readonly IEntityKeyMapper entityKeyMapper;
         readonly BulkItemSerializationMapperDelegate<TItemId> bulkIdMapper;
         
         public BulkKeyMessagePackFormatter(IBulkDataStorageMetaData<TItemId> metaData,
-                                           EntityKeyMapper<TItemId> entityKeyMapper, 
+                                           IEntityKeyMapper entityKeyMapper, 
                                            BulkItemSerializationMapperDelegate<TItemId> bulkIdMapper)
         {
             this.metaData = metaData ?? throw new ArgumentNullException(nameof(metaData));
@@ -45,7 +45,7 @@ namespace RogueEntity.Core.Meta.Items
             {
                 var age = reader.ReadByte();
                 var key = reader.ReadInt32();
-                return entityKeyMapper(new EntityKeyData(age, key));
+                return entityKeyMapper.EntityKeyMapper<TItemId>(new EntityKeyData(age, key));
             }
 
             var itemId = reader.ReadInt32();

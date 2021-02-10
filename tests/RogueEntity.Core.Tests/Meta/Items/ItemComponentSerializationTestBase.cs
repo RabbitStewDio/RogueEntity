@@ -158,8 +158,8 @@ namespace RogueEntity.Core.Tests.Meta.Items
 
             var surr = new ObjectSurrogateResolver();
 
-            var scn = new EntityRegistrationScanner().With(new XmlEntityRegistrationHandler<TItemId>(surr))
-                                                     .With(new XmlDataContractRegistrationHandler<TItemId>(surr));
+            var scn = new EntityRegistrationScanner().With(new XmlEntityRegistrationHandler(surr))
+                                                     .With(new XmlDataContractRegistrationHandler(surr));
             if (!scn.TryRegisterComponent<ItemDeclarationHolder< TItemId>>(out var itemDeclarationRegistration))
             {
                 Assert.Fail("Unable to register item declaration type.");
@@ -197,8 +197,8 @@ namespace RogueEntity.Core.Tests.Meta.Items
         TItemId DeserializeFromXml(string xml, TItemId originalId)
         {
             var surr = new ObjectSurrogateResolver();
-            var scn = new EntityRegistrationScanner().With(new XmlEntityRegistrationHandler<TItemId>(surr))
-                                                     .With(new XmlDataContractRegistrationHandler<TItemId>(surr));
+            var scn = new EntityRegistrationScanner().With(new XmlEntityRegistrationHandler(surr))
+                                                     .With(new XmlDataContractRegistrationHandler(surr));
 
             PerformBaseEntityComponentRegistration(scn, out var itemDeclarationRegistration, out var keyRegistration);
 
@@ -210,11 +210,12 @@ namespace RogueEntity.Core.Tests.Meta.Items
 
             using (var ld = EntityRegistry.CreateLoader())
             {
-                PopulateSurrogateResolver(surr, ld.Map, registration, keyRegistration);
+                var mapper = new DefaultEntityKeyMapper().Register(ld.Map);
+                PopulateSurrogateResolver(surr, mapper, registration, keyRegistration);
 
                 var reader = new XmlBulkArchiveReader<TItemId>(reg);
                 var xmlReader = XmlReader.Create(new StringReader(xml));
-                reader.ReadAll(xmlReader, ld);
+                reader.ReadAll(xmlReader, ld, mapper);
                 if (!ld.TryLookupMapping(originalId, out var retval))
                 {
                     Assert.Fail("Unable to locate input in deserialized data.");
@@ -240,7 +241,7 @@ namespace RogueEntity.Core.Tests.Meta.Items
         }
 
         void PopulateSurrogateResolver(ObjectSurrogateResolver surr, 
-                                       EntityKeyMapper<TItemId> mapper,
+                                       IEntityKeyMapper mapper,
                                        params EntityComponentRegistration[] components)
         {
             var xmlContext = new XmlSerializationContext();
@@ -261,7 +262,7 @@ namespace RogueEntity.Core.Tests.Meta.Items
 
         byte[] SerializeToBinary()
         {
-            var scn = new EntityRegistrationScanner().With(new BinaryEntityRegistrationHandler<TItemId>());
+            var scn = new EntityRegistrationScanner().With(new BinaryEntityRegistrationHandler());
             PerformBaseEntityComponentRegistration(scn, out var itemDeclarationRegistration, out var keyRegistration);
             var registration = PerformEntityComponentRegistration(scn);
 
@@ -273,7 +274,11 @@ namespace RogueEntity.Core.Tests.Meta.Items
             {
                 var stream = new MemoryStream();
 
-                var msgPackOptions = MessagePackSerializerOptions.Standard.WithResolver(CreateMessageResolver(WriteMapper, registration, keyRegistration));
+                var msgPackOptions = MessagePackSerializerOptions.Standard
+                                                                 .WithResolver(CreateMessageResolver(new DefaultEntityKeyMapper().Register(WriteMapper), 
+                                                                                                     registration, 
+                                                                                                     keyRegistration)
+                                                                               );
                 var writer = new BinaryArchiveWriter<TItemId>(reg, stream, msgPackOptions);
 
                 sn.WriteAll(writer);
@@ -295,18 +300,19 @@ namespace RogueEntity.Core.Tests.Meta.Items
         
         TItemId DeserializeFromBinary(byte[] data, TItemId originalId)
         {
-            var scn = new EntityRegistrationScanner().With(new BinaryEntityRegistrationHandler<TItemId>());
+            var scn = new EntityRegistrationScanner().With(new BinaryEntityRegistrationHandler());
             PerformBaseEntityComponentRegistration(scn, out var itemDeclarationRegistration, out var keyRegistration);
             var registration = PerformEntityComponentRegistration(scn);
 
             var reg = new BinaryReadHandlerRegistry().Register(registration)
                                                      .Register(itemDeclarationRegistration);
 
-            var readerBackend = new BinaryReaderBackend<TItemId>(reg);
 
             using (var ld = EntityRegistry.CreateLoader())
             {
-                var msgPackOptions = MessagePackSerializerOptions.Standard.WithResolver(CreateMessageResolver(ld.Map, registration, keyRegistration));
+                var readerBackend = new BinaryReaderBackend<TItemId>(reg);
+                var msgPackOptions = MessagePackSerializerOptions.Standard.WithResolver(CreateMessageResolver(new DefaultEntityKeyMapper().Register(ld.Map), 
+                                                                                                              registration, keyRegistration));
                 var reader = new BinaryBulkArchiveReader<TItemId>(readerBackend, msgPackOptions);
 
                 var stream = new MemoryStream(data);
@@ -321,7 +327,7 @@ namespace RogueEntity.Core.Tests.Meta.Items
             }
         }
 
-        IFormatterResolver CreateMessageResolver(EntityKeyMapper<TItemId> mapper,
+        IFormatterResolver CreateMessageResolver(IEntityKeyMapper mapper,
                                                  params EntityComponentRegistration[] components)
         {
             var bs = new BinarySerializationContext();
@@ -340,12 +346,12 @@ namespace RogueEntity.Core.Tests.Meta.Items
             return bs.CreateResolver(mapper);
         }
 
-        protected virtual void CustomizeXmlSerializationContext(EntityKeyMapper<TItemId> mapper, XmlSerializationContext bs)
+        protected virtual void CustomizeXmlSerializationContext(IEntityKeyMapper mapper, XmlSerializationContext bs)
         {
             
         }
         
-        protected virtual void CustomizeBinarySerializationContext(EntityKeyMapper<TItemId> mapper, BinarySerializationContext bs)
+        protected virtual void CustomizeBinarySerializationContext(IEntityKeyMapper mapper, BinarySerializationContext bs)
         {
             
         }        

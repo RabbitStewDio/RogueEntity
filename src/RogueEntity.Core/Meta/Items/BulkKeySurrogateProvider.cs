@@ -8,17 +8,17 @@ namespace RogueEntity.Core.Meta.Items
     public class BulkKeySurrogateProvider<TItemId> : SerializationSurrogateProviderBase<TItemId, BulkKeyData>
         where TItemId : IEntityKey
     {
-        readonly EntityKeyMapper<TItemId> mapper;
+        readonly IEntityKeyMapper mapper;
         readonly IBulkDataStorageMetaData<TItemId> metaData;
         readonly BulkItemSerializationMapperDelegate<TItemId> bulkMapper;
 
         public BulkKeySurrogateProvider(IBulkDataStorageMetaData<TItemId> metaData,
-                                        EntityKeyMapper<TItemId> mapper,
+                                        IEntityKeyMapper mapper,
                                         BulkItemSerializationMapperDelegate<TItemId> bulkMapper)
         {
             this.metaData = metaData;
             this.bulkMapper = bulkMapper;
-            this.mapper = mapper ?? Map;
+            this.mapper = mapper ?? new DefaultEntityKeyMapper().Register(Map);
         }
 
         TItemId Map(EntityKeyData data)
@@ -30,7 +30,7 @@ namespace RogueEntity.Core.Meta.Items
         {
             if (surrogate.IsReference)
             {
-                return mapper(new EntityKeyData(surrogate.Age, surrogate.ItemId));
+                return mapper.EntityKeyMapper<TItemId>(new EntityKeyData(surrogate.Age, surrogate.ItemId));
             }
 
             if (metaData.TryCreateBulkKey(surrogate.ItemId, surrogate.Data, out var tmp) && 

@@ -68,25 +68,21 @@ namespace RogueEntity.Core.Tests.Equipment
             return registration;
         }
 
-        protected override void CustomizeXmlSerializationContext(EntityKeyMapper<ActorReference> mapper, XmlSerializationContext bs)
+        protected override void CustomizeXmlSerializationContext(IEntityKeyMapper mapper, XmlSerializationContext bs)
         {
-            ItemReference IdentityMapper(EntityKeyData data) => ItemReference.FromReferencedItem(data.Age, data.Key);
-
             var itemReferenceMetaData = new ItemReferenceMetaData();
             var bulkIdSerializationMapper = new BulkItemIdSerializationMapper<ItemReference>(itemReferenceMetaData, Context.ItemRegistry, Context.ItemRegistry);
             bs.Register(new ItemDeclarationHolderSurrogateProvider<ItemReference>(Context.ItemResolver));
-            bs.Register(new BulkKeySurrogateProvider<ItemReference>(itemReferenceMetaData, IdentityMapper, bulkIdSerializationMapper.TryMap));
+            bs.Register(new BulkKeySurrogateProvider<ItemReference>(itemReferenceMetaData, CreateEntityMapper(Context.ItemResolver.EntityMetaData), bulkIdSerializationMapper.TryMap));
             bs.Register(new EquipmentSlotSurrogateProvider(registry));
         }
 
-        protected override void CustomizeBinarySerializationContext(EntityKeyMapper<ActorReference> mapper, BinarySerializationContext bs)
+        protected override void CustomizeBinarySerializationContext(IEntityKeyMapper mapper, BinarySerializationContext bs)
         {
-            ItemReference IdentityMapper(EntityKeyData data) => ItemReference.FromReferencedItem(data.Age, data.Key);
-
             var itemReferenceMetaData = new ItemReferenceMetaData();
             var bulkIdSerializationMapper = new BulkItemIdSerializationMapper<ItemReference>(itemReferenceMetaData, Context.ItemRegistry, Context.ItemRegistry);
             bs.Register(new ItemDeclarationHolderMessagePackFormatter<ItemReference>(Context.ItemResolver));
-            bs.Register(new BulkKeyMessagePackFormatter<ItemReference>(itemReferenceMetaData, IdentityMapper, bulkIdSerializationMapper.TryMap));
+            bs.Register(new BulkKeyMessagePackFormatter<ItemReference>(itemReferenceMetaData, CreateEntityMapper(Context.ItemResolver.EntityMetaData), bulkIdSerializationMapper.TryMap));
             bs.Register(new EquipmentSlotMessagePackFormatter(registry));
         }
 

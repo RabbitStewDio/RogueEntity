@@ -1,4 +1,6 @@
-﻿using System;
+﻿using EnTTSharp.Entities;
+using EnTTSharp.Serialization;
+using System;
 using System.Collections.Generic;
 using FluentAssertions;
 using NUnit.Framework;
@@ -25,6 +27,12 @@ namespace RogueEntity.Core.Tests.Meta.Items
 
         protected abstract TItemTrait CreateTrait();
 
+        protected IEntityKeyMapper CreateEntityMapper<TEntityKey>(IBulkDataStorageMetaData<TEntityKey> m)
+            where TEntityKey : IEntityKey
+        {
+            return new DefaultEntityKeyMapper().Register(d => m.CreateReferenceKey(d.Age, d.Key));
+        }
+        
         [SetUp]
         public void SetUp()
         {

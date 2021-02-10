@@ -35,7 +35,7 @@ namespace RogueEntity.Core.Infrastructure.Serialization
 
         public void AddComponentRegistration(EntityComponentRegistration reg) => componentRegistrations.Add(reg);
         
-        public ObjectSurrogateResolver Populate<TItemId>(ObjectSurrogateResolver os, EntityKeyMapper<TItemId> mapper)
+        public ObjectSurrogateResolver Populate(ObjectSurrogateResolver os, IEntityKeyMapper mapper)
         {
             foreach (var s in surrogateMappings)
             {
@@ -51,7 +51,7 @@ namespace RogueEntity.Core.Infrastructure.Serialization
 
                 if (c.TryGet(out XmlWriteHandlerRegistration w))
                 {
-                    if (w.TryGetResolverFactory<TItemId>(out var factory))
+                    if (w.TryGetResolverFactory(out var factory))
                     {
                         var resolver = factory(mapper);
                         if (resolver != null)
@@ -62,7 +62,7 @@ namespace RogueEntity.Core.Infrastructure.Serialization
                 }
                 else if (c.TryGet(out XmlReadHandlerRegistration r))
                 {
-                    if (r.TryGetResolverFactory<TItemId>(out var factory))
+                    if (r.TryGetResolverFactory(out var factory))
                     {
                         var resolver = factory(mapper);
                         if (resolver != null)

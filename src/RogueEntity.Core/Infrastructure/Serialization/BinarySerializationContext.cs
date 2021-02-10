@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using EnTTSharp.Annotations;
-using EnTTSharp.Entities;
 using EnTTSharp.Serialization;
 using EnTTSharp.Serialization.Binary;
 using MessagePack;
@@ -53,7 +52,7 @@ namespace RogueEntity.Core.Infrastructure.Serialization
         public void AddComponentRegistration(EntityComponentRegistration reg) => componentRegistrations.Add(reg);
 
 
-        public IFormatterResolver CreateResolver<TItemId>(EntityKeyMapper<TItemId> mapper) where TItemId : IEntityKey
+        public IFormatterResolver CreateResolver(IEntityKeyMapper mapper) 
         {
             var resolvers = new List<IFormatterResolver>();
             resolvers.AddRange(this.formatterResolvers);
@@ -70,7 +69,7 @@ namespace RogueEntity.Core.Infrastructure.Serialization
 
                 if (c.TryGet(out BinaryWriteHandlerRegistration w))
                 {
-                    if (w.TryGetResolverFactory<TItemId>(out var factory))
+                    if (w.TryGetResolverFactory(out var factory))
                     {
                         var resolver = factory(mapper);
                         if (resolver != null)
@@ -78,7 +77,7 @@ namespace RogueEntity.Core.Infrastructure.Serialization
                             resolvers.Add(resolver);
                         }
                     }
-                    else if (w.TryGetMessagePackFormatterFactory<TItemId>(out var messageFormatter))
+                    else if (w.TryGetMessagePackFormatterFactory(out var messageFormatter))
                     {
                         var fmt = messageFormatter(mapper);
                         if (fmt != null)
@@ -89,7 +88,7 @@ namespace RogueEntity.Core.Infrastructure.Serialization
                 }
                 else if (c.TryGet(out BinaryReadHandlerRegistration r))
                 {
-                    if (r.TryGetResolverFactory<TItemId>(out var factory))
+                    if (r.TryGetResolverFactory(out var factory))
                     {
                         var resolver = factory(mapper);
                         if (resolver != null)
@@ -97,7 +96,7 @@ namespace RogueEntity.Core.Infrastructure.Serialization
                             resolvers.Add(resolver);
                         }
                     }
-                    else if (r.TryGetMessagePackFormatterFactory<TItemId>(out var messageFormatter))
+                    else if (r.TryGetMessagePackFormatterFactory(out var messageFormatter))
                     {
                         var fmt = messageFormatter(mapper);
                         if (fmt != null)
