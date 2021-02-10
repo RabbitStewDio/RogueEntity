@@ -46,7 +46,7 @@ namespace RogueEntity.Core.Tests.Sensing.Discovery
 
         static DiscoveryMapData ProduceDiscoveryData(DiscoveryMapData data)
         {
-            if (data.TryGetWritableMap(0, out var mapData))
+            if (data.TryGetWritableView(0, out var mapData))
             {
                 mapData[10, 10] = true;
                 mapData[11, 10] = true;

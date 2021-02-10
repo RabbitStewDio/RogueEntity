@@ -293,8 +293,8 @@ namespace RogueEntity.Core.Tests.Sensing.Discovery
             context.ItemResolver.TryQueryData(active10, out IDiscoveryMap m1).Should().BeTrue();
             context.ItemResolver.TryQueryData(active5, out IDiscoveryMap m2).Should().BeTrue();
 
-            m1.TryGetMap(0, out var mapA).Should().BeTrue();
-            m2.TryGetMap(0, out var mapB).Should().BeTrue();
+            m1.TryGetView(0, out var mapA).Should().BeTrue();
+            m2.TryGetView(0, out var mapB).Should().BeTrue();
 
             Console.WriteLine("Computed Discovery Map Actor A (10):");
             Console.WriteLine(TestHelpers.PrintMap(mapA, activeTestArea));

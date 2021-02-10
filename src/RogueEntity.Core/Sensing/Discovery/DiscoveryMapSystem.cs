@@ -47,7 +47,7 @@ namespace RogueEntity.Core.Sensing.Discovery
                 return;
             }
 
-            if (!map.TryGetWritableMap(pos.GridZ, out var target))
+            if (!map.TryGetWritableView(pos.GridZ, out var target))
             {
                 return;
             }
