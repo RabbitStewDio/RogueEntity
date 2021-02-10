@@ -8,7 +8,7 @@ namespace RogueEntity.Core.Positioning.Grid
     public static class GridPositionItemDeclarations
     {
         public static BulkItemDeclarationBuilder<TItemId> WithGridPosition<TItemId>(this BulkItemDeclarationBuilder<TItemId> builder, MapLayer layer, params MapLayer[] layers)
-            where TItemId : IBulkDataStorageKey<TItemId>
+            where TItemId : IEntityKey
         {
             builder.Declaration.WithTrait(new BulkItemGridPositionTrait<TItemId>(layer, layers));
             return builder;

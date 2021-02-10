@@ -11,7 +11,7 @@ namespace RogueEntity.Core.Positioning.Grid
                                                       IItemComponentTrait<TItemId, EntityGridPositionUpdateMessage>,
                                                       IItemComponentDesignTimeInformationTrait<MapLayerPreference>,
                                                       IItemComponentInformationTrait<TItemId, MapLayerPreference>
-        where TItemId : IBulkDataStorageKey<TItemId>
+        where TItemId : IEntityKey
     {
         readonly MapLayerPreference layerPreference;
 

@@ -1,5 +1,4 @@
 using EnTTSharp.Entities;
-using RogueEntity.Api.ItemTraits;
 using RogueEntity.Core.Meta.ItemBuilder;
 
 namespace RogueEntity.Core.Movement.CostModifier
@@ -17,7 +16,7 @@ namespace RogueEntity.Core.Movement.CostModifier
         public static BulkItemDeclarationBuilder< TItemId> 
             WithMovementCostModifier< TItemId, TMovementMode>(this BulkItemDeclarationBuilder< TItemId> builder,
                                                                            RelativeMovementCostModifier<TMovementMode> m)
-            where TItemId : IBulkDataStorageKey<TItemId>
+            where TItemId : IEntityKey
         {
             return builder.WithTrait(new RelativeMovementCostModifierTrait< TItemId, TMovementMode>(m));
         }
