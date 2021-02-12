@@ -85,7 +85,8 @@ namespace RogueEntity.SadCons.Controls
 
         protected virtual void DrawValue(FlexibleCursor cursor, Rectangle area, T item, ControlStates state)
         {
-            cursor.Print(FormatValue(cursor, area, item, state));
+            var value = FormatValue(cursor, area, item, state);
+            cursor.Print(value);
         }
 
         public new virtual object Clone() => new FlexibleListBoxItemTheme<T>(ItemHeight)

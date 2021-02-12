@@ -28,6 +28,7 @@ namespace RogueEntity.Simple.Demo.BoxPusher
         IGameLoop gameLoop;
         MapConsole mapConsole;
         Optional<PlayerData> playerData;
+        bool started;
 
         public IPlayerService<ActorReference> PlayerService { get; private set; }
         public IPlayerManager<ActorReference, BoxPusherPlayerProfile> PlayerManager { get; private set; }
@@ -77,7 +78,7 @@ namespace RogueEntity.Simple.Demo.BoxPusher
             if (PlayerManager.TryActivatePlayer(playerProfileId, out var playerTag, out var playerEntityId, out var playerRecord))
             {
                 gameLoop.Initialize();
-                
+                started = true;
                 playerData = new PlayerData(playerTag, playerEntityId, playerRecord);
                 return true;
             }
@@ -88,12 +89,21 @@ namespace RogueEntity.Simple.Demo.BoxPusher
         public void Stop()
         {
             gameLoop.Dispose();
+            started = false;
         }
         
         public void Update(GameTime time)
         {
-            gameLoop.Update(time.ElapsedGameTime);
-            
+            if (started)
+            {
+                gameLoop.Update(time.ElapsedGameTime);
+
+                RefreshPlayerProfile();
+            }
+        }
+
+        void RefreshPlayerProfile()
+        {
             if (playerData.TryGetValue(out var pd))
             {
                 var ir = ServiceResolver.Resolve<IItemResolver<ActorReference>>();
@@ -103,8 +113,6 @@ namespace RogueEntity.Simple.Demo.BoxPusher
                 }
             }
         }
-
-
     }
     
     public class PlayerData

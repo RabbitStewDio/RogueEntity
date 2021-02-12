@@ -16,6 +16,8 @@ namespace RogueEntity.SadCons
         Button selectButton;
         FlexibleListBoxItemTheme<PlayerProfileContainer<TProfile>> listItemRenderer;
 
+        public event EventHandler<PlayerProfileContainer<TProfile>> LoadRequested;
+
         public FlexibleListBoxItemTheme<PlayerProfileContainer<TProfile>> ListItemRenderer
         {
             get => listItemRenderer;
@@ -35,7 +37,7 @@ namespace RogueEntity.SadCons
             this.listContent = new FlexibleListBox<PlayerProfileContainer<TProfile>>(10, 10);
         }
 
-        public override void Initialize(IConsoleContext parentContext)
+        public override void Initialize(IConsoleParentContext parentContext)
         {
             base.Initialize(parentContext);
             Console = new Window(ParentContext.Bounds.Width - 10, ParentContext.Bounds.Height - 10)
@@ -113,14 +115,13 @@ namespace RogueEntity.SadCons
 
         protected virtual void OnPerformAction(PlayerProfileContainer<TProfile> profile)
         {
-            
+            LoadRequested?.Invoke(this, profile);
         }
 
         void OnBack()
         {
             Hide();
         }
-
 
         protected override void OnParentConsoleResized()
         {

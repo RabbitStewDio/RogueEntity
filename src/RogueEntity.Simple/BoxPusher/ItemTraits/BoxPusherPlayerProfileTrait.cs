@@ -1,5 +1,6 @@
 using EnTTSharp.Entities;
 using RogueEntity.Api.ItemTraits;
+using RogueEntity.Api.Utils;
 using RogueEntity.Core.Meta.Items;
 using System.Collections.Generic;
 
@@ -12,7 +13,7 @@ namespace RogueEntity.Simple.BoxPusher.ItemTraits
         {
         }
 
-        protected override BoxPusherPlayerProfile CreateInitialValue(TActorId reference)
+        protected override Optional<BoxPusherPlayerProfile> CreateInitialValue(TActorId reference)
         {
             return new BoxPusherPlayerProfile();
         }

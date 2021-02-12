@@ -1,18 +1,14 @@
-using RogueEntity.Core.Utils;
-using System;
+using JetBrains.Annotations;
 using Console = SadConsole.Console;
 
 namespace RogueEntity.SadCons
 {
-    public interface IConsoleContext
+    public interface IConsoleContext: IConsoleParentContext
     {
-        event Action ConsoleResized;
-
         bool IsVisible { get; set; }
+        void Initialize([NotNull] IConsoleParentContext parentContext);
 
-        IConsoleContext ParentContext { get; }
         Console Console { get; }
-        Rectangle Bounds { get; }
 
         void Show();
         void Hide();

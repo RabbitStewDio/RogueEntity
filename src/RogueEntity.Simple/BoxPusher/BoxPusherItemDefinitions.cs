@@ -23,12 +23,6 @@ namespace RogueEntity.Simple.BoxPusher
 {
     public static class BoxPusherItemDefinitions
     {
-        public static void DoSomething(ItemDeclarationBuilder t)
-        {
-            var itemDeclarationBuilderWithReferenceContext = t.ForEntity<ItemReference>();
-            itemDeclarationBuilderWithReferenceContext.DefineWall();
-        }
-
         public static ReferenceItemDeclarationBuilder<TActorId> DefinePlayer<TActorId, TItemId>(this ItemDeclarationBuilderWithReferenceContext<TActorId> b)
             where TActorId : IEntityKey
             where TItemId : IEntityKey
@@ -70,7 +64,7 @@ namespace RogueEntity.Simple.BoxPusher
         }
 
         public static BulkItemDeclarationBuilder<TItemId> DefineWall<TItemId>(this ItemDeclarationBuilderWithBulkContext<TItemId> b)
-            where TItemId : IBulkDataStorageKey<TItemId>
+            where TItemId : IEntityKey
         {
             return b.Define("Items.Wall")
                     .WithGridPosition(BoxPusherMapLayers.Items)
@@ -81,7 +75,7 @@ namespace RogueEntity.Simple.BoxPusher
         }
 
         public static BulkItemDeclarationBuilder<TItemId> DefineFloor<TItemId>(this ItemDeclarationBuilderWithBulkContext<TItemId> b)
-            where TItemId : IBulkDataStorageKey<TItemId>
+            where TItemId : IEntityKey
         {
             return b.Define("Items.Floor.Empty")
                     .WithGridPosition(BoxPusherMapLayers.Floor)
@@ -92,7 +86,7 @@ namespace RogueEntity.Simple.BoxPusher
         }
 
         public static ReferenceItemDeclarationBuilder<TItemId> DefineFloorTargetZone<TItemId>(this ItemDeclarationBuilderWithReferenceContext<TItemId> b)
-            where TItemId : IBulkDataStorageKey<TItemId>
+            where TItemId : IEntityKey
         {
             return b.Define("Items.Floor.TargetZone")
                     .WithGridPosition(BoxPusherMapLayers.Floor)

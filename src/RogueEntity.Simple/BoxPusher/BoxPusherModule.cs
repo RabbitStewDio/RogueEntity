@@ -8,9 +8,6 @@ using RogueEntity.Core;
 using RogueEntity.Core.Chunks;
 using RogueEntity.Core.Infrastructure.Randomness;
 using RogueEntity.Core.Meta.EntityKeys;
-using RogueEntity.Core.Meta.ItemBuilder;
-using RogueEntity.Core.Movement.CostModifier;
-using RogueEntity.Core.Movement.MovementModes.Walking;
 using RogueEntity.Core.Players;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Grid;
@@ -18,12 +15,11 @@ using RogueEntity.Core.Sensing.Sources.Light;
 using RogueEntity.Generator;
 using RogueEntity.Generator.MapFragments;
 using RogueEntity.Simple.BoxPusher.ItemTraits;
-using static RogueEntity.Core.Movement.CostModifier.MovementCostModifiers;
 
 namespace RogueEntity.Simple.BoxPusher
 {
     [Module("BoxPusher")]
-    public class BoxPusherModule : ModuleBase
+    public partial class BoxPusherModule : ModuleBase
     {
         static readonly EntityRole BoxRole = new EntityRole("Role.BoxPusher.Box");
         static readonly EntityRole TargetSpotRole = new EntityRole("Role.BoxPusher.TargetSpot");
@@ -50,74 +46,6 @@ namespace RogueEntity.Simple.BoxPusher
 
             DeclareRelation<ActorReference, ItemReference>(PlayerToBoxRelation);
             DeclareRelation<ItemReference, ItemReference>(BoxOccupiesTargetRelation);
-        }
-
-        [ModuleInitializer]
-        void InitializeModule(in ModuleInitializationParameter mip, IModuleInitializer initializer)
-        {
-            mip.ServiceResolver.ConfigureLightPhysics();
-            mip.ServiceResolver.ConfigureEntity(ItemReferenceMetaData.Instance, BoxPusherMapLayers.Floor, BoxPusherMapLayers.Items);
-            mip.ServiceResolver.ConfigureEntity(ActorReferenceMetaData.Instance, BoxPusherMapLayers.Actors);
-
-            var mapBuilder = new MapBuilder().WithLayer<ItemReference>(BoxPusherMapLayers.Floor, mip.ServiceResolver)
-                                             .WithLayer<ItemReference>(BoxPusherMapLayers.Items, mip.ServiceResolver)
-                                             .WithLayer<ActorReference>(BoxPusherMapLayers.Actors, mip.ServiceResolver);
-            var fragmentParser = new MapFragmentParser();
-            var mapLoader = new BoxPusherMapLevelDataSource(mapBuilder, fragmentParser, mip.ServiceResolver.Resolve<IEntityRandomGeneratorSource>());
-            mip.ServiceResolver.Store<IMapLevelDataSource<int>>(mapLoader);
-            mip.ServiceResolver.Store<IMapLevelDataSourceSystem>(mapLoader);
-
-            /*
-            var profileDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "RogueEntity/BoxPusher");
-            var profileDataRepoFact = new FileDataRepositoryFactory(profileDir, MessagePackSerializerOptions.Standard)
-                                      .WithKey(new GuidValueConverter())
-                                      .WithKey(new StringValueConverter());
-            
-            var profileManager = new DefaultPlayerProfileManager<BoxPusherPlayerProfile>(profileDataRepoFact.Create<Guid, BoxPusherPlayerProfile>("profiles"));
-            */
-            var profileManager = new InMemoryPlayerProfileManager<BoxPusherPlayerProfile>();
-            profileManager.TryCreatePlayer(new BoxPusherPlayerProfile("Duffy Duck"), out _, out _);
-            profileManager.TryCreatePlayer(new BoxPusherPlayerProfile("Bugs Bunny").RecordLevelComplete(1), out _, out _);
-            mip.ServiceResolver.Store<IPlayerProfileManager<BoxPusherPlayerProfile>>(profileManager);
-
-            mip.ServiceResolver.Store(new BoxPusherWinConditionSystems());
-            mip.ServiceResolver.Store(BoxPusherLevelSystem<ActorReference, ItemReference>.Create(mip.ServiceResolver, BoxPusherMapLayers.Actors));
-            mip.ServiceResolver.Store<IPlayerManager<ActorReference, BoxPusherPlayerProfile>>(
-                new InMemoryPlayerManager<ActorReference, BoxPusherPlayerProfile>(
-                    mip.ServiceResolver.Resolve<IItemResolver<ActorReference>>(),
-                    mip.ServiceResolver.ResolveToReference<IPlayerServiceConfiguration>(),
-                    profileManager));
-        }
-
-        [ContentInitializer]
-        void InitializeContent(in ModuleInitializationParameter mip, IModuleInitializer initializer)
-        {
-            var serviceResolver = mip.ServiceResolver;
-            var ctx = initializer.DeclareContentContext<ItemReference>();
-            ctx.Activate(ctx.CreateBulkEntityBuilder(serviceResolver)
-                            .DefineWall()
-                            .Declaration);
-
-            ctx.Activate(ctx.CreateBulkEntityBuilder(serviceResolver)
-                            .DefineFloor()
-                            .Declaration);
-
-            ctx.Activate(ctx.CreateReferenceEntityBuilder(serviceResolver)
-                            .DefineFloorTargetZone()
-                            .WithMovementCostModifier(For<WalkingMovement>(1))
-                            .Declaration);
-
-            ctx.Activate(ctx.CreateReferenceEntityBuilder(serviceResolver)
-                            .DefineBox()
-                            .WithMovementCostModifier(Blocked<WalkingMovement>())
-                            .Declaration);
-
-            var actorContext = initializer.DeclareContentContext<ActorReference>();
-            var playerId = actorContext.Activate(actorContext.CreateReferenceEntityBuilder(serviceResolver)
-                                                             .DefinePlayer<ActorReference, ItemReference>()
-                                                             .Declaration);
-
-            mip.ServiceResolver.Store<IPlayerServiceConfiguration>(new PlayerServiceConfiguration(playerId));
         }
 
 

@@ -4,7 +4,7 @@ namespace RogueEntity.Simple.BoxPusher
 {
     public static class BoxPusherMapLayers
     {
-        public static readonly MapLayerRegistry Registry = new MapLayerRegistry();
+        public static readonly IMapLayerRegistry Registry;
 
         public static readonly MapLayer Floor;
         public static readonly MapLayer Items;
@@ -12,9 +12,11 @@ namespace RogueEntity.Simple.BoxPusher
         
         static BoxPusherMapLayers()
         {
-            Floor = Registry.Create("Floor");
-            Items = Registry.Create("Items");
-            Actors = Registry.Create("Actors");
+            var reg =  new MapLayerRegistry();
+            Floor = reg.Create("Floor");
+            Items = reg.Create("Items");
+            Actors = reg.Create("Actors");
+            Registry = reg;
         }
     }
 }
