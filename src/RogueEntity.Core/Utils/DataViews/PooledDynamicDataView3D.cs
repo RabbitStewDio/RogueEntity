@@ -1,5 +1,6 @@
 using RogueEntity.Api.Utils;
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 
 namespace RogueEntity.Core.Utils.DataViews
@@ -32,6 +33,26 @@ namespace RogueEntity.Core.Utils.DataViews
             }
 
             return false;
+        }
+        
+        public void RemoveAllViews()
+        {
+            var length = index.Count;
+            var k = ArrayPool<int>.Shared.Rent(length);
+            index.Keys.CopyTo(k, 0);
+            for (var i = 0; i < length; i++)
+            {
+                RemoveView(k[i]);
+            }
+            ArrayPool<int>.Shared.Return(k);
+        }
+        
+        public void Clear()
+        {
+            foreach (var v in index.Values)
+            {
+                v.Clear();
+            }
         }
 
         public bool TryGetView(int z, out IReadOnlyDynamicDataView2D<T> view)

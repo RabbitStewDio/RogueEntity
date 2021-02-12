@@ -2,6 +2,7 @@
 using System.Linq;
 using EnTTSharp.Entities;
 using RogueEntity.Api.ItemTraits;
+using RogueEntity.Api.Utils;
 
 namespace RogueEntity.Core.Meta.Items
 {
@@ -15,7 +16,7 @@ namespace RogueEntity.Core.Meta.Items
             Priority = priority;
         }
 
-        protected abstract TData CreateInitialValue(TItemId reference);
+        protected abstract Optional<TData> CreateInitialValue(TItemId reference);
 
         public ItemTraitId Id { get; }
         public int Priority { get; }
@@ -41,7 +42,11 @@ namespace RogueEntity.Core.Meta.Items
                                        TItemId k,
                                        IItemDeclaration item)
         {
-            v.AssignOrReplace(k, CreateInitialValue(k));
+            var initialValue = CreateInitialValue(k);
+            if (initialValue.TryGetValue(out var val))
+            {
+                v.AssignOrReplace(k, val);
+            }
         }
 
         public virtual void Apply(IEntityViewControl<TItemId> v,

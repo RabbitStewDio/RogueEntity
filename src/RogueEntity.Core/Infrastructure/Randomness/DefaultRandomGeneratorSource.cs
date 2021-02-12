@@ -23,6 +23,14 @@ namespace RogueEntity.Core.Infrastructure.Randomness
             pool.Return(obj);
         }
 
+        public IRandomGenerator RandomGenerator(int seedVariance)
+        {
+            var generator = pool.Get();
+            ulong timeBasedSeed = RandomContext.Combine((ulong)this.seed << 32, (ulong)(timer.Value.FixedStepTime));
+            generator.Activate(RandomContext.MakeSeed(timeBasedSeed, seedVariance));
+            return generator;
+        }
+
         public IRandomGenerator RandomGenerator<TSeedSource>(TSeedSource entity, int seedVariance)
             where TSeedSource : IRandomSeedSource
         {

@@ -8,7 +8,7 @@ namespace RogueEntity.Core.Positioning.MapLayers
     {
         readonly MapLayerLookupDelegate registry;
 
-        public MapLayerMessagePackFormatter(MapLayerRegistry registry)
+        public MapLayerMessagePackFormatter(IMapLayerRegistry registry)
         {
             if (registry == null)
             {

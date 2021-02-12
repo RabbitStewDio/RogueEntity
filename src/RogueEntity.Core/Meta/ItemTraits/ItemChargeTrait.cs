@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using EnTTSharp.Entities;
 using RogueEntity.Api.ItemTraits;
+using RogueEntity.Api.Utils;
 using RogueEntity.Core.Meta.Items;
 
 namespace RogueEntity.Core.Meta.ItemTraits
@@ -15,7 +16,7 @@ namespace RogueEntity.Core.Meta.ItemTraits
             initialCharge = new ItemCharge(charge, maxCharge);
         }
 
-        protected override ItemCharge CreateInitialValue(TItemId reference)
+        protected override Optional<ItemCharge> CreateInitialValue(TItemId reference)
         {
             return initialCharge;
         }

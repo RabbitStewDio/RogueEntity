@@ -11,6 +11,11 @@ namespace RogueEntity.Core.Infrastructure.Randomness
             this.seed = seed;
         }
 
+        public IRandomGenerator RandomGenerator(int seedVariance)
+        {
+            return new FixedGenerator(RandomContext.MakeSeed(seed, seedVariance));
+        }
+
         public IRandomGenerator RandomGenerator<TEntity>(TEntity entity, int seedVariance)
             where TEntity : IRandomSeedSource
         {

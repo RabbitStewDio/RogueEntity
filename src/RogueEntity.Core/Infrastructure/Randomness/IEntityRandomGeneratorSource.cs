@@ -1,6 +1,11 @@
 ﻿namespace RogueEntity.Core.Infrastructure.Randomness
 {
-    public interface IEntityRandomGeneratorSource
+    public interface IRandomGeneratorSource
+    {
+        public IRandomGenerator RandomGenerator(int seedVariance);
+    }
+    
+    public interface IEntityRandomGeneratorSource: IRandomGeneratorSource
     {
         /// <summary>
         ///   Produces a function that represents a deterministic pseud-random number generator

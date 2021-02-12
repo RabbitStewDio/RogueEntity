@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using RogueEntity.Api.Utils;
+using System.Buffers;
+using System.Linq;
 
 namespace RogueEntity.Core.Utils.DataViews
 {
@@ -35,6 +37,26 @@ namespace RogueEntity.Core.Utils.DataViews
             TileSizeY = tileSizeY;
             
             index = new Dictionary<int, IDynamicDataView2D<T>>();
+        }
+
+        public void RemoveAllViews()
+        {
+            var length = index.Count;
+            var k = ArrayPool<int>.Shared.Rent(length);
+            index.Keys.CopyTo(k, 0);
+            for (var i = 0; i < length; i++)
+            {
+                RemoveView(k[i]);
+            }
+            ArrayPool<int>.Shared.Return(k);
+        }
+        
+        public void Clear()
+        {
+            foreach (var v in index.Values)
+            {
+                v.Clear();
+            }
         }
 
         public bool RemoveView(int z)

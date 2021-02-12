@@ -7,7 +7,7 @@ namespace RogueEntity.Core.Positioning.MapLayers
     {
         readonly MapLayerLookupDelegate registry;
 
-        public MapLayerSurrogateProvider(MapLayerRegistry registry)
+        public MapLayerSurrogateProvider(IMapLayerRegistry registry)
         {
             if (registry == null)
             {

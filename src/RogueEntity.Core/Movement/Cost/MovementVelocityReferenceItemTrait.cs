@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using EnTTSharp.Entities;
 using RogueEntity.Api.ItemTraits;
+using RogueEntity.Api.Utils;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Movement.MovementModes;
 using RogueEntity.Core.Positioning.Algorithms;
@@ -29,7 +30,7 @@ namespace RogueEntity.Core.Movement.Cost
             this.movementModePreference = movementModePreference;
         }
 
-        protected override MovementVelocity<TMovementMode> CreateInitialValue(TActorId reference)
+        protected override Optional<MovementVelocity<TMovementMode>> CreateInitialValue(TActorId reference)
         {
             return new MovementVelocity<TMovementMode>(standardMovementCost);
         }

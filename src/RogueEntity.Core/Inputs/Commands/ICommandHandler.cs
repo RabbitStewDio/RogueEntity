@@ -1,18 +1,9 @@
+﻿using RogueEntity.Api.Utils;
+
 namespace RogueEntity.Core.Inputs.Commands
 {
-    public interface ICommandHandler<TActor, TCommand> : ICommandHandler
-        where TCommand : ICommand
+    public interface ICommandHandler<TActorId, TCommand>
     {
-        bool IsValid(TActor actor);
-        bool IsValid(TActor actor, TCommand cmd);
-
-        void Submit(TActor actor, in TCommand command);
-    }
-
-    /// <summary>
-    ///   A tagging interface.
-    /// </summary>
-    public interface ICommandHandler
-    {
+        public bool IsCommandValidForState(TActorId actor, Optional<TCommand> cmd);
     }
 }

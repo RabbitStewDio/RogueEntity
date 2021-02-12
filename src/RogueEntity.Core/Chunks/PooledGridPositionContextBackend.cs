@@ -22,7 +22,7 @@ namespace RogueEntity.Core.Chunks
 
         public ReadOnlyListWrapper<MapLayer> GridLayers()
         {
-            throw new NotImplementedException();
+            return mapLayers;
         }
 
         public bool TryGetGridDataFor(MapLayer layer, out IGridMapDataContext<TEntityId> data)

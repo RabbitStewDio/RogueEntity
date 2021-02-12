@@ -2,6 +2,6 @@ namespace RogueEntity.Core.Positioning.MapLayers
 {
     public interface IMapLayerContext
     {
-        public MapLayerRegistry MapLayerRegistry { get; }
+        public IMapLayerRegistry MapLayerRegistry { get; }
     }
 }

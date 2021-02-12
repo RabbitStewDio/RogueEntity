@@ -1,5 +1,6 @@
 using EnTTSharp.Entities;
 using RogueEntity.Api.ItemTraits;
+using RogueEntity.Api.Utils;
 using RogueEntity.Core.Meta.Items;
 using System.Collections.Generic;
 
@@ -22,7 +23,7 @@ namespace RogueEntity.Core.MovementPlaning.Goals
             this.goalStrength = goalStrength;
         }
 
-        protected override GoalMarker<TDiscriminator> CreateInitialValue(TItemId reference)
+        protected override Optional<GoalMarker<TDiscriminator>> CreateInitialValue(TItemId reference)
         {
             return new GoalMarker<TDiscriminator>(goalStrength);
         }

@@ -181,6 +181,11 @@ namespace RogueEntity.Core.Meta.Items
 
         public bool IsDestroyed(in TItemId item)
         {
+            if (item.IsEmpty)
+            {
+                return true;
+            }
+            
             if (!entityMetaData.IsReferenceEntity(item))
             {
                 return false;

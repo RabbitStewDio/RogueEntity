@@ -1,34 +1,34 @@
-﻿using System;
-using System.Collections;
+﻿using RogueEntity.Api.Utils;
+using System;
 using System.Collections.Generic;
 
 namespace RogueEntity.Core.Positioning.MapLayers
 {
-    public class MapLayerRegistry: IEnumerable<MapLayer>
+    public interface IMapLayerRegistry
     {
-        readonly Dictionary<byte, MapLayer> layersById;
+        public bool TryGetValue(byte id, out MapLayer l);
+        public ReadOnlyListWrapper<MapLayer> Layers { get; } 
+    }
+    
+    public class MapLayerRegistry: IMapLayerRegistry
+    {
         public readonly MapLayer Indeterminate; 
+        
+        readonly Dictionary<byte, MapLayer> layersById;
+        readonly List<MapLayer> layers;
 
         public MapLayerRegistry()
         {
+            layers = new List<MapLayer>()
+            {
+                Indeterminate
+            };
+            
             layersById = new Dictionary<byte, MapLayer>();
             Indeterminate = new MapLayer(0, nameof(Indeterminate));
         }
 
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
-
-        IEnumerator<MapLayer> IEnumerable<MapLayer>.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
-
-        public Dictionary<byte, MapLayer>.ValueCollection.Enumerator GetEnumerator()
-        {
-            return layersById.Values.GetEnumerator();
-        }
+        public ReadOnlyListWrapper<MapLayer> Layers => layers;
 
         public MapLayer Create(string name)
         {
@@ -51,6 +51,7 @@ namespace RogueEntity.Core.Positioning.MapLayers
         void Add(MapLayer l)
         {
             layersById.Add(l.LayerId, l);
+            layers.Add(l);
         }
 
         public bool TryGetValue(byte id, out MapLayer l)

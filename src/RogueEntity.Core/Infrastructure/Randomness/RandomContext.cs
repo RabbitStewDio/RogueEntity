@@ -18,6 +18,17 @@ namespace RogueEntity.Core.Infrastructure.Randomness
                 return retval;
             }
         }
+        
+        public static ulong MakeSeed(ulong baseSeed,
+                                              int seedVariance)
+        {
+            unchecked
+            {
+                var retval = baseSeed;
+                retval = Combine(retval, (ulong)seedVariance);
+                return retval;
+            }
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ulong Combine(ulong a, ulong b)

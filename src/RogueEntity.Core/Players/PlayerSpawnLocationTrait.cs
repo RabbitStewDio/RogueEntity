@@ -1,5 +1,6 @@
 using EnTTSharp.Entities;
 using RogueEntity.Api.ItemTraits;
+using RogueEntity.Api.Utils;
 using RogueEntity.Core.Meta.Items;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,7 +14,7 @@ namespace RogueEntity.Core.Players
         {
         }
 
-        protected override PlayerSpawnLocation CreateInitialValue(TItemId reference)
+        protected override Optional<PlayerSpawnLocation> CreateInitialValue(TItemId reference)
         {
             return new PlayerSpawnLocation();
         }

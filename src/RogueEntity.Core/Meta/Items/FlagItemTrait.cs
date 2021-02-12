@@ -1,5 +1,6 @@
 using EnTTSharp.Entities;
 using RogueEntity.Api.ItemTraits;
+using RogueEntity.Api.Utils;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -16,7 +17,7 @@ namespace RogueEntity.Core.Meta.Items
             this.flagExistsOnNewItems = flagExistsOnNewItems;
         }
 
-        protected override TFlagItem CreateInitialValue(TEntityId reference)
+        protected override Optional<TFlagItem> CreateInitialValue(TEntityId reference)
         {
             return new TFlagItem();
         }

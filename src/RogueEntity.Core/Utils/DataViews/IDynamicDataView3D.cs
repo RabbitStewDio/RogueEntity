@@ -6,5 +6,7 @@ namespace RogueEntity.Core.Utils.DataViews
     {
         bool TryGetWritableView(int z, out IDynamicDataView2D<T> view, DataViewCreateMode mode = DataViewCreateMode.Nothing);
         bool RemoveView(int z);
+        void Clear();
+        void RemoveAllViews();
     }
 }
