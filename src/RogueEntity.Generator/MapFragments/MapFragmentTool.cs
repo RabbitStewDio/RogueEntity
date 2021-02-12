@@ -102,13 +102,13 @@ namespace RogueEntity.Generator.MapFragments
                 this.randomGenerator = randomGenerator;
             }
 
-            public bool ClearPreProcess<TEntity>(ItemDeclarationId item, Position pos, IItemResolver<TEntity> itemResolver, ref TEntity entityKey)
+            public Optional<TEntity> ClearPreProcess<TEntity>(ItemDeclarationId item, Position pos, IItemResolver<TEntity> itemResolver, TEntity entityKey)
                 where TEntity : IEntityKey
             {
-                return true;
+                return entityKey;
             }
 
-            public bool InstantiatePostProcess<TEntity>(ItemDeclarationId item, Position pos, IItemResolver<TEntity> itemResolver, ref TEntity entityKey)
+            public Optional<TEntity> InstantiatePostProcess<TEntity>(ItemDeclarationId item, Position pos, IItemResolver<TEntity> itemResolver, TEntity entityKey)
                 where TEntity : IEntityKey
             {
                 if (itemResolver.TryQueryData(entityKey, out StackCount stackSize))
@@ -139,7 +139,7 @@ namespace RogueEntity.Generator.MapFragments
                     }
                 }
 
-                return true;
+                return entityKey;
             }
         }
 

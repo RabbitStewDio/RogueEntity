@@ -23,6 +23,11 @@ namespace RogueEntity.Generator
             return b;
         }
 
+        public static MapBuilder Fill(this MapBuilder b, MapLayer l, float z, Rectangle r, params ItemDeclarationId[] items)
+        {
+            return Fill(b, l, z, r, null, items);
+        }
+        
         public static MapBuilder Fill(this MapBuilder b, MapLayer l, float z, Rectangle r, IMapBuilderInstantiationLifter postProcessor, params ItemDeclarationId[] items)
         {
             foreach (var pos in r.Contents)
@@ -33,6 +38,11 @@ namespace RogueEntity.Generator
             return b;
         }
 
+        public static MapBuilder Draw(this MapBuilder b, MapLayer l, float z, Rectangle r, params ItemDeclarationId[] items)
+        {
+            return Draw(b, l, z, r, null, items);
+        }
+        
         public static MapBuilder Draw(this MapBuilder b, MapLayer l, float z, Rectangle r, IMapBuilderInstantiationLifter postProcessor, params ItemDeclarationId[] items)
         {
             foreach (var pos in r.PerimeterPositions())

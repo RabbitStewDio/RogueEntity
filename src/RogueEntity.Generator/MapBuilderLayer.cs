@@ -40,11 +40,20 @@ namespace RogueEntity.Generator
                 return false;
             }
 
-            if (postProc == null || postProc.InstantiatePostProcess(item, pos, resolver, ref entity))
+            if (postProc == null)
             {
                 resolver.Apply(entity);
+                return true;
             }
-            return true;
+
+            if (postProc.InstantiatePostProcess(item, pos, resolver, entity).TryGetValue(out var e))
+            {
+                resolver.Apply(e);
+                return true;
+            }
+
+            resolver.DiscardUnusedItem(entity);
+            return false;
         }
 
         public override bool Clear(Position pos, IMapBuilderInstantiationLifter postProc = null)
@@ -59,7 +68,7 @@ namespace RogueEntity.Generator
                 
                 if (postProc != null && resolver.TryResolve(entity, out var decl))
                 {
-                    if (!postProc.ClearPreProcess(decl.Id, pos, resolver, ref entity))
+                    if (!postProc.ClearPreProcess(decl.Id, pos, resolver, entity).TryGetValue(out entity))
                     {
                         return false;
                     }
