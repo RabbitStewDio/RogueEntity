@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\RogueEntity.Core\RogueEntity.Core.csproj" />
+    <ProjectReference Include="..\..\src\RogueEntity.Generator\RogueEntity.Generator.csproj" />
+  </ItemGroup>
+
+</Project>
