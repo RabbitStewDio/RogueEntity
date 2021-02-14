@@ -98,6 +98,8 @@ namespace RogueEntity.Core.Meta
                                              EntityRegistry<TItemId> registry)
             where TItemId : IEntityKey
         {
+            registry.RegisterNonConstructable<ItemDeclarationHolder<TItemId>>();
+            
             // Entites are not destroyed immediately, instead we wait until the end of the turn to prune them.
             registry.RegisterFlag<DestroyedMarker>();
             registry.RegisterFlag<CascadingDestroyedMarker>();
@@ -109,8 +111,6 @@ namespace RogueEntity.Core.Meta
         {
             // All entities carry a reference to their trait declaration with them. This allows
             // systems to lookup traits and to perform actions on them.
-            registry.RegisterNonConstructable<ItemDeclarationHolder<TItemId>>();
-
             registry.RegisterNonConstructable<StackCount>();
             registry.RegisterNonConstructable<Weight>();
             registry.RegisterNonConstructable<Temperature>();

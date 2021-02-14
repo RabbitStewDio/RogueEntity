@@ -4,6 +4,7 @@ using RogueEntity.Core.Inputs.Commands;
 using RogueEntity.Core.Meta.ItemBuilder;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Meta.Naming;
+using RogueEntity.Core.Players;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Sensing.Discovery;
@@ -22,6 +23,7 @@ namespace RogueEntity.Simple.MineSweeper
             where TItemId : IEntityKey
         {
             return b.Define(PlayerId)
+                    .AsPlayer()
                     .WithName("player")
                     .WithCommand(CommandType.Of<ToggleFlagCommand>())
                     .WithCommand(CommandType.Of<RevealMapPositionCommand>())

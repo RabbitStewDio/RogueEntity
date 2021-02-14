@@ -1,4 +1,4 @@
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 using RogueEntity.Api.GameLoops;
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Api.Modules;
@@ -11,31 +11,31 @@ using RogueEntity.Core.Infrastructure.Services;
 using RogueEntity.Core.Meta.EntityKeys;
 using RogueEntity.Core.Players;
 using RogueEntity.SadCons;
-using RogueEntity.Simple.BoxPusher.ItemTraits;
+using RogueEntity.Simple.MineSweeper;
 using Serilog;
 using System;
 using System.ComponentModel.Composition.Hosting;
 using System.Diagnostics.CodeAnalysis;
 using Console = SadConsole.Console;
 
-namespace RogueEntity.Simple.Demo.BoxPusher
+namespace RogueEntity.Samples.MineSweeper.MonoGame
 {
-    public class BoxPusherGame
+    public class MineSweeperGame
     {
         [SuppressMessage("ReSharper", "NotAccessedField.Local")]
         readonly DirectoryCatalog pluginCatalogue;
 
         IGameLoop gameLoop;
         MapConsole mapConsole;
-        Optional<PlayerData> playerData;
-        bool started;
+        Optional<MineSweeperPlayerData> playerData;
 
         public IPlayerService<ActorReference> PlayerService { get; private set; }
-        public IPlayerManager<ActorReference, BoxPusherPlayerProfile> PlayerManager { get; private set; }
-        public IPlayerProfileManager<BoxPusherPlayerProfile> ProfileManager { get; private set; }
+        public IPlayerManager<ActorReference, MineSweeperPlayerProfile> PlayerManager { get; private set; }
+        public IPlayerProfileManager<MineSweeperPlayerProfile> ProfileManager { get; private set; }
         public IServiceResolver ServiceResolver { get; private set; }
+        public bool Started { get; private set; }
 
-        public BoxPusherGame()
+        public MineSweeperGame()
         {
             pluginCatalogue = new DirectoryCatalog(".");
         }
@@ -47,22 +47,24 @@ namespace RogueEntity.Simple.Demo.BoxPusher
             ServiceResolver.Store<IEntityRandomGeneratorSource>(new DefaultRandomGeneratorSource(10, ServiceResolver.ResolveToReference<ITimeSource>()));
 
             var ms = new ModuleSystem(ServiceResolver);
-            ms.ScanForModules("BoxPusher");
+            ms.ScanForModules("MineSweeper");
 
-            gameLoop = ms.Initialize().BuildRealTimeStepLoop(30);
+            gameLoop = ms.Initialize()
+                         .BuildRealTimeStepLoop(30);
+            
             ServiceResolver.Store(gameLoop.TimeSource);
             ServiceResolver.ValidatePromisesCanResolve();
 
             PlayerService = ServiceResolver.Resolve<IPlayerService<ActorReference>>();
-            PlayerManager = ServiceResolver.Resolve<IPlayerManager<ActorReference, BoxPusherPlayerProfile>>();
-            ProfileManager = ServiceResolver.Resolve<IPlayerProfileManager<BoxPusherPlayerProfile>>();
+            PlayerManager = ServiceResolver.Resolve<IPlayerManager<ActorReference, MineSweeperPlayerProfile>>();
+            ProfileManager = ServiceResolver.Resolve<IPlayerProfileManager<MineSweeperPlayerProfile>>();
         }
-        
+
         public Console InitializeRendering(int width, int height)
         {
             var console = new Console(width, height);
             console.FillWithRandomGarbage();
-            
+
             mapConsole = new MapConsole(console);
             mapConsole.Initialize(PlayerService);
             return console;
@@ -75,11 +77,16 @@ namespace RogueEntity.Simple.Demo.BoxPusher
         /// <param name="playerProfileId"></param>
         public bool StartGame(Guid playerProfileId)
         {
+            if (Started)
+            {
+                return false;
+            }
+            
+            gameLoop.Initialize();
             if (PlayerManager.TryActivatePlayer(playerProfileId, out var playerTag, out var playerEntityId, out var playerRecord))
             {
-                gameLoop.Initialize();
-                started = true;
-                playerData = new PlayerData(playerTag, playerEntityId, playerRecord);
+                Started = true;
+                playerData = new MineSweeperPlayerData(playerTag, playerEntityId, playerRecord);
                 return true;
             }
 
@@ -89,17 +96,19 @@ namespace RogueEntity.Simple.Demo.BoxPusher
         public void Stop()
         {
             gameLoop.Dispose();
-            started = false;
+            Started = false;
         }
-        
+
         public void Update(GameTime time)
         {
-            if (started)
+            if (!Started)
             {
-                gameLoop.Update(time.ElapsedGameTime);
-
-                RefreshPlayerProfile();
+                return;
             }
+
+            gameLoop.Update(time.ElapsedGameTime);
+
+            RefreshPlayerProfile();
         }
 
         void RefreshPlayerProfile()
@@ -107,7 +116,7 @@ namespace RogueEntity.Simple.Demo.BoxPusher
             if (playerData.TryGetValue(out var pd))
             {
                 var ir = ServiceResolver.Resolve<IItemResolver<ActorReference>>();
-                if (ir.TryQueryData(pd.PlayerEntityId, out BoxPusherPlayerProfile profile))
+                if (ir.TryQueryData(pd.PlayerEntityId, out MineSweeperPlayerProfile profile))
                 {
                     pd.PlayerRecord = profile;
                 }

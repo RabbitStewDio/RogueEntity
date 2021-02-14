@@ -1,6 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
 using SadConsole;
-using SadConsole.Controls;
 using System;
 
 namespace RogueEntity.SadCons
@@ -11,7 +10,7 @@ namespace RogueEntity.SadCons
         public event Action OnLoadGame;
         public event Action OnSettings;
         public event Action OnQuitGame;
-        
+
         public bool HasLoadScreen;
         public bool HasSettings;
 
@@ -22,19 +21,30 @@ namespace RogueEntity.SadCons
             Console = new ControlsConsole(24, 19);
             Console.Position = new Point(this.ParentContext.Bounds.Width - Console.Width - 2,
                                          this.ParentContext.Bounds.Height - Console.Height - 2);
-            Console.Add(CreateNewGameButton());
+
+            int x = 2;
+            int y = 2;
+            Console.Add(SadConsoleControls.CreateButton("New Game", 20, 3)
+                                          .WithAction(() => OnNewGame?.Invoke())
+                                          .WithVerticalPlacementAt(x, ref y));
 
             if (HasLoadScreen)
             {
-                Console.Add(CreateLoadGameButton());
+                Console.Add(SadConsoleControls.CreateButton("Load Game", 20, 3)
+                                              .WithAction(() => OnLoadGame?.Invoke())
+                                              .WithVerticalPlacementAt(x, ref y, 2));
             }
 
             if (HasSettings)
             {
-                Console.Add(CreateOptionsButton());
+                Console.Add(SadConsoleControls.CreateButton("Settings", 20, 3)
+                                              .WithAction(() => OnSettings?.Invoke())
+                                              .WithVerticalPlacementAt(x, ref y, 2));
             }
 
-            Console.Add(CreateQuitGameButton());
+            Console.Add(SadConsoleControls.CreateButton("Quit", 20, 3)
+                                          .WithAction(() => OnQuitGame?.Invoke())
+                                          .WithVerticalPlacementAt(x, ref y, 2));
         }
 
         protected override void OnParentConsoleResized()
@@ -43,50 +53,5 @@ namespace RogueEntity.SadCons
                                          this.ParentContext.Bounds.Height - Console.Height);
             base.OnParentConsoleResized();
         }
-
-        Button CreateQuitGameButton()
-        {
-            var quitGameButton = new Button(20, 3)
-            {
-                Text = "Quit",
-                Position = new Point(2, 2 + Console.Children.Count * 5)
-            };
-            quitGameButton.Click += (e, args) => OnQuitGame?.Invoke();
-            return quitGameButton;
-        }
-
-        Button CreateLoadGameButton()
-        {
-            var loadGameButton = new Button(20, 3)
-            {
-                Text = "Continue",
-                Position = new Point(2, 2 + Console.Children.Count * 5)
-            };
-            loadGameButton.Click += (e, args) => OnLoadGame?.Invoke();
-            return loadGameButton;
-        }
-
-        Button CreateNewGameButton()
-        {
-            var newGameButton = new Button(20, 3)
-            {
-                Text = "New Game",
-                Position = new Point(2, 2 + Console.Children.Count * 5)
-            };
-            newGameButton.Click += (e, args) => OnNewGame?.Invoke();
-            return newGameButton;
-        }
-
-        Button CreateOptionsButton()
-        {
-            var newGameButton = new Button(20, 3)
-            {
-                Text = "Settings",
-                Position = new Point(2, 2 + Console.Children.Count * 5)
-            };
-            newGameButton.Click += (e, args) => OnSettings?.Invoke();
-            return newGameButton;
-        }
-
     }
 }

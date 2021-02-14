@@ -1,14 +1,39 @@
-﻿using System;
+﻿using Microsoft.Extensions.Configuration;
+using Serilog;
+using Game = SadConsole.Game;
 
 namespace RogueEntity.Samples.MineSweeper.MonoGame
 {
-    public static class Program
+    class Program
     {
-        [STAThread]
+        static void SetUpLogging()
+        {
+            var configuration = new ConfigurationBuilder()
+                                .AddJsonFile("appsettings.json", true)
+                                .Build();
+
+            var logger = new LoggerConfiguration()
+                         .ReadFrom.Configuration(configuration)
+                         .CreateLogger();
+            Log.Logger = logger;
+        }
+
         static void Main()
         {
-            using (var game = new Game1())
-                game.Run();
+            SetUpLogging();
+
+            // Setup the engine and create the main window.
+            Game.Create(80, 25);
+
+            var shell = new MineSweeperGameShell();
+            Game.OnInitialize += shell.Initialize;
+            Game.OnUpdate += shell.Update;
+            Game.OnDraw += shell.Draw;
+            Game.OnDestroy += shell.Destroy;
+
+            // Start the game.
+            Game.Instance.Run();
+            Game.Instance.Dispose();
         }
     }
 }

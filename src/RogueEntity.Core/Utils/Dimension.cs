@@ -1,12 +1,20 @@
+using MessagePack;
 using System;
+using System.Runtime.Serialization;
 
 namespace RogueEntity.Core.Utils
 {
+    [MessagePackObject()]
+    [DataContract]
     public readonly struct Dimension : IEquatable<Dimension>
     {
         public static readonly Dimension Empty = default;
         
+        [Key(0)]
+        [DataMember(Order = 0)]
         public readonly int Width;
+        [Key(1)]
+        [DataMember(Order = 1)]
         public readonly int Height;
 
         public Dimension(int width, int height)
@@ -15,6 +23,10 @@ namespace RogueEntity.Core.Utils
             Height = height;
         }
 
+        [IgnoreMember]
+        [IgnoreDataMember]
+        public int Area => Width * Height;
+        
         public void Deconstruct(out int width, out int height)
         {
             width = Width;
@@ -47,6 +59,11 @@ namespace RogueEntity.Core.Utils
         public static bool operator !=(Dimension left, Dimension right)
         {
             return !left.Equals(right);
+        }
+
+        public override string ToString()
+        {
+            return $"({nameof(Width)}: {Width}, {nameof(Height)}: {Height})";
         }
     }
 }

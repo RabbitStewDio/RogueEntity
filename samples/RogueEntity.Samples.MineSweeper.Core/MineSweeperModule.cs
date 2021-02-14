@@ -12,7 +12,7 @@ using RogueEntity.Generator;
 
 namespace RogueEntity.Simple.MineSweeper
 {
-    [Module("Minesweeper")]
+    [Module("MineSweeper")]
     public partial class MineSweeperModule : ModuleBase
     {
         static readonly EntitySystemId RegisterEntitiesSystemId = new EntitySystemId("Entities.MineSweeper.Player");

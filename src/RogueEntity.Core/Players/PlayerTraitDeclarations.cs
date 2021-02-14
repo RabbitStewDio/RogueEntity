@@ -9,7 +9,14 @@ namespace RogueEntity.Core.Players
             where TItemId : IEntityKey
         {
             builder.Declaration
-                   .WithTrait(new PlayerTrait<TItemId>())
+                   .WithTrait(new PlayerTrait<TItemId>());
+            return builder;
+        }
+
+        public static ReferenceItemDeclarationBuilder<TItemId> AsAvatar<TItemId>(this ReferenceItemDeclarationBuilder<TItemId> builder)
+            where TItemId : IEntityKey
+        {
+            builder.Declaration
                    .WithTrait(new PlayerObserverTrait<TItemId>());
             return builder;
         }

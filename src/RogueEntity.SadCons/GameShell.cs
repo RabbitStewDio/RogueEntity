@@ -1,5 +1,4 @@
 using Microsoft.Xna.Framework;
-using RogueEntity.Core.Players;
 using RogueEntity.Core.Utils;
 using RogueEntity.SadCons.Controls;
 using SadConsole;
@@ -10,11 +9,11 @@ using Rectangle = RogueEntity.Core.Utils.Rectangle;
 namespace RogueEntity.SadCons
 {
     public abstract class GameShell<TConsoleType>: IConsoleParentContext
-        where TConsoleType: IConsoleContext
+        where TConsoleType: class, IConsoleContext
     {
         public event Action ConsoleResized;
 
-        protected TConsoleType ControlsCanvas { get; set; }
+        protected TConsoleType ControlsCanvas { get; private set; }
         Console ParentConsole { get; set; }
         
         Dimension lastConsoleSize;
@@ -29,18 +28,20 @@ namespace RogueEntity.SadCons
             lastConsoleSize = new Dimension(rootConsole.Width, rootConsole.Height);
             this.ParentConsole.Clear();
 
-            InitializeLateOverride();
+            ControlsCanvas = InitializeLateOverride();
+            this.ParentConsole.Children.Add(ControlsCanvas.Console);
 
             Show();
         }
-        
+
+        public Rectangle ScreenBounds => Bounds;
+
         public Rectangle Bounds => new Rectangle(ParentConsole.Position.X,
                                                  ParentConsole.Position.Y,
                                                  ParentConsole.Width,
                                                  ParentConsole.Height);
 
-        protected virtual void InitializeLateOverride()
-        { }
+        protected abstract TConsoleType InitializeLateOverride();
 
         void OnWindowResized(object sender, EventArgs e)
         {
@@ -50,29 +51,10 @@ namespace RogueEntity.SadCons
             ConsoleResized?.Invoke();
         }
 
-        public bool IsChildVisible(Console c)
-        {
-            return ParentConsole.Children.Contains(c);
-        }
-
-        public void SetChildVisible(Console c, bool state)
-        {
-            if (state)
-            { 
-                ParentConsole.Children.Add(c);
-            }
-            else
-            {
-                ParentConsole.Children.Remove(c);
-            }
-        }
 
         public bool IsVisible
         {
-            get
-            {
-                return ControlsCanvas?.IsVisible ?? false;
-            }
+            get => ControlsCanvas.IsVisible;
             set
             {
                 if (value == IsVisible)
@@ -91,14 +73,15 @@ namespace RogueEntity.SadCons
             }
         }
 
-        public void Show()
+
+        public virtual void Show()
         {
-            ControlsCanvas?.Show();
+            ControlsCanvas.IsVisible = true;
         }
 
-        public void Hide()
+        public virtual void Hide()
         {
-            ControlsCanvas?.Hide();
+            ControlsCanvas.IsVisible = false;
         }
 
         public virtual void Update(GameTime time)

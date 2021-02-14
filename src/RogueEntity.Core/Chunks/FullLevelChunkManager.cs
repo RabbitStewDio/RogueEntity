@@ -188,8 +188,9 @@ namespace RogueEntity.Core.Chunks
         /// <summary>
         ///   Action Step 2: Process all active maps. Find all observers and mark the observed position active.
         /// </summary>
-        public void ProcessObservers<TEntity>(IEntityViewControl<TEntity> v, TEntity k, in PlayerObserver obs, in EntityGridPosition pos)
+        public void ProcessObservers<TEntity, TPosition>(IEntityViewControl<TEntity> v, TEntity k, in PlayerObserver obs, in TPosition pos)
             where TEntity : IEntityKey
+            where TPosition : IPosition<TPosition>
         {
             if (pos.IsInvalid)
             {
@@ -288,11 +289,11 @@ namespace RogueEntity.Core.Chunks
                 {
                     return MapChunkLoadingResult.LevelNotLoaded;
                 }
-                
+
                 level.MarkActiveAtTime(frameTime);
                 return MapChunkLoadingResult.Success;
             }
-            
+
             if (levelDataSource.Value.TryCreateMapLevel(levelId))
             {
                 this.levelData[levelId] = new LevelTrackingData(frameTime)

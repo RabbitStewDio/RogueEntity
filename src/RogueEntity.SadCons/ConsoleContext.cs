@@ -1,5 +1,6 @@
 using JetBrains.Annotations;
 using RogueEntity.Core.Utils;
+using SadConsole;
 using System;
 using Console = SadConsole.Console;
 
@@ -9,9 +10,7 @@ namespace RogueEntity.SadCons
     {
         event Action ConsoleResized;
         Rectangle Bounds { get; }
-
-        bool IsChildVisible(Console c);
-        void SetChildVisible(Console c, bool state);
+        Rectangle ScreenBounds { get; }
     }
     
     public abstract class ConsoleContext<TConsoleType> : IConsoleContext
@@ -26,6 +25,8 @@ namespace RogueEntity.SadCons
             this.ParentContext.ConsoleResized += OnParentConsoleResized;
         }
 
+        public Rectangle ScreenBounds => ParentContext.ScreenBounds;
+
         public Rectangle Bounds
         {
             get
@@ -39,6 +40,32 @@ namespace RogueEntity.SadCons
             }
         }
 
+        public void AddChildContext(IConsoleContext c)
+        {
+            c.Initialize(this);
+            var console = c.Console;
+            if (console is Window w)
+            {
+                
+            }
+            else if (console != null)
+            {
+                Console.Children.Add(console);
+            }
+        }
+
+        public void RemoveChildContext(IConsoleContext c)
+        {
+            var console = c.Console;
+            if (console is Window w)
+            {
+                
+            }
+            else if (console != null)
+            {
+                Console.Children.Remove(console);
+            }
+        }
 
         protected void FireConsoleResized() => ConsoleResized?.Invoke();
 
@@ -47,7 +74,7 @@ namespace RogueEntity.SadCons
             ConsoleResized?.Invoke();
         }
 
-        protected TConsoleType Console { get; set; }
+        public TConsoleType Console { get; protected set; }
         Console IConsoleContext.Console => Console;
 
         public bool IsChildVisible(Console c)
@@ -55,21 +82,9 @@ namespace RogueEntity.SadCons
             return Console.Children.Contains(c);
         }
 
-        public void SetChildVisible(Console c, bool visibleState)
-        {
-            if (visibleState)
-            {
-                Console.Children.Add(Console);
-            }
-            else
-            {
-                Console.Children.Remove(Console);
-            }
-        }
-
         public bool IsVisible
         {
-            get => ParentContext.IsChildVisible(Console);
+            get => Console.IsVisible;
             set
             {
                 if (value == IsVisible)
@@ -91,12 +106,28 @@ namespace RogueEntity.SadCons
 
         public virtual void Show()
         {
-            ParentContext.SetChildVisible(Console, true);
+            if (Console is Window w)
+            {
+                // SadConsole has some questionable choices some times.
+                w.Show(true);
+            }
+            else
+            {
+                Console.IsVisible = true;
+            }
         }
 
         public virtual void Hide()
         {
-            ParentContext.SetChildVisible(Console, false);
+            if (Console is Window w)
+            {
+                // SadConsole has some questionable choices some times.
+                w.Hide();
+            }
+            else
+            {
+                Console.IsVisible = false;
+            }
         }
     }
 }

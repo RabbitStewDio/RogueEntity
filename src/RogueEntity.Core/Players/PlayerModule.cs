@@ -4,6 +4,7 @@ using RogueEntity.Api.GameLoops;
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Api.Modules;
 using RogueEntity.Api.Modules.Attributes;
+using RogueEntity.Api.Modules.Helpers;
 using RogueEntity.Api.Services;
 using RogueEntity.Core.Meta;
 using RogueEntity.Core.Meta.Items;
@@ -27,6 +28,7 @@ namespace RogueEntity.Core.Players
         public static readonly EntitySystemId PlayerComponentsId = "Entities.Core.Player";
         public static readonly EntitySystemId PlayerObserverComponentsId = "Entities.Core.PlayerObserver";
         public static readonly EntitySystemId PlayerSpawnPointComponentsId = "Entities.Core.PlayerSpawnPoint";
+        public static readonly EntitySystemId RegisterPlayerServiceId = "Systems.Core.Player.RegisterPlayerService";
         public static readonly EntitySystemId RegisterPlayerObserverRefreshGridId = "Systems.Core.Player.RefreshObservers.Grid";
         public static readonly EntitySystemId RegisterPlayerObserverRefreshContinuousId = "Systems.Core.Player.RefreshObservers.Continuous";
 
@@ -75,9 +77,20 @@ namespace RogueEntity.Core.Players
         {
             var entityContext = initializer.DeclareEntityContext<TItemId>();
             entityContext.Register(PlayerComponentsId, -20_000, RegisterPlayerComponents);
+            entityContext.Register(RegisterPlayerServiceId, -10_000, RegisterPlayerService);
+            
         }
 
-        [EntityRoleInitializer("Role.Core.Player",
+        void RegisterPlayerService<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter, EntityRegistry<TItemId> registry)
+            where TItemId : IEntityKey
+        {
+            if (!TryGetOrCreatePlayerService(initParameter.ServiceResolver, registry, out var service))
+            {
+                throw new ModuleInitializationException("Require a player service to function");
+            }
+        }
+
+        [EntityRoleInitializer("Role.Core.Player.PlayerObserver",
                                ConditionalRoles = new[] {"Role.Core.Position.ContinuousPositioned"})]
         protected void InitializeRefreshPlayerObserversContinuous<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                                            IModuleInitializer initializer,
@@ -88,7 +101,7 @@ namespace RogueEntity.Core.Players
             entityContext.Register(RegisterPlayerObserverRefreshContinuousId, 80_000, RegisterRefreshObservers<TItemId, ContinuousMapPosition>);
         }
 
-        [EntityRoleInitializer("Role.Core.Player",
+        [EntityRoleInitializer("Role.Core.Player.PlayerObserver",
                                ConditionalRoles = new[] {"Role.Core.Position.GridPositioned"})]
         protected void InitializeRefreshPlayerObserversGrid<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                                      IModuleInitializer initializer,

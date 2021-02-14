@@ -33,27 +33,28 @@ namespace RogueEntity.Simple.Demo.BoxPusher
             var loadGameContext = new BoxPusherNewGameContext(game.ProfileManager);
             return loadGameContext;
         }
-
-        protected override void InitializeLateOverride()
+        
+        protected override MainMenuConsoleContext InitializeLateOverride()
         {
             game.InitializeSystems();
             
-            base.InitializeLateOverride();
-            
-            ControlsCanvas = new MainMenuConsoleContext()
+            var canvas = new MainMenuConsoleContext()
             {
                 HasSettings = false,
                 HasLoadScreen = true
             };
-            ControlsCanvas.OnQuitGame += OnQuitGame;
-            ControlsCanvas.OnNewGame += OnShowNewGameDialog;
-            ControlsCanvas.OnLoadGame += OnShowLoadGameDialog;
-            ControlsCanvas.OnSettings += OnShowSettingsDialog;
+            canvas.OnQuitGame += OnQuitGame;
+            canvas.OnNewGame += OnShowNewGameDialog;
+            canvas.OnLoadGame += OnShowLoadGameDialog;
+            canvas.OnSettings += OnShowSettingsDialog;
+            canvas.Initialize(this);
 
-            
             loadGameScreen = CreateLoadScreen();
             newGameScreen = CreateNewGameScreen();
 
+            canvas.AddChildContext(newGameScreen);
+            canvas.AddChildContext(loadGameScreen);
+            return canvas;
         }
 
         void OnShowSettingsDialog()

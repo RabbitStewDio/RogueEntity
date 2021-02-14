@@ -15,6 +15,7 @@ namespace RogueEntity.Simple.MineSweeper
         void InitializeModule(in ModuleInitializationParameter mip, IModuleInitializer initializer)
         {
             mip.ServiceResolver.ConfigureEntity(ItemReferenceMetaData.Instance, MineSweeperMapLayers.Items, MineSweeperMapLayers.Flags);
+            mip.ServiceResolver.ConfigureEntity(ActorReferenceMetaData.Instance);
 
             var mapBuilder = new MapBuilder().WithLayer<ItemReference>(MineSweeperMapLayers.Items, mip.ServiceResolver)
                                              .WithLayer<ItemReference>(MineSweeperMapLayers.Flags, mip.ServiceResolver);
@@ -28,7 +29,6 @@ namespace RogueEntity.Simple.MineSweeper
                     mip.ServiceResolver.Resolve<IItemResolver<ActorReference>>(),
                     mip.ServiceResolver.ResolveToReference<IPlayerServiceConfiguration>(),
                     profileManager));
-            
         }
     }
 }

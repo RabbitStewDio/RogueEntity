@@ -12,6 +12,11 @@
   <ItemGroup>
     <None Remove="Icon.ico" />
     <None Remove="Icon.bmp" />
+    <None Remove="Content\obj\**" />
+    <None Remove="Content\bin\**" />
+    <None Update="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Icon.ico" />
@@ -36,5 +41,9 @@
     <PackageReference Include="MonoGame.Framework.DesktopGL" Version="3.8.0.1641">
       <PrivateAssets>All</PrivateAssets>
     </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\RogueEntity.SadCons\RogueEntity.SadCons.csproj" />
+    <ProjectReference Include="..\RogueEntity.Samples.MineSweeper.Core\RogueEntity.Samples.MineSweeper.Core.csproj" />
   </ItemGroup>
 </Project>

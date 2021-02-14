@@ -29,6 +29,7 @@ namespace RogueEntity.Simple.BoxPusher
         {
             return b.Define("Player")
                     .AsPlayer()
+                    .AsAvatar()
                     .WithInventory()
                     .Of<TItemId>()
                     .WithGridPosition(BoxPusherMapLayers.Actors)
