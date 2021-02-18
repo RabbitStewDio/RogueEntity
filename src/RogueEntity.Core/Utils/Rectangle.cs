@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
@@ -764,45 +763,45 @@ namespace RogueEntity.Core.Utils
         /// Gets all positions that reside on the inner perimeter of the rectangle.
         /// </summary>
         /// <returns>IEnumerable of all positions that reside on the inner perimeter of the rectangle.</returns>
-        public RectangleRange PerimeterPositions()
+        public RectangleBoundary PerimeterPositions()
         {
-            return new RectangleRange(this);
+            return new RectangleBoundary(this);
         }
 
         /// <summary>
         /// Gets all positions that reside on the min-y line of the rectangle.
         /// </summary>
         /// <returns>IEnumerable of all positions that lie on the min-y line of the rectangle.</returns>
-        public RectangleRange MinYPositions()
+        public RectangleBoundary MinYPositions()
         {
-            return new RectangleRange(new Rectangle(X, Y, Width, 1));
+            return new RectangleBoundary(new Rectangle(X, Y, Width, 1));
         }
 
         /// <summary>
         /// Gets all positions that reside on the max-y line of the rectangle.
         /// </summary>
         /// <returns>IEnumerable of all positions that lie on the max-y line of the rectangle.</returns>
-        public RectangleRange MaxYPositions()
+        public RectangleBoundary MaxYPositions()
         {
-            return new RectangleRange(new Rectangle(X, MaxExtentY, Width, 1));
+            return new RectangleBoundary(new Rectangle(X, MaxExtentY, Width, 1));
         }
 
         /// <summary>
         /// Gets all positions that reside on the min-x line of the rectangle.
         /// </summary>
         /// <returns>IEnumerable of all positions that lie on the min-x line of the rectangle.</returns>
-        public RectangleRange MinXPositions()
+        public RectangleBoundary MinXPositions()
         {
-            return new RectangleRange(new Rectangle(X, Y, 1, Height));
+            return new RectangleBoundary(new Rectangle(X, Y, 1, Height));
         }
 
         /// <summary>
         /// Gets all positions that reside on the max-x line of the rectangle.
         /// </summary>
         /// <returns>IEnumerable of all positions that lie on the max-x line of the rectangle.</returns>
-        public RectangleRange MaxXPositions()
+        public RectangleBoundary MaxXPositions()
         {
-            return new RectangleRange(new Rectangle(MaxExtentX, Y, 1, Height));
+            return new RectangleBoundary(new Rectangle(MaxExtentX, Y, 1, Height));
         }
 
         /// <summary>
@@ -811,7 +810,7 @@ namespace RogueEntity.Core.Utils
         /// </summary>
         /// <param name="side">Side to get positions for.</param>
         /// <returns>IEnumerable of all positions that line on the inner perimeter of the rectangle on the given side.</returns>
-        public RectangleRange PositionsOnSide(Direction side)
+        public RectangleBoundary PositionsOnSide(Direction side)
         {
             switch (side)
             {
@@ -830,30 +829,8 @@ namespace RogueEntity.Core.Utils
         
         public RectangleContents Contents => new RectangleContents(this);
 
-        public readonly struct RectangleContents : IEnumerable<Position2D>
-        {
-            readonly Rectangle data;
-
-            public RectangleContents(Rectangle data)
-            {
-                this.data = data;
-            }
-
-            IEnumerator IEnumerable.GetEnumerator()
-            {
-                return GetEnumerator();
-            }
-
-            IEnumerator<Position2D> IEnumerable<Position2D>.GetEnumerator()
-            {
-                return GetEnumerator();
-            }
-        
-            public RectangleEnumerator GetEnumerator() => new RectangleEnumerator(data.X, data.Y, data.Width, data.Height);
-        } 
-
     }
-    
+
     public static class RectangleExtensions 
     {
 

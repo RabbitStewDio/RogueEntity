@@ -3,18 +3,18 @@ using System.Collections.Generic;
 
 namespace RogueEntity.Core.Utils
 {
-    public struct RectangleEnumerator : IEnumerator<Position2D>
+    public struct RectangleContentsEnumerator : IEnumerator<Position2D>
     {
         readonly Position2D origin;
         readonly int width;
         readonly int maxIdx;
         int idx;
 
-        public RectangleEnumerator(Rectangle r) : this(r.X, r.Y, r.Width, r.Height)
+        public RectangleContentsEnumerator(Rectangle r) : this(r.X, r.Y, r.Width, r.Height)
         {
         }
 
-        public RectangleEnumerator(int x, int y, int width, int height)
+        public RectangleContentsEnumerator(int x, int y, int width, int height)
         {
             this.origin = new Position2D(x, y);
             this.width = width;

@@ -5,7 +5,6 @@ using RogueEntity.Api.Services;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Positioning.MapLayers;
-using RogueEntity.Core.Sensing.Resistance;
 using RogueEntity.Core.Utils.DataViews;
 using System;
 using System.Collections.Generic;

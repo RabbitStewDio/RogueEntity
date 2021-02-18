@@ -66,7 +66,7 @@ namespace RogueEntity.Core.Players
 
             if (!playerDataByEntityKey.TryGetValue(e, out var data))
             {
-                data = new PlayerData(e, playerTag, false);
+                data = new PlayerData(e, playerTag);
                 playerDataByGuid.Add(data.Tag, data);
                 playerDataByEntityKey.Add(e, data);
             }

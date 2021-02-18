@@ -10,7 +10,7 @@ namespace RogueEntity.Generator.Tests
         [Test]
         public void Clear_Bulk()
         {
-            var (item, pos) = GivenAnItem(BulkItem1).IsPlacedAt(Position.Of(ItemLayer, 0, 0));
+            var (_, pos) = GivenAnItem(BulkItem1).IsPlacedAt(Position.Of(ItemLayer, 0, 0));
 
             When(_ => MapBuilder.Clear(Position.Of(ItemLayer, 0, 0)));
 
@@ -33,7 +33,7 @@ namespace RogueEntity.Generator.Tests
         [Test]
         public void Clear_Empty()
         {
-            var (item, pos) = GivenAnEmptyItem().IsPlacedAt(Position.Of(ItemLayer, 0, 0));
+            var (_, pos) = GivenAnEmptyItem().IsPlacedAt(Position.Of(ItemLayer, 0, 0));
 
             When(_ => MapBuilder.Clear(Position.Of(ItemLayer, 0, 0)));
 

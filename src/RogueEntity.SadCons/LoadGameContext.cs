@@ -45,14 +45,14 @@ namespace RogueEntity.SadCons
                 Position = new Point(5, 5)
             };
 
-            backButton = new Button(10, 1)
+            backButton = new Button(10)
             {
                 Text = "Back", 
                 Position = new Point(Console.Width - 13, Console.Height - 3)
             };
             backButton.Click += (e, args) => OnBack();
 
-            selectButton = new Button(10, 1)
+            selectButton = new Button(10)
             {
                 Text = "Load", 
                 Position = new Point(Console.Width - 26, Console.Height - 3)
@@ -98,14 +98,6 @@ namespace RogueEntity.SadCons
         }
 
         void OnPerformAction(object sender, EventArgs e)
-        {
-            if (listContent.SelectedItem.TryGetValue(out var profile))
-            {
-                OnPerformAction(profile);
-            }
-        }
-
-        void OnPerformAction(object sender, FlexibleListBox<TProfile>.SelectedItemEventArgs e)
         {
             if (listContent.SelectedItem.TryGetValue(out var profile))
             {

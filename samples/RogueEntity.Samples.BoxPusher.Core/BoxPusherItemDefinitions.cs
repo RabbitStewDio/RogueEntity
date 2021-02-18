@@ -1,7 +1,5 @@
 using EnTTSharp.Entities;
-using RogueEntity.Api.ItemTraits;
 using RogueEntity.Core.Inventory;
-using RogueEntity.Core.Meta.EntityKeys;
 using RogueEntity.Core.Meta.ItemBuilder;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Meta.Naming;
@@ -16,10 +14,10 @@ using RogueEntity.Core.Sensing.Receptors.Light;
 using RogueEntity.Core.Sensing.Resistance;
 using RogueEntity.Core.Sensing.Sources.Light;
 using RogueEntity.Core.Utils;
-using RogueEntity.Simple.BoxPusher.ItemTraits;
+using RogueEntity.Samples.BoxPusher.Core.ItemTraits;
 using static RogueEntity.Core.Movement.CostModifier.MovementCostModifiers;
 
-namespace RogueEntity.Simple.BoxPusher
+namespace RogueEntity.Samples.BoxPusher.Core
 {
     public static class BoxPusherItemDefinitions
     {

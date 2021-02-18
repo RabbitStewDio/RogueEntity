@@ -66,11 +66,6 @@ namespace RogueEntity.SadCons.Controls
         bool allowDecimalPoint;
 
         /// <summary>
-        /// The current appearance of the control.
-        /// </summary>
-        Cell currentAppearance;
-
-        /// <summary>
         /// Raised when the text has changed and the preview has accepted it.
         /// </summary>
         public event EventHandler TextChanged;
@@ -450,12 +445,10 @@ namespace RogueEntity.SadCons.Controls
 
             if (AllowDecimal)
             {
-                return decimal.TryParse(text, NumberStyles.Number, CultureInfo.CurrentCulture, out var value);
+                return decimal.TryParse(text, NumberStyles.Number, CultureInfo.CurrentCulture, out _);
             }
-            else
-            {
-                return int.TryParse(text, NumberStyles.Integer, CultureInfo.CurrentCulture, out var value);
-            }
+
+            return int.TryParse(text, NumberStyles.Integer, CultureInfo.CurrentCulture, out _);
         }
 
         bool ProcessNavigationKeys(AsciiKey currentKey, StringBuilder newText)

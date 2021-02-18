@@ -124,7 +124,7 @@ namespace RogueEntity.Core.Tests.Equipment
         [Test]
         public void Validate_Equip_StackingBulkItems_DesiredSlot()
         {
-            var existingItem = this.GivenAnEntity(BulkCombinedItemDeclaration).WithStackSize(15).InstantiatedAsEquipment(slotHead);
+            this.GivenAnEntity(BulkCombinedItemDeclaration).WithStackSize(15).InstantiatedAsEquipment(slotHead);
             var addedItem = this.GivenAnEntity(BulkCombinedItemDeclaration).WithStackSize(15).InstantiatedWithoutPosition();
             var expectedItem = this.GivenAnEntity(BulkCombinedItemDeclaration).WithStackSize(30).InstantiatedWithoutPosition();
             ItemReference remainderItem = ItemReference.Empty;
@@ -140,7 +140,7 @@ namespace RogueEntity.Core.Tests.Equipment
         [Test]
         public void Validate_Equip_StackingBulkItems_AutoSlot_Exceed_StackSize()
         {
-            var existingItem = this.GivenAnEntity(BulkCombinedItemDeclaration).WithStackSize(10).InstantiatedAsEquipment(slotHead);
+            this.GivenAnEntity(BulkCombinedItemDeclaration).WithStackSize(10).InstantiatedAsEquipment(slotHead);
             var addedItem = this.GivenAnEntity(BulkCombinedItemDeclaration).WithStackSize(55).InstantiatedWithoutPosition();
             
             var expectedResultItem = this.GivenAnEntity(BulkCombinedItemDeclaration).WithStackSize(60).InstantiatedWithoutPosition();

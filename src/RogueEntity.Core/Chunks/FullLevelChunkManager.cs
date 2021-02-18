@@ -4,7 +4,6 @@ using RogueEntity.Api.Time;
 using RogueEntity.Api.Utils;
 using RogueEntity.Core.Players;
 using RogueEntity.Core.Positioning;
-using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Utils;
 using System;
 using System.Collections.Generic;

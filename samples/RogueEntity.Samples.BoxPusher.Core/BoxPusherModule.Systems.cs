@@ -9,9 +9,9 @@ using RogueEntity.Core.Players;
 using RogueEntity.Core.Sensing.Sources.Light;
 using RogueEntity.Generator;
 using RogueEntity.Generator.MapFragments;
-using RogueEntity.Simple.BoxPusher.ItemTraits;
+using RogueEntity.Samples.BoxPusher.Core.ItemTraits;
 
-namespace RogueEntity.Simple.BoxPusher
+namespace RogueEntity.Samples.BoxPusher.Core
 {
     public partial class BoxPusherModule
     {
@@ -45,11 +45,10 @@ namespace RogueEntity.Simple.BoxPusher
 
             mip.ServiceResolver.Store(new BoxPusherWinConditionSystems());
             mip.ServiceResolver.Store(BoxPusherLevelSystem<ActorReference, ItemReference>.Create(mip.ServiceResolver, BoxPusherMapLayers.Actors));
-            mip.ServiceResolver.Store<IPlayerManager<ActorReference, BoxPusherPlayerProfile>>(
-                new InMemoryPlayerManager<ActorReference, BoxPusherPlayerProfile>(
+            mip.ServiceResolver.Store<IPlayerManager<ActorReference>>(
+                new InMemoryPlayerManager<ActorReference>(
                     mip.ServiceResolver.Resolve<IItemResolver<ActorReference>>(),
-                    mip.ServiceResolver.ResolveToReference<IPlayerServiceConfiguration>(),
-                    profileManager));
+                    mip.ServiceResolver.ResolveToReference<IPlayerServiceConfiguration>()));
         }
     }
 }

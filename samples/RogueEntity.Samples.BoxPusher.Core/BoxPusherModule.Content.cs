@@ -7,7 +7,7 @@ using RogueEntity.Core.Movement.MovementModes.Walking;
 using RogueEntity.Core.Players;
 using static RogueEntity.Core.Movement.CostModifier.MovementCostModifiers;
 
-namespace RogueEntity.Simple.BoxPusher
+namespace RogueEntity.Samples.BoxPusher.Core
 {
     public partial class BoxPusherModule
     {

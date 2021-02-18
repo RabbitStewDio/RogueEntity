@@ -5,16 +5,21 @@ using Console = SadConsole.Console;
 
 namespace RogueEntity.SadCons
 {
-    public class MapConsole
+    public class MapConsole: ConsoleContext<Console>
     {
-        readonly Console backend;
         readonly MapConsoleState sharedState;
 
-        public MapConsole(Console backend)
+        public MapConsole()
         {
-            this.backend = backend;
             this.sharedState = new MapConsoleState();
             this.sharedState.PlayerId = new PlayerTag(PlayerIds.SinglePlayer);
+        }
+
+        public override void Initialize(IConsoleParentContext parentContext)
+        {
+            base.Initialize(parentContext);
+            
+            Console = new Console(parentContext.ScreenBounds.Width, parentContext.ScreenBounds.Height);
         }
 
         public PlayerTag PlayerId
@@ -26,9 +31,9 @@ namespace RogueEntity.SadCons
         public void Initialize<TPlayerEntity>(IPlayerService<TPlayerEntity> playerService)
             where TPlayerEntity : IEntityKey
         {
-            this.backend.Components.RemoveAll();
-            this.backend.Components.Add(new MapConsoleMouseHandler<TPlayerEntity>(sharedState, playerService));
-            this.backend.Components.Add(new MapConsoleKeyboardHandler<TPlayerEntity>(sharedState, playerService));
+            Console.Components.RemoveAll();
+            Console.Components.Add(new MapConsoleMouseHandler<TPlayerEntity>(sharedState, playerService));
+            Console.Components.Add(new MapConsoleKeyboardHandler<TPlayerEntity>(sharedState, playerService));
         }
     }
 }

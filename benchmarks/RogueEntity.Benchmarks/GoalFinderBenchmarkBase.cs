@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using JetBrains.Profiler.Api;
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Api.Utils;
 using RogueEntity.Core.Meta.EntityKeys;
@@ -13,13 +12,13 @@ using RogueEntity.Core.Movement.MovementModes.Walking;
 using RogueEntity.Core.MovementPlaning.GoalFinding.SingleLevel;
 using RogueEntity.Core.MovementPlaning.Goals;
 using RogueEntity.Core.MovementPlaning.Pathfinding;
-using RogueEntity.Core.MovementPlaning.Pathfinding.SingleLevel;
 using RogueEntity.Core.Positioning.Algorithms;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Positioning.MapLayers;
 using RogueEntity.Core.Positioning.SpatialQueries;
 using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.DataViews;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RogueEntity.Benchmarks
 {
@@ -164,6 +163,7 @@ namespace RogueEntity.Benchmarks
             }
         }
         
+        [SuppressMessage("ReSharper", "NotAccessedVariable")]
         public void ValidatePathFinding()
         {
             TimeSpan totalTime = TimeSpan.Zero;
@@ -181,12 +181,6 @@ namespace RogueEntity.Benchmarks
                                                 .WithSearchRadius(32)
                                                 .Build(new PathfindingMovementCostFactors(new MovementCost(WalkingMovement.Instance, DistanceCalculation.Euclid, 1))))
                 {
-                    if (i == 5440)
-                    {
-                        MemoryProfiler.CollectAllocations(true);
-                        MemoryProfiler.GetSnapshot("Begin");
-                    }
-
                     var result = pf.TryFindPath(startPosition, out _, pathBuffer);
                     if (result == PathFinderResult.Found)
                     {
@@ -202,12 +196,6 @@ namespace RogueEntity.Benchmarks
                         totalTime += pv.TimeElapsed;
                         nodesEvaluated += pv.NodesEvaluated;
                         // Console.WriteLine($"Performance View: {pv.NodesEvaluated:n0} in {pv.TimeElapsed}");
-                    }
-
-                    if (i == 5440)
-                    {
-                        MemoryProfiler.GetSnapshot("End");
-                        MemoryProfiler.CollectAllocations(false);
                     }
                 }
             }

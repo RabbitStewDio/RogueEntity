@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
 
-namespace RogueEntity.Simple.BoxPusher.ItemTraits
+namespace RogueEntity.Samples.BoxPusher.Core.ItemTraits
 {
     [MessagePackObject]
     [DataContract]

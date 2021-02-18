@@ -1,11 +1,8 @@
 ﻿using Microsoft.Extensions.Configuration;
-using RogueEntity.SadCons;
-using RogueEntity.Simple.Demo.BoxPusher;
-using SadConsole;
 using Serilog;
 using Game = SadConsole.Game;
 
-namespace RogueEntity.Simple.Demo
+namespace RogueEntity.Samples.BoxPusher.MonoGame
 {
     class Program
     {

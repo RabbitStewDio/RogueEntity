@@ -59,7 +59,7 @@ namespace RogueEntity.Generator.MapFragments
             var layers = builder.Layers;
             var itemsPerLayer = new ItemDeclarationId[layers.Count];
 
-            foreach (var c in AreaRange.Of(f.Size.Width, f.Size.Height))
+            foreach (var c in new RectangleContents(f.Size.Width, f.Size.Height))
             {
                 var entry = f.MapData[c.X, c.Y];
                 if (entry == MapFragmentTagDeclaration.Empty)

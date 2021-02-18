@@ -51,6 +51,12 @@ namespace RogueEntity.Core.Meta.Items
 
         public bool TryResolve(in TItemId itemRef, out IItemDeclaration item)
         {
+            if (itemRef.IsEmpty)
+            {
+                item = default;
+                return false;
+            }
+            
             if (entityMetaData.IsReferenceEntity(itemRef))
             {
                 if (entityRegistry.IsValid(itemRef))
@@ -250,7 +256,7 @@ namespace RogueEntity.Core.Meta.Items
             {
                 foreach (var e in resolver.entityRegistry.View<TEntityTraitA>())
                 {
-                    if (!resolver.entityRegistry.GetComponent(e, out ItemDeclarationHolder<TEntityId> t) ||
+                    if (!resolver.entityRegistry.GetComponent(e, out ItemDeclarationHolder<TEntityId> _) ||
                         !resolver.entityRegistry.GetComponent(e, out TEntityTraitA ca))
                     {
                         continue;
@@ -264,7 +270,7 @@ namespace RogueEntity.Core.Meta.Items
             {
                 foreach (var e in resolver.entityRegistry.View<TEntityTraitA>())
                 {
-                    if (!resolver.entityRegistry.GetComponent(e, out ItemDeclarationHolder<TEntityId> t) ||
+                    if (!resolver.entityRegistry.GetComponent(e, out ItemDeclarationHolder<TEntityId> _) ||
                         !resolver.entityRegistry.GetComponent(e, out TEntityTraitA ca) ||
                         !resolver.entityRegistry.GetComponent(e, out TEntityTraitB cb))
                     {

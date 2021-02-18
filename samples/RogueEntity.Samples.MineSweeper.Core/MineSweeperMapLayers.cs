@@ -1,6 +1,6 @@
 ﻿using RogueEntity.Core.Positioning.MapLayers;
 
-namespace RogueEntity.Simple.MineSweeper
+namespace RogueEntity.Samples.MineSweeper.Core
 {
     public static class MineSweeperMapLayers
     {

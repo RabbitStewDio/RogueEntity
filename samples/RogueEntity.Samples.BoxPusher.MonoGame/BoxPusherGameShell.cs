@@ -1,13 +1,12 @@
 using Microsoft.Xna.Framework;
 using RogueEntity.Core.Players;
 using RogueEntity.SadCons;
-using RogueEntity.Simple.BoxPusher.ItemTraits;
+using RogueEntity.Samples.BoxPusher.Core.ItemTraits;
 
-namespace RogueEntity.Simple.Demo.BoxPusher
+namespace RogueEntity.Samples.BoxPusher.MonoGame
 {
     public class BoxPusherGameShell : GameShell<MainMenuConsoleContext>
     {
-        readonly IPlayerProfileManager<BoxPusherPlayerProfile> profileManager;
         readonly BoxPusherGame game;
         readonly BoxPusherProfileItemTheme itemTheme;
         LoadGameContext<BoxPusherPlayerProfile> loadGameScreen;

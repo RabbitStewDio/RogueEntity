@@ -14,7 +14,7 @@ namespace RogueEntity.SadCons
         public event Action ConsoleResized;
 
         protected TConsoleType ControlsCanvas { get; private set; }
-        Console ParentConsole { get; set; }
+        protected Console ParentConsole { get; private set; }
         
         Dimension lastConsoleSize;
 

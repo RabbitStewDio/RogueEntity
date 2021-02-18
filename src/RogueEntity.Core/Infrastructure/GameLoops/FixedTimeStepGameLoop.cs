@@ -44,6 +44,7 @@ namespace RogueEntity.Core.Infrastructure.GameLoops
         public TimeSpan CurrentTime => TimeState.TotalGameTimeElapsed;
         public int FixedStepTime => TimeState.FixedStepCount;
 
+        public bool IsRunning { get; private set; }
 
         /// <summary>
         ///   A global set of handlers that runs once at the start of  each new game.
@@ -75,6 +76,12 @@ namespace RogueEntity.Core.Infrastructure.GameLoops
 
         public void Initialize(Func<bool> isWaitingForInputDelegate = null)
         {
+            if (IsRunning)
+            {
+                throw new InvalidOperationException("GameLoop already running");
+            }
+
+            IsRunning = true;
             IsWaitingForInputDelegate = isWaitingForInputDelegate;
 
             TimeState = new GameTimeState(this.timeProcessor.TimeStepDuration);
@@ -85,13 +92,26 @@ namespace RogueEntity.Core.Infrastructure.GameLoops
             }
         }
 
-        public void Dispose()
+        public void Stop()
         {
+            if (!IsRunning)
+            {
+                return;
+            }
+            
+            IsRunning = false;
             for (var i = DisposeStepHandlers.Count - 1; i >= 0; i--)
             {
                 var handler = DisposeStepHandlers[i];
                 handler.PerformAction(ActionSystemExecutionContext.ShutDown);
             }
+            
+            IsWaitingForInputDelegate = null;
+        }
+
+        public void Dispose()
+        {
+            Stop();
         }
 
         [SuppressMessage("ReSharper", "InconsistentContextLogPropertyNaming")]

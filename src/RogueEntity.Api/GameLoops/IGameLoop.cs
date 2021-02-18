@@ -7,6 +7,9 @@ namespace RogueEntity.Api.GameLoops
     {
         void Initialize(Func<bool> isWaitingForInputDelegate = null);
         void Update(TimeSpan absoluteTime);
+        void Stop();
+        
+        bool IsRunning { get; }
         ITimeSource TimeSource { get; }
         
         event EventHandler<WorldStepEventArgs> FixStepProgress;

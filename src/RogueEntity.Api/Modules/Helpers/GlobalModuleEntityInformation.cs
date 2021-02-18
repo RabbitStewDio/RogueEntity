@@ -6,7 +6,6 @@ using RogueEntity.Api.ItemTraits;
 using RogueEntity.Api.Utils;
 using Serilog;
 using Serilog.Events;
-using System.Buffers;
 
 namespace RogueEntity.Api.Modules.Helpers
 {

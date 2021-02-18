@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace RogueEntity.Core.Utils
 {
-    public struct RectangleRangeEnumerator : IEnumerator<Position2D>
+    public struct RectangleBoundaryEnumerator : IEnumerator<Position2D>
     {
         readonly int minX;
         readonly int maxX;
@@ -12,7 +12,7 @@ namespace RogueEntity.Core.Utils
         int side;
         int pos;
 
-        public RectangleRangeEnumerator(Rectangle r)
+        public RectangleBoundaryEnumerator(Rectangle r)
         {
             this.minX = r.MinExtentX;
             this.minY = r.MinExtentY;

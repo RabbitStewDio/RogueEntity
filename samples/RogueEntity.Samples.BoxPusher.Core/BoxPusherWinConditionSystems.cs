@@ -3,10 +3,10 @@ using RogueEntity.Core.Players;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Utils;
-using RogueEntity.Simple.BoxPusher.ItemTraits;
+using RogueEntity.Samples.BoxPusher.Core.ItemTraits;
 using System.Collections.Generic;
 
-namespace RogueEntity.Simple.BoxPusher
+namespace RogueEntity.Samples.BoxPusher.Core
 {
     public class BoxPusherWinConditionSystems
     {

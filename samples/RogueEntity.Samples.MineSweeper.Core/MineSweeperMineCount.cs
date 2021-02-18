@@ -2,7 +2,7 @@
 using MessagePack;
 using System.Runtime.Serialization;
 
-namespace RogueEntity.Simple.MineSweeper
+namespace RogueEntity.Samples.MineSweeper.Core
 {
     [EntityComponent]
     [DataContract]

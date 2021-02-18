@@ -1,13 +1,13 @@
-﻿
-using RogueEntity.Api.ItemTraits;
+﻿using RogueEntity.Api.ItemTraits;
 using RogueEntity.Api.Modules;
 using RogueEntity.Api.Modules.Attributes;
 using RogueEntity.Core;
 using RogueEntity.Core.Meta.EntityKeys;
 using RogueEntity.Core.Players;
 using RogueEntity.Generator;
+using RogueEntity.Samples.MineSweeper.Core.Commands;
 
-namespace RogueEntity.Simple.MineSweeper
+namespace RogueEntity.Samples.MineSweeper.Core
 {
     public partial class MineSweeperModule
     {
@@ -21,14 +21,12 @@ namespace RogueEntity.Simple.MineSweeper
                                              .WithLayer<ItemReference>(MineSweeperMapLayers.Flags, mip.ServiceResolver);
             mip.ServiceResolver.Store(mapBuilder);
             mip.ServiceResolver.Store<IPlayerServiceConfiguration>(new PlayerServiceConfiguration(MineSweeperItemDefinitions.PlayerId));
-            
-            var profileManager = new InMemoryPlayerProfileManager<MineSweeperPlayerProfile>();
-            mip.ServiceResolver.Store<IPlayerProfileManager<MineSweeperPlayerProfile>>(profileManager);
-            mip.ServiceResolver.Store<IPlayerManager<ActorReference, MineSweeperPlayerProfile>>(
-                new InMemoryPlayerManager<ActorReference, MineSweeperPlayerProfile>(
+
+            mip.ServiceResolver.Store(new MineSweeperCommandService<ActorReference>(mip.ServiceResolver.Resolve<IItemResolver<ActorReference>>()));
+            mip.ServiceResolver.Store<IPlayerManager<ActorReference>>(
+                new InMemoryPlayerManager<ActorReference>(
                     mip.ServiceResolver.Resolve<IItemResolver<ActorReference>>(),
-                    mip.ServiceResolver.ResolveToReference<IPlayerServiceConfiguration>(),
-                    profileManager));
+                    mip.ServiceResolver.ResolveToReference<IPlayerServiceConfiguration>()));
         }
     }
 }

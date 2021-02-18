@@ -21,10 +21,7 @@ namespace RogueEntity.Api.Tests.Modules
     [Module]
     public class InvalidModule : ModuleBase
     {
-        public InvalidModule()
-        {
-            // this module intentionally does not define an Id or any other metadata.
-        }
+        // this module intentionally does not define an Id or any other metadata.
     }
 
     public class ActivateEntityModule<TItemId> : ModuleBase

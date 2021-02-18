@@ -1,42 +1,27 @@
-﻿using EnTTSharp.Entities.Attributes;
-using RogueEntity.Api.Utils;
-using RogueEntity.Core.Meta.EntityKeys;
-using RogueEntity.Core.Players;
+﻿using RogueEntity.Api.Utils;
 using RogueEntity.Core.Positioning.Grid;
-using RogueEntity.Core.Utils;
-using RogueEntity.Core.Utils.DataViews;
 
-namespace RogueEntity.Simple.MineSweeper
+namespace RogueEntity.Samples.MineSweeper.Core
 {
-    [EntityComponent()]
-    public class MineSweeperPlayerData
+    public readonly struct MineSweeperPlayerData
     {
-        public PlayerTag PlayerTag { get; }
-        public ActorReference PlayerEntityId { get; }
-        public MineSweeperPlayerProfile PlayerRecord { get; set; }
-        public int Seed => PlayerRecord.Seed;
-        
-        public Dimension PlayField;
-        public int MineCount;
-        public int UndiscoveredTileCount;
-        public Optional<EntityGridPosition> ExplodedPosition;
-        
-        public DynamicBoolDataView DiscoveredArea;
+        public readonly Optional<EntityGridPosition> ExplodedPosition;
+        public readonly bool AreaCleared;
 
-        public MineSweeperPlayerData(PlayerTag playerTag, ActorReference playerEntityId, MineSweeperPlayerProfile playerRecord)
+        public MineSweeperPlayerData(Optional<EntityGridPosition> explodedPosition, bool areaCleared = false)
         {
-            PlayerTag = playerTag;
-            PlayerEntityId = playerEntityId;
-            PlayerRecord = playerRecord;
-            PlayField = PlayerRecord.PlayFieldArea;
-            MineCount = PlayerRecord.MineCount;
+            ExplodedPosition = explodedPosition;
+            AreaCleared = areaCleared;
         }
 
-        public Rectangle ActiveArea => new Rectangle(1, 1, PlayField.Width, PlayField.Height);
-        
-        public bool IsGameWon()
+        public MineSweeperPlayerData WithExplodedPosition(EntityGridPosition pos)
         {
-            return !ExplodedPosition.HasValue && MineCount == UndiscoveredTileCount;
+            return new MineSweeperPlayerData(pos);
+        }
+
+        public MineSweeperPlayerData WithAreaCleared()
+        {
+            return new MineSweeperPlayerData(this.ExplodedPosition, true);
         }
     }
 }

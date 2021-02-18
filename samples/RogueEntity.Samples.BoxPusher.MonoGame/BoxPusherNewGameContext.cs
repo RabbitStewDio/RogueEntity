@@ -1,9 +1,9 @@
 ﻿using RogueEntity.Core.Players;
 using RogueEntity.SadCons;
-using RogueEntity.Simple.BoxPusher.ItemTraits;
+using RogueEntity.Samples.BoxPusher.Core.ItemTraits;
 using SadConsole;
 
-namespace RogueEntity.Simple.Demo.BoxPusher
+namespace RogueEntity.Samples.BoxPusher.MonoGame
 {
     public class BoxPusherNewGameContext: ConsoleContext<Window>
     {

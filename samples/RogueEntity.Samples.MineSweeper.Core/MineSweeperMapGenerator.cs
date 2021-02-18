@@ -10,31 +10,40 @@ using RogueEntity.Generator;
 using System;
 using System.Collections.Generic;
 
-namespace RogueEntity.Simple.MineSweeper
+namespace RogueEntity.Samples.MineSweeper.Core
 {
     public class MineSweeperMapGenerator<TItemId>
         where TItemId : IEntityKey
     {
+        readonly IMineSweeperGameParameterService worldGeneratorParameterService;
         readonly IEntityRandomGeneratorSource randomSource;
         readonly IGridMapContext<TItemId> gridMap;
         readonly IItemResolver<TItemId> itemResolver;
         readonly MapBuilder mapBuilder;
 
-        public MineSweeperMapGenerator(IEntityRandomGeneratorSource randomSource, 
-                                  IGridMapContext<TItemId> gridMap, 
-                                  IItemResolver<TItemId> itemResolver, 
-                                  MapBuilder mapBuilder)
+        public MineSweeperMapGenerator(IEntityRandomGeneratorSource randomSource,
+                                       IGridMapContext<TItemId> gridMap,
+                                       IItemResolver<TItemId> itemResolver,
+                                       MapBuilder mapBuilder,
+                                       IMineSweeperGameParameterService worldGeneratorParameterSource)
         {
             this.randomSource = randomSource;
             this.gridMap = gridMap;
             this.itemResolver = itemResolver;
             this.mapBuilder = mapBuilder;
+            this.worldGeneratorParameterService = worldGeneratorParameterSource;
         }
 
-        public void Activate<TActorId>(IEntityViewControl<TActorId> v, TActorId k, in MineSweeperPlayerData playerData)
-            where TActorId : IEntityKey
+        public void Activate()
         {
-            if (!gridMap.TryGetGridDataFor(MineSweeperMapLayers.Flags, out var flagData))
+            var playerData = worldGeneratorParameterService.WorldParameter;
+            if (!playerData.Validate())
+            {
+                throw new ArgumentException();
+            }
+            
+            if (!gridMap.TryGetGridDataFor(MineSweeperMapLayers.Flags, out var flagData) ||
+                !flagData.TryGetWritableView(0, out _, DataViewCreateMode.CreateMissing))
             {
                 throw new InvalidOperationException();
             }
@@ -53,18 +62,18 @@ namespace RogueEntity.Simple.MineSweeper
             // Define the playing field
             // which is surrounded by a wall
             mapBuilder.Draw(MineSweeperMapLayers.Items, 0,
-                            new Rectangle(0, 0, playerData.PlayField.Width + 2, playerData.PlayField.Height + 2),
+                            new Rectangle(0, 0, playerData.PlayFieldArea.Width + 2, playerData.PlayFieldArea.Height + 2),
                             MineSweeperItemDefinitions.Wall);
-            
+
             // with a random number of mines
             var minePositions = GenerateMinePositions(playerData);
             foreach (var pos in minePositions)
             {
                 mapBuilder.Instantiate(MineSweeperItemDefinitions.Mine, Position.From(pos));
             }
-            
+
             // and finally precompute the neighbourhood cells indicating how many mines are near by
-            foreach (var (x, y) in new Rectangle(1, 1, playerData.PlayField.Width, playerData.PlayField.Height).Contents)
+            foreach (var (x, y) in new RectangleContents(1, 1, playerData.PlayFieldArea.Width, playerData.PlayFieldArea.Height))
             {
                 if (!mapBuilder.Instantiate(MineSweeperItemDefinitions.Floor, Position.Of(MineSweeperMapLayers.Items, x, y)))
                 {
@@ -82,7 +91,7 @@ namespace RogueEntity.Simple.MineSweeper
             }
         }
 
-        HashSet<EntityGridPosition> GenerateMinePositions(MineSweeperPlayerData playerData) 
+        HashSet<EntityGridPosition> GenerateMinePositions(MineSweeperGameParameter playerData)
         {
             var rng = randomSource.RandomGenerator(playerData.Seed);
             var minePositions = new HashSet<EntityGridPosition>();
@@ -91,8 +100,8 @@ namespace RogueEntity.Simple.MineSweeper
                  minePositions.Count < playerData.MineCount;
                  attempt += 1)
             {
-                var x = rng.Next(0, playerData.PlayField.Width) + 1;
-                var y = rng.Next(0, playerData.PlayField.Height) + 1;
+                var x = rng.Next(0, playerData.PlayFieldArea.Width) + 1;
+                var y = rng.Next(0, playerData.PlayFieldArea.Height) + 1;
                 var pos = EntityGridPosition.Of(MineSweeperMapLayers.Items, x, y);
                 minePositions.Add(pos);
             }
@@ -105,18 +114,18 @@ namespace RogueEntity.Simple.MineSweeper
             return minePositions;
         }
 
-        static void ValidatePlayerData(MineSweeperPlayerData playerData)
+        static void ValidatePlayerData(in MineSweeperGameParameter playerData)
         {
-            if (playerData.PlayField.Width <= 1 ||
-                playerData.PlayField.Height <= 1)
+            if (playerData.PlayFieldArea.Width <= 1 ||
+                playerData.PlayFieldArea.Height <= 1)
             {
-                playerData.PlayField = new Dimension(10, 10);
+                throw new Exception();
             }
 
             if (playerData.MineCount <= 0 ||
-                playerData.MineCount >= playerData.PlayField.Width * playerData.PlayField.Height)
+                playerData.MineCount >= playerData.PlayFieldArea.Width * playerData.PlayFieldArea.Height)
             {
-                playerData.MineCount = Math.Max(1, (int) (playerData.PlayField.Width * playerData.PlayField.Height * 0.3f));
+                throw new Exception();
             }
         }
 
@@ -135,7 +144,7 @@ namespace RogueEntity.Simple.MineSweeper
                     count += 1;
                 }
             }
-            
+
             return count;
         }
     }

@@ -1,6 +1,5 @@
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Core.Positioning;
-using RogueEntity.Core.Tests.Positioning.Grid.GridItemPlacementServiceTest;
 
 namespace RogueEntity.Core.Tests.Fixtures
 {

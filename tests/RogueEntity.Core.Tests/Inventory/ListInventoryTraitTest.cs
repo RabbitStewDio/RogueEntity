@@ -84,8 +84,6 @@ namespace RogueEntity.Core.Tests.Inventory
 
         protected override void CustomizeXmlSerializationContext(IEntityKeyMapper mapper, XmlSerializationContext bs)
         {
-            ItemReference IdentityMapper(EntityKeyData data) => ItemReference.FromReferencedItem(data.Age, data.Key);
-            
             var itemReferenceMetaData = new ItemReferenceMetaData();
             var bulkIdSerializationMapper = new BulkItemIdSerializationMapper<ItemReference>(itemReferenceMetaData, Context.ItemRegistry, Context.ItemRegistry);
             bs.Register(new ItemDeclarationHolderSurrogateProvider<ItemReference>(Context.ItemResolver));

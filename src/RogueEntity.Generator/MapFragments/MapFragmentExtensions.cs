@@ -2,7 +2,6 @@
 using System;
 using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.DataViews;
-using RogueEntity.Core.Utils.Maps;
 
 namespace RogueEntity.Generator.MapFragments
 {

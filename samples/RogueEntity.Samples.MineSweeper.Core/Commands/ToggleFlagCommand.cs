@@ -1,6 +1,6 @@
 ﻿using RogueEntity.Core.Utils;
 
-namespace RogueEntity.Simple.MineSweeper
+namespace RogueEntity.Samples.MineSweeper.Core.Commands
 {
     public readonly struct ToggleFlagCommand
     {

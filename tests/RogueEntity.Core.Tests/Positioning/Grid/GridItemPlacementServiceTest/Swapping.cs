@@ -152,8 +152,8 @@ namespace RogueEntity.Core.Tests.Positioning.Grid.GridItemPlacementServiceTest
         [Test]
         public void Swap_Compatible_Partial_BulkItem_Stacks()
         {
-            var (refA, posA) = this.GivenAnEntity(StackingBulkItemA).WithStackSize(5).IsPlacedAt(Position.Of(DefaultLayer, 0, 0));
-            var (refB, posB) = this.GivenAnEntity(StackingBulkItemA).WithStackSize(4).IsPlacedAt(Position.Of(DefaultLayer, 1, 0));
+            var (_, posA) = this.GivenAnEntity(StackingBulkItemA).WithStackSize(5).IsPlacedAt(Position.Of(DefaultLayer, 0, 0));
+            var (_, posB) = this.GivenAnEntity(StackingBulkItemA).WithStackSize(4).IsPlacedAt(Position.Of(DefaultLayer, 1, 0));
             var refC = this.GivenAnEntity(StackingBulkItemA).WithStackSize(2).InstantiatedWithoutPosition();
             var refD = this.GivenAnEntity(StackingBulkItemA).WithStackSize(3).InstantiatedWithoutPosition();
             
@@ -167,8 +167,8 @@ namespace RogueEntity.Core.Tests.Positioning.Grid.GridItemPlacementServiceTest
         [Test]
         public void Swap_Compatible_Partial_BulkItem_Stacks_NotEnough_At_Source()
         {
-            var (refA, posA) = this.GivenAnEntity(StackingBulkItemA).WithStackSize(5).IsPlacedAt(Position.Of(DefaultLayer, 0, 0));
-            var (refB, posB) = this.GivenAnEntity(StackingBulkItemA).WithStackSize(4).IsPlacedAt(Position.Of(DefaultLayer, 1, 0));
+            var (_, posA) = this.GivenAnEntity(StackingBulkItemA).WithStackSize(5).IsPlacedAt(Position.Of(DefaultLayer, 0, 0));
+            var (_, posB) = this.GivenAnEntity(StackingBulkItemA).WithStackSize(4).IsPlacedAt(Position.Of(DefaultLayer, 1, 0));
             var refC = this.GivenAnEntity(StackingBulkItemA).WithStackSize(6).InstantiatedWithoutPosition();
             var refD = this.GivenAnEntity(StackingBulkItemA).WithStackSize(3).InstantiatedWithoutPosition();
             
@@ -182,8 +182,8 @@ namespace RogueEntity.Core.Tests.Positioning.Grid.GridItemPlacementServiceTest
         [Test]
         public void Swap_Compatible_Partial_BulkItem_Stacks_NotEnough_At_Target()
         {
-            var (refA, posA) = this.GivenAnEntity(StackingBulkItemA).WithStackSize(5).IsPlacedAt(Position.Of(DefaultLayer, 0, 0));
-            var (refB, posB) = this.GivenAnEntity(StackingBulkItemA).WithStackSize(4).IsPlacedAt(Position.Of(DefaultLayer, 1, 0));
+            var (_, posA) = this.GivenAnEntity(StackingBulkItemA).WithStackSize(5).IsPlacedAt(Position.Of(DefaultLayer, 0, 0));
+            var (_, posB) = this.GivenAnEntity(StackingBulkItemA).WithStackSize(4).IsPlacedAt(Position.Of(DefaultLayer, 1, 0));
             var refC = this.GivenAnEntity(StackingBulkItemA).WithStackSize(2).InstantiatedWithoutPosition();
             var refD = this.GivenAnEntity(StackingBulkItemA).WithStackSize(5).InstantiatedWithoutPosition();
             

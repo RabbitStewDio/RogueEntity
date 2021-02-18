@@ -7,15 +7,21 @@ namespace RogueEntity.Core.Infrastructure.Randomness
 {
     public class DefaultRandomGeneratorSource : IEntityRandomGeneratorSource
     {
-        readonly int seed;
         readonly Lazy<ITimeSource> timer;
         readonly DefaultObjectPool<Generator> pool;
+        int seed;
 
         public DefaultRandomGeneratorSource(int seed, Lazy<ITimeSource> timer)
         {
             this.seed = seed;
             this.timer = timer;
-            pool = new DefaultObjectPool<Generator>(new GeneratorPolicy(Return));
+            this.pool = new DefaultObjectPool<Generator>(new GeneratorPolicy(Return));
+        }
+
+        public int Seed
+        {
+            get => seed;
+            set => seed = value;
         }
 
         void Return(Generator obj)

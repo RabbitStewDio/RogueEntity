@@ -35,7 +35,7 @@ namespace RogueEntity.Core.Tests.Positioning.Grid.GridItemPlacementServiceTest
         public void PlaceBulkItemInOccupiedCell_Stackable_Compatible_WithEnoughSpace()
         {
             var refC = this.GivenAnEntity(StackingBulkItemA).WithStackSize(2).InstantiatedWithoutPosition();
-            var (refB, posB) = this.GivenAnEntity(StackingBulkItemA).WithStackSize(5).IsPlacedAt(Position.Of(DefaultLayer, 0, 0));
+            var (_, posB) = this.GivenAnEntity(StackingBulkItemA).WithStackSize(5).IsPlacedAt(Position.Of(DefaultLayer, 0, 0));
 
             When(_ => PlacementService.TryPlaceItem(refC, posB));
             

@@ -1,6 +1,6 @@
 using System;
 
-namespace RogueEntity.SadCons
+namespace RogueEntity.SadCons.Util
 {
     public readonly struct CoroutineHandle : IEquatable<CoroutineHandle>
     {

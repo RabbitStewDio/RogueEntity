@@ -10,6 +10,7 @@ using RogueEntity.Core.Positioning.Algorithms;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.DataViews;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RogueEntity.Benchmarks
 {
@@ -98,6 +99,7 @@ namespace RogueEntity.Benchmarks
             }
         }
         
+        [SuppressMessage("ReSharper", "NotAccessedVariable")]
         public void ValidatePathFinding()
         {
 

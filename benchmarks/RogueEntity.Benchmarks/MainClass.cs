@@ -3,9 +3,13 @@ using System.Diagnostics.CodeAnalysis;
 using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Diagnosers;
 using BenchmarkDotNet.Running;
+using JetBrains.Annotations;
+
+#pragma warning disable 162
 
 namespace RogueEntity.Benchmarks
 {
+    [SuppressMessage("ReSharper", "HeuristicUnreachableCode")]
     public class MainClass
     {
         const bool RunManually = false;
@@ -24,10 +28,7 @@ namespace RogueEntity.Benchmarks
             config.Add(MemoryDiagnoser.Default);
             // config.Add(new InliningDiagnoser(true, new[] {"EnTTSharp", "RogueEntity"}));
 
-            // config.Add(ThreadingDiagnoser.Default);
-            // var summary = BenchmarkRunner.Run(typeof(MainClass).Assembly, config);
-            var summary = BenchmarkRunner.Run(typeof(MainClass).Assembly, config);
-            // Console.WriteLine(summary);
+            BenchmarkRunner.Run(typeof(MainClass).Assembly, config);
         }
 
         static void RunOnce_GoalFinder()
@@ -48,6 +49,7 @@ namespace RogueEntity.Benchmarks
             }
         }
 
+        [UsedImplicitly]
         static void RunOnce_PathFinder()
         {
             var bm = new PathFinderBenchmarkMaze256();

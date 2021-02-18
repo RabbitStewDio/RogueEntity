@@ -3,10 +3,12 @@ using NUnit.Framework;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.MapLayers;
 using RogueEntity.Core.Tests.Fixtures;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RogueEntity.Core.Tests.Positioning.Grid.GridItemPlacementServiceTest
 {
     [TestFixture]
+    [SuppressMessage("ReSharper", "UnusedVariable")]
     public class Movement : GridItemPlacementServiceFixture
     {
         [Test]
@@ -14,14 +16,14 @@ namespace RogueEntity.Core.Tests.Positioning.Grid.GridItemPlacementServiceTest
         {
             var dummyLayer = new MapLayer(2, "Dummy Layer");
 
-            var (refA, posA) = this.GivenAnEntity(ReferenceItemA).IsPlacedAt(Position.Of(DefaultLayer, 0, 0));
+            var (refA, _) = this.GivenAnEntity(ReferenceItemA).IsPlacedAt(Position.Of(DefaultLayer, 0, 0));
 
             PlacementService.TryMoveItem(refA, Position.Invalid, Position.Invalid).Should().BeTrue("because moving from an invalid position to an invalid position is a no-op");
             PlacementService.TryMoveItem(default, Position.Of(DefaultLayer, 1, 0), Position.Of(DefaultLayer, 0, 0)).Should().BeTrue("moving an empty entity is a no-op");
             PlacementService.TryMoveItem(refA, Position.Of(dummyLayer, 1, 0), Position.Of(DefaultLayer, 0, 0)).Should().BeFalse("because there is no dummy layer");
             PlacementService.TryMoveItem(refA, Position.Of(DefaultLayer, 1, 0), Position.Of(dummyLayer, 0, 0)).Should().BeFalse("because there is no dummy layer");
             PlacementService.TryMoveItem(refA, Position.Of(DefaultLayer, 1, 0, 1), Position.Of(DefaultLayer, 0, 0)).Should().BeFalse("because there is no Z-Level 1");
-            PlacementService.TryMoveItem(refA, Position.Of(DefaultLayer, 0, 0, 0), Position.Of(DefaultLayer, 0, 0, 1)).Should().BeTrue("because we do create Z-Levels on demand");
+            PlacementService.TryMoveItem(refA, Position.Of(DefaultLayer, 0, 0), Position.Of(DefaultLayer, 0, 0, 1)).Should().BeTrue("because we do create Z-Levels on demand");
         }
 
         public void MovingAnEmptyEntityIsANoOp()

@@ -25,7 +25,6 @@ namespace RogueEntity.Core.Infrastructure.GameLoops
 
         readonly GameTimeProcessor timeProcessor;
         
-        bool disposed;
         TimeSpan fixedTimeUpdateTargetTime;
         TimeSpan fixedTimeUpdateHandledTime;
 
@@ -48,6 +47,8 @@ namespace RogueEntity.Core.Infrastructure.GameLoops
         {
             get { return this; }
         }
+
+        public bool IsRunning { get; private set; }
 
         public TimeSpan CurrentTime => TimeState.TotalGameTimeElapsed;
 
@@ -83,6 +84,12 @@ namespace RogueEntity.Core.Infrastructure.GameLoops
 
         public void Initialize(Func<bool> isWaitingForInputDelegate = null)
         {
+            if (IsRunning)
+            {
+                throw new InvalidOperationException("GameLoop is already initialized");
+            }
+
+            IsRunning = true;
             IsWaitingForInputDelegate = isWaitingForInputDelegate;
 
             if (gameFixedTimeStep.TryGetValue(out var ts))
@@ -103,12 +110,12 @@ namespace RogueEntity.Core.Infrastructure.GameLoops
             }
         }
 
-        public void Dispose()
+        public void Stop()
         {
-            if (disposed) 
+            if (!IsRunning) 
                 return;
             
-            disposed = true;
+            IsRunning = false;
             for (var i = DisposeStepHandlers.Count - 1; i >= 0; i--)
             {
                 var handler = DisposeStepHandlers[i];
@@ -118,6 +125,10 @@ namespace RogueEntity.Core.Infrastructure.GameLoops
             IsWaitingForInputDelegate = null;
         }
 
+        public void Dispose()
+        {
+            Stop();
+        }
 
         [SuppressMessage("ReSharper", "InconsistentContextLogPropertyNaming")]
         public void Update(TimeSpan absoluteTime)

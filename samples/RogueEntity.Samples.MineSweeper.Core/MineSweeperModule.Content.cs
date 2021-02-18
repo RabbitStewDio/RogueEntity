@@ -4,7 +4,7 @@ using RogueEntity.Core.Meta.EntityKeys;
 using RogueEntity.Core.Meta.ItemBuilder;
 using RogueEntity.Core.Players;
 
-namespace RogueEntity.Simple.MineSweeper
+namespace RogueEntity.Samples.MineSweeper.Core
 {
     public partial class MineSweeperModule
     {

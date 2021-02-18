@@ -2,7 +2,7 @@
 
 namespace RogueEntity.Core.Players
 {
-    public interface IPlayerManager<TEntity, TProfileData>
+    public interface IPlayerManager<TEntity>
     {
         /// <summary>
         ///   Login
@@ -10,9 +10,8 @@ namespace RogueEntity.Core.Players
         /// <param name="playerId"></param>
         /// <param name="playerTag"></param>
         /// <param name="playerEntity"></param>
-        /// <param name="profileData"></param>
         /// <returns></returns>
-        bool TryActivatePlayer(Guid playerId, out PlayerTag playerTag, out TEntity playerEntity, out TProfileData profileData);
+        bool TryActivatePlayer(Guid playerId, out PlayerTag playerTag, out TEntity playerEntity);
 
         /// <summary>
         ///   Logout

@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using RogueEntity.SadCons;
-using RogueEntity.Simple.MineSweeper;
+using RogueEntity.Samples.MineSweeper.Core;
+using System;
 
 namespace RogueEntity.Samples.MineSweeper.MonoGame
 {
@@ -8,10 +9,23 @@ namespace RogueEntity.Samples.MineSweeper.MonoGame
     {
         readonly MineSweeperGame game;
         MineSweeperNewGameContext newGameScreen;
+        MineSweeperMapContext mapContext;
 
         public MineSweeperGameShell()
         {
             game = new MineSweeperGame();
+            game.GameStarted += OnGameStarted;
+            game.GameStopped += OnGameStopped;
+        }
+
+        void OnGameStarted(object sender, EventArgs e)
+        {
+            ControlsCanvas.IsVisible = false;
+        }
+
+        void OnGameStopped(object sender, EventArgs e)
+        {
+            ControlsCanvas.IsVisible = true;
         }
 
         protected override MainMenuConsoleContext InitializeLateOverride()
@@ -30,19 +44,19 @@ namespace RogueEntity.Samples.MineSweeper.MonoGame
 
             newGameScreen = new MineSweeperNewGameContext();
             newGameScreen.NewGameRequested += OnNewGameRequested;
-
             canvas.AddChildContext(newGameScreen);
+
+            mapContext = new MineSweeperMapContext(game);
+            mapContext.Initialize(this);
+            ParentConsole.Children.Add(mapContext.Console);
+            
             return canvas;
         }
 
-        void OnNewGameRequested(object? sender, MineSweeperPlayerProfile e)
+        void OnNewGameRequested(object sender, MineSweeperGameParameter e)
         {
             System.Console.WriteLine($"Starting new game for {e}");
-            if (game.ProfileManager.TryCreatePlayer(e, out var guid, out var actualProfile) &&
-                game.StartGame(guid))
-            {
-                ControlsCanvas.IsVisible = false;
-            }
+            game.StartGame(e);
         }
 
         void OnShowSettingsDialog()
@@ -64,11 +78,6 @@ namespace RogueEntity.Samples.MineSweeper.MonoGame
         {
             base.Update(time);
             game.Update(time);
-            
-            if (!game.Started && !ControlsCanvas.IsVisible)
-            {
-                ControlsCanvas.IsVisible = true;
-            }
         }
     }
 }

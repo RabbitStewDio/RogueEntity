@@ -1,5 +1,4 @@
 using EnTTSharp.Entities;
-using RogueEntity.Api.ItemTraits;
 using RogueEntity.Core.Meta.ItemBuilder;
 using RogueEntity.Core.Positioning.MapLayers;
 

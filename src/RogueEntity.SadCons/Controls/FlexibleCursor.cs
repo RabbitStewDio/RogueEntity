@@ -654,7 +654,7 @@ namespace RogueEntity.SadCons.Controls
         }
 
         /// <summary>
-        /// Calls the <see cref="CarriageReturn"/> and <see cref="LineFeed"/> methods in a single call.
+        /// Calls the <see cref="CarriageReturn"/> and <see cref="LineFeed()"/> methods in a single call.
         /// </summary>
         /// <returns>The current cursor object.</returns>
         public FlexibleCursor NewLine() => CarriageReturn().LineFeed();
@@ -792,7 +792,6 @@ namespace RogueEntity.SadCons.Controls
             return this;
         }
 
-        /// <inheritdoc />
         public virtual void Render(SpriteBatch batch, Font font, Rectangle renderArea)
         {
             batch.Draw(font.FontImage, renderArea, font.GlyphRects[font.SolidGlyphIndex], CursorRenderCell.Background, 0f, Vector2.Zero, SpriteEffects.None, 0.6f);

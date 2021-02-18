@@ -5,7 +5,7 @@ using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Generator;
 using System;
 
-namespace RogueEntity.Simple.MineSweeper
+namespace RogueEntity.Samples.MineSweeper.Core.Commands
 {
     public class MineSweeperToggleFlagSystem<TItemId>
         where TItemId : IEntityKey
@@ -27,28 +27,40 @@ namespace RogueEntity.Simple.MineSweeper
                                                   in ToggleFlagCommand revealCommand)
             where TActorId : IEntityKey
         {
-            v.RemoveComponent<ToggleFlagCommand>(k);
-            
-            if (!playerData.ActiveArea.Contains(revealCommand.Position))
+            try
             {
-                return;
-            }
-            
-            if (!gridMap.TryGetGridDataFor(MineSweeperMapLayers.Flags, out var flagData) ||
-                !flagData.TryGetWritableView(0, out var flagView))
-            {
-                throw new InvalidOperationException();
-            }
+                var pos = revealCommand.Position;
+                if (!gridMap.TryGetGridDataFor(MineSweeperMapLayers.Items, out var itemData) ||
+                    !itemData.TryGetView(0, out var itemView))
+                {
+                    throw new InvalidOperationException();
+                }
 
-            var flag = flagView[revealCommand.Position.X, revealCommand.Position.Y];
-            var position = Position.Of(MineSweeperMapLayers.Flags, revealCommand.Position.X, revealCommand.Position.Y);
-            if (itemResolver.IsItemType(flag, MineSweeperItemDefinitions.Flag))
-            {
-                mapBuilder.Clear(position);
+                if (!gridMap.TryGetGridDataFor(MineSweeperMapLayers.Flags, out var flagData) ||
+                    !flagData.TryGetWritableView(0, out var flagView))
+                {
+                    throw new InvalidOperationException();
+                }
+
+                if (itemView[pos.X, pos.Y].IsEmpty)
+                {
+                    return;
+                }
+
+                var flag = flagView[pos.X, pos.Y];
+                var position = Position.Of(MineSweeperMapLayers.Flags, pos.X, pos.Y);
+                if (itemResolver.IsItemType(flag, MineSweeperItemDefinitions.Flag))
+                {
+                    mapBuilder.Clear(position);
+                }
+                else
+                {
+                    mapBuilder.Instantiate(MineSweeperItemDefinitions.Flag, position);
+                }
             }
-            else
+            finally
             {
-                mapBuilder.Instantiate(MineSweeperItemDefinitions.Flag, position);
+                v.RemoveComponent<ToggleFlagCommand>(k);
             }
         }
     }

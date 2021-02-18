@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using RogueEntity.Api.Utils;
 using System.Buffers;
-using System.Linq;
 
 namespace RogueEntity.Core.Utils.DataViews
 {

@@ -8,8 +8,9 @@ using RogueEntity.Core.Players;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Sensing.Discovery;
+using RogueEntity.Samples.MineSweeper.Core.Commands;
 
-namespace RogueEntity.Simple.MineSweeper
+namespace RogueEntity.Samples.MineSweeper.Core
 {
     public static class MineSweeperItemDefinitions
     {
@@ -27,6 +28,7 @@ namespace RogueEntity.Simple.MineSweeper
                     .WithName("player")
                     .WithCommand(CommandType.Of<ToggleFlagCommand>())
                     .WithCommand(CommandType.Of<RevealMapPositionCommand>())
+                    .WithTrait(new MineSweeperPlayerDataTrait<TItemId>())
                     .WithDiscoveryMap();
         }
         

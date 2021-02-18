@@ -2,7 +2,6 @@ using FluentAssertions;
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Core.Meta.EntityKeys;
 using RogueEntity.Core.Positioning.Grid;
-using RogueEntity.Core.Tests.Positioning.Grid.GridItemPlacementServiceTest;
 using System;
 
 namespace RogueEntity.Core.Tests.Fixtures

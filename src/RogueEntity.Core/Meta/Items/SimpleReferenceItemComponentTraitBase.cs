@@ -16,7 +16,7 @@ namespace RogueEntity.Core.Meta.Items
             Priority = priority;
         }
 
-        protected abstract Optional<TData> CreateInitialValue(TItemId reference);
+        protected virtual Optional<TData> CreateInitialValue(TItemId reference) => Optional.Empty();
 
         public ItemTraitId Id { get; }
         public int Priority { get; }

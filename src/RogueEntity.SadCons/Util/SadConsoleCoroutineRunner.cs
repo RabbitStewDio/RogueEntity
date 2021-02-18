@@ -5,7 +5,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Game = SadConsole.Game;
 
-namespace RogueEntity.SadCons
+namespace RogueEntity.SadCons.Util
 {
     public class SadConsoleCoroutineRunner
     {

@@ -1,5 +1,3 @@
-using System;
-
 namespace RogueEntity.Core.Utils.DataViews
 {
     public interface IDynamicDataView3D<T>: IReadOnlyDynamicDataView3D<T>

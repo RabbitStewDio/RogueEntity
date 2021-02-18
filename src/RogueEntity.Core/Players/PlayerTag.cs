@@ -14,16 +14,16 @@ namespace RogueEntity.Core.Players
     [MessagePackObject]
     public readonly struct PlayerTag : IEquatable<PlayerTag>
     {
-        readonly Guid id;
+        public readonly Guid Id;
 
         public PlayerTag(Guid id)
         {
-            this.id = id;
+            this.Id = id;
         }
 
         public bool Equals(PlayerTag other)
         {
-            return id.Equals(other.id);
+            return Id.Equals(other.Id);
         }
 
         public override bool Equals(object obj)
@@ -33,7 +33,7 @@ namespace RogueEntity.Core.Players
 
         public override int GetHashCode()
         {
-            return id.GetHashCode();
+            return Id.GetHashCode();
         }
 
         public static bool operator ==(PlayerTag left, PlayerTag right)

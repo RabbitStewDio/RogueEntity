@@ -1,4 +1,3 @@
-using FluentAssertions;
 using NUnit.Framework;
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Core.Meta.EntityKeys;
@@ -8,7 +7,6 @@ using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Positioning.MapLayers;
 using RogueEntity.Core.Tests.Fixtures;
-using System;
 
 namespace RogueEntity.Core.Tests.Positioning.Grid.GridItemPlacementServiceTest
 {
@@ -17,7 +15,6 @@ namespace RogueEntity.Core.Tests.Positioning.Grid.GridItemPlacementServiceTest
         protected MapLayer DefaultLayer = new MapLayer(1, "Default Layer");
         protected GridItemPlacementService<ItemReference> PlacementService;
 
-        protected bool LastResult;
         protected ItemContextBackend<ItemReference> ItemEntityContext;
         protected DefaultGridPositionContextBackend<ItemReference> ItemMapContext;
         protected ItemPlacementServiceContext<ItemReference> ItemPlacementContext;

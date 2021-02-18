@@ -4,7 +4,7 @@ using RogueEntity.Api.Utils;
 using RogueEntity.Core.Meta.Items;
 using System.Collections.Generic;
 
-namespace RogueEntity.Simple.BoxPusher.ItemTraits
+namespace RogueEntity.Samples.BoxPusher.Core.ItemTraits
 {
     public class BoxPusherPlayerProfileTrait<TActorId>: SimpleReferenceItemComponentTraitBase<TActorId, BoxPusherPlayerProfile>
         where TActorId : IEntityKey

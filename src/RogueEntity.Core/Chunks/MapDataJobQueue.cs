@@ -190,7 +190,6 @@ namespace RogueEntity.Core.Chunks
                 jobData.JobProgress = Optional.Empty();
                 jobs.Remove(k);
                 buffer.PopFront();
-                return;
             }
         }
 

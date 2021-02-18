@@ -2,7 +2,7 @@
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Core.Inputs.Commands;
 
-namespace RogueEntity.Simple.MineSweeper
+namespace RogueEntity.Samples.MineSweeper.Core.Commands
 {
     public class MineSweeperCommandService<TActor>
         where TActor : IEntityKey

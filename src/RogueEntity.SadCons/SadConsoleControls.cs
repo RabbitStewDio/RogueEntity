@@ -1,5 +1,8 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using RogueEntity.Api.Utils;
 using RogueEntity.SadCons.Controls;
+using SadConsole;
 using SadConsole.Controls;
 using System;
 using System.Globalization;
@@ -8,6 +11,30 @@ namespace RogueEntity.SadCons
 {
     public static class SadConsoleControls
     {
+        public static void DrawCursor(this CellSurface console, int x, int y, Optional<Color> color = default)
+        {
+            var realColor = color.GetOrElse(Color.Yellow);
+            console.SafeSetDecorator(x - 1, y - 1, new CellDecorator(realColor, 0xda, SpriteEffects.None));
+            console.SafeSetDecorator(x + 1, y - 1, new CellDecorator(realColor, 0xbf, SpriteEffects.None));
+            console.SafeSetDecorator(x + 1, y + 1, new CellDecorator(realColor, 0xd9, SpriteEffects.None));
+            console.SafeSetDecorator(x - 1, y + 1, new CellDecorator(realColor, 0xc0, SpriteEffects.None));
+        }
+
+        static void SafeSetDecorator(this CellSurface console, int x, int y, params CellDecorator[] d)
+        {
+            if (x < 0 || y < 0)
+            {
+                return;
+            }
+
+            if (x > console.Width || y >= console.Height)
+            {
+                return;
+            }
+
+            console.SetDecorator(x, y, 1, d);
+        }
+
         public static Button CreateButton(string text, int width, int height)
         {
             return new Button(width, height)

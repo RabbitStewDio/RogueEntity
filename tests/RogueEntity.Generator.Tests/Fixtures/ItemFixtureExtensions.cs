@@ -1,6 +1,5 @@
 using EnTTSharp.Entities;
 using RogueEntity.Api.ItemTraits;
-using RogueEntity.Core.Meta.EntityKeys;
 using RogueEntity.Core.Positioning;
 
 namespace RogueEntity.Generator.Tests.Fixtures

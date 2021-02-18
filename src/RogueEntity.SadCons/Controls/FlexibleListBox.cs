@@ -5,10 +5,8 @@ using SadConsole;
 using SadConsole.Controls;
 using SadConsole.Themes;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
-using System.Diagnostics;
 using System.Runtime.Serialization;
 
 namespace RogueEntity.SadCons.Controls
@@ -16,8 +14,6 @@ namespace RogueEntity.SadCons.Controls
     [DataContract]
     public class FlexibleListBox<T> : ControlBase
     {
-        static readonly EqualityComparer<T> EqualityComparer = EqualityComparer<T>.Default;
-
         public class SelectedItemEventArgs : EventArgs
         {
             public Optional<T> Item;
@@ -40,7 +36,7 @@ namespace RogueEntity.SadCons.Controls
         protected Point scrollBarOffset = new Point(0, 0);
 
         [DataMember(Name = "ScrollBarSizeAdjust")]
-        protected int scrollBarSizeAdjust = 0;
+        protected int scrollBarSizeAdjust;
 
         [DataMember(Name = "ListItemHeight")]
         int listItemHeight;

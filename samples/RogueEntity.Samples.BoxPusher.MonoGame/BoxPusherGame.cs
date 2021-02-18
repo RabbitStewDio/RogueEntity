@@ -10,15 +10,14 @@ using RogueEntity.Core.Infrastructure.Randomness;
 using RogueEntity.Core.Infrastructure.Services;
 using RogueEntity.Core.Meta.EntityKeys;
 using RogueEntity.Core.Players;
-using RogueEntity.SadCons;
-using RogueEntity.Simple.BoxPusher.ItemTraits;
+using RogueEntity.Samples.BoxPusher.Core.ItemTraits;
 using Serilog;
 using System;
 using System.ComponentModel.Composition.Hosting;
 using System.Diagnostics.CodeAnalysis;
 using Console = SadConsole.Console;
 
-namespace RogueEntity.Simple.Demo.BoxPusher
+namespace RogueEntity.Samples.BoxPusher.MonoGame
 {
     public class BoxPusherGame
     {
@@ -26,12 +25,11 @@ namespace RogueEntity.Simple.Demo.BoxPusher
         readonly DirectoryCatalog pluginCatalogue;
 
         IGameLoop gameLoop;
-        MapConsole mapConsole;
-        Optional<PlayerData> playerData;
+        Optional<BoxPusherPlayerData> playerData;
         bool started;
 
         public IPlayerService<ActorReference> PlayerService { get; private set; }
-        public IPlayerManager<ActorReference, BoxPusherPlayerProfile> PlayerManager { get; private set; }
+        public IPlayerManager<ActorReference> PlayerManager { get; private set; }
         public IPlayerProfileManager<BoxPusherPlayerProfile> ProfileManager { get; private set; }
         public IServiceResolver ServiceResolver { get; private set; }
 
@@ -54,7 +52,7 @@ namespace RogueEntity.Simple.Demo.BoxPusher
             ServiceResolver.ValidatePromisesCanResolve();
 
             PlayerService = ServiceResolver.Resolve<IPlayerService<ActorReference>>();
-            PlayerManager = ServiceResolver.Resolve<IPlayerManager<ActorReference, BoxPusherPlayerProfile>>();
+            PlayerManager = ServiceResolver.Resolve<IPlayerManager<ActorReference>>();
             ProfileManager = ServiceResolver.Resolve<IPlayerProfileManager<BoxPusherPlayerProfile>>();
         }
         
@@ -63,8 +61,8 @@ namespace RogueEntity.Simple.Demo.BoxPusher
             var console = new Console(width, height);
             console.FillWithRandomGarbage();
             
-            mapConsole = new MapConsole(console);
-            mapConsole.Initialize(PlayerService);
+          //  mapConsole = new MapConsole(console);
+           // mapConsole.Initialize(PlayerService);
             return console;
         }
 
@@ -75,11 +73,11 @@ namespace RogueEntity.Simple.Demo.BoxPusher
         /// <param name="playerProfileId"></param>
         public bool StartGame(Guid playerProfileId)
         {
-            if (PlayerManager.TryActivatePlayer(playerProfileId, out var playerTag, out var playerEntityId, out var playerRecord))
+            if (PlayerManager.TryActivatePlayer(playerProfileId, out var playerTag, out var playerEntityId))
             {
                 gameLoop.Initialize();
                 started = true;
-                playerData = new PlayerData(playerTag, playerEntityId, playerRecord);
+                playerData = new BoxPusherPlayerData(playerTag, playerEntityId, default);
                 return true;
             }
 

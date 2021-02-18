@@ -3,7 +3,7 @@ using SadConsole.Controls;
 using System;
 using System.Collections.Generic;
 
-namespace RogueEntity.SadCons
+namespace RogueEntity.SadCons.Controls
 {
     public class RadioButtonSet<TValue>: IDisposable
     {

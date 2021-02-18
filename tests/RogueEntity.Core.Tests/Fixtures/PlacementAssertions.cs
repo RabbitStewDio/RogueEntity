@@ -4,9 +4,8 @@ using RogueEntity.Core.Meta.EntityKeys;
 using RogueEntity.Core.Meta.ItemTraits;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Grid;
-using RogueEntity.Core.Tests.Fixtures;
 
-namespace RogueEntity.Core.Tests.Positioning.Grid.GridItemPlacementServiceTest
+namespace RogueEntity.Core.Tests.Fixtures
 {
     public class PlacementAssertions<TItemFixture>
         where TItemFixture: IItemFixture

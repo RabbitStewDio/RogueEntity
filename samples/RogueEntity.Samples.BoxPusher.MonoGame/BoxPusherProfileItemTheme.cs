@@ -1,13 +1,13 @@
 ﻿using Microsoft.Xna.Framework;
 using RogueEntity.SadCons;
 using RogueEntity.SadCons.Controls;
-using RogueEntity.Simple.BoxPusher.ItemTraits;
+using RogueEntity.Samples.BoxPusher.Core.ItemTraits;
 using SadConsole;
 using SadConsole.Controls;
 using System;
 using System.Collections.Generic;
 
-namespace RogueEntity.Simple.Demo.BoxPusher
+namespace RogueEntity.Samples.BoxPusher.MonoGame
 {
     public class BoxPusherProfileItemTheme: FlexibleListBoxItemTheme<PlayerProfileContainer<BoxPusherPlayerProfile>>
     {

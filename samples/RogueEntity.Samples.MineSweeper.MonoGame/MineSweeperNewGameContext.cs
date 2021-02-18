@@ -1,6 +1,6 @@
 ﻿using RogueEntity.SadCons;
 using RogueEntity.SadCons.Controls;
-using RogueEntity.Simple.MineSweeper;
+using RogueEntity.Samples.MineSweeper.Core;
 using SadConsole;
 using SadConsole.Controls;
 using System;
@@ -11,10 +11,10 @@ namespace RogueEntity.Samples.MineSweeper.MonoGame
 {
     public class MineSweeperNewGameContext : ConsoleContext<Window>
     {
-        public event EventHandler<MineSweeperPlayerProfile> NewGameRequested;
+        public event EventHandler<MineSweeperGameParameter> NewGameRequested;
         
         readonly RadioButtonSet<MineSweeperDifficulty> difficultySelector;
-        readonly DefaultLabelBinding<MineSweeperPlayerProfile> profileData;
+        readonly DefaultLabelBinding<MineSweeperGameParameter> profileData;
         Button submitButton;
         FlexibleTextBox minesBox;
         FlexibleTextBox widthBox;
@@ -25,8 +25,8 @@ namespace RogueEntity.Samples.MineSweeper.MonoGame
         {
             this.difficultySelector = new RadioButtonSet<MineSweeperDifficulty>("DifficultyGroup");
             this.difficultySelector.SelectionChanged += OnDifficultyChanged;
-            this.profileData = new DefaultLabelBinding<MineSweeperPlayerProfile>(FormatProfileData,
-                                                                                 MineSweeperPlayerProfile.Easy);
+            this.profileData = new DefaultLabelBinding<MineSweeperGameParameter>(FormatProfileData,
+                                                                                 MineSweeperGameParameter.Easy);
             this.profileData.PropertyChanged += OnValueChanged;
         }
 
@@ -39,7 +39,7 @@ namespace RogueEntity.Samples.MineSweeper.MonoGame
             }
         }
 
-        string FormatProfileData(MineSweeperPlayerProfile arg)
+        string FormatProfileData(MineSweeperGameParameter arg)
         {
             var pct = arg.MineCount / Math.Max(1f, arg.PlayFieldArea.Area);
             return $"of {arg.PlayFieldArea.Area} ({pct:P})";
@@ -50,13 +50,13 @@ namespace RogueEntity.Samples.MineSweeper.MonoGame
             switch (e)
             {
                 case MineSweeperDifficulty.Easy:
-                    profileData.Value = MineSweeperPlayerProfile.Easy;
+                    profileData.Value = MineSweeperGameParameter.Easy;
                     break;
                 case MineSweeperDifficulty.Normal:
-                    profileData.Value = MineSweeperPlayerProfile.Normal;
+                    profileData.Value = MineSweeperGameParameter.Normal;
                     break;
                 case MineSweeperDifficulty.Hard:
-                    profileData.Value = MineSweeperPlayerProfile.Hard;
+                    profileData.Value = MineSweeperGameParameter.Hard;
                     break;
                 case MineSweeperDifficulty.Custom:
                     break;
@@ -87,13 +87,13 @@ namespace RogueEntity.Samples.MineSweeper.MonoGame
             
 
             Console.Add(SadConsoleControls.CreateLabel("Difficulty:").WithPlacementAt(2, 2));
-            Console.Add(SadConsoleControls.CreateRadioButton("Easy", difficultySelector, MineSweeperDifficulty.Easy, 8, 1)
+            Console.Add(SadConsoleControls.CreateRadioButton("Easy", difficultySelector, MineSweeperDifficulty.Easy, 8)
                                           .WithHorizontalPlacementAt(ref x, y));
-            Console.Add(SadConsoleControls.CreateRadioButton("Normal", difficultySelector, MineSweeperDifficulty.Normal, 8, 1)
+            Console.Add(SadConsoleControls.CreateRadioButton("Normal", difficultySelector, MineSweeperDifficulty.Normal, 8)
                                           .WithHorizontalPlacementAt(ref x, y));
-            Console.Add(SadConsoleControls.CreateRadioButton("Hard", difficultySelector, MineSweeperDifficulty.Hard, 8, 1)
+            Console.Add(SadConsoleControls.CreateRadioButton("Hard", difficultySelector, MineSweeperDifficulty.Hard, 8)
                                           .WithHorizontalPlacementAt(ref x, y));
-            Console.Add(SadConsoleControls.CreateRadioButton("Custom", difficultySelector, MineSweeperDifficulty.Custom, 8, 1)
+            Console.Add(SadConsoleControls.CreateRadioButton("Custom", difficultySelector, MineSweeperDifficulty.Custom, 8)
                                           .WithHorizontalPlacementAt(ref x, y));
 
             x = 2;

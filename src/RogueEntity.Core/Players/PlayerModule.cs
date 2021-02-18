@@ -84,7 +84,7 @@ namespace RogueEntity.Core.Players
         void RegisterPlayerService<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter, EntityRegistry<TItemId> registry)
             where TItemId : IEntityKey
         {
-            if (!TryGetOrCreatePlayerService(initParameter.ServiceResolver, registry, out var service))
+            if (!TryGetOrCreatePlayerService(initParameter.ServiceResolver, registry, out _))
             {
                 throw new ModuleInitializationException("Require a player service to function");
             }

@@ -1,4 +1,3 @@
-using JetBrains.Annotations;
 using RogueEntity.Core.Utils;
 using SadConsole;
 using System;
@@ -6,20 +5,13 @@ using Console = SadConsole.Console;
 
 namespace RogueEntity.SadCons
 {
-    public interface IConsoleParentContext
-    {
-        event Action ConsoleResized;
-        Rectangle Bounds { get; }
-        Rectangle ScreenBounds { get; }
-    }
-    
     public abstract class ConsoleContext<TConsoleType> : IConsoleContext
         where TConsoleType : Console
     {
         public IConsoleParentContext ParentContext { get; private set; }
         public event Action ConsoleResized;
 
-        public virtual void Initialize([NotNull] IConsoleParentContext parentContext)
+        public virtual void Initialize(IConsoleParentContext parentContext)
         {
             this.ParentContext = parentContext ?? throw new ArgumentNullException(nameof(parentContext));
             this.ParentContext.ConsoleResized += OnParentConsoleResized;
@@ -31,9 +23,14 @@ namespace RogueEntity.SadCons
         {
             get
             {
-                return Console == null
-                    ? new Rectangle()
-                    : new Rectangle(Console.Position.X,
+                if (Console is ContainerConsole || 
+                    Console == null)
+                {
+                    // ContainerConsole has not size and therefore does not return sane values
+                    return ParentContext.Bounds;
+                }
+                
+                return new Rectangle(Console.Position.X,
                                     Console.Position.Y,
                                     Console.Width,
                                     Console.Height);
@@ -44,9 +41,9 @@ namespace RogueEntity.SadCons
         {
             c.Initialize(this);
             var console = c.Console;
-            if (console is Window w)
+            if (console is Window)
             {
-                
+                // ignore. Windows are free floating
             }
             else if (console != null)
             {
@@ -57,9 +54,9 @@ namespace RogueEntity.SadCons
         public void RemoveChildContext(IConsoleContext c)
         {
             var console = c.Console;
-            if (console is Window w)
+            if (console is Window)
             {
-                
+                // ignore. Windows are free floating
             }
             else if (console != null)
             {

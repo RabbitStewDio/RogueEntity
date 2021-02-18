@@ -8,7 +8,7 @@ using RogueEntity.Generator;
 using RogueEntity.Generator.MapFragments;
 using System;
 
-namespace RogueEntity.Simple.BoxPusher
+namespace RogueEntity.Samples.BoxPusher.Core
 {
     public class BoxPusherMapLevelDataSource : MapLevelDataSourceBase<int, Unit>
     {

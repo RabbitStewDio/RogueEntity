@@ -4,19 +4,14 @@ using RogueEntity.Api.GameLoops;
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Api.Modules;
 using RogueEntity.Api.Modules.Attributes;
-using RogueEntity.Core;
 using RogueEntity.Core.Chunks;
-using RogueEntity.Core.Infrastructure.Randomness;
 using RogueEntity.Core.Meta.EntityKeys;
 using RogueEntity.Core.Players;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Grid;
-using RogueEntity.Core.Sensing.Sources.Light;
-using RogueEntity.Generator;
-using RogueEntity.Generator.MapFragments;
-using RogueEntity.Simple.BoxPusher.ItemTraits;
+using RogueEntity.Samples.BoxPusher.Core.ItemTraits;
 
-namespace RogueEntity.Simple.BoxPusher
+namespace RogueEntity.Samples.BoxPusher.Core
 {
     [Module("BoxPusher")]
     public partial class BoxPusherModule : ModuleBase
