@@ -7,6 +7,7 @@ using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.DataViews;
 using RogueEntity.SadCons;
 using RogueEntity.Samples.MineSweeper.Core;
+using RogueEntity.Samples.MineSweeper.Core.Traits;
 using SadConsole;
 using SadConsole.Components;
 using System;

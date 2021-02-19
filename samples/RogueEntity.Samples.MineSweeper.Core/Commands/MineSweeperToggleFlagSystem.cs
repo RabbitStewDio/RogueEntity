@@ -3,6 +3,7 @@ using RogueEntity.Api.ItemTraits;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Generator;
+using RogueEntity.Samples.MineSweeper.Core.Traits;
 using System;
 
 namespace RogueEntity.Samples.MineSweeper.Core.Commands

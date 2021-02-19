@@ -3,7 +3,7 @@ using RogueEntity.Api.ItemTraits;
 using RogueEntity.Core.Meta.Items;
 using System.Collections.Generic;
 
-namespace RogueEntity.Samples.MineSweeper.Core
+namespace RogueEntity.Samples.MineSweeper.Core.Traits
 {
     public class MineSweeperMineCountItemTrait<TItemId> : SimpleBulkItemComponentTraitBase<TItemId, MineSweeperMineCount>
         where TItemId : IBulkDataStorageKey<TItemId>

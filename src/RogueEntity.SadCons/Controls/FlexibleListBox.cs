@@ -38,9 +38,6 @@ namespace RogueEntity.SadCons.Controls
         [DataMember(Name = "ScrollBarSizeAdjust")]
         protected int scrollBarSizeAdjust;
 
-        [DataMember(Name = "ListItemHeight")]
-        int listItemHeight;
-
         FlexibleListBoxItemTheme<T> itemTheme;
 
         /// <summary>

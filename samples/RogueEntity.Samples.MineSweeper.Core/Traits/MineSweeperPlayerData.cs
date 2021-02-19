@@ -1,7 +1,7 @@
 ﻿using RogueEntity.Api.Utils;
 using RogueEntity.Core.Positioning.Grid;
 
-namespace RogueEntity.Samples.MineSweeper.Core
+namespace RogueEntity.Samples.MineSweeper.Core.Traits
 {
     public readonly struct MineSweeperPlayerData
     {

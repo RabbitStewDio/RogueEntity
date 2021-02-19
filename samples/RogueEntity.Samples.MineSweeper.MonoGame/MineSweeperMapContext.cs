@@ -116,7 +116,6 @@ namespace RogueEntity.Samples.MineSweeper.MonoGame
                 if (info.IsKeyPressed(Keys.Escape))
                 {
                     mineSweeperMapContext.uiContext.ShowQuitDialog();
-                    return;
                 }
             }
         }

@@ -2,7 +2,7 @@
 <#@ assembly name="mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" #>
 
 <#+
-    void GenerateBulkEntityKeyMetaData(string className)
+    public void GenerateBulkEntityKeyMetaData(string className)
     {
         if (string.IsNullOrEmpty(className))
         {

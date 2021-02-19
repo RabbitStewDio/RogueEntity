@@ -18,7 +18,7 @@ namespace RogueEntity.Core.GridProcessing.LayerAggregation
         readonly int z;
         readonly Action<AggregationProcessingParameter<TAggregateData, TSourceType>> processor;
         readonly Dictionary<byte, IAggregationPropertiesDataProcessor< TSourceType>> dependencies;
-        readonly DynamicDataView2D<TAggregateData> resistanceData;
+        readonly DynamicDataView2D<TAggregateData> aggregatedView;
         readonly List<IAggregationPropertiesDataProcessor< TSourceType>> dependenciesAsList;
         readonly List<IReadOnlyDynamicDataView2D<TSourceType>> dataViewsAsList;
         readonly Dictionary<Rectangle, AggregationProcessingParameter<TAggregateData, TSourceType>> processingParameterCollector;
@@ -34,13 +34,13 @@ namespace RogueEntity.Core.GridProcessing.LayerAggregation
             this.z = z;
             this.processor = processor ?? throw new ArgumentNullException(nameof(processor));
             this.dependencies = new Dictionary<byte, IAggregationPropertiesDataProcessor< TSourceType>>();
-            this.resistanceData = new DynamicDataView2D<TAggregateData>(offsetX, offsetY, tileSizeX, tileSizeY);
+            this.aggregatedView = new DynamicDataView2D<TAggregateData>(offsetX, offsetY, tileSizeX, tileSizeY);
             this.dependenciesAsList = new List<IAggregationPropertiesDataProcessor< TSourceType>>();
             this.dataViewsAsList = new List<IReadOnlyDynamicDataView2D<TSourceType>>();
             this.processingParameterCollector = new Dictionary<Rectangle, AggregationProcessingParameter<TAggregateData, TSourceType>>();
         }
 
-        public DynamicDataView2D<TAggregateData> ResistanceData => resistanceData;
+        public DynamicDataView2D<TAggregateData> AggregatedView => aggregatedView;
 
         public bool IsDefined(MapLayer layer)
         {
@@ -128,7 +128,7 @@ namespace RogueEntity.Core.GridProcessing.LayerAggregation
                         continue;
                     }
 
-                    if (!resistanceData.TryGetWriteAccess(t.X, t.Y, out var writableTile, DataViewCreateMode.CreateMissing))
+                    if (!aggregatedView.TryGetWriteAccess(t.X, t.Y, out var writableTile, DataViewCreateMode.CreateMissing))
                     {
                         continue;
                     }

@@ -11,6 +11,8 @@ using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Sensing.Discovery;
 using RogueEntity.Generator;
 using RogueEntity.Samples.MineSweeper.Core.Commands;
+using RogueEntity.Samples.MineSweeper.Core.Services;
+using RogueEntity.Samples.MineSweeper.Core.Traits;
 
 namespace RogueEntity.Samples.MineSweeper.Core
 {

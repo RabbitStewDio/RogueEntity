@@ -1,6 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using RogueEntity.SadCons;
-using RogueEntity.Samples.MineSweeper.Core;
+using RogueEntity.Samples.MineSweeper.Core.Services;
 using System;
 
 namespace RogueEntity.Samples.MineSweeper.MonoGame
@@ -55,7 +55,6 @@ namespace RogueEntity.Samples.MineSweeper.MonoGame
 
         void OnNewGameRequested(object sender, MineSweeperGameParameter e)
         {
-            System.Console.WriteLine($"Starting new game for {e}");
             game.StartGame(e);
         }
 

@@ -7,10 +7,11 @@ using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.DataViews;
 using RogueEntity.Generator;
+using RogueEntity.Samples.MineSweeper.Core.Traits;
 using System;
 using System.Collections.Generic;
 
-namespace RogueEntity.Samples.MineSweeper.Core
+namespace RogueEntity.Samples.MineSweeper.Core.Services
 {
     public class MineSweeperMapGenerator<TItemId>
         where TItemId : IEntityKey

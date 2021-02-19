@@ -1,9 +1,6 @@
 using RogueEntity.SadCons;
 using SadConsole;
-using SadConsole.Components;
 using SadConsole.Controls;
-using System;
-using Console = SadConsole.Console;
 
 namespace RogueEntity.Samples.MineSweeper.MonoGame
 {

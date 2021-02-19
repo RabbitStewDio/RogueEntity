@@ -37,7 +37,19 @@ namespace RogueEntity.Core.GridProcessing.LayerAggregation
             this.TileSizeX = tileSizeX;
             this.TileSizeY = tileSizeY;
             this.resultDataView = new AggregationLayerStore<TAggregationType, TSourceType>();
+            this.resultDataView.ViewCreated += OnViewCreated;
+            this.resultDataView.ViewExpired += OnViewExpired;
             this.layerFactories2 = new List<IAggregationLayerController<TSourceType>>();
+        }
+
+        void OnViewExpired(object sender, DynamicDataView3DEventArgs<TAggregationType> e)
+        {
+            ViewExpired?.Invoke(this, e);
+        }
+
+        void OnViewCreated(object sender, DynamicDataView3DEventArgs<TAggregationType> e)
+        {
+            ViewCreated?.Invoke(this, e);
         }
 
         public int OffsetX { get; }
@@ -100,7 +112,7 @@ namespace RogueEntity.Core.GridProcessing.LayerAggregation
         {
             if (resultDataView.TryGetLayer(z, out var layerData))
             {
-                data = layerData.ResistanceData;
+                data = layerData.AggregatedView;
                 return true;
             }
 

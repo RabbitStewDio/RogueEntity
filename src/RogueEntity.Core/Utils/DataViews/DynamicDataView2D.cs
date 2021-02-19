@@ -96,7 +96,11 @@ namespace RogueEntity.Core.Utils.DataViews
 
         public Rectangle GetActiveBounds()
         {
-            if (index.Count == 0) return default;
+            if (index.Count == 0)
+            {
+                return default;
+            }
+            
             if (activeBounds.Width != 0 && activeBounds.Height != 0)
             {
                 return activeBounds;
@@ -148,6 +152,34 @@ namespace RogueEntity.Core.Utils.DataViews
             }
         }
 
+        public void Reset()
+        {
+            foreach (var e in index)
+            {
+                ViewExpired?.Invoke(this, new DynamicDataView2DEventArgs<T>(e.Key, e.Value));
+            }
+            
+            index.Clear();
+        }
+
+        public bool RemoveView(int x, int y, out Position2D removedIndex)
+        {
+            var dx = DataViewPartitions.TileSplit(x, offsetX, tileSizeX);
+            var dy = DataViewPartitions.TileSplit(y, offsetY, tileSizeY);
+
+            var key = new Position2D(dx, dy);
+            if (index.TryGetValue(key, out var existing))
+            {
+                ViewExpired?.Invoke(this, new DynamicDataView2DEventArgs<T>(key, existing));
+                index.Remove(key);
+                removedIndex = key;
+                return true;
+            }
+
+            removedIndex = default;
+            return false;
+        }
+        
         public BoundedDataView<T> GetOrCreateData(int x, int y)
         {
             if (TryGetDataInternal(x, y, out BoundedDataView<T> rawData))

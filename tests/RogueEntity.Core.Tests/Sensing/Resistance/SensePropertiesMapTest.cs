@@ -39,12 +39,12 @@ namespace RogueEntity.Core.Tests.Sensing.Resistance
             s.IsDefined(MapLayer.Indeterminate).Should().BeFalse();
             s.IsDefined(TestMapLayers.One).Should().BeFalse();
             s.IsDefined(TestMapLayers.Two).Should().BeFalse();
-            s.ResistanceData[0, 0].Should().Be(0);
+            s.AggregatedView[0, 0].Should().Be(0);
 
             s.AddProcess(TestMapLayers.One, new SensePropertiesDataProcessor<ItemReference, VisionSense>(TestMapLayers.One, ctx, ctx.ItemResolver, 0, 0, 0, 64, 64));
             s.IsDefined(TestMapLayers.One).Should().BeTrue();
             s.IsDefined(TestMapLayers.Two).Should().BeFalse();
-            s.ResistanceData[0, 0].Should().Be(0);
+            s.AggregatedView[0, 0].Should().Be(0);
         }
 
         [Test]
@@ -57,17 +57,17 @@ namespace RogueEntity.Core.Tests.Sensing.Resistance
 
             s.Process();
             s.ResetDirtyFlags();
-            s.ResistanceData[0, 0].Should().Be(Percentage.Full);
+            s.AggregatedView[0, 0].Should().Be(Percentage.Full);
 
             data.TrySet(EntityGridPosition.Of(TestMapLayers.One, 0, 0), default).Should().BeTrue();
             // without someone marking the data as dirty, no update will be done.
             s.Process();
-            s.ResistanceData[0, 0].Should().Be(Percentage.Full);
+            s.AggregatedView[0, 0].Should().Be(Percentage.Full);
 
             // After marking the map dirty, the processor should now see the map contents and update accordingly
             s.MarkDirty(EntityGridPosition.Of(TestMapLayers.One, 0, 0));
             s.Process();
-            s.ResistanceData[0, 0].Should().Be(0);
+            s.AggregatedView[0, 0].Should().Be(0);
         }
 
         [Test]
@@ -85,7 +85,7 @@ namespace RogueEntity.Core.Tests.Sensing.Resistance
             // After marking the map dirty, the processor should now see the map contents and update accordingly
             s.MarkDirty(EntityGridPosition.Of(TestMapLayers.Indeterminate, 0, 0));
             s.Process();
-            s.ResistanceData[0, 0].Should().Be(Percentage.Full);
+            s.AggregatedView[0, 0].Should().Be(Percentage.Full);
         }
     }
 }

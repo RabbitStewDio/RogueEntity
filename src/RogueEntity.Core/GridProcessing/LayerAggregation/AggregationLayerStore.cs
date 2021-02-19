@@ -4,12 +4,15 @@ using System.Linq;
 using JetBrains.Annotations;
 using RogueEntity.Api.Utils;
 using RogueEntity.Core.Positioning.Grid;
+using RogueEntity.Core.Utils.DataViews;
 
 namespace RogueEntity.Core.GridProcessing.LayerAggregation
 {
     public class AggregationLayerStore<TAggregateType, TSourceType>
     {
         readonly Dictionary<int, AggregatePropertiesLayer<TAggregateType, TSourceType>> layers;
+        public event EventHandler<DynamicDataView3DEventArgs<TAggregateType>> ViewCreated;
+        public event EventHandler<DynamicDataView3DEventArgs<TAggregateType>> ViewExpired;
 
         public AggregationLayerStore()
         {
@@ -20,17 +23,21 @@ namespace RogueEntity.Core.GridProcessing.LayerAggregation
 
         public void RemoveLayer(int z)
         {
-            layers.Remove(z);
+            if (layers.TryGetValue(z, out var view))
+            {
+                ViewExpired?.Invoke(this, new DynamicDataView3DEventArgs<TAggregateType>(z, view.AggregatedView));
+                layers.Remove(z);
+            }
         }
 
         public void DefineLayer(int z, [NotNull] AggregatePropertiesLayer<TAggregateType, TSourceType> layerData)
         {
-            if (z < 0)
+            if (layers.TryGetValue(z, out var existingView))
             {
-                throw new ArgumentOutOfRangeException();
+                ViewExpired?.Invoke(this, new DynamicDataView3DEventArgs<TAggregateType>(z, existingView.AggregatedView));
             }
-
             layers[z] = layerData ?? throw new ArgumentNullException(nameof(layerData));
+            ViewCreated?.Invoke(this, new DynamicDataView3DEventArgs<TAggregateType>(z, layerData.AggregatedView));
         }
 
         public bool TryGetLayer(int z, out AggregatePropertiesLayer<TAggregateType, TSourceType> layerData)

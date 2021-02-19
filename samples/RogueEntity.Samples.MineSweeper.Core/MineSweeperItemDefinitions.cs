@@ -9,6 +9,7 @@ using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Sensing.Discovery;
 using RogueEntity.Samples.MineSweeper.Core.Commands;
+using RogueEntity.Samples.MineSweeper.Core.Traits;
 
 namespace RogueEntity.Samples.MineSweeper.Core
 {

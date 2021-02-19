@@ -94,7 +94,7 @@ namespace RogueEntity.Core.Tests.Positioning.Grid.GridItemPlacementServiceTest
         public void RemoveBulkItem_Stacking_LessThanInCell()
         {
             var refC = this.GivenAnEntity(StackingBulkItemA).WithStackSize(2).InstantiatedWithoutPosition();
-            var (refA, posA) = this.GivenAnEntity(StackingBulkItemA).WithStackSize(5).IsPlacedAt(Position.Of(DefaultLayer, 0, 0));
+            var (_, posA) = this.GivenAnEntity(StackingBulkItemA).WithStackSize(5).IsPlacedAt(Position.Of(DefaultLayer, 0, 0));
 
             When(_ => PlacementService.TryRemoveItem(refC, posA));
             
@@ -106,7 +106,7 @@ namespace RogueEntity.Core.Tests.Positioning.Grid.GridItemPlacementServiceTest
         public void RemoveBulkItem_Stacking_MoreThanInCell()
         {
             var refC = this.GivenAnEntity(StackingBulkItemA).WithStackSize(5).InstantiatedWithoutPosition();
-            var (refA, posA) = this.GivenAnEntity(StackingBulkItemA).WithStackSize(2).IsPlacedAt(Position.Of(DefaultLayer, 0, 0));
+            var (_, posA) = this.GivenAnEntity(StackingBulkItemA).WithStackSize(2).IsPlacedAt(Position.Of(DefaultLayer, 0, 0));
 
             When(_ => PlacementService.TryRemoveItem(refC, posA));
             

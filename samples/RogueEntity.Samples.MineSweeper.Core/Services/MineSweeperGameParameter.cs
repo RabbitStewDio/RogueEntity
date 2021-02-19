@@ -1,18 +1,8 @@
 using RogueEntity.Core.Utils;
 using System;
 
-namespace RogueEntity.Samples.MineSweeper.Core
+namespace RogueEntity.Samples.MineSweeper.Core.Services
 {
-    public interface IMineSweeperGameParameterService
-    {
-        MineSweeperGameParameter WorldParameter { get; }
-    }
-    
-    public class MineSweeperGameParameterService: IMineSweeperGameParameterService
-    {
-        public MineSweeperGameParameter WorldParameter { get; set; }
-    }
-
     public readonly struct MineSweeperGameParameter : IEquatable<MineSweeperGameParameter>
     {
         public static readonly MineSweeperGameParameter Easy = new MineSweeperGameParameter(new Dimension(10, 10), 10);
@@ -91,5 +81,5 @@ namespace RogueEntity.Samples.MineSweeper.Core
         {
             return $"{nameof(PlayFieldArea)}: {PlayFieldArea}, {nameof(MineCount)}: {MineCount}, {nameof(Seed)}: {Seed}";
         }
-    }  
+    }
 }

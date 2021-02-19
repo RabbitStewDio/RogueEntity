@@ -6,6 +6,8 @@ using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Sensing.Discovery;
 using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.DataViews;
+using RogueEntity.Samples.MineSweeper.Core.Services;
+using RogueEntity.Samples.MineSweeper.Core.Traits;
 using Serilog;
 using System;
 using System.Collections.Generic;

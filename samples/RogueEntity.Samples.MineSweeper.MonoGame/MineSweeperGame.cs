@@ -11,8 +11,9 @@ using RogueEntity.Core.Infrastructure.Services;
 using RogueEntity.Core.Meta.EntityKeys;
 using RogueEntity.Core.Players;
 using RogueEntity.Core.Utils;
-using RogueEntity.Samples.MineSweeper.Core;
 using RogueEntity.Samples.MineSweeper.Core.Commands;
+using RogueEntity.Samples.MineSweeper.Core.Services;
+using RogueEntity.Samples.MineSweeper.Core.Traits;
 using Serilog;
 using System;
 using System.ComponentModel.Composition.Hosting;
@@ -151,7 +152,6 @@ namespace RogueEntity.Samples.MineSweeper.MonoGame
         {
             if (!Status.IsStoppable())
             {
-                System.Console.WriteLine("Not stoppable");
                 return;
             }
 

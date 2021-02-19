@@ -1,6 +1,6 @@
 ﻿using RogueEntity.SadCons;
 using RogueEntity.SadCons.Controls;
-using RogueEntity.Samples.MineSweeper.Core;
+using RogueEntity.Samples.MineSweeper.Core.Services;
 using SadConsole;
 using SadConsole.Controls;
 using System;

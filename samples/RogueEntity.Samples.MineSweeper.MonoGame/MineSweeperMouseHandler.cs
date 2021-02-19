@@ -1,7 +1,7 @@
 using RogueEntity.Api.Utils;
 using RogueEntity.Core.Utils;
-using RogueEntity.Samples.MineSweeper.Core;
 using RogueEntity.Samples.MineSweeper.Core.Commands;
+using RogueEntity.Samples.MineSweeper.Core.Services;
 using SadConsole;
 using SadConsole.Components;
 using SadConsole.Input;

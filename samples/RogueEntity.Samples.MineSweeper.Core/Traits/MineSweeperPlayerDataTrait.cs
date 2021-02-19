@@ -5,7 +5,7 @@ using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Players;
 using System.Collections.Generic;
 
-namespace RogueEntity.Samples.MineSweeper.Core
+namespace RogueEntity.Samples.MineSweeper.Core.Traits
 {
     public class MineSweeperPlayerDataTrait<TActorId>: SimpleReferenceItemComponentTraitBase<TActorId, MineSweeperPlayerData>
         where TActorId : IEntityKey
