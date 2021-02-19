@@ -1,5 +1,7 @@
 using RogueEntity.Api.Utils;
+using RogueEntity.Core.Runtime;
 using RogueEntity.Core.Utils;
+using RogueEntity.Samples.MineSweeper.Core;
 using RogueEntity.Samples.MineSweeper.Core.Commands;
 using RogueEntity.Samples.MineSweeper.Core.Services;
 using SadConsole;
@@ -41,7 +43,7 @@ namespace RogueEntity.Samples.MineSweeper.MonoGame
                 return;
             }
 
-            if (game.Status != MineSweeperGameStatus.Running)
+            if (game.Status != GameStatus.Running)
             {
                 handled = true;
                 return;

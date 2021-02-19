@@ -2,6 +2,7 @@ using Microsoft.Xna.Framework;
 using RogueEntity.Core.Players;
 using RogueEntity.SadCons;
 using RogueEntity.Samples.BoxPusher.Core.ItemTraits;
+using System;
 
 namespace RogueEntity.Samples.BoxPusher.MonoGame
 {
@@ -18,21 +19,6 @@ namespace RogueEntity.Samples.BoxPusher.MonoGame
             itemTheme = new BoxPusherProfileItemTheme(3);
         }
 
-        
-        LoadGameContext<BoxPusherPlayerProfile> CreateLoadScreen()
-        {
-            var loadGameContext = new LoadGameContext<BoxPusherPlayerProfile>(game.ProfileManager);
-            loadGameContext.ListItemRenderer = itemTheme;
-            loadGameContext.LoadRequested += OnLoadRequested;
-            return loadGameContext;
-        }
-
-        BoxPusherNewGameContext CreateNewGameScreen()
-        {
-            var loadGameContext = new BoxPusherNewGameContext(game.ProfileManager);
-            return loadGameContext;
-        }
-        
         protected override MainMenuConsoleContext InitializeLateOverride()
         {
             game.InitializeSystems();
@@ -48,12 +34,29 @@ namespace RogueEntity.Samples.BoxPusher.MonoGame
             canvas.OnSettings += OnShowSettingsDialog;
             canvas.Initialize(this);
 
-            loadGameScreen = CreateLoadScreen();
-            newGameScreen = CreateNewGameScreen();
+            loadGameScreen = new LoadGameContext<BoxPusherPlayerProfile>(game.ProfileManager);
+            loadGameScreen.ListItemRenderer = itemTheme;
+            loadGameScreen.LoadRequested += OnLoadRequested;
+            
+            newGameScreen = new BoxPusherNewGameContext(game.ProfileManager);
+            newGameScreen.Play += OnNewProfileCreated;
 
             canvas.AddChildContext(newGameScreen);
             canvas.AddChildContext(loadGameScreen);
             return canvas;
+        }
+
+        void OnNewProfileCreated(object sender, (Guid, BoxPusherPlayerProfile) valueTuple)
+        {
+            // at this call we can assume that the profile exists, so we can just load the game
+            
+        }
+
+        void OnLoadRequested(object sender, PlayerProfileContainer<BoxPusherPlayerProfile> e)
+        {
+            loadGameScreen.Hide();
+            game.StartGame(e.Id);
+            ControlsCanvas.IsVisible = false;
         }
 
         void OnShowSettingsDialog()
@@ -76,17 +79,10 @@ namespace RogueEntity.Samples.BoxPusher.MonoGame
             SadConsole.Game.Instance.Exit();
         }
 
-        void OnLoadRequested(object sender, PlayerProfileContainer<BoxPusherPlayerProfile> e)
-        {
-            loadGameScreen.Hide();
-            game.StartGame(e.Id);
-            ControlsCanvas.IsVisible = false;
-        }
-
         public override void Update(GameTime time)
         {
             base.Update(time);
-            game.Update(time);
+            game.Update(time.TotalGameTime);
         }
 
         protected IPlayerProfileManager<BoxPusherPlayerProfile> ProfileManager => game.ProfileManager;

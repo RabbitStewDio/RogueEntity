@@ -1,6 +1,8 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
+using RogueEntity.Core.Runtime;
 using RogueEntity.SadCons;
+using RogueEntity.Samples.MineSweeper.Core;
 using SadConsole;
 using SadConsole.Components;
 using System;

@@ -2,6 +2,7 @@ using Microsoft.Xna.Framework;
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Core.Meta.EntityKeys;
 using RogueEntity.Core.Positioning.Grid;
+using RogueEntity.Core.Runtime;
 using RogueEntity.Core.Sensing.Discovery;
 using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.DataViews;

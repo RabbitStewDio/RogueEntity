@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using RogueEntity.SadCons;
+using RogueEntity.Samples.MineSweeper.Core;
 using RogueEntity.Samples.MineSweeper.Core.Services;
 using System;
 
@@ -76,7 +77,7 @@ namespace RogueEntity.Samples.MineSweeper.MonoGame
         public override void Update(GameTime time)
         {
             base.Update(time);
-            game.Update(time);
+            game.Update(time.TotalGameTime);
         }
     }
 }

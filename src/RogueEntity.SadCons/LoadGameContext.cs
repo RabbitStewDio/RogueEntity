@@ -12,8 +12,8 @@ namespace RogueEntity.SadCons
     {
         readonly IPlayerProfileManager<TProfile> profileManager;
         Button backButton;
-        FlexibleListBox<PlayerProfileContainer<TProfile>> listContent;
         Button selectButton;
+        FlexibleListBox<PlayerProfileContainer<TProfile>> listContent;
         FlexibleListBoxItemTheme<PlayerProfileContainer<TProfile>> listItemRenderer;
 
         public event EventHandler<PlayerProfileContainer<TProfile>> LoadRequested;
@@ -62,9 +62,8 @@ namespace RogueEntity.SadCons
             Console.Add(backButton);
             Console.Add(selectButton);
             RecreateList();
-            
         }
-
+        
         void RecreateList()
         {
             if (listContent != null)
@@ -121,12 +120,6 @@ namespace RogueEntity.SadCons
             var width = ParentContext.Bounds.Width - 10;
             var height = ParentContext.Bounds.Height - 10;
             Console.Resize(width, height, true, new Rectangle(0, 0, width, height));
-            // Console.Resize(width, height, true);
-            
-            System.Console.WriteLine("Size: " + width + ", " + height);
-            System.Console.WriteLine("ViewPort: " + Console.ViewPort);
-            System.Console.WriteLine("ParentBounds: " + ParentContext.Bounds);
-            // Console.SetRenderCells();
 
             backButton.Position = new Point(Console.Width - 13, Console.Height - 3);
             RecreateList();
@@ -137,15 +130,8 @@ namespace RogueEntity.SadCons
 
         public override void Show()
         {
-            RefreshData();
             base.Show();
-            Console.Show(true);
-        }
-
-        public override void Hide()
-        {
-            Console.Hide();
-            base.Hide();
+            RefreshData();
         }
     }
 }

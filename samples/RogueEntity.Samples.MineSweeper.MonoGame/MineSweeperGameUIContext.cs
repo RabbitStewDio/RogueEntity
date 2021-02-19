@@ -1,4 +1,6 @@
+using RogueEntity.Core.Runtime;
 using RogueEntity.SadCons;
+using RogueEntity.Samples.MineSweeper.Core;
 using SadConsole;
 using SadConsole.Controls;
 
@@ -49,7 +51,7 @@ namespace RogueEntity.Samples.MineSweeper.MonoGame
 
         public void ShowGameOverDialog()
         {
-            if (game.Status == MineSweeperGameStatus.GameLost)
+            if (game.Status == GameStatus.GameLost)
             {
                 gameOverMessage.DisplayText = "Game Over!";
             }

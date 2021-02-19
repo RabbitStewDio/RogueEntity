@@ -69,6 +69,7 @@ namespace RogueEntity.SadCons.Controls
         /// Raised when the text has changed and the preview has accepted it.
         /// </summary>
         public event EventHandler TextChanged;
+        public event EventHandler EditedTextChanged;
 
         /// <summary>
         /// Raised before the text has changed and allows the change to be cancelled.
@@ -112,6 +113,7 @@ namespace RogueEntity.SadCons.Controls
             get => editingText;
             protected set
             {
+                var old = editingText;
                 editingText = value;
 
                 if (MaxLength != 0)
@@ -122,6 +124,11 @@ namespace RogueEntity.SadCons.Controls
                     }
                 }
 
+                if (old != editingText)
+                {
+                    EditedTextChanged?.Invoke(this, EventArgs.Empty);
+                }
+                
                 ValidateCursorPosition();
                 DetermineState();
                 IsDirty = true;
