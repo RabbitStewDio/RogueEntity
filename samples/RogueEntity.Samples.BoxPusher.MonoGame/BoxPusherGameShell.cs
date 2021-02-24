@@ -1,6 +1,8 @@
 using Microsoft.Xna.Framework;
 using RogueEntity.Core.Players;
+using RogueEntity.Core.Storage;
 using RogueEntity.SadCons;
+using RogueEntity.Samples.BoxPusher.Core;
 using RogueEntity.Samples.BoxPusher.Core.ItemTraits;
 using System;
 
@@ -15,7 +17,7 @@ namespace RogueEntity.Samples.BoxPusher.MonoGame
 
         public BoxPusherGameShell()
         {
-            game = new BoxPusherGame();
+            game = new BoxPusherGame(DefaultStorageLocationService.CreateDefault("BoxPusher"));
             itemTheme = new BoxPusherProfileItemTheme(3);
         }
 
@@ -46,9 +48,11 @@ namespace RogueEntity.Samples.BoxPusher.MonoGame
             return canvas;
         }
 
-        void OnNewProfileCreated(object sender, (Guid, BoxPusherPlayerProfile) valueTuple)
+        void OnNewProfileCreated(object sender, (Guid profileId, BoxPusherPlayerProfile profile) valueTuple)
         {
             // at this call we can assume that the profile exists, so we can just load the game
+            game.StartGame(valueTuple.profileId);
+            ControlsCanvas.IsVisible = false;
             
         }
 

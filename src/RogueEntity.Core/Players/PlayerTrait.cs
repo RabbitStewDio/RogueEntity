@@ -18,6 +18,12 @@ namespace RogueEntity.Core.Players
             return Optional.Empty();
         }
 
+        public override void Initialize(IEntityViewControl<TActorId> v, TActorId k, IItemDeclaration item)
+        {
+            base.Initialize(v, k, item);
+            v.AssignComponent<NewPlayerTag>(k);
+        }
+
         public override IEnumerable<EntityRoleInstance> GetEntityRoles()
         {
             yield return PlayerModule.PlayerRole.Instantiate<TActorId>();

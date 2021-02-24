@@ -68,8 +68,8 @@ namespace RogueEntity.Core.Inventory
                                  .WithoutContext()
                                  .WithInputParameter<DestroyedMarker, ListInventoryData<TActorId, TItemId>>()
                                  .CreateSystem(system.MarkDestroyedContainerEntities);
-            context.AddInitializationStepHandler(action);
-            context.AddFixedStepHandlers(action);
+            context.AddInitializationStepHandlerSystem(action);
+            context.AddFixedStepHandlerSystem(action);
         }
     }
 }

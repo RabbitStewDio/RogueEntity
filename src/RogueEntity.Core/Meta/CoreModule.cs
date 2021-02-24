@@ -81,7 +81,7 @@ namespace RogueEntity.Core.Meta
                                        .WithoutContext()
                                        .WithInputParameter<CascadingDestroyedMarker>()
                                        .CreateSystem(DestroyedEntitiesSystem<TItemId>.SchedulePreviouslyMarkedItemsForDestruction);
-            context.AddFixedStepHandlers(markCascades);
+            context.AddFixedStepHandlerSystem(markCascades);
         }
 
         void RegisterEntityCleanupSystems<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,

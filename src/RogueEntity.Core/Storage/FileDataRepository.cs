@@ -7,21 +7,17 @@ using System.IO;
 
 namespace RogueEntity.Core.Storage
 {
-    public class FileDataRepository<TKey, TData> : IDataRepository<TKey, TData>
+    public abstract class FileDataRepositoryBase<TKey, TData> : IDataRepository<TKey, TData>
     {
         static readonly ILogger Logger = SLog.ForContext<FileDataRepository<TKey, TData>>();
-
         readonly IFileKeyConverter<TKey> fileKeyConverter;
-        readonly MessagePackSerializerOptions messagePackSerializerOptions;
         readonly string baseDirectory;
         readonly DirectoryInfo dirInfo;
 
-        public FileDataRepository(IFileKeyConverter<TKey> fileKeyConverter,
-                                  MessagePackSerializerOptions messagePackSerializerOptions,
-                                  string baseDirectory)
+        protected FileDataRepositoryBase(IFileKeyConverter<TKey> fileKeyConverter,
+                                         string baseDirectory)
         {
             this.fileKeyConverter = fileKeyConverter;
-            this.messagePackSerializerOptions = messagePackSerializerOptions;
             this.baseDirectory = baseDirectory;
             this.dirInfo = Directory.CreateDirectory(baseDirectory);
         }
@@ -48,7 +44,7 @@ namespace RogueEntity.Core.Storage
             try
             {
                 using var fs = File.OpenRead(Path.Combine(baseDirectory, filename));
-                value = MessagePackSerializer.Deserialize<TData>(fs, messagePackSerializerOptions);
+                ParseFromStream(out value, fs);
                 return true;
             }
             catch (Exception e)
@@ -58,6 +54,8 @@ namespace RogueEntity.Core.Storage
                 return false;
             }
         }
+
+        protected abstract void ParseFromStream(out TData value, FileStream fs);
 
         public bool TryStore(in TKey k, in TData value)
         {
@@ -72,7 +70,7 @@ namespace RogueEntity.Core.Storage
             {
                 using var fs = File.Create(tmp);
                 
-                MessagePackSerializer.Serialize(fs, value, messagePackSerializerOptions);
+                WriteToStream(value, fs);
                 fs.Close();
                 File.Delete(fullPath);
                 File.Move(tmp, fullPath);
@@ -94,6 +92,8 @@ namespace RogueEntity.Core.Storage
             }
         }
 
+        protected abstract void WriteToStream(TData value, FileStream fs);
+
         public bool TryDelete(in TKey k)
         {
             if (!fileKeyConverter.TryConvertToFileName(k, out var filename))
@@ -113,5 +113,28 @@ namespace RogueEntity.Core.Storage
                 return false;
             }
         }
+    }
+
+    public class FileDataRepository<TKey, TData> : FileDataRepositoryBase<TKey, TData>
+    {
+        MessagePackSerializerOptions messagePackSerializerOptions;
+        
+        public FileDataRepository(IFileKeyConverter<TKey> fileKeyConverter, 
+                                  string baseDirectory,
+                                  MessagePackSerializerOptions messagePackSerializerOptions) : base(fileKeyConverter, baseDirectory)
+        {
+            this.messagePackSerializerOptions = messagePackSerializerOptions;
+        }
+        
+        protected override void WriteToStream(TData value, FileStream fs)
+        {
+            MessagePackSerializer.Serialize(fs, value, messagePackSerializerOptions);
+        }
+
+        protected override void ParseFromStream(out TData value, FileStream fs)
+        {
+            value = MessagePackSerializer.Deserialize<TData>(fs, messagePackSerializerOptions);
+        }
+
     }
 }

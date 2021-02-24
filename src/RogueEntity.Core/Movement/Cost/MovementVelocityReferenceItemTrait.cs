@@ -54,7 +54,7 @@ namespace RogueEntity.Core.Movement.Cost
 
         public override IEnumerable<EntityRoleInstance> GetEntityRoles()
         {
-            yield return MovementModules.GetMovableActorRole<TMovementMode>().Instantiate<TActorId>();
+            yield return MovementModules.GetMovableActorWithVelocityRole<TMovementMode>().Instantiate<TActorId>();
         }
     }
 }

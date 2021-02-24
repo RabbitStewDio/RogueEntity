@@ -59,8 +59,8 @@ namespace RogueEntity.Core.Sensing.Cache
                 resolver.Store(system);
                 resolver.Store<ISenseCacheSetupSystem>(system);
 
-                context.AddInitializationStepHandler(system.Start, nameof(system.Start));
-                context.AddDisposeStepHandler(system.Stop, nameof(system.Stop));
+                context.AddInitializationStepHandler(system.Start);
+                context.AddDisposeStepHandler(system.Stop);
             }
         }
 

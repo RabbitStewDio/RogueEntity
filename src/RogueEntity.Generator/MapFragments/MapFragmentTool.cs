@@ -19,11 +19,11 @@ namespace RogueEntity.Generator.MapFragments
         static readonly ILogger Logger = SLog.ForContext(typeof(MapFragmentTool));
 
         readonly MapBuilder builder;
-        readonly IEntityRandomGeneratorSource randomContext;
+        readonly IRandomGeneratorSource randomContext;
         readonly Dictionary<byte, List<ItemDeclarationId>> availableItems;
         BufferList<ItemDeclarationId> buffer;
 
-        public MapFragmentTool(MapBuilder builder, IEntityRandomGeneratorSource randomContext)
+        public MapFragmentTool(MapBuilder builder, IRandomGeneratorSource randomContext)
         {
             this.builder = builder;
             this.randomContext = randomContext;
@@ -52,8 +52,7 @@ namespace RogueEntity.Generator.MapFragments
                 throw new ArgumentException();
             }
 
-            var randomGenerator = randomContext.RandomGenerator(new ConstantRandomSeedSource(129),
-                                                                origin.GetHashCode());
+            var randomGenerator = randomContext.RandomGenerator(origin.GetHashCode());
 
             var postProcessor = new ItemCreationPostProcessor(randomGenerator);
             var layers = builder.Layers;

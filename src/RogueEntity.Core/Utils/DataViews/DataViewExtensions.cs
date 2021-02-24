@@ -8,7 +8,7 @@ namespace RogueEntity.Core.Utils.DataViews
     public static class DataViewExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TData TryGet<TResistanceMap, TData>(this TResistanceMap resistanceMap,
+        public static TData TryGetMapValue<TResistanceMap, TData>(this TResistanceMap resistanceMap,
                                                           ref IReadOnlyBoundedDataView<TData> resistanceTile,
                                                           int tx,
                                                           int ty,

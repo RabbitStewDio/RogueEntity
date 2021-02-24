@@ -2,14 +2,16 @@
 using RogueEntity.Api.Modules;
 using RogueEntity.Api.Modules.Attributes;
 using RogueEntity.Core;
-using RogueEntity.Core.Chunks;
 using RogueEntity.Core.Infrastructure.Randomness;
+using RogueEntity.Core.MapLoading;
 using RogueEntity.Core.Meta.EntityKeys;
 using RogueEntity.Core.Players;
 using RogueEntity.Core.Sensing.Sources.Light;
+using RogueEntity.Core.Storage;
 using RogueEntity.Generator;
 using RogueEntity.Generator.MapFragments;
 using RogueEntity.Samples.BoxPusher.Core.ItemTraits;
+using System;
 
 namespace RogueEntity.Samples.BoxPusher.Core
 {
@@ -26,27 +28,20 @@ namespace RogueEntity.Samples.BoxPusher.Core
                                              .WithLayer<ItemReference>(BoxPusherMapLayers.Items, mip.ServiceResolver)
                                              .WithLayer<ActorReference>(BoxPusherMapLayers.Actors, mip.ServiceResolver);
             var fragmentParser = new MapFragmentParser();
-            var mapLoader = new BoxPusherMapLevelDataSource(mapBuilder, fragmentParser, mip.ServiceResolver.Resolve<IEntityRandomGeneratorSource>());
-            mip.ServiceResolver.Store<IMapLevelDataSource<int>>(mapLoader);
-            mip.ServiceResolver.Store<IMapLevelDataSourceSystem>(mapLoader);
+            var mapLoader = new BoxPusherMapLevelDataSource(mapBuilder, fragmentParser, 
+                                                            mip.ServiceResolver.Resolve<IStorageLocationService>(),
+                                                            mip.ServiceResolver.Resolve<IEntityRandomGeneratorSource>());
+            mip.ServiceResolver.Store<IMapRegionLoaderService<int>>(mapLoader);
 
-            /*
-            var profileDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "RogueEntity/BoxPusher");
-            var profileDataRepoFact = new FileDataRepositoryFactory(profileDir, MessagePackSerializerOptions.Standard)
-                                      .WithKey(new GuidValueConverter())
-                                      .WithKey(new StringValueConverter());
-            
-            var profileManager = new DefaultPlayerProfileManager<BoxPusherPlayerProfile>(profileDataRepoFact.Create<Guid, BoxPusherPlayerProfile>("profiles"));
-            */
             var profileManager = new InMemoryPlayerProfileManager<BoxPusherPlayerProfile>();
             profileManager.TryCreatePlayer(new BoxPusherPlayerProfile("Duffy Duck"), out _, out _);
             profileManager.TryCreatePlayer(new BoxPusherPlayerProfile("Bugs Bunny").RecordLevelComplete(1), out _, out _);
             mip.ServiceResolver.Store<IPlayerProfileManager<BoxPusherPlayerProfile>>(profileManager);
 
             mip.ServiceResolver.Store(new BoxPusherWinConditionSystems());
-            mip.ServiceResolver.Store(BoxPusherLevelSystem<ActorReference, ItemReference>.Create(mip.ServiceResolver, BoxPusherMapLayers.Actors));
+            mip.ServiceResolver.Store<IMapRegionSystem>(new BoxPusherMapRegionSystem(mapLoader, TimeSpan.FromMilliseconds(5), profileManager));
             mip.ServiceResolver.Store<IPlayerManager<ActorReference>>(
-                new InMemoryPlayerManager<ActorReference>(
+                new BasicPlayerManager<ActorReference>(
                     mip.ServiceResolver.Resolve<IItemResolver<ActorReference>>(),
                     mip.ServiceResolver.ResolveToReference<IPlayerServiceConfiguration>()));
         }

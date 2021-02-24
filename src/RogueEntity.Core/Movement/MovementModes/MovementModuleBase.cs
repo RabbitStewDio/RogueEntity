@@ -8,6 +8,7 @@ using RogueEntity.Api.Modules.Attributes;
 using RogueEntity.Api.Modules.Helpers;
 using RogueEntity.Api.Services;
 using RogueEntity.Core.GridProcessing.LayerAggregation;
+using RogueEntity.Core.Movement.Cost;
 using RogueEntity.Core.Movement.CostModifier;
 using RogueEntity.Core.Movement.CostModifier.Directions;
 using RogueEntity.Core.Movement.CostModifier.Map;
@@ -19,10 +20,16 @@ namespace RogueEntity.Core.Movement.MovementModes
     public abstract class MovementModuleBase<TMovementMode> : ModuleBase
         where TMovementMode : IMovementMode
     {
-        public static EntityRole MovementCostModifierSourceRole = MovementModules.GetMovableActorRole<TMovementMode>();
-        public static EntityRole MovableActorRole = MovementModules.GetCostModifierSourceRole<TMovementMode>();
+        public static EntityRole MovementCostModifierSourceRole = MovementModules.GetCostModifierSourceRole<TMovementMode>();
+
+        public static EntityRole MovableActorRole = MovementModules.GetMovableActorRole<TMovementMode>();
+        public static EntityRole MovableActorWithPointsRole = MovementModules.GetMovableActorWithPointsRole<TMovementMode>();
+        public static EntityRole MovableActorWithVelocityRole = MovementModules.GetMovableActorWithVelocityRole<TMovementMode>();
 
         public static EntityRelation ProvidesMovementCostDataRelation = MovementModules.GetCostModifierRelation<TMovementMode>();
+
+        public static readonly EntitySystemId RegisterActorEntitiesWithPointsId = MovementModules.CreateActorEntityId<TMovementMode>();
+        public static readonly EntitySystemId RegisterActorEntitiesWithVelocityId = MovementModules.CreateActorEntityId<TMovementMode>();
 
         public static readonly EntitySystemId RegisterResistanceEntitiesId = MovementModules.CreateEntityId<TMovementMode>();
         public static readonly EntitySystemId RegisterResistanceSystem = MovementModules.CreateSystemId<TMovementMode>("LifeCycle");
@@ -37,8 +44,10 @@ namespace RogueEntity.Core.Movement.MovementModes
         {
             DeclareDependencies(ModuleDependency.Of(PositionModule.ModuleId));
 
-            RequireRole(MovableActorRole).WithImpliedRole(MovementModules.GeneralMovableActorRole);
             RequireRole(MovementCostModifierSourceRole).WithImpliedRole(MovementModules.GeneralCostModifierSourceRole);
+            RequireRole(MovableActorRole).WithImpliedRole(MovementModules.GeneralMovableActorRole);
+            ForRole(MovableActorWithPointsRole).WithImpliedRole(MovableActorRole);
+            ForRole(MovableActorWithVelocityRole).WithImpliedRole(MovableActorRole);
 
             RequireRelation(ProvidesMovementCostDataRelation);
         }
@@ -49,23 +58,35 @@ namespace RogueEntity.Core.Movement.MovementModes
                                                                                                       EntityRole role)
             where TItemId : IEntityKey
         {
-            if (role != MovementCostModifierSourceRole)
+            if (role == MovementCostModifierSourceRole)
             {
-                yield break;
+                yield return ModuleEntityRoleInitializerInfo.CreateFor<TItemId>(MovementCostModifierSourceRole,
+                                                                                InitializeResistanceRole,
+                                                                                $"{GetType().Name}#{nameof(InitializeResistanceRole)}")
+                                                            .WithRequiredRoles(PositionModule.GridPositionedRole)
+                                                            .WithRequiredRolesAnywhereInSystem(MovableActorRole);
             }
 
-            yield return ModuleEntityRoleInitializerInfo.CreateFor<TItemId>(MovementCostModifierSourceRole,
-                                                                            InitializeResistanceRole,
-                                                                            $"{GetType().Name}#{nameof(InitializeResistanceRole)}")
-                                                        .WithRequiredRoles(PositionModule.GridPositionedRole)
-                                                        .WithRequiredRolesAnywhereInSystem(MovableActorRole);
+            if (role == MovableActorWithPointsRole)
+            {
+                yield return ModuleEntityRoleInitializerInfo.CreateFor<TItemId>(MovableActorWithPointsRole,
+                                                                                InitializeActorWithPointsRole,
+                                                                                $"{GetType().Name}#{nameof(InitializeActorWithPointsRole)}");
+            }
+            
+            if (role == MovableActorWithVelocityRole)
+            {
+                yield return ModuleEntityRoleInitializerInfo.CreateFor<TItemId>(MovableActorWithVelocityRole,
+                                                                                InitializeActorWithVelocityRole,
+                                                                                $"{GetType().Name}#{nameof(InitializeActorWithVelocityRole)}");
+            }
         }
 
         [FinalizerCollector(InitializerCollectorType.Relations)]
         [SuppressMessage("ReSharper", "UnusedTypeParameter", Justification = "TObject is part of a delegate definition.")]
-        public IEnumerable<ModuleEntityRelationInitializerInfo<TSource>> CollectRoleInitializers<TSource, TObject>(IServiceResolver serviceResolver,
-                                                                                                                   IModuleEntityInformation entityInformation,
-                                                                                                                   EntityRelation relation)
+        public IEnumerable<ModuleEntityRelationInitializerInfo<TSource>> CollectRelationInitializers<TSource, TObject>(IServiceResolver serviceResolver,
+                                                                                                                       IModuleEntityInformation entityInformation,
+                                                                                                                       EntityRelation relation)
             where TSource : IEntityKey
             where TObject : IEntityKey
         {
@@ -78,6 +99,24 @@ namespace RogueEntity.Core.Movement.MovementModes
                                                                                 FinalizePathfinderFromSourcesRelation,
                                                                                 $"{GetType().Name}#{nameof(FinalizePathfinderFromSourcesRelation)}"
             );
+        }
+
+        protected void InitializeActorWithPointsRole<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
+                                                              IModuleInitializer initializer,
+                                                              EntityRole role)
+            where TItemId : IEntityKey
+        {
+            var ctx = initializer.DeclareEntityContext<TItemId>();
+            ctx.Register(RegisterActorEntitiesWithPointsId, 0, RegisterActorEntitiesWithPoints);
+        }
+
+        protected void InitializeActorWithVelocityRole<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
+                                                                IModuleInitializer initializer,
+                                                                EntityRole role)
+            where TItemId : IEntityKey
+        {
+            var ctx = initializer.DeclareEntityContext<TItemId>();
+            ctx.Register(RegisterActorEntitiesWithVelocityId, 0, RegisterActorEntitiesWithVelocity);
         }
 
         protected void InitializeResistanceRole<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
@@ -155,11 +194,11 @@ namespace RogueEntity.Core.Movement.MovementModes
             if (!serviceResolver.TryResolve(out InboundDirectionalitySystemRegisteredMarker _))
             {
                 serviceResolver.Store(new InboundDirectionalitySystemRegisteredMarker());
-                context.AddInitializationStepHandler(system.MarkGloballyDirty, nameof(system.MarkGloballyDirty));
-                context.AddInitializationStepHandler(system.ProcessSystem, nameof(system.ProcessSystem));
-                context.AddInitializationStepHandler(system.MarkCleanSystem, nameof(system.MarkCleanSystem));
-                context.AddFixedStepHandlers(system.ProcessSystem, nameof(system.ProcessSystem));
-                context.AddFixedStepHandlers(system.MarkCleanSystem, nameof(system.MarkCleanSystem));
+                context.AddInitializationStepHandler(system.MarkGloballyDirty);
+                context.AddInitializationStepHandler(system.ProcessSystem);
+                context.AddInitializationStepHandler(system.MarkCleanSystem);
+                context.AddFixedStepHandlers(system.ProcessSystem);
+                context.AddFixedStepHandlers(system.MarkCleanSystem);
             }
         }
 
@@ -174,11 +213,11 @@ namespace RogueEntity.Core.Movement.MovementModes
             if (!serviceResolver.TryResolve(out OutboundDirectionalitySystemRegisteredMarker _))
             {
                 serviceResolver.Store(new OutboundDirectionalitySystemRegisteredMarker());
-                context.AddInitializationStepHandler(system.MarkGloballyDirty, nameof(system.MarkGloballyDirty));
-                context.AddInitializationStepHandler(system.ProcessSystem, nameof(system.ProcessSystem));
-                context.AddInitializationStepHandler(system.MarkCleanSystem, nameof(system.MarkCleanSystem));
-                context.AddFixedStepHandlers(system.ProcessSystem, nameof(system.ProcessSystem));
-                context.AddFixedStepHandlers(system.MarkCleanSystem, nameof(system.MarkCleanSystem));
+                context.AddInitializationStepHandler(system.MarkGloballyDirty);
+                context.AddInitializationStepHandler(system.ProcessSystem);
+                context.AddInitializationStepHandler(system.MarkCleanSystem);
+                context.AddFixedStepHandlers(system.ProcessSystem);
+                context.AddFixedStepHandlers(system.MarkCleanSystem);
             }
         }
 
@@ -253,6 +292,20 @@ namespace RogueEntity.Core.Movement.MovementModes
             where TItemId : IEntityKey
         {
             registry.RegisterNonConstructable<RelativeMovementCostModifier<TMovementMode>>();
+        }
+
+        protected void RegisterActorEntitiesWithPoints<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
+                                                                EntityRegistry<TItemId> registry)
+            where TItemId : IEntityKey
+        {
+            registry.RegisterNonConstructable<MovementPointCost<TMovementMode>>();
+        }
+
+        protected void RegisterActorEntitiesWithVelocity<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
+                                                                  EntityRegistry<TItemId> registry)
+            where TItemId : IEntityKey
+        {
+            registry.RegisterNonConstructable<MovementVelocity<TMovementMode>>();
         }
 
         readonly struct InboundDirectionalitySystemRegisteredMarker

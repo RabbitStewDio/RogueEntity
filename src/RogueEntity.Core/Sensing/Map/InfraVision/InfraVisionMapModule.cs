@@ -93,8 +93,8 @@ namespace RogueEntity.Core.Sensing.Map.InfraVision
                         .WithInputParameter<HeatSourceDefinition, SenseSourceState<TemperatureSense>>()
                         .CreateSystem(hs.CollectSenseSources);
 
-            context.AddInitializationStepHandler(system);
-            context.AddFixedStepHandlers(system);
+            context.AddInitializationStepHandlerSystem(system);
+            context.AddFixedStepHandlerSystem(system);
         }
 
         void RegisterComputeSenseMapSystem<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,

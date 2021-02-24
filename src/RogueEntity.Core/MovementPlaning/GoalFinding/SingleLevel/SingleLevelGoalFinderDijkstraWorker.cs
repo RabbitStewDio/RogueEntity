@@ -140,7 +140,7 @@ namespace RogueEntity.Core.MovementPlaning.GoalFinding.SingleLevel
             for (var index = 0; index < movementCostsOnLevel.Count; index++)
             {
                 var s = movementCostsOnLevel[index];
-                var dir = s.Directions.TryGet(ref directionsTile[index], targetPosX, targetPosY, DirectionalityInformation.None);
+                var dir = s.Directions.TryGetMapValue(ref directionsTile[index], targetPosX, targetPosY, DirectionalityInformation.None);
                 allowedMovements |= dir;
             }
 
@@ -166,7 +166,7 @@ namespace RogueEntity.Core.MovementPlaning.GoalFinding.SingleLevel
             for (var index = 0; index < movementCostsOnLevel.Count; index++)
             {
                 var m = movementCostsOnLevel[index];
-                var dir = m.Directions.TryGet(ref directionsTile[index], targetPosX, targetPosY, DirectionalityInformation.None);
+                var dir = m.Directions.TryGetMapValue(ref directionsTile[index], targetPosX, targetPosY, DirectionalityInformation.None);
                 if (dir == DirectionalityInformation.None)
                 {
                     continue;
@@ -177,7 +177,7 @@ namespace RogueEntity.Core.MovementPlaning.GoalFinding.SingleLevel
                     continue;
                 }
 
-                var tileCost = m.Costs.TryGet(ref costsTile[index], targetPosX, targetPosY, 0);
+                var tileCost = m.Costs.TryGetMapValue(ref costsTile[index], targetPosX, targetPosY, 0);
                 if (tileCost <= 0)
                 {
                     // a cost of zero means its undefined. This should mean the tile is not valid.

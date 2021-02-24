@@ -91,7 +91,7 @@ namespace RogueEntity.Core.Sensing.Common.ShadowCast
                                           int currentX,
                                           int currentY)
         {
-            var dirInfo = p.DirectionalityView.TryGet(ref directionalityTile, prevX + p.Origin.X, prevY + p.Origin.Y, DirectionalityInformation.None);
+            var dirInfo = p.DirectionalityView.TryGetMapValue(ref directionalityTile, prevX + p.Origin.X, prevY + p.Origin.Y, DirectionalityInformation.None);
             if (dirInfo == DirectionalityInformation.None)
             {
                 return true;
@@ -162,7 +162,7 @@ namespace RogueEntity.Core.Sensing.Common.ShadowCast
 
                     var signalStrength = resistanceData[prevX, prevY];
                     var distanceFromOrigin = (float)dist.Calculate(deltaX, deltaY, 0);
-                    var resistance = p.ResistanceMap.TryGet(ref resistanceTile, globalCurrentX, globalCurrentY, 1);
+                    var resistance = p.ResistanceMap.TryGetMapValue(ref resistanceTile, globalCurrentX, globalCurrentY, 1);
 
                     var fullyBlocked = IsFullyBlocked(resistance);
                     var blockedByDirections = IsBlockedByDirectionalityMap(in p, prevX, prevY, currentX, currentY);

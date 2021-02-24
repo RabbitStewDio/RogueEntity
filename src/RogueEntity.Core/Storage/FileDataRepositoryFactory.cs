@@ -52,7 +52,7 @@ namespace RogueEntity.Core.Storage
                 throw new ArgumentException($"Repository-id '{id}' is not valid.");
             }
 
-            return new FileDataRepository<TKey, TData>(fileConverter, options, Path.Combine(profileDirectory, id));
+            return new FileDataRepository<TKey, TData>(fileConverter, Path.Combine(profileDirectory, id), options);
         }
     }
 }

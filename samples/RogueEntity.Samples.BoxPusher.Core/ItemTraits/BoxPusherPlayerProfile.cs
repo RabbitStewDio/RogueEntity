@@ -1,3 +1,4 @@
+using EnTTSharp.Entities.Attributes;
 using MessagePack;
 using RogueEntity.Core.Utils;
 using System.Collections.Generic;
@@ -6,6 +7,7 @@ using System.Runtime.Serialization;
 
 namespace RogueEntity.Samples.BoxPusher.Core.ItemTraits
 {
+    [EntityComponent]
     [MessagePackObject]
     [DataContract]
     public class BoxPusherPlayerProfile
@@ -17,11 +19,14 @@ namespace RogueEntity.Samples.BoxPusher.Core.ItemTraits
         [Key(1)]
         [DataMember(Order = 1)]
         readonly Dictionary<int, LevelStats> levelStats;
+        
+        public int CurrentLevel { get; set; } 
 
         public BoxPusherPlayerProfile()
         {
             this.levelStats = new Dictionary<int, LevelStats>();
             this.PlayerName = "<undefined>";
+            this.CurrentLevel = 0;
         }
 
         public int MaxLevelComplete => levelStats.Where(x => x.Value.ClearedOnce).Select(x => x.Key).MaybeMax().GetOrElse(0);
@@ -32,8 +37,9 @@ namespace RogueEntity.Samples.BoxPusher.Core.ItemTraits
         }
 
         [SerializationConstructor]
-        internal BoxPusherPlayerProfile(string playerName, Dictionary<int, LevelStats> levelStats)
+        internal BoxPusherPlayerProfile(string playerName, Dictionary<int, LevelStats> levelStats, int currentLevel)
         {
+            this.CurrentLevel = currentLevel;
             this.PlayerName = playerName ?? "<undefined>";
             this.levelStats = levelStats;
         }

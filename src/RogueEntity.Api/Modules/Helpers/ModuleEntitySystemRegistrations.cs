@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using EnTTSharp.Entities;
+using EnTTSharp.Entities.Systems;
 using RogueEntity.Api.GameLoops;
 using RogueEntity.Api.Utils;
 using Serilog;
@@ -54,11 +55,11 @@ namespace RogueEntity.Api.Modules.Helpers
             CurrentSystem = null;
             contextPattern = null;
         }
-
+        
         ActionSystemEntry Wrap(Action c, string description, int order)
         {
-            var d = string.IsNullOrEmpty(description) ? "" : "|" + description;
-            return new ActionSystemEntry(c, CurrentSystem, order, $"{contextPattern}{d}");
+            var d = string.IsNullOrEmpty(description) ? EntitySystemReference.CreateSystemDescription(c) : description;
+            return new ActionSystemEntry(c, CurrentSystem, order, $"{contextPattern}|{d}");
         }
 
         void AddEntry(List<ActionSystemEntry> entries,

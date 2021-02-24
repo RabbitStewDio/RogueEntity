@@ -22,6 +22,8 @@ namespace RogueEntity.Samples.BoxPusher.MonoGame
         {
             SetUpLogging();
 
+            
+            
             // Setup the engine and create the main window.
             Game.Create(80, 25);
 

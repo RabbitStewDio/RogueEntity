@@ -105,7 +105,7 @@ namespace RogueEntity.Core.Sensing.Common.FloodFill
                         var tx = origin.X + pos.X;
                         var ty = origin.Y + pos.Y;
 
-                        var resistance = resistanceMap.TryGet(ref resistanceTile, tx, ty, 1);
+                        var resistance = resistanceMap.TryGetMapValue(ref resistanceTile, tx, ty, 1);
                         flags |= resistance >= 1 ? SenseDataFlags.Obstructed : SenseDataFlags.None;
                     }
 
@@ -128,7 +128,7 @@ namespace RogueEntity.Core.Sensing.Common.FloodFill
         {
             var targetPosX = basePos.X + origin.X;
             var targetPosY = basePos.Y + origin.Y;
-            var allowedMovements = directionalityView.TryGet(ref directionalityTile, targetPosX, targetPosY, DirectionalityInformation.All);
+            var allowedMovements = directionalityView.TryGetMapValue(ref directionalityTile, targetPosX, targetPosY, DirectionalityInformation.All);
 
             return directionData[(int)allowedMovements];
         }
@@ -146,7 +146,7 @@ namespace RogueEntity.Core.Sensing.Common.FloodFill
                 return false;
             }
 
-            var resistance = resistanceMap.TryGet(ref resistanceTile, targetPoint.X, targetPoint.Y, 1).Clamp(0, 1);
+            var resistance = resistanceMap.TryGetMapValue(ref resistanceTile, targetPoint.X, targetPoint.Y, 1).Clamp(0, 1);
             if (resistance >= 1)
             {
                 totalPathCost = default;

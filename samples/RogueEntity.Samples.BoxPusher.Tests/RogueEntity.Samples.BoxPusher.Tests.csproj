@@ -28,4 +28,8 @@
     </None>
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\RogueEntity.Samples.BoxPusher.Core\RogueEntity.Samples.BoxPusher.Core.csproj" />
+  </ItemGroup>
+
 </Project>

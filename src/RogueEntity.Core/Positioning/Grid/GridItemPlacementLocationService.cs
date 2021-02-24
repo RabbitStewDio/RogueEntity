@@ -68,7 +68,7 @@ namespace RogueEntity.Core.Positioning.Grid
 
                     placementPos = origin.WithPosition(c.X, c.Y);
 
-                    var itemAtPos = map.TryGet(ref tile, c.X, c.Y, in defaultItem);
+                    var itemAtPos = map.TryGetMapValue(ref tile, c.X, c.Y, in defaultItem);
                     if (itemAtPos.IsEmpty)
                     {
                         return true;
@@ -127,7 +127,7 @@ namespace RogueEntity.Core.Positioning.Grid
 
                     placementPos = origin.WithPosition(c.X, c.Y);
 
-                    var data = map.TryGet(ref tile, c.X, c.Y, in defaultValue);
+                    var data = map.TryGetMapValue(ref tile, c.X, c.Y, in defaultValue);
                     if (data.IsEmpty)
                     {
                         return true;

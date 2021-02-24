@@ -123,7 +123,7 @@ namespace RogueEntity.Core.MovementPlaning.Pathfinding.SingleLevel
             for (var index = 0; index < movementCostsOnLevel.Count; index++)
             {
                 var s = movementCostsOnLevel[index];
-                var dir = s.Directions.TryGet(ref directionsTile[index], targetPosX, targetPosY, DirectionalityInformation.None);
+                var dir = s.Directions.TryGetMapValue(ref directionsTile[index], targetPosX, targetPosY, DirectionalityInformation.None);
                 allowedMovements |= dir;
             }
 
@@ -141,7 +141,7 @@ namespace RogueEntity.Core.MovementPlaning.Pathfinding.SingleLevel
             for (var index = 0; index < movementCostsOnLevel.Count; index++)
             {
                 var m = movementCostsOnLevel[index];
-                var dir = m.Directions.TryGet(ref directionsTile[index], sourcePosX, sourcePosY, DirectionalityInformation.None);
+                var dir = m.Directions.TryGetMapValue(ref directionsTile[index], sourcePosX, sourcePosY, DirectionalityInformation.None);
                 if (dir == DirectionalityInformation.None)
                 {
                     continue;
@@ -153,8 +153,8 @@ namespace RogueEntity.Core.MovementPlaning.Pathfinding.SingleLevel
                 }
 
                 var targetPos = sourceNode + d;
-                var sourceTileCost = m.Costs.TryGet(ref costsTile[index], sourcePosX, sourcePosY, 0);
-                var targetTileCost = m.Costs.TryGet(ref costsTile[index], targetPos.X, targetPos.Y, 0);
+                var sourceTileCost = m.Costs.TryGetMapValue(ref costsTile[index], sourcePosX, sourcePosY, 0);
+                var targetTileCost = m.Costs.TryGetMapValue(ref costsTile[index], targetPos.X, targetPos.Y, 0);
                 var tileCost = (sourceTileCost + targetTileCost) / 2.0f;
                 if (tileCost <= 0)
                 {

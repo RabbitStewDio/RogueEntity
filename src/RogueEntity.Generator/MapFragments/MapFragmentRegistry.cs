@@ -20,6 +20,7 @@ namespace RogueEntity.Generator.MapFragments
             path = Path.GetFullPath(path);
             logger.Debug("Loading map fragments from {Path}", path);
             var files = Directory.GetFiles(path, "*.tilemap", SearchOption.AllDirectories);
+            
             foreach (var f in files)
             {
                 if (parser.TryParseFromFile(f, out var frag))

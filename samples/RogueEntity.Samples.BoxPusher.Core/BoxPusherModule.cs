@@ -4,7 +4,7 @@ using RogueEntity.Api.GameLoops;
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Api.Modules;
 using RogueEntity.Api.Modules.Attributes;
-using RogueEntity.Core.Chunks;
+using RogueEntity.Core.MapLoading;
 using RogueEntity.Core.Meta.EntityKeys;
 using RogueEntity.Core.Players;
 using RogueEntity.Core.Positioning;
@@ -37,7 +37,7 @@ namespace RogueEntity.Samples.BoxPusher.Core
 
             DeclareDependencies(ModuleDependency.Of(PositionModule.ModuleId),
                                 ModuleDependency.Of(PlayerModule.ModuleId),
-                                ModuleDependency.Of(ChunkManagerModule.ModuleId));
+                                ModuleDependency.Of(MapLoadingModule.ModuleId));
 
             DeclareRelation<ActorReference, ItemReference>(PlayerToBoxRelation);
             DeclareRelation<ItemReference, ItemReference>(BoxOccupiesTargetRelation);
@@ -90,7 +90,7 @@ namespace RogueEntity.Samples.BoxPusher.Core
                                  .WithInputParameter<EntityGridPosition>()
                                  .WithInputParameter<BoxPusherBoxMarker>()
                                  .CreateSystem(system.CollectBoxPositions);
-            context.AddFixedStepHandlers(action);
+            context.AddFixedStepHandlerSystem(action);
         }
 
         void RegisterTargetSpotWinConditionSystem<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter, IGameLoopSystemRegistration context, EntityRegistry<TItemId> registry)
@@ -102,7 +102,7 @@ namespace RogueEntity.Samples.BoxPusher.Core
                                  .WithInputParameter<EntityGridPosition>()
                                  .WithInputParameter<BoxPusherTargetFieldMarker>()
                                  .CreateSystem(system.CollectTargetSpots);
-            context.AddFixedStepHandlers(action);
+            context.AddFixedStepHandlerSystem(action);
         }
 
         void RegisterBoxEntities<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter, EntityRegistry<TItemId> registry)
@@ -133,7 +133,7 @@ namespace RogueEntity.Samples.BoxPusher.Core
                                  .WithInputParameter<PlayerTag>()
                                  .WithInputParameter<BoxPusherPlayerProfile>()
                                  .CreateSystem(system.FinishEvaluateWinCondition);
-            context.AddFixedStepHandlers(action);
+            context.AddFixedStepHandlerSystem(action);
         }
 
         void RegisterInitializeWinSystem<TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter, IGameLoopSystemRegistration context, EntityRegistry<TActorId> registry)
@@ -148,7 +148,7 @@ namespace RogueEntity.Samples.BoxPusher.Core
                                  .CreateSystem(system.FindPlayer);
 
             context.AddFixedStepHandlers(system.StartCheckWinCondition);
-            context.AddFixedStepHandlers(action);
+            context.AddFixedStepHandlerSystem(action);
         }
     }
 }

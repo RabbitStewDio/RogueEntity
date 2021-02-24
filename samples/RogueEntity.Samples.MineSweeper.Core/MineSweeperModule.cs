@@ -87,8 +87,8 @@ namespace RogueEntity.Samples.MineSweeper.Core
                                                           sr.Resolve<MapBuilder>()
                                                       ).ProcessInputCommand);
 
-            context.AddVariableStepHandlers(sysMapReveal, nameof(MineSweeperMapRevealSystem<ItemReference>.ProcessInputCommand));
-            context.AddVariableStepHandlers(sysToggleFlag, nameof(MineSweeperToggleFlagSystem<ItemReference>.ProcessInputCommand));
+            context.AddVariableStepHandlerSystem(sysMapReveal);
+            context.AddVariableStepHandlerSystem(sysToggleFlag);
         }
 
         void RegisterPlayerEntities<TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter, EntityRegistry<TActorId> registry)

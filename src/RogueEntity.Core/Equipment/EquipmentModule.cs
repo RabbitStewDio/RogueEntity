@@ -68,8 +68,8 @@ namespace RogueEntity.Core.Equipment
                                  .WithInputParameter<DestroyedMarker, SlottedEquipmentData<TItemId>>()
                                  .CreateSystem(system.MarkDestroyedContainerEntities);
 
-            context.AddInitializationStepHandler(action);
-            context.AddFixedStepHandlers(action);
+            context.AddInitializationStepHandlerSystem(action);
+            context.AddFixedStepHandlerSystem(action);
         }
 
         void RegisterContainedItemEntities<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,

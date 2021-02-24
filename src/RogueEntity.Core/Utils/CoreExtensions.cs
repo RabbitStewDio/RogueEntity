@@ -32,15 +32,16 @@ namespace RogueEntity.Core.Utils
             return value;
         }
 
-        public static TEnum[] GetValues<TEnum>() where TEnum : struct, IComparable, IConvertible, IFormattable
+        public static TEnum[] GetValues<TEnum>()
+            where TEnum : struct, IComparable, IConvertible, IFormattable
         {
-            return (TEnum[]) Enum.GetValues(typeof(TEnum));
+            return (TEnum[])Enum.GetValues(typeof(TEnum));
         }
 
         public static TEnum[] GetValues<TEnum>(this TEnum v)
             where TEnum : struct, IComparable, IConvertible, IFormattable
         {
-            return (TEnum[]) Enum.GetValues(typeof(TEnum));
+            return (TEnum[])Enum.GetValues(typeof(TEnum));
         }
 
         public static bool HasFlags<TEnum>(this TEnum value, TEnum flag)
@@ -49,7 +50,8 @@ namespace RogueEntity.Core.Utils
             return EnumExtensionsInternal<TEnum>.HasFlagsDelegate(value, flag);
         }
 
-        static class EnumExtensionsInternal<TEnum> where TEnum : struct, IComparable, IConvertible, IFormattable
+        static class EnumExtensionsInternal<TEnum>
+            where TEnum : struct, IComparable, IConvertible, IFormattable
         {
             /// <summary>
             /// The delegate which determines if a flag is set.
@@ -95,10 +97,22 @@ namespace RogueEntity.Core.Utils
             }
         }
 
+        public static Optional<T> GetItemAt<T>(this IReadOnlyList<T> list, int index)
+        {
+            if (index < 0 || index >= list.Count) return Optional.Empty();
+            return list[index];
+        }
+
+        public static Optional<T> GetItemAt<T>(this ReadOnlyListWrapper<T> list, int index)
+        {
+            if (index < 0 || index >= list.Count) return Optional.Empty();
+            return list[index];
+        }
+
         public static bool EqualsList<TItem>(ReadOnlyListWrapper<TItem> a, ReadOnlyListWrapper<TItem> b)
         {
             if (a.Count != b.Count) return false;
-            
+
             for (var i = 0; i < a.Count; i++)
             {
                 if (!EqualityComparer<TItem>.Default.Equals(a[i], b[i]))
@@ -109,13 +123,13 @@ namespace RogueEntity.Core.Utils
 
             return true;
         }
-        
+
         public static bool EqualsList<TItem>(IReadOnlyList<TItem> a, IReadOnlyList<TItem> b)
         {
             if (ReferenceEquals(a, b)) return true;
             if (a == null || b == null) return false;
             if (a.Count != b.Count) return false;
-            
+
             for (var i = 0; i < a.Count; i++)
             {
                 if (!EqualityComparer<TItem>.Default.Equals(a[i], b[i]))
@@ -126,13 +140,13 @@ namespace RogueEntity.Core.Utils
 
             return true;
         }
-        
+
         public static bool EqualsDictionary<TKey, TItem>(Dictionary<TKey, TItem> a, Dictionary<TKey, TItem> b)
         {
             if (ReferenceEquals(a, b)) return true;
             if (a == null || b == null) return false;
             if (a.Count != b.Count) return false;
-            
+
             foreach (var entry in a)
             {
                 if (!b.TryGetValue(entry.Key, out var otherValue) ||

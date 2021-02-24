@@ -7,13 +7,13 @@ using System.Linq;
 
 namespace RogueEntity.Core.Players
 {
-    public class PlayerObserverTrait<TActorId> : SimpleReferenceItemComponentTraitBase<TActorId, PlayerTag>
+    public class PlayerObserverTrait<TActorId> : SimpleReferenceItemComponentTraitBase<TActorId, PlayerObserverTag>
         where TActorId : IEntityKey
     {
         public PlayerObserverTrait() : base("Actor.Generic.PlayerObserver", 1)
         { }
 
-        protected override Optional<PlayerTag> CreateInitialValue(TActorId reference)
+        protected override Optional<PlayerObserverTag> CreateInitialValue(TActorId reference)
         {
             return Optional.Empty();
         }

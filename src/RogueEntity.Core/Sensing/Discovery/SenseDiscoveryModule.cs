@@ -101,8 +101,8 @@ namespace RogueEntity.Core.Sensing.Discovery
                                            SenseReceptorDirtyFlag<VisionSense, VisionSense>>()
                                        .CreateSystem(system.ExpandDiscoveredArea);
 
-            context.AddFixedStepHandlers(entitySystem);
-            context.AddInitializationStepHandler(entitySystem);
+            context.AddFixedStepHandlerSystem(entitySystem);
+            context.AddInitializationStepHandlerSystem(entitySystem);
         }
 
         void RegisterDiscoveryActionsInfraVision<TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter,
@@ -121,8 +121,8 @@ namespace RogueEntity.Core.Sensing.Discovery
                                            SenseReceptorDirtyFlag<VisionSense, TemperatureSense>>()
                                        .CreateSystem(system.ExpandDiscoveredArea);
 
-            context.AddFixedStepHandlers(entitySystem);
-            context.AddInitializationStepHandler(entitySystem);
+            context.AddFixedStepHandlerSystem(entitySystem);
+            context.AddInitializationStepHandlerSystem(entitySystem);
         }
 
         void RegisterDiscoveryActionsTouch<TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter,
@@ -141,8 +141,8 @@ namespace RogueEntity.Core.Sensing.Discovery
                                            SenseReceptorDirtyFlag<TouchSense, TouchSense>>()
                                        .CreateSystem(system.ExpandDiscoveredArea);
 
-            context.AddFixedStepHandlers(entitySystem);
-            context.AddInitializationStepHandler(entitySystem);
+            context.AddFixedStepHandlerSystem(entitySystem);
+            context.AddInitializationStepHandlerSystem(entitySystem);
         }
 
         DiscoveryMapSystem GetOrCreate(IServiceResolver resolver)

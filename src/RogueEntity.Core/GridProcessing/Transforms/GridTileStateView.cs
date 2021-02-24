@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Utils.DataViews;
+using System.Buffers;
 
 namespace RogueEntity.Core.GridProcessing.Transforms
 {
@@ -14,7 +15,6 @@ namespace RogueEntity.Core.GridProcessing.Transforms
         readonly int tileSizeY;
         readonly ConcurrentDictionary<int, DynamicBoolDataView> tileStateCache;
         readonly Func<int, DynamicBoolDataView> getActionDelegate;
-        KeyValuePair<int, DynamicBoolDataView>[] copyBuffer;
         bool globallyDirty;
 
         public GridTileStateView(int offsetX, int offsetY, int tileSizeX, int tileSizeY)
@@ -58,19 +58,18 @@ namespace RogueEntity.Core.GridProcessing.Transforms
         public void MarkClean()
         {
             globallyDirty = false;
+            
             ICollection<KeyValuePair<int, DynamicBoolDataView>> view = tileStateCache;
-            var count = tileStateCache.Count;
-            if (copyBuffer.Length < count)
-            {
-                Array.Resize(ref copyBuffer, tileStateCache.Count);
-                view.CopyTo(copyBuffer, tileStateCache.Count);
-            }
-
+            
+            var count = view.Count;
+            var copyBuffer = ArrayPool<KeyValuePair<int, DynamicBoolDataView>>.Shared.Rent(count);
+            view.CopyTo(copyBuffer, tileStateCache.Count);
             for (var index = 0; index < count; index++)
             {
                 var l = copyBuffer[index];
                 l.Value.Clear();
             }
+            ArrayPool<KeyValuePair<int, DynamicBoolDataView>>.Shared.Return(copyBuffer, true);
         }
 
         public bool IsDirty(in Position pos) => IsDirty(pos.GridX, pos.GridY, pos.GridZ);

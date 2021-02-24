@@ -92,8 +92,8 @@ namespace RogueEntity.Core.Sensing.Map.Light
                         .WithInputParameter<LightSourceDefinition, SenseSourceState<VisionSense>>()
                         .CreateSystem(hs.CollectSenseSources);
 
-            context.AddInitializationStepHandler(system);
-            context.AddFixedStepHandlers(system);
+            context.AddInitializationStepHandlerSystem(system);
+            context.AddFixedStepHandlerSystem(system);
         }
 
         void RegisterComputeSenseMapSystem<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,

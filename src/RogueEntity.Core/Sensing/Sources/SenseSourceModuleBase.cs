@@ -237,9 +237,9 @@ namespace RogueEntity.Core.Sensing.Sources
         {
             var serviceResolver = initParameter.ServiceResolver;
             var ls = GetOrCreateSenseSourceSystem<TItemId>(serviceResolver);
-            context.AddInitializationStepHandler(ls.EnsureSenseCacheAvailable, nameof(ls.EnsureSenseCacheAvailable));
-            context.AddInitializationStepHandler(ls.BeginSenseCalculation, nameof(ls.BeginSenseCalculation));
-            context.AddFixedStepHandlers(ls.BeginSenseCalculation, nameof(ls.BeginSenseCalculation));
+            context.AddInitializationStepHandler(ls.EnsureSenseCacheAvailable);
+            context.AddInitializationStepHandler(ls.BeginSenseCalculation);
+            context.AddFixedStepHandlers(ls.BeginSenseCalculation);
         }
 
         protected void RegisterCollectSenseSourceGridSystem<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
@@ -254,8 +254,8 @@ namespace RogueEntity.Core.Sensing.Sources
                                  .WithInputParameter<TSenseSourceDefinition, EntityGridPosition>()
                                  .WithOutputParameter<SenseSourceState<TSense>>()
                                  .CreateSystem(ls.FindDirtySenseSources);
-            context.AddInitializationStepHandler(system);
-            context.AddFixedStepHandlers(system);
+            context.AddInitializationStepHandlerSystem(system);
+            context.AddFixedStepHandlerSystem(system);
         }
 
         protected void RegisterCollectSenseSourceContinuousSystem<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
@@ -270,8 +270,8 @@ namespace RogueEntity.Core.Sensing.Sources
                                  .WithInputParameter<TSenseSourceDefinition, ContinuousMapPosition>()
                                  .WithOutputParameter<SenseSourceState<TSense>>()
                                  .CreateSystem(ls.FindDirtySenseSources);
-            context.AddInitializationStepHandler(system);
-            context.AddFixedStepHandlers(system);
+            context.AddInitializationStepHandlerSystem(system);
+            context.AddFixedStepHandlerSystem(system);
         }
 
         protected void RegisterCalculateSenseSourceStateSystem<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
@@ -288,8 +288,8 @@ namespace RogueEntity.Core.Sensing.Sources
                         .WithOutputParameter<SenseSourceState<TSense>>()
                         .CreateSystem(ls.RefreshLocalSenseState);
 
-            context.AddInitializationStepHandler(refreshLocalSenseState);
-            context.AddFixedStepHandlers(refreshLocalSenseState);
+            context.AddInitializationStepHandlerSystem(refreshLocalSenseState);
+            context.AddFixedStepHandlerSystem(refreshLocalSenseState);
         }
 
         protected void RegisterCleanUpSystem<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
@@ -306,13 +306,13 @@ namespace RogueEntity.Core.Sensing.Sources
                                       .WithOutputParameter<SenseSourceState<TSense>>()
                                       .CreateSystem(ls.ResetSenseSourceCacheState);
 
-            context.AddInitializationStepHandler(resetSystem, nameof(ls.ResetSenseSourceCacheState));
-            context.AddFixedStepHandlers(resetSystem, nameof(ls.ResetSenseSourceCacheState));
+            context.AddInitializationStepHandlerSystem(resetSystem);
+            context.AddFixedStepHandlerSystem(resetSystem);
 
-            context.AddInitializationStepHandler(ls.EndSenseCalculation, nameof(ls.EndSenseCalculation));
-            context.AddFixedStepHandlers(ls.EndSenseCalculation, nameof(ls.EndSenseCalculation));
+            context.AddInitializationStepHandler(ls.EndSenseCalculation);
+            context.AddFixedStepHandlers(ls.EndSenseCalculation);
 
-            context.AddDisposeStepHandler(ls.ShutDown, nameof(ls.ShutDown));
+            context.AddDisposeStepHandler(ls.ShutDown);
         }
 
         protected void RegisterProcessSenseDirectionalitySystem<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
@@ -326,11 +326,11 @@ namespace RogueEntity.Core.Sensing.Sources
             if (!serviceResolver.TryResolve(out SenseDirectionalitySystemRegisteredMarker<TSense> _))
             {
                 serviceResolver.Store(new SenseDirectionalitySystemRegisteredMarker<TSense>());
-                context.AddInitializationStepHandler(system.MarkGloballyDirty, nameof(system.MarkGloballyDirty));
-                context.AddInitializationStepHandler(system.ProcessSystem, nameof(system.ProcessSystem));
-                context.AddInitializationStepHandler(system.MarkCleanSystem, nameof(system.MarkCleanSystem));
-                context.AddFixedStepHandlers(system.ProcessSystem, nameof(system.ProcessSystem));
-                context.AddFixedStepHandlers(system.MarkCleanSystem, nameof(system.MarkCleanSystem));
+                context.AddInitializationStepHandler(system.MarkGloballyDirty);
+                context.AddInitializationStepHandler(system.ProcessSystem);
+                context.AddInitializationStepHandler(system.MarkCleanSystem);
+                context.AddFixedStepHandlers(system.ProcessSystem);
+                context.AddFixedStepHandlers(system.MarkCleanSystem);
             }
         }
 

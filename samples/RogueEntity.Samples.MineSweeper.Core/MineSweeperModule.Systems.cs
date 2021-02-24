@@ -24,7 +24,7 @@ namespace RogueEntity.Samples.MineSweeper.Core
 
             mip.ServiceResolver.Store(new MineSweeperCommandService<ActorReference>(mip.ServiceResolver.Resolve<IItemResolver<ActorReference>>()));
             mip.ServiceResolver.Store<IPlayerManager<ActorReference>>(
-                new InMemoryPlayerManager<ActorReference>(
+                new BasicPlayerManager<ActorReference>(
                     mip.ServiceResolver.Resolve<IItemResolver<ActorReference>>(),
                     mip.ServiceResolver.ResolveToReference<IPlayerServiceConfiguration>()));
         }

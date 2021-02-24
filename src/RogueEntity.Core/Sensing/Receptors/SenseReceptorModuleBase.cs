@@ -143,9 +143,9 @@ namespace RogueEntity.Core.Sensing.Receptors
         {
             var serviceResolver = initParameter.ServiceResolver;
             var ls = GetOrCreateSenseReceptorSystem<TItemId>(serviceResolver);
-            context.AddInitializationStepHandler(ls.EnsureSenseCacheAvailable, nameof(ls.EnsureSenseCacheAvailable));
-            context.AddInitializationStepHandler(ls.BeginSenseCalculation, nameof(ls.BeginSenseCalculation));
-            context.AddFixedStepHandlers(ls.BeginSenseCalculation, nameof(ls.BeginSenseCalculation));
+            context.AddInitializationStepHandler(ls.EnsureSenseCacheAvailable);
+            context.AddInitializationStepHandler(ls.BeginSenseCalculation);
+            context.AddFixedStepHandlers(ls.BeginSenseCalculation);
         }
 
         protected void RegisterCollectReceptorsGridSystem<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
@@ -162,8 +162,8 @@ namespace RogueEntity.Core.Sensing.Receptors
                                      EntityGridPosition>()
                                  .WithOutputParameter<SensoryReceptorState<TReceptorSense, TSourceSense>>()
                                  .CreateSystem(ls.CollectReceptor);
-            context.AddInitializationStepHandler(system);
-            context.AddFixedStepHandlers(system);
+            context.AddInitializationStepHandlerSystem(system);
+            context.AddFixedStepHandlerSystem(system);
         }
 
         protected void RegisterCollectReceptorsContinuousSystem<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
@@ -180,8 +180,8 @@ namespace RogueEntity.Core.Sensing.Receptors
                                      ContinuousMapPosition>()
                                  .WithOutputParameter<SensoryReceptorState<TReceptorSense, TSourceSense>>()
                                  .CreateSystem(ls.CollectReceptor);
-            context.AddInitializationStepHandler(system);
-            context.AddFixedStepHandlers(system);
+            context.AddInitializationStepHandlerSystem(system);
+            context.AddFixedStepHandlerSystem(system);
         }
 
         protected void RegisterCollectSenseSourcesSystem<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
@@ -195,8 +195,8 @@ namespace RogueEntity.Core.Sensing.Receptors
                                  .WithoutContext()
                                  .WithInputParameter<TSenseSource, SenseSourceState<TSourceSense>>()
                                  .CreateSystem(ls.CollectObservedSenseSource);
-            context.AddInitializationStepHandler(system);
-            context.AddFixedStepHandlers(system);
+            context.AddInitializationStepHandlerSystem(system);
+            context.AddFixedStepHandlerSystem(system);
         }
 
         protected void RegisterComputeReceptorFieldOfView<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
@@ -215,8 +215,8 @@ namespace RogueEntity.Core.Sensing.Receptors
                             SenseReceptorDirtyFlag<TReceptorSense, TSourceSense>>()
                         .WithOutputParameter<SensoryReceptorState<TReceptorSense, TSourceSense>>()
                         .CreateSystem(ls.RefreshLocalReceptorState);
-            context.AddInitializationStepHandler(refreshLocalSenseState);
-            context.AddFixedStepHandlers(refreshLocalSenseState);
+            context.AddInitializationStepHandlerSystem(refreshLocalSenseState);
+            context.AddFixedStepHandlerSystem(refreshLocalSenseState);
         }
 
         protected abstract void RegisterCalculateDirectionalSystem<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
@@ -245,8 +245,8 @@ namespace RogueEntity.Core.Sensing.Receptors
                                  .CreateSystem(omni.CopySenseSourcesToVisionField);
 
 
-            context.AddInitializationStepHandler(system);
-            context.AddFixedStepHandlers(system);
+            context.AddInitializationStepHandlerSystem(system);
+            context.AddFixedStepHandlerSystem(system);
         }
 
         protected void RegisterCalculateUniDirectionalSystem<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
@@ -271,8 +271,8 @@ namespace RogueEntity.Core.Sensing.Receptors
                                  .CreateSystem(uniSys.CopySenseSourcesToVisionField);
 
 
-            context.AddInitializationStepHandler(system);
-            context.AddFixedStepHandlers(system);
+            context.AddInitializationStepHandlerSystem(system);
+            context.AddFixedStepHandlerSystem(system);
         }
 
 
@@ -302,12 +302,12 @@ namespace RogueEntity.Core.Sensing.Receptors
                         .WithInputParameter<ObservedSenseSource<TSourceSense>>()
                         .CreateSystem(ls.ResetSenseSourceObservedState);
 
-            context.AddInitializationStepHandler(clearObservedStateSystem, nameof(ls.ResetSenseSourceObservedState));
-            context.AddFixedStepHandlers(clearObservedStateSystem, nameof(ls.ResetSenseSourceObservedState));
+            context.AddInitializationStepHandlerSystem(clearObservedStateSystem);
+            context.AddFixedStepHandlerSystem(clearObservedStateSystem);
 
 
-            context.AddInitializationStepHandler(ls.EndSenseCalculation, nameof(ls.EndSenseCalculation));
-            context.AddFixedStepHandlers(ls.EndSenseCalculation, nameof(ls.EndSenseCalculation));
+            context.AddInitializationStepHandler(ls.EndSenseCalculation);
+            context.AddFixedStepHandlers(ls.EndSenseCalculation);
         }
 
         protected virtual SensePropertiesSystem<TReceptorSense> GetOrCreateSensePropertiesSystem<TEntityId>(IServiceResolver serviceResolver)

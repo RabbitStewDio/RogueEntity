@@ -6,14 +6,14 @@ using System;
 
 namespace RogueEntity.Core.Players
 {
-    public class InMemoryPlayerManager<TEntity> : IPlayerManager<TEntity>
+    public class BasicPlayerManager<TEntity> : IPlayerManager<TEntity>
         where TEntity : IEntityKey
     {
         readonly IItemResolver<TEntity> itemResolver;
         readonly Lazy<IPlayerServiceConfiguration> playerItemId;
 
-        public InMemoryPlayerManager([NotNull] IItemResolver<TEntity> itemResolver,
-                                     [NotNull] Lazy<IPlayerServiceConfiguration> playerItemId)
+        public BasicPlayerManager([NotNull] IItemResolver<TEntity> itemResolver,
+                                  [NotNull] Lazy<IPlayerServiceConfiguration> playerItemId)
         {
             this.itemResolver = itemResolver ?? throw new ArgumentNullException(nameof(itemResolver));
             this.playerItemId = playerItemId ?? throw new ArgumentNullException(nameof(playerItemId));
@@ -37,7 +37,13 @@ namespace RogueEntity.Core.Players
                 }
             }
 
-            playerEntity = itemResolver.Instantiate(playerItemId.Value.PlayerId);
+            var tmpPlayerEntity = itemResolver.Instantiate(playerItemId.Value.PlayerId);
+            if (!itemResolver.TryUpdateData(tmpPlayerEntity, playerTag, out playerEntity))
+            {
+                itemResolver.DiscardUnusedItem(tmpPlayerEntity);
+                return false;
+            }
+
             return true;
         }
 
@@ -58,6 +64,7 @@ namespace RogueEntity.Core.Players
                     return true;
                 }
             }
+
             return false;
         }
     }

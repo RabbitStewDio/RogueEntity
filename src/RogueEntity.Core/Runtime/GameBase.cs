@@ -26,7 +26,7 @@ namespace RogueEntity.Core.Runtime
         }
 
         public IServiceResolver ServiceResolver { get; private set; }
-        public IPlayerService<TPlayerEntity> PlayerService { get; private set; }
+        public IPlayerService PlayerService { get; private set; }
         public IPlayerManager<TPlayerEntity> PlayerManager { get; private set; }
         public GameStatus Status { get; private set; }
         public Optional<PlayerReference<TPlayerEntity>> PlayerData { get; private set; }
@@ -47,7 +47,7 @@ namespace RogueEntity.Core.Runtime
 
             ServiceResolver.Store(gameLoop.TimeSource);
             ServiceResolver.ValidatePromisesCanResolve();
-            PlayerService = ServiceResolver.Resolve<IPlayerService<TPlayerEntity>>();
+            PlayerService = ServiceResolver.Resolve<IPlayerService>();
             PlayerManager = ServiceResolver.Resolve<IPlayerManager<TPlayerEntity>>();
             
             Status = GameStatus.Initialized;
@@ -95,8 +95,7 @@ namespace RogueEntity.Core.Runtime
             UpdateOverride(absoluteGameTime);
 
             var status = CheckStatus();
-            if (status == GameStatus.GameLost ||
-                status == GameStatus.GameWon)
+            if ((status & GameStatus.FinishedMask) != 0)
             {
                 Status = status;
                 GameFinished?.Invoke(this, EventArgs.Empty);
