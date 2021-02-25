@@ -172,8 +172,8 @@ namespace RogueEntity.Core.Tests.Sensing.Sources
             context.ItemEntityRegistry.GetComponent(active5, out SenseSourceState<TSense> vb).Should().BeTrue();
             bool haveInactiveState = context.ItemEntityRegistry.GetComponent(inactive, out SenseSourceState<TSense> vc);
 
-            va.LastPosition.Should().Be(new Position(3, 4, 0, TestMapLayers.One));
-            vb.LastPosition.Should().Be(new Position(8, 9, 0, TestMapLayers.One));
+            va.LastPosition.Should().Be(Position.Of(TestMapLayers.One,3, 4, 0));
+            vb.LastPosition.Should().Be(Position.Of(TestMapLayers.One,8, 9, 0));
 
             va.State.Should().Be(SenseSourceDirtyState.Active);
             vb.State.Should().Be(SenseSourceDirtyState.Dirty, "Because (8, 9, 0) is not observed.");

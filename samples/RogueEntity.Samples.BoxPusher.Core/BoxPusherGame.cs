@@ -39,14 +39,15 @@ namespace RogueEntity.Samples.BoxPusher.Core
             actorResolver = ServiceResolver.Resolve<IItemResolver<ActorReference>>();
         }
 
-        protected override bool TurnAllowed()
+        public override bool IsBlockedOrWaitingForInput()
         {
             if (LevelLoader.IsBlocked())
             {
-                return false;
+                System.Console.WriteLine("Blocked");
+                return true;
             }
             
-            return base.TurnAllowed();
+            return base.IsBlockedOrWaitingForInput();
         }
         
         protected override GameStatus CheckStatus()
@@ -73,11 +74,12 @@ namespace RogueEntity.Samples.BoxPusher.Core
                 return false;
             }
 
-            if (PerformStartGame(profileId) &&
-                this.PlayerData.TryGetValue(out var value))
+            if (PerformStartGame(profileId) && this.PlayerData.TryGetValue(out var value))
             {
-                if (actorResolver.TryUpdateData(value.EntityId, profile, out _))
+                if (actorResolver.TryUpdateData(value.EntityId, profile, out _) &&
+                    actorResolver.TryUpdateData(value.EntityId, PlayerObserverTag.CreateFor(new PlayerTag(profileId)), out _))
                 {
+                    System.Console.WriteLine("Player created");
                     return true;
                 }
 

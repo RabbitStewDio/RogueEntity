@@ -27,7 +27,7 @@ namespace RogueEntity.Samples.BoxPusher.Core
                                                                                            TItemId k,
                                                                                            in PlayerObserverTag player)
         {
-            if (!profileManager.TryLoadPlayerData(player.Id, out var profile))
+            if (!profileManager.TryLoadPlayerData(player.ControllingPlayer.Id, out var profile))
             {
                 return Optional.Empty();
             }

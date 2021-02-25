@@ -88,7 +88,7 @@ namespace RogueEntity.Core.Tests.Sensing.Cache
             cache.ActivateTrackedSenseSource(typeof(TouchSense));
             
             conn.Start();
-            sps.OnPositionDirty(this, new PositionDirtyEventArgs(new Position(10, 10, 10, 1)));
+            sps.OnPositionDirty(this, new PositionDirtyEventArgs(Position.Of(TestMapLayers.One, 10, 10, 10)));
             
             cache.TryGetGlobalSenseCache(out var globalCacheView).Should().BeTrue();
             globalCacheView.IsDirty(Position.Of(TestMapLayers.Indeterminate, 10, 10, 10)).Should().BeFalse("Because as long as the layer is not affecting sense properties, it should not dirty the cache");
@@ -96,7 +96,7 @@ namespace RogueEntity.Core.Tests.Sensing.Cache
             // force the creation of a sense properties layer.
             sps.GetOrCreate(10);
             
-            sps.OnPositionDirty(this, new PositionDirtyEventArgs(new Position(10, 10, 10, 1)));
+            sps.OnPositionDirty(this, new PositionDirtyEventArgs(Position.Of(TestMapLayers.One, 10, 10, 10)));
             globalCacheView.IsDirty(Position.Of(TestMapLayers.Indeterminate, 10, 10, 10)).Should().BeTrue("now that the layer is tracked, it should forward map change events");
             globalCacheView.IsDirty(Position.Of(TestMapLayers.Indeterminate, 11, 11, 10)).Should().BeTrue();
             globalCacheView.IsDirty(Position.Of(TestMapLayers.Indeterminate, 11, 11, 11)).Should().BeFalse();

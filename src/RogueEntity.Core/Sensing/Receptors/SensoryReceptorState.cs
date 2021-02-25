@@ -45,6 +45,16 @@ namespace RogueEntity.Core.Sensing.Receptors
             LastPosition = lastPosition;
         }
 
+        public SensoryReceptorState<TReceptorSense, TSourceSense> WithoutPosition()
+        {
+            if (LastPosition.IsInvalid)
+            {
+                return this;
+            }
+
+            return new SensoryReceptorState<TReceptorSense, TSourceSense>(SenseSource, State, Position.Invalid, LastIntensity);
+        }
+
         public SensoryReceptorState<TReceptorSense, TSourceSense> WithPosition(Position position)
         {
             if (position == LastPosition)

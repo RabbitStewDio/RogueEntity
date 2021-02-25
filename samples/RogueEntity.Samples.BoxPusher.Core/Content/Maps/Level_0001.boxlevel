@@ -5,12 +5,12 @@ Tags:
     - EntryPoint
 
 Symbols:
-    w: [ground, wall]
-    .: [ground]
-    b: [ground, box]
-    o: [target]
-    O: [target, box]
-    *: [ground, '', player]
+    'w': [Items.Floor.Empty, Items.Wall]
+    '.': [Items.Floor.Empty]
+    'b': [Items.Floor.Empty, Items.Box]
+    'o': [Items.Floor.TargetZone]
+    'O': [Items.Floor.TargetZone, Items.Box]
+    '@': [Items.Floor.Empty, Items.Floor.SpawnPoint]
     
 ---
 ....wwwww..........
@@ -21,7 +21,7 @@ Symbols:
 www.w.ww.w...wwwwww
 w...w.ww.wwwww..oow
 w.b..b..........oow
-wwwww.www.w*ww..oow
+wwwww.www.w@ww..oow
 ....w.....wwwwwwwww
 ....wwwwwww........
 

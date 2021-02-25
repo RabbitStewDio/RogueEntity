@@ -16,11 +16,11 @@ namespace RogueEntity.Samples.BoxPusher.Core
     [Module("BoxPusher")]
     public partial class BoxPusherModule : ModuleBase
     {
-        static readonly EntityRole BoxRole = new EntityRole("Role.BoxPusher.Box");
-        static readonly EntityRole TargetSpotRole = new EntityRole("Role.BoxPusher.TargetSpot");
+        public static readonly EntityRole BoxRole = new EntityRole("Role.BoxPusher.Box");
+        public static readonly EntityRole TargetSpotRole = new EntityRole("Role.BoxPusher.TargetSpot");
 
-        static readonly EntityRelation BoxOccupiesTargetRelation = new EntityRelation("Relation.BoxPusher.BoxOccupiesTargetSpot", BoxRole, TargetSpotRole);
-        static readonly EntityRelation PlayerToBoxRelation = new EntityRelation("Relation.BoxPusher.PlayerCountingBoxes", PlayerModule.PlayerRole, BoxRole);
+        public static readonly EntityRelation BoxOccupiesTargetRelation = new EntityRelation("Relation.BoxPusher.BoxOccupiesTargetSpot", BoxRole, TargetSpotRole);
+        public static readonly EntityRelation PlayerToBoxRelation = new EntityRelation("Relation.BoxPusher.PlayerCountingBoxes", PlayerModule.PlayerRole, BoxRole);
 
         static readonly EntitySystemId BoxPusherBoxEntities = new EntitySystemId("Entities.BoxPusher.Box");
         static readonly EntitySystemId BoxPusherTargetSpotEntities = new EntitySystemId("Entities.BoxPusher.TargetSpot");

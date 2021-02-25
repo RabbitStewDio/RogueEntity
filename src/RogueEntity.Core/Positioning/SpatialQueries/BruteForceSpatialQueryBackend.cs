@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using EnTTSharp.Entities;
 using JetBrains.Annotations;
+using RogueEntity.Api.Utils;
 using RogueEntity.Core.Positioning.Algorithms;
 using RogueEntity.Core.Positioning.Continuous;
 using RogueEntity.Core.Positioning.Grid;
@@ -22,19 +22,12 @@ namespace RogueEntity.Core.Positioning.SpatialQueries
         }
 
 
-        public List<SpatialQueryResult<TItemId, TComponent>> Query2D<TComponent>(in Position pos,
-                                                                                 float distance = 1,
-                                                                                 DistanceCalculation d = DistanceCalculation.Euclid,
-                                                                                 List<SpatialQueryResult<TItemId, TComponent>> buffer = null)
+        public BufferList<SpatialQueryResult<TItemId, TComponent>> Query2D<TComponent>(in Position pos,
+                                                                                       float distance = 1,
+                                                                                       DistanceCalculation d = DistanceCalculation.Euclid,
+                                                                                       BufferList<SpatialQueryResult<TItemId, TComponent>> buffer = null)
         {
-            if (buffer == null)
-            {
-                buffer = new List<SpatialQueryResult<TItemId, TComponent>>();
-            }
-            else
-            {
-                buffer.Clear();
-            }
+            BufferList.PrepareBuffer(buffer);
 
             if (TryGetView<EntityGridPosition, TComponent>(out var gridView))
             {
@@ -49,19 +42,12 @@ namespace RogueEntity.Core.Positioning.SpatialQueries
             return buffer;
         }
 
-        public List<SpatialQueryResult<TItemId, TComponent>> Query3D<TComponent>(in Position pos,
-                                                                                 float distance = 1,
-                                                                                 DistanceCalculation d = DistanceCalculation.Euclid,
-                                                                                 List<SpatialQueryResult<TItemId, TComponent>> buffer = null)
+        public BufferList<SpatialQueryResult<TItemId, TComponent>> Query3D<TComponent>(in Position pos,
+                                                                                       float distance = 1,
+                                                                                       DistanceCalculation d = DistanceCalculation.Euclid,
+                                                                                       BufferList<SpatialQueryResult<TItemId, TComponent>> buffer = null)
         {
-            if (buffer == null)
-            {
-                buffer = new List<SpatialQueryResult<TItemId, TComponent>>();
-            }
-            else
-            {
-                buffer.Clear();
-            }
+            BufferList.PrepareBuffer(buffer);
 
             if (TryGetView<EntityGridPosition, TComponent>(out var gridView))
             {
@@ -105,7 +91,7 @@ namespace RogueEntity.Core.Positioning.SpatialQueries
                 this.add3D = AddResult3D;
             }
 
-            public void Invoke2D(List<SpatialQueryResult<TItemId, TComponent>> receiver,
+            public void Invoke2D(BufferList<SpatialQueryResult<TItemId, TComponent>> receiver,
                                  in Position pos,
                                  float distance = 1,
                                  DistanceCalculation d = DistanceCalculation.Euclid)
@@ -113,7 +99,7 @@ namespace RogueEntity.Core.Positioning.SpatialQueries
                 view?.ApplyWithContext(new Context(receiver, pos, distance, d), add2D);
             }
 
-            public void Invoke3D(List<SpatialQueryResult<TItemId, TComponent>> receiver,
+            public void Invoke3D(BufferList<SpatialQueryResult<TItemId, TComponent>> receiver,
                                  in Position pos,
                                  float distance = 1,
                                  DistanceCalculation d = DistanceCalculation.Euclid)
@@ -166,12 +152,12 @@ namespace RogueEntity.Core.Positioning.SpatialQueries
 
             readonly struct Context
             {
-                public readonly List<SpatialQueryResult<TItemId, TComponent>> Receiver;
+                public readonly BufferList<SpatialQueryResult<TItemId, TComponent>> Receiver;
                 public readonly Position Origin;
                 public readonly DistanceCalculation DistanceCalculator;
                 public readonly float Distance;
 
-                public Context(List<SpatialQueryResult<TItemId, TComponent>> receiver,
+                public Context(BufferList<SpatialQueryResult<TItemId, TComponent>> receiver,
                                in Position origin,
                                float distance,
                                DistanceCalculation distanceCalculator)

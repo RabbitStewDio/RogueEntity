@@ -1,11 +1,15 @@
+using RogueEntity.Api.Utils;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Utils;
+using Serilog;
 using System.Collections.Generic;
 
 namespace RogueEntity.Core.MapLoading
 {
     public abstract class MapRegionLoaderServiceBase<TRegionKey> : IMapRegionLoaderService<TRegionKey>
     {
+        static readonly ILogger Logger = SLog.ForContext<MapRegionLoaderServiceBase<TRegionKey>>();
+        
         readonly Dictionary<TRegionKey, MapRegionLoadRequestStatus<TRegionKey>> chunks;
 
         public MapRegionLoaderServiceBase()
@@ -72,18 +76,21 @@ namespace RogueEntity.Core.MapLoading
         {
             foreach (var c in chunks.Values)
             {
-                if (!c.Status.HasFlags(MapRegionLoadingStatus.ImmediateLoadRequested))
+                if (c.Status != MapRegionLoadingStatus.ImmediateLoadRequested)
                 {
                     continue;
                 }
 
+                Logger.Debug("Loading map chunk {RegionKey} as immediate chunk", c.RegionKey);
                 var s = PerformLoadNextChunk(c.RegionKey);
                 switch (s)
                 {
                     case MapRegionLoadingStatus.Error:
+                        Logger.Debug("Loading map chunk {RegionKey} as immediate chunk failed", c.RegionKey);
                         c.MarkFailed();
                         return false;
                     case MapRegionLoadingStatus.Loaded:
+                        Logger.Debug("Loading map chunk {RegionKey} as immediate chunk success", c.RegionKey);
                         c.MarkLoaded();
                         return true;
                     default:
@@ -93,7 +100,7 @@ namespace RogueEntity.Core.MapLoading
             
             foreach (var c in chunks.Values)
             {
-                if (!c.Status.HasFlags(MapRegionLoadingStatus.LazyLoadRequested))
+                if (c.Status != MapRegionLoadingStatus.LazyLoadRequested)
                 {
                     continue;
                 }
@@ -102,12 +109,15 @@ namespace RogueEntity.Core.MapLoading
                 switch (s)
                 {
                     case MapRegionLoadingStatus.Error:
+                        Logger.Debug("Loading map chunk {RegionKey} as lazy chunk failed", c.RegionKey);
                         c.MarkFailed();
                         return false;
                     case MapRegionLoadingStatus.Loaded:
+                        Logger.Debug("Loading map chunk {RegionKey} as lazy chunk success", c.RegionKey);
                         c.MarkLoaded();
                         return true;
                     case MapRegionLoadingStatus.ImmediateLoadRequested:
+                        Logger.Debug("Loading map chunk {RegionKey} as lazy chunk upgraded to immediate loading", c.RegionKey);
                         c.RequestImmediateLoading();
                         return true;
                     default:

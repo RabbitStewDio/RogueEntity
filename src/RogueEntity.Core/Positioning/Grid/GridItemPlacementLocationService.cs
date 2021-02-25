@@ -2,6 +2,7 @@ using EnTTSharp.Entities;
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Api.Utils;
 using RogueEntity.Core.Meta.ItemTraits;
+using RogueEntity.Core.Positioning.MapLayers;
 using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.DataViews;
 using Serilog;
@@ -32,6 +33,13 @@ namespace RogueEntity.Core.Positioning.Grid
             if (itemIdMetaData.IsReferenceEntity(itemToBePlaced))
             {
                 return TryFindEmptySpace(origin, out placementPos, searchRadius);
+            }
+
+            if (origin.LayerId == MapLayer.Indeterminate.LayerId)
+            {
+                Logger.Verbose("Given position {Position} has an indeterminate map layer", origin);
+                placementPos = default;
+                return false;
             }
             
             if (origin.IsInvalid)
@@ -99,6 +107,14 @@ namespace RogueEntity.Core.Positioning.Grid
                 placementPos = default;
                 return false;
             }
+
+            if (origin.LayerId == MapLayer.Indeterminate.LayerId)
+            {
+                Logger.Verbose("Given position {Position} has an indeterminate map layer", origin);
+                placementPos = default;
+                return false;
+            }
+
 
             if (!mapContext.TryGetGridDataFor(origin.LayerId, out var mapData))
             {

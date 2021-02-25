@@ -6,6 +6,7 @@ using RogueEntity.Core.Storage;
 using RogueEntity.Core.Utils;
 using RogueEntity.Generator;
 using RogueEntity.Generator.MapFragments;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -24,12 +25,13 @@ namespace RogueEntity.Samples.BoxPusher.Core
         {
             this.mapBuilder = mapBuilder.ForFragmentPlacement(randomSource);
 
-            this.registry = new MapFragmentRegistry();
+            this.registry = new MapFragmentRegistry("*.boxlevel");
             this.registry.LoadAll(mapFragmentParser, storageLocations.ContentLocation);
 
             this.levelData = this.registry.Items
                                  .OrderBy(e => e.Info.Name)
                                  .ToList();
+            Console.WriteLine("Found " + levelData.Count + " chunks");
         }
 
         public int Count => levelData.Count;

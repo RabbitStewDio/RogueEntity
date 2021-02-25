@@ -25,7 +25,7 @@ namespace RogueEntity.Samples.BoxPusher.Core
             where TActorId : IEntityKey
             where TItemId : IEntityKey
         {
-            return b.Define("Player")
+            return b.Define("Player", "Tag.Player")
                     .AsPlayer()
                     .AsAvatar()
                     .WithInventory()
@@ -42,11 +42,11 @@ namespace RogueEntity.Samples.BoxPusher.Core
         public static ReferenceItemDeclarationBuilder<TItemId> DefineBox<TItemId>(this ItemDeclarationBuilderWithReferenceContext<TItemId> b)
             where TItemId : IEntityKey
         {
-            return b.Define("Items.Box")
+            return b.Define("Items.Box", "Tag.Box")
                     .WithGridPosition(BoxPusherMapLayers.Items)
                     .WithMovementCostModifier(Blocked<WalkingMovement>())
                     .WithLightResistance(0.Percent())
-                    .WithTrait(new FlagItemTrait<TItemId, BoxPusherBoxMarker>(true, "BoxPusher.BoxMarkerTrait"))
+                    .WithTrait(new BoxPusherBoxMarkerTrait<TItemId>())
                     .WithName("box")
                 ;
         }
@@ -54,7 +54,7 @@ namespace RogueEntity.Samples.BoxPusher.Core
         public static ReferenceItemDeclarationBuilder<TItemId> DefineWall<TItemId>(this ItemDeclarationBuilderWithReferenceContext<TItemId> b)
             where TItemId : IEntityKey
         {
-            return b.Define("Items.Wall")
+            return b.Define("Items.Wall", "Tag.Wall")
                     .WithGridPosition(BoxPusherMapLayers.Items)
                     .AsImmobile()
                     .WithMovementCostModifier(Blocked<WalkingMovement>())
@@ -65,7 +65,7 @@ namespace RogueEntity.Samples.BoxPusher.Core
         public static BulkItemDeclarationBuilder<TItemId> DefineWall<TItemId>(this ItemDeclarationBuilderWithBulkContext<TItemId> b)
             where TItemId : IEntityKey
         {
-            return b.Define("Items.Wall")
+            return b.Define("Items.Wall", "Tag.Wall")
                     .WithGridPosition(BoxPusherMapLayers.Items)
                     .AsImmobile()
                     .WithMovementCostModifier(Blocked<WalkingMovement>())
@@ -76,7 +76,7 @@ namespace RogueEntity.Samples.BoxPusher.Core
         public static BulkItemDeclarationBuilder<TItemId> DefineFloor<TItemId>(this ItemDeclarationBuilderWithBulkContext<TItemId> b)
             where TItemId : IEntityKey
         {
-            return b.Define("Items.Floor.Empty")
+            return b.Define("Items.Floor.Empty", "Tag.Floor.Empty")
                     .WithGridPosition(BoxPusherMapLayers.Floor)
                     .AsImmobile()
                     .WithMovementCostModifier(For<WalkingMovement>(1))
@@ -87,13 +87,25 @@ namespace RogueEntity.Samples.BoxPusher.Core
         public static ReferenceItemDeclarationBuilder<TItemId> DefineFloorTargetZone<TItemId>(this ItemDeclarationBuilderWithReferenceContext<TItemId> b)
             where TItemId : IEntityKey
         {
-            return b.Define("Items.Floor.TargetZone")
+            return b.Define("Items.Floor.TargetZone", "Tag.Floor.Target")
                     .WithGridPosition(BoxPusherMapLayers.Floor)
                     .AsImmobile()
                     .WithMovementCostModifier(For<WalkingMovement>(1))
-                    .WithTrait(new FlagItemTrait<TItemId, BoxPusherTargetFieldMarker>(true, "BoxPusher.TargetFieldMarkerTrait"))
+                    .WithTrait(new BoxPusherTargetFieldMarkerTrait<TItemId>())
                     .WithLightResistance(0.Percent())
                     .WithName("target zone");
+        }
+
+        public static ReferenceItemDeclarationBuilder<TItemId> DefineSpawnPoint<TItemId>(this ItemDeclarationBuilderWithReferenceContext<TItemId> b)
+            where TItemId : IEntityKey
+        {
+            return b.Define("Items.Floor.SpawnPoint", "Tag.Floor.Empty")
+                    .WithGridPosition(BoxPusherMapLayers.Floor)
+                    .AsImmobile()
+                    .AsSpawnLocation()
+                    .WithMovementCostModifier(For<WalkingMovement>(1))
+                    .WithLightResistance(0.Percent())
+                    .WithName("floor");
         }
     }
 }

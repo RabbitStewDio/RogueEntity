@@ -1,8 +1,10 @@
 using JetBrains.Annotations;
 using RogueEntity.Api.ItemTraits;
+using RogueEntity.Api.Utils;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.MapLayers;
 using RogueEntity.Core.Utils;
+using Serilog;
 using System;
 using System.Runtime.Serialization;
 
@@ -10,13 +12,16 @@ namespace RogueEntity.Generator
 {
     public static class MapOperations
     {
+        static readonly ILogger Logger = SLog.ForContext(typeof(MapOperations)); 
+        
         public static MapBuilder Clear(this MapBuilder b, MapLayer l, float z, Rectangle r, IMapBuilderInstantiationLifter postProcessor = null)
         {
             foreach (var pos in r.Contents)
             {
-                if (!b.Clear(Position.Of(l, pos.X, pos.Y, z), postProcessor))
+                var position = Position.Of(l, pos.X, pos.Y, z);
+                if (!b.Clear(position, postProcessor))
                 {
-                    throw new MapGeneratorException();
+                    throw new MapGeneratorException($"Unable to clear position {position}");
                 }
             }
 
@@ -70,11 +75,14 @@ namespace RogueEntity.Generator
                 {
                     continue;
                 }
-                
-                if (!b.Instantiate(items[index], Position.Of(l, pos.X, pos.Y, pos.Z), postProcessor))
+
+                var position = Position.Of(l, pos.X, pos.Y, pos.Z);
+                if (!b.Instantiate(item, position, postProcessor))
                 {
-                    throw new MapGeneratorException();
+                    throw new MapGeneratorException($"Unable to instantiate {item.Id} at {position}");
                 }
+
+                Logger.Verbose("Instantiated {ItemId} at {Position}", item.Id, position);
             }
 
             return b;

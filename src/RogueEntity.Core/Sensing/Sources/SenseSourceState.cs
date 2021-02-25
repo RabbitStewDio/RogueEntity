@@ -23,6 +23,17 @@ namespace RogueEntity.Core.Sensing.Sources
             LastPosition = lastPosition;
         }
 
+        public SenseSourceState<TSense> WithoutPosition()
+        {
+            if (LastPosition.IsInvalid)
+            {
+                return this;
+            }
+
+            LastPosition = Position.Invalid;
+            return this;
+        }
+        
         public SenseSourceState<TSense> WithPosition(Position position)
         {
             if (position == LastPosition)

@@ -108,6 +108,7 @@ namespace RogueEntity.Core.Sensing.Receptors
             if (resistanceSource == null)
             {
                 this.resistanceSource = senseProperties.Value;
+                Logger.Information("Retrieved resistance source for {SourceSense}:{TargetSense}", typeof(TSourceSense).Name, typeof(TReceptorSense).Name);
             }
         }
 
@@ -137,7 +138,7 @@ namespace RogueEntity.Core.Sensing.Receptors
             where TItemId : IEntityKey
             where TPosition : IPosition<TPosition>
         {
-            if (definition.Enabled)
+            if (definition.Enabled && !pos.IsInvalid)
             {
                 var position = Position.From(pos);
                 var localIntensity = ComputeIntensity(definition.SenseDefinition, in position);

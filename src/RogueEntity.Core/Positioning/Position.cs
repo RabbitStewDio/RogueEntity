@@ -32,11 +32,11 @@ namespace RogueEntity.Core.Positioning
 
         public bool IsInvalid => layerId == 0;
 
-        public Position(double x, double y, double z, MapLayer layer) : this(x, y, z, layer.LayerId)
+        internal Position(double x, double y, double z, MapLayer layer) : this(x, y, z, layer.LayerId)
         {
         }
 
-        public Position(double x, double y, double z, byte layer)
+        internal Position(double x, double y, double z, byte layer)
         {
             this.X = x;
             this.Y = y;
@@ -100,6 +100,16 @@ namespace RogueEntity.Core.Positioning
             return new Position(x, y, this.Z, this.LayerId);
         }
 
+        public Position WithLayer(MapLayer layer)
+        {
+            return new Position(this.X, this.Y, this.Z, layer);
+        }
+
+        public Position WithLayer(byte layerId)
+        {
+            return new Position(this.X, this.Y, this.Z, layerId);
+        }
+
         public Position WithPosition(double tx, double ty)
         {
             return new Position(tx, ty, this.Z, this.LayerId);
@@ -119,6 +129,11 @@ namespace RogueEntity.Core.Positioning
         public static Position Of(MapLayer layer, double x, double y, double z = 0)
         {
             return new Position(x, y, z, layer.LayerId);
+        }
+        
+        public static Position Of(byte layer, double x, double y, double z = 0)
+        {
+            return new Position(x, y, z, layer);
         }
     }
 }

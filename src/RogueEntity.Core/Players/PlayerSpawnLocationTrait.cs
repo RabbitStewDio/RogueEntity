@@ -21,7 +21,7 @@ namespace RogueEntity.Core.Players
 
         public override IEnumerable<EntityRoleInstance> GetEntityRoles()
         {
-            return Enumerable.Empty<EntityRoleInstance>();
+            yield return PlayerModule.PlayerSpawnPointRole.Instantiate<TItemId>();
         }
     }
 }

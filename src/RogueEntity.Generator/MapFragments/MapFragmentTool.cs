@@ -20,14 +20,13 @@ namespace RogueEntity.Generator.MapFragments
 
         readonly MapBuilder builder;
         readonly IRandomGeneratorSource randomContext;
-        readonly Dictionary<byte, List<ItemDeclarationId>> availableItems;
+        Dictionary<byte, List<ItemDeclarationId>> availableItems;
         BufferList<ItemDeclarationId> buffer;
 
         public MapFragmentTool(MapBuilder builder, IRandomGeneratorSource randomContext)
         {
             this.builder = builder;
             this.randomContext = randomContext;
-            this.availableItems = PopulateItems(builder);
         }
 
         static Dictionary<byte, List<ItemDeclarationId>> PopulateItems(MapBuilder mapBuilder)
@@ -44,12 +43,52 @@ namespace RogueEntity.Generator.MapFragments
             return result;
         }
 
+        public bool Validate(MapFragment f)
+        {
+            if (availableItems == null)
+            {
+                this.availableItems = PopulateItems(builder);
+            }
+            
+            bool result = true;
+            var layers = builder.Layers;
+            foreach (var entry in f.Symbols)
+            {
+                if (entry == MapFragmentTagDeclaration.Empty)
+                {
+                    continue;
+                }
+
+                for (var i = 0; i < layers.Count; i++)
+                {
+                    if (!entry.TryGetTag(i, out var tag) || string.IsNullOrEmpty(tag))
+                    {
+                        continue;
+                    }
+
+                    buffer = PopulateMatchingItems(layers[i], tag, buffer);
+                    if (buffer.Count == 0)
+                    {
+                        Logger.Warning("Unable to find matching items for requested tag pattern {Tag} in layer {Layer}", tag, layers[i]);
+                        result = false;
+                    }
+                }
+            }
+
+            return result;
+        }
+
         public void CopyToMap(MapFragment f,
                               EntityGridPosition origin)
         {
             if (origin == EntityGridPosition.Invalid)
             {
                 throw new ArgumentException();
+            }
+
+            if (availableItems == null)
+            {
+                this.availableItems = PopulateItems(builder);
             }
 
             var randomGenerator = randomContext.RandomGenerator(origin.GetHashCode());

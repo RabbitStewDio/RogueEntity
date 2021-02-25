@@ -360,6 +360,7 @@ namespace RogueEntity.Core.Sensing.Receptors
                                                                            GetOrCreateDirectionalitySystem<TItemId>(serviceResolver),
                                                                            physics.sensePhysics,
                                                                            physics.propagationAlgorithm);
+                serviceResolver.Store(ls);
             }
 
             return ls;

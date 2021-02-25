@@ -2,13 +2,18 @@ using EnTTSharp.Entities;
 using JetBrains.Annotations;
 using RogueEntity.Api.Utils;
 using RogueEntity.Core.Players;
-using RogueEntity.Core.Positioning;
+using RogueEntity.Core.Positioning.Algorithms;
+using RogueEntity.Core.Positioning.SpatialQueries;
+using RogueEntity.Core.Utils;
 using System;
 using System.Diagnostics;
 
 namespace RogueEntity.Core.MapLoading
 {
-    public abstract class BasicMapRegionSystemBase: IMapRegionSystem
+    /// <summary>
+    ///    A simple map loader system for loading whole levels (identified by the Z-coordinate).
+    /// </summary>
+    public abstract class BasicMapRegionSystemBase : IMapRegionSystem
     {
         readonly TimeSpan maximumProcessingTime;
         readonly IMapRegionLoaderService<int> mapLoaderService;
@@ -63,8 +68,7 @@ namespace RogueEntity.Core.MapLoading
             where TItemId : IEntityKey
         {
             var level = cmd.Level;
-            var status = mapLoaderService.RequestImmediateLoading(level);
-            v.AssignOrReplace(k, status);
+            mapLoaderService.RequestImmediateLoading(level);
         }
 
         /// <summary>
@@ -80,14 +84,14 @@ namespace RogueEntity.Core.MapLoading
         {
             if (cmd.Position.IsInvalid)
             {
+                v.RemoveComponent<ChangeLevelPositionCommand>(k);
                 return;
             }
 
             var level = cmd.Position.GridZ;
-            var status = mapLoaderService.RequestImmediateLoading(level);
-            v.AssignOrReplace(k, status);
+            mapLoaderService.RequestImmediateLoading(level);
         }
-        
+
         /// <summary>
         ///    A basic driver function that loads the next requested chunk.
         /// </summary>

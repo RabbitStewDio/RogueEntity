@@ -9,9 +9,11 @@ namespace RogueEntity.Generator.MapFragments
     {
         readonly ILogger logger = SLog.ForContext<MapFragmentRegistry>();
         readonly List<MapFragment> fragments;
+        readonly string filterPattern;
 
-        public MapFragmentRegistry()
+        public MapFragmentRegistry(string filterPattern = null)
         {
+            this.filterPattern = filterPattern ?? "*.tilemap";
             fragments = new List<MapFragment>();
         }
 
@@ -19,7 +21,7 @@ namespace RogueEntity.Generator.MapFragments
         {
             path = Path.GetFullPath(path);
             logger.Debug("Loading map fragments from {Path}", path);
-            var files = Directory.GetFiles(path, "*.tilemap", SearchOption.AllDirectories);
+            var files = Directory.GetFiles(path, filterPattern, SearchOption.AllDirectories);
             
             foreach (var f in files)
             {

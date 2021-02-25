@@ -5,6 +5,7 @@ using JetBrains.Annotations;
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Api.Utils;
 using RogueEntity.Core.Meta.ItemTraits;
+using RogueEntity.Core.Positioning.MapLayers;
 using RogueEntity.Core.Utils.DataViews;
 using Serilog;
 
@@ -46,6 +47,11 @@ namespace RogueEntity.Core.Positioning.Grid
             if (placementPos.IsInvalid)
             {
                 Logger.Verbose("Given position {Position} is invalid", placementPos);
+                return false;
+            }
+
+            if (placementPos.LayerId == MapLayer.Indeterminate.LayerId)
+            {
                 return false;
             }
 
@@ -154,6 +160,11 @@ namespace RogueEntity.Core.Positioning.Grid
                 return false;
             }
 
+            if (placementPos.LayerId == MapLayer.Indeterminate.LayerId)
+            {
+                return false;
+            }
+
             if (!mapContext.TryGetGridDataFor(placementPos.LayerId, out var mapData))
             {
                 Logger.Verbose("Unable to resolve grid data for map layer {LayerId} of position {Position}", placementPos.LayerId, placementPos);
@@ -247,6 +258,12 @@ namespace RogueEntity.Core.Positioning.Grid
             {
                 // Nothing to move.
                 return true;
+            }
+
+            if (placementPos.LayerId == MapLayer.Indeterminate.LayerId ||
+                currentPos.LayerId == MapLayer.Indeterminate.LayerId)
+            {
+                return false;
             }
 
             if (!mapContext.TryGetGridDataFor(currentPos.LayerId, out var sourceMapContext))
@@ -434,6 +451,12 @@ namespace RogueEntity.Core.Positioning.Grid
             if (sourceItem.IsEmpty && targetItem.IsEmpty)
             {
                 return true;
+            }
+
+            if (sourcePosition.LayerId == MapLayer.Indeterminate.LayerId ||
+                targetPosition.LayerId == MapLayer.Indeterminate.LayerId)
+            {
+                return false;
             }
 
             if (sourceItem.IsEmpty)

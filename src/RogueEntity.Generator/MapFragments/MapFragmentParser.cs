@@ -7,6 +7,7 @@ using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.DataViews;
 using Serilog;
 using System;
+using System.Linq;
 using YamlDotNet.Core;
 using YamlDotNet.Core.Events;
 using YamlDotNet.Serialization;
@@ -211,7 +212,11 @@ namespace RogueEntity.Generator.MapFragments
                     id = GuidUtility.Create(GuidUtility.UrlNamespace, mapInfo.Name);
                 }
 
-                mapFragment = new MapFragment(id, mapData, mi, new Dimension(mapInfo.Size.Width, mapInfo.Size.Height), new TypedRuleProperties());
+
+                var symbols = mapInfo.Symbols.Values
+                                     .Select(e => new MapFragmentTagDeclaration(e))
+                                     .ToList();
+                mapFragment = new MapFragment(id, symbols, mapData, mi, new Dimension(mapInfo.Size.Width, mapInfo.Size.Height), new TypedRuleProperties());
 
                 for (var index = 0; index < postProcessors.Count; index++)
                 {

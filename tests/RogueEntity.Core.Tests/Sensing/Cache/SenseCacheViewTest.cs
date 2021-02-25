@@ -12,8 +12,8 @@ namespace RogueEntity.Core.Tests.Sensing.Cache
         public void ValidateInitialState()
         {
             var sv = new GridCacheStateView(64, 64, 2);
-            sv.IsDirty(new Position(10, 10, 5, 1)).Should().Be(false);
-            sv.IsDirty(new Position(10, 10, 5, 1), 5).Should().Be(false);
+            sv.IsDirty(Position.Of(TestMapLayers.One,10, 10, 5)).Should().Be(false);
+            sv.IsDirty(Position.Of(TestMapLayers.One,10, 10, 5), 5).Should().Be(false);
             sv.IsDirty(5, new Rectangle(1, 1, 50, 50)).Should().Be(false);
         }
         
@@ -23,13 +23,13 @@ namespace RogueEntity.Core.Tests.Sensing.Cache
             var sv = new GridCacheStateView(64, 64, 2);
 
             sv.MarkGloballyDirty();
-            sv.IsDirty(new Position(10, 10, 5, 1)).Should().Be(true);
-            sv.IsDirty(new Position(10, 10, 5, 1), 5).Should().Be(true);
+            sv.IsDirty(Position.Of(TestMapLayers.One,10, 10, 5)).Should().Be(true);
+            sv.IsDirty(Position.Of(TestMapLayers.One,10, 10, 5), 5).Should().Be(true);
             sv.IsDirty(5, new Rectangle(1, 1, 50, 50)).Should().Be(true);
             
             sv.MarkClean();
-            sv.IsDirty(new Position(10, 10, 5, 1)).Should().Be(false);
-            sv.IsDirty(new Position(10, 10, 5, 1), 5).Should().Be(false);
+            sv.IsDirty(Position.Of(TestMapLayers.One,10, 10, 5)).Should().Be(false);
+            sv.IsDirty(Position.Of(TestMapLayers.One,10, 10, 5), 5).Should().Be(false);
             sv.IsDirty(5, new Rectangle(1, 1, 50, 50)).Should().Be(false);
         }
 
@@ -38,9 +38,9 @@ namespace RogueEntity.Core.Tests.Sensing.Cache
         {
             var sv = new GridCacheStateView(64, 64, 2);
 
-            sv.MarkDirty(new Position(10, 10, 5, 1));
-            sv.IsDirty(new Position(10, 10, 5, 1)).Should().Be(true);
-            sv.IsDirty(new Position(10, 10, 5, 1), 5).Should().Be(true);
+            sv.MarkDirty(Position.Of(TestMapLayers.One, 10, 10, 5));
+            sv.IsDirty(Position.Of(TestMapLayers.One, 10, 10, 5)).Should().Be(true);
+            sv.IsDirty(Position.Of(TestMapLayers.One, 10, 10, 5), 5).Should().Be(true);
             sv.IsDirty(5, new Rectangle(1, 1, 50, 50)).Should().Be(true);
         }
     }

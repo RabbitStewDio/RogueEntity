@@ -5,6 +5,7 @@ using System.Threading;
 using EnTTSharp.Entities;
 using RogueEntity.Core.Sensing.Receptors;
 using RogueEntity.Core.Utils;
+using RogueEntity.Core.Utils.DataViews;
 
 namespace RogueEntity.Core.Sensing.Discovery
 {
@@ -47,7 +48,7 @@ namespace RogueEntity.Core.Sensing.Discovery
                 return;
             }
 
-            if (!map.TryGetWritableView(pos.GridZ, out var target))
+            if (!map.TryGetWritableView(pos.GridZ, out var target, DataViewCreateMode.CreateMissing))
             {
                 return;
             }

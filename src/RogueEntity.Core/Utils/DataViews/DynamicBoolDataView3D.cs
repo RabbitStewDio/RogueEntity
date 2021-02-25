@@ -4,36 +4,38 @@ using RogueEntity.Api.Utils;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Serialization;
 
 namespace RogueEntity.Core.Utils.DataViews
 {
     [MessagePackObject]
     [DataContract]
+    [SuppressMessage("ReSharper", "ConvertToAutoProperty")]
     public class DynamicBoolDataView3D : IDynamicDataView3D<bool>
     {
         public event EventHandler<DynamicDataView3DEventArgs<bool>> ViewCreated;
         public event EventHandler<DynamicDataView3DEventArgs<bool>> ViewExpired;
 
-        [DataMember(Order = 0)]
-        [Key(0)]
-        public int TileSizeX { get; }
-
-        [DataMember(Order = 1)]
-        [Key(1)]
-        public int TileSizeY { get; }
-
-        [DataMember(Order = 2)]
-        [Key(2)]
-        public int OffsetX { get; }
-
-        [DataMember(Order = 3)]
-        [Key(3)]
-        public int OffsetY { get; }
-
         [DataMember(Order = 4)]
         [Key(4)]
         readonly Dictionary<int, DynamicBoolDataView> index;
+
+        [DataMember(Order = 0)]
+        [Key(0)]
+        readonly int tileSizeX;
+
+        [DataMember(Order = 1)]
+        [Key(1)]
+        readonly int tileSizeY;
+
+        [DataMember(Order = 2)]
+        [Key(2)]
+        readonly int offsetX;
+
+        [DataMember(Order = 3)]
+        [Key(3)]
+        readonly int offsetY;
 
         public DynamicBoolDataView3D() : this(0, 0, 64, 64)
         { }
@@ -46,10 +48,10 @@ namespace RogueEntity.Core.Utils.DataViews
 
         public DynamicBoolDataView3D(int offsetX, int offsetY, int tileSizeX, int tileSizeY)
         {
-            OffsetX = offsetX;
-            OffsetY = offsetY;
-            TileSizeX = tileSizeX;
-            TileSizeY = tileSizeY;
+            this.offsetX = offsetX;
+            this.offsetY = offsetY;
+            this.tileSizeX = tileSizeX;
+            this.tileSizeY = tileSizeY;
 
             index = new Dictionary<int, DynamicBoolDataView>();
         }
@@ -58,11 +60,27 @@ namespace RogueEntity.Core.Utils.DataViews
         public DynamicBoolDataView3D(int tileSizeX, int tileSizeY, int offsetX, int offsetY, [NotNull] Dictionary<int, DynamicBoolDataView> index)
         {
             this.index = index ?? throw new ArgumentNullException(nameof(index));
-            TileSizeX = tileSizeX;
-            TileSizeY = tileSizeY;
-            OffsetX = offsetX;
-            OffsetY = offsetY;
+            this.tileSizeX = tileSizeX;
+            this.tileSizeY = tileSizeY;
+            this.offsetX = offsetX;
+            this.offsetY = offsetY;
         }
+
+        [IgnoreMember]
+        [IgnoreDataMember]
+        public int TileSizeX => tileSizeX;
+
+        [IgnoreMember]
+        [IgnoreDataMember]
+        public int TileSizeY => tileSizeY;
+
+        [IgnoreMember]
+        [IgnoreDataMember]
+        public int OffsetX => offsetX;
+
+        [IgnoreMember]
+        [IgnoreDataMember]
+        public int OffsetY => offsetY;
 
         public bool RemoveView(int z)
         {
@@ -85,9 +103,10 @@ namespace RogueEntity.Core.Utils.DataViews
             {
                 RemoveView(k[i]);
             }
+
             ArrayPool<int>.Shared.Return(k);
         }
-        
+
         public void Clear()
         {
             foreach (var v in index.Values)

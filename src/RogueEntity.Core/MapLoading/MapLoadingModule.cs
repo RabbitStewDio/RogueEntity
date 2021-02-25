@@ -4,7 +4,11 @@ using RogueEntity.Api.GameLoops;
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Api.Modules;
 using RogueEntity.Api.Modules.Attributes;
+using RogueEntity.Api.Services;
+using RogueEntity.Core.Infrastructure.Randomness;
 using RogueEntity.Core.Players;
+using RogueEntity.Core.Positioning;
+using RogueEntity.Core.Positioning.Grid;
 
 namespace RogueEntity.Core.MapLoading
 {
@@ -13,6 +17,9 @@ namespace RogueEntity.Core.MapLoading
         public static readonly string ModuleId = "Core.MapLoading";
         static readonly EntitySystemId MapLoadingCommandsSystemId = "System.Core.MapLoading.CommandSystem";
         static readonly EntitySystemId MapLoadingSystemId = "System.Core.MapLoading.LoaderSystem";
+        static readonly EntitySystemId SpawnActorsSystemId = "System.Core.MapLoading.SpawnActors";
+        static readonly EntitySystemId CollectSpawnPointsSystemId = "System.Core.MapLoading.CollectSpawnPoints";
+
         static readonly EntitySystemId RegisterMapLoadingEntitiesSystemId = "Entities.Core.MapLoading";
 
         public MapLoadingModule()
@@ -38,6 +45,61 @@ namespace RogueEntity.Core.MapLoading
             entityContext.Register(MapLoadingSystemId, 31_000, RegisterMapLoaderSystem);
         }
 
+        [EntityRelationInitializerAttribute("Relation.Core.Player.PlayerToSpawnPoint")]
+        protected void InitializeSpawnPlayerRelation<TActorId, TItemId>(in ModuleEntityInitializationParameter<TActorId> initParameter,
+                                                                        IModuleInitializer initializer,
+                                                                        EntityRelation r)
+            where TActorId : IEntityKey
+            where TItemId : IEntityKey
+        {
+            var entityContext = initializer.DeclareEntityContext<TActorId>();
+            entityContext.Register(SpawnActorsSystemId, 32_000, RegisterSpawnPlayers<TActorId, TItemId>);
+
+            var spawnPointEntityContext = initializer.DeclareEntityContext<TItemId>();
+            spawnPointEntityContext.Register(CollectSpawnPointsSystemId, 31_500, RegisterCollectSpawnPoints<TActorId, TItemId>);
+        }
+
+        void RegisterCollectSpawnPoints<TActorId, TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
+                                                           IGameLoopSystemRegistration context,
+                                                           EntityRegistry<TItemId> registry)
+            where TActorId : IEntityKey
+            where TItemId : IEntityKey
+        {
+            var system = GetOrCreateSpawnSystem<TActorId, TItemId>(initParameter.ServiceResolver);
+
+            context.AddFixedStepHandlers(system.StartCollectSpawnLocations);
+            context.AddLateVariableStepHandlers(system.StartCollectSpawnLocations);
+
+            var s = registry.BuildSystem()
+                            .WithoutContext()
+                            .WithInputParameter<EntityGridPosition>()
+                            .WithInputParameter<PlayerSpawnLocation>()
+                            .CreateSystem(system.CollectSpawnLocations);
+            context.AddFixedStepHandlerSystem(s);
+        }
+
+        void RegisterSpawnPlayers<TActorId, TItemId>(in ModuleEntityInitializationParameter<TActorId> initParameter,
+                                                     IGameLoopSystemRegistration context,
+                                                     EntityRegistry<TActorId> registry)
+            where TActorId : IEntityKey
+            where TItemId : IEntityKey
+        {
+            var system = GetOrCreateSpawnSystem<TActorId, TItemId>(initParameter.ServiceResolver);
+
+            var spawnAction = registry.BuildSystem()
+                                      .WithoutContext()
+                                      .WithInputParameter<PlayerObserverTag>()
+                                      .WithInputParameter<ChangeLevelCommand>()
+                                      .CreateSystem(system.SpawnPlayer);
+            context.AddFixedStepHandlerSystem(spawnAction);
+
+            var placeAction = registry.BuildSystem()
+                                      .WithoutContext()
+                                      .WithInputParameter<PlayerObserverTag>()
+                                      .WithInputParameter<ChangeLevelPositionCommand>()
+                                      .CreateSystem(system.PlacePlayerAfterLevelChange);
+            context.AddFixedStepHandlerSystem(placeAction);
+        }
 
         void RegisterMapLoaderCommandsSystem<TEntityId>(in ModuleEntityInitializationParameter<TEntityId> initParameter,
                                                         IGameLoopSystemRegistration context,
@@ -91,6 +153,24 @@ namespace RogueEntity.Core.MapLoading
         {
             registry.RegisterNonConstructable<ChangeLevelCommand>();
             registry.RegisterNonConstructable<ChangeLevelPositionCommand>();
+        }
+
+        BasicPlayerSpawnSystem<TActorId, TItemId> GetOrCreateSpawnSystem<TActorId, TItemId>(IServiceResolver serviceResolver)
+            where TActorId : IEntityKey
+            where TItemId : IEntityKey
+        {
+            if (serviceResolver.TryResolve(out BasicPlayerSpawnSystem<TActorId, TItemId> spawnSystem))
+            {
+                return spawnSystem;
+            }
+
+            var system = new BasicPlayerSpawnSystem<TActorId, TItemId>(serviceResolver.Resolve<IMapRegionLoaderService<int>>(),
+                                                                       serviceResolver.Resolve<IItemPlacementService<TActorId>>(),
+                                                                       serviceResolver.Resolve<IItemPlacementLocationService<TActorId>>(),
+                                                                       serviceResolver.Resolve<IItemResolver<TActorId>>(),
+                                                                       serviceResolver.ResolveOptional<IEntityRandomGeneratorSource>());
+            serviceResolver.Store(system);
+            return system;
         }
     }
 }

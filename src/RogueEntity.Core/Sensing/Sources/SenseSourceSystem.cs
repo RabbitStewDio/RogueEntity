@@ -112,7 +112,7 @@ namespace RogueEntity.Core.Sensing.Sources
             where TItemId : IEntityKey
             where TPosition : IPosition<TPosition>
         {
-            if (definition.Enabled)
+            if (definition.Enabled && !pos.IsInvalid)
             {
                 var position = Position.From(pos);
                 var localIntensity = ComputeIntensity(definition.SenseDefinition, in position);
@@ -123,18 +123,19 @@ namespace RogueEntity.Core.Sensing.Sources
                                  .WithIntensity(localIntensity)
                                  .WithDirtyState(SenseSourceDirtyState.Dirty);
                     v.AssignOrReplace(k, new SenseDirtyFlag<TSense>());
-                    Console.WriteLine($"For {pos} dirty");
 
                     senseCacheControl.MarkDirty<TSense>(position);
                 }
-                else if (state.State != SenseSourceDirtyState.Active ||
-                         (cacheView.TryGetValue(out var cache) && cache.IsDirty(pos, physics.SignalRadiusForIntensity(localIntensity))))
+                else
                 {
-                    state = state.WithDirtyState(SenseSourceDirtyState.Dirty);
-                    v.AssignOrReplace(k, new SenseDirtyFlag<TSense>());
-                    Console.WriteLine($"For {pos} dirty2");
+                    var isCacheDirty = cacheView.TryGetValue(out var cache) && cache.IsDirty(pos, physics.SignalRadiusForIntensity(localIntensity));
+                    if (state.State != SenseSourceDirtyState.Active || isCacheDirty)
+                    {
+                        state = state.WithDirtyState(SenseSourceDirtyState.Dirty);
+                        v.AssignOrReplace(k, new SenseDirtyFlag<TSense>());
 
-                    senseCacheControl.MarkDirty<TSense>(position);
+                        senseCacheControl.MarkDirty<TSense>(position);
+                    }
                 }
 
                 return;
@@ -145,7 +146,6 @@ namespace RogueEntity.Core.Sensing.Sources
                 // Light has been disabled since the last calculation.
                 state = state.WithDirtyState(SenseSourceDirtyState.Dirty);
                 v.AssignOrReplace(k, new SenseDirtyFlag<TSense>());
-                Console.WriteLine($"For {pos} dirty3");
 
                 if (!state.LastPosition.IsInvalid)
                 {
@@ -247,19 +247,32 @@ namespace RogueEntity.Core.Sensing.Sources
                                                         ref SenseSourceState<TSense> state)
             where TItemId : IEntityKey
         {
-/*            
-            if (definition.Enabled && state.State != SenseSourceDirtyState.Active)
+            // we only ever clear the dirty state of observed components. This 
+            // ensures that unobserved entities remain eligible for processing 
+            // once an observer comes into range.
+            if (v.GetComponent(k, out ObservedSenseSource<TSense> _))
             {
-                Console.WriteLine($"Pos {state.LastPosition} marked active");
-                state = state.WithDirtyState(SenseSourceDirtyState.Active);
+                if (definition.Enabled && state.State != SenseSourceDirtyState.Active)
+                {
+                    if (state.LastPosition.IsInvalid)
+                    {
+                        Console.WriteLine($"Pos is invalid, entity sense marked inactive");
+                        state = state.WithDirtyState(SenseSourceDirtyState.Inactive);
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Pos {state.LastPosition} marked active");
+                        state = state.WithDirtyState(SenseSourceDirtyState.Active);
+                    }
+                }
+
+                if (!definition.Enabled && state.State != SenseSourceDirtyState.Inactive)
+                {
+                    Console.WriteLine($"Pos {state.LastPosition} marked inactive");
+                    state = state.WithDirtyState(SenseSourceDirtyState.Inactive);
+                }
             }
 
-            if (!definition.Enabled && state.State != SenseSourceDirtyState.Inactive)
-            {
-                Console.WriteLine($"Pos {state.LastPosition} marked inactive");
-                state = state.WithDirtyState(SenseSourceDirtyState.Inactive);
-            }
-*/
             v.RemoveComponent<SenseDirtyFlag<TSense>>(k);
         }
 

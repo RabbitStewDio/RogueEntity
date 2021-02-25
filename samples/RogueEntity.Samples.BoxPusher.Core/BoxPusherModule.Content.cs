@@ -2,10 +2,7 @@
 using RogueEntity.Api.Modules.Attributes;
 using RogueEntity.Core.Meta.EntityKeys;
 using RogueEntity.Core.Meta.ItemBuilder;
-using RogueEntity.Core.Movement.CostModifier;
-using RogueEntity.Core.Movement.MovementModes.Walking;
 using RogueEntity.Core.Players;
-using static RogueEntity.Core.Movement.CostModifier.MovementCostModifiers;
 
 namespace RogueEntity.Samples.BoxPusher.Core
 {
@@ -27,12 +24,14 @@ namespace RogueEntity.Samples.BoxPusher.Core
 
             ctx.Activate(ctx.CreateReferenceEntityBuilder(serviceResolver)
                             .DefineFloorTargetZone()
-                            .WithMovementCostModifier(For<WalkingMovement>(1))
                             .Declaration);
 
             ctx.Activate(ctx.CreateReferenceEntityBuilder(serviceResolver)
                             .DefineBox()
-                            .WithMovementCostModifier(Blocked<WalkingMovement>())
+                            .Declaration);
+
+            ctx.Activate(ctx.CreateReferenceEntityBuilder(serviceResolver)
+                            .DefineSpawnPoint()
                             .Declaration);
 
             var actorContext = initializer.DeclareContentContext<ActorReference>();

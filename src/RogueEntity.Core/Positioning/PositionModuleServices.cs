@@ -77,10 +77,10 @@ namespace RogueEntity.Core.Positioning
             return created;
         }
 
-        public static GridItemPlacementService<TEntityId> GetOrCreateGridItemPlacementService<TEntityId>(this IServiceResolver serviceResolver)
+        public static IItemPlacementService<TEntityId> GetOrCreateGridItemPlacementService<TEntityId>(this IServiceResolver serviceResolver)
             where TEntityId : IEntityKey
         {
-            if (serviceResolver.TryResolve(out GridItemPlacementService<TEntityId> gs))
+            if (serviceResolver.TryResolve(out IItemPlacementService<TEntityId> gs))
             {
                 return gs;
             }
@@ -88,13 +88,14 @@ namespace RogueEntity.Core.Positioning
             var r = new GridItemPlacementService<TEntityId>(serviceResolver.Resolve<IItemResolver<TEntityId>>(),
                                                             serviceResolver.Resolve<IGridMapContext<TEntityId>>());
             serviceResolver.Store(r);
+            serviceResolver.Store<IItemPlacementService<TEntityId>>(r);
             return r;
         }
 
-        public static GridItemPlacementLocationService<TEntityId> GetOrCreateGridItemPlacementLocationService<TEntityId>(this IServiceResolver serviceResolver)
+        public static IItemPlacementLocationService<TEntityId> GetOrCreateGridItemPlacementLocationService<TEntityId>(this IServiceResolver serviceResolver)
             where TEntityId : IEntityKey
         {
-            if (serviceResolver.TryResolve(out GridItemPlacementLocationService<TEntityId> gs))
+            if (serviceResolver.TryResolve(out IItemPlacementLocationService<TEntityId> gs))
             {
                 return gs;
             }
@@ -102,6 +103,7 @@ namespace RogueEntity.Core.Positioning
             var r = new GridItemPlacementLocationService<TEntityId>(serviceResolver.Resolve<IItemResolver<TEntityId>>(),
                                                                     serviceResolver.Resolve<IGridMapContext<TEntityId>>());
             serviceResolver.Store(r);
+            serviceResolver.Store<IItemPlacementLocationService<TEntityId>>(r);
             return r;
         }
         

@@ -1,8 +1,8 @@
 using EnTTSharp.Entities;
+using RogueEntity.Api.Utils;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Algorithms;
 using RogueEntity.Core.Positioning.SpatialQueries;
-using System.Collections.Generic;
 
 namespace RogueEntity.Core.MovementPlaning.Goals
 {
@@ -10,12 +10,12 @@ namespace RogueEntity.Core.MovementPlaning.Goals
         where TItemId : IEntityKey
     {
         readonly ISpatialQuery<TItemId> query;
-        readonly List<SpatialQueryResult<TItemId, GoalMarker<TGoal>>> buffer;
+        readonly BufferList<SpatialQueryResult<TItemId, GoalMarker<TGoal>>> buffer;
 
         public EntityGoalTargetSource2D(ISpatialQuery<TItemId> query)
         {
             this.query = query;
-            this.buffer = new List<SpatialQueryResult<TItemId, GoalMarker<TGoal>>>();
+            this.buffer = new BufferList<SpatialQueryResult<TItemId, GoalMarker<TGoal>>>();
         }
 
         public void Dispose()

@@ -5,7 +5,7 @@ using System.Buffers;
 
 namespace RogueEntity.Core.Utils.DataViews
 {
-    public class DynamicDataView3D<T>: IDynamicDataView3D<T>
+    public class DynamicDataView3D<T> : IDynamicDataView3D<T>
     {
         public event EventHandler<DynamicDataView3DEventArgs<T>> ViewCreated;
         public event EventHandler<DynamicDataView3DEventArgs<T>> ViewExpired;
@@ -15,26 +15,22 @@ namespace RogueEntity.Core.Utils.DataViews
         public int TileSizeY { get; }
         readonly Dictionary<int, IDynamicDataView2D<T>> index;
 
-        public DynamicDataView3D(): this(0, 0, 64, 64)
-        {
-        }
+        public DynamicDataView3D() : this(0, 0, 64, 64)
+        { }
 
-        public DynamicDataView3D(DynamicDataViewConfiguration config): this(config.OffsetX, config.OffsetY, config.TileSizeX, config.TileSizeY)
-        {
-        }
+        public DynamicDataView3D(DynamicDataViewConfiguration config) : this(config.OffsetX, config.OffsetY, config.TileSizeX, config.TileSizeY)
+        { }
 
-        public DynamicDataView3D(int tileSizeX, int tileSizeY): this(0, 0, tileSizeX, tileSizeY)
-        {
-            
-        }
-        
+        public DynamicDataView3D(int tileSizeX, int tileSizeY) : this(0, 0, tileSizeX, tileSizeY)
+        { }
+
         public DynamicDataView3D(int offsetX, int offsetY, int tileSizeX, int tileSizeY)
         {
             OffsetX = offsetX;
             OffsetY = offsetY;
             TileSizeX = tileSizeX;
             TileSizeY = tileSizeY;
-            
+
             index = new Dictionary<int, IDynamicDataView2D<T>>();
         }
 
@@ -47,9 +43,10 @@ namespace RogueEntity.Core.Utils.DataViews
             {
                 RemoveView(k[i]);
             }
+
             ArrayPool<int>.Shared.Return(k);
         }
-        
+
         public void Clear()
         {
             foreach (var v in index.Values)
@@ -101,7 +98,7 @@ namespace RogueEntity.Core.Utils.DataViews
             ViewCreated?.Invoke(this, new DynamicDataView3DEventArgs<T>(z, rdata));
             data = rdata;
             return true;
-        }        
+        }
 
         public BufferList<int> GetActiveLayers(BufferList<int> buffer = null)
         {

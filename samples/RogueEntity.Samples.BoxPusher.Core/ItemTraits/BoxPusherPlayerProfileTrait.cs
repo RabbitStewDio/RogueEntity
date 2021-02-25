@@ -2,6 +2,7 @@ using EnTTSharp.Entities;
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Api.Utils;
 using RogueEntity.Core.Meta.Items;
+using RogueEntity.Core.Players;
 using System.Collections.Generic;
 
 namespace RogueEntity.Samples.BoxPusher.Core.ItemTraits
@@ -20,7 +21,7 @@ namespace RogueEntity.Samples.BoxPusher.Core.ItemTraits
 
         public override IEnumerable<EntityRoleInstance> GetEntityRoles()
         {
-            yield break;
+            yield return PlayerModule.PlayerRole.Instantiate<TActorId>();
         }
     }
 }

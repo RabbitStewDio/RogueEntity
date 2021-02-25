@@ -70,7 +70,7 @@ namespace RogueEntity.Core.Runtime
                 playerId = PlayerIds.SinglePlayer;
             }
             
-            gameLoop.Initialize(TurnAllowed);
+            gameLoop.Initialize(IsBlockedOrWaitingForInput);
 
             if (PlayerManager.TryActivatePlayer(playerId, out var playerTag, out var playerEntityId))
             {
@@ -95,13 +95,33 @@ namespace RogueEntity.Core.Runtime
             UpdateOverride(absoluteGameTime);
 
             var status = CheckStatus();
-            if ((status & GameStatus.FinishedMask) != 0)
+            if (status.IsFinished())
             {
                 Status = status;
                 GameFinished?.Invoke(this, EventArgs.Empty);
             }
         }
 
+        public virtual bool IsBlockedOrWaitingForInput()
+        {
+            // if status is error, or either a win or a loose, 
+            // we don't continue simulating the world. 
+            switch (CheckStatus())
+            {
+                case GameStatus.NotStarted:
+                case GameStatus.Initialized:
+                case GameStatus.GameLost:
+                case GameStatus.GameWon:
+                case GameStatus.Error:
+                    return true;
+                case GameStatus.Running:
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+            return CheckStatus() != GameStatus.Running;
+        }
+        
         protected virtual void UpdateOverride(TimeSpan absoluteGameTime)
         {
         }
@@ -118,11 +138,6 @@ namespace RogueEntity.Core.Runtime
             GameStopped?.Invoke(this, EventArgs.Empty);
         }
 
-        protected virtual bool TurnAllowed()
-        {
-            return CheckStatus() == GameStatus.Running;
-        }
-        
         protected abstract GameStatus CheckStatus();
     }
 }

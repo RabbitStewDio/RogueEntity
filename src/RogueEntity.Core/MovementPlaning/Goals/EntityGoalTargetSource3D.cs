@@ -1,21 +1,21 @@
 using EnTTSharp.Entities;
+using RogueEntity.Api.Utils;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Algorithms;
 using RogueEntity.Core.Positioning.SpatialQueries;
-using System.Collections.Generic;
 
 namespace RogueEntity.Core.MovementPlaning.Goals
 {
     public class EntityGoalTargetSource3D<TItemId, TGoal> : IGoalFinderTargetSource
         where TItemId : IEntityKey
     {
-        readonly List<SpatialQueryResult<TItemId, GoalMarker<TGoal>>> buffer;
+        readonly BufferList<SpatialQueryResult<TItemId, GoalMarker<TGoal>>> buffer;
         readonly ISpatialQuery<TItemId> query;
 
         public EntityGoalTargetSource3D(ISpatialQuery<TItemId> query)
         {
             this.query = query;
-            this.buffer = new List<SpatialQueryResult<TItemId, GoalMarker<TGoal>>>();
+            this.buffer = new BufferList<SpatialQueryResult<TItemId, GoalMarker<TGoal>>>();
         }
 
         public void Dispose()

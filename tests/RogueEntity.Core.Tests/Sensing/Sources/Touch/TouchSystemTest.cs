@@ -101,9 +101,9 @@ namespace RogueEntity.Core.Tests.Sensing.Sources.Touch
             context.ItemEntityRegistry.GetComponent(active5, out SenseSourceState<TouchSense> vb).Should().BeTrue();
             context.ItemEntityRegistry.GetComponent(inactive, out SenseSourceState<TouchSense> vc).Should().BeTrue();
 
-            va.LastPosition.Should().Be(new Position(3, 4, 0, TestMapLayers.One));
-            vb.LastPosition.Should().Be(new Position(8, 9, 0, TestMapLayers.One));
-            vc.LastPosition.Should().Be(new Position(5, 5, 0, TestMapLayers.One));
+            va.LastPosition.Should().Be(Position.Of(TestMapLayers.One,3, 4, 0));
+            vb.LastPosition.Should().Be(Position.Of(TestMapLayers.One,8, 9, 0));
+            vc.LastPosition.Should().Be(Position.Of(TestMapLayers.One,5, 5, 0));
 
             va.State.Should().Be(SenseSourceDirtyState.Active);
             vb.State.Should().Be(SenseSourceDirtyState.Dirty);

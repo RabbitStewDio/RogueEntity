@@ -12,7 +12,13 @@ namespace RogueEntity.Core.Runtime
         GameLost =     0b01001,
         GameWon =      0b00101,
         Error =        0b10001,
-        FinishedMask = 0b11100,
         // @formatter:on
+    }
+
+    public static class GameStatusMasks
+    {
+        public const GameStatus FinishedMask = GameStatus.Error | GameStatus.GameWon | GameStatus.GameLost;
+
+        public static bool IsFinished(this GameStatus g) => (g & FinishedMask) != 0;
     }
 }

@@ -33,7 +33,7 @@ namespace RogueEntity.Generator.MapFragments
             }
 
             mf = mf.WithName(mf.Info.Name + "[V]")
-                   .WithMapData(nextMapData, mf.Size);
+                   .WithMapData(mf.Symbols, nextMapData, mf.Size);
             
             c = c.Swap(MapFragmentConnectivity.East, MapFragmentConnectivity.West);
 
@@ -59,7 +59,7 @@ namespace RogueEntity.Generator.MapFragments
             }
 
             mf = mf.WithName(mf.Info.Name + "[H]")
-                   .WithMapData(nextMapData, mf.Size);
+                   .WithMapData(mf.Symbols, nextMapData, mf.Size);
             if (!mf.Properties.TryGet(out MapFragmentConnectivity c))
             {
                 return mf;

@@ -228,8 +228,8 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor
             context.ItemEntityRegistry.GetComponent(active5, out SensoryReceptorState<TReceptorSense, TSourceSense> vb).Should().BeTrue();
             bool haveInactiveState = context.ItemEntityRegistry.GetComponent(inactive, out SensoryReceptorState<TReceptorSense, TSourceSense> vc);
 
-            va.LastPosition.Should().Be(new Position(26, 4, 0, TestMapLayers.One));
-            vb.LastPosition.Should().Be(new Position(7, 9, 0, TestMapLayers.One));
+            va.LastPosition.Should().Be(Position.Of(TestMapLayers.One,26, 4, 0));
+            vb.LastPosition.Should().Be(Position.Of(TestMapLayers.One,7, 9, 0));
 
             va.State.Should().Be(SenseSourceDirtyState.Active);
             vb.State.Should().Be(SenseSourceDirtyState.Active);
