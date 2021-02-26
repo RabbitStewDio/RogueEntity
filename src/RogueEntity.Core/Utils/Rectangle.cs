@@ -22,7 +22,7 @@ namespace RogueEntity.Core.Utils
     /// </remarks>
     [Serializable]
     [DataContract]
-    public readonly struct Rectangle : IEquatable<Rectangle>, 
+    public readonly struct Rectangle : IEquatable<Rectangle>,
                                        IEquatable<(int x, int y, int width, int height)>
     {
         /// <summary>
@@ -204,7 +204,7 @@ namespace RogueEntity.Core.Utils
         /// </summary>
         [DataMember]
         public readonly int Y;
-        
+
         /// <summary>
         /// Creates a rectangle with the given minimum and maximum extents. Effectively a
         /// constructor, but with extra overloads not possible to provide in constructors alone.
@@ -242,7 +242,7 @@ namespace RogueEntity.Core.Utils
         /// <returns>A new rectangle with the given center point and radius values.</returns>
         public static Rectangle WithRadius(int centerX, int centerY, int horizontalRadius, int verticalRadius)
             => new Rectangle(centerX - horizontalRadius, centerY - verticalRadius, 2 * horizontalRadius + 1,
-                2 * verticalRadius + 1);
+                             2 * verticalRadius + 1);
 
         /// <summary>
         /// Creates a rectangle centered on the given position, with the given horizontal and
@@ -279,9 +279,15 @@ namespace RogueEntity.Core.Utils
         /// <param name="position">Minimum (x, y) values that are inside the resulting rectangle.</param>
         /// <param name="size">The size of the rectangle, in form (width, height).</param>
         /// <returns>A new rectangle at the given position with the given size.</returns>
-        public static Rectangle WithPositionAndSize(Position2D position, Position2D size) =>
-            new Rectangle(position.X, position.Y, size.X, size.Y);
-        
+        public static Rectangle WithPositionAndSize(Position2D position, Dimension size) =>
+            new Rectangle(position.X, position.Y, size.Width, size.Height);
+
+        public static Rectangle WithCenterAndSize(Position2D position, Dimension size) =>
+            new Rectangle(position.X - size.Width / 2,
+                          position.Y - size.Height / 2,
+                          size.Width,
+                          size.Height
+            );
 
         /// <summary>
         /// Returns whether or not the rectangles differ in either their positions or extents.
@@ -306,7 +312,7 @@ namespace RogueEntity.Core.Utils
         {
             return r1.X == r2.X && r1.Y == r2.Y && r1.Width == r2.Width && r1.Height == r2.Height;
         }
-        
+
 
         /// <summary>
         /// Creates and returns a new rectangle that is the same size as the current one, but with
@@ -410,7 +416,7 @@ namespace RogueEntity.Core.Utils
             return (X <= other.X && other.X + other.Width <= X + Width && Y <= other.Y &&
                     other.Y + other.Height <= Y + Height);
         }
-        
+
 
         /// <summary>
         /// Compares based upon whether or not the areas contained within the rectangle are identical
@@ -452,8 +458,8 @@ namespace RogueEntity.Core.Utils
         /// <returns>A new rectangle, expanded appropriately.</returns>
         public Rectangle Expand(int horizontalChange, int verticalChange)
             => new Rectangle(X - horizontalChange, Y - verticalChange, Width + (2 * horizontalChange),
-                Height + (2 * verticalChange));
-        
+                             Height + (2 * verticalChange));
+
         /// <summary>
         /// Returns whether or not the given rectangle intersects the current one.
         /// </summary>
@@ -758,7 +764,7 @@ namespace RogueEntity.Core.Utils
         /// <returns>True if the two positions are equal, false if not.</returns>
         public bool Equals((int x, int y, int width, int height) other)
             => X == other.x && Y == other.y && Width == other.width && Height == other.height;
-        
+
         /// <summary>
         /// Gets all positions that reside on the inner perimeter of the rectangle.
         /// </summary>
@@ -826,15 +832,12 @@ namespace RogueEntity.Core.Utils
                     throw new Exception("Cannot retrieve positions on a non-cardinal side of a rectangle.");
             }
         }
-        
-        public RectangleContents Contents => new RectangleContents(this);
 
+        public RectangleContents Contents => new RectangleContents(this);
     }
 
-    public static class RectangleExtensions 
+    public static class RectangleExtensions
     {
-
-        
         /// <summary>
         /// Gets a sequence of positions representing every location in <paramref name="rect1"/> that
         /// is NOT in <paramref name="rect2"/>.
@@ -917,7 +920,7 @@ namespace RogueEntity.Core.Utils
             int y = Math.Min(r1.Y, r2.Y);
 
             return new Rectangle(x, y, Math.Max(r1.X + r1.Width, r2.X + r2.Width) - x,
-                Math.Max(r1.Y + r1.Height, r2.Y + r2.Height) - y);
+                                 Math.Max(r1.Y + r1.Height, r2.Y + r2.Height) - y);
         }
     }
 }

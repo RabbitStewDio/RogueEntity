@@ -16,6 +16,7 @@ namespace RogueEntity.Core.Runtime
         public event EventHandler GameStarted;
         public event EventHandler GameFinished;
         public event EventHandler GameStopped;
+        public event EventHandler<TimeSpan> GameUpdate;
 
         string[] ModuleIds { get; }
         IGameLoop gameLoop;
@@ -93,6 +94,7 @@ namespace RogueEntity.Core.Runtime
 
             gameLoop.Update(absoluteGameTime);
             UpdateOverride(absoluteGameTime);
+            GameUpdate?.Invoke(this, absoluteGameTime);
 
             var status = CheckStatus();
             if (status.IsFinished())

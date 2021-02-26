@@ -51,7 +51,6 @@ namespace RogueEntity.SadCons
             ConsoleResized?.Invoke();
         }
 
-
         public bool IsVisible
         {
             get => ControlsCanvas.IsVisible;

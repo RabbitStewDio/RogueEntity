@@ -14,6 +14,7 @@ namespace RogueEntity.Samples.BoxPusher.MonoGame
         readonly BoxPusherProfileItemTheme itemTheme;
         LoadGameContext<BoxPusherPlayerProfile> loadGameScreen;
         BoxPusherNewGameContext newGameScreen;
+        BoxPusherMapContext mapContext;
 
         public BoxPusherGameShell()
         {
@@ -45,6 +46,11 @@ namespace RogueEntity.Samples.BoxPusher.MonoGame
 
             canvas.AddChildContext(newGameScreen);
             canvas.AddChildContext(loadGameScreen);
+
+            mapContext = new BoxPusherMapContext(game);
+            mapContext.Initialize(this);
+            ParentConsole.Children.Add(mapContext.Console);
+
             return canvas;
         }
 
@@ -53,7 +59,6 @@ namespace RogueEntity.Samples.BoxPusher.MonoGame
             // at this call we can assume that the profile exists, so we can just load the game
             game.StartGame(valueTuple.profileId);
             ControlsCanvas.IsVisible = false;
-            
         }
 
         void OnLoadRequested(object sender, PlayerProfileContainer<BoxPusherPlayerProfile> e)

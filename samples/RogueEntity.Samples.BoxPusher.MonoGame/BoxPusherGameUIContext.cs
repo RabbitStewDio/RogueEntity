@@ -1,21 +1,18 @@
 using Microsoft.Xna.Framework;
-using RogueEntity.Core.Runtime;
 using RogueEntity.SadCons;
-using RogueEntity.Samples.MineSweeper.Core;
+using RogueEntity.Samples.BoxPusher.Core;
 using SadConsole;
 using SadConsole.Controls;
 
-namespace RogueEntity.Samples.MineSweeper.MonoGame
+namespace RogueEntity.Samples.BoxPusher.MonoGame
 {
-    public class MineSweeperGameUIContext: ConsoleContext<ControlsConsole>
+    public class BoxPusherGameUIContext : ConsoleContext<ControlsConsole>
     {
-        readonly MineSweeperGame game;
-        Window gameOverWindow;
-        Window quitConfirmWindow;
+        readonly BoxPusherGame game;
         Label statusLabel;
-        Label gameOverMessage;
+        Window quitConfirmWindow;
 
-        public MineSweeperGameUIContext(MineSweeperGame game)
+        public BoxPusherGameUIContext(BoxPusherGame game)
         {
             this.game = game;
         }
@@ -27,16 +24,9 @@ namespace RogueEntity.Samples.MineSweeper.MonoGame
             Console = new ControlsConsole(parentContext.Bounds.Width, 1);
             Console.FocusOnMouseClick = false;
             Console.IsVisible = true;
-            
+
             statusLabel = SadConsoleControls.CreateLabel("Position: [99, 99]").WithPlacementAt(0, 0);
             Console.Add(statusLabel);
-
-            gameOverMessage = SadConsoleControls.CreateLabel("Game Over!");
-            
-            gameOverWindow = new Window(40, 20);
-            gameOverWindow.Center();
-            gameOverWindow.Add(gameOverMessage.WithPlacementAt(5, 5));
-            gameOverWindow.Add(SadConsoleControls.CreateButton("Back to Main Menu", 20, 3).WithAction(OnBackToMenu).WithPlacementAt(5, 12));
 
             quitConfirmWindow = new Window(40, 20);
             quitConfirmWindow.Center();
@@ -50,26 +40,13 @@ namespace RogueEntity.Samples.MineSweeper.MonoGame
             quitConfirmWindow.Show(true);
         }
 
-        public void ShowGameOverDialog()
-        {
-            if (game.Status == GameStatus.GameLost)
-            {
-                gameOverMessage.DisplayText = "Game Over!";
-            }
-            else
-            {
-                gameOverMessage.DisplayText = "You won!";
-            }
-            
-            gameOverWindow.Show(true);
-        }
-
         protected override void OnParentConsoleResized()
         {
             base.OnParentConsoleResized();
+            System.Console.WriteLine("System UI resized: " + ParentContext.Bounds);
+            
             Console.Resize(ParentContext.Bounds.Width, 1, true, new Rectangle(0, 0, ParentContext.Bounds.Width, 1));
             
-            gameOverWindow.Center();
             quitConfirmWindow.Center();
         }
 
@@ -82,7 +59,6 @@ namespace RogueEntity.Samples.MineSweeper.MonoGame
         {
             game.Stop();
             quitConfirmWindow.Hide();
-            gameOverWindow.Hide();
         }
     }
 }

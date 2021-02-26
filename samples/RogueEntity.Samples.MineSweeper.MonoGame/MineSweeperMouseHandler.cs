@@ -1,4 +1,3 @@
-using RogueEntity.Api.Utils;
 using RogueEntity.Core.Runtime;
 using RogueEntity.Core.Utils;
 using RogueEntity.Samples.MineSweeper.Core;
@@ -10,11 +9,6 @@ using SadConsole.Input;
 
 namespace RogueEntity.Samples.MineSweeper.MonoGame
 {
-    public class MineSweeperInputState
-    {
-        public Optional<Position2D> MouseHoverPosition;
-    }
-    
     public class MineSweeperMouseHandler: MouseConsoleComponent
     {
         readonly MineSweeperInputState inputState;

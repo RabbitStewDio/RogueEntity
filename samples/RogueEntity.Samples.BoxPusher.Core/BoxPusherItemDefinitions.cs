@@ -1,7 +1,6 @@
 using EnTTSharp.Entities;
 using RogueEntity.Core.Inventory;
 using RogueEntity.Core.Meta.ItemBuilder;
-using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Meta.Naming;
 using RogueEntity.Core.Movement.Cost;
 using RogueEntity.Core.Movement.CostModifier;
@@ -21,11 +20,19 @@ namespace RogueEntity.Samples.BoxPusher.Core
 {
     public static class BoxPusherItemDefinitions
     {
+        public static readonly ItemDeclarationInfo Player = ItemDeclarationInfo.Of("Player", "Tag.Player"); 
+        public static readonly ItemDeclarationInfo Box = ItemDeclarationInfo.Of("Items.Box", "Tag.Box"); 
+        public static readonly ItemDeclarationInfo Wall = ItemDeclarationInfo.Of("Items.Wall", "Tag.Wall"); 
+        
+        public static readonly ItemDeclarationInfo EmptyFloor = ItemDeclarationInfo.Of("Items.Floor.Empty", "Tag.Floor.Empty"); 
+        public static readonly ItemDeclarationInfo TargetZoneFloor = ItemDeclarationInfo.Of("Items.Floor.TargetZone", "Tag.Floor.Target"); 
+        public static readonly ItemDeclarationInfo SpawnPointFloor = ItemDeclarationInfo.Of("Items.Floor.SpawnPoint", "Tag.Floor.Empty"); 
+        
         public static ReferenceItemDeclarationBuilder<TActorId> DefinePlayer<TActorId, TItemId>(this ItemDeclarationBuilderWithReferenceContext<TActorId> b)
             where TActorId : IEntityKey
             where TItemId : IEntityKey
         {
-            return b.Define("Player", "Tag.Player")
+            return b.Define(Player)
                     .AsPlayer()
                     .AsAvatar()
                     .WithInventory()
@@ -42,7 +49,7 @@ namespace RogueEntity.Samples.BoxPusher.Core
         public static ReferenceItemDeclarationBuilder<TItemId> DefineBox<TItemId>(this ItemDeclarationBuilderWithReferenceContext<TItemId> b)
             where TItemId : IEntityKey
         {
-            return b.Define("Items.Box", "Tag.Box")
+            return b.Define(Box)
                     .WithGridPosition(BoxPusherMapLayers.Items)
                     .WithMovementCostModifier(Blocked<WalkingMovement>())
                     .WithLightResistance(0.Percent())
@@ -54,7 +61,7 @@ namespace RogueEntity.Samples.BoxPusher.Core
         public static ReferenceItemDeclarationBuilder<TItemId> DefineWall<TItemId>(this ItemDeclarationBuilderWithReferenceContext<TItemId> b)
             where TItemId : IEntityKey
         {
-            return b.Define("Items.Wall", "Tag.Wall")
+            return b.Define(Wall)
                     .WithGridPosition(BoxPusherMapLayers.Items)
                     .AsImmobile()
                     .WithMovementCostModifier(Blocked<WalkingMovement>())
@@ -65,7 +72,7 @@ namespace RogueEntity.Samples.BoxPusher.Core
         public static BulkItemDeclarationBuilder<TItemId> DefineWall<TItemId>(this ItemDeclarationBuilderWithBulkContext<TItemId> b)
             where TItemId : IEntityKey
         {
-            return b.Define("Items.Wall", "Tag.Wall")
+            return b.Define(Wall)
                     .WithGridPosition(BoxPusherMapLayers.Items)
                     .AsImmobile()
                     .WithMovementCostModifier(Blocked<WalkingMovement>())
@@ -76,7 +83,7 @@ namespace RogueEntity.Samples.BoxPusher.Core
         public static BulkItemDeclarationBuilder<TItemId> DefineFloor<TItemId>(this ItemDeclarationBuilderWithBulkContext<TItemId> b)
             where TItemId : IEntityKey
         {
-            return b.Define("Items.Floor.Empty", "Tag.Floor.Empty")
+            return b.Define(EmptyFloor)
                     .WithGridPosition(BoxPusherMapLayers.Floor)
                     .AsImmobile()
                     .WithMovementCostModifier(For<WalkingMovement>(1))
@@ -87,7 +94,7 @@ namespace RogueEntity.Samples.BoxPusher.Core
         public static ReferenceItemDeclarationBuilder<TItemId> DefineFloorTargetZone<TItemId>(this ItemDeclarationBuilderWithReferenceContext<TItemId> b)
             where TItemId : IEntityKey
         {
-            return b.Define("Items.Floor.TargetZone", "Tag.Floor.Target")
+            return b.Define(TargetZoneFloor)
                     .WithGridPosition(BoxPusherMapLayers.Floor)
                     .AsImmobile()
                     .WithMovementCostModifier(For<WalkingMovement>(1))
@@ -99,7 +106,7 @@ namespace RogueEntity.Samples.BoxPusher.Core
         public static ReferenceItemDeclarationBuilder<TItemId> DefineSpawnPoint<TItemId>(this ItemDeclarationBuilderWithReferenceContext<TItemId> b)
             where TItemId : IEntityKey
         {
-            return b.Define("Items.Floor.SpawnPoint", "Tag.Floor.Empty")
+            return b.Define(SpawnPointFloor)
                     .WithGridPosition(BoxPusherMapLayers.Floor)
                     .AsImmobile()
                     .AsSpawnLocation()
