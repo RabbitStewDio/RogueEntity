@@ -8,13 +8,20 @@ using RogueEntity.Core.Players;
 
 namespace RogueEntity.Core.Inputs.Commands
 {
+    public static class CommandRoles
+    {
+        public static EntityRole CreateRoleFor<TCommand>(CommandType<TCommand> cmd)
+        {
+            return new EntityRole("Role.Core.Inputs.Commands.Executor[]");
+        }
+    }
+
     public class CommandsModule : ModuleBase
     {
         public const string ModuleId = "Core.Inputs.Commands";
 
-        public static readonly EntityRole CommandExecutorRole = new EntityRole("Role.Core.Inputs.Commands.Executor");
         public static readonly EntityRole CommandExecutionTrackerRole = new EntityRole("Role.Core.Inputs.Commands.ExecutionTracker");
-        
+
         public static readonly EntitySystemId RegisterEntitiesSystemId = new EntitySystemId("Entities.Core.Inputs.Commands");
         public static readonly EntitySystemId ClearCommandsSystemId = new EntitySystemId("Systems.Core.Inputs.Commands.ClearExpiredCommands");
 
@@ -26,9 +33,8 @@ namespace RogueEntity.Core.Inputs.Commands
             Description = "Provides base classes and behaviours for submitting and handling commands to player observers";
             IsFrameworkModule = true;
 
-            RequireRole(CommandExecutorRole);
             RequireRole(CommandExecutionTrackerRole);
-            
+
             DeclareDependency(ModuleDependency.Of(PlayerModule.ModuleId));
         }
 

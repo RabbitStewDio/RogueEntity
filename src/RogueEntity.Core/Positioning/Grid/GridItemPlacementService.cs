@@ -29,6 +29,39 @@ namespace RogueEntity.Core.Positioning.Grid
             this.itemIdMetaData = itemResolver.EntityMetaData;
         }
 
+        public bool TryQueryItem<TPosition>(in TPosition placementPos, out TItemId item)
+            where TPosition : IPosition<TPosition>
+        {
+            if (placementPos.IsInvalid)
+            {
+                Logger.Verbose("Given position {Position} is invalid", placementPos);
+                item = default;
+                return false;
+            }
+
+            if (placementPos.LayerId == MapLayer.Indeterminate.LayerId)
+            {
+                item = default;
+                return false;
+            }
+
+            if (!mapContext.TryGetGridDataFor(placementPos.LayerId, out var mapData))
+            {
+                Logger.Verbose("Unable to resolve grid data for map layer {LayerId} of position {Position}", placementPos.LayerId, placementPos);
+                item = default;
+                return false;
+            }
+
+            if (!mapData.TryGetView(placementPos.GridZ, out var map))
+            {
+                Logger.Verbose("Requested grid position for map layer {LayerId} is out of range for position {Position}", placementPos.LayerId, placementPos);
+                item = default;
+                return false;
+            }
+
+            return map.TryGet(placementPos.GridX, placementPos.GridY, out item);
+        }
+
         /// <summary>
         ///   Tries to remove the target item from the map. The item will not be destroyed
         ///   in the process. Use this to place items into containers or generally leave
@@ -37,7 +70,8 @@ namespace RogueEntity.Core.Positioning.Grid
         /// <param name="targetItem"></param>
         /// <param name="placementPos"></param>
         /// <returns></returns>
-        public bool TryRemoveItem(in TItemId targetItem, in Position placementPos)
+        public bool TryRemoveItem<TPosition>(in TItemId targetItem, in TPosition placementPos)
+            where TPosition : IPosition<TPosition>
         {
             if (targetItem.IsEmpty)
             {
@@ -152,7 +186,8 @@ namespace RogueEntity.Core.Positioning.Grid
         /// <param name="targetItem"></param>
         /// <param name="placementPos"></param>
         /// <returns></returns>
-        public bool TryPlaceItem(in TItemId targetItem, in Position placementPos)
+        public bool TryPlaceItem<TPosition>(in TItemId targetItem, in TPosition placementPos)
+            where TPosition : IPosition<TPosition>
         {
             if (placementPos.IsInvalid)
             {
@@ -237,7 +272,8 @@ namespace RogueEntity.Core.Positioning.Grid
             return true;
         }
 
-        public bool TryMoveItem(in TItemId item, in Position currentPos, in Position placementPos)
+        public bool TryMoveItem<TPosition>(in TItemId item, in TPosition currentPos, in TPosition placementPos)
+            where TPosition : IPosition<TPosition>
         {
             if (currentPos.IsInvalid && placementPos.IsInvalid)
             {
@@ -436,7 +472,8 @@ namespace RogueEntity.Core.Positioning.Grid
             }
         }
 
-        public bool TrySwapItem(in TItemId sourceItem, in Position sourcePosition, in TItemId targetItem, in Position targetPosition)
+        public bool TrySwapItem<TPosition>(in TItemId sourceItem, in TPosition sourcePosition, in TItemId targetItem, in TPosition targetPosition)
+            where TPosition : IPosition<TPosition>
         {
             if (sourcePosition.IsInvalid && targetPosition.IsInvalid)
             {

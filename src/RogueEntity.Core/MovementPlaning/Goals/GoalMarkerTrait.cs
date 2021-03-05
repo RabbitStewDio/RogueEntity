@@ -30,7 +30,7 @@ namespace RogueEntity.Core.MovementPlaning.Goals
 
         public override IEnumerable<EntityRoleInstance> GetEntityRoles()
         {
-            yield break; // todo
+            yield return GoalModule.GoalMarkerRole.Instantiate<TItemId>();
         }
     }
 }

@@ -5,6 +5,7 @@ using FluentAssertions;
 using NUnit.Framework;
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Api.Time;
+using RogueEntity.Core.Infrastructure.GameLoops;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Grid;
@@ -109,7 +110,7 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor
                                                                    .WithTrait(new ReferenceItemGridPositionTrait<ItemReference>(TestMapLayers.One))
                                                                    .DoWith(x => AttachTrait(x)));
 
-            timeSource = new TestTimeSource();
+            timeSource = new TestTimeSource(new RealTimeSourceDefinition(30));
             senseProperties = new DynamicDataView3D<float>();
             receptorSenseProperties = new DynamicDataView3D<float>();
             senseCache = new SenseStateCache(2, 64, 64);

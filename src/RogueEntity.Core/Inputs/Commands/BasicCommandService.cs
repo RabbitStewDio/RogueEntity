@@ -57,8 +57,18 @@ namespace RogueEntity.Core.Inputs.Commands
                 return false;
             }
             
-            return itemResolver.TryUpdateData(actor, cmd, out _) && 
-                   itemResolver.TryUpdateData(actor, new CommandInProgress(false, trait.Id), out _);
+            if (!itemResolver.TryUpdateData(actor, cmd, out _))
+            {
+                return false;
+            }
+
+            if (!itemResolver.TryUpdateData(actor, new CommandInProgress(false, CommandTypeId.Create<TCommand>()), out _))
+            {
+                itemResolver.TryRemoveData<TCommand>(actor, out _);
+                return false;
+            }
+
+            return true;
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using RogueEntity.Api.GameLoops;
+﻿using JetBrains.Annotations;
+using RogueEntity.Api.GameLoops;
 using RogueEntity.Api.Time;
 using RogueEntity.Api.Utils;
 using Serilog;
@@ -26,12 +27,16 @@ namespace RogueEntity.Core.Infrastructure.GameLoops
         readonly GameTimeProcessor timeProcessor;
         GameTimeState timeState;
 
-        public FixedTimeStepGameLoop(int maxFixStepsPerUpdate, TimeSpan fixedDeltaTime, Optional<TimeSpan> gameFixedTimeStep = default)
+        public FixedTimeStepGameLoop([NotNull] ITimeSourceDefinition timeSourceDefinition, 
+                                     int maxFixStepsPerUpdate, 
+                                     TimeSpan fixedDeltaTime, 
+                                     Optional<TimeSpan> gameFixedTimeStep = default)
         {
             this.maxFixStepsPerUpdate = maxFixStepsPerUpdate;
             this.gameFixedTimeStep = gameFixedTimeStep;
             timeProcessor = new GameTimeProcessor(fixedDeltaTime);
 
+            TimeSourceDefinition = timeSourceDefinition ?? throw new ArgumentNullException(nameof(timeSourceDefinition));
             PreFixedStepHandlers = new List<ActionSystemEntry>();
             FixedStepHandlers = new List<ActionSystemEntry>();
             LateFixedStepHandlers = new List<ActionSystemEntry>();
@@ -41,10 +46,9 @@ namespace RogueEntity.Core.Infrastructure.GameLoops
             DisposeStepHandlers = new List<ActionSystemEntry>();
         }
 
-        public ITimeSource TimeSource
-        {
-            get { return this; }
-        }
+        public ITimeSource TimeSource => this;
+
+        public ITimeSourceDefinition TimeSourceDefinition { get; }
 
         public double TicksPerSecond => timeProcessor.TicksPerSecond;
         public TimeSpan CurrentTime => timeState.TotalGameTimeElapsed;

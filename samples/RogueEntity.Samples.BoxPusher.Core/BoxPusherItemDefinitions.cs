@@ -1,9 +1,11 @@
 using EnTTSharp.Entities;
+using RogueEntity.Core.Inputs.Commands;
 using RogueEntity.Core.Inventory;
 using RogueEntity.Core.Meta.ItemBuilder;
 using RogueEntity.Core.Meta.Naming;
 using RogueEntity.Core.Movement.Cost;
 using RogueEntity.Core.Movement.CostModifier;
+using RogueEntity.Core.Movement.GridMovement;
 using RogueEntity.Core.Movement.MovementModes.Walking;
 using RogueEntity.Core.Players;
 using RogueEntity.Core.Positioning;
@@ -43,6 +45,7 @@ namespace RogueEntity.Samples.BoxPusher.Core
                     .WithMovement()
                     .AsPointCost(WalkingMovement.Instance, DistanceCalculation.Euclid, 1)
                     .WithTrait(new BoxPusherPlayerProfileTrait<TActorId>())
+                    .WithCommand(CommandType.Of<GridMoveCommand>())
                 ;
         }
 

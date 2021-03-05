@@ -34,7 +34,7 @@ namespace RogueEntity.Core.Inputs.Commands
                 itemDeclaration.QueryAll(traitBuffer);
                 foreach (var t in traitBuffer)
                 {
-                    if (t.Id != cmdId)
+                    if (t.CommandId != cmdId)
                     {
                         continue;
                     }

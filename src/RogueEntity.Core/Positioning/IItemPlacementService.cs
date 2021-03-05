@@ -7,6 +7,9 @@ namespace RogueEntity.Core.Positioning
     /// <typeparam name="TItemId"></typeparam>
     public interface IItemPlacementService<TItemId>
     {
+        bool TryQueryItem<TPosition>(in TPosition pos, out TItemId item)
+            where TPosition: IPosition<TPosition>;
+        
         /// <summary>
         ///   Tries to remove the target item from the map. The item will not be destroyed
         ///   in the process. Use this to place items into containers or generally leave
@@ -15,8 +18,9 @@ namespace RogueEntity.Core.Positioning
         /// <param name="targetItem"></param>
         /// <param name="placementPos"></param>
         /// <returns></returns>
-        bool TryRemoveItem(in TItemId targetItem,
-                           in Position placementPos);
+        bool TryRemoveItem<TPosition>(in TItemId targetItem,
+                                      in TPosition placementPos)
+            where TPosition: IPosition<TPosition>;
 
         /// <summary>
         ///    Places an item at the given placement position. It is assumed and strongly
@@ -26,28 +30,31 @@ namespace RogueEntity.Core.Positioning
         /// <param name="targetItem"></param>
         /// <param name="placementPos"></param>
         /// <returns></returns>
-        bool TryPlaceItem(in TItemId targetItem,
-                          in Position placementPos);
+        bool TryPlaceItem<TPosition>(in TItemId targetItem,
+                                     in TPosition placementPos)
+            where TPosition: IPosition<TPosition>;
 
         /// <summary>
-        ///    Places an item at the given placement position. It is assumed and strongly
-        ///    recommended that the item has not been placed elsewhere (and is validated for
-        ///    reference items).
+        ///    Moves an item at the given current position to the placement position. This
+        ///    method will fail if the target position is not empty or stackable and receptive
+        ///    of the given item.
         /// </summary>
         /// <param name="item"></param>
         /// <param name="currentPos"></param>
         /// <param name="placementPos"></param>
         /// <returns></returns>
-        bool TryMoveItem(in TItemId item,
-                         in Position currentPos,
-                         in Position placementPos);
+        bool TryMoveItem<TPosition>(in TItemId item,
+                                    in TPosition currentPos,
+                                    in TPosition placementPos)
+            where TPosition: IPosition<TPosition>;
 
         /// <summary>
         ///    Swaps the source entity with the target entity (which is expected to be located at the given position).
         /// </summary>
-        bool TrySwapItem(in TItemId sourceItem,
-                         in Position sourcePosition,
-                         in TItemId targetItem,
-                         in Position targetPosition);
+        bool TrySwapItem<TPosition>(in TItemId sourceItem,
+                                    in TPosition sourcePosition,
+                                    in TItemId targetItem,
+                                    in TPosition targetPosition)
+            where TPosition: IPosition<TPosition>;
     }
 }

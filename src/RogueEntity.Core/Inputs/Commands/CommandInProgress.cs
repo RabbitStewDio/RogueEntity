@@ -11,10 +11,10 @@ namespace RogueEntity.Core.Inputs.Commands
     [MessagePackObject]
     public readonly struct CommandInProgress
     {
-        public readonly Optional<ItemTraitId> ActiveCommand;
+        public readonly Optional<CommandTypeId> ActiveCommand;
         public readonly bool Handled;
 
-        public CommandInProgress(bool handled, Optional<ItemTraitId> activeCommand)
+        public CommandInProgress(bool handled, Optional<CommandTypeId> activeCommand)
         {
             this.Handled = handled;
             this.ActiveCommand = activeCommand;

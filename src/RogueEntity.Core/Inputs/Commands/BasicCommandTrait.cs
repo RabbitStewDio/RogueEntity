@@ -21,6 +21,7 @@ namespace RogueEntity.Core.Inputs.Commands
                                  int priority = 100) : base(CreateDefaultId(), priority)
         {
             this.handler = handler ?? AllowAllCommandHandler<TActorId, TCommand>.Instance;
+            CommandId = CommandTypeId.Create<TCommand>();
         }
 
         static ItemTraitId CreateDefaultId()
@@ -28,8 +29,7 @@ namespace RogueEntity.Core.Inputs.Commands
             return "Traits.Commands." + typeof(TCommand).FullName;
         }
 
-        public BasicCommandTrait(ItemTraitId id, int priority = 100) : base(id, priority)
-        { }
+        public CommandTypeId CommandId { get; }
 
         protected override Optional<TCommand> CreateInitialValue(TActorId reference)
         {
@@ -38,7 +38,7 @@ namespace RogueEntity.Core.Inputs.Commands
 
         public override IEnumerable<EntityRoleInstance> GetEntityRoles()
         {
-            yield return CommandsModule.CommandExecutorRole.Instantiate<TActorId>();
+            yield return CommandRoles.CreateRoleFor(CommandType.Of<TCommand>()).Instantiate<TActorId>();
         }
 
         public bool CanHandle<TQueryCommand>()

@@ -7,7 +7,6 @@ using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.MapLayers;
 using Serilog;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace RogueEntity.Core.MapLoading
 {
@@ -23,6 +22,7 @@ namespace RogueEntity.Core.MapLoading
         readonly IItemPlacementLocationService<TActorId> spatialQuery;
         readonly Dictionary<int, List<(Position pos, TItemId entity)>> spawnPointsPerLevel;
         readonly Optional<IEntityRandomGeneratorSource> randomSource;
+        readonly List<(Position pos, TItemId entity)> filterBuffer;
 
         public BasicPlayerSpawnSystem(IMapRegionLoaderService<int> mapLoaderService,
                                       IItemPlacementService<TActorId> placementService,
@@ -36,6 +36,7 @@ namespace RogueEntity.Core.MapLoading
             this.placementService = placementService;
             this.randomSource = randomSource;
             this.spawnPointsPerLevel = new Dictionary<int, List<(Position, TItemId)>>();
+            this.filterBuffer = new List<(Position pos, TItemId entity)>();
         }
 
         public void StartCollectSpawnLocations()
@@ -107,14 +108,7 @@ namespace RogueEntity.Core.MapLoading
                 return;
             }
 
-            // todo: Should really use a reusable buffer list for this.
-            var l = levelData.Where(x =>
-                             {
-                                 var (pos, _) = x;
-                                 return spatialQuery.TryFindEmptySpace(pos.WithLayer(mapLayerPref.PreferredLayer), out _, 1);
-                             })
-                             .ToList();
-            
+            var l = FilterByAvailableSpace(levelData, mapLayerPref);
             if (randomSource.TryGetValue(out var value))
             {
                 if (PlaceRandomly(l, value, k, mapLayerPref.PreferredLayer))
@@ -133,6 +127,22 @@ namespace RogueEntity.Core.MapLoading
             Logger.Warning("Unable to find any placement for player actor");
         }
 
+        List<(Position pos, TItemId entity)> FilterByAvailableSpace(List<(Position pos, TItemId entity)> raw,
+                                                                    in MapLayerPreference mapLayerPref)
+        {
+            filterBuffer.Clear();
+            foreach (var valueTuple in raw)
+            {
+                var pos = valueTuple.pos;
+                if (spatialQuery.TryFindEmptySpace(pos.WithLayer(mapLayerPref.PreferredLayer), out _, 1))
+                {
+                    filterBuffer.Add(valueTuple);
+                }   
+            }
+
+            return filterBuffer;
+        }
+        
         bool PlaceLinearly(List<(Position pos, TItemId entity)> levelData,
                            TActorId k,
                            MapLayer preferredLayer)

@@ -32,12 +32,12 @@ namespace RogueEntity.Core.Infrastructure.GameLoops
         TimeSpan fixedTimeUpdateTargetTime;
         TimeSpan fixedTimeUpdateHandledTime;
 
-        public RealTimeGameLoop(double fps = 60, Optional<TimeSpan> gameFixedTimeStep = default)
+        public RealTimeGameLoop(ITimeSourceDefinition timeSourceDefinition, double fps = 60, Optional<TimeSpan> gameFixedTimeStep = default)
         {
             this.gameFixedTimeStep = gameFixedTimeStep;
             timeProcessor = GameTimeProcessor.WithFramesPerSecond(fps);
 
-            // commands = new Queue<Action>();
+            TimeSourceDefinition = timeSourceDefinition ?? throw new ArgumentNullException(nameof(timeSourceDefinition));
             PreFixedStepHandlers = new List<ActionSystemEntry>();
             FixedStepHandlers = new List<ActionSystemEntry>();
             LateFixedStepHandlers = new List<ActionSystemEntry>();
@@ -46,6 +46,8 @@ namespace RogueEntity.Core.Infrastructure.GameLoops
             InitializationStepHandlers = new List<ActionSystemEntry>();
             DisposeStepHandlers = new List<ActionSystemEntry>();
         }
+
+        public ITimeSourceDefinition TimeSourceDefinition { get; }
 
         public ITimeSource TimeSource
         {

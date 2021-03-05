@@ -23,9 +23,9 @@ namespace RogueEntity.Core.Infrastructure.GameLoops
 
         public double TicksPerSecond { get; }
 
-        public IGameLoop BuildTimeStepLoop(IGameLoopSystemInformation t, Optional<TimeSpan> fixedStepTime = default)
+        public IGameLoop BuildTimeStepLoop(IGameLoopSystemInformation t)
         {
-            var s = new FixedTimeStepGameLoop(stepsPerFrame, timePerTick);
+            var s = new FixedTimeStepGameLoop(this, stepsPerFrame, timePerTick);
             foreach (var entry in t.InitializationEntries)
             {
                 Logger.Debug("Adding Initialization Step {StepName}", entry.ToString());
@@ -77,9 +77,9 @@ namespace RogueEntity.Core.Infrastructure.GameLoops
 
         public double TicksPerSecond { get; }
 
-        public IGameLoop BuildTimeStepLoop(IGameLoopSystemInformation t, Optional<TimeSpan> fixedStepTime = default)
+        public IGameLoop BuildTimeStepLoop(IGameLoopSystemInformation t)
         {
-            var s = new RealTimeGameLoop(TicksPerSecond, fixedStepTime);
+            var s = new RealTimeGameLoop(this, TicksPerSecond);
             foreach (var entry in t.InitializationEntries)
             {
                 Logger.Debug("Adding Initialization Step {StepName}", entry.ToString());

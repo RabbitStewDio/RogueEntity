@@ -11,6 +11,8 @@ namespace RogueEntity.Core.Inputs.Commands
     public interface ICommandTrait<TActorId> : IItemTrait
         where TActorId : IEntityKey
     {
+        CommandTypeId CommandId { get; }
+        
         bool CanHandle<TCommand>();
 
         bool TryActionOn<TResult>(IItemResolver<TActorId> r, TActorId k, ICommandLift<TActorId, TResult> lifter, out TResult result);
