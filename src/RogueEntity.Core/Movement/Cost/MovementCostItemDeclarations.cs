@@ -1,5 +1,6 @@
 using EnTTSharp.Entities;
 using RogueEntity.Api.ItemTraits;
+using RogueEntity.Api.Time;
 using RogueEntity.Core.Meta.ItemBuilder;
 using RogueEntity.Core.Positioning.Algorithms;
 
@@ -33,15 +34,18 @@ namespace RogueEntity.Core.Movement.Cost
                 where TMovementMode : IMovementMode
             {
                 this.builder.WithTrait(new MovementPointCostReferenceItemTrait<TItemId, TMovementMode>(m, c, unitCost, preference));
-                this.builder.WithTrait(new PathfindingMovementCostFactorsTrait<TItemId>());
+                this.builder.WithTrait(new AggregateMovementCostFactorsTrait<TItemId>());
                 return builder;
             }
 
-            public ReferenceItemDeclarationBuilder<TItemId> AsVelocity<TMovementMode>(TMovementMode m, DistanceCalculation c, float unitCost, int preference = 0)
+            public ReferenceItemDeclarationBuilder<TItemId> AsVelocityPerSecond<TMovementMode>(TMovementMode m, DistanceCalculation c, float meterPerSecond, int preference = 0)
                 where TMovementMode : IMovementMode
             {
-                this.builder.WithTrait(new MovementVelocityReferenceItemTrait<TItemId, TMovementMode>(m, c, unitCost, preference));
-                this.builder.WithTrait(new PathfindingMovementCostFactorsTrait<TItemId>());
+                var timeSourceDefinition = builder.ServiceResolver.Resolve<ITimeSourceDefinition>();
+                var meterPerTick = (float) (meterPerSecond / timeSourceDefinition.TicksPerSecond);
+                
+                this.builder.WithTrait(new MovementVelocityReferenceItemTrait<TItemId, TMovementMode>(m, c, meterPerTick, preference));
+                this.builder.WithTrait(new AggregateMovementCostFactorsTrait<TItemId>());
                 return builder;
             }
         }
@@ -60,15 +64,18 @@ namespace RogueEntity.Core.Movement.Cost
                 where TMovementMode : IMovementMode
             {
                 this.builder.WithTrait(new MovementPointCostBulkItemTrait<TItemId, TMovementMode>(m, c, unitCost, preference));
-                this.builder.WithTrait(new PathfindingMovementCostFactorsTrait<TItemId>());
+                this.builder.WithTrait(new AggregateMovementCostFactorsTrait<TItemId>());
                 return builder;
             }
 
-            public BulkItemDeclarationBuilder<TItemId> AsVelocity<TMovementMode>(TMovementMode m, DistanceCalculation c, float unitCost, int preference = 0)
+            public BulkItemDeclarationBuilder<TItemId> AsVelocityPerSecond<TMovementMode>(TMovementMode m, DistanceCalculation c, float meterPerSecond, int preference = 0)
                 where TMovementMode : IMovementMode
             {
-                this.builder.WithTrait(new MovementVelocityBulkItemTrait<TItemId, TMovementMode>(m, c, unitCost, preference));
-                this.builder.WithTrait(new PathfindingMovementCostFactorsTrait<TItemId>());
+                var timeSourceDefinition = builder.ServiceResolver.Resolve<ITimeSourceDefinition>();
+                var meterPerTick = (float) (meterPerSecond / timeSourceDefinition.TicksPerSecond);
+                
+                this.builder.WithTrait(new MovementVelocityBulkItemTrait<TItemId, TMovementMode>(m, c, meterPerTick, preference));
+                this.builder.WithTrait(new AggregateMovementCostFactorsTrait<TItemId>());
                 return builder;
             }
         }

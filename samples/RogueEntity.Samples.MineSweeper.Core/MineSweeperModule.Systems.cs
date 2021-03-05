@@ -2,6 +2,7 @@
 using RogueEntity.Api.Modules;
 using RogueEntity.Api.Modules.Attributes;
 using RogueEntity.Core;
+using RogueEntity.Core.Inputs.Commands;
 using RogueEntity.Core.Meta.EntityKeys;
 using RogueEntity.Core.Players;
 using RogueEntity.Generator;
@@ -22,7 +23,7 @@ namespace RogueEntity.Samples.MineSweeper.Core
             mip.ServiceResolver.Store(mapBuilder);
             mip.ServiceResolver.Store<IPlayerServiceConfiguration>(new PlayerServiceConfiguration(MineSweeperItemDefinitions.PlayerId));
 
-            mip.ServiceResolver.Store(new MineSweeperCommandService<ActorReference>(mip.ServiceResolver.Resolve<IItemResolver<ActorReference>>()));
+            mip.ServiceResolver.Store(new BasicCommandService<ActorReference>(mip.ServiceResolver.Resolve<IItemResolver<ActorReference>>()));
             mip.ServiceResolver.Store<IPlayerManager<ActorReference>>(
                 new BasicPlayerManager<ActorReference>(
                     mip.ServiceResolver.Resolve<IItemResolver<ActorReference>>(),

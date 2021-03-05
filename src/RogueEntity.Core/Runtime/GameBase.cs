@@ -1,6 +1,7 @@
 using RogueEntity.Api.GameLoops;
 using RogueEntity.Api.Modules;
 using RogueEntity.Api.Services;
+using RogueEntity.Api.Time;
 using RogueEntity.Api.Utils;
 using RogueEntity.Core.Infrastructure.GameLoops;
 using RogueEntity.Core.Infrastructure.Services;
@@ -12,6 +13,8 @@ namespace RogueEntity.Core.Runtime
 {
     public abstract class GameBase<TPlayerEntity>
     {
+        static readonly ILogger Logger = SLog.ForContext<GameBase<TPlayerEntity>>();
+        
         public event EventHandler GameInitialized;
         public event EventHandler GameStarted;
         public event EventHandler GameFinished;
@@ -23,9 +26,10 @@ namespace RogueEntity.Core.Runtime
 
         protected GameBase(params string[] moduleIds)
         {
-            ModuleIds = moduleIds;
+            ModuleIds = moduleIds ?? new string[0];
         }
 
+        public ITimeSourceDefinition TimeSourceDefinition { get; protected set; }
         public IServiceResolver ServiceResolver { get; private set; }
         public IPlayerService PlayerService { get; private set; }
         public IPlayerManager<TPlayerEntity> PlayerManager { get; private set; }
@@ -36,15 +40,17 @@ namespace RogueEntity.Core.Runtime
         
         public void InitializeSystems()
         {
-            Log.Debug("Starting");
+            Logger.Debug("Starting");
+            TimeSourceDefinition ??= new RealTimeSourceDefinition(30);
+            
             ServiceResolver = CreateServiceResolver();
+            ServiceResolver.Store(TimeSourceDefinition);
             InitializeServices(ServiceResolver);
             
             var ms = new ModuleSystem(ServiceResolver);
             ms.ScanForModules(ModuleIds);
 
-            gameLoop = ms.Initialize()
-                         .BuildRealTimeStepLoop(30);
+            gameLoop = TimeSourceDefinition.BuildTimeStepLoop(ms.Initialize());
 
             ServiceResolver.Store(gameLoop.TimeSource);
             ServiceResolver.ValidatePromisesCanResolve();

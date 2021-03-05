@@ -12,10 +12,17 @@ namespace RogueEntity.Core.Inputs.Commands
     public readonly struct CommandInProgress
     {
         public readonly Optional<ItemTraitId> ActiveCommand;
+        public readonly bool Handled;
 
-        public CommandInProgress(Optional<ItemTraitId> activeCommand)
+        public CommandInProgress(bool handled, Optional<ItemTraitId> activeCommand)
         {
-            ActiveCommand = activeCommand;
+            this.Handled = handled;
+            this.ActiveCommand = activeCommand;
+        }
+
+        public CommandInProgress MarkHandled()
+        {
+            return new CommandInProgress(true, ActiveCommand);
         }
     }
 }

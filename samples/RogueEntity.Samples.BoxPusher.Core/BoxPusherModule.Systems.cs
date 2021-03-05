@@ -3,6 +3,7 @@ using RogueEntity.Api.Modules;
 using RogueEntity.Api.Modules.Attributes;
 using RogueEntity.Core;
 using RogueEntity.Core.Infrastructure.Randomness;
+using RogueEntity.Core.Inputs.Commands;
 using RogueEntity.Core.MapLoading;
 using RogueEntity.Core.Meta.EntityKeys;
 using RogueEntity.Core.Players;
@@ -28,10 +29,13 @@ namespace RogueEntity.Samples.BoxPusher.Core
                                              .WithLayer<ItemReference>(BoxPusherMapLayers.Items, mip.ServiceResolver)
                                              .WithLayer<ActorReference>(BoxPusherMapLayers.Actors, mip.ServiceResolver);
             var fragmentParser = new MapFragmentParser();
-            var mapLoader = new BoxPusherMapLevelDataSource(mapBuilder, fragmentParser, 
+            var mapLoader = new BoxPusherMapLevelDataSource(mapBuilder, fragmentParser,
                                                             mip.ServiceResolver.Resolve<IStorageLocationService>(),
                                                             mip.ServiceResolver.Resolve<IEntityRandomGeneratorSource>());
             mip.ServiceResolver.Store<IMapRegionLoaderService<int>>(mapLoader);
+            mip.ServiceResolver.Store<IBoxPusherMapMetaDataService>(mapLoader);
+
+            mip.ServiceResolver.Store(new BasicCommandService<ActorReference>(mip.ServiceResolver.Resolve<IItemResolver<ActorReference>>()));
 
             var profileManager = new InMemoryPlayerProfileManager<BoxPusherPlayerProfile>();
             profileManager.TryCreatePlayer(new BoxPusherPlayerProfile("Duffy Duck"), out _, out _);

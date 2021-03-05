@@ -65,7 +65,7 @@ namespace RogueEntity.Core.MovementPlaning.GoalFinding.SingleLevel
             return this;
         }
 
-        public IGoalFinder Build(in PathfindingMovementCostFactors movementProfile)
+        public IGoalFinder Build(in AggregateMovementCostFactors movementProfile)
         {
             var e = compoundTargetEvaluatorPool.Get();
             foreach (var goal in goalSources)

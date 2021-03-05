@@ -33,7 +33,7 @@ namespace RogueEntity.Core.MovementPlaning.Pathfinding.SingleLevel
             return this;
         }
 
-        public IPathFinder Build(in PathfindingMovementCostFactors movementProfile)
+        public IPathFinder Build(in AggregateMovementCostFactors movementProfile)
         {
             var pf = pathFinderPool.Get();
             var te = targetEvaluator ?? defaultTargetEvaluators.Get(); 

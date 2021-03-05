@@ -12,7 +12,13 @@ using System.Linq;
 
 namespace RogueEntity.Samples.BoxPusher.Core
 {
-    public class BoxPusherMapLevelDataSource : MapRegionLoaderServiceBase<int>
+    public interface IBoxPusherMapMetaDataService
+    {
+        public bool TryGetMetaData(int key, out MapFragmentInfo data);
+        public bool TryGetBounds(int key, out Rectangle data);
+    }
+    
+    public class BoxPusherMapLevelDataSource : MapRegionLoaderServiceBase<int>, IBoxPusherMapMetaDataService
     {
         readonly MapFragmentRegistry registry;
         readonly MapFragmentTool mapBuilder;
@@ -47,6 +53,30 @@ namespace RogueEntity.Samples.BoxPusher.Core
             return MapRegionLoadingStatus.Loaded;
         }
 
+
+        public bool TryGetBounds(int key, out Rectangle data)
+        {
+            if (levelData.GetItemAt(key).TryGetValue(out var mapFragment))
+            {
+                data = new Rectangle(0, 0, mapFragment.Size.Width, mapFragment.Size.Height);
+                return true;
+            }
+
+            data = default;
+            return false;
+        }
+
+        public bool TryGetMetaData(int key, out MapFragmentInfo data)
+        {
+            if (levelData.GetItemAt(key).TryGetValue(out var mapFragment))
+            {
+                data = mapFragment.Info;
+                return true;
+            }
+
+            data = default;
+            return false;
+        }
 
         public override bool IsLevelPositionAvailable<TPosition>(TPosition p)
         {

@@ -149,7 +149,7 @@ namespace RogueEntity.Benchmarks
             
             using (var pf = pathfinderSource.GetGoalFinder()
                                             .WithGoal<PerformanceGoal>()
-                                            .Build(new PathfindingMovementCostFactors(new MovementCost(WalkingMovement.Instance, DistanceCalculation.Euclid, 1))))
+                                            .Build(new AggregateMovementCostFactors(new MovementCost(WalkingMovement.Instance, DistanceCalculation.Euclid, 1))))
             {
                 var sourcePosition = EntityGridPosition.OfRaw(layer.LayerId, 0, 9);
                 var result = pf.TryFindPath(sourcePosition, out var resultPath);
@@ -179,7 +179,7 @@ namespace RogueEntity.Benchmarks
                 using (var pf = pathfinderSource.GetGoalFinder()
                                                 .WithGoal<PerformanceGoal>()
                                                 .WithSearchRadius(32)
-                                                .Build(new PathfindingMovementCostFactors(new MovementCost(WalkingMovement.Instance, DistanceCalculation.Euclid, 1))))
+                                                .Build(new AggregateMovementCostFactors(new MovementCost(WalkingMovement.Instance, DistanceCalculation.Euclid, 1))))
                 {
                     var result = pf.TryFindPath(startPosition, out _, pathBuffer);
                     if (result == PathFinderResult.Found)

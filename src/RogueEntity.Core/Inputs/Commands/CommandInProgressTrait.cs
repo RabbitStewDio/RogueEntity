@@ -22,7 +22,7 @@ namespace RogueEntity.Core.Inputs.Commands
 
         public override IEnumerable<EntityRoleInstance> GetEntityRoles()
         {
-            yield break;
+            yield return CommandsModule.CommandExecutionTrackerRole.Instantiate<TActorId>();
         }
     }
 }

@@ -10,6 +10,6 @@ namespace RogueEntity.Core.MovementPlaning.GoalFinding
         IGoalFinderBuilder WithGoal<TGoal>()
             where TGoal : IGoal;
 
-        public IGoalFinder Build(in PathfindingMovementCostFactors movementProfile);
+        public IGoalFinder Build(in AggregateMovementCostFactors movementProfile);
     }
 }

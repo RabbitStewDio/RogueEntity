@@ -12,7 +12,9 @@ namespace RogueEntity.Core.Infrastructure.GameLoops
 {
     /// <summary>
     ///    A game loop with simulated time that stops when any player's turn is active.
-    ///    This loop always advances by a fixed number of time steps.
+    ///    This loop always advances by a fixed number of time steps. This means the
+    ///    simulation will speed up or slow down depending on the frequency of the
+    ///    incoming update calls.
     /// </summary>
     public class FixedTimeStepGameLoop : ITimeSource,
                                          IGameLoop
@@ -20,11 +22,14 @@ namespace RogueEntity.Core.Infrastructure.GameLoops
         readonly ILogger logger = SLog.ForContext<FixedTimeStepGameLoop>();
 
         readonly int maxFixStepsPerUpdate;
+        readonly Optional<TimeSpan> gameFixedTimeStep;
         readonly GameTimeProcessor timeProcessor;
+        GameTimeState timeState;
 
-        public FixedTimeStepGameLoop(int maxFixStepsPerUpdate, TimeSpan fixedDeltaTime)
+        public FixedTimeStepGameLoop(int maxFixStepsPerUpdate, TimeSpan fixedDeltaTime, Optional<TimeSpan> gameFixedTimeStep = default)
         {
             this.maxFixStepsPerUpdate = maxFixStepsPerUpdate;
+            this.gameFixedTimeStep = gameFixedTimeStep;
             timeProcessor = new GameTimeProcessor(fixedDeltaTime);
 
             PreFixedStepHandlers = new List<ActionSystemEntry>();
@@ -41,8 +46,9 @@ namespace RogueEntity.Core.Infrastructure.GameLoops
             get { return this; }
         }
 
-        public TimeSpan CurrentTime => TimeState.TotalGameTimeElapsed;
-        public int FixedStepTime => TimeState.FixedStepCount;
+        public double TicksPerSecond => timeProcessor.TicksPerSecond;
+        public TimeSpan CurrentTime => timeState.TotalGameTimeElapsed;
+        public int FixedStepTime => timeState.FixedStepCount;
 
         public bool IsRunning { get; private set; }
 
@@ -84,7 +90,14 @@ namespace RogueEntity.Core.Infrastructure.GameLoops
             IsRunning = true;
             IsWaitingForInputDelegate = isWaitingForInputDelegate;
 
-            TimeState = new GameTimeState(this.timeProcessor.TimeStepDuration);
+            if (gameFixedTimeStep.TryGetValue(out var ts))
+            {
+                timeState = new GameTimeState(ts);
+            }
+            else
+            {
+                timeState = new GameTimeState(timeProcessor.TimeStepDuration);
+            }
 
             foreach (var step in InitializationStepHandlers)
             {
@@ -120,24 +133,6 @@ namespace RogueEntity.Core.Infrastructure.GameLoops
             var w = Stopwatch.StartNew();
             logger.Verbose("Enter Update: {Time} ({FixedFrame})", absoluteTime, TimeState.FixedStepCount);
 
-            // if (commands.Count > 0)
-            // {
-            //     // Translates incoming commands into Entity system components. 
-            //     // 
-            //     // Command requests can come in at any time. We deliberately do that processing
-            //     // only at this particular point, where we can guarantee that no one else is
-            //     // modifying the entity system.
-            //     var cmdGameContext = ContextProvider(TimeState.FrameDeltaTime, TimeState.TotalGameTimeElapsed);
-            //     using (LogContext.PushProperty("GameLoop.Activity", "CommandProcessing"))
-            //     {
-            //         logger.Debug("Processing {CommandCount} commands.", commands.Count);
-            //         while (commands.TryDequeue(out var command))
-            //         {
-            //             command(cmdGameContext);
-            //         }
-            //     }
-            // }
-
             if (!IsWaitingForInput())
             {
                 using (LogContext.PushProperty("GameLoop.Activity", "FixedTimeStep"))
@@ -147,7 +142,7 @@ namespace RogueEntity.Core.Infrastructure.GameLoops
                     {
                         var w2 = Stopwatch.StartNew();
                         count += 1;
-                        TimeState = GameTimeProcessor.NextFixedStep(TimeState);
+                        timeState = GameTimeProcessor.NextFixedStep(timeState);
 
                         foreach (var handler in PreFixedStepHandlers)
                         {
@@ -157,7 +152,7 @@ namespace RogueEntity.Core.Infrastructure.GameLoops
                             }
                         }
 
-                        FixStepProgress?.Invoke(this, new WorldStepEventArgs(TimeState));
+                        FixStepProgress?.Invoke(this, new WorldStepEventArgs(timeState));
 
                         foreach (var handler in FixedStepHandlers)
                         {
@@ -179,11 +174,11 @@ namespace RogueEntity.Core.Infrastructure.GameLoops
                     } while (!IsWaitingForInput() && count < maxFixStepsPerUpdate);
 
                     logger.Information("Processed {Count} events at {Elapsed} ({ElapsedTotalMilliseconds};{FixedTimeStep})",
-                                       count, w.Elapsed, w.Elapsed.TotalMilliseconds, TimeState.FixedStepCount);
+                                       count, w.Elapsed, w.Elapsed.TotalMilliseconds, timeState.FixedStepCount);
                 }
             }
 
-            TimeState = timeProcessor.AdvanceFrameTimeOnly(TimeState, absoluteTime);
+            timeState = timeProcessor.AdvanceFrameTimeOnly(timeState, absoluteTime);
 
             using (LogContext.PushProperty("GameLoop.Activity", "VariableTimeStep"))
             {
@@ -195,7 +190,7 @@ namespace RogueEntity.Core.Infrastructure.GameLoops
                     }
                 }
 
-                VariableStepProgress?.Invoke(this, new WorldStepEventArgs(TimeState));
+                VariableStepProgress?.Invoke(this, new WorldStepEventArgs(timeState));
 
                 foreach (var stepHandler in LateVariableStepHandlers)
                 {
@@ -209,6 +204,9 @@ namespace RogueEntity.Core.Infrastructure.GameLoops
             logger.Verbose("Finished Update at {Elapsed} ({ElapsedTotalMilliseconds})", w.Elapsed, w.Elapsed.TotalMilliseconds);
         }
 
-        public GameTimeState TimeState { get; private set; }
+        public ref readonly GameTimeState TimeState
+        {
+            get => ref timeState;
+        }
     }
 }

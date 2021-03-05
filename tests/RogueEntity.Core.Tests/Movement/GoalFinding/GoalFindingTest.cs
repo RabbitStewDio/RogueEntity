@@ -153,7 +153,7 @@ namespace RogueEntity.Core.Tests.Movement.GoalFinding
             var pfs = CreateGoalFinderSource(resistanceMap, bounds);
             var pf = pfs.GetGoalFinder()
                         .WithGoal<TestGoal>()
-                        .Build(new PathfindingMovementCostFactors(new MovementCost(WalkingMovement.Instance, DistanceCalculation.Euclid, 1)));
+                        .Build(new AggregateMovementCostFactors(new MovementCost(WalkingMovement.Instance, DistanceCalculation.Euclid, 1)));
 
             var result = pf.TryFindPath(startPosition, out var resultPath);
             result.Should().Be(PathFinderResult.Found);

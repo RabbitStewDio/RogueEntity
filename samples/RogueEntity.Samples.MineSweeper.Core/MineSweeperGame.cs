@@ -2,6 +2,7 @@
 using RogueEntity.Api.Services;
 using RogueEntity.Api.Time;
 using RogueEntity.Core.Infrastructure.Randomness;
+using RogueEntity.Core.Inputs.Commands;
 using RogueEntity.Core.Meta.EntityKeys;
 using RogueEntity.Core.Runtime;
 using RogueEntity.Samples.MineSweeper.Core.Commands;
@@ -21,7 +22,7 @@ namespace RogueEntity.Samples.MineSweeper.Core
         DefaultRandomGeneratorSource randomGeneratorSource;
 
         public MineSweeperGameParameterService GameParameterService { get; }
-        public MineSweeperCommandService<ActorReference> CommandService { get; private set; }
+        public BasicCommandService<ActorReference> CommandService { get; private set; }
 
         public MineSweeperGame(): base("MineSweeper")
         {
@@ -32,7 +33,7 @@ namespace RogueEntity.Samples.MineSweeper.Core
 
         void OnGameInitialized(object sender, EventArgs e)
         {
-            CommandService = ServiceResolver.Resolve<MineSweeperCommandService<ActorReference>>();
+            CommandService = ServiceResolver.Resolve<BasicCommandService<ActorReference>>();
         }
 
         protected override void InitializeServices(IServiceResolver serviceResolver)

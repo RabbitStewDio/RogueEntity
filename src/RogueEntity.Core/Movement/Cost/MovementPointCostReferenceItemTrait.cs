@@ -5,11 +5,12 @@ using RogueEntity.Api.Utils;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Movement.MovementModes;
 using RogueEntity.Core.Positioning.Algorithms;
+using System;
 
 namespace RogueEntity.Core.Movement.Cost
 {
     public class MovementPointCostReferenceItemTrait< TActorId, TMovementMode> : SimpleReferenceItemComponentTraitBase< TActorId, MovementPointCost<TMovementMode>>,
-                                                                                              IItemComponentInformationTrait< TActorId, MovementCost>
+                                                                                 IMovementCostTrait<TActorId>
         where TActorId : IEntityKey
         where TMovementMode : IMovementMode
     {

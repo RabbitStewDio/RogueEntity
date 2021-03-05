@@ -13,22 +13,26 @@ namespace RogueEntity.Core.Infrastructure.GameLoops
     /// <summary>
     ///   This game loop keeps ticking even if the user does not perform any
     ///   actions. This behaviour is similar to Unity and other game engines.
+    ///   On each update a variable number of fixed-update steps will be
+    ///   executed depending on the time passed since the last update.
     /// </summary>
     public class RealTimeGameLoop : ITimeSource, IGameLoop
     {
         /// <summary>
-        ///   An optional time span defining how much simulated time passes on each fixed step.
+        ///   An optional initial value for how much fixed step time has
+        ///   passed. Can be used to initialize the game loop to a previous
+        ///   state.
         /// </summary>
         readonly Optional<TimeSpan> gameFixedTimeStep;
 
         readonly ILogger logger = SLog.ForContext<RealTimeGameLoop>();
 
         readonly GameTimeProcessor timeProcessor;
-        
+
         TimeSpan fixedTimeUpdateTargetTime;
         TimeSpan fixedTimeUpdateHandledTime;
 
-        public RealTimeGameLoop(int fps = 60, Optional<TimeSpan> gameFixedTimeStep = default)
+        public RealTimeGameLoop(double fps = 60, Optional<TimeSpan> gameFixedTimeStep = default)
         {
             this.gameFixedTimeStep = gameFixedTimeStep;
             timeProcessor = GameTimeProcessor.WithFramesPerSecond(fps);
@@ -50,9 +54,11 @@ namespace RogueEntity.Core.Infrastructure.GameLoops
 
         public bool IsRunning { get; private set; }
 
-        public TimeSpan CurrentTime => TimeState.TotalGameTimeElapsed;
+        public double TicksPerSecond => timeProcessor.TicksPerSecond;
+        
+        public TimeSpan CurrentTime => timeState.TotalGameTimeElapsed;
 
-        public int FixedStepTime => TimeState.FixedStepCount;
+        public int FixedStepTime => timeState.FixedStepCount;
 
         /// <summary>
         ///   A global set of handlers that runs once at the start of  each new game.
@@ -94,11 +100,11 @@ namespace RogueEntity.Core.Infrastructure.GameLoops
 
             if (gameFixedTimeStep.TryGetValue(out var ts))
             {
-                TimeState = new GameTimeState(ts);
+                timeState = new GameTimeState(ts);
             }
             else
             {
-                TimeState = new GameTimeState(timeProcessor.TimeStepDuration);
+                timeState = new GameTimeState(timeProcessor.TimeStepDuration);
             }
 
             fixedTimeUpdateTargetTime = TimeSpan.Zero;
@@ -112,9 +118,9 @@ namespace RogueEntity.Core.Infrastructure.GameLoops
 
         public void Stop()
         {
-            if (!IsRunning) 
+            if (!IsRunning)
                 return;
-            
+
             IsRunning = false;
             for (var i = DisposeStepHandlers.Count - 1; i >= 0; i--)
             {
@@ -151,7 +157,7 @@ namespace RogueEntity.Core.Infrastructure.GameLoops
 
             if (!IsWaitingForInput())
             {
-                var fixedSteps = timeProcessor.ComputeFixedStepCount(TimeState, absoluteTime,
+                var fixedSteps = timeProcessor.ComputeFixedStepCount(timeState, absoluteTime,
                                                                      ref fixedTimeUpdateHandledTime,
                                                                      ref fixedTimeUpdateTargetTime);
                 using (LogContext.PushProperty("GameLoop.Activity", "FixedTimeStep"))
@@ -160,7 +166,7 @@ namespace RogueEntity.Core.Infrastructure.GameLoops
                     {
                         var w2 = Stopwatch.StartNew();
 
-                        TimeState = GameTimeProcessor.NextFixedStep(TimeState);
+                        timeState = GameTimeProcessor.NextFixedStep(timeState);
                         foreach (var handler in PreFixedStepHandlers)
                         {
                             using (LogContext.PushProperty("GameLoop.Time", w2.Elapsed.TotalMilliseconds))
@@ -169,7 +175,7 @@ namespace RogueEntity.Core.Infrastructure.GameLoops
                             }
                         }
 
-                        FixStepProgress?.Invoke(this, new WorldStepEventArgs(TimeState));
+                        FixStepProgress?.Invoke(this, new WorldStepEventArgs(timeState));
 
                         foreach (var handler in FixedStepHandlers)
                         {
@@ -191,8 +197,15 @@ namespace RogueEntity.Core.Infrastructure.GameLoops
                     }
                 }
             }
+            else
+            {
+                var fixedSteps = timeProcessor.ComputeFixedStepCount(timeState, absoluteTime,
+                                                                     ref fixedTimeUpdateHandledTime,
+                                                                     ref fixedTimeUpdateTargetTime);
+                logger.Verbose("Skipping {FixedStepCount} fixed update frames due to waiting for input", fixedSteps);
+            }
 
-            TimeState = timeProcessor.AdvanceFrameTimeOnly(TimeState, absoluteTime);
+            timeState = timeProcessor.AdvanceFrameTimeOnly(timeState, absoluteTime);
 
             using (LogContext.PushProperty("GameLoop.Activity", "VariableTimeStep"))
             {
@@ -204,7 +217,7 @@ namespace RogueEntity.Core.Infrastructure.GameLoops
                     }
                 }
 
-                VariableStepProgress?.Invoke(this, new WorldStepEventArgs(TimeState));
+                VariableStepProgress?.Invoke(this, new WorldStepEventArgs(timeState));
 
                 foreach (var stepHandler in LateVariableStepHandlers)
                 {
@@ -218,6 +231,8 @@ namespace RogueEntity.Core.Infrastructure.GameLoops
             logger.Verbose("Finished Update at {Elapsed} ({ElapsedTotalMilliseconds})", w.Elapsed, w.Elapsed.TotalMilliseconds);
         }
 
-        public GameTimeState TimeState { get; private set; }
+        GameTimeState timeState;
+
+        public ref readonly GameTimeState TimeState => ref timeState;
     }
 }

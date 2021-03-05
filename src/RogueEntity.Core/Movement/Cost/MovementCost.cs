@@ -31,7 +31,8 @@ namespace RogueEntity.Core.Movement.Cost
         public readonly DistanceCalculation MovementStyle;
 
         /// <summary>
-        ///   A movement cost indicator as fixed point number. (16/16 split) 
+        ///   An abstract movement cost indicator. This should only ever serve as a weight when
+        ///   performing path-finding. 
         /// </summary>
         [DataMember(Order = 2)]
         [Key(2)]

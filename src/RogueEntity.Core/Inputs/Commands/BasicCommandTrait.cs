@@ -17,7 +17,7 @@ namespace RogueEntity.Core.Inputs.Commands
     {
         readonly ICommandHandler<TActorId, TCommand> handler;
 
-        public BasicCommandTrait(ICommandHandler<TActorId, TCommand> handler = null, 
+        public BasicCommandTrait(ICommandHandler<TActorId, TCommand> handler = null,
                                  int priority = 100) : base(CreateDefaultId(), priority)
         {
             this.handler = handler ?? AllowAllCommandHandler<TActorId, TCommand>.Instance;
@@ -29,8 +29,7 @@ namespace RogueEntity.Core.Inputs.Commands
         }
 
         public BasicCommandTrait(ItemTraitId id, int priority = 100) : base(id, priority)
-        {
-        }
+        { }
 
         protected override Optional<TCommand> CreateInitialValue(TActorId reference)
         {
@@ -39,7 +38,7 @@ namespace RogueEntity.Core.Inputs.Commands
 
         public override IEnumerable<EntityRoleInstance> GetEntityRoles()
         {
-            yield break; // todo: Return command receiver roles
+            yield return CommandsModule.CommandExecutorRole.Instantiate<TActorId>();
         }
 
         public bool CanHandle<TQueryCommand>()
@@ -55,6 +54,18 @@ namespace RogueEntity.Core.Inputs.Commands
         public bool IsCommandValidForState(TActorId actor, TCommand cmd)
         {
             return handler.IsCommandValidForState(actor, cmd);
+        }
+
+        public bool TryActionOn<TResult>(IItemResolver<TActorId> r, TActorId k, ICommandLift<TActorId, TResult> lifter, out TResult result)
+        {
+            if (r.TryQueryData(k, out TCommand cmd))
+            {
+                result = lifter.PerformCommandAction(k, cmd);
+                return true;
+            }
+
+            result = default;
+            return false;
         }
     }
 }

@@ -8,8 +8,8 @@ using RogueEntity.Core.Positioning.Algorithms;
 
 namespace RogueEntity.Core.Movement.Cost
 {
-    public class MovementVelocityReferenceItemTrait< TActorId, TMovementMode> : SimpleReferenceItemComponentTraitBase< TActorId, MovementVelocity<TMovementMode>>,
-                                                                                             IItemComponentInformationTrait< TActorId, MovementCost>
+    public class MovementVelocityReferenceItemTrait<TActorId, TMovementMode> : SimpleReferenceItemComponentTraitBase<TActorId, MovementVelocity<TMovementMode>>,
+                                                                               IMovementCostTrait<TActorId>
         where TActorId : IEntityKey
         where TMovementMode : IMovementMode
     {
@@ -35,9 +35,9 @@ namespace RogueEntity.Core.Movement.Cost
             return new MovementVelocity<TMovementMode>(standardMovementCost);
         }
 
-        public bool TryQuery(IEntityViewControl<TActorId> v,  TActorId k, out MovementCost t)
+        public bool TryQuery(IEntityViewControl<TActorId> v, TActorId k, out MovementCost t)
         {
-            if (TryQuery(v,  k, out MovementVelocity<TMovementMode> pointCost) && pointCost.Velocity > 0)
+            if (TryQuery(v, k, out MovementVelocity<TMovementMode> pointCost) && pointCost.Velocity > 0)
             {
                 t = new MovementCost(movementMode, movementStyle, 1 / pointCost.Velocity, movementModePreference);
                 return true;
@@ -47,7 +47,7 @@ namespace RogueEntity.Core.Movement.Cost
             return false;
         }
 
-        protected override bool ValidateData(IEntityViewControl<TActorId> entityViewControl,  in TActorId itemReference, in MovementVelocity<TMovementMode> data)
+        protected override bool ValidateData(IEntityViewControl<TActorId> entityViewControl, in TActorId itemReference, in MovementVelocity<TMovementMode> data)
         {
             return data.Velocity > 0;
         }

@@ -13,16 +13,16 @@ using RogueEntity.Core.Tests.Meta.Items;
 namespace RogueEntity.Core.Tests.Movement.Cost
 {
     [TestFixture]
-    public class PathfindingMovementCostFactorsTraitTest : ItemComponentInformationTraitTestBase<ItemReference, PathfindingMovementCostFactors,
-        PathfindingMovementCostFactorsTrait<ItemReference>>
+    public class PathfindingMovementCostFactorsTraitTest : ItemComponentInformationTraitTestBase<ItemReference, AggregateMovementCostFactors,
+        AggregateMovementCostFactorsTrait<ItemReference>>
     {
         public PathfindingMovementCostFactorsTraitTest() : base(new ItemReferenceMetaData())
         {
         }
 
-        protected override IItemComponentTestDataFactory<PathfindingMovementCostFactors> ProduceTestData(EntityRelations<ItemReference> relations)
+        protected override IItemComponentTestDataFactory<AggregateMovementCostFactors> ProduceTestData(EntityRelations<ItemReference> relations)
         {
-            return new ItemComponentTestDataFactory<PathfindingMovementCostFactors>(new PathfindingMovementCostFactors(new List<MovementCost>()
+            return new ItemComponentTestDataFactory<AggregateMovementCostFactors>(new AggregateMovementCostFactors(new List<MovementCost>()
             {
                 new MovementCost(WalkingMovement.Instance, DistanceCalculation.Chebyshev, 10)
             }));
@@ -33,9 +33,9 @@ namespace RogueEntity.Core.Tests.Movement.Cost
             EntityRegistry.RegisterNonConstructable<MovementPointCost<WalkingMovement>>();
         }
 
-        protected override PathfindingMovementCostFactorsTrait<ItemReference> CreateTrait()
+        protected override AggregateMovementCostFactorsTrait<ItemReference> CreateTrait()
         {
-            return new PathfindingMovementCostFactorsTrait<ItemReference>();
+            return new AggregateMovementCostFactorsTrait<ItemReference>();
         }
 
         protected override BulkItemDeclaration<ItemReference> CreateBulkItemDeclaration(IBulkItemTrait<ItemReference> bulkTrait)
@@ -64,9 +64,9 @@ namespace RogueEntity.Core.Tests.Movement.Cost
             );
 
             var item = ItemResolver.Instantiate("Blah");
-            ItemResolver.TryQueryData(item, out PathfindingMovementCostFactors factors).Should().BeTrue();
+            ItemResolver.TryQueryData(item, out AggregateMovementCostFactors factors).Should().BeTrue();
             factors.Should()
-                   .Be(new PathfindingMovementCostFactors(new List<MovementCost>()
+                   .Be(new AggregateMovementCostFactors(new List<MovementCost>()
                    {
                        new MovementCost(SwimmingMovement.Instance, DistanceCalculation.Manhattan, 10),
                        new MovementCost(WalkingMovement.Instance, DistanceCalculation.Euclid, 10, 10),

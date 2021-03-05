@@ -5,13 +5,15 @@ namespace RogueEntity.Core.Infrastructure.GameLoops
 {
     public class GameTimeProcessor
     {
-        public TimeSpan TimeStepDuration { get; set; }
+        public TimeSpan TimeStepDuration { get; }
+        public double TicksPerSecond { get; }
 
-        public GameTimeProcessor(float timeStepDuration = 1 / 60f)
+        public GameTimeProcessor(double timeStepDuration = 1 / 60f)
         {
             TimeStepDuration = TimeSpan.FromSeconds(timeStepDuration);
             if (TimeStepDuration.Ticks <= 0)
                 throw new ArgumentException("Cannot use negative time.");
+            TicksPerSecond = 1000 / TimeStepDuration.TotalMilliseconds;
         }
 
         public GameTimeProcessor(TimeSpan timeStepDuration)
@@ -22,7 +24,7 @@ namespace RogueEntity.Core.Infrastructure.GameLoops
             TimeStepDuration = timeStepDuration;
         }
 
-        public int ComputeFixedStepCount(GameTimeState start,
+        public int ComputeFixedStepCount(in GameTimeState start,
                                          TimeSpan absoluteTime,
                                          ref TimeSpan fixedUpdateHandledTime,
                                          ref TimeSpan fixedUpdateTargetTime)
@@ -40,7 +42,7 @@ namespace RogueEntity.Core.Infrastructure.GameLoops
             return fc;
         }
 
-        public GameTimeState AdvanceFrameTimeOnly(GameTimeState start, TimeSpan absoluteTime)
+        public GameTimeState AdvanceFrameTimeOnly(in GameTimeState start, TimeSpan absoluteTime)
         {
             var endTime = absoluteTime;
             var currentFixed = start.FixedGameTimeElapsed;
@@ -52,7 +54,7 @@ namespace RogueEntity.Core.Infrastructure.GameLoops
             return endState;
         }
 
-        public static GameTimeState NextFixedStep(GameTimeState previousState)
+        public static GameTimeState NextFixedStep(in GameTimeState previousState)
         {
             var state = new GameTimeState(previousState.FixedStepCount + 1,
                                           previousState.FixedGameTimeElapsed + previousState.FixedDeltaTime,
@@ -61,7 +63,7 @@ namespace RogueEntity.Core.Infrastructure.GameLoops
             return state;
         }
 
-        public static GameTimeProcessor WithFramesPerSecond(int frames)
+        public static GameTimeProcessor WithFramesPerSecond(double frames)
         {
             if (frames <= 0)
             {

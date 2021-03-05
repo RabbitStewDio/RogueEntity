@@ -98,7 +98,7 @@ namespace RogueEntity.Core.Tests.Movement.Pathfinding
             var targetPosition = EntityGridPosition.OfRaw(0, tx, ty);
             var pf = pfs.GetPathFinder()
                         .WithTarget(new DefaultPathFinderTargetEvaluator().WithTargetPosition(targetPosition))
-                        .Build(new PathfindingMovementCostFactors(new MovementCost(WalkingMovement.Instance, DistanceCalculation.Euclid, 1)));
+                        .Build(new AggregateMovementCostFactors(new MovementCost(WalkingMovement.Instance, DistanceCalculation.Euclid, 1)));
 
             var result = pf.TryFindPath(startPosition, out var resultPath);
             result.Should().Be(PathFinderResult.Found);

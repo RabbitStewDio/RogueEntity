@@ -1,6 +1,7 @@
 ﻿using EnTTSharp.Entities;
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Api.Utils;
+using RogueEntity.Core.Inputs.Commands;
 using RogueEntity.Core.Positioning.Algorithms;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Sensing.Discovery;
@@ -102,6 +103,7 @@ namespace RogueEntity.Samples.MineSweeper.Core.Commands
             finally
             {
                 v.RemoveComponent<RevealMapPositionCommand>(k);
+                v.RemoveComponent<CommandInProgress>(k);
             }
         }
 

@@ -1,5 +1,6 @@
 ﻿using EnTTSharp.Entities;
 using RogueEntity.Api.ItemTraits;
+using RogueEntity.Core.Inputs.Commands;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Generator;
@@ -62,6 +63,7 @@ namespace RogueEntity.Samples.MineSweeper.Core.Commands
             finally
             {
                 v.RemoveComponent<ToggleFlagCommand>(k);
+                v.RemoveComponent<CommandInProgress>(k);
             }
         }
     }

@@ -8,19 +8,19 @@ using RogueEntity.Core.Movement.MovementModes;
 
 namespace RogueEntity.Core.Movement.Cost
 {
-    public class PathfindingMovementCostFactorsTrait<TActorId> : IItemComponentInformationTrait<TActorId, PathfindingMovementCostFactors>,
-                                                                 IBulkItemTrait<TActorId>,
-                                                                 IReferenceItemTrait<TActorId>
+    public class AggregateMovementCostFactorsTrait<TActorId> : IItemComponentInformationTrait<TActorId, AggregateMovementCostFactors>,
+                                                               IBulkItemTrait<TActorId>,
+                                                               IReferenceItemTrait<TActorId>
         where TActorId : IEntityKey
     {
-        readonly BufferList<IItemComponentInformationTrait<TActorId, MovementCost>> sourceTraits;
+        readonly BufferList<IMovementCostTrait<TActorId>> sourceTraits;
         readonly List<MovementCost> movementCosts;
         bool movementCostsValid;
         bool traitsValid;
 
-        public PathfindingMovementCostFactorsTrait()
+        public AggregateMovementCostFactorsTrait()
         {
-            sourceTraits = new BufferList<IItemComponentInformationTrait<TActorId, MovementCost>>();
+            sourceTraits = new BufferList<IMovementCostTrait<TActorId>>();
             movementCosts = new List<MovementCost>();
         }
 
@@ -37,11 +37,11 @@ namespace RogueEntity.Core.Movement.Cost
             return Enumerable.Empty<EntityRelationInstance>();
         }
 
-        public bool TryQuery(IEntityViewControl<TActorId> v, TActorId k, out PathfindingMovementCostFactors t)
+        public bool TryQuery(IEntityViewControl<TActorId> v, TActorId k, out AggregateMovementCostFactors t)
         {
             if (movementCostsValid)
             {
-                t = new PathfindingMovementCostFactors(movementCosts);
+                t = new AggregateMovementCostFactors(movementCosts);
                 return true;
             }
 
@@ -56,11 +56,11 @@ namespace RogueEntity.Core.Movement.Cost
 
             movementCosts.Sort();
             movementCostsValid = true;
-            t = new PathfindingMovementCostFactors(movementCosts);
+            t = new AggregateMovementCostFactors(movementCosts);
             return movementCosts.Count > 0;
         }
 
-        PathfindingMovementCostFactorsTrait<TActorId> CreateInstance() => new PathfindingMovementCostFactorsTrait<TActorId>();
+        AggregateMovementCostFactorsTrait<TActorId> CreateInstance() => new AggregateMovementCostFactorsTrait<TActorId>();
 
         public TActorId Initialize(IItemDeclaration item, TActorId reference)
         {

@@ -3,15 +3,23 @@ using RogueEntity.Api.ItemTraits;
 
 namespace RogueEntity.Core.Inputs.Commands
 {
-    public interface ICommandTrait: IItemTrait
+    public interface ICommandLift<TActorId, TResult>
+    {
+        TResult PerformCommandAction<TCommand>(TActorId k, TCommand cmd);
+    }
+
+    public interface ICommandTrait<TActorId> : IItemTrait
+        where TActorId : IEntityKey
     {
         bool CanHandle<TCommand>();
+
+        bool TryActionOn<TResult>(IItemResolver<TActorId> r, TActorId k, ICommandLift<TActorId, TResult> lifter, out TResult result);
     }
-    
-    public interface ICommandTrait<TActor, TCommand>: ICommandTrait
-        where TActor : IEntityKey
+
+    public interface ICommandTrait<TActorId, TCommand> : ICommandTrait<TActorId>
+        where TActorId : IEntityKey
     {
-        bool IsCommandValidForState(TActor actor);
-        bool IsCommandValidForState(TActor actor, TCommand cmd);
+        bool IsCommandValidForState(TActorId actor);
+        bool IsCommandValidForState(TActorId actor, TCommand cmd);
     }
 }

@@ -4,11 +4,12 @@ using RogueEntity.Api.ItemTraits;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Movement.MovementModes;
 using RogueEntity.Core.Positioning.Algorithms;
+using System;
 
 namespace RogueEntity.Core.Movement.Cost
 {
     public class MovementPointCostBulkItemTrait< TActorId, TMovementMode> : SimpleBulkItemComponentTraitBase< TActorId, MovementPointCost<TMovementMode>>,
-                                                                                         IItemComponentInformationTrait< TActorId, MovementCost>
+                                                                            IMovementCostTrait<TActorId>
         where TActorId : IBulkDataStorageKey<TActorId>
         where TMovementMode : IMovementMode
     {

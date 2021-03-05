@@ -88,7 +88,7 @@ namespace RogueEntity.Benchmarks
         {
             using (var pf = pathfinderSource.GetPathFinder()
                                             .WithTarget(new DefaultPathFinderTargetEvaluator().WithTargetPosition(EntityGridPosition.OfRaw(0, 0, 11)))
-                                            .Build(new PathfindingMovementCostFactors(new MovementCost(WalkingMovement.Instance, DistanceCalculation.Euclid, 1))))
+                                            .Build(new AggregateMovementCostFactors(new MovementCost(WalkingMovement.Instance, DistanceCalculation.Euclid, 1))))
             {
                 var result = pf.TryFindPath(EntityGridPosition.OfRaw(0, 0, 9), out _);
                 if (result != PathFinderResult.Found)
@@ -115,7 +115,7 @@ namespace RogueEntity.Benchmarks
 
                 using (var pf = pathfinderSource.GetPathFinder()
                                    .WithTarget(new DefaultPathFinderTargetEvaluator().WithTargetPosition(targetPosition))
-                                   .Build(new PathfindingMovementCostFactors(new MovementCost(WalkingMovement.Instance, DistanceCalculation.Euclid, 1))))
+                                   .Build(new AggregateMovementCostFactors(new MovementCost(WalkingMovement.Instance, DistanceCalculation.Euclid, 1))))
                 {
                     pf.TryFindPath(startPosition, out _);
                     // Console.WriteLine($"{i} = From {startPosition} to {targetPosition} = {result} + {string.Join(", ", resultPath.Select(e => e.Item1))}");

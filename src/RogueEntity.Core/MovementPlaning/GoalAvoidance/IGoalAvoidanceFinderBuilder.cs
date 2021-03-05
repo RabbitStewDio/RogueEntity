@@ -11,7 +11,7 @@ namespace RogueEntity.Core.MovementPlaning.GoalAvoidance
         IGoalFinderBuilder WithGoal<TGoal>()
             where TGoal : IGoal;
 
-        public IGoalAvoidanceFinder Build(in PathfindingMovementCostFactors movementProfile);
+        public IGoalAvoidanceFinder Build(in AggregateMovementCostFactors movementProfile);
 
     }
 }
