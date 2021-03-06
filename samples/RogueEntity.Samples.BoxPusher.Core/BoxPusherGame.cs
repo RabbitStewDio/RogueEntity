@@ -2,6 +2,7 @@ using RogueEntity.Api.ItemTraits;
 using RogueEntity.Api.Services;
 using RogueEntity.Api.Time;
 using RogueEntity.Core.Infrastructure.Randomness;
+using RogueEntity.Core.Inputs.Commands;
 using RogueEntity.Core.MapLoading;
 using RogueEntity.Core.Meta.EntityKeys;
 using RogueEntity.Core.Players;
@@ -23,6 +24,7 @@ namespace RogueEntity.Samples.BoxPusher.Core
 
         public IPlayerProfileManager<BoxPusherPlayerProfile> ProfileManager { get; private set; }
         public IMapRegionLoaderService<int> LevelLoader { get; private set; }
+        public BasicCommandService<ActorReference> CommandService { get; private set; }
         IItemResolver<ActorReference> actorResolver;
 
         public BoxPusherGame(IStorageLocationService storageLocations): base("BoxPusher")
@@ -36,9 +38,10 @@ namespace RogueEntity.Samples.BoxPusher.Core
         {
             ProfileManager = ServiceResolver.Resolve<IPlayerProfileManager<BoxPusherPlayerProfile>>();
             LevelLoader = ServiceResolver.Resolve<IMapRegionLoaderService<int>>();
+            CommandService = ServiceResolver.Resolve<BasicCommandService<ActorReference>>();
             actorResolver = ServiceResolver.Resolve<IItemResolver<ActorReference>>();
         }
-
+        
         public override bool IsBlockedOrWaitingForInput()
         {
             if (LevelLoader.IsBlocked())

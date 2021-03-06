@@ -4,7 +4,6 @@ using RogueEntity.Api.ItemTraits;
 using RogueEntity.Api.Time;
 using RogueEntity.Core.Inputs.Commands;
 using RogueEntity.Core.Movement.Cost;
-using RogueEntity.Core.Players;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Algorithms;
 using RogueEntity.Core.Positioning.Grid;
@@ -15,12 +14,12 @@ namespace RogueEntity.Core.Movement.GridMovement
     public class GridMoveCommandSystem<TActorId>
         where TActorId : IEntityKey
     {
-        protected readonly ITimeSource Timer;
+        protected readonly Lazy<ITimeSource> Timer;
         protected readonly IItemPlacementService<TActorId> PlacementService;
         protected readonly GridStepMovementService<TActorId> MovementService;
 
 
-        public GridMoveCommandSystem([NotNull] ITimeSource timer,
+        public GridMoveCommandSystem([NotNull] Lazy<ITimeSource> timer,
                                      [NotNull] IItemResolver<TActorId> actorResolver,
                                      [NotNull] IMovementDataProvider movementDataProvider,
                                      [NotNull] IItemPlacementService<TActorId> placementService)
@@ -32,7 +31,6 @@ namespace RogueEntity.Core.Movement.GridMovement
 
         public void ProcessMovement(IEntityViewControl<TActorId> v,
                                     TActorId k,
-                                    in PlayerObserverTag observer,
                                     in EntityGridPosition position,
                                     ref CommandInProgress progressIndicator,
                                     ref GridMoveCommand cmd)
@@ -64,7 +62,7 @@ namespace RogueEntity.Core.Movement.GridMovement
 
             if (cmd.FinishTime.TryGetValue(out var turn))
             {
-                if (Timer.CurrentTime >= turn)
+                if (Timer.Value.CurrentTime >= turn)
                 {
                     progressIndicator = progressIndicator.MarkHandled();
                 }
@@ -87,29 +85,37 @@ namespace RogueEntity.Core.Movement.GridMovement
                 return;
             }
 
-            if (!TryPerformMove(v, k, position, moveTarget, movementCost))
+            // we have: movement mode, total movement cost, we need the time the movement will be finished.
+            var distance = movementCost.MovementStyle.Calculate(position, moveTarget);
+            var velocity = movementCost.ToMeterPerSecond(Timer.Value.TimeSourceDefinition);
+            var expectedMovementTime = TimeSpan.FromSeconds(distance / velocity);
+
+            if (!TryPerformMove(v, k, position, moveTarget, movementCost, expectedMovementTime))
             {
                 progressIndicator = progressIndicator.MarkHandled();
                 return;
             }
 
-            // we have: movement mode, total movement cost, we need the time the movement will be finished.
-            var distance = movementCost.MovementStyle.Calculate(position, moveTarget);
-            var velocity = movementCost.ToMeterPerSecond(Timer.TimeSourceDefinition);
-            cmd = cmd.WithFinishTime(movementCost.MovementMode, Timer.CurrentTime.Add(TimeSpan.FromSeconds(distance / velocity)));
+            cmd = cmd.WithFinishTime(movementCost.MovementMode, Timer.Value.CurrentTime.Add(expectedMovementTime));
         }
 
         protected virtual bool TryPerformMove(IEntityViewControl<TActorId> v,
                                               TActorId k,
                                               in EntityGridPosition position,
                                               in EntityGridPosition targetPosition,
-                                              in MovementCost movementCost)
+                                              in MovementCost movementCost,
+                                              in TimeSpan expectedMovementDuration)
         {
             if (!PlacementService.TryMoveItem(k, position, targetPosition))
             {
                 // unable to actually move the actor to its new position.
                 return false;
             }
+
+            v.AssignOrReplace(k, new MovementIntent(Timer.Value.CurrentTime,
+                                                    expectedMovementDuration.TotalSeconds,
+                                                    Position.From(position),
+                                                    Position.From(targetPosition)));
 
             return true;
         }

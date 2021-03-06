@@ -8,14 +8,6 @@ using RogueEntity.Core.Players;
 
 namespace RogueEntity.Core.Inputs.Commands
 {
-    public static class CommandRoles
-    {
-        public static EntityRole CreateRoleFor<TCommand>(CommandType<TCommand> cmd)
-        {
-            return new EntityRole("Role.Core.Inputs.Commands.Executor[]");
-        }
-    }
-
     public class CommandsModule : ModuleBase
     {
         public const string ModuleId = "Core.Inputs.Commands";
@@ -46,7 +38,7 @@ namespace RogueEntity.Core.Inputs.Commands
         {
             var entityContext = initializer.DeclareEntityContext<TActorId>();
             entityContext.Register(RegisterEntitiesSystemId, 20_000, RegisterCommandComponents);
-            entityContext.Register(RegisterEntitiesSystemId, 1_000_000, RegisterClearExpiredCommandsSystem);
+            entityContext.Register(ClearCommandsSystemId, 1_000_000, RegisterClearExpiredCommandsSystem);
         }
 
         void RegisterClearExpiredCommandsSystem<TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter,

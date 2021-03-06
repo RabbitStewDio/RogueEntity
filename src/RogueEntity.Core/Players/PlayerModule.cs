@@ -30,9 +30,9 @@ namespace RogueEntity.Core.Players
         public static readonly EntitySystemId PlayerComponentsId = "Entities.Core.Player";
         public static readonly EntitySystemId PlayerObserverComponentsId = "Entities.Core.PlayerObserver";
         public static readonly EntitySystemId PlayerSpawnPointComponentsId = "Entities.Core.PlayerSpawnPoint";
-        public static readonly EntitySystemId RegisterPlayerServiceId = "Systems.Core.Player.RegisterPlayerService";
-        public static readonly EntitySystemId RegisterPlayerObserverRefreshGridId = "Systems.Core.Player.RefreshObservers.Grid";
-        public static readonly EntitySystemId RegisterPlayerObserverRefreshContinuousId = "Systems.Core.Player.RefreshObservers.Continuous";
+        public static readonly EntitySystemId RegisterPlayerServiceId = "System.Core.Player.RegisterPlayerService";
+        public static readonly EntitySystemId RegisterPlayerObserverRefreshGridId = "System.Core.Player.RefreshObservers.Grid";
+        public static readonly EntitySystemId RegisterPlayerObserverRefreshContinuousId = "System.Core.Player.RefreshObservers.Continuous";
 
         public PlayerModule()
         {

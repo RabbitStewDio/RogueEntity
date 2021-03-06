@@ -73,8 +73,8 @@ namespace RogueEntity.Samples.BoxPusher.MonoGame
             mapConsole = new Console(parentContext.ScreenBounds.Width / 2, parentContext.ScreenBounds.Height / 2);
             mapConsole.Font = mapConsole.Font.Master.GetFont(Font.FontSizes.Two); 
             mapConsole.Components.Add(new BoxPusherMouseHandler(game, sharedUIState));
-            mapConsole.Components.Add(new BoxPusherMapDrawHandler(game, sharedUIState));
             mapConsole.Components.Add(new BoxPusherKeyboardHandler(game, sharedUIState));
+            mapConsole.Components.Add(new BoxPusherMapDrawHandler(game, sharedUIState));
             Console.Children.Add(mapConsole);
 
             uiContext = new BoxPusherGameUIContext(game);
