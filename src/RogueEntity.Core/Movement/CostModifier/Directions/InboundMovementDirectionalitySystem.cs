@@ -1,7 +1,10 @@
 using RogueEntity.Core.Directionality;
+using RogueEntity.Core.GridProcessing.LayerAggregation;
+using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Algorithms;
 using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.DataViews;
+using System;
 
 namespace RogueEntity.Core.Movement.CostModifier.Directions
 {
@@ -9,11 +12,35 @@ namespace RogueEntity.Core.Movement.CostModifier.Directions
     ///   Calculates the acceptable inbound movements into a given cell.
     /// </summary>
     /// <typeparam name="TMovementMode"></typeparam>
-    public sealed class InboundMovementDirectionalitySystem<TMovementMode> : AdjacencyGridTransformSystem<float>, IInboundMovementDirectionView<TMovementMode>
+    public sealed class InboundMovementDirectionalitySystem<TMovementMode> : AdjacencyGridTransformSystem<float>, 
+                                                                             IInboundMovementDirectionView<TMovementMode>,
+                                                                             IDisposable
     {
+        readonly IAggregationCacheControl cacheControl;
+
         public InboundMovementDirectionalitySystem(IReadOnlyDynamicDataView3D<float> sourceData,
+                                                   IAggregationCacheControl cacheControl = null,
                                                    AdjacencyRule adjacencyRule = AdjacencyRule.EightWay) : base(sourceData, adjacencyRule)
-        { }
+        {
+            this.cacheControl = cacheControl;
+            if (this.cacheControl != null)
+            {
+                this.cacheControl.PositionDirty += OnPositionDirty;
+            }
+        }
+
+        public void Dispose()
+        {
+            if (this.cacheControl != null)
+            {
+                this.cacheControl.PositionDirty -= OnPositionDirty;
+            }
+        }
+        
+        void OnPositionDirty(object sender, PositionDirtyEventArgs e)
+        {
+            MarkDirty(e);
+        }
 
         public void ProcessSystem() => Process();
 

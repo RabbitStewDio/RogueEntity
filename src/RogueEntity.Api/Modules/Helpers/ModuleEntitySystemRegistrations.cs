@@ -42,10 +42,20 @@ namespace RogueEntity.Api.Modules.Helpers
             contextPattern = "#";
         }
 
-        public void EnterContext<TEntity>(IEntitySystemDeclaration<TEntity> d)
+        public void EnterEntityContext<TEntity>(IEntitySystemDeclaration<TEntity> d)
             where TEntity : IEntityKey
         {
-            Logger.Debug("Processing entity system {SystemId} in module {ModuleId} for {EntityId}", d.Id, d.DeclaringModule, typeof(TEntity));
+            Logger.Debug("{Order} - Processing entity system {SystemId} in module {ModuleId} for {EntityId}", 
+                         d.InsertionOrder,d.Id, d.DeclaringModule, typeof(TEntity));
+            CurrentSystem = d;
+            contextPattern = typeof(TEntity).Name;
+        }
+
+        public void EnterActionContext<TEntity>(IEntitySystemDeclaration<TEntity> d)
+            where TEntity : IEntityKey
+        {
+            Logger.Debug("{Order} - Processing action system {SystemId} in module {ModuleId} for {EntityId}", 
+                         d.InsertionOrder,d.Id, d.DeclaringModule, typeof(TEntity));
             CurrentSystem = d;
             contextPattern = typeof(TEntity).Name;
         }

@@ -79,6 +79,13 @@ namespace RogueEntity.Api.Modules.Initializers
                 {
                     foreach (var roleInitializer in CollectRelationInitializers<TEntityId>(targetType, currentModule, mi, relation))
                     {
+                        if (!mi.HasRole(relation.Subject))
+                        {
+                            Logger.Debug("Skipping module initializer {SourceHint} for entity {Entity} with non-subject relation {EntityRelation}", 
+                                         roleInitializer.SourceHint, typeof(TEntityId), relation);
+                            continue;
+                        }
+                        
                         if (IsValidRelation(roleInitializer, mi, relation))
                         {
                             Logger.Debug("Invoking module initializer {SourceHint} for entity {Entity} with relation {EntityRelation}", 

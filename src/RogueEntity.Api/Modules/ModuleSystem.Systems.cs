@@ -4,6 +4,7 @@ using EnTTSharp.Entities;
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Api.Modules.Helpers;
 using RogueEntity.Api.Services;
+using System;
 
 namespace RogueEntity.Api.Modules
 {
@@ -15,9 +16,10 @@ namespace RogueEntity.Api.Modules
             var globalSystems = CollectGlobalSystems(moduleInitializer);
             InitializeGlobalSystems(globalModuleEntityInformation, globalSystems);
 
+            var handler = new EntitySystemRegistrationHandler(globalModuleEntityInformation, serviceResolver, registrations);
             foreach (var entity in moduleInitializer.EntityInitializers)
             {
-                var handler = new EntitySystemRegistrationHandler(globalModuleEntityInformation, serviceResolver, registrations);
+                Console.WriteLine("Processing " + entity.entityType);
                 entity.callback(handler);
             }
 
@@ -93,7 +95,7 @@ namespace RogueEntity.Api.Modules
                 {
                     try
                     {
-                        registrations.EnterContext(system);
+                        registrations.EnterEntityContext(system);
                         system.EntityRegistration?.Invoke(mip, ctx.EntityRegistry);
                     }
                     finally
@@ -106,7 +108,7 @@ namespace RogueEntity.Api.Modules
                 {
                     try
                     {
-                        registrations.EnterContext(system);
+                        registrations.EnterActionContext(system);
                         system.EntitySystemRegistration?.Invoke(mip, registrations, ctx.EntityRegistry);
                     }
                     finally

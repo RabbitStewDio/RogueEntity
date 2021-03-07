@@ -1,7 +1,10 @@
 using RogueEntity.Core.Directionality;
+using RogueEntity.Core.GridProcessing.LayerAggregation;
+using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Algorithms;
 using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.DataViews;
+using System;
 
 namespace RogueEntity.Core.Movement.CostModifier.Directions
 {
@@ -9,11 +12,27 @@ namespace RogueEntity.Core.Movement.CostModifier.Directions
     ///   Calculates the acceptable outbound movements into a given cell.
     /// </summary>
     /// <typeparam name="TMovementMode"></typeparam>
-    public sealed class OutboundMovementDirectionalitySystem<TMovementMode> : AdjacencyGridTransformSystem<float>, IOutboundMovementDirectionView<TMovementMode>
+    public sealed class OutboundMovementDirectionalitySystem<TMovementMode> : AdjacencyGridTransformSystem<float>, 
+                                                                              IOutboundMovementDirectionView<TMovementMode>,
+                                                                              IDisposable
     {
+        readonly IAggregationCacheControl cacheControl;
+
         public OutboundMovementDirectionalitySystem(IReadOnlyDynamicDataView3D<float> sourceData,
-                                                      AdjacencyRule adjacencyRule = AdjacencyRule.EightWay) : base(sourceData, adjacencyRule)
-        { }
+                                                    IAggregationCacheControl cacheControl = null,
+                                                    AdjacencyRule adjacencyRule = AdjacencyRule.EightWay) : base(sourceData, adjacencyRule)
+        {
+            this.cacheControl = cacheControl;
+            if (cacheControl != null)
+            {
+                cacheControl.PositionDirty += OnPositionDirty;
+            }
+        }
+
+        void OnPositionDirty(object sender, PositionDirtyEventArgs e)
+        {
+            MarkDirty(e);
+        }
 
         public void ProcessSystem() => Process();
 
@@ -25,7 +44,7 @@ namespace RogueEntity.Core.Movement.CostModifier.Directions
             var c = d.ToCoordinates();
             var moveData = QueryMovementCost(in parameterData, pos.X + c.X, pos.Y + c.Y);
             var isMoveAllowed = moveData > 0;
-            
+
             if (!isMoveAllowed || d.IsCardinal())
             {
                 return isMoveAllowed;
@@ -57,6 +76,14 @@ namespace RogueEntity.Core.Movement.CostModifier.Directions
             }
 
             return moveData;
+        }
+
+        public void Dispose()
+        {
+            if (cacheControl != null)
+            {
+                cacheControl.PositionDirty -= OnPositionDirty;
+            }
         }
     }
 }

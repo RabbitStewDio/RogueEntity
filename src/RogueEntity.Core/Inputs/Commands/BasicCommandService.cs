@@ -1,6 +1,8 @@
 using EnTTSharp.Entities;
 using JetBrains.Annotations;
 using RogueEntity.Api.ItemTraits;
+using RogueEntity.Api.Utils;
+using Serilog;
 using System;
 
 namespace RogueEntity.Core.Inputs.Commands
@@ -8,6 +10,7 @@ namespace RogueEntity.Core.Inputs.Commands
     public class BasicCommandService<TActor>
         where TActor : IEntityKey
     {
+        static readonly ILogger Logger = SLog.ForContext<BasicCommandService<TActor>>();
         readonly IItemResolver<TActor> itemResolver;
 
         public BasicCommandService([NotNull] IItemResolver<TActor> itemResolver)
@@ -68,6 +71,7 @@ namespace RogueEntity.Core.Inputs.Commands
                 return false;
             }
 
+            Logger.Information("Submitted command {Command}", cmd);            
             return true;
         }
     }

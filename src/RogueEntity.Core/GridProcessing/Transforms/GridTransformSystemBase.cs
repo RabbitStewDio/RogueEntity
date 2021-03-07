@@ -40,14 +40,24 @@ namespace RogueEntity.Core.GridProcessing.Transforms
                     continue;
                 }
 
-                if (!TargetData.TryGetWritableView(zPosition, out var directionMap, DataViewCreateMode.CreateMissing))
+                // Check if this is a new layer. We'll first query without attempting to
+                // create a missing layer to detect whether we are reusing an existing 
+                // z-level. If that fails, we potentially have a new z-level we have not
+                // seen before. In that case, our dirty map wont contain any data, so we
+                // assume everything is dirty.
+                bool maybeGloballyDirty = false;
+                if (!TargetData.TryGetWritableView(zPosition, out var directionMap))
                 {
-                    continue;
+                    maybeGloballyDirty = true;
+                    if (!TargetData.TryGetWritableView(zPosition, out directionMap, DataViewCreateMode.CreateMissing))
+                    {
+                        continue;
+                    }
                 }
                 
                 foreach (var tile in sourceView.GetActiveTiles(activeTileBuffer))
                 {
-                    if (!dirtyMap.IsDirty(tile.X, tile.Y, zPosition))
+                    if (!maybeGloballyDirty && !dirtyMap.IsDirty(tile.X, tile.Y, zPosition))
                     {
                         continue;
                     }
@@ -62,11 +72,24 @@ namespace RogueEntity.Core.GridProcessing.Transforms
                 }
             }
 
+            foreach (var z in TargetData.GetActiveLayers(activeZLevelsBuffer))
+            {
+                if (sourceData.TryGetView(z, out _))
+                {
+                    continue;
+                }
+
+                // This view is no longer contained in the source, so we can remove it from
+                // here too.
+                TargetData.RemoveView(z);
+            }
+            
             if (processingParameterCache.Count == 0)
             {
                 return false;
             }
             
+            Console.WriteLine("Processing " + GetType().Name);
             var r = Parallel.ForEach(processingParameterCache, processTileDelegate);
             return r.IsCompleted;
         }

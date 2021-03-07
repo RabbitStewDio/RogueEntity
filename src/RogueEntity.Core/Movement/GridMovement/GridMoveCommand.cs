@@ -42,5 +42,10 @@ namespace RogueEntity.Core.Movement.GridMovement
 
             return new GridMoveCommand(MoveTo, Optional.ValueOf(mode), targetTurn);
         }
+
+        public override string ToString()
+        {
+            return $"GridMoveCommand({nameof(MoveTo)}: {MoveTo}, {nameof(FinishTime)}: {FinishTime}, {nameof(MovementMode)}: {MovementMode})";
+        }
     }
 }

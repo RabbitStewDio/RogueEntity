@@ -4,11 +4,15 @@ using RogueEntity.Api.GameLoops;
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Api.Modules;
 using RogueEntity.Api.Modules.Attributes;
+using RogueEntity.Api.Time;
 using RogueEntity.Core.MapLoading;
 using RogueEntity.Core.Meta.EntityKeys;
+using RogueEntity.Core.Movement;
+using RogueEntity.Core.Movement.GridMovement;
 using RogueEntity.Core.Players;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Grid;
+using RogueEntity.Samples.BoxPusher.Core.Commands;
 using RogueEntity.Samples.BoxPusher.Core.ItemTraits;
 
 namespace RogueEntity.Samples.BoxPusher.Core
@@ -30,6 +34,8 @@ namespace RogueEntity.Samples.BoxPusher.Core
         static readonly EntitySystemId BoxPusherCollectTargetSpotsSystem = new EntitySystemId("System.BoxPusher.WinSystem.CollectTargetSpots");
         static readonly EntitySystemId BoxPusherCollectBoxesSystem = new EntitySystemId("System.BoxPusher.WinSystem.CollectBoxes");
         static readonly EntitySystemId BoxPusherFinalizeWinSystem = new EntitySystemId("System.BoxPusher.WinSystem.Finalize");
+        
+        static readonly EntitySystemId BoxPusherEnsureMoveSystem = new EntitySystemId("System.BoxPusher.MoveSystem.Create");
 
         public BoxPusherModule()
         {
@@ -37,6 +43,7 @@ namespace RogueEntity.Samples.BoxPusher.Core
 
             DeclareDependencies(ModuleDependency.Of(PositionModule.ModuleId),
                                 ModuleDependency.Of(PlayerModule.ModuleId),
+                                ModuleDependency.Of(GridMovementModule.ModuleId),
                                 ModuleDependency.Of(MapLoadingModule.ModuleId));
 
             DeclareRelation<ActorReference, ItemReference>(PlayerToBoxRelation);
@@ -79,6 +86,34 @@ namespace RogueEntity.Samples.BoxPusher.Core
             var ctx = initializer.DeclareEntityContext<TItemId>();
             ctx.Register(BoxPusherTargetSpotEntities, 40_000, RegisterTargetSpotEntities);
             ctx.Register(BoxPusherCollectTargetSpotsSystem, 40_005, RegisterTargetSpotWinConditionSystem);
+        }
+
+        [EntityRelationInitializer("Relation.BoxPusher.PlayerCountingBoxes")]
+        public void InitializePlayerBoxRelation<TActorId, TItemId>(in ModuleEntityInitializationParameter<TActorId> initParameter,
+                                                                   IModuleInitializer initializer,
+                                                                   EntityRelation r)
+            where TActorId : IEntityKey
+            where TItemId : IEntityKey
+        {
+
+            var ctx = initializer.DeclareEntityContext<TActorId>();
+            ctx.Register(BoxPusherEnsureMoveSystem, 1000, EnsureMoveSystemExists);
+        }
+
+        void EnsureMoveSystemExists<TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter, EntityRegistry<TActorId> registry)
+            where TActorId : IEntityKey
+        {
+            var sr = initParameter.ServiceResolver;
+            var ms = new PushMoveSystem<ActorReference, ItemReference>(sr.ResolveToReference<ITimeSource>(),
+                                                                       sr.Resolve<IItemResolver<ActorReference>>(),
+                                                                       sr.Resolve<IMovementDataProvider>(),
+                                                                       sr.Resolve<IItemPlacementService<ActorReference>>(),
+                                                                       sr.Resolve<IItemResolver<ItemReference>>(),
+                                                                       sr.Resolve<IItemPlacementService<ItemReference>>()
+            );
+
+            initParameter.ServiceResolver.Store(ms);
+            initParameter.ServiceResolver.Store<GridMoveCommandSystem<ActorReference>>(ms);
         }
 
         void RegisterBoxWinConditionSystem<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter, IGameLoopSystemRegistration context, EntityRegistry<TItemId> registry)

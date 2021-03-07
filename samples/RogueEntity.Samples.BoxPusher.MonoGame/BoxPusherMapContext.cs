@@ -79,6 +79,9 @@ namespace RogueEntity.Samples.BoxPusher.MonoGame
 
             uiContext = new BoxPusherGameUIContext(game);
             AddChildContext(uiContext);
+
+            mapConsole.FocusedMode = SadConsole.Console.ActiveBehavior.Push;
+            mapConsole.IsFocused = true;
         }
 
         protected override void OnParentConsoleResized()

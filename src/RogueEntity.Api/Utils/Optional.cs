@@ -87,10 +87,12 @@ namespace RogueEntity.Api.Utils
         {
             if (HasValue)
             {
-                return $"Optional({nameof(value)}: {value})";
+                return $"Some({value})";
             }
-
-            return "Optional<None>";
+            else
+            {
+                return "None";
+            }
         }
 
         public static implicit operator Optional<T>(T data)

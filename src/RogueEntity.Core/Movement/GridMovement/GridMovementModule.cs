@@ -13,7 +13,7 @@ namespace RogueEntity.Core.Movement.GridMovement
 {
     public class GridMovementModule : ModuleBase
     {
-        public const string ModuleId = "Core.Movement.GridMovement";
+        public static readonly string ModuleId = "Core.Movement.GridMovement";
         public static readonly EntityRole MovementIntentRole = new EntityRole("Role.Core.Movement.GridMovement.MovementIntent");
         public static readonly EntityRole GridMovementCommandReceiverRole = new EntityRole("Role.Core.Movement.GridMovement.MoveCommandReceiver");
 
@@ -39,7 +39,8 @@ namespace RogueEntity.Core.Movement.GridMovement
                 .WithImpliedRole(PositionModule.GridPositionedRole);
 
             RequireRole(CommandRoles.CreateRoleFor(CommandType.Of<GridMoveCommand>()))
-                .WithImpliedRole(GridMovementCommandReceiverRole);
+                .WithImpliedRole(GridMovementCommandReceiverRole)
+                .WithImpliedRole(MovementIntentRole);
         }
 
         [EntityRoleInitializer("Role.Core.Movement.GridMovement.MovementIntent")]

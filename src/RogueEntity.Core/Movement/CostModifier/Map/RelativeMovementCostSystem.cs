@@ -6,16 +6,14 @@ using RogueEntity.Core.Positioning.MapLayers;
 
 namespace RogueEntity.Core.Movement.CostModifier.Map
 {
-    public class RelativeMovementCostSystem< TMovementType> : LayeredAggregationSystem< float, RelativeMovementCostModifier<TMovementType>>,
-                                                                           IRelativeMovementCostSystem<TMovementType>
+    public class RelativeMovementCostSystem<TMovementType> : LayeredAggregationSystem<float, RelativeMovementCostModifier<TMovementType>>,
+                                                             IRelativeMovementCostSystem<TMovementType>
     {
         public RelativeMovementCostSystem(int tileWidth, int tileHeight) : base(RelativeMovementCostSystem.ProcessTile, tileWidth, tileHeight)
-        {
-        }
+        { }
 
         public RelativeMovementCostSystem(int offsetX, int offsetY, int tileSizeX, int tileSizeY) : base(RelativeMovementCostSystem.ProcessTile, offsetX, offsetY, tileSizeX, tileSizeY)
-        {
-        }
+        { }
     }
 
     public static class RelativeMovementCostSystem
@@ -46,13 +44,13 @@ namespace RogueEntity.Core.Movement.CostModifier.Map
             }
         }
 
-        public static void AddLayer< TItemId, TMovementMode>(this IAggregationLayerSystemBackend< RelativeMovementCostModifier<TMovementMode>> system,
-                                                                          IGridMapContext<TItemId> mapContext,
-                                                                          IItemResolver< TItemId> itemContext,
-                                                                          MapLayer mapLayer)
+        public static void AddLayer<TItemId, TMovementMode>(this IAggregationLayerSystemBackend<RelativeMovementCostModifier<TMovementMode>> system,
+                                                            IGridMapContext<TItemId> mapContext,
+                                                            IItemResolver<TItemId> itemContext,
+                                                            MapLayer mapLayer)
             where TItemId : IEntityKey
         {
-            system.AddSenseLayerFactory(new RelativeMovementCostLayerFactory< TItemId, TMovementMode>(mapLayer, mapContext, itemContext));
+            system.AddSenseLayerFactory(new RelativeMovementCostLayerFactory<TItemId, TMovementMode>(mapLayer, mapContext, itemContext));
         }
     }
 }

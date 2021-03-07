@@ -52,7 +52,7 @@ namespace RogueEntity.Core.Movement.GridMovement
                 return false;
             }
 
-            if (itemResolver.TryQueryData(actor, out AggregateMovementCostFactors mcf) ||
+            if (!itemResolver.TryQueryData(actor, out AggregateMovementCostFactors mcf) ||
                 !mcf.TryGetMovementCost(movementMode, out var cost))
             {
                 // have no movement modes. That means that actor cannot move on its own.
@@ -125,7 +125,7 @@ namespace RogueEntity.Core.Movement.GridMovement
                 return false;
             }
 
-            if (itemResolver.TryQueryData(actor, out AggregateMovementCostFactors mcf))
+            if (!itemResolver.TryQueryData(actor, out AggregateMovementCostFactors mcf))
             {
                 // have no movement modes. That means that actor cannot move on its own.
                 movementCost = default;
