@@ -5,7 +5,6 @@ using RogueEntity.Api.Utils;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Movement.MovementModes;
 using RogueEntity.Core.Positioning.Algorithms;
-using System;
 
 namespace RogueEntity.Core.Movement.Cost
 {

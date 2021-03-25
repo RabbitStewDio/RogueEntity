@@ -1,4 +1,3 @@
-using Microsoft.Xna.Framework;
 using RogueEntity.Api.Utils;
 using RogueEntity.Core.Players;
 using RogueEntity.Core.Positioning.Grid;

@@ -1,6 +1,5 @@
 ﻿using EnTTSharp.Entities.Attributes;
 using MessagePack;
-using RogueEntity.Api.ItemTraits;
 using RogueEntity.Api.Utils;
 using System.Runtime.Serialization;
 

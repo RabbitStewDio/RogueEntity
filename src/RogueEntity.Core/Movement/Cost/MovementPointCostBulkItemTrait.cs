@@ -4,7 +4,6 @@ using RogueEntity.Api.ItemTraits;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Movement.MovementModes;
 using RogueEntity.Core.Positioning.Algorithms;
-using System;
 
 namespace RogueEntity.Core.Movement.Cost
 {

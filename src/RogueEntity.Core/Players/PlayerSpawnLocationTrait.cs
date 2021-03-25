@@ -3,7 +3,6 @@ using RogueEntity.Api.ItemTraits;
 using RogueEntity.Api.Utils;
 using RogueEntity.Core.Meta.Items;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace RogueEntity.Core.Players
 {

@@ -2,9 +2,6 @@ using EnTTSharp.Entities;
 using JetBrains.Annotations;
 using RogueEntity.Api.Utils;
 using RogueEntity.Core.Players;
-using RogueEntity.Core.Positioning.Algorithms;
-using RogueEntity.Core.Positioning.SpatialQueries;
-using RogueEntity.Core.Utils;
 using System;
 using System.Diagnostics;
 

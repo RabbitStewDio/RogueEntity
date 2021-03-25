@@ -1,5 +1,4 @@
 using RogueEntity.Api.Utils;
-using System;
 
 namespace RogueEntity.Core.Players
 {

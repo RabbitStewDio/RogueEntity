@@ -6,7 +6,6 @@ using RogueEntity.Core.Inputs.Commands;
 using RogueEntity.Core.Meta.EntityKeys;
 using RogueEntity.Core.Players;
 using RogueEntity.Generator;
-using RogueEntity.Samples.MineSweeper.Core.Commands;
 
 namespace RogueEntity.Samples.MineSweeper.Core
 {
