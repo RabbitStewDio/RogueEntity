@@ -7,7 +7,7 @@ namespace RogueEntity.Generator.MapFragments
     ///   Only used during parsing. 
     /// </summary>
     [UsedImplicitly]
-    internal struct MapFragmentSize : IEquatable<MapFragmentSize>
+    struct MapFragmentSize : IEquatable<MapFragmentSize>
     {
         public int Width { get; set; }
         public int Height { get; set; }

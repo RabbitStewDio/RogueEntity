@@ -11,7 +11,7 @@ namespace RogueEntity.Generator.MapFragments
     /// </summary>
     [UsedImplicitly]
     [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Local")]
-    internal class MapFragmentParseInfo
+    class MapFragmentParseInfo
     {
         public string Template { get; set; }
         public string Guid { get; set; }
