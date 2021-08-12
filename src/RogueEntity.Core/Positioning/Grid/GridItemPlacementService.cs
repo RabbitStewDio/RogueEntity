@@ -14,6 +14,7 @@ namespace RogueEntity.Core.Positioning.Grid
     public class GridItemPlacementService<TItemId> : IItemPlacementService<TItemId>
         where TItemId : IEntityKey
     {
+        public event EventHandler<ItemPositionChangedEvent<TItemId>> ItemPositionChanged;
         static readonly EqualityComparer<TItemId> Equality = EqualityComparer<TItemId>.Default;
         static readonly ILogger Logger = SLog.ForContext<GridItemPlacementService<TItemId>>();
 
@@ -126,6 +127,7 @@ namespace RogueEntity.Core.Positioning.Grid
 
                 existingItem = default;
                 mapData.MarkDirty(placementPos);
+                ItemPositionChanged?.Invoke(this, ItemPositionChangedEvent.ForRemove(targetItem, placementPos));
                 return true;
             }
 
@@ -142,6 +144,7 @@ namespace RogueEntity.Core.Positioning.Grid
                 // The slightly easy path: This is a bulk item that is not stackable
                 existingItem = default;
                 mapData.MarkDirty(placementPos);
+                ItemPositionChanged?.Invoke(this, ItemPositionChangedEvent.ForRemove(targetItem, placementPos));
                 return true;
             }
 
@@ -169,12 +172,14 @@ namespace RogueEntity.Core.Positioning.Grid
 
                 existingItem = changedItem;
                 mapData.MarkDirty(placementPos);
+                ItemPositionChanged?.Invoke(this, ItemPositionChangedEvent.ForRemove(targetItem, placementPos));
                 return true;
             }
 
             // The resulting item stack is empty, so we can fully discard the item from the map.
             existingItem = default;
             mapData.MarkDirty(placementPos);
+            ItemPositionChanged?.Invoke(this, ItemPositionChangedEvent.ForRemove(targetItem, placementPos));
             return true;
         }
 
@@ -236,6 +241,7 @@ namespace RogueEntity.Core.Positioning.Grid
 
                 existingItem = targetItem;
                 mapData.MarkDirty(placementPos);
+                ItemPositionChanged?.Invoke(this, ItemPositionChangedEvent.ForPlacement(targetItem, placementPos));
                 return true;
             }
 
@@ -243,6 +249,7 @@ namespace RogueEntity.Core.Positioning.Grid
             {
                 existingItem = targetItem;
                 mapData.MarkDirty(placementPos);
+                ItemPositionChanged?.Invoke(this, ItemPositionChangedEvent.ForPlacement(targetItem, placementPos));
                 return true;
             }
 
@@ -269,6 +276,7 @@ namespace RogueEntity.Core.Positioning.Grid
 
             existingItem = changedItem;
             mapData.MarkDirty(placementPos);
+            ItemPositionChanged?.Invoke(this, ItemPositionChangedEvent.ForPlacement(targetItem, placementPos));
             return true;
         }
 
@@ -327,14 +335,14 @@ namespace RogueEntity.Core.Positioning.Grid
             }
 
             var defaultItem = default(TItemId);
-            ref var existingItem = ref sourceMap.TryGetForUpdate(currentPos.GridX, currentPos.GridY, ref defaultItem, out var success);
+            ref var existingItemRef = ref sourceMap.TryGetForUpdate(currentPos.GridX, currentPos.GridY, ref defaultItem, out var success);
             if (!success)
             {
                 Logger.Verbose("Unable to query map at current position {Position}", currentPos);
                 return false;
             }
 
-            ref var targetItem = ref targetMap.TryGetForUpdate(placementPos.GridX, placementPos.GridY, ref defaultItem, out success, DataViewCreateMode.CreateMissing);
+            ref var targetItemRef = ref targetMap.TryGetForUpdate(placementPos.GridX, placementPos.GridY, ref defaultItem, out success, DataViewCreateMode.CreateMissing);
             if (!success)
             {
                 Logger.Verbose("Unable to query map at target position {Position}", placementPos);
@@ -343,13 +351,13 @@ namespace RogueEntity.Core.Positioning.Grid
 
             if (itemIdMetaData.IsReferenceEntity(item))
             {
-                if (!Equality.Equals(existingItem, item))
+                if (!Equality.Equals(existingItemRef, item))
                 {
-                    Logger.Verbose("Pre-condition failed: Item {ExistingItem} on map position {Position} does not match the given entity {Item}", existingItem, currentPos, item);
+                    Logger.Verbose("Pre-condition failed: Item {ExistingItem} on map position {Position} does not match the given entity {Item}", existingItemRef, currentPos, item);
                     return false;
                 }
 
-                if (!targetItem.IsEmpty)
+                if (!targetItemRef.IsEmpty)
                 {
                     Logger.Verbose("Pre-condition failed: Map position {Position} is not empty", placementPos);
                     return false;
@@ -357,38 +365,39 @@ namespace RogueEntity.Core.Positioning.Grid
 
                 if (!itemResolver.TryUpdateData(item, new EntityGridPositionUpdateMessage(EntityGridPosition.From(placementPos)), out _))
                 {
-                    Logger.Verbose("Failed to update entity data for {TargetItem} at position {Position}", targetItem, placementPos);
+                    Logger.Verbose("Failed to update entity data for {TargetItem} at position {Position}", targetItemRef, placementPos);
                     return false;
                 }
 
-                existingItem = default;
-                targetItem = item;
+                existingItemRef = default;
+                targetItemRef = item;
                 sourceMapContext.MarkDirty(currentPos);
                 targetMapContext.MarkDirty(placementPos);
+                ItemPositionChanged?.Invoke(this, ItemPositionChangedEvent.ForMove(item, currentPos, placementPos));
                 return true;
             }
 
             // are we moving a full stack?
-            if (Equality.Equals(existingItem, item))
+            if (Equality.Equals(existingItemRef, item))
             {
-                if (targetItem.IsEmpty)
+                if (targetItemRef.IsEmpty)
                 {
                     // the easy path: Moving a full stack to an empty slot.
-                    existingItem = default;
-                    targetItem = item;
+                    existingItemRef = default;
+                    targetItemRef = item;
                     sourceMapContext.MarkDirty(currentPos);
                     targetMapContext.MarkDirty(placementPos);
                     return true;
                 }
 
-                if (!itemIdMetaData.IsSameBulkType(item, targetItem))
+                if (!itemIdMetaData.IsSameBulkType(item, targetItemRef))
                 {
                     Logger.Verbose("Precondition failed: Target position is occupied by an incompatible item type");
                     return false;
                 }
 
                 var itemStackSize = itemResolver.QueryStackSize(item);
-                var targetStackSize = itemResolver.QueryStackSize(targetItem);
+                var targetStackSize = itemResolver.QueryStackSize(targetItemRef);
                 if (!targetStackSize.Merge(itemStackSize, out var mergedStack) ||
                     !itemResolver.TryUpdateData(item, mergedStack, out var mergedItem))
                 {
@@ -397,22 +406,23 @@ namespace RogueEntity.Core.Positioning.Grid
                     return false;
                 }
 
-                existingItem = default;
-                targetItem = mergedItem;
+                existingItemRef = default;
+                targetItemRef = mergedItem;
                 sourceMapContext.MarkDirty(currentPos);
                 targetMapContext.MarkDirty(placementPos);
+                ItemPositionChanged?.Invoke(this, ItemPositionChangedEvent.ForMove(item, currentPos, placementPos));
                 return true;
             }
             else
             {
-                if (!itemIdMetaData.IsSameBulkType(item, existingItem))
+                if (!itemIdMetaData.IsSameBulkType(item, existingItemRef))
                 {
-                    Logger.Verbose("Precondition failed: Source item {ExistingItem} on map does not match the incompatible item type {Item}", existingItem, item);
+                    Logger.Verbose("Precondition failed: Source item {ExistingItem} on map does not match the incompatible item type {Item}", existingItemRef, item);
                     return false;
                 }
 
                 var itemStackSize = itemResolver.QueryStackSize(item);
-                var existingStack = itemResolver.QueryStackSize(existingItem);
+                var existingStack = itemResolver.QueryStackSize(existingItemRef);
                 var takeResult = existingStack.Take(itemStackSize.Count);
                 if (takeResult.NotEnoughItemsInStack)
                 {
@@ -424,7 +434,7 @@ namespace RogueEntity.Core.Positioning.Grid
                 TItemId changedSourceItem;
                 if (takeResult.ItemsLeftInStack.TryGetValue(out var resultStack))
                 {
-                    if (!itemResolver.TryUpdateData(existingItem, resultStack, out changedSourceItem))
+                    if (!itemResolver.TryUpdateData(existingItemRef, resultStack, out changedSourceItem))
                     {
                         // for some unlikely reason we are not allowed to write the resulting stack back 
                         // to the item. 
@@ -438,24 +448,25 @@ namespace RogueEntity.Core.Positioning.Grid
                     changedSourceItem = default;
                 }
 
-                if (targetItem.IsEmpty)
+                if (targetItemRef.IsEmpty)
                 {
                     // the target position is empty. so after writing back the changed size for the source,
                     // we can just update the target position to the stack taken.
-                    existingItem = changedSourceItem;
-                    targetItem = item;
+                    existingItemRef = changedSourceItem;
+                    targetItemRef = item;
                     sourceMapContext.MarkDirty(currentPos);
                     targetMapContext.MarkDirty(placementPos);
+                    ItemPositionChanged?.Invoke(this, ItemPositionChangedEvent.ForMove(item, currentPos, placementPos));
                     return true;
                 }
 
-                if (!itemIdMetaData.IsSameBulkType(item, targetItem))
+                if (!itemIdMetaData.IsSameBulkType(item, targetItemRef))
                 {
                     Logger.Verbose("Precondition failed: Target position is occupied by an incompatible item type");
                     return false;
                 }
 
-                var targetStackSize = itemResolver.QueryStackSize(targetItem);
+                var targetStackSize = itemResolver.QueryStackSize(targetItemRef);
                 if (!targetStackSize.Merge(itemStackSize, out var mergedStack) ||
                     !itemResolver.TryUpdateData(item, mergedStack, out var mergedItem))
                 {
@@ -464,10 +475,11 @@ namespace RogueEntity.Core.Positioning.Grid
                     return false;
                 }
 
-                existingItem = changedSourceItem;
-                targetItem = mergedItem;
+                existingItemRef = changedSourceItem;
+                targetItemRef = mergedItem;
                 sourceMapContext.MarkDirty(currentPos);
                 targetMapContext.MarkDirty(placementPos);
+                ItemPositionChanged?.Invoke(this, ItemPositionChangedEvent.ForMove(item, currentPos, placementPos));
                 return true;
             }
         }
@@ -584,6 +596,8 @@ namespace RogueEntity.Core.Positioning.Grid
                 targetMapItem = sourceItem;
                 sourceMapContext.MarkDirty(sourcePosition);
                 targetMapContext.MarkDirty(targetPosition);
+                ItemPositionChanged?.Invoke(this, ItemPositionChangedEvent.ForMove(sourceItem, sourcePosition, targetPosition));
+                ItemPositionChanged?.Invoke(this, ItemPositionChangedEvent.ForMove(targetItem, targetPosition, sourcePosition));
                 return true;
             }
 
@@ -624,6 +638,8 @@ namespace RogueEntity.Core.Positioning.Grid
                 targetMapItem = targetResultEntity;
                 sourceMapContext.MarkDirty(sourcePosition);
                 targetMapContext.MarkDirty(targetPosition);
+                ItemPositionChanged?.Invoke(this, ItemPositionChangedEvent.ForMove(sourceItem, sourcePosition, targetPosition));
+                ItemPositionChanged?.Invoke(this, ItemPositionChangedEvent.ForMove(targetItem, targetPosition, sourcePosition));
                 return true;
             }
 

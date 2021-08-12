@@ -1,5 +1,6 @@
 ﻿using RogueEntity.Api.ItemTraits;
 using RogueEntity.Api.Modules;
+using RogueEntity.Core.Positioning;
 
 namespace RogueEntity.Core.MovementPlaning.Goals
 {
@@ -12,7 +13,7 @@ namespace RogueEntity.Core.MovementPlaning.Goals
         {
             Id = ModuleId;
 
-            RequireRole(GoalMarkerRole);
+            RequireRole(GoalMarkerRole).WithImpliedRole(PositionModule.PositionQueryRole);
         }
     }
 }

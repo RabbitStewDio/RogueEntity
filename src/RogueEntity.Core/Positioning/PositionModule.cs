@@ -23,6 +23,8 @@ namespace RogueEntity.Core.Positioning
         public static readonly EntitySystemId RegisterClearGridPositionChangeTracker = "Systems.Core.Position.Grid.ClearChangeTracker";
         public static readonly EntitySystemId RegisterSpatialQuery = "Systems.Core.Position.RegisterSpatialQuery";
 
+        public static readonly EntityRole PositionQueryRole = new EntityRole("Role.Core.Position.PositionQueryable");
+        
         public static readonly EntityRole PositionedRole = new EntityRole("Role.Core.Position.Positionable");
         public static readonly EntityRole GridPositionedRole = new EntityRole("Role.Core.Position.GridPositioned");
         public static readonly EntityRole ContinuousPositionedRole = new EntityRole("Role.Core.Position.ContinuousPositioned");

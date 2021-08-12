@@ -24,7 +24,7 @@ namespace RogueEntity.Core.Utils.DataViews
 
         [DataMember(Order = 2)]
         [Key(2)]
-        readonly Dictionary<Position2D, BoundedDataView<T>> index;
+        readonly Dictionary<TileIndex, BoundedDataView<T>> index;
 
         [DataMember(Order = 4)]
         [Key(4)]
@@ -75,13 +75,13 @@ namespace RogueEntity.Core.Utils.DataViews
             this.offsetY = offsetY;
             this.tileSizeX = tileSizeX;
             this.tileSizeY = tileSizeY;
-            this.index = new Dictionary<Position2D, BoundedDataView<T>>();
+            this.index = new Dictionary<TileIndex, BoundedDataView<T>>();
         }
 
         [SerializationConstructor]
         protected DynamicDataView2D(int tileSizeX,
                                   int tileSizeY,
-                                  [NotNull] Dictionary<Position2D, BoundedDataView<T>> index,
+                                  [NotNull] Dictionary<TileIndex, BoundedDataView<T>> index,
                                   long currentTime,
                                   int offsetX,
                                   int offsetY)
@@ -162,12 +162,12 @@ namespace RogueEntity.Core.Utils.DataViews
             index.Clear();
         }
 
-        public bool RemoveView(int x, int y, out Position2D removedIndex)
+        public bool RemoveView(int x, int y, out TileIndex removedIndex)
         {
             var dx = DataViewPartitions.TileSplit(x, offsetX, tileSizeX);
             var dy = DataViewPartitions.TileSplit(y, offsetY, tileSizeY);
 
-            var key = new Position2D(dx, dy);
+            var key = new TileIndex(dx, dy);
             if (index.TryGetValue(key, out var existing))
             {
                 ViewExpired?.Invoke(this, new DynamicDataView2DEventArgs<T>(key, existing));
@@ -192,7 +192,7 @@ namespace RogueEntity.Core.Utils.DataViews
             
             var data = CreateDataViewInternal(dx, dy);
             
-            ViewCreated?.Invoke(this, new DynamicDataView2DEventArgs<T>(new Position2D(dx, dy), data));
+            ViewCreated?.Invoke(this, new DynamicDataView2DEventArgs<T>(new TileIndex(dx, dy), data));
             return data;
         }
 
@@ -200,7 +200,7 @@ namespace RogueEntity.Core.Utils.DataViews
         {
             var bounds = new Rectangle(dx * tileSizeX + offsetX, dy * tileSizeY + offsetY, tileSizeX, tileSizeY);
             var data = new BoundedDataView<T>(bounds);
-            index[new Position2D(dx, dy)] = data;
+            index[new TileIndex(dx, dy)] = data;
             activeBounds = default;
             return data;
         }
@@ -235,7 +235,7 @@ namespace RogueEntity.Core.Utils.DataViews
             var dy = DataViewPartitions.TileSplit(y, offsetY, tileSizeY);
             var data = CreateDataViewInternal(dx, dy);
             
-            ViewCreated?.Invoke(this, new DynamicDataView2DEventArgs<T>(new Position2D(dx, dy), data));
+            ViewCreated?.Invoke(this, new DynamicDataView2DEventArgs<T>(new TileIndex(dx, dy), data));
 
             raw = data;
             return true;
@@ -264,7 +264,7 @@ namespace RogueEntity.Core.Utils.DataViews
             var dx = DataViewPartitions.TileSplit(x, offsetX, tileSizeX);
             var dy = DataViewPartitions.TileSplit(y, offsetY, tileSizeY);
             
-            if (!index.TryGetValue(new Position2D(dx, dy), out data))
+            if (!index.TryGetValue(new TileIndex(dx, dy), out data))
             {
                 return false;
             }

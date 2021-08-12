@@ -7,6 +7,8 @@ namespace RogueEntity.Core.Positioning
 {
     public class ItemPlacementServiceContext<TItemId> : IItemPlacementServiceContext<TItemId>
     {
+        public event EventHandler<ItemPositionChangedEvent<TItemId>> ItemPositionChanged; 
+
         readonly Dictionary<byte, (IItemPlacementService<TItemId> placementService, IItemPlacementLocationService<TItemId> locatorService)> services;
 
         public ItemPlacementServiceContext()
@@ -20,7 +22,13 @@ namespace RogueEntity.Core.Positioning
         {
             this.services[layer.LayerId] = (service ?? throw new ArgumentNullException(nameof(service)), 
                                             locator ?? throw new ArgumentNullException(nameof(locator)));
+            service.ItemPositionChanged += OnItemPositionChanged;
             return this;
+        }
+
+        void OnItemPositionChanged(object sender, ItemPositionChangedEvent<TItemId> e)
+        {
+            
         }
 
         public bool TryGetItemPlacementService(MapLayer layer, out IItemPlacementService<TItemId> service)

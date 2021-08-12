@@ -182,15 +182,6 @@ namespace RogueEntity.Core.Positioning.Continuous
                 return false;
             }
 
-            if (mapDataContext.TryGetItemAt(desiredPosition, out var itemAtDesiredPosition) &&
-                !itemAtDesiredPosition.IsEmpty)
-            {
-                // target position is not empty. We would overwrite 
-                // an existing actor.
-                logger.Verbose("Desired position is not empty for item {Item} at {Pos}", k, desiredPosition);
-                return false;
-            }
-
             if (previousPosition != ContinuousMapPosition.Invalid)
             {
                 if (!layerPreference.IsAcceptable(previousPosition, out var previousLayerId) ||

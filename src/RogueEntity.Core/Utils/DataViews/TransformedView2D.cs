@@ -12,12 +12,12 @@ namespace RogueEntity.Core.Utils.DataViews
         public event EventHandler<DynamicDataView2DEventArgs<TTarget>> ViewExpired;
         readonly IReadOnlyDynamicDataView2D<TSource> source;
         readonly Func<TSource, TTarget> transformation;
-        readonly Dictionary<Position2D, TransformedBoundedDataView<TSource, TTarget>> index;
+        readonly Dictionary<TileIndex, TransformedBoundedDataView<TSource, TTarget>> index;
 
         public TransformedView2D([NotNull] IReadOnlyDynamicDataView2D<TSource> source,
                                  [NotNull] Func<TSource, TTarget> transformation)
         {
-            this.index = new Dictionary<Position2D, TransformedBoundedDataView<TSource, TTarget>>();
+            this.index = new Dictionary<TileIndex, TransformedBoundedDataView<TSource, TTarget>>();
             this.source = source ?? throw new ArgumentNullException(nameof(source));
             this.transformation = transformation ?? throw new ArgumentNullException(nameof(transformation));
 
@@ -84,7 +84,7 @@ namespace RogueEntity.Core.Utils.DataViews
         {
             var dx = DataViewPartitions.TileSplit(x, OffsetX, TileSizeX);
             var dy = DataViewPartitions.TileSplit(y, OffsetY, TileSizeY);
-            var key = new Position2D(dx, dy);
+            var key = new TileIndex(dx, dy);
             if (index.TryGetValue(key, out var targetRaw))
             {
                 raw = targetRaw;

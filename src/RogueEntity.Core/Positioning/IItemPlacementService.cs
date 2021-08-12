@@ -1,5 +1,42 @@
+using System;
+
 namespace RogueEntity.Core.Positioning
 {
+    public static class ItemPositionChangedEvent
+    {
+        public static ItemPositionChangedEvent<TItemId> ForRemove<TItemId, TPosition>(TItemId item, TPosition pos)
+            where TPosition : IPosition<TPosition>
+        {
+            return new ItemPositionChangedEvent<TItemId>(item, Position.From(pos), default);
+        }
+        
+        public static ItemPositionChangedEvent<TItemId> ForMove<TItemId, TPosition>(TItemId item, TPosition posFrom, TPosition posTo)
+            where TPosition : IPosition<TPosition>
+        {
+            return new ItemPositionChangedEvent<TItemId>(item, Position.From(posFrom), Position.From(posTo));
+        }
+        
+        public static ItemPositionChangedEvent<TItemId> ForPlacement<TItemId, TPosition>(TItemId item, TPosition posTo)
+            where TPosition : IPosition<TPosition>
+        {
+            return new ItemPositionChangedEvent<TItemId>(item, default, Position.From(posTo));
+        }
+    } 
+    
+    public readonly struct ItemPositionChangedEvent<TItemId>
+    {
+        public readonly TItemId Item;
+        public readonly Position SourcePosition;
+        public readonly Position TargetPosition;
+
+        public ItemPositionChangedEvent(TItemId item, Position sourcePosition, Position targetPosition)
+        {
+            Item = item;
+            SourcePosition = sourcePosition;
+            TargetPosition = targetPosition;
+        }
+    }
+
     /// <summary>
     ///   Encapsulates all primitive operations that place (bulk and reference) entities 
     ///   into a map.
@@ -7,9 +44,18 @@ namespace RogueEntity.Core.Positioning
     /// <typeparam name="TItemId"></typeparam>
     public interface IItemPlacementService<TItemId>
     {
+        event EventHandler<ItemPositionChangedEvent<TItemId>> ItemPositionChanged;
+
+        /// <summary>
+        ///   Tries to query the item at the given position. 
+        /// </summary>
+        /// <param name="pos"></param>
+        /// <param name="item"></param>
+        /// <typeparam name="TPosition"></typeparam>
+        /// <returns></returns>
         bool TryQueryItem<TPosition>(in TPosition pos, out TItemId item)
-            where TPosition: IPosition<TPosition>;
-        
+            where TPosition : IPosition<TPosition>;
+
         /// <summary>
         ///   Tries to remove the target item from the map. The item will not be destroyed
         ///   in the process. Use this to place items into containers or generally leave
@@ -20,7 +66,7 @@ namespace RogueEntity.Core.Positioning
         /// <returns></returns>
         bool TryRemoveItem<TPosition>(in TItemId targetItem,
                                       in TPosition placementPos)
-            where TPosition: IPosition<TPosition>;
+            where TPosition : IPosition<TPosition>;
 
         /// <summary>
         ///    Places an item at the given placement position. It is assumed and strongly
@@ -32,7 +78,7 @@ namespace RogueEntity.Core.Positioning
         /// <returns></returns>
         bool TryPlaceItem<TPosition>(in TItemId targetItem,
                                      in TPosition placementPos)
-            where TPosition: IPosition<TPosition>;
+            where TPosition : IPosition<TPosition>;
 
         /// <summary>
         ///    Moves an item at the given current position to the placement position. This
@@ -46,7 +92,7 @@ namespace RogueEntity.Core.Positioning
         bool TryMoveItem<TPosition>(in TItemId item,
                                     in TPosition currentPos,
                                     in TPosition placementPos)
-            where TPosition: IPosition<TPosition>;
+            where TPosition : IPosition<TPosition>;
 
         /// <summary>
         ///    Swaps the source entity with the target entity (which is expected to be located at the given position).
@@ -55,6 +101,6 @@ namespace RogueEntity.Core.Positioning
                                     in TPosition sourcePosition,
                                     in TItemId targetItem,
                                     in TPosition targetPosition)
-            where TPosition: IPosition<TPosition>;
+            where TPosition : IPosition<TPosition>;
     }
 }

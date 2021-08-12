@@ -14,10 +14,10 @@ namespace RogueEntity.Core.Utils.DataViews
         public event EventHandler<DynamicDataView2DEventArgs<T>> ViewCreated;
         public event EventHandler<DynamicDataView2DEventArgs<T>> ViewExpired;
 
-        readonly Dictionary<Position2D, IPooledBoundedDataView<T>> index;
+        readonly Dictionary<TileIndex, IPooledBoundedDataView<T>> index;
 
         long currentTime;
-        readonly List<Position2D> expired;
+        readonly List<TileIndex> expired;
         Rectangle activeBounds;
 
         readonly IBoundedDataViewPool<T> pool;
@@ -27,8 +27,8 @@ namespace RogueEntity.Core.Utils.DataViews
         {
             this.tileConfiguration = pool.TileConfiguration;
             this.pool = pool ?? throw new ArgumentNullException(nameof(pool));
-            this.index = new Dictionary<Position2D, IPooledBoundedDataView<T>>();
-            this.expired = new List<Position2D>();
+            this.index = new Dictionary<TileIndex, IPooledBoundedDataView<T>>();
+            this.expired = new List<TileIndex>();
         }
 
         public int OffsetX => tileConfiguration.OffsetX;
