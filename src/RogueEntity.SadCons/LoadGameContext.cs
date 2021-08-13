@@ -40,7 +40,8 @@ namespace RogueEntity.SadCons
         public override void Initialize(IConsoleParentContext parentContext)
         {
             base.Initialize(parentContext);
-            Console = new Window(ParentContext.Bounds.Width - 10, ParentContext.Bounds.Height - 10)
+            var size = ParentContext.Bounds.BoundsFor(Global.FontDefault);
+            Console = new Window(size.Width - 10, size.Height - 10)
             {
                 Position = new Point(5, 5)
             };
@@ -117,8 +118,9 @@ namespace RogueEntity.SadCons
         protected override void OnParentConsoleResized()
         {
 
-            var width = ParentContext.Bounds.Width - 10;
-            var height = ParentContext.Bounds.Height - 10;
+            var size = ParentContext.Bounds.BoundsFor(Global.FontDefault);
+            var width = size.Width - 10;
+            var height = size.Height - 10;
             Console.Resize(width, height, true, new Rectangle(0, 0, width, height));
 
             backButton.Position = new Point(Console.Width - 13, Console.Height - 3);

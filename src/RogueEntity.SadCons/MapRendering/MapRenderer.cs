@@ -33,9 +33,9 @@ namespace RogueEntity.SadCons.MapRendering
             {
                 return false;
             }
-
-
-            var mapOrigin = observerAtCenter.ToGridXY() - new Position2D(console.Width / 2, console.Height / 2);
+            
+            var screenCenter = new Position2D(console.Width / 2, console.Height / 2);
+            var mapOrigin = observerAtCenter.ToGridXY() - screenCenter;
             foreach (var (x, y) in new RectangleContents(0, 0, console.Width, console.Height))
             {
                 var pos = Position.Of(MapLayer.Indeterminate, mapOrigin.X + x, mapOrigin.Y + y, observerAtCenter.Z);

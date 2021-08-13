@@ -70,8 +70,10 @@ namespace RogueEntity.Samples.BoxPusher.MonoGame
             Console = new ContainerConsole();
             Console.IsVisible = false;
 
-            mapConsole = new Console(parentContext.ScreenBounds.Width / 2, parentContext.ScreenBounds.Height / 2);
-            mapConsole.Font = mapConsole.Font.Master.GetFont(Font.FontSizes.Two); 
+            var font = Global.LoadFont("Content/MapTiles.font").GetFont(Font.FontSizes.Two);
+            var size = parentContext.ScreenBounds.BoundsFor(font);
+            mapConsole = new Console(size.Width, size.Height);
+            mapConsole.Font = font; 
             mapConsole.Components.Add(new BoxPusherMouseHandler(game, sharedUIState));
             mapConsole.Components.Add(new BoxPusherKeyboardHandler(game, sharedUIState));
             mapConsole.Components.Add(new BoxPusherMapDrawHandler(game, sharedUIState));
@@ -93,7 +95,8 @@ namespace RogueEntity.Samples.BoxPusher.MonoGame
             }
 
             // need to resize the viewport to match the game play area
-            mapConsole.Resize(ParentContext.ScreenBounds.Width / 2, ParentContext.ScreenBounds.Height / 2, true);
+            var size = ParentContext.ScreenBounds.BoundsFor(mapConsole.Font);
+            mapConsole.Resize(size.Width, size.Height, true);
             mapConsole.Position = new Point(0, 0);
         }
     }

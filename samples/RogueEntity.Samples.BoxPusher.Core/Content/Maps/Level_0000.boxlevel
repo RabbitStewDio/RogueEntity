@@ -1,0 +1,21 @@
+﻿Name: "Level 1 - Staging Zone"
+Type: MapFragment
+    
+Tags: 
+    - EntryPoint
+
+Symbols:
+    'w': [Items.Floor.Empty, Items.Wall]
+    '.': [Items.Floor.Empty]
+    'b': [Items.Floor.Empty, Items.Box]
+    'o': [Items.Floor.TargetZone]
+    'O': [Items.Floor.TargetZone, Items.Box]
+    '@': [Items.Floor.Empty, Items.Floor.SpawnPoint]
+    ' ': []
+    
+---
+wwwwww
+w.b.ow
+w.w.ww
+w.@.w
+wwwww

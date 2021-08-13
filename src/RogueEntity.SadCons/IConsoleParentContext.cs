@@ -6,7 +6,7 @@ namespace RogueEntity.SadCons
     public interface IConsoleParentContext
     {
         event Action ConsoleResized;
-        Rectangle Bounds { get; }
-        Rectangle ScreenBounds { get; }
+        ConsoleSize Bounds { get; }
+        ConsoleSize ScreenBounds { get; }
     }
 }

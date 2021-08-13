@@ -21,7 +21,8 @@ namespace RogueEntity.Samples.BoxPusher.MonoGame
         {
             base.Initialize(parentContext);
 
-            Console = new ControlsConsole(parentContext.Bounds.Width, 1);
+            var size = ParentContext.Bounds.BoundsInCells();
+            Console = new ControlsConsole(size.Width, 1);
             Console.FocusOnMouseClick = false;
             Console.IsVisible = true;
 
@@ -45,7 +46,8 @@ namespace RogueEntity.Samples.BoxPusher.MonoGame
             base.OnParentConsoleResized();
             System.Console.WriteLine("System UI resized: " + ParentContext.Bounds);
             
-            Console.Resize(ParentContext.Bounds.Width, 1, true, new Rectangle(0, 0, ParentContext.Bounds.Width, 1));
+            var size = ParentContext.Bounds.BoundsInCells();
+            Console.Resize(size.Width, 1, true, new Rectangle(0, 0, size.Width, 1));
             
             quitConfirmWindow.Center();
         }

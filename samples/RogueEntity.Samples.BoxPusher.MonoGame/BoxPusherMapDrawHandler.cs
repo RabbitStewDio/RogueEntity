@@ -36,24 +36,24 @@ namespace RogueEntity.Samples.BoxPusher.MonoGame
         {
             renderer.AddGridLayer<ItemReference>(BoxPusherMapLayers.Floor, this.game.ServiceResolver)
                     .WithRenderTemplate(BoxPusherItemDefinitions.EmptyFloor.Tag,
-                                        ConsoleRenderData.For('.')
+                                        ConsoleRenderData.For(5)
                                                          .WithForeground(Color.White))
                     .WithRenderTemplate(BoxPusherItemDefinitions.TargetZoneFloor.Tag,
-                                        ConsoleRenderData.For(':')
+                                        ConsoleRenderData.For(4)
                                                          .WithForeground(Color.Green, true));
 
             renderer.AddGridLayer<ItemReference>(BoxPusherMapLayers.Items, this.game.ServiceResolver)
                     .WithRenderTemplate(BoxPusherItemDefinitions.Wall.Tag,
-                                        ConsoleRenderData.For('#')
+                                        ConsoleRenderData.For(2)
                                                          .WithForeground(Color.White))
                     .WithRenderTemplate(BoxPusherItemDefinitions.Box.Tag,
-                                        ConsoleRenderData.For('+', true)
+                                        ConsoleRenderData.For(3, true)
                                                          .WithForeground(Color.Black)
                                                          .WithBackground(Color.White));
 
             renderer.AddGridLayer<ActorReference>(BoxPusherMapLayers.Actors, this.game.ServiceResolver)
                     .WithRenderTemplate(BoxPusherItemDefinitions.Player.Tag,
-                                        ConsoleRenderData.For('@', true)
+                                        ConsoleRenderData.For(6, true)
                                                          .WithForeground(Color.Yellow));
 
             metaDataService = this.game.ServiceResolver.Resolve<IBoxPusherMapMetaDataService>();
@@ -78,7 +78,7 @@ namespace RogueEntity.Samples.BoxPusher.MonoGame
                 return;
             }
 
-            if (metaDataService.TryGetBounds(pos.GridZ, out var m))
+            if (metaDataService.TryGetMapBounds(pos.GridZ, out var m))
             {
                 var center = m.Center;
                 renderer.Render(pos.WithPosition(center.X, center.Y), console);

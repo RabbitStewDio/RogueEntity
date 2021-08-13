@@ -24,7 +24,8 @@ namespace RogueEntity.Samples.MineSweeper.MonoGame
         {
             base.Initialize(parentContext);
 
-            Console = new ControlsConsole(parentContext.Bounds.Width, 1);
+            var size = ParentContext.Bounds.BoundsInCells();
+            Console = new ControlsConsole(size.Width, 1);
             Console.FocusOnMouseClick = false;
             Console.IsVisible = true;
             
@@ -67,7 +68,8 @@ namespace RogueEntity.Samples.MineSweeper.MonoGame
         protected override void OnParentConsoleResized()
         {
             base.OnParentConsoleResized();
-            Console.Resize(ParentContext.Bounds.Width, 1, true, new Rectangle(0, 0, ParentContext.Bounds.Width, 1));
+            var visibleAra = ParentContext.ScreenBounds.BoundsFor(Console.Font);
+            Console.Resize(visibleAra.Width, 1, true, new Rectangle(0, 0, visibleAra.Width, 1));
             
             gameOverWindow.Center();
             quitConfirmWindow.Center();

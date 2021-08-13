@@ -34,12 +34,21 @@ namespace RogueEntity.SadCons
             Show();
         }
 
-        public Rectangle ScreenBounds => Bounds;
+        public ConsoleSize ScreenBounds => Bounds;
 
-        public Rectangle Bounds => new Rectangle(ParentConsole.Position.X,
-                                                 ParentConsole.Position.Y,
-                                                 ParentConsole.Width,
-                                                 ParentConsole.Height);
+        public ConsoleSize Bounds
+        {
+            get
+            {
+                var pixelArea = ParentConsole.AbsoluteArea;
+                var bounds = new Rectangle(pixelArea.X,
+                                           pixelArea.Y,
+                                           pixelArea.Width,
+                                           pixelArea.Height);
+                var fontSize = ParentConsole.Font.Size;
+                return new ConsoleSize(bounds, new Dimension(fontSize.X, fontSize.Y));
+            }
+        }
 
         protected abstract TConsoleType InitializeLateOverride();
 

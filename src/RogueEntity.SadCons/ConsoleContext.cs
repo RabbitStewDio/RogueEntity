@@ -17,23 +17,26 @@ namespace RogueEntity.SadCons
             this.ParentContext.ConsoleResized += OnParentConsoleResized;
         }
 
-        public Rectangle ScreenBounds => ParentContext.ScreenBounds;
+        public ConsoleSize ScreenBounds => ParentContext.ScreenBounds;
 
-        public Rectangle Bounds
+        public ConsoleSize Bounds
         {
             get
             {
-                if (Console is ContainerConsole || 
-                    Console == null)
+                if (Console is ContainerConsole || Console == null)
                 {
                     // ContainerConsole has not size and therefore does not return sane values
                     return ParentContext.Bounds;
                 }
-                
-                return new Rectangle(Console.Position.X,
-                                    Console.Position.Y,
-                                    Console.Width,
-                                    Console.Height);
+
+
+                var pixelArea = Console.AbsoluteArea;
+                var bounds = new Rectangle(pixelArea.X,
+                                           pixelArea.Y,
+                                           pixelArea.Width,
+                                           pixelArea.Height);
+                var fontSize = Console.Font.Size;
+                return new ConsoleSize(bounds, new Dimension(fontSize.X, fontSize.Y));
             }
         }
 

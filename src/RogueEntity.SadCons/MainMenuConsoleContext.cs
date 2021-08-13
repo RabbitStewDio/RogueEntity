@@ -19,8 +19,10 @@ namespace RogueEntity.SadCons
             base.Initialize(parentContext);
 
             Console = new ControlsConsole(24, 19);
-            Console.Position = new Point(this.ParentContext.Bounds.Width - Console.Width - 2,
-                                         this.ParentContext.Bounds.Height - Console.Height - 2);
+            
+            var size = ParentContext.Bounds.BoundsFor(Console.Font);
+            Console.Position = new Point(size.Width - Console.Width - 2,
+                                         size.Height - Console.Height - 2);
 
             int x = 2;
             int y = 2;
@@ -49,8 +51,9 @@ namespace RogueEntity.SadCons
 
         protected override void OnParentConsoleResized()
         {
-            Console.Position = new Point(this.ParentContext.Bounds.Width - Console.Width,
-                                         this.ParentContext.Bounds.Height - Console.Height);
+            var size = ParentContext.Bounds.BoundsFor(Console.Font);
+            Console.Position = new Point(size.Width - Console.Width,
+                                         size.Height - Console.Height);
             base.OnParentConsoleResized();
         }
     }

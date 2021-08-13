@@ -232,9 +232,9 @@ namespace RogueEntity.Generator.MapFragments
 
                 return true;
             }
-            catch (SyntaxErrorException se)
+            catch (YamlException se)
             {
-                Log.Error(se, "Failed to parse {Context}", context);
+                Logger.Error(se, "Failed to parse {Context}", context);
                 mapFragment = default;
                 return false;
             }
@@ -245,7 +245,7 @@ namespace RogueEntity.Generator.MapFragments
             var props = f.Info.Properties;
             if (!props.TryGetValue(MapFragmentExtensions.ConnectivityProperty, out string c))
             {
-                Log.Error("Definition had no connectivity information");
+                Logger.Error("Definition had no connectivity information");
                 result = default;
                 return false;
             }

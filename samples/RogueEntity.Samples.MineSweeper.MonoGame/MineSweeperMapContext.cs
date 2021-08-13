@@ -43,7 +43,9 @@ namespace RogueEntity.Samples.MineSweeper.MonoGame
             Console = new ContainerConsole();
             Console.IsVisible = false;
             
-            mapConsole = new ScrollingConsole(parentContext.Bounds.Width, parentContext.Bounds.Height);
+            var size = ParentContext.Bounds.BoundsInCells();
+            
+            mapConsole = new ScrollingConsole(size.Width, size.Height);
             mapConsole.Components.Add(new MineSweeperMouseHandler(inputState, game));
             mapConsole.Components.Add(new MineSweeperMapDrawHandler(inputState, game));
             mapConsole.Components.Add(new MineSweeperKeyboardHandler(this));
@@ -64,7 +66,7 @@ namespace RogueEntity.Samples.MineSweeper.MonoGame
             // need to resize the viewport to match the game play area
             var playerData = game.GameParameterService.WorldParameter;
             var gameArea = playerData.PlayFieldBounds;
-            var visibleAra = ParentContext.ScreenBounds;
+            var visibleAra = ParentContext.ScreenBounds.BoundsFor(Console.Font);
             var viewOrigin = mapConsole.ViewPort.Center;
             
             var sizeX = Math.Min(visibleAra.Width, gameArea.Width);
@@ -87,7 +89,7 @@ namespace RogueEntity.Samples.MineSweeper.MonoGame
             
             var playerData = game.GameParameterService.WorldParameter;
             var gameArea = playerData.PlayFieldBounds;
-            var visibleAra = ParentContext.ScreenBounds;
+            var visibleAra = ParentContext.ScreenBounds.BoundsFor(Console.Font);
 
             var sizeX = Math.Min(visibleAra.Width, gameArea.Width);
             var sizeY = Math.Min(visibleAra.Height, gameArea.Height);

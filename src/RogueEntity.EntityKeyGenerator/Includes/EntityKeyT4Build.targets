@@ -1,6 +1,6 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <ItemGroup>
-        <DotNetCliToolReference Include="dotnet-t4-project-tool" Version="2.0.5"/>
+        <DotNetCliToolReference Include="dotnet-t4-project-tool" Version="2.2.1"/>
         <PackageReference Include="JetBrains.Annotations" Version="2020.1.0"/>
         <PackageReference Include="Serilog" Version="2.9.0"/>
         <PackageReference Include="System.ValueTuple" Version="4.5.0"/>

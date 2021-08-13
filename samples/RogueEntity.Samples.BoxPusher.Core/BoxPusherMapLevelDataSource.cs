@@ -15,7 +15,7 @@ namespace RogueEntity.Samples.BoxPusher.Core
     public interface IBoxPusherMapMetaDataService
     {
         public bool TryGetMetaData(int key, out MapFragmentInfo data);
-        public bool TryGetBounds(int key, out Rectangle data);
+        public bool TryGetMapBounds(int key, out Rectangle data);
     }
     
     public class BoxPusherMapLevelDataSource : MapRegionLoaderServiceBase<int>, IBoxPusherMapMetaDataService
@@ -54,7 +54,7 @@ namespace RogueEntity.Samples.BoxPusher.Core
         }
 
 
-        public bool TryGetBounds(int key, out Rectangle data)
+        public bool TryGetMapBounds(int key, out Rectangle data)
         {
             if (levelData.GetItemAt(key).TryGetValue(out var mapFragment))
             {
