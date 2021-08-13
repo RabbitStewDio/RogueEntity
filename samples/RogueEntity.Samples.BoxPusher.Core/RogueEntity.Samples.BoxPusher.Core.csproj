@@ -12,7 +12,10 @@
 
   <ItemGroup>
     <None Update="Content\Maps\Level_0001.boxlevel">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Content\Maps\Level_0000.boxlevel">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
 

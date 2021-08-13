@@ -1,3 +1,4 @@
+using RogueEntity.Api.Utils;
 using RogueEntity.Core.Infrastructure.Randomness;
 using RogueEntity.Core.MapLoading;
 using RogueEntity.Core.Positioning.Grid;
@@ -6,7 +7,7 @@ using RogueEntity.Core.Storage;
 using RogueEntity.Core.Utils;
 using RogueEntity.Generator;
 using RogueEntity.Generator.MapFragments;
-using System;
+using Serilog;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -20,6 +21,8 @@ namespace RogueEntity.Samples.BoxPusher.Core
     
     public class BoxPusherMapLevelDataSource : MapRegionLoaderServiceBase<int>, IBoxPusherMapMetaDataService
     {
+        static readonly ILogger Logger = SLog.ForContext<BoxPusherMapLevelDataSource>();
+        
         readonly MapFragmentRegistry registry;
         readonly MapFragmentTool mapBuilder;
         readonly List<MapFragment> levelData;
@@ -37,7 +40,7 @@ namespace RogueEntity.Samples.BoxPusher.Core
             this.levelData = this.registry.Items
                                  .OrderBy(e => e.Info.Name)
                                  .ToList();
-            Console.WriteLine("Found " + levelData.Count + " chunks");
+            Logger.Information("Found {ChunkCount} chunks", levelData.Count);
         }
 
         public int Count => levelData.Count;

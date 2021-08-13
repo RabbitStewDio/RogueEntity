@@ -14,6 +14,7 @@ namespace RogueEntity.SadCons.MapRendering
         readonly IGridMapDataContext<TMapData> layer;
         readonly IItemResolver<TMapData> itemResolver;
         readonly Dictionary<string, ConsoleRenderData> rendererForTags;
+        Optional<(int z, IReadOnlyDynamicDataView2D<TMapData> view)> cachedView;
 
         public ConsoleRenderLayer(IGridMapDataContext<TMapData> layer,
                                   IItemResolver<TMapData> itemResolver)
@@ -34,8 +35,6 @@ namespace RogueEntity.SadCons.MapRendering
             this.rendererForTags[tag] = cell;
             return this;
         }
-
-        Optional<(int z, IReadOnlyDynamicDataView2D<TMapData> view)> cachedView;
 
         public Optional<ConsoleRenderData> Get(Position p)
         {

@@ -75,9 +75,9 @@ namespace RogueEntity.Core.Positioning
             }
         }
 
-        public int GridX => (int)(X + 0.5f);
-        public int GridY => (int)(Y + 0.5f);
-        public int GridZ => (int)(Z + 0.5f);
+        public int GridX => (int)Math.Floor(X);
+        public int GridY => (int)Math.Floor(Y);
+        public int GridZ => (int)Math.Floor(Z);
 
         public static bool operator ==(Position left, Position right)
         {

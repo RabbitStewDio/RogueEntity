@@ -10,12 +10,13 @@ Symbols:
     'b': [Items.Floor.Empty, Items.Box]
     'o': [Items.Floor.TargetZone]
     'O': [Items.Floor.TargetZone, Items.Box]
-    '@': [Items.Floor.Empty, Items.Floor.SpawnPoint]
+    '@': [Items.Floor.SpawnPoint]
     ' ': []
     
 ---
-wwwwww
-w.b.ow
+  www 
+wwwoww
+w..b@w
 w.w.ww
-w.@.w
+w...w
 wwwww
