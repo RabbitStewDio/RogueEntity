@@ -18,7 +18,7 @@ namespace RogueEntity.Api.Modules.Initializers
         readonly GlobalModuleEntityInformation entityInfo;
         readonly IServiceResolver serviceResolver;
         readonly ModuleInitializer moduleInitializer;
-        ModuleBase currentModule;
+        IModule currentModule;
 
         public ModuleSystemPhaseDeclareRoleSystems(in ModuleSystemPhaseInitModuleResult p,
                                                    IServiceResolver serviceResolver)
@@ -86,7 +86,7 @@ namespace RogueEntity.Api.Modules.Initializers
             }
         }
 
-        List<ModuleEntityRoleInitializerInfo<TEntityId>> CollectRoleInitializers<TEntityId>(ModuleBase module, IModuleEntityInformation mi, EntityRole role)
+        List<ModuleEntityRoleInitializerInfo<TEntityId>> CollectRoleInitializers<TEntityId>(IModule module, IModuleEntityInformation mi, EntityRole role)
             where TEntityId : IEntityKey
         {
             var entityType = typeof(TEntityId);

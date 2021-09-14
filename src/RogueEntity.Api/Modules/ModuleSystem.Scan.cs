@@ -15,7 +15,7 @@ namespace RogueEntity.Api.Modules
         /// </summary>
         /// <param name="module"></param>
         /// <exception cref="InvalidOperationException"></exception>
-        public void AddModule(ModuleBase module)
+        public void AddModule(IModule module)
         {
             if (initialized)
             {
@@ -66,7 +66,7 @@ namespace RogueEntity.Api.Modules
             
             foreach (var typeInfo in assembly.DefinedTypes)
             {
-                if (!typeof(ModuleBase).IsAssignableFrom(typeInfo))
+                if (!typeof(IModule).IsAssignableFrom(typeInfo))
                 {
                     continue;
                 }
@@ -77,7 +77,7 @@ namespace RogueEntity.Api.Modules
                     continue;
                 }
 
-                if (!(Activator.CreateInstance(typeInfo) is ModuleBase module))
+                if (!(Activator.CreateInstance(typeInfo) is IModule module))
                 {
                     Logger.Verbose("Unable to auto-register module {Module} - Default Constructor is missing", typeInfo.FullName);
                     continue;

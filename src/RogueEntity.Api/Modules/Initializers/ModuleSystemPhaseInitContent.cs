@@ -84,7 +84,7 @@ namespace RogueEntity.Api.Modules.Initializers
             }
         }
 
-        static List<ModuleContentInitializerDelegate> CollectContentInitializers(ModuleBase module)
+        static List<ModuleContentInitializerDelegate> CollectContentInitializers(IModule module)
         {
             var actions = new List<ModuleContentInitializerDelegate>();
             foreach (var m in module.GetType().GetMethods(BindingFlags.Instance | BindingFlags.NonPublic))

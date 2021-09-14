@@ -4,10 +4,11 @@ using EnTTSharp.Entities;
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Api.Modules.Helpers;
 using RogueEntity.Api.Utils;
+using System.Linq;
 
 namespace RogueEntity.Api.Modules
 {
-    public abstract class ModuleBase
+    public abstract class ModuleBase: IModule
     {
         readonly List<ModuleDependency> moduleDependencies;
         readonly Dictionary<Type, DeclaredEntityRoleRecord> declaredRoles;
@@ -33,10 +34,10 @@ namespace RogueEntity.Api.Modules
         public string Author { get; protected set; }
         public string Description { get; protected set; }
 
-        public IEnumerable<ModuleDependency> ModuleDependencies
-        {
-            get { return moduleDependencies; }
-        }
+        public ReadOnlyListWrapper<ModuleDependency> ModuleDependencies => moduleDependencies;
+
+        public bool HasRequiredRole(in EntityRole role) => RequiredRoles.Contains(role);
+        public bool HasRequiredRelation(in EntityRelation relation) => RequiredRelations.Contains(relation);
 
         public ReadOnlyListWrapper<EntityRelation> RequiredRelations => requiredRelations;
         public ReadOnlyListWrapper<EntityRole> RequiredRoles => requiredRoles;
@@ -47,6 +48,16 @@ namespace RogueEntity.Api.Modules
         public bool TryGetDeclaredRole<TEntityId>(out DeclaredEntityRoleRecord roleRecord)
         {
             return declaredRoles.TryGetValue(typeof(TEntityId), out roleRecord);
+        }
+
+        public IEnumerable<EntityRole> QueryDeclaredRolesForEntityType<TEntityType>()
+        {
+            if (TryGetDeclaredRole<TEntityType>(out var roleRecord))
+            {
+                return roleRecord.Roles;
+            }
+            
+            return Enumerable.Empty<EntityRole>();
         }
 
         public bool TryGetRelationById(string id, out EntityRelation relation)

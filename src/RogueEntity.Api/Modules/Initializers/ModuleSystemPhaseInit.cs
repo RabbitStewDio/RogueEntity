@@ -46,7 +46,7 @@ namespace RogueEntity.Api.Modules.Initializers
                     var subject = r.Subject;
                     var obj = r.Object;
 
-                    if (!m.Module.RequiredRoles.Contains(subject))
+                    if (!m.Module.HasRequiredRole(subject))
                     {
                         // find module that declared this 
                         foreach (var dep in modulesById.Values)
@@ -56,7 +56,7 @@ namespace RogueEntity.Api.Modules.Initializers
                                 continue;
                             }
 
-                            if (dep.Module.RequiredRoles.Contains(subject))
+                            if (dep.Module.HasRequiredRole(subject))
                             {
                                 m.AddDependency(dep, "Implied Relation Subject Dependency");
                             }
@@ -70,7 +70,7 @@ namespace RogueEntity.Api.Modules.Initializers
 
         void AddModuleDependencyFromRoleUsage(ModuleRecord requestingModule, EntityRole role)
         {
-            if (!requestingModule.Module.RequiredRoles.Contains(role))
+            if (!requestingModule.Module.HasRequiredRole(role))
             {
                 // find module that declared this 
                 foreach (var dep in modulesById.Values)
@@ -80,7 +80,7 @@ namespace RogueEntity.Api.Modules.Initializers
                         continue;
                     }
 
-                    if (dep.Module.RequiredRoles.Contains(role))
+                    if (dep.Module.HasRequiredRole(role))
                     {
                         requestingModule.AddDependency(dep, "Implied Role Dependency");
                     }

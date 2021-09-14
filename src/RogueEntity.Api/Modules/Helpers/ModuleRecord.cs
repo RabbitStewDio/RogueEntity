@@ -9,7 +9,7 @@ namespace RogueEntity.Api.Modules.Helpers
     {
         public static readonly ILogger Logger = SLog.ForContext<ModuleSystem>();
         public readonly ModuleId ModuleId;
-        public readonly ModuleBase Module;
+        public readonly IModule Module;
         public readonly List<ModuleRecord> Dependencies;
         public bool IsUsedAsDependency { get; set; }
         public bool ResolvedRoles { get; set; }
@@ -35,7 +35,7 @@ namespace RogueEntity.Api.Modules.Helpers
             }
         }
 
-        public ModuleRecord(ModuleBase module)
+        public ModuleRecord(IModule module)
         {
             Module = module;
             ModuleId = module.Id;

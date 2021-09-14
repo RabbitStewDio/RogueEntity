@@ -18,7 +18,7 @@ namespace RogueEntity.Api.Modules.Initializers
         readonly GlobalModuleEntityInformation entityInfo;
         readonly IServiceResolver serviceResolver;
         readonly ModuleInitializer moduleInitializer;
-        ModuleBase currentModule;
+        IModule currentModule;
 
         public ModuleSystemPhaseDeclareRelationSystems(in ModuleSystemPhaseInitModuleResult p,
                                                        IServiceResolver serviceResolver)
@@ -81,20 +81,20 @@ namespace RogueEntity.Api.Modules.Initializers
                     {
                         if (!mi.HasRole(relation.Subject))
                         {
-                            Logger.Debug("Skipping module initializer {SourceHint} for entity {Entity} with non-subject relation {EntityRelation}", 
+                            Logger.Debug("Skipping module initializer {SourceHint} for entity {Entity} with non-subject relation {EntityRelation}",
                                          roleInitializer.SourceHint, typeof(TEntityId), relation);
                             continue;
                         }
-                        
+
                         if (IsValidRelation(roleInitializer, mi, relation))
                         {
-                            Logger.Debug("Invoking module initializer {SourceHint} for entity {Entity} with relation {EntityRelation}", 
+                            Logger.Debug("Invoking module initializer {SourceHint} for entity {Entity} with relation {EntityRelation}",
                                          roleInitializer.SourceHint, typeof(TEntityId), relation);
                             roleInitializer.Initializer(in moduleInitializerParams, moduleInitializer, relation);
                         }
                         else
                         {
-                            Logger.Debug("Skipping module initializer {SourceHint} for entity {Entity} with relation {EntityRelation}", 
+                            Logger.Debug("Skipping module initializer {SourceHint} for entity {Entity} with relation {EntityRelation}",
                                          roleInitializer.SourceHint, typeof(TEntityId), relation);
                         }
                     }
@@ -130,9 +130,9 @@ namespace RogueEntity.Api.Modules.Initializers
         }
 
         List<ModuleEntityRelationInitializerInfo<TEntityId>> CollectRelationInitializers<TEntityId>(Type targetType,
-                                                                                                                  ModuleBase module,
-                                                                                                                  IModuleEntityInformation mi,
-                                                                                                                  EntityRelation relation)
+                                                                                                    IModule module,
+                                                                                                    IModuleEntityInformation mi,
+                                                                                                    EntityRelation relation)
             where TEntityId : IEntityKey
         {
             var subjectType = typeof(TEntityId);
@@ -148,7 +148,7 @@ namespace RogueEntity.Api.Modules.Initializers
                     continue;
                 }
 
-                if (!m.IsSameGenericFunction(new[] {subjectType, targetType},
+                if (!m.IsSameGenericFunction(new[] { subjectType, targetType },
                                              out var genericMethod, out var errorHint,
                                              typeof(IEnumerable<ModuleEntityRelationInitializerInfo<TEntityId>>),
                                              typeof(IServiceResolver), typeof(IModuleEntityInformation), typeof(EntityRelation)))
@@ -163,7 +163,7 @@ namespace RogueEntity.Api.Modules.Initializers
                     continue;
                 }
 
-                if (genericMethod.Invoke(module, new object[] {serviceResolver, mi, relation}) is IEnumerable<ModuleEntityRelationInitializerInfo<TEntityId>> list)
+                if (genericMethod.Invoke(module, new object[] { serviceResolver, mi, relation }) is IEnumerable<ModuleEntityRelationInitializerInfo<TEntityId>> list)
                 {
                     retval.AddRange(list);
                 }
@@ -182,7 +182,7 @@ namespace RogueEntity.Api.Modules.Initializers
                     continue;
                 }
 
-                if (!m.IsSameGenericAction(new[] {subjectType, targetType},
+                if (!m.IsSameGenericAction(new[] { subjectType, targetType },
                                            out var genericMethod, out var errorHint,
                                            typeof(ModuleEntityInitializationParameter<TEntityId>).MakeByRefType(), typeof(IModuleInitializer), typeof(EntityRelation)))
                 {
@@ -209,6 +209,7 @@ namespace RogueEntity.Api.Modules.Initializers
             {
                 Logger.Verbose("No relation initializers defined for {Relation} with subject {Subject} and {Target}", relation, subjectType, targetType);
             }
+
             return retval;
         }
     }

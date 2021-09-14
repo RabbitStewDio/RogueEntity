@@ -154,7 +154,7 @@ namespace RogueEntity.Api.Modules.Initializers
             // find module that declared this 
             foreach (var dep in modulesById.Values)
             {
-                if (dep.Module.RequiredRoles.Contains(role))
+                if (dep.Module.HasRequiredRole(role))
                 {
                     yield return dep;
                 }
@@ -166,7 +166,7 @@ namespace RogueEntity.Api.Modules.Initializers
             // find module that declared this 
             foreach (var dep in modulesById.Values)
             {
-                if (dep.Module.RequiredRelations.Contains(relation))
+                if (dep.Module.HasRequiredRelation(relation))
                 {
                     yield return dep;
                 }

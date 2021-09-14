@@ -11,7 +11,7 @@ namespace RogueEntity.Api.Modules.Initializers
     {
         static readonly ILogger Logger = SLog.ForContext<ModuleSystem>();
         readonly GlobalModuleEntityInformation entityInfo;
-        ModuleBase currentModule;
+        IModule currentModule;
         ModuleInitializer moduleInitializer;
 
         public ModuleSystemPhaseResolveRoles(in ModuleSystemPhaseInitModuleResult p)
@@ -97,12 +97,9 @@ namespace RogueEntity.Api.Modules.Initializers
             var subject = typeof(TEntityId);
 
             // record all explicitly declared role instances.
-            if (currentModule.TryGetDeclaredRole<TEntityId>(out var roleRecord))
+            foreach (var role in currentModule.QueryDeclaredRolesForEntityType<TEntityId>())
             {
-                foreach (var role in roleRecord.Roles)
-                {
-                    roleSet.RecordRole(role, " as explicit declaration in module {Module}", currentModule.Id);
-                }
+                roleSet.RecordRole(role, " as explicit declaration in module {Module}", currentModule.Id);
             }
 
             // record all explicitly declared relationship instances.

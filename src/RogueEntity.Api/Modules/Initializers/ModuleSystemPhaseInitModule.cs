@@ -54,7 +54,7 @@ namespace RogueEntity.Api.Modules.Initializers
             }
         }
 
-        List<ModuleInitializerDelegate> CollectModuleInitializers(ModuleBase module)
+        List<ModuleInitializerDelegate> CollectModuleInitializers(IModule module)
         {
             var actions = new List<ModuleInitializerDelegate>();
             foreach (var m in module.GetType().GetMethods(BindingFlags.Instance | BindingFlags.NonPublic))
