@@ -7,24 +7,27 @@ using RogueEntity.Api.Modules.Attributes;
 using RogueEntity.Api.Modules.Helpers;
 using RogueEntity.Api.Services;
 using RogueEntity.Api.Time;
+using RogueEntity.Api.Utils;
 using RogueEntity.Core.Meta;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Continuous;
 using RogueEntity.Core.Positioning.Grid;
+using Serilog;
 using System;
+using System.Linq;
 
 namespace RogueEntity.Core.Players
 {
     public class PlayerModule : ModuleBase
     {
+        static readonly ILogger Logger = SLog.ForContext<PlayerModule>();
+        
         public static readonly string ModuleId = "Core.Player";
 
-        public static readonly EntityRole PlayerSpawnPointRole = new EntityRole("Role.Core.Player.PlayerSpawnPoint");
         public static readonly EntityRole PlayerRole = new EntityRole("Role.Core.Player");
         public static readonly EntityRole PlayerObserverRole = new EntityRole("Role.Core.Player.PlayerObserver");
 
-        public static readonly EntityRelation PlayerToSpawnPointRelation = new EntityRelation("Relation.Core.Player.PlayerToSpawnPoint", PlayerRole, PlayerSpawnPointRole, true);
         public static readonly EntityRelation PlayerToObserverRelation = new EntityRelation("Relation.Core.Player.PlayerHasObservers", PlayerRole, PlayerObserverRole, true);
 
         public static readonly EntitySystemId PlayerComponentsId = "Entities.Core.Player";
@@ -44,22 +47,10 @@ namespace RogueEntity.Core.Players
 
             DeclareDependency(ModuleDependency.Of(CoreModule.ModuleId));
 
-            RequireRole(PlayerSpawnPointRole);
             RequireRole(PlayerObserverRole);
             RequireRole(PlayerRole).WithImpliedRole(CoreModule.EntityRole);
 
-            RequireRelation(PlayerToSpawnPointRelation);
             RequireRelation(PlayerToObserverRelation);
-        }
-
-        [EntityRoleInitializer("Role.Core.Player.PlayerSpawnPoint")]
-        protected void InitializePlayerSpawnPointRole<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
-                                                               IModuleInitializer initializer,
-                                                               EntityRole r)
-            where TItemId : IEntityKey
-        {
-            var entityContext = initializer.DeclareEntityContext<TItemId>();
-            entityContext.Register(PlayerSpawnPointComponentsId, -20_000, RegisterPlayerSpawnPointComponents);
         }
 
         [EntityRoleInitializer("Role.Core.Player.PlayerObserver")]
@@ -78,13 +69,34 @@ namespace RogueEntity.Core.Players
                                                      EntityRole r)
             where TItemId : IEntityKey
         {
+            if (!initParameter.ServiceResolver.TryResolve(out IPlayerServiceConfiguration conf))
+            {
+                var itemResolver = initParameter.ServiceResolver.Resolve<IItemResolver<TItemId>>();
+
+                var x = itemResolver.ItemRegistry.Items.Where(e => e.GetEntityRoles().Select(e => e.role.Role).Contains(PlayerModule.PlayerRole)).Select(e => e.Id).ToList();
+                if (x.Count > 1)
+                {
+                    Logger.Warning("Skipping auto-configuration of player configuration service as more than one item declares a player role trait: {ItemsDeclaringPlayerTrait}", x);
+                }
+                else if (x.Count == 1)
+                {
+                    conf = new PlayerServiceConfiguration(x[0]);
+                    initParameter.ServiceResolver.Store(conf);
+                    Logger.Information("Auto-configured player configuration service for player item {ItemDeclaringPlayerTrait}", x[0]);
+                }
+                else
+                {
+                    Logger.Warning("No item declared a player role trait; unable to provide automatic player configuration");
+                }
+            }
+
             var entityContext = initializer.DeclareEntityContext<TItemId>();
             entityContext.Register(PlayerComponentsId, -20_000, RegisterPlayerComponents);
             entityContext.Register(RegisterPlayerServiceId, 80_000, RegisterPlayerService);
         }
 
         [EntityRelationInitializerAttribute("Relation.Core.Player.PlayerHasObservers",
-                                            ConditionalObjectRoles = new[] {"Role.Core.Position.ContinuousPositioned"})]
+                                            ConditionalObjectRoles = new[] { "Role.Core.Position.ContinuousPositioned" })]
         protected void InitializeRefreshPlayerObserversContinuous<TActorId, TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                                                      IModuleInitializer initializer,
                                                                                      EntityRelation r)
@@ -96,7 +108,7 @@ namespace RogueEntity.Core.Players
         }
 
         [EntityRelationInitializerAttribute("Relation.Core.Player.PlayerHasObservers",
-                                            ConditionalObjectRoles = new[] {"Role.Core.Position.GridPositioned"})]
+                                            ConditionalObjectRoles = new[] { "Role.Core.Position.GridPositioned" })]
         protected void InitializeRefreshPlayerObserversGrid<TActorId, TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                                                IModuleInitializer initializer,
                                                                                EntityRelation r)
@@ -117,10 +129,18 @@ namespace RogueEntity.Core.Players
                 throw new ModuleInitializationException("Require a player service to function");
             }
 
+            if (!initParameter.ServiceResolver.TryResolve<IPlayerManager<TItemId>>(out var playerManager))
+            {
+                playerManager = new BasicPlayerManager<TItemId>(
+                    initParameter.ServiceResolver.Resolve<IItemResolver<TItemId>>(),
+                    initParameter.ServiceResolver.ResolveToReference<IPlayerServiceConfiguration>());
+                initParameter.ServiceResolver.Store(playerManager);
+            }
+
             var refreshPlayerSystem = registry.BuildSystem()
-                                  .WithoutContext()
-                                  .WithInputParameter<PlayerTag>()
-                                  .CreateSystem(playerService.RefreshPlayers);
+                                              .WithoutContext()
+                                              .WithInputParameter<PlayerTag>()
+                                              .CreateSystem(playerService.RefreshPlayers);
 
             context.AddInitializationStepHandlerSystem(refreshPlayerSystem);
             context.AddInitializationStepHandler(playerService.RemoveExpiredPlayerData);
@@ -168,13 +188,6 @@ namespace RogueEntity.Core.Players
             where TItemId : IEntityKey
         {
             registry.RegisterNonConstructable<PlayerObserverTag>();
-        }
-
-        void RegisterPlayerSpawnPointComponents<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
-                                                         EntityRegistry<TItemId> registry)
-            where TItemId : IEntityKey
-        {
-            registry.RegisterNonConstructable<PlayerSpawnLocation>();
         }
 
         bool TryGetOrCreatePlayerService<TItemId>(IServiceResolver r, out BasicPlayerService<TItemId> ps)

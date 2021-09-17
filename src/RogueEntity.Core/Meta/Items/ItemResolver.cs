@@ -245,7 +245,7 @@ namespace RogueEntity.Core.Meta.Items
                         continue;
                     }
 
-                    if (c.Id == id)
+                    if (c.ItemId == id)
                     {
                         yield return e;
                     }

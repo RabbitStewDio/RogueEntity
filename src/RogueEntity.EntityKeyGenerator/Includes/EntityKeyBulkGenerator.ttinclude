@@ -11,6 +11,7 @@
     [EntityKey]
     [EntityXmlSerialization]
     [EntityBinarySerialization]
+    [EntityKeyMetaData(typeof(<#= className #>MetaData))]
     public readonly struct <#=className #> : IEquatable<<#=className #>>, IBulkDataStorageKey<<#=className #>>
     {
         public static readonly <#=className #> Empty = default;

@@ -13,7 +13,7 @@ namespace RogueEntity.SadCons.MapRendering
     {
         readonly IGridMapDataContext<TMapData> layer;
         readonly IItemResolver<TMapData> itemResolver;
-        readonly Dictionary<string, ConsoleRenderData> rendererForTags;
+        readonly Dictionary<WorldEntityTag, ConsoleRenderData> rendererForTags;
         Optional<(int z, IReadOnlyDynamicDataView2D<TMapData> view)> cachedView;
 
         public ConsoleRenderLayer(IGridMapDataContext<TMapData> layer,
@@ -21,7 +21,7 @@ namespace RogueEntity.SadCons.MapRendering
         {
             this.layer = layer;
             this.itemResolver = itemResolver;
-            this.rendererForTags = new Dictionary<string, ConsoleRenderData>();
+            this.rendererForTags = new Dictionary<WorldEntityTag, ConsoleRenderData>();
             this.layer.ViewExpired += OnViewExpired;
         }
 
@@ -30,7 +30,7 @@ namespace RogueEntity.SadCons.MapRendering
             cachedView = default;
         }
 
-        public ConsoleRenderLayer<TMapData> WithRenderTemplate(string tag, ConsoleRenderData cell)
+        public ConsoleRenderLayer<TMapData> WithRenderTemplate(WorldEntityTag tag, ConsoleRenderData cell)
         {
             this.rendererForTags[tag] = cell;
             return this;
@@ -38,18 +38,11 @@ namespace RogueEntity.SadCons.MapRendering
 
         public Optional<ConsoleRenderData> Get(Position p)
         {
-            if (!cachedView.TryGetValue(out var x) || x.z != p.GridZ)
+            if (!RefreshCachedMap(p, out var mapView))
             {
-                if (!layer.TryGetView(p.GridZ, out var view))
-                {
-                    return default;
-                }
-
-                x = (p.GridZ, view);
-                cachedView = x;
+                return default;
             }
 
-            var (_, mapView) = x;
             var item = mapView[p.GridX, p.GridY];
             if (item.IsEmpty)
             {
@@ -63,6 +56,25 @@ namespace RogueEntity.SadCons.MapRendering
             }
 
             return cellTemplate;
+        }
+
+        bool RefreshCachedMap(Position p, out IReadOnlyDynamicDataView2D<TMapData> view)
+        {
+            if (!cachedView.TryGetValue(out var x) || x.z != p.GridZ)
+            {
+                if (!layer.TryGetView(p.GridZ, out view))
+                {
+                    {
+                        return false;
+                    }
+                }
+
+                x = (p.GridZ, view);
+                cachedView = x;
+            }
+
+            view = default;
+            return true;
         }
     }
 }

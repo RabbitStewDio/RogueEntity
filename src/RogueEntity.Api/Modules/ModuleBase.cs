@@ -1,17 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using EnTTSharp.Entities;
 using RogueEntity.Api.ItemTraits;
-using RogueEntity.Api.Modules.Helpers;
 using RogueEntity.Api.Utils;
-using System.Linq;
 
 namespace RogueEntity.Api.Modules
 {
     public abstract class ModuleBase: IModule
     {
         readonly List<ModuleDependency> moduleDependencies;
-        readonly Dictionary<Type, DeclaredEntityRoleRecord> declaredRoles;
         readonly Dictionary<Type, DeclaredEntityRelationRecord> declaredRelations;
 
         readonly List<EntityRelation> requiredRelations;
@@ -21,7 +17,6 @@ namespace RogueEntity.Api.Modules
         {
             moduleDependencies = new List<ModuleDependency>();
 
-            declaredRoles = new Dictionary<Type, DeclaredEntityRoleRecord>();
             declaredRelations = new Dictionary<Type, DeclaredEntityRelationRecord>();
 
             requiredRelations = new List<EntityRelation>();
@@ -42,23 +37,7 @@ namespace RogueEntity.Api.Modules
         public ReadOnlyListWrapper<EntityRelation> RequiredRelations => requiredRelations;
         public ReadOnlyListWrapper<EntityRole> RequiredRoles => requiredRoles;
 
-        public IEnumerable<DeclaredEntityRoleRecord> DeclaredEntityTypes => declaredRoles.Values;
         public IEnumerable<DeclaredEntityRelationRecord> DeclaredEntityRelations => declaredRelations.Values;
-
-        public bool TryGetDeclaredRole<TEntityId>(out DeclaredEntityRoleRecord roleRecord)
-        {
-            return declaredRoles.TryGetValue(typeof(TEntityId), out roleRecord);
-        }
-
-        public IEnumerable<EntityRole> QueryDeclaredRolesForEntityType<TEntityType>()
-        {
-            if (TryGetDeclaredRole<TEntityType>(out var roleRecord))
-            {
-                return roleRecord.Roles;
-            }
-            
-            return Enumerable.Empty<EntityRole>();
-        }
 
         public bool TryGetRelationById(string id, out EntityRelation relation)
         {
@@ -83,23 +62,7 @@ namespace RogueEntity.Api.Modules
             return false;
         }
 
-        protected DeclareDependencyBuilder DeclareEntity<TEntityId>(EntityRole r)
-            where TEntityId : IEntityKey
-        {
-            if (declaredRoles.TryGetValue(typeof(TEntityId), out var rr))
-            {
-                rr.With(r);
-            }
-            else
-            {
-                rr = new DeclaredEntityRoleRecord(typeof(TEntityId), r, (cb, m) => cb.ActivateEntity<TEntityId>(m));
-                declaredRoles[rr.EntityType] = rr;
-            }
-
-            return new DeclareDependencyBuilder(this, r);
-        }
-
-        protected DeclareDependencyBuilder DeclareRelation<TSubject, TObject>(EntityRelation r)
+        public DeclareDependencyBuilder DeclareRelation<TSubject, TObject>(EntityRelation r)
         {
             if (!declaredRelations.TryGetValue(typeof(TSubject), out var record))
             {
@@ -154,12 +117,6 @@ namespace RogueEntity.Api.Modules
         {
             moduleDependencies.AddRange(dependencies);
         }
-
-        public virtual void ProcessDeclaredSystems<TEntityId>(in ModuleInitializationParameter p,
-                                                              IModuleInitializationData<TEntityId> moduleContext,
-                                                              IModuleInitializer initializer)
-            where TEntityId : IEntityKey
-        { }
     }
 
 
@@ -177,6 +134,12 @@ namespace RogueEntity.Api.Modules
         public RequireDependencyBuilder WithImpliedRole(EntityRole r)
         {
             this.module.RequireRelation(new EntityRelation(ModuleRelationNames.ImpliedRoleRelationId, role, r, true));
+            return this;
+        }
+
+        public RequireDependencyBuilder WithRequiredRole(EntityRole r)
+        {
+            this.module.RequireRelation(new EntityRelation(ModuleRelationNames.ImpliedRoleRelationId, role, r, false));
             return this;
         }
 

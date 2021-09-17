@@ -10,12 +10,13 @@ namespace RogueEntity.Core.Meta.Items
     {
         readonly TraitRegistration<IBulkItemTrait<TItemId>> traitRegistration;
 
-        public BulkItemDeclaration(ItemDeclarationId id) : this(id, id.Id) {}
+        public BulkItemDeclaration(ItemDeclarationId id) : this(id, new WorldEntityTag(id.Id)) {}
 
-        public BulkItemDeclaration(ItemDeclarationId id, string tag) :
+        public BulkItemDeclaration(ItemDeclarationId id, WorldEntityTag tag) :
             base(id, tag)
         {
             traitRegistration = new TraitRegistration<IBulkItemTrait<TItemId>>(TraitComparer.Default);
+            traitRegistration.Add(new DefaultEntityTagTrait<TItemId>(tag));
         }
 
         public BulkItemDeclaration<TItemId> WithTrait(IBulkItemTrait<TItemId> trait)

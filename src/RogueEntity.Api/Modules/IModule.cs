@@ -9,10 +9,8 @@ namespace RogueEntity.Api.Modules
         ModuleId Id { get; }
         ReadOnlyListWrapper<EntityRelation> RequiredRelations { get; }
         ReadOnlyListWrapper<ModuleDependency> ModuleDependencies { get; }
-        IEnumerable<DeclaredEntityRoleRecord> DeclaredEntityTypes { get; }
-        IEnumerable<DeclaredEntityRelationRecord> DeclaredEntityRelations { get; }
         
-        IEnumerable<EntityRole> QueryDeclaredRolesForEntityType<TEntityType>();
+        IEnumerable<DeclaredEntityRelationRecord> DeclaredEntityRelations { get; }
         
         bool HasRequiredRole(in EntityRole role);
         bool HasRequiredRelation(in EntityRelation relation);

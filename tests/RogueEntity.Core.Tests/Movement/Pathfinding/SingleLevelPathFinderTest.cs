@@ -9,6 +9,7 @@ using RogueEntity.Core.MovementPlaning.Pathfinding;
 using RogueEntity.Core.MovementPlaning.Pathfinding.SingleLevel;
 using RogueEntity.Core.Positioning.Algorithms;
 using RogueEntity.Core.Positioning.Grid;
+using RogueEntity.Core.Tests.Fixtures;
 using RogueEntity.Core.Utils.DataViews;
 using static RogueEntity.Core.Tests.Movement.PathfindingTestUtil;
 

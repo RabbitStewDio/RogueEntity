@@ -2,8 +2,7 @@ using RogueEntity.Api.ItemTraits;
 using RogueEntity.Api.Services;
 using RogueEntity.Api.Time;
 using RogueEntity.Core.Infrastructure.Randomness;
-using RogueEntity.Core.Inputs.Commands;
-using RogueEntity.Core.MapLoading;
+using RogueEntity.Core.MapLoading.MapRegions;
 using RogueEntity.Core.Meta.EntityKeys;
 using RogueEntity.Core.Players;
 using RogueEntity.Core.Runtime;
@@ -24,7 +23,6 @@ namespace RogueEntity.Samples.BoxPusher.Core
 
         public IPlayerProfileManager<BoxPusherPlayerProfile> ProfileManager { get; private set; }
         public IMapRegionLoaderService<int> LevelLoader { get; private set; }
-        public BasicCommandService<ActorReference> CommandService { get; private set; }
         IItemResolver<ActorReference> actorResolver;
 
         public BoxPusherGame(IStorageLocationService storageLocations): base("BoxPusher")
@@ -38,7 +36,6 @@ namespace RogueEntity.Samples.BoxPusher.Core
         {
             ProfileManager = ServiceResolver.Resolve<IPlayerProfileManager<BoxPusherPlayerProfile>>();
             LevelLoader = ServiceResolver.Resolve<IMapRegionLoaderService<int>>();
-            CommandService = ServiceResolver.Resolve<BasicCommandService<ActorReference>>();
             actorResolver = ServiceResolver.Resolve<IItemResolver<ActorReference>>();
         }
         
@@ -46,7 +43,7 @@ namespace RogueEntity.Samples.BoxPusher.Core
         {
             if (LevelLoader.IsBlocked())
             {
-                System.Console.WriteLine("Blocked");
+                Console.WriteLine("Blocked");
                 return true;
             }
             
@@ -82,7 +79,7 @@ namespace RogueEntity.Samples.BoxPusher.Core
                 if (actorResolver.TryUpdateData(value.EntityId, profile, out _) &&
                     actorResolver.TryUpdateData(value.EntityId, PlayerObserverTag.CreateFor(new PlayerTag(profileId)), out _))
                 {
-                    System.Console.WriteLine("Player created");
+                    Console.WriteLine("Player created");
                     return true;
                 }
 

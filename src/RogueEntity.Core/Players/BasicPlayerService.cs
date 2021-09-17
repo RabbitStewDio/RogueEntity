@@ -41,7 +41,6 @@ namespace RogueEntity.Core.Players
         /// </summary>
         /// <param name="v"></param>
         /// <param name="k"></param>
-        /// <param name="o"></param>
         /// <param name="playerTag"></param>
         public void RefreshPlayers(IEntityViewControl<TEntity> v, TEntity k, in PlayerTag playerTag)
         {

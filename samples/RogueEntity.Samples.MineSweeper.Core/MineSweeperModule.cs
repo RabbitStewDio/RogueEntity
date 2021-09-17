@@ -5,11 +5,11 @@ using RogueEntity.Api.ItemTraits;
 using RogueEntity.Api.Modules;
 using RogueEntity.Api.Modules.Attributes;
 using RogueEntity.Core.Infrastructure.Randomness;
+using RogueEntity.Core.MapLoading.Builder;
 using RogueEntity.Core.Meta.EntityKeys;
 using RogueEntity.Core.Players;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Sensing.Discovery;
-using RogueEntity.Generator;
 using RogueEntity.Samples.MineSweeper.Core.Commands;
 using RogueEntity.Samples.MineSweeper.Core.Services;
 using RogueEntity.Samples.MineSweeper.Core.Traits;
@@ -31,7 +31,7 @@ namespace RogueEntity.Samples.MineSweeper.Core
         {
             Id = "MineSweeper.Game";
 
-            DeclareRelation<ActorReference, ItemReference>(PlayerRevealsFieldRelation);
+            RequireRelation(PlayerRevealsFieldRelation);
         }
 
         [EntityRoleInitializer("Role.Core.Player")]

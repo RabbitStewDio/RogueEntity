@@ -1,6 +1,8 @@
 using Microsoft.Xna.Framework;
 using RogueEntity.Core.Meta.EntityKeys;
+using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Runtime;
+using RogueEntity.Generator;
 using RogueEntity.SadCons.MapRendering;
 using RogueEntity.Samples.BoxPusher.Core;
 using SadConsole.Components;
@@ -13,13 +15,14 @@ namespace RogueEntity.Samples.BoxPusher.MonoGame
     {
         readonly BoxPusherGame game;
         readonly BoxPusherInputState sharedState;
-        readonly MapRenderer renderer;
-        IBoxPusherMapMetaDataService metaDataService;
+        IMapLevelMetaDataService metaDataService;
+        readonly BasicMapRenderer br;
 
         public BoxPusherMapDrawHandler(BoxPusherGame game, BoxPusherInputState sharedState)
         {
             this.sharedState = sharedState;
-            this.renderer = new MapRenderer();
+            // this.renderer = new MapRenderer();
+            this.br = new BasicMapRenderer();
 
             this.game = game;
             if (this.game.Status.IsInitialized())
@@ -34,29 +37,44 @@ namespace RogueEntity.Samples.BoxPusher.MonoGame
 
         void OnGameInitialized(object sender, EventArgs e)
         {
-            renderer.AddGridLayer<ItemReference>(BoxPusherMapLayers.Floor, this.game.ServiceResolver)
-                    .WithRenderTemplate(BoxPusherItemDefinitions.EmptyFloor.Tag,
-                                        ConsoleRenderData.For(5)
-                                                         .WithForeground(Color.White))
-                    .WithRenderTemplate(BoxPusherItemDefinitions.TargetZoneFloor.Tag,
-                                        ConsoleRenderData.For(4)
-                                                         .WithForeground(Color.Green, true));
+            br.DefineRenderLayer(RenderLayers.FromGrid(this.game.ServiceResolver.Resolve<IGridMapContext<ItemReference>>())
+                                             .ForMapLayer(BoxPusherMapLayers.Floor)
+                                             .WithConverter(RenderLayers.StandardTagConverter<ItemReference>(this.game.ServiceResolver))
+                                             .Build());
+            br.DefineRenderLayer(RenderLayers.FromGrid(this.game.ServiceResolver.Resolve<IGridMapContext<ItemReference>>())
+                                             .ForMapLayer(BoxPusherMapLayers.Items)
+                                             .WithConverter(RenderLayers.StandardTagConverter<ItemReference>(this.game.ServiceResolver))
+                                             .Build());
+            br.DefineRenderLayer(RenderLayers.FromGrid(this.game.ServiceResolver.Resolve<IGridMapContext<ActorReference>>())
+                                             .ForMapLayer(BoxPusherMapLayers.Actors)
+                                             .WithConverter(RenderLayers.StandardTagConverter<ActorReference>(this.game.ServiceResolver))
+                                             .Build());
 
-            renderer.AddGridLayer<ItemReference>(BoxPusherMapLayers.Items, this.game.ServiceResolver)
-                    .WithRenderTemplate(BoxPusherItemDefinitions.Wall.Tag,
-                                        ConsoleRenderData.For(2)
-                                                         .WithForeground(Color.White))
-                    .WithRenderTemplate(BoxPusherItemDefinitions.Box.Tag,
-                                        ConsoleRenderData.For(3, true)
-                                                         .WithForeground(Color.Black)
-                                                         .WithBackground(Color.White));
+            br.Add(RenderMatchers.Match(BoxPusherMapLayers.Floor, BoxPusherItemDefinitions.EmptyFloor.Tag)
+                                 .As(ConsoleRenderData.For(5)
+                                                      .WithForeground(Color.White)));
+            br.Add(RenderMatchers.Match(BoxPusherMapLayers.Floor, BoxPusherItemDefinitions.TargetZoneFloor.Tag)
+                                 .As(ConsoleRenderData.For(4)
+                                                      .WithForeground(Color.Green)));
+            br.Add(RenderMatchers.Match(BoxPusherMapLayers.Floor, BoxPusherItemDefinitions.TargetZoneFloor.Tag)
+                                 .And(BoxPusherMapLayers.Items, BoxPusherItemDefinitions.Box.Tag)
+                                 .As(ConsoleRenderData.For(3)
+                                                      .WithForeground(Color.Black)
+                                                      .WithBackground(Color.Green)));
+            br.Add(RenderMatchers.Match(BoxPusherMapLayers.Items, BoxPusherItemDefinitions.Box.Tag)
+                                 .As(ConsoleRenderData.For(3)
+                                                      .WithForeground(Color.Black)
+                                                      .WithBackground(Color.White)));
+            br.Add(RenderMatchers.Match(BoxPusherMapLayers.Items, BoxPusherItemDefinitions.Wall.Tag)
+                                 .As(ConsoleRenderData.For(2)
+                                                      .WithForeground(Color.White)
+                                                      .WithBackground(Color.Black)));
+            br.Add(RenderMatchers.Match(BoxPusherMapLayers.Actors, BoxPusherItemDefinitions.Player.Tag)
+                                 .As(ConsoleRenderData.For(6)
+                                                      .WithForeground(Color.Yellow)
+                                                      .WithBackground(Color.Black)));
 
-            renderer.AddGridLayer<ActorReference>(BoxPusherMapLayers.Actors, this.game.ServiceResolver)
-                    .WithRenderTemplate(BoxPusherItemDefinitions.Player.Tag,
-                                        ConsoleRenderData.For(6, true)
-                                                         .WithForeground(Color.Yellow));
-
-            metaDataService = this.game.ServiceResolver.Resolve<IBoxPusherMapMetaDataService>();
+            metaDataService = this.game.ServiceResolver.Resolve<IMapLevelMetaDataService>();
             this.game.GameInitialized -= OnGameInitialized;
         }
 
@@ -75,20 +93,19 @@ namespace RogueEntity.Samples.BoxPusher.MonoGame
             var pos = observer.Position;
             if (pos.IsInvalid)
             {
+                console.FillWithRandomGarbage();
                 return;
             }
 
             if (metaDataService.TryGetMapBounds(pos.GridZ, out var m))
             {
                 var center = m.Center;
-                renderer.Render(pos.WithPosition(center.X, center.Y), console);
+                br.Render(pos.WithPosition(center.X, center.Y), console);
             }
             else
             {
-                renderer.Render(pos, console);
+                br.Render(pos, console);
             }
-
-
         }
     }
 }

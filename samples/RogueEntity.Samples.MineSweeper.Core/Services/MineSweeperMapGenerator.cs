@@ -1,12 +1,12 @@
 ﻿using EnTTSharp.Entities;
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Core.Infrastructure.Randomness;
+using RogueEntity.Core.MapLoading.Builder;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Algorithms;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.DataViews;
-using RogueEntity.Generator;
 using RogueEntity.Samples.MineSweeper.Core.Traits;
 using System;
 using System.Collections.Generic;

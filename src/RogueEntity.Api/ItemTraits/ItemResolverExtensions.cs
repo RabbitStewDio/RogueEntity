@@ -10,7 +10,7 @@ namespace RogueEntity.Api.ItemTraits
             return r.TryResolve(k, out var id) && id.Id == d;
         }
 
-        public static string QueryItemTag<TEntity>(this IItemResolver<TEntity> r, TEntity k)
+        public static WorldEntityTag QueryItemTag<TEntity>(this IItemResolver<TEntity> r, TEntity k)
             where TEntity : IEntityKey
         {
             if (r.TryResolve(k, out var id))
@@ -18,7 +18,7 @@ namespace RogueEntity.Api.ItemTraits
                 return id.Tag;
             }
 
-            return null;
+            return default;
         }
         
         public static ItemDeclarationId QueryItemId<TEntity>(this IItemResolver<TEntity> r, TEntity k)
@@ -31,5 +31,6 @@ namespace RogueEntity.Api.ItemTraits
 
             return default;
         }
+
     }
 }

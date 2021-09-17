@@ -14,6 +14,7 @@ using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Algorithms;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Positioning.SpatialQueries;
+using RogueEntity.Core.Tests.Fixtures;
 using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.DataViews;
 using static RogueEntity.Core.Tests.Movement.PathfindingTestUtil;

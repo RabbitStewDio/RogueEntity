@@ -17,6 +17,7 @@ namespace RogueEntity.Api.Modules.Helpers
         public bool ResolvedOrder { get; set; }
         public bool InitializedModule { get; set; }
         public bool InitializedContent { get; set; }
+        public bool InitializedLateModule { get; set; }
         public bool InitializedRoles { get; set; }
         public bool InitializedRelations { get; set; }
         public bool FinalizedRoles { get; set; }

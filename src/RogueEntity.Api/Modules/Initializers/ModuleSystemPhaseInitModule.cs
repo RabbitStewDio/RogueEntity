@@ -41,7 +41,8 @@ namespace RogueEntity.Api.Modules.Initializers
         {
             var moduleInitializer = new ModuleInitializer();
             var globalInformation = new GlobalModuleEntityInformation();
-            while (true)
+            var circuitBreaker = 100;
+            while (circuitBreaker > 0)
             {
                 InitializeModule(moduleInitializer, globalInformation, orderedModules);
                 var newModules = initPhase.CreateModulesSortedByInitOrder();
@@ -51,7 +52,11 @@ namespace RogueEntity.Api.Modules.Initializers
                     // module initialization done.
                     return new ModuleSystemPhaseInitModuleResult(moduleInitializer, globalInformation, newModules);
                 }
+
+                circuitBreaker -= 1;
             }
+
+            throw new ModuleInitializationException("Did not reach a stable state after 100 iterations of module search.");
         }
 
         List<ModuleInitializerDelegate> CollectModuleInitializers(IModule module)

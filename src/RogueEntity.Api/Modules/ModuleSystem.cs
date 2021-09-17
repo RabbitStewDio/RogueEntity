@@ -53,8 +53,11 @@ namespace RogueEntity.Api.Modules
 
             // 2. Initialize content. This sets up EntityDeclarations and thus tells the system which roles are used by each entity key
             //    encountered by the code.
-            var phase3 = new ModuleSystemPhaseInitContent(phase2Result, serviceResolver);
-            phase3.InitializeModuleContent();
+            var phase3a = new ModuleSystemPhaseInitContent(phase2Result, serviceResolver);
+            phase3a.InitializeModuleContent();
+
+            var phase3b = new ModuleSystemPhaseInitLateModule(phase2Result, serviceResolver);
+            phase3b.InitializeModuleContent();
 
             // 3. Let the content modules declare all their items and game rules.
             var phase4 = new ModuleSystemPhaseDeclareContent(phase2Result, serviceResolver, modulesById);

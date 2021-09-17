@@ -1,0 +1,89 @@
+using EnTTSharp.Entities;
+using JetBrains.Annotations;
+using System;
+using System.Diagnostics;
+
+namespace RogueEntity.Core.MapLoading.MapRegions
+{
+    /// <summary>
+    ///    A simple map loader system for loading whole levels (identified by the Z-coordinate).
+    /// </summary>
+    public class BasicMapRegionSystem : IMapRegionSystem
+    {
+        readonly TimeSpan maximumProcessingTime;
+        readonly IMapRegionLoaderService<int> mapLoaderService;
+        readonly Stopwatch processingTimeStopWatch;
+
+        public BasicMapRegionSystem([NotNull] IMapRegionLoaderService<int> mapLoaderService,
+                                    TimeSpan maximumProcessingTime = default)
+        {
+            this.mapLoaderService = mapLoaderService ?? throw new ArgumentNullException(nameof(mapLoaderService));
+            this.maximumProcessingTime = NormalizeMaximumLoadingTime(maximumProcessingTime);
+            this.processingTimeStopWatch = new Stopwatch();
+        }
+
+        static TimeSpan NormalizeMaximumLoadingTime(TimeSpan maximumProcessingTime)
+        {
+            return maximumProcessingTime <= TimeSpan.Zero ? TimeSpan.FromMilliseconds(5) : maximumProcessingTime;
+        }
+
+        /// <summary>
+        ///   Invoked when a existing player requests to be moved to a different level.
+        ///   May not be appropriate for all game types. Also used when a player is moving
+        ///   into a new level by entering a stair case or portal, where the player
+        ///   has no control over where the end point of the portal lies. 
+        /// </summary>
+        public void RequestLoadLevelFromChangeLevelCommand<TItemId>(IEntityViewControl<TItemId> v,
+                                                                    TItemId k,
+                                                                    in ChangeLevelCommand cmd)
+            where TItemId : IEntityKey
+        {
+            var level = cmd.Level;
+            mapLoaderService.RequestImmediateLoading(level);
+        }
+
+        /// <summary>
+        ///   Invoked when a player is moving into a new level by falling or by knowing where
+        ///   the end point of a given portal is placed. Useful for stairs that should line
+        ///   up across levels or for jumping down a hole in the ground. 
+        /// </summary>
+        public void RequestLoadLevelFromChangePositionCommand<TItemId>(IEntityViewControl<TItemId> v,
+                                                                       TItemId k,
+                                                                       in ChangeLevelPositionCommand cmd)
+            where TItemId : IEntityKey
+        {
+            if (cmd.Position.IsInvalid)
+            {
+                v.RemoveComponent<ChangeLevelPositionCommand>(k);
+                return;
+            }
+
+            var level = cmd.Position.GridZ;
+            mapLoaderService.RequestImmediateLoading(level);
+        }
+
+        /// <summary>
+        ///    A basic driver function that loads the next requested chunk.
+        /// </summary>
+        public void LoadChunks()
+        {
+            processingTimeStopWatch.Restart();
+            try
+            {
+                while (mapLoaderService.PerformLoadNextChunk())
+                {
+                    if (processingTimeStopWatch.Elapsed >= maximumProcessingTime)
+                    {
+                        return;
+                    }
+                }
+            }
+            finally
+            {
+                processingTimeStopWatch.Stop();
+            }
+        }
+
+        protected IMapRegionLoaderService<int> MapLoaderService => mapLoaderService;
+    }
+}

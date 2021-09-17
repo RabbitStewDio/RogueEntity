@@ -82,7 +82,7 @@ namespace RogueEntity.Core.Meta.ItemBuilder
             return new ReferenceItemDeclarationBuilder<TItemId>(serviceResolver, new ReferenceItemDeclaration<TItemId>(id.Id, id.Tag));
         }
         
-        public ReferenceItemDeclarationBuilder<TItemId> Define(ItemDeclarationId id, string tag = null)
+        public ReferenceItemDeclarationBuilder<TItemId> Define(ItemDeclarationId id, WorldEntityTag tag = default)
         {
             return new ReferenceItemDeclarationBuilder<TItemId>(serviceResolver, new ReferenceItemDeclaration<TItemId>(id, tag));
         }
@@ -103,7 +103,7 @@ namespace RogueEntity.Core.Meta.ItemBuilder
             return new BulkItemDeclarationBuilder<TItemId>(serviceResolver, new BulkItemDeclaration<TItemId>(id.Id, id.Tag));
         }
 
-        public BulkItemDeclarationBuilder<TItemId> Define(ItemDeclarationId id, string tag = null)
+        public BulkItemDeclarationBuilder<TItemId> Define(ItemDeclarationId id, WorldEntityTag tag = default)
         {
             return new BulkItemDeclarationBuilder<TItemId>(serviceResolver, new BulkItemDeclaration<TItemId>(id, tag));
         }

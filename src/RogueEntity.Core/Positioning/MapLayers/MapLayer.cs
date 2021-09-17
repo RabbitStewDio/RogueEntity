@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Runtime.Serialization;
 using MessagePack;
+using System.Collections.Generic;
 
 namespace RogueEntity.Core.Positioning.MapLayers
 {
@@ -57,5 +58,15 @@ namespace RogueEntity.Core.Positioning.MapLayers
         {
             return !left.Equals(right);
         }
+
+        sealed class LayerIdRelationalComparer : IComparer<MapLayer>
+        {
+            public int Compare(MapLayer x, MapLayer y)
+            {
+                return x.LayerId.CompareTo(y.LayerId);
+            }
+        }
+
+        public static IComparer<MapLayer> LayerIdComparer { get; } = new LayerIdRelationalComparer();
     }
 }

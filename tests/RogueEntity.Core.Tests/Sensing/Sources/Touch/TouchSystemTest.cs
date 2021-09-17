@@ -13,6 +13,7 @@ using RogueEntity.Core.Sensing.Sources;
 using RogueEntity.Core.Sensing.Sources.Touch;
 using RogueEntity.Core.Meta.EntityKeys;
 using RogueEntity.Core.Positioning.Algorithms;
+using RogueEntity.Core.Tests.Fixtures;
 using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.DataViews;
 
@@ -101,9 +102,9 @@ namespace RogueEntity.Core.Tests.Sensing.Sources.Touch
             context.ItemEntityRegistry.GetComponent(active5, out SenseSourceState<TouchSense> vb).Should().BeTrue();
             context.ItemEntityRegistry.GetComponent(inactive, out SenseSourceState<TouchSense> vc).Should().BeTrue();
 
-            va.LastPosition.Should().Be(Position.Of(TestMapLayers.One,3, 4, 0));
-            vb.LastPosition.Should().Be(Position.Of(TestMapLayers.One,8, 9, 0));
-            vc.LastPosition.Should().Be(Position.Of(TestMapLayers.One,5, 5, 0));
+            va.LastPosition.Should().Be(Position.Of(TestMapLayers.One,3, 4));
+            vb.LastPosition.Should().Be(Position.Of(TestMapLayers.One,8, 9));
+            vc.LastPosition.Should().Be(Position.Of(TestMapLayers.One,5, 5));
 
             va.State.Should().Be(SenseSourceDirtyState.Active);
             vb.State.Should().Be(SenseSourceDirtyState.Dirty);

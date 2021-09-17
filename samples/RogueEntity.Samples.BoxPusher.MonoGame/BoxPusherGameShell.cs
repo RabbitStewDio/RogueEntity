@@ -19,7 +19,20 @@ namespace RogueEntity.Samples.BoxPusher.MonoGame
         public BoxPusherGameShell()
         {
             game = new BoxPusherGame(DefaultStorageLocationService.CreateDefault("BoxPusher"));
+            game.GameStarted += OnGameStarted;
+            game.GameStopped += OnGameStopped;
+            
             itemTheme = new BoxPusherProfileItemTheme(3);
+        }
+
+        void OnGameStarted(object sender, EventArgs e)
+        {
+            ControlsCanvas.IsVisible = false;
+        }
+
+        void OnGameStopped(object sender, EventArgs e)
+        {
+            ControlsCanvas.IsVisible = true;
         }
 
         protected override MainMenuConsoleContext InitializeLateOverride()
@@ -58,14 +71,12 @@ namespace RogueEntity.Samples.BoxPusher.MonoGame
         {
             // at this call we can assume that the profile exists, so we can just load the game
             game.StartGame(valueTuple.profileId);
-            ControlsCanvas.IsVisible = false;
         }
 
         void OnLoadRequested(object sender, PlayerProfileContainer<BoxPusherPlayerProfile> e)
         {
             loadGameScreen.Hide();
             game.StartGame(e.Id);
-            ControlsCanvas.IsVisible = false;
         }
 
         void OnShowSettingsDialog()

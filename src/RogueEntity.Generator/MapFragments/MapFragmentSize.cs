@@ -1,5 +1,6 @@
 using JetBrains.Annotations;
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RogueEntity.Generator.MapFragments
 {
@@ -33,6 +34,7 @@ namespace RogueEntity.Generator.MapFragments
             return obj is MapFragmentSize other && Equals(other);
         }
 
+        [SuppressMessage("ReSharper", "NonReadonlyMemberInGetHashCode")]
         public override int GetHashCode()
         {
             unchecked

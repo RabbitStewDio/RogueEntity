@@ -4,9 +4,12 @@ using RogueEntity.Api.ItemTraits;
 using RogueEntity.Api.Modules;
 using RogueEntity.Api.Modules.Attributes;
 using RogueEntity.Core.Meta;
+using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Positioning.Continuous;
 using RogueEntity.Core.Positioning.Grid;
+using RogueEntity.Core.Positioning.MapLayers;
 using RogueEntity.Core.Positioning.SpatialQueries;
+using System.Linq;
 
 namespace RogueEntity.Core.Positioning
 {
@@ -24,7 +27,7 @@ namespace RogueEntity.Core.Positioning
         public static readonly EntitySystemId RegisterSpatialQuery = "Systems.Core.Position.RegisterSpatialQuery";
 
         public static readonly EntityRole PositionQueryRole = new EntityRole("Role.Core.Position.PositionQueryable");
-        
+
         public static readonly EntityRole PositionedRole = new EntityRole("Role.Core.Position.Positionable");
         public static readonly EntityRole GridPositionedRole = new EntityRole("Role.Core.Position.GridPositioned");
         public static readonly EntityRole ContinuousPositionedRole = new EntityRole("Role.Core.Position.ContinuousPositioned");
@@ -55,6 +58,69 @@ namespace RogueEntity.Core.Positioning
                 r = new SpatialQueryRegistry();
                 initParameter.ServiceResolver.Store(r);
                 initParameter.ServiceResolver.Store<ISpatialQueryLookup>(r);
+            }
+        }
+
+        /// <summary>
+        ///   Ensures that if an entity declares to be grid positioned, that the system contains a
+        ///   map with a valid layer for such entities. This method will do nothing if an map system
+        ///   already exists.
+        /// </summary>
+        /// <param name="initParameter"></param>
+        /// <param name="initializer"></param>
+        /// <param name="role"></param>
+        /// <typeparam name="TActorId"></typeparam>
+        protected void EnsureDefaultGridMapExists<TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter,
+                                                        IModuleInitializer initializer,
+                                                        EntityRole role)
+            where TActorId : IEntityKey
+        {
+            if (!initParameter.ServiceResolver.TryResolve<IItemResolver<TActorId>>(out var itemResolver))
+            {
+                return;
+            }
+
+            var mapLayers = itemResolver.ItemRegistry.QueryDesignTimeTrait<MapLayerPreference>()
+                                        .SelectMany(e => e.Item2.AcceptableLayers)
+                                        .Distinct()
+                                        .ToList();
+            if (mapLayers.Count == 0)
+            {
+                return;
+            }
+
+            if (!PositionModuleServices.TryGetOrCreateDefaultMapServices<TActorId>(initParameter.ServiceResolver, out var map, out var placementService))
+            {
+                return;
+            }
+            
+            var itemPlacementService = initParameter.ServiceResolver.GetOrCreateGridItemPlacementService<TActorId>();
+            var locationService = initParameter.ServiceResolver.GetOrCreateGridItemPlacementLocationService<TActorId>();
+
+            foreach (var layer in mapLayers)
+            {
+                if (!map.TryGetGridDataFor(layer, out _))
+                {
+                    map.WithDefaultMapLayer(layer);
+                }
+
+                if (placementService.TryGetItemPlacementService(layer, out var existingPlacementService))
+                {
+                    if (placementService.TryGetItemPlacementLocationService(layer, out _))
+                    {
+                        continue;
+                    }
+
+                    placementService.WithLayer(layer, existingPlacementService, locationService);
+                }
+                else if (placementService.TryGetItemPlacementLocationService(layer, out var existingLocationService))
+                {
+                    placementService.WithLayer(layer, itemPlacementService, existingLocationService);
+                }
+                else
+                {
+                    placementService.WithLayer(layer, itemPlacementService, locationService);
+                }
             }
         }
 
@@ -89,6 +155,8 @@ namespace RogueEntity.Core.Positioning
                                                           EntityRole role)
             where TActorId : IEntityKey
         {
+            EnsureDefaultGridMapExists(initParameter, initializer, role);
+            
             var entityContext = initializer.DeclareEntityContext<TActorId>();
             entityContext.Register(RegisterGridPositions, 0, RegisterGridEntities);
             entityContext.Register(RegisterClearGridPositionChangeTracker, 10, RegisterClearGridPositionChangeTrackers);

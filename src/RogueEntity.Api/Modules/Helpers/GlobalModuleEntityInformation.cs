@@ -416,7 +416,7 @@ namespace RogueEntity.Api.Modules.Helpers
 
                 if (Logger.IsEnabled(LogEventLevel.Debug))
                 {
-                    Logger.Debug("Entity {EntityType} requires role {Role} as role alias declared in {ModuleId}", entityType, t.Id, declaringModule);
+                    Logger.Debug("Entity {EntityType} requires role {Role} as role alias declared in {ModuleId} for subject role {SubjectRole}", entityType, t.Id, declaringModule, s);
                 }
 
                 rolesPerType.Add(t);

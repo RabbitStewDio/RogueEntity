@@ -26,7 +26,7 @@ namespace RogueEntity.Core.Tests.Meta.Items
         {
             var reg = itemContext.ItemRegistry;
 
-            var itemDeclaration = new BulkItemDeclaration<ItemReference>("bulkitem", "bulkitem.tag");
+            var itemDeclaration = new BulkItemDeclaration<ItemReference>("bulkitem", new WorldEntityTag("bulkitem.tag"));
             reg.Register(itemDeclaration);
             reg.TryGetBulkItemById("bulkitem", out _).Should().BeTrue();
             reg.TryGetItemById("bulkitem", out _).Should().BeTrue();
@@ -43,7 +43,7 @@ namespace RogueEntity.Core.Tests.Meta.Items
         {
             var reg = itemContext.ItemRegistry;
 
-            var itemDeclaration = new ReferenceItemDeclaration<ItemReference>("refitem", "refitem.tag");
+            var itemDeclaration = new ReferenceItemDeclaration<ItemReference>("refitem", new WorldEntityTag("refitem.tag"));
             reg.Register(itemDeclaration);
             reg.TryGetBulkItemById("refitem", out _).Should().BeFalse();
             reg.TryGetItemById("refitem", out _).Should().BeTrue();
@@ -81,7 +81,7 @@ namespace RogueEntity.Core.Tests.Meta.Items
             var baseTrait = new CallTracerReferenceTrait("reftrait", 20);
             var overrideTrait = new CallTracerReferenceTrait("reftrait", 10);
 
-            var itemDeclaration = new ReferenceItemDeclaration<ItemReference>("refitem", "refitem.tag");
+            var itemDeclaration = new ReferenceItemDeclaration<ItemReference>("refitem", new WorldEntityTag("refitem.tag"));
             itemDeclaration.WithTrait(baseTrait);
             itemDeclaration.WithTrait(overrideTrait);
 
@@ -94,7 +94,7 @@ namespace RogueEntity.Core.Tests.Meta.Items
             var baseTrait = new CallTracerBulkTrait("bulktrait", 20);
             var overrideTrait = new CallTracerBulkTrait("bulktrait", 10);
 
-            var itemDeclaration = new BulkItemDeclaration<ItemReference>("bulkitem", "bulkitem.tag");
+            var itemDeclaration = new BulkItemDeclaration<ItemReference>("bulkitem", new WorldEntityTag( "bulkitem.tag"));
             itemDeclaration.WithTrait(baseTrait);
             itemDeclaration.WithTrait(overrideTrait);
 
@@ -107,7 +107,7 @@ namespace RogueEntity.Core.Tests.Meta.Items
             var baseTrait = new CallTracerBulkTrait("bulktrait", 20);
             var overrideTrait = new CallTracerBulkTrait("bulktrait", 10);
 
-            var itemDeclaration = new BulkItemDeclaration<ItemReference>("bulkitem", "bulkitem.tag");
+            var itemDeclaration = new BulkItemDeclaration<ItemReference>("bulkitem", new WorldEntityTag("bulkitem.tag"));
             itemDeclaration.WithTrait(overrideTrait);
             itemDeclaration.WithTrait(baseTrait);
 
@@ -121,7 +121,7 @@ namespace RogueEntity.Core.Tests.Meta.Items
 
             var itemTrait = new CallTracerReferenceTrait("reftrait", 10);
 
-            var itemDeclaration = new ReferenceItemDeclaration<ItemReference>("refitem", "refitem.tag");
+            var itemDeclaration = new ReferenceItemDeclaration<ItemReference>("refitem", new WorldEntityTag("refitem.tag"));
             itemDeclaration.WithTrait(itemTrait);
             reg.Register(itemDeclaration);
 
@@ -142,7 +142,7 @@ namespace RogueEntity.Core.Tests.Meta.Items
             var reg = itemContext.ItemRegistry;
             var itemTrait = new CallTracerBulkTrait("bulktrait", 10);
 
-            var itemDeclaration = new BulkItemDeclaration<ItemReference>("bulkitem", "bulkitem.tag");
+            var itemDeclaration = new BulkItemDeclaration<ItemReference>("bulkitem", new WorldEntityTag("bulkitem.tag"));
             itemDeclaration.WithTrait(itemTrait);
             reg.Register(itemDeclaration);
 

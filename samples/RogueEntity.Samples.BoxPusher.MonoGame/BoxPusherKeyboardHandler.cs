@@ -35,6 +35,11 @@ namespace RogueEntity.Samples.BoxPusher.MonoGame
                     game.CommandService.TrySubmit(game.PlayerData.Value.EntityId, cmd);
                 }
             }
+
+            if (info.IsKeyPressed(Keys.Escape))
+            {
+                sharedState.NotifyQuitInitiated();
+            }
         }
 
         bool TryGetInputDirection(Keyboard info, out Direction d)

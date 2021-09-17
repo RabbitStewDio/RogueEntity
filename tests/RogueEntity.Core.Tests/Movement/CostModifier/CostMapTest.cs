@@ -3,6 +3,7 @@ using NUnit.Framework;
 using RogueEntity.Core.Directionality;
 using RogueEntity.Core.Movement.CostModifier.Directions;
 using RogueEntity.Core.Movement.MovementModes.Walking;
+using RogueEntity.Core.Tests.Fixtures;
 using RogueEntity.Core.Utils.DataViews;
 using System;
 using static RogueEntity.Core.Tests.Movement.PathfindingTestUtil;

@@ -129,7 +129,12 @@ namespace RogueEntity.Api.Modules.Initializers
         void DeclareUniqueItems<TEntityId>(IModuleInitializationData<TEntityId> moduleContext)
             where TEntityId : IEntityKey
         {
-            var ctx = serviceResolver.Resolve<IItemContextBackend<TEntityId>>();
+            if (!serviceResolver.TryResolve(out IItemContextBackend<TEntityId> ctx))
+            {
+                Logger.Warning("Unable to locate ItemContextBackend for entity type {EntityType}. Did you forget to declare item definitions?", typeof(TEntityId));
+                return;
+            }
+            
             var items = new Dictionary<ItemDeclarationId, (ModuleId, IItemDeclaration)>();
             foreach (var (mod, b) in moduleContext.DeclaredBulkItems)
             {
@@ -222,15 +227,27 @@ namespace RogueEntity.Api.Modules.Initializers
             }
         }
 
-        static List<(string, List<string>)> CreateTraitEvidence(Dictionary<ItemDeclarationId, (ModuleId, List<ItemTraitId>)> backend)
+        static List<TraitEvidenceRecord> CreateTraitEvidence(Dictionary<ItemDeclarationId, (ModuleId, List<ItemTraitId>)> backend)
         {
-            var data = new List<(string, List<string>)>();
+            var data = new List<TraitEvidenceRecord>();
             foreach (var b in backend)
             {
-                data.Add((b.Key.Id, b.Value.Item2.Select(e => e.Id).ToList()));
+                data.Add(new TraitEvidenceRecord(b.Key.Id, b.Value.Item2.Select(e => e.Id).ToList()));
             }
 
             return data;
+        }
+
+        public readonly struct TraitEvidenceRecord
+        {
+            public string ItemDeclaration { get; }
+            public List<string> Traits { get; }
+
+            public TraitEvidenceRecord(string itemDeclaration, List<string> traits)
+            {
+                ItemDeclaration = itemDeclaration;
+                Traits = traits;
+            }
         }
     }
 }

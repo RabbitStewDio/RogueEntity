@@ -11,10 +11,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Content\Maps\Level_0001.boxlevel">
+    <None Update="Content\Maps\Level_0001.map.yml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Content\Maps\Level_0000.boxlevel">
+    <None Update="Content\Maps\Level_0000.map.yml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>

@@ -9,7 +9,7 @@ namespace RogueEntity.SadCons.MapRendering
 {
     public static class MapRendererExtensions
     {
-        public static ConsoleRenderLayer<TMapData> AddGridLayer<TMapData>(this MapRenderer r, MapLayer layer, IServiceResolver serviceResolver)
+        public static ConsoleRenderLayer<TMapData> AddGridLayer<TMapData>(this LegacyMapRenderer r, MapLayer layer, IServiceResolver serviceResolver)
             where TMapData : IEntityKey
         {
             var l = CreateRendererFor<TMapData>(layer, serviceResolver);

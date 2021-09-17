@@ -5,6 +5,8 @@ using RogueEntity.Api.Time;
 using RogueEntity.Api.Utils;
 using RogueEntity.Core.Infrastructure.GameLoops;
 using RogueEntity.Core.Infrastructure.Services;
+using RogueEntity.Core.Inputs.Commands;
+using RogueEntity.Core.Meta.EntityKeys;
 using RogueEntity.Core.Players;
 using Serilog;
 using System;
@@ -35,6 +37,7 @@ namespace RogueEntity.Core.Runtime
         public IPlayerManager<TPlayerEntity> PlayerManager { get; private set; }
         public GameStatus Status { get; private set; }
         public Optional<PlayerReference<TPlayerEntity>> PlayerData { get; private set; }
+        public IBasicCommandService<TPlayerEntity> CommandService { get; private set; }
 
         protected virtual IServiceResolver CreateServiceResolver() => new DefaultServiceResolver();
         
@@ -46,9 +49,8 @@ namespace RogueEntity.Core.Runtime
             ServiceResolver = CreateServiceResolver();
             ServiceResolver.Store(TimeSourceDefinition);
             InitializeServices(ServiceResolver);
-            
-            var ms = new ModuleSystem(ServiceResolver);
-            ms.ScanForModules(ModuleIds);
+
+            var ms = CreateModuleSystem();
 
             gameLoop = TimeSourceDefinition.BuildTimeStepLoop(ms.Initialize());
 
@@ -56,9 +58,17 @@ namespace RogueEntity.Core.Runtime
             ServiceResolver.ValidatePromisesCanResolve();
             PlayerService = ServiceResolver.Resolve<IPlayerService>();
             PlayerManager = ServiceResolver.Resolve<IPlayerManager<TPlayerEntity>>();
-            
+            CommandService = ServiceResolver.Resolve<IBasicCommandService<TPlayerEntity>>();
+
             Status = GameStatus.Initialized;
             GameInitialized?.Invoke(this, EventArgs.Empty);
+        }
+
+        protected virtual ModuleSystem CreateModuleSystem()
+        {
+            var ms = new ModuleSystem(ServiceResolver);
+            ms.ScanForModules(ModuleIds);
+            return ms;
         }
 
         protected virtual void InitializeServices(IServiceResolver serviceResolver)
@@ -107,6 +117,16 @@ namespace RogueEntity.Core.Runtime
             {
                 Status = status;
                 GameFinished?.Invoke(this, EventArgs.Empty);
+                RemoveActivePlayer();
+            }
+        }
+
+        void RemoveActivePlayer()
+        {
+            if (!PlayerData.TryGetValue(out var playerData) ||
+                !PlayerManager.TryDeactivatePlayer(playerData.Tag.Id))
+            {
+                // Big warning, unable to kill player.
             }
         }
 
@@ -123,11 +143,10 @@ namespace RogueEntity.Core.Runtime
                 case GameStatus.Error:
                     return true;
                 case GameStatus.Running:
-                    break;
+                    return false;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
-            return CheckStatus() != GameStatus.Running;
         }
         
         protected virtual void UpdateOverride(TimeSpan absoluteGameTime)
@@ -144,8 +163,9 @@ namespace RogueEntity.Core.Runtime
             gameLoop.Stop();
             Status = GameStatus.Initialized;
             GameStopped?.Invoke(this, EventArgs.Empty);
+            RemoveActivePlayer();
         }
 
-        protected abstract GameStatus CheckStatus();
+        protected virtual GameStatus CheckStatus() => GameStatus.Running;
     }
 }

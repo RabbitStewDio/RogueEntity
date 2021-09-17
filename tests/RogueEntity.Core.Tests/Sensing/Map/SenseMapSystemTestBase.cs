@@ -19,6 +19,7 @@ using RogueEntity.Core.Tests.Sensing.Sources;
 using RogueEntity.Core.Utils.DataViews;
 using RogueEntity.Core.Meta.EntityKeys;
 using RogueEntity.Core.Positioning.Algorithms;
+using RogueEntity.Core.Tests.Fixtures;
 using RogueEntity.Core.Utils;
 
 namespace RogueEntity.Core.Tests.Sensing.Map

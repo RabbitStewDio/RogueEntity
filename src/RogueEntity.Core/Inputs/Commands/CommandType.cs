@@ -21,7 +21,7 @@ namespace RogueEntity.Core.Inputs.Commands
 
     public readonly struct CommandTypeId : IEquatable<CommandTypeId>
     {
-        readonly string CommandId;
+        public readonly string CommandId;
 
         public CommandTypeId(string commandId)
         {
@@ -40,10 +40,7 @@ namespace RogueEntity.Core.Inputs.Commands
 
         public override int GetHashCode()
         {
-            unchecked
-            {
-                return (CommandId != null ? CommandId.GetHashCode() : 0);
-            }
+            return (CommandId != null ? CommandId.GetHashCode() : 0);
         }
 
         public static bool operator ==(CommandTypeId left, CommandTypeId right)
@@ -59,6 +56,11 @@ namespace RogueEntity.Core.Inputs.Commands
         public static CommandTypeId Create<TCommand>()
         {
             return new CommandTypeId(typeof(TCommand).FullName);
+        }
+
+        public override string ToString()
+        {
+            return $"{nameof(CommandTypeId)}({CommandId})";
         }
     }
     

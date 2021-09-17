@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using EnTTSharp.Entities;
 using RogueEntity.Api.Modules.Attributes;
 using RogueEntity.Api.Modules.Helpers;
 using RogueEntity.Api.Services;
@@ -31,7 +30,6 @@ namespace RogueEntity.Api.Modules.Initializers
         public void InitializeModuleContent()
         {
             var mip = new ModuleInitializationParameter(moduleInfo, serviceResolver);
-            var activator = new ModuleEntityActivator(moduleInfo, initializer);
             foreach (var mod in orderedModules)
             {
                 if (mod.InitializedContent)
@@ -49,37 +47,10 @@ namespace RogueEntity.Api.Modules.Initializers
                     {
                         mi(in mip, initializer);
                     }
-                    
-                    foreach (var roleRecord in mod.Module.DeclaredEntityTypes)
-                    {
-                        roleRecord.Activate(activator);
-                    }
                 }
                 finally
                 {
                     initializer.CurrentModuleId = null;
-                }
-            }
-        }
-
-        class ModuleEntityActivator : IModuleEntityActivatorCallback
-        {
-            readonly GlobalModuleEntityInformation moduleInfo;
-            readonly ModuleInitializer initializer;
-
-            public ModuleEntityActivator(GlobalModuleEntityInformation moduleInfo, ModuleInitializer initializer)
-            {
-                this.moduleInfo = moduleInfo;
-                this.initializer = initializer;
-            }
-
-            public void ActivateEntity<TEntity>(DeclaredEntityRoleRecord x) where TEntity : IEntityKey
-            {
-                initializer.DeclareEntityContext<TEntity>();
-                var mi = moduleInfo.CreateEntityInformation<TEntity>();
-                foreach (var role in x.Roles)
-                {
-                    mi.RecordRole(role);
                 }
             }
         }

@@ -21,9 +21,9 @@ namespace RogueEntity.Samples.MineSweeper.MonoGame
         public MineSweeperMapContext(MineSweeperGame game)
         {
             this.game = game;
-            this.game.GameStarted += (s,e) => OnGameStarted();
-            this.game.GameStopped += (s,e) => OnGameStopped();
-            this.game.GameFinished += (s, e) => OnGameOver();
+            this.game.GameStarted += (_,_) => OnGameStarted();
+            this.game.GameStopped += (_,_) => OnGameStopped();
+            this.game.GameFinished += (_, _) => OnGameOver();
             this.inputState = new MineSweeperInputState();
         }
 

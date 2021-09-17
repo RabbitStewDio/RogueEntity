@@ -23,6 +23,7 @@ using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.DataViews;
 using RogueEntity.Core.Meta.EntityKeys;
 using RogueEntity.Core.Positioning.Algorithms;
+using RogueEntity.Core.Tests.Fixtures;
 
 namespace RogueEntity.Core.Tests.Sensing.Discovery
 {

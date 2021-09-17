@@ -4,7 +4,7 @@ using RogueEntity.Core.Meta.EntityKeys;
 
 namespace RogueEntity.Core.Tests.Meta.ItemTraits
 {
-    public class TemperatureDataTraitTest : ItemComponentTraitTestBase<ItemReference, Temperature, TemperatureTrait<ItemReference>>
+    public class TemperatureDataTraitTest : ItemComponentInformationTraitTestBase<ItemReference, Temperature, TemperatureTrait<ItemReference>>
     {
 
         public TemperatureDataTraitTest(): base(new ItemReferenceMetaData())

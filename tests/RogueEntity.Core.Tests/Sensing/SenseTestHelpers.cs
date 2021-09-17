@@ -1,4 +1,5 @@
 using RogueEntity.Core.Sensing.Common;
+using RogueEntity.Core.Tests.Fixtures;
 using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.DataViews;
 

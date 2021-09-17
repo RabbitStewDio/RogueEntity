@@ -4,6 +4,7 @@ using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Sensing;
 using RogueEntity.Core.Sensing.Cache;
 using RogueEntity.Core.Sensing.Resistance.Maps;
+using RogueEntity.Core.Tests.Fixtures;
 
 namespace RogueEntity.Core.Tests.Sensing.Cache
 {

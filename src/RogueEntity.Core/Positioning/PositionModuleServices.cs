@@ -55,16 +55,47 @@ namespace RogueEntity.Core.Positioning
             return GetOrCreateDefaultGridMapContext<TEntityId>(serviceResolver, LookupDefaultConfiguration<TEntityId>(serviceResolver));
         }
 
-        public static DefaultGridPositionContextBackend<TEntityId> GetOrCreateDefaultGridMapContext<TEntityId>(this IServiceResolver serviceResolver, DynamicDataViewConfiguration config)
+        public static bool TryGetOrCreateDefaultMapServices<TEntityId>(IServiceResolver serviceResolver,
+                                                                       out DefaultGridPositionContextBackend<TEntityId> map,
+                                                                       out ItemPlacementServiceContext<TEntityId> placementService)
+        {
+            if (!TryGetOrCreateDefaultGridMapContext(serviceResolver,
+                                                     LookupDefaultConfiguration<TEntityId>(serviceResolver),
+                                                     out map))
+            {
+                placementService = default;
+                return false;
+            }
+
+            if (serviceResolver.TryResolve(out IItemPlacementServiceContext<TEntityId> ctx))
+            {
+                if (ctx is ItemPlacementServiceContext<TEntityId> ps)
+                {
+                    placementService = ps;
+                    return true;
+                }
+
+                placementService = default;
+                return false;
+            }
+
+            placementService = new ItemPlacementServiceContext<TEntityId>();
+            serviceResolver.Store<IItemPlacementServiceContext<TEntityId>>(placementService);
+            return true;
+        }
+
+        static bool TryGetOrCreateDefaultGridMapContext<TEntityId>(this IServiceResolver serviceResolver, DynamicDataViewConfiguration config, out DefaultGridPositionContextBackend<TEntityId> map)
         {
             if (serviceResolver.TryResolve(out IGridMapContext<TEntityId> maybeMap))
             {
                 if (maybeMap is DefaultGridPositionContextBackend<TEntityId> defaultImpl)
                 {
-                    return defaultImpl;
+                    map = defaultImpl;
+                    return true;
                 }
 
-                throw new InvalidOperationException("A conflicting grid map implementation has been defined.");
+                map = default;
+                return false;
             }
 
             var created = new DefaultGridPositionContextBackend<TEntityId>(config);
@@ -74,7 +105,18 @@ namespace RogueEntity.Core.Positioning
             }
 
             serviceResolver.Store<IGridMapContext<TEntityId>>(created);
-            return created;
+            map = created;
+            return true;
+        }
+
+        public static DefaultGridPositionContextBackend<TEntityId> GetOrCreateDefaultGridMapContext<TEntityId>(this IServiceResolver serviceResolver, DynamicDataViewConfiguration config)
+        {
+            if (!TryGetOrCreateDefaultGridMapContext<TEntityId>(serviceResolver, config, out var result))
+            {
+                throw new InvalidOperationException("A conflicting grid map implementation has been defined.");
+            }
+
+            return result;
         }
 
         public static IItemPlacementService<TEntityId> GetOrCreateGridItemPlacementService<TEntityId>(this IServiceResolver serviceResolver)
@@ -106,8 +148,9 @@ namespace RogueEntity.Core.Positioning
             serviceResolver.Store<IItemPlacementLocationService<TEntityId>>(r);
             return r;
         }
-        
-        public static HashSet<MapLayer> CollectMapLayers<TItemId, TAdditionalComponent>(ModuleEntityInitializationParameter<TItemId> initParameter) where TItemId : IEntityKey
+
+        public static HashSet<MapLayer> CollectMapLayers<TItemId, TAdditionalComponent>(ModuleEntityInitializationParameter<TItemId> initParameter)
+            where TItemId : IEntityKey
         {
             var moduleContext = initParameter.ContentDeclarations;
             var layers = new HashSet<MapLayer>();
@@ -134,7 +177,8 @@ namespace RogueEntity.Core.Positioning
             return layers;
         }
 
-        public static HashSet<MapLayer> CollectMapLayers<TItemId>(ModuleEntityInitializationParameter<TItemId> initParameter) where TItemId : IEntityKey
+        public static HashSet<MapLayer> CollectMapLayers<TItemId>(ModuleEntityInitializationParameter<TItemId> initParameter)
+            where TItemId : IEntityKey
         {
             var moduleContext = initParameter.ContentDeclarations;
             var layers = new HashSet<MapLayer>();
@@ -158,7 +202,5 @@ namespace RogueEntity.Core.Positioning
 
             return layers;
         }
-
-
     }
 }

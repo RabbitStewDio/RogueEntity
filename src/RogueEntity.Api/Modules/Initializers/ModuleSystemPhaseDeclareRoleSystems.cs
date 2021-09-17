@@ -162,7 +162,7 @@ namespace RogueEntity.Api.Modules.Initializers
 
             if (retval.Count == 0)
             {
-                Logger.Verbose("No role initializers defined for {Role} with subject {Subject}", role, entityType);
+                Logger.Verbose("{Module} does not define initializers for {Role} with subject {Subject}", module.Id, role, entityType);
             }
 
             return retval;

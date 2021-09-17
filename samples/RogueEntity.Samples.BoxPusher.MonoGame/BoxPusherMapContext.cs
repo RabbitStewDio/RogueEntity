@@ -19,12 +19,23 @@ namespace RogueEntity.Samples.BoxPusher.MonoGame
         public BoxPusherMapContext(BoxPusherGame game)
         {
             this.sharedUIState = new BoxPusherInputState();
+            this.sharedUIState.QuitInitiated += OnQuitInitiated;
 
             this.game = game;
             this.game.GameStarted += (s, e) => OnGameStarted();
             this.game.GameStopped += (s, e) => OnGameStopped();
             this.game.GameFinished += (s, e) => OnGameOver();
             this.game.GameUpdate += (s, t) => OnGameUpdate();
+        }
+
+        void OnQuitInitiated()
+        {
+            if (uiContext == null)
+            {
+                return;
+            }
+            
+            uiContext.ShowQuitDialog();
         }
 
         void OnGameUpdate()

@@ -1,6 +1,7 @@
 using FluentAssertions;
 using NUnit.Framework;
 using RogueEntity.Core.Positioning.Grid;
+using RogueEntity.Core.Tests.Fixtures;
 using System;
 
 namespace RogueEntity.Core.Tests.Positioning.Grid
@@ -17,12 +18,12 @@ namespace RogueEntity.Core.Tests.Positioning.Grid
         [Test]
         public void OutOfRangeX()
         {
-            this.Invoking(x => EntityGridPosition.Of(TestMapLayers.One, int.MaxValue, 0)).Should().Throw<ArgumentOutOfRangeException>();
-            this.Invoking(x => EntityGridPosition.Of(TestMapLayers.One, 0, int.MaxValue)).Should().Throw<ArgumentOutOfRangeException>();
-            this.Invoking(x => EntityGridPosition.Of(TestMapLayers.One, 0, 0, int.MaxValue)).Should().Throw<ArgumentOutOfRangeException>();
-            this.Invoking(x => EntityGridPosition.Of(TestMapLayers.One, int.MinValue, 0)).Should().Throw<ArgumentOutOfRangeException>();
-            this.Invoking(x => EntityGridPosition.Of(TestMapLayers.One, 0, int.MinValue)).Should().Throw<ArgumentOutOfRangeException>();
-            this.Invoking(x => EntityGridPosition.Of(TestMapLayers.One, 0, 0, int.MinValue)).Should().Throw<ArgumentOutOfRangeException>();
+            this.Invoking(_ => EntityGridPosition.Of(TestMapLayers.One, int.MaxValue, 0)).Should().Throw<ArgumentOutOfRangeException>();
+            this.Invoking(_ => EntityGridPosition.Of(TestMapLayers.One, 0, int.MaxValue)).Should().Throw<ArgumentOutOfRangeException>();
+            this.Invoking(_ => EntityGridPosition.Of(TestMapLayers.One, 0, 0, int.MaxValue)).Should().Throw<ArgumentOutOfRangeException>();
+            this.Invoking(_ => EntityGridPosition.Of(TestMapLayers.One, int.MinValue, 0)).Should().Throw<ArgumentOutOfRangeException>();
+            this.Invoking(_ => EntityGridPosition.Of(TestMapLayers.One, 0, int.MinValue)).Should().Throw<ArgumentOutOfRangeException>();
+            this.Invoking(_ => EntityGridPosition.Of(TestMapLayers.One, 0, 0, int.MinValue)).Should().Throw<ArgumentOutOfRangeException>();
         }
 
         [Test]

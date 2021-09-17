@@ -2,6 +2,7 @@
 using RogueEntity.Api.Modules.Attributes;
 using RogueEntity.Core.Meta.EntityKeys;
 using RogueEntity.Core.Meta.ItemBuilder;
+using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Players;
 
 namespace RogueEntity.Samples.BoxPusher.Core
@@ -13,7 +14,9 @@ namespace RogueEntity.Samples.BoxPusher.Core
         void InitializeContent(in ModuleInitializationParameter mip, IModuleInitializer initializer)
         {
             var serviceResolver = mip.ServiceResolver;
-            var ctx = initializer.DeclareContentContext<ItemReference>();
+            var ctx = initializer.DeclareContentContext<ItemReference>()
+                                 .EnsureEntityRegistered(serviceResolver);
+
             ctx.Activate(ctx.CreateBulkEntityBuilder(serviceResolver)
                             .DefineWall()
                             .Declaration);
@@ -34,12 +37,11 @@ namespace RogueEntity.Samples.BoxPusher.Core
                             .DefineSpawnPoint()
                             .Declaration);
 
-            var actorContext = initializer.DeclareContentContext<ActorReference>();
-            var playerId = actorContext.Activate(actorContext.CreateReferenceEntityBuilder(serviceResolver)
+            var actorContext = initializer.DeclareContentContext<ActorReference>()
+                                          .EnsureEntityRegistered(serviceResolver);
+            actorContext.Activate(actorContext.CreateReferenceEntityBuilder(serviceResolver)
                                                              .DefinePlayer<ActorReference, ItemReference>()
                                                              .Declaration);
-
-            mip.ServiceResolver.Store<IPlayerServiceConfiguration>(new PlayerServiceConfiguration(playerId));
         }
 
     }

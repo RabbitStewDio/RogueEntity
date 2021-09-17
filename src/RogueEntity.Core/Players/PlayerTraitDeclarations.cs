@@ -20,14 +20,5 @@ namespace RogueEntity.Core.Players
                    .WithTrait(new PlayerObserverTrait<TItemId>());
             return builder;
         }
-
-        public static ReferenceItemDeclarationBuilder<TItemId> AsSpawnLocation<TItemId>(this ReferenceItemDeclarationBuilder<TItemId> builder)
-            where TItemId : IEntityKey
-        {
-            builder.Declaration.WithTrait(new PlayerSpawnLocationTrait<TItemId>());
-            return builder;
-        }
-
-        
     }
 }

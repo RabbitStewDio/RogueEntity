@@ -46,6 +46,12 @@ namespace RogueEntity.Core.Inputs.Commands
                                                           EntityRegistry<TActorId> registry)
             where TActorId : IEntityKey
         {
+            if (!initParameter.ServiceResolver.TryResolve(out IBasicCommandService<TActorId> cmdService))
+            {
+                initParameter.ServiceResolver.Store<IBasicCommandService<TActorId>>
+                    (new BasicCommandService<TActorId>(initParameter.ServiceResolver.Resolve<IItemResolver<TActorId>>()));
+            }
+            
             var system = new BasicCommandSystem<TActorId>(initParameter.ServiceResolver.Resolve<IItemResolver<TActorId>>());
             var clearCommandsSystem = registry.BuildSystem()
                                               .WithoutContext()

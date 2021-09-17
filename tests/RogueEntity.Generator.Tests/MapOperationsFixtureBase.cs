@@ -1,5 +1,6 @@
 using NUnit.Framework;
 using RogueEntity.Api.ItemTraits;
+using RogueEntity.Core.MapLoading.Builder;
 using RogueEntity.Core.Meta.Base;
 using RogueEntity.Core.Meta.EntityKeys;
 using RogueEntity.Core.Meta.Items;

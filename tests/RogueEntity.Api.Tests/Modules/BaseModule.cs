@@ -24,6 +24,7 @@ namespace RogueEntity.Api.Tests.Modules
         // this module intentionally does not define an Id or any other metadata.
     }
 
+    
     public class ActivateEntityModule<TItemId> : ModuleBase
         where TItemId : IEntityKey
     {
@@ -32,8 +33,13 @@ namespace RogueEntity.Api.Tests.Modules
         public ActivateEntityModule()
         {
             Id = "ActivateEntity+" + typeof(TItemId).Name;
+        }
 
-            DeclareEntity<TItemId>(ActivatorRole);
+        [ContentInitializer]
+        public void DeclareEntity(in ModuleInitializationParameter mp, IModuleInitializer ctx)
+        {
+            ctx.DeclareContentContext<TItemId>().DeclareTraitRoles<TItemId>(ActivatorRole);
         }
     }
+    
 }

@@ -5,7 +5,7 @@ using RogueEntity.Api.ItemTraits;
 
 namespace RogueEntity.Core.Meta.Items
 {
-    public abstract class StatelessItemComponentTraitBase<TItemId, TData> : IItemComponentTrait<TItemId, TData>,
+    public abstract class StatelessItemComponentTraitBase<TItemId, TData> : IItemComponentInformationTrait<TItemId, TData>,
                                                                             IBulkItemTrait<TItemId>,
                                                                             IReferenceItemTrait<TItemId>
         where TItemId : IEntityKey
@@ -37,18 +37,6 @@ namespace RogueEntity.Core.Meta.Items
         {
             t = GetData(k);
             return true;
-        }
-
-        public bool TryUpdate(IEntityViewControl<TItemId> v, TItemId k, in TData t, out TItemId changedK)
-        {
-            changedK = k;
-            return false;
-        }
-
-        public bool TryRemove(IEntityViewControl<TItemId> entityRegistry, TItemId k, out TItemId changedItem)
-        {
-            changedItem = k;
-            return false;
         }
 
         protected virtual StatelessItemComponentTraitBase<TItemId, TData> CreateInstance()

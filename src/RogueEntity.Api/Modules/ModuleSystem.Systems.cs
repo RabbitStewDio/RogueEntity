@@ -19,7 +19,7 @@ namespace RogueEntity.Api.Modules
             var handler = new EntitySystemRegistrationHandler(globalModuleEntityInformation, serviceResolver, registrations);
             foreach (var entity in moduleInitializer.EntityInitializers)
             {
-                Console.WriteLine("Processing " + entity.entityType);
+                Logger.Debug("Processing {EntityType}", entity.entityType);
                 entity.callback(handler);
             }
 
@@ -87,8 +87,13 @@ namespace RogueEntity.Api.Modules
                     return;
                 }
 
+                if (!serviceResolver.TryResolve(out IItemContextBackend<TEntityId> ctx))
+                {
+                    Logger.Debug("No ItemContextBackend for entity type {EntityType}; Skipping EntitySystem initialization", typeof(TEntityId));
+                    return;
+                }
+            
                 var mip = new ModuleEntityInitializationParameter<TEntityId>(mi, serviceResolver, moduleContext);
-                var ctx = serviceResolver.Resolve<IItemContextBackend<TEntityId>>();
 
                 var sortedEntries = CollectEntitySystemDeclarations(moduleContext);
                 foreach (var system in sortedEntries)

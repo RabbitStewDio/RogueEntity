@@ -30,7 +30,7 @@ namespace RogueEntity.Core.Meta.Items
 
         public override SurrogateContainer<string> GetObjectToSerialize(ItemDeclarationHolder<TItemId> obj)
         {
-            return new SurrogateContainer<string>(obj.Id);
+            return new SurrogateContainer<string>(obj.ItemId);
         }
     }
 }

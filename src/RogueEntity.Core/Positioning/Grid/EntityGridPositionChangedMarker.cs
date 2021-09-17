@@ -27,6 +27,11 @@ namespace RogueEntity.Core.Positioning.Grid
         public static void Update<TKey>(IEntityViewControl<TKey> v, TKey k, EntityGridPosition previous) 
             where TKey : IEntityKey
         {
+            if (!v.IsValid(k))
+            {
+                return;
+            }
+            
             if (v.GetComponent(k, out EntityGridPositionChangedMarker marker))
             {
                 if (marker.PreviousPosition == previous)

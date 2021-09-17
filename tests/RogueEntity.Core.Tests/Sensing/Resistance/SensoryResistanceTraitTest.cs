@@ -8,7 +8,7 @@ using RogueEntity.Core.Meta.EntityKeys;
 namespace RogueEntity.Core.Tests.Sensing.Resistance
 {
     [TestFixture]
-    public class SensoryResistanceTraitTest : ItemComponentTraitTestBase<ItemReference, SensoryResistance<VisionSense>, SensoryResistanceTrait<ItemReference, VisionSense>>
+    public class SensoryResistanceTraitTest : ItemComponentInformationTraitTestBase<ItemReference, SensoryResistance<VisionSense>, SensoryResistanceTrait<ItemReference, VisionSense>>
     {
         public SensoryResistanceTraitTest(): base(new ItemReferenceMetaData())
         {

@@ -7,7 +7,7 @@ using System;
 
 namespace RogueEntity.Core.Inputs.Commands
 {
-    public class BasicCommandService<TActor>
+    public class BasicCommandService<TActor> : IBasicCommandService<TActor>
         where TActor : IEntityKey
     {
         static readonly ILogger Logger = SLog.ForContext<BasicCommandService<TActor>>();
@@ -55,7 +55,7 @@ namespace RogueEntity.Core.Inputs.Commands
                 return false;
             }
 
-            if (!itemResolver.TryQueryTrait(actor, out ICommandTrait<TActor, TCommand> trait))
+            if (!itemResolver.TryQueryTrait(actor, out ICommandTrait<TActor, TCommand> _))
             {
                 return false;
             }

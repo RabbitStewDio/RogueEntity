@@ -77,6 +77,12 @@ namespace RogueEntity.Api.Modules
                     continue;
                 }
 
+                if (typeInfo.GetConstructor(Type.EmptyTypes) == null)
+                {
+                    Logger.Verbose("Skipping module without public default constructor for {Module}", typeInfo.FullName);
+                    continue;
+                }
+                
                 if (!(Activator.CreateInstance(typeInfo) is IModule module))
                 {
                     Logger.Verbose("Unable to auto-register module {Module} - Default Constructor is missing", typeInfo.FullName);

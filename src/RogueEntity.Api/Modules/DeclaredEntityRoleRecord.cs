@@ -6,11 +6,13 @@ using RogueEntity.Api.Utils;
 
 namespace RogueEntity.Api.Modules
 {
+    [Obsolete]
     public interface IModuleEntityActivatorCallback
     {
         public void ActivateEntity<TEntity>(DeclaredEntityRoleRecord record) where TEntity : IEntityKey;
     }
 
+    [Obsolete]
     public readonly struct DeclaredEntityRoleRecord : IEquatable<DeclaredEntityRoleRecord>
     {
         public readonly Type EntityType;

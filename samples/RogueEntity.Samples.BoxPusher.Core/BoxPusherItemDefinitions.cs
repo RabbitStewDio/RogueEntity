@@ -1,6 +1,7 @@
 using EnTTSharp.Entities;
 using RogueEntity.Core.Inputs.Commands;
 using RogueEntity.Core.Inventory;
+using RogueEntity.Core.MapLoading.PlayerSpawning;
 using RogueEntity.Core.Meta.ItemBuilder;
 using RogueEntity.Core.Meta.Naming;
 using RogueEntity.Core.Movement.Cost;

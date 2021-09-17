@@ -130,10 +130,9 @@ namespace RogueEntity.Core.Movement.MovementModes
         void EnsureMovementDataCollectorAvailable<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter, EntityRegistry<TItemId> registry)
             where TItemId : IEntityKey
         {
-            Console.WriteLine("HERE");
             var sr = initParameter.ServiceResolver;
-            if (!sr.TryResolve(out IMovementDataCollector mdc) &&
-                !sr.TryResolve(out IMovementDataProvider mdp))
+            if (!sr.TryResolve(out IMovementDataCollector _) &&
+                !sr.TryResolve(out IMovementDataProvider _))
             {
                 var x = new MovementDataCollector();
                 sr.Store<IMovementDataCollector>(x);

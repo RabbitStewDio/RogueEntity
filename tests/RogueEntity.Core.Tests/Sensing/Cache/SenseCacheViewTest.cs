@@ -2,6 +2,7 @@ using FluentAssertions;
 using NUnit.Framework;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Caching;
+using RogueEntity.Core.Tests.Fixtures;
 using RogueEntity.Core.Utils;
 
 namespace RogueEntity.Core.Tests.Sensing.Cache

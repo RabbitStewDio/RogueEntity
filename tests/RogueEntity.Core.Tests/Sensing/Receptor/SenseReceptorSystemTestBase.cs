@@ -21,6 +21,7 @@ using RogueEntity.Core.Tests.Sensing.Common;
 using RogueEntity.Core.Tests.Sensing.Sources;
 using RogueEntity.Core.Utils.DataViews;
 using RogueEntity.Core.Meta.EntityKeys;
+using RogueEntity.Core.Tests.Fixtures;
 using RogueEntity.Core.Utils;
 
 namespace RogueEntity.Core.Tests.Sensing.Receptor
@@ -229,8 +230,8 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor
             context.ItemEntityRegistry.GetComponent(active5, out SensoryReceptorState<TReceptorSense, TSourceSense> vb).Should().BeTrue();
             bool haveInactiveState = context.ItemEntityRegistry.GetComponent(inactive, out SensoryReceptorState<TReceptorSense, TSourceSense> vc);
 
-            va.LastPosition.Should().Be(Position.Of(TestMapLayers.One,26, 4, 0));
-            vb.LastPosition.Should().Be(Position.Of(TestMapLayers.One,7, 9, 0));
+            va.LastPosition.Should().Be(Position.Of(TestMapLayers.One,26, 4));
+            vb.LastPosition.Should().Be(Position.Of(TestMapLayers.One,7, 9));
 
             va.State.Should().Be(SenseSourceDirtyState.Active);
             vb.State.Should().Be(SenseSourceDirtyState.Active);

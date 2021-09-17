@@ -1,5 +1,6 @@
 using FluentAssertions;
 using NUnit.Framework;
+using RogueEntity.Core.MapLoading.Builder;
 using RogueEntity.Core.Meta.EntityKeys;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Positioning;

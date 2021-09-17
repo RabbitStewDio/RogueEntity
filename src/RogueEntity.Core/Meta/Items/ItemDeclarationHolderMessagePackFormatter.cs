@@ -19,7 +19,7 @@ namespace RogueEntity.Core.Meta.Items
 
         public void Serialize(ref MessagePackWriter writer, ItemDeclarationHolder<TItemId> value, MessagePackSerializerOptions options)
         {
-            writer.Write(value.Id);
+            writer.Write(value.ItemId);
         }
 
         public ItemDeclarationHolder<TItemId> Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)

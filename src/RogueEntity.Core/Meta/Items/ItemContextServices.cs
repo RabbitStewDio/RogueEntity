@@ -1,11 +1,27 @@
 using EnTTSharp.Entities;
 using RogueEntity.Api.ItemTraits;
+using RogueEntity.Api.Modules;
+using RogueEntity.Api.Modules.Helpers;
 using RogueEntity.Api.Services;
 
 namespace RogueEntity.Core.Meta.Items
 {
     public static class ItemContextServices
     {
+        public static IModuleContentContext<TEntityId> EnsureEntityRegistered<TEntityId>(this IModuleContentContext<TEntityId> ctx, IServiceResolver serviceResolver)
+            where TEntityId : IEntityKey
+        {
+            if (EntityKeyMetaData.TryGetMetaData<TEntityId>(out var md))
+            {
+                serviceResolver.ConfigureEntityType(md);
+            }
+            else
+            {
+                throw new ModuleInitializationException();
+            }
+            return ctx;
+        }
+
         public static IServiceResolver ConfigureEntityType<TEntity>(this IServiceResolver serviceResolver, IBulkDataStorageMetaData<TEntity> meta)
             where TEntity : IEntityKey
         {

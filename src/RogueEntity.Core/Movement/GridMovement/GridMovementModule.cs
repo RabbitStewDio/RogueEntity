@@ -34,6 +34,7 @@ namespace RogueEntity.Core.Movement.GridMovement
             DeclareDependency(ModuleDependency.Of(PositionModule.ModuleId));
 
             RequireRole(MovementIntentRole);
+            
             RequireRole(GridMovementCommandReceiverRole)
                 .WithImpliedRole(CommandsModule.CommandExecutionTrackerRole)
                 .WithImpliedRole(PositionModule.GridPositionedRole);

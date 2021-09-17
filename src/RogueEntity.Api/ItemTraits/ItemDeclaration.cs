@@ -6,19 +6,21 @@ namespace RogueEntity.Api.ItemTraits
 {
     public abstract class ItemDeclaration : IEquatable<ItemDeclaration>, IItemDeclaration
     {
-        public string Tag { get; }
+        public WorldEntityTag Tag { get; }
         public ItemDeclarationId Id { get; }
 
         protected ItemDeclaration(ItemDeclarationId id,
-                    string tag)
+                                  WorldEntityTag tag)
         {
             Id = id;
             Tag = tag;
         }
 
-        public abstract bool TryQuery<TTrait>(out TTrait t) where TTrait : IItemTrait;
+        public abstract bool TryQuery<TTrait>(out TTrait t)
+            where TTrait : IItemTrait;
 
-        public abstract BufferList<TTrait> QueryAll<TTrait>(BufferList<TTrait> cache = null) where TTrait : IItemTrait;
+        public abstract BufferList<TTrait> QueryAll<TTrait>(BufferList<TTrait> cache = null)
+            where TTrait : IItemTrait;
 
         public bool Equals(ItemDeclaration other)
         {
@@ -52,7 +54,7 @@ namespace RogueEntity.Api.ItemTraits
                 return false;
             }
 
-            return Equals((ItemDeclaration) obj);
+            return Equals((ItemDeclaration)obj);
         }
 
         public override int GetHashCode()

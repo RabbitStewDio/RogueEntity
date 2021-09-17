@@ -8,6 +8,7 @@ using RogueEntity.Core.Sensing.Resistance;
 using RogueEntity.Core.Sensing.Resistance.Maps;
 using RogueEntity.Core.Utils;
 using RogueEntity.Core.Meta.EntityKeys;
+using RogueEntity.Core.Tests.Fixtures;
 
 namespace RogueEntity.Core.Tests.Sensing.Resistance
 {
@@ -22,9 +23,9 @@ namespace RogueEntity.Core.Tests.Sensing.Resistance
         public void SetUp()
         {
             ctx = new SenseMappingTestContext();
-            wall = ctx.ItemRegistry.Register(new BulkItemDeclaration<ItemReference>("Wall", "WallTag")
+            wall = ctx.ItemRegistry.Register(new BulkItemDeclaration<ItemReference>("Wall", new WorldEntityTag("WallTag"))
                                                  .WithTrait(new SensoryResistanceTrait<ItemReference, VisionSense>(Percentage.Full)));
-            ceilingFan = ctx.ItemRegistry.Register(new BulkItemDeclaration<ItemReference>("Fan", "FanTag")
+            ceilingFan = ctx.ItemRegistry.Register(new BulkItemDeclaration<ItemReference>("Fan", new WorldEntityTag("FanTag"))
                                                        .WithTrait(new SensoryResistanceTrait<ItemReference, VisionSense>(Percentage.Of(0.1f))));
             sps = new SensePropertiesSystem<VisionSense>(0, 0, 64, 64);
             sps.AddLayer(ctx, ctx.ItemResolver, TestMapLayers.One);

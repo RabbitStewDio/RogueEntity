@@ -6,7 +6,7 @@ namespace RogueEntity.Core.Inputs.Commands
     {
         public static EntityRole CreateRoleFor<TCommand>(CommandType<TCommand> cmd)
         {
-            return new EntityRole($"Role.Core.Inputs.Commands.Executor[{cmd.CommandId}]");
+            return new EntityRole($"Role.Core.Inputs.Commands.Executor[{cmd.CommandId.CommandId}]");
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Serilog;
+using System;
 using Game = SadConsole.Game;
 
 namespace RogueEntity.Samples.BoxPusher.MonoGame
@@ -22,7 +23,7 @@ namespace RogueEntity.Samples.BoxPusher.MonoGame
         {
             SetUpLogging();
 
-            
+            Console.WriteLine("Starting ..");
             
             // Setup the engine and create the main window.
             Game.Create(80, 25);

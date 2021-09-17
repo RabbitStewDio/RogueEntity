@@ -96,12 +96,6 @@ namespace RogueEntity.Api.Modules.Initializers
             var roleSet = entityInfo.CreateEntityInformation<TEntityId>();
             var subject = typeof(TEntityId);
 
-            // record all explicitly declared role instances.
-            foreach (var role in currentModule.QueryDeclaredRolesForEntityType<TEntityId>())
-            {
-                roleSet.RecordRole(role, " as explicit declaration in module {Module}", currentModule.Id);
-            }
-
             // record all explicitly declared relationship instances.
             foreach (var relationRecord in currentModule.DeclaredEntityRelations)
             {

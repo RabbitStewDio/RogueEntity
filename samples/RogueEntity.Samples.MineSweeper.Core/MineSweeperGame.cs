@@ -21,7 +21,6 @@ namespace RogueEntity.Samples.MineSweeper.Core
         DefaultRandomGeneratorSource randomGeneratorSource;
 
         public MineSweeperGameParameterService GameParameterService { get; }
-        public BasicCommandService<ActorReference> CommandService { get; private set; }
 
         public MineSweeperGame(): base("MineSweeper")
         {
@@ -32,7 +31,6 @@ namespace RogueEntity.Samples.MineSweeper.Core
 
         void OnGameInitialized(object sender, EventArgs e)
         {
-            CommandService = ServiceResolver.Resolve<BasicCommandService<ActorReference>>();
         }
 
         protected override void InitializeServices(IServiceResolver serviceResolver)

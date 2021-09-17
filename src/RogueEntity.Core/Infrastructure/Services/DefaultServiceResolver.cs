@@ -50,12 +50,17 @@ namespace RogueEntity.Core.Infrastructure.Services
                 throw new ArgumentException();
             }
 
+            if (backend.ContainsKey(t))
+            {
+                throw new ArgumentException("Redefinition of service type " + t);
+            }
+
             backend[t] = service;
         }
 
         public void Store<TServiceObject>(in TServiceObject service)
         {
-            backend[typeof(TServiceObject)] = service;
+            Store(typeof(TServiceObject), service);
         }
 
         public Lazy<T> ResolveToReference<T>()

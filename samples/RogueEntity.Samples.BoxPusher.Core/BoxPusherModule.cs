@@ -6,6 +6,8 @@ using RogueEntity.Api.Modules;
 using RogueEntity.Api.Modules.Attributes;
 using RogueEntity.Api.Time;
 using RogueEntity.Core.MapLoading;
+using RogueEntity.Core.MapLoading.Builder;
+using RogueEntity.Core.MapLoading.MapRegions;
 using RogueEntity.Core.Meta.EntityKeys;
 using RogueEntity.Core.Movement;
 using RogueEntity.Core.Movement.GridMovement;
@@ -14,6 +16,7 @@ using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Samples.BoxPusher.Core.Commands;
 using RogueEntity.Samples.BoxPusher.Core.ItemTraits;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RogueEntity.Samples.BoxPusher.Core
 {
@@ -23,7 +26,7 @@ namespace RogueEntity.Samples.BoxPusher.Core
         public static readonly EntityRole BoxRole = new EntityRole("Role.BoxPusher.Box");
         public static readonly EntityRole TargetSpotRole = new EntityRole("Role.BoxPusher.TargetSpot");
 
-        public static readonly EntityRelation BoxOccupiesTargetRelation = new EntityRelation("Relation.BoxPusher.BoxOccupiesTargetSpot", BoxRole, TargetSpotRole);
+        public static readonly EntityRelation BoxOccupiesTargetRelation = new EntityRelation("Relation.BoxPusher.BoxOccupiesTargetSpot", BoxRole, TargetSpotRole, true);
         public static readonly EntityRelation PlayerToBoxRelation = new EntityRelation("Relation.BoxPusher.PlayerCountingBoxes", PlayerModule.PlayerRole, BoxRole);
 
         static readonly EntitySystemId BoxPusherBoxEntities = new EntitySystemId("Entities.BoxPusher.Box");
@@ -34,7 +37,7 @@ namespace RogueEntity.Samples.BoxPusher.Core
         static readonly EntitySystemId BoxPusherCollectTargetSpotsSystem = new EntitySystemId("System.BoxPusher.WinSystem.CollectTargetSpots");
         static readonly EntitySystemId BoxPusherCollectBoxesSystem = new EntitySystemId("System.BoxPusher.WinSystem.CollectBoxes");
         static readonly EntitySystemId BoxPusherFinalizeWinSystem = new EntitySystemId("System.BoxPusher.WinSystem.Finalize");
-        
+
         static readonly EntitySystemId BoxPusherEnsureMoveSystem = new EntitySystemId("System.BoxPusher.MoveSystem.Create");
 
         public BoxPusherModule()
@@ -44,15 +47,16 @@ namespace RogueEntity.Samples.BoxPusher.Core
             DeclareDependencies(ModuleDependency.Of(PositionModule.ModuleId),
                                 ModuleDependency.Of(PlayerModule.ModuleId),
                                 ModuleDependency.Of(GridMovementModule.ModuleId),
-                                ModuleDependency.Of(MapLoadingModule.ModuleId));
+                                ModuleDependency.Of(MapLoadingModule.ModuleId),
+                                ModuleDependency.Of(MapBuilderModule.ModuleId));
 
-            DeclareRelation<ActorReference, ItemReference>(PlayerToBoxRelation);
-            DeclareRelation<ItemReference, ItemReference>(BoxOccupiesTargetRelation);
+            RequireRelation(PlayerToBoxRelation);
+            RequireRelation(BoxOccupiesTargetRelation);
         }
 
 
         [EntityRoleInitializer("Role.Core.Player",
-                               ConditionalRoles = new[] {"Role.Core.Position.GridPositioned"})]
+                               ConditionalRoles = new[] { "Role.Core.Position.GridPositioned" })]
         public void InitializePlayer<TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter,
                                                IModuleInitializer initializer,
                                                EntityRole r)
@@ -65,7 +69,7 @@ namespace RogueEntity.Samples.BoxPusher.Core
         }
 
         [EntityRoleFinalizer("Role.BoxPusher.Box",
-                             ConditionalRoles = new[] {"Role.Core.Position.GridPositioned"})]
+                             ConditionalRoles = new[] { "Role.Core.Position.GridPositioned" })]
         public void InitializeBox<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                            IModuleInitializer initializer,
                                            EntityRole r)
@@ -77,7 +81,7 @@ namespace RogueEntity.Samples.BoxPusher.Core
         }
 
         [EntityRoleFinalizer("Role.BoxPusher.TargetSpot",
-                             ConditionalRoles = new[] {"Role.Core.Position.GridPositioned"})]
+                             ConditionalRoles = new[] { "Role.Core.Position.GridPositioned" })]
         public void InitializeTargetSpot<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                   IModuleInitializer initializer,
                                                   EntityRole r)
@@ -89,13 +93,13 @@ namespace RogueEntity.Samples.BoxPusher.Core
         }
 
         [EntityRelationInitializer("Relation.BoxPusher.PlayerCountingBoxes")]
+        [SuppressMessage("ReSharper", "UnusedTypeParameter")]
         public void InitializePlayerBoxRelation<TActorId, TItemId>(in ModuleEntityInitializationParameter<TActorId> initParameter,
                                                                    IModuleInitializer initializer,
                                                                    EntityRelation r)
             where TActorId : IEntityKey
             where TItemId : IEntityKey
         {
-
             var ctx = initializer.DeclareEntityContext<TActorId>();
             ctx.Register(BoxPusherEnsureMoveSystem, 1000, EnsureMoveSystemExists);
         }

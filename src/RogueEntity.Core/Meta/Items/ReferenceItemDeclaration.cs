@@ -4,19 +4,19 @@ using RogueEntity.Api.Utils;
 
 namespace RogueEntity.Core.Meta.Items
 {
-    public class ReferenceItemDeclaration<TItemId> : ItemDeclaration, 
-                                                               IReferenceItemDeclaration<TItemId> 
+    public class ReferenceItemDeclaration<TItemId> : ItemDeclaration,
+                                                     IReferenceItemDeclaration<TItemId>
         where TItemId : IEntityKey
     {
         readonly TraitRegistration<IReferenceItemTrait<TItemId>> traits;
 
-        public ReferenceItemDeclaration(ItemDeclarationId id): this(id, id.Id) 
-        {
-        }
+        public ReferenceItemDeclaration(ItemDeclarationId id) : this(id, new WorldEntityTag(id.Id))
+        { }
 
-        public ReferenceItemDeclaration(ItemDeclarationId id, string tag): base(id, tag) 
+        public ReferenceItemDeclaration(ItemDeclarationId id, WorldEntityTag tag) : base(id, tag)
         {
             traits = new TraitRegistration<IReferenceItemTrait<TItemId>>(TraitComparer.Default);
+            traits.Add(new DefaultEntityTagTrait<TItemId>(tag));
         }
 
         public ReferenceItemDeclaration<TItemId> WithTrait(IReferenceItemTrait<TItemId> trait)
@@ -50,6 +50,5 @@ namespace RogueEntity.Core.Meta.Items
                 itemTrait.Apply(v, k, this);
             }
         }
-
     }
 }

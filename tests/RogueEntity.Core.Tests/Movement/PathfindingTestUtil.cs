@@ -3,6 +3,7 @@ using RogueEntity.Api.Utils;
 using RogueEntity.Core.Movement;
 using RogueEntity.Core.MovementPlaning.Goals;
 using RogueEntity.Core.Positioning.Grid;
+using RogueEntity.Core.Tests.Fixtures;
 using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.DataViews;
 

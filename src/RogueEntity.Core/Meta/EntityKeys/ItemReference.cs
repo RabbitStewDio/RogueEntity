@@ -21,11 +21,16 @@ using RogueEntity.Api.ItemTraits;
 
 
 
+
+
+
+
 namespace RogueEntity.Core.Meta.EntityKeys
 {
     [EntityKey]
     [EntityXmlSerialization]
     [EntityBinarySerialization]
+    [EntityKeyMetaData(typeof(ItemReferenceMetaData))]
     public readonly struct ItemReference : IEquatable<ItemReference>, IBulkDataStorageKey<ItemReference>
     {
         public static readonly ItemReference Empty = default;

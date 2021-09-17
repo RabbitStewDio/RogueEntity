@@ -2,6 +2,7 @@
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Api.Utils;
 using RogueEntity.Core.Infrastructure.Randomness;
+using RogueEntity.Core.MapLoading.Builder;
 using RogueEntity.Core.Meta.ItemTraits;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Grid;

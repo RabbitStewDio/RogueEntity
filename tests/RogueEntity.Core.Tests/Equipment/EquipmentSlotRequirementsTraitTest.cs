@@ -6,7 +6,7 @@ using RogueEntity.Core.Tests.Meta.Items;
 namespace RogueEntity.Core.Tests.Equipment
 {
     [TestFixture]
-    public class EquipmentSlotRequirementsTraitTest : ItemComponentTraitTestBase<ItemReference, EquipmentSlotRequirements, EquipmentSlotRequirementsTrait<ItemReference>>
+    public class EquipmentSlotRequirementsTraitTest : ItemComponentInformationTraitTestBase<ItemReference, EquipmentSlotRequirements, EquipmentSlotRequirementsTrait<ItemReference>>
     {
         readonly EquipmentSlotRegistry registry;
         readonly EquipmentSlot slotHead;
