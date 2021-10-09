@@ -5,60 +5,49 @@ using RogueEntity.Api.Time;
 using RogueEntity.Api.Utils;
 using RogueEntity.Core.Infrastructure.GameLoops;
 using RogueEntity.Core.Infrastructure.Services;
-using RogueEntity.Core.Inputs.Commands;
-using RogueEntity.Core.Meta.EntityKeys;
-using RogueEntity.Core.Players;
 using Serilog;
 using System;
 
 namespace RogueEntity.Core.Runtime
 {
-    public abstract class GameBase<TPlayerEntity>
+    public abstract class GameBase: IDisposable
     {
-        static readonly ILogger Logger = SLog.ForContext<GameBase<TPlayerEntity>>();
+        static readonly ILogger Logger = SLog.ForContext<GameBase>();
         
         public event EventHandler GameInitialized;
         public event EventHandler GameStarted;
         public event EventHandler GameFinished;
         public event EventHandler GameStopped;
         public event EventHandler<TimeSpan> GameUpdate;
-
+        
         string[] ModuleIds { get; }
-        IGameLoop gameLoop;
 
         protected GameBase(params string[] moduleIds)
         {
-            ModuleIds = moduleIds ?? new string[0];
+            ModuleIds = moduleIds ?? Array.Empty<string>();
         }
 
-        public ITimeSourceDefinition TimeSourceDefinition { get; protected set; }
         public IServiceResolver ServiceResolver { get; private set; }
-        public IPlayerService PlayerService { get; private set; }
-        public IPlayerManager<TPlayerEntity> PlayerManager { get; private set; }
-        public GameStatus Status { get; private set; }
-        public Optional<PlayerReference<TPlayerEntity>> PlayerData { get; private set; }
-        public IBasicCommandService<TPlayerEntity> CommandService { get; private set; }
-
+        public GameStatus Status { get; protected set; }
+        protected IGameLoop GameLoop { get; private set; }
         protected virtual IServiceResolver CreateServiceResolver() => new DefaultServiceResolver();
         
-        public void InitializeSystems()
+        public void InitializeSystems(ITimeSourceDefinition timeSourceDefinition = null)
         {
             Logger.Debug("Starting");
-            TimeSourceDefinition ??= new RealTimeSourceDefinition(30);
+            timeSourceDefinition ??= new RealTimeSourceDefinition(30);
             
             ServiceResolver = CreateServiceResolver();
-            ServiceResolver.Store(TimeSourceDefinition);
+            ServiceResolver.Store(timeSourceDefinition);
             InitializeServices(ServiceResolver);
 
             var ms = CreateModuleSystem();
 
-            gameLoop = TimeSourceDefinition.BuildTimeStepLoop(ms.Initialize());
+            GameLoop = timeSourceDefinition.BuildTimeStepLoop(ms.Initialize());
 
-            ServiceResolver.Store(gameLoop.TimeSource);
+            ServiceResolver.Store(GameLoop.TimeSource);
             ServiceResolver.ValidatePromisesCanResolve();
-            PlayerService = ServiceResolver.Resolve<IPlayerService>();
-            PlayerManager = ServiceResolver.Resolve<IPlayerManager<TPlayerEntity>>();
-            CommandService = ServiceResolver.Resolve<IBasicCommandService<TPlayerEntity>>();
+            LateInitializeSystemsOverride();
 
             Status = GameStatus.Initialized;
             GameInitialized?.Invoke(this, EventArgs.Empty);
@@ -71,36 +60,39 @@ namespace RogueEntity.Core.Runtime
             return ms;
         }
 
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                GameLoop?.Dispose();
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        ~GameBase()
+        {
+            Dispose(false);
+        }
+
         protected virtual void InitializeServices(IServiceResolver serviceResolver)
         {
         }
-
-        protected bool PerformStartGame(Guid playerId = default)
+        
+        protected virtual void LateInitializeSystemsOverride()
         {
-            if (Status != GameStatus.Initialized)
-            {
-                return false;
-            }
+        }
 
-            if (playerId == default)
-            {
-                playerId = PlayerIds.SinglePlayer;
-            }
-            
-            gameLoop.Initialize(IsBlockedOrWaitingForInput);
-
-            if (PlayerManager.TryActivatePlayer(playerId, out var playerTag, out var playerEntityId))
-            {
-                PlayerData = new PlayerReference<TPlayerEntity>(playerTag, playerEntityId);
-
-                Status = GameStatus.Running;
-                GameStarted?.Invoke(this, EventArgs.Empty);
-                return true;
-            }
-
-            return false;
+        protected void FireGameStartedEvent()
+        {
+            GameStarted?.Invoke(this, EventArgs.Empty);
         }
         
+                
         public void Update(TimeSpan absoluteGameTime)
         {
             if (Status != GameStatus.Running)
@@ -108,7 +100,7 @@ namespace RogueEntity.Core.Runtime
                 return;
             }
 
-            gameLoop.Update(absoluteGameTime);
+            GameLoop.Update(absoluteGameTime);
             UpdateOverride(absoluteGameTime);
             GameUpdate?.Invoke(this, absoluteGameTime);
 
@@ -117,19 +109,29 @@ namespace RogueEntity.Core.Runtime
             {
                 Status = status;
                 GameFinished?.Invoke(this, EventArgs.Empty);
-                RemoveActivePlayer();
             }
         }
 
-        void RemoveActivePlayer()
+        public ITimeSource Time => GameLoop.TimeSource;
+        
+        protected virtual GameStatus CheckStatus() => GameLoop.IsRunning ? GameStatus.Running : Status;
+                
+        protected virtual void UpdateOverride(TimeSpan absoluteGameTime)
         {
-            if (!PlayerData.TryGetValue(out var playerData) ||
-                !PlayerManager.TryDeactivatePlayer(playerData.Tag.Id))
-            {
-                // Big warning, unable to kill player.
-            }
         }
 
+        public virtual void Stop()
+        {
+            if (!Status.IsStoppable())
+            {
+                return;
+            }
+
+            GameLoop.Stop();
+            Status = GameStatus.Initialized;
+            GameStopped?.Invoke(this, EventArgs.Empty);
+        }
+        
         public virtual bool IsBlockedOrWaitingForInput()
         {
             // if status is error, or either a win or a loose, 
@@ -148,24 +150,5 @@ namespace RogueEntity.Core.Runtime
                     throw new ArgumentOutOfRangeException();
             }
         }
-        
-        protected virtual void UpdateOverride(TimeSpan absoluteGameTime)
-        {
-        }
-
-        public virtual void Stop()
-        {
-            if (!Status.IsStoppable())
-            {
-                return;
-            }
-
-            gameLoop.Stop();
-            Status = GameStatus.Initialized;
-            GameStopped?.Invoke(this, EventArgs.Empty);
-            RemoveActivePlayer();
-        }
-
-        protected virtual GameStatus CheckStatus() => GameStatus.Running;
     }
 }

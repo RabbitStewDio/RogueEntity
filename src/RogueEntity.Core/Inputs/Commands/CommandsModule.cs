@@ -46,11 +46,7 @@ namespace RogueEntity.Core.Inputs.Commands
                                                           EntityRegistry<TActorId> registry)
             where TActorId : IEntityKey
         {
-            if (!initParameter.ServiceResolver.TryResolve(out IBasicCommandService<TActorId> cmdService))
-            {
-                initParameter.ServiceResolver.Store<IBasicCommandService<TActorId>>
-                    (new BasicCommandService<TActorId>(initParameter.ServiceResolver.Resolve<IItemResolver<TActorId>>()));
-            }
+            EnsureAnyCommandServiceExists(initParameter);
             
             var system = new BasicCommandSystem<TActorId>(initParameter.ServiceResolver.Resolve<IItemResolver<TActorId>>());
             var clearCommandsSystem = registry.BuildSystem()
@@ -59,6 +55,15 @@ namespace RogueEntity.Core.Inputs.Commands
                                               .CreateSystem(system.ClearHandledCommands);
             context.AddFixedStepHandlerSystem(clearCommandsSystem);
             context.AddVariableStepHandlerSystem(clearCommandsSystem);
+        }
+
+        static void EnsureAnyCommandServiceExists<TActorId>(ModuleEntityInitializationParameter<TActorId> initParameter) where TActorId : IEntityKey
+        {
+            if (!initParameter.ServiceResolver.TryResolve(out IBasicCommandService<TActorId> _))
+            {
+                initParameter.ServiceResolver.Store<IBasicCommandService<TActorId>>
+                    (new BasicCommandService<TActorId>(initParameter.ServiceResolver.Resolve<IItemResolver<TActorId>>()));
+            }
         }
 
         void RegisterCommandComponents<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter, EntityRegistry<TItemId> registry)

@@ -21,19 +21,21 @@ namespace RogueEntity.Generator
         readonly IEntityRandomGeneratorSource randomSource;
         readonly Lazy<MapBuilder> mapBuilder;
         readonly List<MapFragment> levelData;
+        bool initialized;
 
         protected StaticMapLevelDataSource(Lazy<MapBuilder> mapBuilder, IEntityRandomGeneratorSource randomSource)
         {
             this.randomSource = randomSource ?? throw new ArgumentNullException(nameof(randomSource));
             this.mapBuilder = mapBuilder ?? throw new ArgumentNullException(nameof(mapBuilder));
             this.levelData = new List<MapFragment>();
+            this.initialized = false;
         }
 
         public void Initialize()
         {
             this.levelData.Clear();
             this.levelData.AddRange(LoadMapFragments().OrderBy(e => e.Info.Name));
-
+            this.initialized = true;
             Logger.Information("Found {ChunkCount} chunks", levelData.Count);
         }
 
@@ -43,6 +45,14 @@ namespace RogueEntity.Generator
         {
             if (!levelData.GetItemAt(region).TryGetValue(out var mapFragment))
             {
+                if (!initialized)
+                {
+                    Logger.Error("Level data source has not been initialized yet - Check your initialization routines");
+                }
+                else
+                {
+                    Logger.Debug("Unable to serve request for region {RegionKey} - no such level data", region);
+                }
                 return MapRegionLoadingStatus.Error;
             }
 

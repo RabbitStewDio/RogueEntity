@@ -7,19 +7,19 @@ namespace RogueEntity.Core.Movement.Cost
         public static float ToMeterPerSecond<TMovementMode>(this in MovementVelocity<TMovementMode> m,
                                                             ITimeSourceDefinition timeDefinition)
         {
-            return (float)(m.Velocity * timeDefinition.TicksPerSecond);
+            return (float)(m.Velocity * timeDefinition.UpdateTicksPerSecond);
         }
 
         public static float ToMeterPerSecond<TMovementMode>(this in MovementPointCost<TMovementMode> m,
                                                             ITimeSourceDefinition timeDefinition)
         {
-            return (float) (m.Cost / timeDefinition.TicksPerSecond);
+            return (float) (m.Cost / timeDefinition.UpdateTicksPerSecond);
         }
 
         public static float ToMeterPerSecond(this in MovementCost m,
                                              ITimeSourceDefinition timeDefinition)
         {
-            return (float) (m.Cost / timeDefinition.TicksPerSecond);
+            return (float) (m.Cost / timeDefinition.UpdateTicksPerSecond);
         }
     }
 }

@@ -46,13 +46,15 @@ namespace RogueEntity.Core.Infrastructure.GameLoops
             DisposeStepHandlers = new List<ActionSystemEntry>();
         }
 
+        public TimeSpan FixedTimeStep => timeProcessor.TimeStepDuration;
+
         public ITimeSource TimeSource => this;
 
         public ITimeSourceDefinition TimeSourceDefinition { get; }
 
         public double TicksPerSecond => timeProcessor.TicksPerSecond;
         public TimeSpan CurrentTime => timeState.TotalGameTimeElapsed;
-        public int FixedStepTime => timeState.FixedStepCount;
+        public int FixedStepFrameCounter => timeState.FixedStepCount;
 
         public bool IsRunning { get; private set; }
 

@@ -14,7 +14,9 @@ namespace RogueEntity.Core.Tests.Fixtures
 
         GameTimeState timeState;
         public TimeSpan CurrentTime { get; set; }
-        public int FixedStepTime { get; set; }
+        public int FixedStepFrameCounter { get; set; }
+
+        public TimeSpan FixedTimeStep => TimeSpan.FromSeconds(1 / TimeSourceDefinition.UpdateTicksPerSecond);
 
         public GameTimeState TimeState
         {

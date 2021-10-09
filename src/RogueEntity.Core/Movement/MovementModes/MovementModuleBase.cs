@@ -16,7 +16,6 @@ using RogueEntity.Core.Movement.CostModifier.Map;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Grid;
 using Serilog;
-using System;
 using System.Linq;
 
 namespace RogueEntity.Core.Movement.MovementModes
@@ -70,7 +69,7 @@ namespace RogueEntity.Core.Movement.MovementModes
                 yield return ModuleEntityRoleInitializerInfo.CreateFor<TItemId>(MovementCostModifierSourceRole,
                                                                                 InitializeResistanceRole,
                                                                                 $"{GetType().Name}#{nameof(InitializeResistanceRole)}")
-                                                            .WithRequiredRoles(PositionModule.GridPositionedRole)
+                                                            .WithRequiredRoles(GridPositionModule.GridPositionedRole)
                                                             .WithRequiredRolesAnywhereInSystem(MovableActorRole);
             }
 

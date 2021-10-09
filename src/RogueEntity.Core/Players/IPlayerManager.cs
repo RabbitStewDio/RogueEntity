@@ -1,9 +1,13 @@
-﻿using System;
+﻿using RogueEntity.Core.Runtime;
+using System;
 
 namespace RogueEntity.Core.Players
 {
     public interface IPlayerManager<TEntity>
     {
+        event EventHandler<PlayerReference<TEntity>> PlayerActivated;
+        event EventHandler<PlayerReference<TEntity>> PlayerDeactivated;
+        
         /// <summary>
         ///   Login
         /// </summary>

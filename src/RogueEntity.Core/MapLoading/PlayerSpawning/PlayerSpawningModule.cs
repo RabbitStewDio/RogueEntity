@@ -20,7 +20,8 @@ namespace RogueEntity.Core.MapLoading.PlayerSpawning
         public static readonly EntityRole PlayerSpawnPointRole = new EntityRole("Role.Core.PlayerSpawning.PlayerSpawnPoint");
         public static readonly EntityRelation PlayerToSpawnPointRelation = new EntityRelation("Relation.Core.PlayerSpawning.PlayerToSpawnPoint", PlayerModule.PlayerRole, PlayerSpawnPointRole, true);
 
-        static readonly EntitySystemId SpawnActorsSystemId = "System.Core.PlayerSpawning.SpawnActors";
+        static readonly EntitySystemId SpawnActorsSystemId = "System.Core.PlayerSpawning.SpawnNewActors";
+        static readonly EntitySystemId PlaceActorsSystemId = "System.Core.PlayerSpawning.PlaceActors";
         static readonly EntitySystemId CollectSpawnPointsSystemId = "System.Core.PlayerSpawning.CollectSpawnPoints";
 
         static readonly EntitySystemId PlayerSpawnPointComponentsId = "Entities.Core.PlayerSpawning.PlayerSpawnPoint";
@@ -57,12 +58,12 @@ namespace RogueEntity.Core.MapLoading.PlayerSpawning
             where TActorId : IEntityKey
             where TItemId : IEntityKey
         {
-
             var entityContext = initializer.DeclareEntityContext<TActorId>();
-            entityContext.Register(SpawnActorsSystemId, 32_000, RegisterSpawnPlayers<TActorId, TItemId>);
+            entityContext.Register(SpawnActorsSystemId, 45_000, RegisterSpawnNewPlayers<TActorId, TItemId>);
+            entityContext.Register(PlaceActorsSystemId, 49_500, RegisterPlacePlayersAfterLevelLoading<TActorId, TItemId>);
 
             var spawnPointEntityContext = initializer.DeclareEntityContext<TItemId>();
-            spawnPointEntityContext.Register(CollectSpawnPointsSystemId, 31_500, RegisterCollectSpawnPoints<TActorId, TItemId>);
+            spawnPointEntityContext.Register(CollectSpawnPointsSystemId, 49_000, RegisterCollectSpawnPoints<TActorId, TItemId>);
         }
 
         void RegisterPlayerSpawnPointComponents<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
@@ -72,26 +73,7 @@ namespace RogueEntity.Core.MapLoading.PlayerSpawning
             registry.RegisterNonConstructable<PlayerSpawnLocation>();
         }
 
-        void RegisterCollectSpawnPoints<TActorId, TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
-                                                           IGameLoopSystemRegistration context,
-                                                           EntityRegistry<TItemId> registry)
-            where TActorId : IEntityKey
-            where TItemId : IEntityKey
-        {
-            var system = GetOrCreateSpawnSystem<TActorId, TItemId>(initParameter.ServiceResolver);
-
-            context.AddFixedStepHandlers(system.StartCollectSpawnLocations);
-            context.AddLateVariableStepHandlers(system.StartCollectSpawnLocations);
-
-            var s = registry.BuildSystem()
-                            .WithoutContext()
-                            .WithInputParameter<EntityGridPosition>()
-                            .WithInputParameter<PlayerSpawnLocation>()
-                            .CreateSystem(system.CollectSpawnLocations);
-            context.AddFixedStepHandlerSystem(s);
-        }
-
-        void RegisterSpawnPlayers<TActorId, TItemId>(in ModuleEntityInitializationParameter<TActorId> initParameter,
+        void RegisterSpawnNewPlayers<TActorId, TItemId>(in ModuleEntityInitializationParameter<TActorId> initParameter,
                                                      IGameLoopSystemRegistration context,
                                                      EntityRegistry<TActorId> registry)
             where TActorId : IEntityKey
@@ -105,6 +87,33 @@ namespace RogueEntity.Core.MapLoading.PlayerSpawning
                                                  .WithInputParameter<NewPlayerTag>()
                                                  .CreateSystem(system.RequestLoadLevelFromNewPlayer);
             context.AddFixedStepHandlerSystem(handleNewPlayersSystem);
+        }
+
+        void RegisterCollectSpawnPoints<TActorId, TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
+                                                           IGameLoopSystemRegistration context,
+                                                           EntityRegistry<TItemId> registry)
+            where TActorId : IEntityKey
+            where TItemId : IEntityKey
+        {
+            var system = GetOrCreateSpawnSystem<TActorId, TItemId>(initParameter.ServiceResolver);
+
+            context.AddFixedStepHandlers(system.StartCollectSpawnLocations);
+
+            var s = registry.BuildSystem()
+                            .WithoutContext()
+                            .WithInputParameter<EntityGridPosition>()
+                            .WithInputParameter<PlayerSpawnLocation>()
+                            .CreateSystem(system.CollectSpawnLocations);
+            context.AddFixedStepHandlerSystem(s);
+        }
+
+        void RegisterPlacePlayersAfterLevelLoading<TActorId, TItemId>(in ModuleEntityInitializationParameter<TActorId> initParameter,
+                                                                      IGameLoopSystemRegistration context,
+                                                                      EntityRegistry<TActorId> registry)
+            where TActorId : IEntityKey
+            where TItemId : IEntityKey
+        {
+            var system = GetOrCreateSpawnSystem<TActorId, TItemId>(initParameter.ServiceResolver);
 
             var spawnAction = registry.BuildSystem()
                                       .WithoutContext()
@@ -120,6 +129,7 @@ namespace RogueEntity.Core.MapLoading.PlayerSpawning
                                       .CreateSystem(system.PlacePlayerAfterLevelChange);
             context.AddFixedStepHandlerSystem(placeAction);
         }
+
 
         FlatLevelPlayerSpawnSystem<TActorId, TItemId> GetOrCreateSpawnSystem<TActorId, TItemId>(IServiceResolver serviceResolver)
             where TActorId : IEntityKey

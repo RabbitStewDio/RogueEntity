@@ -4,16 +4,15 @@ using EnTTSharp.Entities;
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Api.Modules.Helpers;
 using RogueEntity.Api.Services;
-using System;
 
 namespace RogueEntity.Api.Modules
 {
     public partial class ModuleSystem
     {
-        IGameLoopSystemInformation InitializeSystems(IModuleInitializationData moduleInitializer,
-                                                                   GlobalModuleEntityInformation globalModuleEntityInformation)
+        IGameLoopSystemInformation InitializeGlobalSystems(IModuleInitializationData moduleInitializer,
+                                                           GlobalModuleEntityInformation globalModuleEntityInformation)
         {
-            var globalSystems = CollectGlobalSystems(moduleInitializer);
+            var globalSystems = CollectGlobalSystems(moduleInitializer.GlobalSystems);
             InitializeGlobalSystems(globalModuleEntityInformation, globalSystems);
 
             var handler = new EntitySystemRegistrationHandler(globalModuleEntityInformation, serviceResolver, registrations);
@@ -23,13 +22,15 @@ namespace RogueEntity.Api.Modules
                 entity.callback(handler);
             }
 
+            var globalFinalizerSystems = CollectGlobalSystems(moduleInitializer.GlobalFinalizerSystems);
+            InitializeGlobalSystems(globalModuleEntityInformation, globalFinalizerSystems);
             return registrations;
         }
 
-        static IEnumerable<IGlobalSystemDeclaration> CollectGlobalSystems(IModuleInitializationData moduleInitializer)
+        static IEnumerable<IGlobalSystemDeclaration> CollectGlobalSystems(IEnumerable<IGlobalSystemDeclaration> moduleInitializer)
         {
             var globalSystems = new Dictionary<EntitySystemId, IGlobalSystemDeclaration>();
-            foreach (var globalSystem in moduleInitializer.GlobalSystems)
+            foreach (var globalSystem in moduleInitializer)
             {
                 if (globalSystems.TryGetValue(globalSystem.Id, out var entry))
                 {
@@ -92,7 +93,7 @@ namespace RogueEntity.Api.Modules
                     Logger.Debug("No ItemContextBackend for entity type {EntityType}; Skipping EntitySystem initialization", typeof(TEntityId));
                     return;
                 }
-            
+
                 var mip = new ModuleEntityInitializationParameter<TEntityId>(mi, serviceResolver, moduleContext);
 
                 var sortedEntries = CollectEntitySystemDeclarations(moduleContext);

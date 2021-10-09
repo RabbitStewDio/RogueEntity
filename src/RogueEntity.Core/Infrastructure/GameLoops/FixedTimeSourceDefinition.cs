@@ -18,10 +18,10 @@ namespace RogueEntity.Core.Infrastructure.GameLoops
         {
             this.stepsPerFrame = stepsPerFrame;
             this.timePerTick = timePerTick;
-            TicksPerSecond = 1 / timePerTick.TotalSeconds;
+            UpdateTicksPerSecond = 1 / timePerTick.TotalSeconds;
         }
 
-        public double TicksPerSecond { get; }
+        public double UpdateTicksPerSecond { get; }
 
         public IGameLoop BuildTimeStepLoop(IGameLoopSystemInformation t)
         {
@@ -72,14 +72,14 @@ namespace RogueEntity.Core.Infrastructure.GameLoops
 
         public RealTimeSourceDefinition(double ticksPerSecond)
         {
-            TicksPerSecond = ticksPerSecond;
+            UpdateTicksPerSecond = ticksPerSecond;
         }
 
-        public double TicksPerSecond { get; }
+        public double UpdateTicksPerSecond { get; }
 
         public IGameLoop BuildTimeStepLoop(IGameLoopSystemInformation t)
         {
-            var s = new RealTimeGameLoop(this, TicksPerSecond);
+            var s = new RealTimeGameLoop(this, UpdateTicksPerSecond);
             foreach (var entry in t.InitializationEntries)
             {
                 Logger.Debug("Adding Initialization Step {StepName}", entry.ToString());

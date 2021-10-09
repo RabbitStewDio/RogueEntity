@@ -14,7 +14,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace RogueEntity.Samples.BoxPusher.Core
 {
-    public class BoxPusherGame: GameBase<ActorReference>
+    public class BoxPusherGame: SinglePlayerGameBase<ActorReference>
     {
         readonly IStorageLocationService storageLocations;
 
@@ -54,6 +54,7 @@ namespace RogueEntity.Samples.BoxPusher.Core
         {
             if (LevelLoader.IsError())
             {
+                Console.WriteLine("Level Loading failed");
                 return GameStatus.Error;
             }
             
@@ -74,10 +75,9 @@ namespace RogueEntity.Samples.BoxPusher.Core
                 return false;
             }
 
-            if (PerformStartGame(profileId) && this.PlayerData.TryGetValue(out var value))
+            if (StartGameWithPlayer(profileId) && this.PlayerData.TryGetValue(out var value))
             {
-                if (actorResolver.TryUpdateData(value.EntityId, profile, out _) &&
-                    actorResolver.TryUpdateData(value.EntityId, PlayerObserverTag.CreateFor(new PlayerTag(profileId)), out _))
+                if (actorResolver.TryUpdateData(value.EntityId, profile, out _))
                 {
                     Console.WriteLine("Player created");
                     return true;

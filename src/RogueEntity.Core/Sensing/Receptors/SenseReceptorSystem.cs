@@ -117,7 +117,7 @@ namespace RogueEntity.Core.Sensing.Receptors
         /// </summary>
         public void BeginSenseCalculation()
         {
-            currentTime = timeSource.Value.FixedStepTime;
+            currentTime = timeSource.Value.FixedStepFrameCounter;
         }
 
         /// <summary>

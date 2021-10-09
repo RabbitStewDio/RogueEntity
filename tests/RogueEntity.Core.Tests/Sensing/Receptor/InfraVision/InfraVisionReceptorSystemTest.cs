@@ -293,12 +293,22 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.InfraVision
                                         sourcePhysics);
         }
 
-        [Test]
-        [TestCase(nameof(PillarRoom), PillarRoom, PillarRoomPerceptionStrength, PillarRoomSenseMapResult, PillarRoomDirectionResult)]
-        [TestCase(nameof(EmptyRoom), EmptyRoom, EmptyRoomPerceptionStrength, EmptyRoomSenseMapResult, EmptyRoomDirectionMapResult)]
-        public void Do(string id, string sourceText, string expectedResultText, string expectedSenseMapText, string expectedSenseMapDirections)
+        protected override TestData FetchTestData(string id)
         {
-            base.PerformTest(id, sourceText, expectedResultText, expectedSenseMapText, expectedSenseMapDirections);
+            switch (id)
+            {
+                case nameof(EmptyRoom): return new TestData(EmptyRoom, EmptyRoomPerceptionStrength, EmptyRoomSenseMapResult, EmptyRoomDirectionMapResult);
+                case nameof(PillarRoom): return new TestData(PillarRoom, PillarRoomPerceptionStrength, PillarRoomSenseMapResult, PillarRoomDirectionResult);
+                default: throw new ArgumentException();
+            }
+        }
+
+        [Test]
+        [TestCase(nameof(EmptyRoom))]
+        [TestCase(nameof(PillarRoom))]
+        public void Do(string id)
+        {
+            base.PerformTest(id);
         }
     }
 }

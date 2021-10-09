@@ -10,15 +10,21 @@ Module Initialization phases:
      40_000 to  44_999 : Reserved as extension point.
      45_000 to  49_999 : Content/Map Processing (Chunk loading etc.)
      50_000 to  59_999 : Sense Map and Light calculations
-     60_000 to  99_999 : Reserved as extension point.
+     60_000 to  79_999 : Reserved as extension point.
+     80_000 to  84_999 : GUI and service updates
+     85_000 to  99_999 : Reserved as extension point.
     100_000 and beyond : System Cleanup Events
 
 
-Chunks:
-
-     47_000  - Mark observed map chunks as used.
-     48_000  - Unload chunks.
-     48_500  - Load chunks.
+Chunks/Maps:
+ 
+     45_000  - Spawn Player Entities
+     45_500  - Process Map-Loading commands, schedule map loading triggers
+     47_500  * Mark observed map chunks as used.  
+     48_000  * Unload chunks.                     
+     48_500  - Load newly observed chunks.        
+     49_000  - Collect possible spawn points
+     49_500  - Place players in newly loaded chunks
 
 Senses:
 
@@ -37,3 +43,8 @@ Senses:
      59_000  - Copy Global Sense Map Data To Receptor                                                       [if using global Sense Map]
      59_000  - Clean-up Sense Source Temporary Data
      59_500  - Clean-up Sense Receptor Temporary Data
+
+Player Management:
+
+     80_000  - Collect Players for PlayerManager (Late Step)
+     81_000  - Collect Player Observers for PlayerManager (Late Step)

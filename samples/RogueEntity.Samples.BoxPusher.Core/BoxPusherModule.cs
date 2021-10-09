@@ -5,7 +5,6 @@ using RogueEntity.Api.ItemTraits;
 using RogueEntity.Api.Modules;
 using RogueEntity.Api.Modules.Attributes;
 using RogueEntity.Api.Time;
-using RogueEntity.Core.MapLoading;
 using RogueEntity.Core.MapLoading.Builder;
 using RogueEntity.Core.MapLoading.MapRegions;
 using RogueEntity.Core.Meta.EntityKeys;

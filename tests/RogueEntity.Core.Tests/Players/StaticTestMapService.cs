@@ -19,14 +19,14 @@ using System.Linq;
 
 namespace RogueEntity.Core.Tests.Players
 {
-    public class StaticMapService : MapRegionLoaderServiceBase<int>, IMapAvailabilityService, IPlayerSpawnInformationSource
+    public class StaticTestMapService : MapRegionLoaderServiceBase<int>, IMapAvailabilityService, IPlayerSpawnInformationSource
     {
         readonly Lazy<MapBuilder> mapBuilder;
         readonly int defaultLevel;
         readonly Dictionary<int, string> mapData;
         readonly Dictionary<string, ItemDeclarationId[]> tokens;
 
-        public StaticMapService(Lazy<MapBuilder> mapBuilder,
+        public StaticTestMapService(Lazy<MapBuilder> mapBuilder,
                                 int defaultLevel)
         {
             this.mapBuilder = mapBuilder;
@@ -52,6 +52,16 @@ namespace RogueEntity.Core.Tests.Players
             return IsRegionLoaded(zPosition);
         }
 
+        public void AddMap(int z, string mapDataRaw)
+        {
+            mapData[z] = mapDataRaw;
+        }
+
+        public void AddMapToken(string tokenCharacter, params ItemDeclarationId[] tokenData)
+        {
+            tokens[tokenCharacter] = tokenData;
+        }
+        
         protected override MapRegionLoadingStatus PerformLoadNextChunk(int region)
         {
             if (!mapData.TryGetValue(region, out var raw))

@@ -29,7 +29,7 @@ namespace RogueEntity.Api.Modules
         public IGameLoopSystemInformation Initialize()
         {
             var (moduleInitializer, globalEntityInfo) = InitializeModules();
-            return InitializeSystems(moduleInitializer, globalEntityInfo);
+            return InitializeGlobalSystems(moduleInitializer, globalEntityInfo);
         }
         
         (ModuleInitializer moduleInitializer, GlobalModuleEntityInformation EntityInformation) InitializeModules()
@@ -87,6 +87,9 @@ namespace RogueEntity.Api.Modules
             var phase9 = new ModuleSystemPhaseFinalizeRelationSystems(phase2Result, serviceResolver);
             phase9.InitializeModuleRelations(orderedModules);
 
+            var phase10 = new ModuleSystemPhaseFinalizeModule(phase2Result, serviceResolver);
+            phase10.InitializeModuleContent();
+            
             return (phase2Result.ModuleInitializer, phase2Result.EntityInformation);
         }
 

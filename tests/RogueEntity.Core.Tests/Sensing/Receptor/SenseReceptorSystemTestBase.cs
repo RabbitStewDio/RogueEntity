@@ -5,6 +5,7 @@ using FluentAssertions;
 using NUnit.Framework;
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Api.Time;
+using RogueEntity.Api.Utils;
 using RogueEntity.Core.Infrastructure.GameLoops;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Positioning;
@@ -23,6 +24,8 @@ using RogueEntity.Core.Utils.DataViews;
 using RogueEntity.Core.Meta.EntityKeys;
 using RogueEntity.Core.Tests.Fixtures;
 using RogueEntity.Core.Utils;
+using Serilog;
+using Serilog.Events;
 
 namespace RogueEntity.Core.Tests.Sensing.Receptor
 {
@@ -31,6 +34,7 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor
         where TSourceSense : ISense
         where TSenseSourceDefinition : ISenseDefinition
     {
+        protected readonly ILogger Logger;
         protected SenseMappingTestContext context;
         protected SenseReceptorSystem<TReceptorSense, TSourceSense> senseSystem;
         protected SenseSourceSystem<TSourceSense, TSenseSourceDefinition> senseSourceSystem;
@@ -55,6 +59,11 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor
 
         protected SensoryResistanceDirectionalitySystem<TSourceSense> directionalitySourceSystem;
         protected SensoryResistanceDirectionalitySystem<TReceptorSense> directionalityReceptorSystem;
+
+        public SenseReceptorSystemBase()
+        {
+            Logger = SLog.ForContext(GetType());
+        }
 
         protected abstract (ISensePropagationAlgorithm, ISensePhysics) GetOrCreateReceptorSensePhysics();
 
@@ -205,8 +214,36 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor
             context.ItemPlacementService.TryPlaceItem(inactive, Position.Of(TestMapLayers.One, 13, 13)).Should().BeTrue();
         }
 
-        protected void PerformTest(string id, string sourceText, string expectedPerceptionResult, string expectedSenseMap, string expectedSenseMapDirections)
+        public readonly struct TestData
         {
+            public readonly string SourceText;
+            public readonly string ExpectedPerceptionResult;
+            public readonly string ExpectedSenseMap;
+            public readonly string ExpectedSenseMapDirections;
+
+            public TestData(string sourceText, string expectedPerceptionResult, string expectedSenseMap, string expectedSenseMapDirections)
+            {
+                SourceText = sourceText;
+                ExpectedPerceptionResult = expectedPerceptionResult;
+                ExpectedSenseMap = expectedSenseMap;
+                ExpectedSenseMapDirections = expectedSenseMapDirections;
+            }
+
+            public void Deconstruct(out string sourceText, out string expectedPerceptionResult, out string expectedSenseMap, out string expectedSenseMapDirections)
+            {
+                sourceText = SourceText;
+                expectedPerceptionResult = ExpectedPerceptionResult;
+                expectedSenseMap = ExpectedSenseMap;
+                expectedSenseMapDirections = ExpectedSenseMapDirections;
+            }
+        }
+
+        protected abstract TestData FetchTestData(string id);
+        
+        protected void PerformTest(string id)
+        {
+            var (sourceText, expectedPerceptionResult, expectedSenseMap, expectedSenseMapDirections) = FetchTestData(id);
+            
             senseProperties.GetOrCreate(0).ImportData(SenseTestHelpers.ParseMap(sourceText, out var activeTestArea));
             receptorSenseProperties.GetOrCreate(0).ImportData(SenseTestHelpers.ParseMap(sourceText, out _));
 
@@ -230,8 +267,8 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor
             context.ItemEntityRegistry.GetComponent(active5, out SensoryReceptorState<TReceptorSense, TSourceSense> vb).Should().BeTrue();
             bool haveInactiveState = context.ItemEntityRegistry.GetComponent(inactive, out SensoryReceptorState<TReceptorSense, TSourceSense> vc);
 
-            va.LastPosition.Should().Be(Position.Of(TestMapLayers.One,26, 4));
-            vb.LastPosition.Should().Be(Position.Of(TestMapLayers.One,7, 9));
+            va.LastPosition.Should().Be(Position.Of(TestMapLayers.One, 26, 4));
+            vb.LastPosition.Should().Be(Position.Of(TestMapLayers.One, 7, 9));
 
             va.State.Should().Be(SenseSourceDirtyState.Active);
             vb.State.Should().Be(SenseSourceDirtyState.Active);
@@ -250,27 +287,31 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor
                 context.ItemEntityRegistry.GetComponent(active10, out sourceState))
             {
                 sourceState.SenseSource.TryGetValue(out var sourceData).Should().BeTrue();
-                Console.WriteLine("Computed Sense Source:");
-                Console.WriteLine(TestHelpers.PrintMap(sourceData.TranslateBy<float>(26, 7), activeTestArea));
-                Console.WriteLine("--> Directions:");
-                Console.WriteLine(TestHelpers.PrintMap(new SenseMapDirectionTestView(sourceData).TranslateBy(26, 7), activeTestArea));
+                if (Logger.IsEnabled(LogEventLevel.Debug))
+                {
+                    Logger.Debug("Computed Sense Source:\n{SourceData}\n-->Directions\n{DirectionData}",
+                                 TestHelpers.PrintMap(sourceData.TranslateBy<float>(26, 7), activeTestArea),
+                                 TestHelpers.PrintMap(new SenseMapDirectionTestView(sourceData).TranslateBy(26, 7), activeTestArea));
+                }
             }
 
-            Console.WriteLine("Computed Perception Result:");
-            Console.WriteLine(TestHelpers.PrintMap(vaData.TranslateBy<float>(26, 4), activeTestArea));
-            Console.WriteLine("--> Directions:");
-            Console.WriteLine(TestHelpers.PrintMap(new SenseMapDirectionTestView(vaData).TranslateBy(26, 4), activeTestArea));
-            Console.WriteLine("--");
+            if (Logger.IsEnabled(LogEventLevel.Debug))
+            {
+                Logger.Debug("Computed Perception Result:\n{Data}\n{Directions}",
+                             TestHelpers.PrintMap(vaData.TranslateBy<float>(26, 4), activeTestArea),
+                             TestHelpers.PrintMap(new SenseMapDirectionTestView(vaData).TranslateBy(26, 4), activeTestArea));
+            }
 
             context.ItemEntityRegistry.GetComponent(active10, out SingleLevelSenseDirectionMapData<TReceptorSense, TSourceSense> rawSenseData).Should().BeTrue();
             rawSenseData.TryGetIntensity(0, out var senseData).Should().BeTrue();
             senseData.GetActiveBounds().Width.Should().NotBe(0);
             senseData.GetActiveBounds().Height.Should().NotBe(0);
-
-            Console.WriteLine("Computed SenseMap Result:");
-            Console.WriteLine(TestHelpers.PrintMap(senseData, activeTestArea));
-            Console.WriteLine("--");
-            Console.WriteLine(TestHelpers.PrintMap(new SenseMapDirectionTestView(senseData), activeTestArea));
+            if (Logger.IsEnabled(LogEventLevel.Debug))
+            {
+                Logger.Debug("Computed SenseMap Result:\n{Data}\n{Directions}",
+                             TestHelpers.PrintMap(senseData, activeTestArea),
+                             TestHelpers.PrintMap(new SenseMapDirectionTestView(senseData), activeTestArea));
+            }
 
             // the resulting sense information is stored relative to the sense origin, with the origin point at the centre of the bounds
             // thus the result map must be mapped to the same area.

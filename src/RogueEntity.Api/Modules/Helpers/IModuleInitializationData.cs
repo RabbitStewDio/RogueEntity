@@ -13,6 +13,7 @@ namespace RogueEntity.Api.Modules.Helpers
     public interface IModuleInitializationData
     {
         IEnumerable<IGlobalSystemDeclaration> GlobalSystems { get; }
+        IEnumerable<IGlobalSystemDeclaration> GlobalFinalizerSystems { get; }
         IEnumerable<(Type entityType, Action<IModuleEntityInitializationCallback> callback)> EntityInitializers { get; }
     }
 }

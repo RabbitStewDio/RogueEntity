@@ -6,12 +6,12 @@ namespace RogueEntity.Core.Positioning.Continuous
     public class ContinuousPositionCacheControlSystem<TItemId>
         where TItemId : IEntityKey
     {
-        readonly IMapLayerContext mapLayerContext;
+        readonly IMapLayerRegistry mapLayers;
         readonly IContinuousMapContext<TItemId> mapContext;
 
-        public ContinuousPositionCacheControlSystem(IMapLayerContext mapLayerContext, IContinuousMapContext<TItemId> mapContext)
+        public ContinuousPositionCacheControlSystem(IMapLayerRegistry mapLayers, IContinuousMapContext<TItemId> mapContext)
         {
-            this.mapLayerContext = mapLayerContext;
+            this.mapLayers = mapLayers;
             this.mapContext = mapContext;
         }
 
@@ -21,7 +21,7 @@ namespace RogueEntity.Core.Positioning.Continuous
         {
             if (oldPosition.PreviousPosition != ContinuousMapPosition.Invalid)
             {
-                if (mapLayerContext.MapLayerRegistry.TryGetValue(oldPosition.PreviousPosition.LayerId, out var layer) &&
+                if (mapLayers.TryGetValue(oldPosition.PreviousPosition.LayerId, out var layer) &&
                     mapContext.TryGetContinuousDataFor(layer, out var mapData))
                 {
                     mapData.MarkDirty(oldPosition.PreviousPosition);
@@ -30,7 +30,7 @@ namespace RogueEntity.Core.Positioning.Continuous
 
             if (v.GetComponent(k, out ContinuousMapPosition p))
             {
-                if (mapLayerContext.MapLayerRegistry.TryGetValue(p.LayerId, out var layer) &&
+                if (mapLayers.TryGetValue(p.LayerId, out var layer) &&
                     mapContext.TryGetContinuousDataFor(layer, out var mapData))
                 {
                     mapData.MarkDirty(p);

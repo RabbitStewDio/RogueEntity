@@ -32,7 +32,7 @@ namespace RogueEntity.Core.Infrastructure.Randomness
         public IRandomGenerator RandomGenerator(int seedVariance)
         {
             var generator = pool.Get();
-            ulong timeBasedSeed = RandomContext.Combine((ulong)this.seed << 32, (ulong)(timer.Value.FixedStepTime));
+            ulong timeBasedSeed = RandomContext.Combine((ulong)this.seed << 32, (ulong)(timer.Value.FixedStepFrameCounter));
             generator.Activate(RandomContext.MakeSeed(timeBasedSeed, seedVariance));
             return generator;
         }
@@ -41,7 +41,7 @@ namespace RogueEntity.Core.Infrastructure.Randomness
             where TSeedSource : IRandomSeedSource
         {
             var generator = pool.Get();
-            ulong timeBasedSeed = RandomContext.Combine((ulong)this.seed << 32, (ulong)(timer.Value.FixedStepTime));
+            ulong timeBasedSeed = RandomContext.Combine((ulong)this.seed << 32, (ulong)(timer.Value.FixedStepFrameCounter));
             generator.Activate(RandomContext.MakeSeed(timeBasedSeed, entity, seedVariance));
             return generator;
         }

@@ -60,7 +60,8 @@ namespace RogueEntity.Core.Infrastructure.GameLoops
         
         public TimeSpan CurrentTime => timeState.TotalGameTimeElapsed;
 
-        public int FixedStepTime => timeState.FixedStepCount;
+        public int FixedStepFrameCounter => timeState.FixedStepCount;
+        public TimeSpan FixedTimeStep => timeProcessor.TimeStepDuration;
 
         /// <summary>
         ///   A global set of handlers that runs once at the start of  each new game.

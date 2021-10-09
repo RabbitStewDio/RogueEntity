@@ -3,7 +3,6 @@ using RogueEntity.Api.Modules.Attributes;
 using RogueEntity.Core.Meta.EntityKeys;
 using RogueEntity.Core.Meta.ItemBuilder;
 using RogueEntity.Core.Meta.Items;
-using RogueEntity.Core.Players;
 
 namespace RogueEntity.Samples.BoxPusher.Core
 {

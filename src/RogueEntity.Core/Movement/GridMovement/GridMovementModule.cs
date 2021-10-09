@@ -31,13 +31,13 @@ namespace RogueEntity.Core.Movement.GridMovement
             IsFrameworkModule = true;
 
             DeclareDependency(ModuleDependency.Of(CommandsModule.ModuleId));
-            DeclareDependency(ModuleDependency.Of(PositionModule.ModuleId));
+            DeclareDependency(ModuleDependency.Of(GridPositionModule.ModuleId));
 
             RequireRole(MovementIntentRole);
             
             RequireRole(GridMovementCommandReceiverRole)
                 .WithImpliedRole(CommandsModule.CommandExecutionTrackerRole)
-                .WithImpliedRole(PositionModule.GridPositionedRole);
+                .WithImpliedRole(GridPositionModule.GridPositionedRole);
 
             RequireRole(CommandRoles.CreateRoleFor(CommandType.Of<GridMoveCommand>()))
                 .WithImpliedRole(GridMovementCommandReceiverRole)

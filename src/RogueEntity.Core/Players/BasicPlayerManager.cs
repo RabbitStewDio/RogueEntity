@@ -2,15 +2,23 @@ using EnTTSharp.Entities;
 using JetBrains.Annotations;
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Core.Meta.Items;
+using RogueEntity.Core.Runtime;
 using System;
 
 namespace RogueEntity.Core.Players
 {
+    /// <summary>
+    ///    A basic player service that handles the creation/activation of player entities.
+    ///    Each player entity also potentially acts as self-referencing player observer. 
+    /// </summary>
+    /// <typeparam name="TEntity"></typeparam>
     public class BasicPlayerManager<TEntity> : IPlayerManager<TEntity>
         where TEntity : IEntityKey
     {
         readonly IItemResolver<TEntity> itemResolver;
         readonly Lazy<IPlayerServiceConfiguration> playerItemId;
+        public event EventHandler<PlayerReference<TEntity>> PlayerActivated;
+        public event EventHandler<PlayerReference<TEntity>> PlayerDeactivated;
 
         public BasicPlayerManager([NotNull] IItemResolver<TEntity> itemResolver,
                                   [NotNull] Lazy<IPlayerServiceConfiguration> playerItemId)
@@ -33,6 +41,7 @@ namespace RogueEntity.Core.Players
                 if (maybePlayerTag.Equals(playerTag))
                 {
                     playerEntity = e;
+                    PlayerActivated?.Invoke(this, new PlayerReference<TEntity>(playerTag, playerEntity));
                     return true;
                 }
             }
@@ -44,6 +53,8 @@ namespace RogueEntity.Core.Players
                 return false;
             }
 
+            itemResolver.TryUpdateData(tmpPlayerEntity, PlayerObserverTag.CreateFor(playerTag), out _);
+            PlayerActivated?.Invoke(this, new PlayerReference<TEntity>(playerTag, playerEntity));
             return true;
         }
 
@@ -61,6 +72,7 @@ namespace RogueEntity.Core.Players
                 if (maybePlayerTag.Equals(playerTag))
                 {
                     itemResolver.Destroy(e);
+                    PlayerDeactivated?.Invoke(this, new PlayerReference<TEntity>(playerTag, e));
                     return true;
                 }
             }

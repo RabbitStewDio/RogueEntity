@@ -9,7 +9,7 @@ using System.Reflection;
 
 namespace RogueEntity.Api.Modules.Initializers
 {
-    public class ModuleSystemPhaseInitLateModule
+    public class ModuleSystemPhaseFinalizeModule
     {
         static readonly ILogger Logger = SLog.ForContext<ModuleSystem>();
 
@@ -18,7 +18,7 @@ namespace RogueEntity.Api.Modules.Initializers
         readonly ModuleInitializer initializer;
         readonly ReadOnlyListWrapper<ModuleRecord> orderedModules;
 
-        public ModuleSystemPhaseInitLateModule(ModuleSystemPhaseInitModuleResult previousResult,
+        public ModuleSystemPhaseFinalizeModule(ModuleSystemPhaseInitModuleResult previousResult,
                                                IServiceResolver serviceResolver)
         {
             this.serviceResolver = serviceResolver;
@@ -32,7 +32,7 @@ namespace RogueEntity.Api.Modules.Initializers
             var mip = new ModuleInitializationParameter(moduleInfo, serviceResolver);
             foreach (var mod in orderedModules)
             {
-                if (mod.InitializedLateModule)
+                if (mod.FinalizedModule)
                 {
                     continue;
                 }
@@ -41,7 +41,7 @@ namespace RogueEntity.Api.Modules.Initializers
                 {
                     initializer.CurrentModuleId = mod.ModuleId;
 
-                    mod.InitializedLateModule = true;
+                    mod.FinalizedModule = true;
                     var contentInitializers = CollectContentInitializers(mod);
                     foreach (var mi in contentInitializers)
                     {
@@ -60,7 +60,7 @@ namespace RogueEntity.Api.Modules.Initializers
             var actions = new List<ModuleContentInitializerDelegate>();
             foreach (var m in module.ModuleMethods)
             {
-                var attr = m.GetCustomAttribute<LateModuleInitializerAttribute>();
+                var attr = m.GetCustomAttribute<ModuleFinalizerAttribute>();
                 if (attr == null)
                 {
                     continue;

@@ -14,10 +14,4 @@ namespace RogueEntity.Api.Modules.Attributes
     public class ModuleInitializerAttribute: Attribute
     {
     }
-    
-    [MeansImplicitUse]
-    [AttributeUsage(AttributeTargets.Method)]
-    public class LateModuleInitializerAttribute: Attribute
-    {
-    }
 }

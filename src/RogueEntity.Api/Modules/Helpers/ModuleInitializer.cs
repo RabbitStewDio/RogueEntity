@@ -12,6 +12,7 @@ namespace RogueEntity.Api.Modules.Helpers
         static readonly ILogger Logger = SLog.ForContext<ModuleInitializer>();
 
         readonly List<GlobalDeclarationRecord> globalSystems;
+        readonly List<GlobalDeclarationRecord> globalFinalizerSystems;
         readonly Dictionary<Type, object> moduleInitializers;
         readonly Dictionary<Type, Action<IModuleEntityInitializationCallback>> moduleInitializerCallbacks;
         public ModuleId CurrentModuleId { get; set; }
@@ -21,6 +22,7 @@ namespace RogueEntity.Api.Modules.Helpers
             moduleInitializers = new Dictionary<Type, object>();
             moduleInitializerCallbacks = new Dictionary<Type, Action<IModuleEntityInitializationCallback>>();
             globalSystems = new List<GlobalDeclarationRecord>();
+            globalFinalizerSystems = new List<GlobalDeclarationRecord>();
         }
 
         public IModuleContentContext<TEntityId> DeclareContentContext<TEntityId>()
@@ -86,7 +88,20 @@ namespace RogueEntity.Api.Modules.Helpers
             });
         }
 
+        public void RegisterFinalizer(EntitySystemId id, int priority, GlobalSystemRegistrationDelegate entityRegistration)
+        {
+            globalFinalizerSystems.Add(new GlobalDeclarationRecord()
+            {
+                DeclaringModule = CurrentModuleId,
+                Id = id,
+                Priority = priority,
+                SystemRegistration = entityRegistration,
+                InsertionOrder = globalFinalizerSystems.Count
+            });
+        }
+
         public IEnumerable<IGlobalSystemDeclaration> GlobalSystems => globalSystems;
+        public IEnumerable<IGlobalSystemDeclaration> GlobalFinalizerSystems => globalFinalizerSystems;
 
         class GlobalDeclarationRecord : IGlobalSystemDeclaration
         {

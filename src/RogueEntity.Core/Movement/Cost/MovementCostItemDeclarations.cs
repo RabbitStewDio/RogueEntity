@@ -42,7 +42,7 @@ namespace RogueEntity.Core.Movement.Cost
                 where TMovementMode : IMovementMode
             {
                 var timeSourceDefinition = builder.ServiceResolver.Resolve<ITimeSourceDefinition>();
-                var meterPerTick = (float) (meterPerSecond / timeSourceDefinition.TicksPerSecond);
+                var meterPerTick = (float) (meterPerSecond / timeSourceDefinition.UpdateTicksPerSecond);
                 
                 this.builder.WithTrait(new MovementVelocityReferenceItemTrait<TItemId, TMovementMode>(m, c, meterPerTick, preference));
                 this.builder.WithTrait(new AggregateMovementCostFactorsTrait<TItemId>());
@@ -72,7 +72,7 @@ namespace RogueEntity.Core.Movement.Cost
                 where TMovementMode : IMovementMode
             {
                 var timeSourceDefinition = builder.ServiceResolver.Resolve<ITimeSourceDefinition>();
-                var meterPerTick = (float) (meterPerSecond / timeSourceDefinition.TicksPerSecond);
+                var meterPerTick = (float) (meterPerSecond / timeSourceDefinition.UpdateTicksPerSecond);
                 
                 this.builder.WithTrait(new MovementVelocityBulkItemTrait<TItemId, TMovementMode>(m, c, meterPerTick, preference));
                 this.builder.WithTrait(new AggregateMovementCostFactorsTrait<TItemId>());

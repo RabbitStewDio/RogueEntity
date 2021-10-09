@@ -1,10 +1,11 @@
 using RogueEntity.Api.Modules;
 using RogueEntity.Core.Runtime;
+using System;
 using System.Collections.Generic;
 
 namespace RogueEntity.Core.Tests.Fixtures
 {
-    public class GameFixture<TPlayerEntity>: GameBase<TPlayerEntity>
+    public class GameFixture<TPlayerEntity>: SinglePlayerGameBase<TPlayerEntity>
     {
         readonly List<IModule> extraModules;
 
@@ -17,7 +18,17 @@ namespace RogueEntity.Core.Tests.Fixtures
         {
             extraModules.Add(module);
         }
-        
+
+        public bool StartGame()
+        {
+            return base.StartGameWithPlayer();
+        }
+
+        public bool ReActivatePlayer(Guid playerId = default)
+        {
+            return base.ActivatePlayer(playerId);
+        }
+
         protected override ModuleSystem CreateModuleSystem()
         {
             var ms = base.CreateModuleSystem();

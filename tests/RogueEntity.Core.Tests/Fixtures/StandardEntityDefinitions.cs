@@ -31,7 +31,7 @@ namespace RogueEntity.Core.Tests.Fixtures
                                  .EnsureEntityRegistered(mp.ServiceResolver);
             itemContext.Activate(itemContext.CreateReferenceEntityBuilder(mp.ServiceResolver)
                                             .Define(Wall)
-                                            .WithGridPosition(TestMapLayers.Items)
+                                            .WithGridPosition(TestMapLayers.Ground)
                                             .AsImmobile()
                                             .WithMovementCostModifier(Blocked<WalkingMovement>())
                                             .WithName("wall")

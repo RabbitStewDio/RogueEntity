@@ -219,7 +219,7 @@ namespace RogueEntity.Core.Positioning.Continuous
 
         public IEnumerable<EntityRoleInstance> GetEntityRoles()
         {
-            yield return PositionModule.ContinuousPositionedRole.Instantiate<TItemId>();
+            yield return ContinuousPositionModule.ContinuousPositionedRole.Instantiate<TItemId>();
         }
 
         public IEnumerable<EntityRelationInstance> GetEntityRelations()

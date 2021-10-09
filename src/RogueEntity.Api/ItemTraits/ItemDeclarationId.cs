@@ -8,6 +8,8 @@ namespace RogueEntity.Api.ItemTraits
     [DataContract]
     public readonly struct ItemDeclarationId : IEquatable<ItemDeclarationId>
     {
+        public static readonly ItemDeclarationId Empty = default; 
+        
         [DataMember(Order = 0)]
         [Key(0)]
         public readonly string Id;

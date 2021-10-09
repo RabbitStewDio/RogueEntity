@@ -80,7 +80,6 @@ namespace RogueEntity.Generator.MapFragments
             if (visitedContexts.Contains(f))
             {
                 Logger.Information("Detected a loop in template references at {Context} via {Evidence}", context, string.Join(", ", visitedContexts));
-                result = default;
                 return false;
             }
 
@@ -93,7 +92,6 @@ namespace RogueEntity.Generator.MapFragments
                 if (!parser.Accept<DocumentStart>(out _))
                 {
                     Logger.Information("YAML structure from {Context} is empty", context);
-                    result = default;
                     return false;
                 }
 

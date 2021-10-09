@@ -12,20 +12,23 @@ namespace RogueEntity.Core.Tests.Fixtures
         public static readonly MapLayer Two;
         public static readonly MapLayer Three;
         public static readonly MapLayer Four;
+        public static readonly MapLayer Five;
 
         public static MapLayer Ground => One;
-        public static MapLayer Items => Two;
-        public static MapLayer Actors => Three;
-        public static MapLayer Effects => Four;
+        public static MapLayer Structure => Two;
+        public static MapLayer Items => Three;
+        public static MapLayer Actors => Four;
+        public static MapLayer Effects => Five;
         
         static TestMapLayers()
         {
             Registry = new MapLayerRegistry();
             Indeterminate = Registry.Indeterminate;
-            One = Registry.Create("Layer 1");
-            Two = Registry.Create("Layer 2");
-            Three = Registry.Create("Layer 3");
-            Four = Registry.Create("Layer 4");
+            One = Registry.Create("Layer 1 (Floor)");
+            Two = Registry.Create("Layer 2 (Structure)");
+            Three = Registry.Create("Layer 3 (Items)");
+            Four = Registry.Create("Layer 4 (Actors)");
+            Five = Registry.Create("Layer 5 (Effects)");
         }
 
     }

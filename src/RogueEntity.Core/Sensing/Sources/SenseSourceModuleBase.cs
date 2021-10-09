@@ -86,22 +86,22 @@ namespace RogueEntity.Core.Sensing.Sources
 
                 // activate for any sense source that is also grid positioned
                 yield return ModuleEntityRoleInitializerInfo.CreateFor<TItemId>(SenseSourceRole, InitializeSenseSourceCollectionGrid)
-                                                            .WithRequiredRoles(PositionModule.GridPositionedRole);
+                                                            .WithRequiredRoles(GridPositionModule.GridPositionedRole);
 
                 // activate for any sense source that is also continuously positioned
                 yield return ModuleEntityRoleInitializerInfo.CreateFor<TItemId>(SenseSourceRole, InitializeSenseSourceCollectionContinuous)
-                                                            .WithRequiredRoles(PositionModule.ContinuousPositionedRole);
+                                                            .WithRequiredRoles(ContinuousPositionModule.ContinuousPositionedRole);
 
                 // all sense sources make use of the sense-cache.
                 yield return ModuleEntityRoleInitializerInfo.CreateFor<TItemId>(SenseSourceRole, InitializeSenseCache)
-                                                            .WithRequiredRoles(PositionModule.GridPositionedRole);
+                                                            .WithRequiredRoles(GridPositionModule.GridPositionedRole);
             }
 
             if (role == ResistanceDataProviderRole)
             {
                 yield return ModuleEntityRoleInitializerInfo.CreateFor<TItemId>(ResistanceDataProviderRole, InitializeResistanceEntities);
                 yield return ModuleEntityRoleInitializerInfo.CreateFor<TItemId>(ResistanceDataProviderRole, InitializeResistanceRole)
-                                                            .WithRequiredRoles(PositionModule.GridPositionedRole)
+                                                            .WithRequiredRoles(GridPositionModule.GridPositionedRole)
                                                             .WithRequiredRelations(NeedSenseResistanceRelation);
             }
         }
@@ -120,7 +120,7 @@ namespace RogueEntity.Core.Sensing.Sources
             if (entityInformation.HasRelation(ResistanceDataProviderRole, NeedSenseResistanceRelation))
             {
                 yield return ModuleEntityRoleInitializerInfo.CreateFor<TItemId>(ResistanceDataProviderRole, InitializeResistanceRelation)
-                                                            .WithRequiredRoles(PositionModule.GridPositionedRole);
+                                                            .WithRequiredRoles(GridPositionModule.GridPositionedRole);
             }
         }
 

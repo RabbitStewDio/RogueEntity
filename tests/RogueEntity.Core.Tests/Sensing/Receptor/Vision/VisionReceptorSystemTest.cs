@@ -274,12 +274,22 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Vision
             return (physics.CreateVisionSensorPropagationAlgorithm(), physics.VisionPhysics);
         }
 
-        [Test]
-        [TestCase(nameof(EmptyRoom), EmptyRoom, EmptyRoomPerceptionStrength, EmptyRoomSenseMapResult, EmptyRoomDirectionResult)]
-        [TestCase(nameof(PillarRoom), PillarRoom, PillarRoomPerceptionStrength, PillarRoomSenseMapResult, PillarRoomDirectionResult)]
-        public void Do(string id, string sourceText, string expectedResultText, string expectedSenseMapText, string expectedDirections)
+        protected override TestData FetchTestData(string id)
         {
-            base.PerformTest(id, sourceText, expectedResultText, expectedSenseMapText, expectedDirections);
+            switch (id)
+            {
+                case nameof(EmptyRoom): return new TestData(EmptyRoom, EmptyRoomPerceptionStrength, EmptyRoomSenseMapResult, EmptyRoomDirectionResult);
+                case nameof(PillarRoom): return new TestData(PillarRoom, PillarRoomPerceptionStrength, PillarRoomSenseMapResult, PillarRoomDirectionResult);
+                default: throw new ArgumentException();
+            }
+        }
+
+        [Test]
+        [TestCase(nameof(EmptyRoom))]
+        [TestCase(nameof(PillarRoom))]
+        public void Do(string id)
+        {
+            base.PerformTest(id);
         }
     }
 }

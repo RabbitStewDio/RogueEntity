@@ -289,12 +289,22 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Noise
             base.PrepareSourceItems(active10, active5, inactive);
         }
 
-        [Test]
-        [TestCase(nameof(EmptyRoom), EmptyRoom, EmptyRoomPerceptionStrength, EmptyRoomSenseMapResult, EmptyRoomSenseMapDirections)]
-        [TestCase(nameof(PillarRoom), PillarRoom, PillarRoomPerceptionStrength, PillarRoomSenseMapResult, PillarRoomDirectionResult)]
-        public void Do(string id, string sourceText, string expectedResultText, string expectedSenseMapText, string expectedDirections)
+        protected override TestData FetchTestData(string id)
         {
-            base.PerformTest(id, sourceText, expectedResultText, expectedSenseMapText, expectedDirections);
+            switch (id)
+            {
+                case nameof(EmptyRoom): return new TestData(EmptyRoom, EmptyRoomPerceptionStrength, EmptyRoomSenseMapResult, EmptyRoomSenseMapDirections);
+                case nameof(PillarRoom): return new TestData(PillarRoom, PillarRoomPerceptionStrength, PillarRoomSenseMapResult, PillarRoomDirectionResult);
+                default: throw new ArgumentException();
+            }
+        }
+
+        [Test]
+        [TestCase(nameof(EmptyRoom))]
+        [TestCase(nameof(PillarRoom))]
+        public void Do(string id)
+        {
+            base.PerformTest(id);
         }
     }
 }

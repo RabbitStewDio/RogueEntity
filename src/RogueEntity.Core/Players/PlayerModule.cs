@@ -66,14 +66,14 @@ namespace RogueEntity.Core.Players
         [EntityRoleInitializer("Role.Core.Player")]
         protected void InitializePlayerRole<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                      IModuleInitializer initializer,
-                                                     EntityRole r)
+                                                     EntityRole role)
             where TItemId : IEntityKey
         {
             if (!initParameter.ServiceResolver.TryResolve(out IPlayerServiceConfiguration conf))
             {
                 var itemResolver = initParameter.ServiceResolver.Resolve<IItemResolver<TItemId>>();
 
-                var x = itemResolver.ItemRegistry.Items.Where(e => e.GetEntityRoles().Select(e => e.role.Role).Contains(PlayerModule.PlayerRole)).Select(e => e.Id).ToList();
+                var x = itemResolver.ItemRegistry.Items.Where(e => e.GetEntityRoles().Select(r => r.role.Role).Contains(PlayerRole)).Select(e => e.Id).ToList();
                 if (x.Count > 1)
                 {
                     Logger.Warning("Skipping auto-configuration of player configuration service as more than one item declares a player role trait: {ItemsDeclaringPlayerTrait}", x);
@@ -104,7 +104,7 @@ namespace RogueEntity.Core.Players
             where TActorId : IEntityKey
         {
             var entityContext = initializer.DeclareEntityContext<TItemId>();
-            entityContext.Register(RegisterPlayerObserverRefreshContinuousId, 80_100, RegisterRefreshObservers<TActorId, TItemId, ContinuousMapPosition>);
+            entityContext.Register(RegisterPlayerObserverRefreshContinuousId, 81_000, RegisterRefreshObservers<TActorId, TItemId, ContinuousMapPosition>);
         }
 
         [EntityRelationInitializerAttribute("Relation.Core.Player.PlayerHasObservers",
@@ -116,7 +116,7 @@ namespace RogueEntity.Core.Players
             where TActorId : IEntityKey
         {
             var entityContext = initializer.DeclareEntityContext<TItemId>();
-            entityContext.Register(RegisterPlayerObserverRefreshGridId, 80_100, RegisterRefreshObservers<TActorId, TItemId, EntityGridPosition>);
+            entityContext.Register(RegisterPlayerObserverRefreshGridId, 81_000, RegisterRefreshObservers<TActorId, TItemId, EntityGridPosition>);
         }
 
         void RegisterPlayerService<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,

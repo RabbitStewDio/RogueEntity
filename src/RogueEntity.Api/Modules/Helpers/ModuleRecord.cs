@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using RogueEntity.Api.Utils;
 using Serilog;
+using System.Reflection;
 
 namespace RogueEntity.Api.Modules.Helpers
 {
@@ -22,6 +23,22 @@ namespace RogueEntity.Api.Modules.Helpers
         public bool InitializedRelations { get; set; }
         public bool FinalizedRoles { get; set; }
         public bool FinalizedRelations { get; set; }
+        public bool FinalizedModule { get; set; }
+        
+        List<MethodInfo> moduleMethods;
+        public ReadOnlyListWrapper<MethodInfo> ModuleMethods
+        {
+            get
+            {
+                if (moduleMethods == null)
+                {
+                    moduleMethods = new List<MethodInfo>();
+                    moduleMethods.AddRange(Module.GetType().GetMethods(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public));
+                }
+
+                return moduleMethods;
+            }
+        }
 
         public int DependencyDepth
         {

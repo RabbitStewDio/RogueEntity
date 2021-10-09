@@ -51,7 +51,7 @@ namespace RogueEntity.Core.Positioning.Grid
 
         public IEnumerable<EntityRoleInstance> GetEntityRoles()
         {
-            yield return PositionModule.GridPositionedRole.Instantiate<TItemId>();
+            yield return GridPositionModule.GridPositionedRole.Instantiate<TItemId>();
         }
 
         public IEnumerable<EntityRelationInstance> GetEntityRelations()

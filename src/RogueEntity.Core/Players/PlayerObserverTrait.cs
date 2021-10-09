@@ -11,7 +11,8 @@ namespace RogueEntity.Core.Players
         where TActorId : IEntityKey
     {
         public PlayerObserverTrait() : base("Actor.Generic.PlayerObserver", 1)
-        { }
+        {
+        }
 
         protected override Optional<PlayerObserverTag> CreateInitialValue(TActorId reference)
         {

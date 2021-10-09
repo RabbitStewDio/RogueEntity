@@ -88,7 +88,7 @@ namespace RogueEntity.Core.Sensing.Map
         /// </summary>
         public void EndSenseCalculation()
         {
-            var currentTime = timeSource.Value.FixedStepTime;
+            var currentTime = timeSource.Value.FixedStepFrameCounter;
             zLevelBuffer.Clear();
             foreach (var l in activeLightsPerLevel)
             {
@@ -118,7 +118,7 @@ namespace RogueEntity.Core.Sensing.Map
                 activeLightsPerLevel[level] = lights;
             }
 
-            var currentTime = timeSource.Value.FixedStepTime;
+            var currentTime = timeSource.Value.FixedStepFrameCounter;
             lights.MarkUsed(currentTime);
             lights.Add(p, s);
         }
@@ -127,7 +127,7 @@ namespace RogueEntity.Core.Sensing.Map
         {
             if (activeLightsPerLevel.TryGetValue(z, out var level))
             {
-                var currentTime = timeSource.Value.FixedStepTime;
+                var currentTime = timeSource.Value.FixedStepFrameCounter;
                 level.MarkUsed(currentTime);
                 data = level.SenseMap;
                 return true;

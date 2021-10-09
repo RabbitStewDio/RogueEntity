@@ -7,12 +7,12 @@ namespace RogueEntity.Api.Modules
     {
         IModuleContentContext<TEntityId> DeclareContentContext<TEntityId>()
             where TEntityId : IEntityKey;
-        
+
         IModuleEntityContext<TEntityId> DeclareEntityContext<TEntityId>()
             where TEntityId : IEntityKey;
 
-        void Register(EntitySystemId id,
-                      int priority,
-                      GlobalSystemRegistrationDelegate entityRegistration);
+        void Register(EntitySystemId id, int priority, GlobalSystemRegistrationDelegate entityRegistration);
+
+        void RegisterFinalizer(EntitySystemId id, int priority, GlobalSystemRegistrationDelegate entityRegistration);
     }
 }

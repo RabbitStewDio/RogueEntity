@@ -59,10 +59,10 @@ namespace RogueEntity.Api.Modules.Initializers
             throw new ModuleInitializationException("Did not reach a stable state after 100 iterations of module search.");
         }
 
-        List<ModuleInitializerDelegate> CollectModuleInitializers(IModule module)
+        List<ModuleInitializerDelegate> CollectModuleInitializers(ModuleRecord module)
         {
             var actions = new List<ModuleInitializerDelegate>();
-            foreach (var m in module.GetType().GetMethods(BindingFlags.Instance | BindingFlags.NonPublic))
+            foreach (var m in module.ModuleMethods)
             {
                 var attr = m.GetCustomAttribute<ModuleInitializerAttribute>();
                 if (attr == null)
@@ -72,14 +72,14 @@ namespace RogueEntity.Api.Modules.Initializers
 
                 if (m.IsSameAction(typeof(ModuleInitializationParameter).MakeByRefType(), typeof(IModuleInitializer)))
                 {
-                    var moduleInitializerDelegate = (ModuleInitializerDelegate)Delegate.CreateDelegate(typeof(ModuleInitializerDelegate), module, m);
+                    var moduleInitializerDelegate = (ModuleInitializerDelegate)Delegate.CreateDelegate(typeof(ModuleInitializerDelegate), module.Module, m);
                     actions.Add(moduleInitializerDelegate);
                     Logger.Verbose("Found plain module initializer {Method}", m.Name);
                     continue;
                 }
 
                 throw new ArgumentException(
-                    $"Expected a method with signature 'void XXX(ModuleInitializationParameter by ref, IModuleInitializer), but found {m} in module {module.Id}");
+                    $"Expected a method with signature 'void XXX(ModuleInitializationParameter by ref, IModuleInitializer), but found {m} in module {module.ModuleId}");
             }
 
             return actions;
@@ -101,7 +101,7 @@ namespace RogueEntity.Api.Modules.Initializers
                 {
                     initializer.CurrentModuleId = mod.ModuleId;
                     mod.InitializedModule = true;
-                    var initializers = CollectModuleInitializers(mod.Module);
+                    var initializers = CollectModuleInitializers(mod);
                     foreach (var mi in initializers)
                     {
                         mi(in mip, initializer);

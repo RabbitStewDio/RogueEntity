@@ -1,4 +1,5 @@
 using EnTTSharp.Entities;
+using RogueEntity.Api.GameLoops;
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Api.Modules;
 using RogueEntity.Api.Modules.Attributes;
@@ -14,7 +15,8 @@ namespace RogueEntity.Core.MapLoading.Builder
     public class MapBuilderModule : ModuleBase
     {
         public static readonly string ModuleId = "Core.MapBuilderModule";
-        public static readonly EntitySystemId RegisterMapBuilderSystem = "Systems.Core.MapBuilder.RegisterMapLayers";
+        public static readonly EntitySystemId RegisterMapBuilderSystemId = "Systems.Core.MapBuilder.RegisterMapLayers";
+        public static readonly EntitySystemId PrintMapBuilderConfigurationId = "Systems.Core.MapBuilder.PrintConfiguration";
 
         readonly ILogger Logger = SLog.ForContext<MapBuilderModule>();
         
@@ -33,8 +35,10 @@ namespace RogueEntity.Core.MapLoading.Builder
                                                           EntityRole role)
             where TActorId : IEntityKey
         {
+            initializer.RegisterFinalizer(PrintMapBuilderConfigurationId, 999_000, PrintMapBuilderStructure);
+            
             var entityContext = initializer.DeclareEntityContext<TActorId>();
-            entityContext.Register(RegisterMapBuilderSystem, 0, RegisterMapBuilder);
+            entityContext.Register(RegisterMapBuilderSystemId, 0, RegisterMapBuilder);
         }
 
         void RegisterMapBuilder<TActorId>(in ModuleEntityInitializationParameter<TActorId> ip, EntityRegistry<TActorId> registry)
@@ -73,6 +77,17 @@ namespace RogueEntity.Core.MapLoading.Builder
             b = new MapBuilder();
             r.Store(b);
             return b;
+        }
+
+        protected void PrintMapBuilderStructure(in ModuleInitializationParameter initParam, IGameLoopSystemRegistration context)
+        {
+            var r = initParam.ServiceResolver;
+            if (!r.TryResolve(out MapBuilder b))
+            {
+                return;
+            }
+
+            Logger.Debug("MapBuilder final layer structure: {Layers}", b.Layers);
         }
     }
 }

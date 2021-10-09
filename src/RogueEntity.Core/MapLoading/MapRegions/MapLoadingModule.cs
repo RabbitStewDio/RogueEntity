@@ -38,8 +38,8 @@ namespace RogueEntity.Core.MapLoading.MapRegions
         {
             var entityContext = initializer.DeclareEntityContext<TItemId>();
             entityContext.Register(RegisterChangeLevelCommandComponentId, -10_000, RegisterCommandEntities);
-            entityContext.Register(MapLoadingCommandsSystemId, 30_000, RegisterMapLoaderCommandsSystem);
-            entityContext.Register(MapLoadingSystemId, 31_000, RegisterMapLoaderSystem);
+            entityContext.Register(MapLoadingCommandsSystemId, 45_500, RegisterMapLoaderCommandsSystem);
+            entityContext.Register(MapLoadingSystemId, 48_500, RegisterMapLoaderSystem);
         }
 
         void RegisterMapLoaderCommandsSystem<TEntityId>(in ModuleEntityInitializationParameter<TEntityId> initParameter,
@@ -75,6 +75,7 @@ namespace RogueEntity.Core.MapLoading.MapRegions
             where TEntityId : IEntityKey
         {
             var system = GetOrResolveMapRegionSystem(initParameter.ServiceResolver);
+            context.AddFixedStepHandlers(system.LoadChunks);
             context.AddLateVariableStepHandlers(system.LoadChunks);
         }
 

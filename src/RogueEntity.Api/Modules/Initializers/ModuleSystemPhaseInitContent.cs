@@ -42,7 +42,7 @@ namespace RogueEntity.Api.Modules.Initializers
                     initializer.CurrentModuleId = mod.ModuleId;
 
                     mod.InitializedContent = true;
-                    var contentInitializers = CollectContentInitializers(mod.Module);
+                    var contentInitializers = CollectContentInitializers(mod);
                     foreach (var mi in contentInitializers)
                     {
                         mi(in mip, initializer);
@@ -55,10 +55,10 @@ namespace RogueEntity.Api.Modules.Initializers
             }
         }
 
-        static List<ModuleContentInitializerDelegate> CollectContentInitializers(IModule module)
+        static List<ModuleContentInitializerDelegate> CollectContentInitializers(ModuleRecord module)
         {
             var actions = new List<ModuleContentInitializerDelegate>();
-            foreach (var m in module.GetType().GetMethods(BindingFlags.Instance | BindingFlags.NonPublic))
+            foreach (var m in module.ModuleMethods)
             {
                 var attr = m.GetCustomAttribute<ContentInitializerAttribute>();
                 if (attr == null)
@@ -68,12 +68,12 @@ namespace RogueEntity.Api.Modules.Initializers
 
                 if (m.IsSameAction(typeof(ModuleInitializationParameter).MakeByRefType(), typeof(IModuleInitializer)))
                 {
-                    actions.Add((ModuleContentInitializerDelegate)Delegate.CreateDelegate(typeof(ModuleContentInitializerDelegate), module, m));
+                    actions.Add((ModuleContentInitializerDelegate)Delegate.CreateDelegate(typeof(ModuleContentInitializerDelegate), module.Module, m));
                     Logger.Verbose("Found plain module initializer {Method}", m.Name);
                     continue;
                 }
 
-                throw new ArgumentException($"Expected a method with signature 'void XXX(IServiceResolver, IModuleInitializer), but found {m} in module {module.Id}");
+                throw new ArgumentException($"Expected a method with signature 'void XXX(IServiceResolver, IModuleInitializer), but found {m} in module {module.ModuleId}");
             }
 
             return actions;

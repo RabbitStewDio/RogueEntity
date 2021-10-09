@@ -53,12 +53,12 @@ namespace RogueEntity.Core.Players
                     return;
                 }
 
-                playerData.LastActiveFrame = timeSource.Value.FixedStepTime;
+                playerData.LastActiveFrame = timeSource.Value.FixedStepFrameCounter;
             }
             else
             {
                 var data = new PlayerData(k, playerTag, true);
-                data.LastActiveFrame = timeSource.Value.FixedStepTime;
+                data.LastActiveFrame = timeSource.Value.FixedStepFrameCounter;
                 data.Active = true;
                 playerDataByEntityKey[k] = data;
                 playerDataByGuid[playerTag] = data;
@@ -71,7 +71,7 @@ namespace RogueEntity.Core.Players
         public void RemoveExpiredPlayerData()
         {
             playerDataBuffer.Clear();
-            var currentTime = timeSource.Value.FixedStepTime;
+            var currentTime = timeSource.Value.FixedStepFrameCounter;
 
             foreach (var p in playerDataByGuid.Values)
             {
@@ -121,9 +121,14 @@ namespace RogueEntity.Core.Players
             {
                 data.Observers.Remove(o.Id);
             }
+            else if (data.Observers.TryGetValue(o.Id, out var observerTuple))
+            {
+                var currentTime = timeSource.Value.FixedStepFrameCounter;
+                data.Observers[o.Id] = (currentTime, new PlayerObserver(o.Id, o.ControllingPlayer, observerTuple.Item2.Primary, Position.From(pos)));
+            }
             else
             {
-                var currentTime = timeSource.Value.FixedStepTime;
+                var currentTime = timeSource.Value.FixedStepFrameCounter;
                 data.Observers[o.Id] = (currentTime, new PlayerObserver(o.Id, o.ControllingPlayer, false, Position.From(pos)));
             }
         }
@@ -133,7 +138,7 @@ namespace RogueEntity.Core.Players
         /// </summary>
         public void RemoveObsoleteObservers()
         {
-            var currentTime = timeSource.Value.FixedStepTime;
+            var currentTime = timeSource.Value.FixedStepFrameCounter;
             foreach (var p in playerDataByGuid.Values)
             {
                 observerIdBuffer.Clear();
@@ -209,6 +214,18 @@ namespace RogueEntity.Core.Players
             return resultFlag;
         }
 
+        public bool TryUpdatePrimaryDesignation(in PlayerObserver o, bool primaryState)
+        {
+            if (playerDataByGuid.TryGetValue(o.Player, out var data) &&
+                data.Observers.TryGetValue(o.Id, out var v))
+            {
+                data.Observers[o.Id] = (v.Item1, new PlayerObserver(v.Item2.Id, v.Item2.Player, primaryState, v.Item2.Position));
+                return true;
+            }
+
+            return false;
+        }
+        
         public bool TryRefreshObserver(in PlayerObserver o, out PlayerObserver result)
         {
             if (playerDataByGuid.TryGetValue(o.Player, out var data) &&

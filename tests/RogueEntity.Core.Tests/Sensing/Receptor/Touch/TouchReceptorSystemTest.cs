@@ -174,11 +174,20 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Touch
             // we do not use separate source objects.
         }
 
-        [Test]
-        [TestCase(nameof(EmptyRoom), EmptyRoom, EmptyRoomPerceptionStrength, EmptyRoomSenseMapResult, EmptyRoomSenseMapDirections)]
-        public void Do(string id, string sourceText, string expectedResultText, string expectedSenseMapText, string expectedSenseMapDirections)
+        protected override TestData FetchTestData(string id)
         {
-            base.PerformTest(id, sourceText, expectedResultText, expectedSenseMapText, expectedSenseMapDirections);
+            switch (id)
+            {
+                case nameof(EmptyRoom): return new TestData(EmptyRoom, EmptyRoomPerceptionStrength, EmptyRoomSenseMapResult, EmptyRoomSenseMapDirections);
+                default: throw new ArgumentException();
+            }
+        }
+
+        [Test]
+        [TestCase(nameof(EmptyRoom))]
+        public void Do(string id)
+        {
+            base.PerformTest(id);
         }
     }
 }

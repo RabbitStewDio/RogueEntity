@@ -63,17 +63,14 @@ namespace RogueEntity.Core.Sensing.Receptors
                 yield return ModuleEntityRoleInitializerInfo.CreateFor<TItemId>
                     (SenseReceptorActorRole, InitializeSenseReceptorRole);
 
-                yield return ModuleEntityRoleInitializerInfo.CreateFor<TItemId>
-                                                                (SenseReceptorActorRole, InitializeCollectReceptorsGrid)
-                                                            .WithRequiredRoles(PositionModule.GridPositionedRole);
+                yield return ModuleEntityRoleInitializerInfo.CreateFor<TItemId>(SenseReceptorActorRole, InitializeCollectReceptorsGrid)
+                                                            .WithRequiredRoles(GridPositionModule.GridPositionedRole);
 
-                yield return ModuleEntityRoleInitializerInfo.CreateFor<TItemId>
-                                                                (SenseReceptorActorRole, InitializeCollectReceptorsContinuous)
-                                                            .WithRequiredRoles(PositionModule.ContinuousPositionedRole);
+                yield return ModuleEntityRoleInitializerInfo.CreateFor<TItemId>(SenseReceptorActorRole, InitializeCollectReceptorsContinuous)
+                                                            .WithRequiredRoles(ContinuousPositionModule.ContinuousPositionedRole);
 
-                yield return ModuleEntityRoleInitializerInfo.CreateFor<TItemId>
-                                                                (SenseReceptorActorRole, InitializeSenseCache)
-                                                            .WithRequiredRoles(PositionModule.GridPositionedRole);
+                yield return ModuleEntityRoleInitializerInfo.CreateFor<TItemId>(SenseReceptorActorRole, InitializeSenseCache)
+                                                            .WithRequiredRoles(GridPositionModule.GridPositionedRole);
             }
 
             if (role == SenseSourceRole)

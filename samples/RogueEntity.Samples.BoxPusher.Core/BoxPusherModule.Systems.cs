@@ -27,6 +27,8 @@ namespace RogueEntity.Samples.BoxPusher.Core
             var mapLoader = new DirectoryMapLevelDataSource(mip.ServiceResolver.ResolveToReference<MapBuilder>(),
                                                             mip.ServiceResolver.Resolve<IStorageLocationService>(),
                                                             mip.ServiceResolver.Resolve<IEntityRandomGeneratorSource>());
+            mapLoader.Initialize();
+            
             mip.ServiceResolver.Store<IMapAvailabilityService>(mapLoader);
             mip.ServiceResolver.Store<IMapRegionLoaderService<int>>(mapLoader);
             mip.ServiceResolver.Store<IMapLevelMetaDataService>(mapLoader);

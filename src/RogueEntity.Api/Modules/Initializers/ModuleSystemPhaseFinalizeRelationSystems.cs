@@ -18,7 +18,7 @@ namespace RogueEntity.Api.Modules.Initializers
         readonly GlobalModuleEntityInformation entityInfo;
         readonly IServiceResolver serviceResolver;
         readonly ModuleInitializer moduleInitializer;
-        IModule currentModule;
+        ModuleRecord currentModule;
 
         public ModuleSystemPhaseFinalizeRelationSystems(in ModuleSystemPhaseInitModuleResult p,
                                                         IServiceResolver serviceResolver)
@@ -44,7 +44,7 @@ namespace RogueEntity.Api.Modules.Initializers
 
                     foreach (var subject in moduleInitializer.EntityInitializers)
                     {
-                        currentModule = mod.Module;
+                        currentModule = mod;
                         subject.callback(this);
                         currentModule = null;
                     }
@@ -122,7 +122,7 @@ namespace RogueEntity.Api.Modules.Initializers
         }
 
         List<ModuleEntityRelationInitializerInfo<TEntityId>> CollectRelationInitializers<TEntityId>(Type targetType,
-                                                                                                    IModule module,
+                                                                                                    ModuleRecord module,
                                                                                                     IModuleEntityInformation mi,
                                                                                                     EntityRelation relation)
             where TEntityId : IEntityKey
@@ -130,7 +130,7 @@ namespace RogueEntity.Api.Modules.Initializers
             var subjectType = typeof(TEntityId);
             var retval = new List<ModuleEntityRelationInitializerInfo<TEntityId>>();
 
-            var methodInfos = module.GetType().GetMethods(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+            var methodInfos = module.ModuleMethods;
 
             foreach (var m in methodInfos)
             {
@@ -148,14 +148,14 @@ namespace RogueEntity.Api.Modules.Initializers
                     if (string.IsNullOrEmpty(errorHint))
                     {
                         throw new ArgumentException(
-                            $"Expected a generic method with signature 'IEnumerable<ModuleEntityRoleInitializerInfo<TEntityId, TRelationTargetId>> Declare<TEntityId>(IServiceResolver, IModuleInitializer, EntityRelation), but found {m} in module {module.Id}");
+                            $"Expected a generic method with signature 'IEnumerable<ModuleEntityRoleInitializerInfo<TEntityId, TRelationTargetId>> Declare<TEntityId>(IServiceResolver, IModuleInitializer, EntityRelation), but found {m} in module {module.ModuleId}");
                     }
 
-                    Logger.Information("Generic constraints on module {Module} with method {Method} do not match. {ErrorHint}", module.Id, m.Name, errorHint);
+                    Logger.Information("Generic constraints on module {Module} with method {Method} do not match. {ErrorHint}", module.ModuleId, m.Name, errorHint);
                     continue;
                 }
 
-                if (genericMethod.Invoke(module, new object[] { serviceResolver, mi, relation }) is IEnumerable<ModuleEntityRelationInitializerInfo<TEntityId>> list)
+                if (genericMethod.Invoke(module.Module, new object[] { serviceResolver, mi, relation }) is IEnumerable<ModuleEntityRelationInitializerInfo<TEntityId>> list)
                 {
                     retval.AddRange(list);
                 }
@@ -181,16 +181,16 @@ namespace RogueEntity.Api.Modules.Initializers
                     if (string.IsNullOrEmpty(errorHint))
                     {
                         throw new ArgumentException(
-                            $"Expected a generic method with signature 'void XXX<TEntityId, TRelationTargetId>(ModuleEntityInitializationParameter ByRef, IModuleInitializer, EntityRole), but found {m} in module {module.Id}");
+                            $"Expected a generic method with signature 'void XXX<TEntityId, TRelationTargetId>(ModuleEntityInitializationParameter ByRef, IModuleInitializer, EntityRole), but found {m} in module {module.ModuleId}");
                     }
 
-                    Logger.Information("Generic constraints on module {Module} with method {Method} do not match. {ErrorHint}", module.Id, m.Name, errorHint);
+                    Logger.Information("Generic constraints on module {Module} with method {Method} do not match. {ErrorHint}", module.ModuleId, m.Name, errorHint);
                     continue;
                 }
 
                 Logger.Verbose("Invoking role initializer {Method}", genericMethod.Name);
                 var initializer = (ModuleEntityRelationInitializerDelegate<TEntityId>)
-                    Delegate.CreateDelegate(typeof(ModuleEntityRelationInitializerDelegate<TEntityId>), module, genericMethod);
+                    Delegate.CreateDelegate(typeof(ModuleEntityRelationInitializerDelegate<TEntityId>), module.Module, genericMethod);
                 retval.Add(ModuleEntityRelationInitializerInfo.CreateFor(relation, initializer)
                                                               .WithRequiredSubjectRoles(attr.ConditionalSubjectRoles.Select(e => new EntityRole(e)).ToArray())
                                                               .WithRequiredTargetRoles(attr.ConditionalObjectRoles.Select(e => new EntityRole(e)).ToArray())
