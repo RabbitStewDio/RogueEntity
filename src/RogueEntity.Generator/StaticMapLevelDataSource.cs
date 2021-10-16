@@ -31,12 +31,21 @@ namespace RogueEntity.Generator
             this.initialized = false;
         }
 
-        public void Initialize()
+        public override void Initialize()
         {
             this.levelData.Clear();
             this.levelData.AddRange(LoadMapFragments().OrderBy(e => e.Info.Name));
             this.initialized = true;
+            this.mapBuilder.Value.MapLayerDirty += OnMapLayerDirty;
             Logger.Information("Found {ChunkCount} chunks", levelData.Count);
+        }
+
+        void OnMapLayerDirty(object sender, MapRegionDirtyEventArgs e)
+        {
+            for (int z = e.ZPositionFrom; z <= e.ZPositionTo; z += 1)
+            {
+                this.EvictRegion(z);
+            }
         }
 
         public int Count => levelData.Count;

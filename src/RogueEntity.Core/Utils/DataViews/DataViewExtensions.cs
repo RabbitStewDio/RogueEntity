@@ -115,6 +115,12 @@ namespace RogueEntity.Core.Utils.DataViews
                 remove { }
             }
 
+            public event EventHandler<DynamicDataView3DEventArgs<T>> ViewReset
+            {
+                add { }
+                remove { }
+            }
+
             readonly int z;
             readonly IReadOnlyDynamicDataView2D<T> backend;
 
@@ -295,5 +301,16 @@ namespace RogueEntity.Core.Utils.DataViews
             string Format(float f) => $"{f:0.00}";
             return map.ExtendToString(bounds, fieldSize, "", "", Format);
         }
+        
+        
+        public static void RemoveAllViews<T>(this IDynamicDataView3D<T> data, BufferList<int> buffer = null)
+        {
+            buffer = data.GetActiveLayers(buffer);
+            foreach (var b in buffer)
+            {
+                data.RemoveView(b);
+            }
+        }
+
     }
 }

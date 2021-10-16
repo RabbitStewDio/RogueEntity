@@ -16,9 +16,10 @@ namespace RogueEntity.Core.Positioning.Grid
     {
         public static readonly string ModuleId = "Core.Position.Grid";
 
-        public static readonly EntitySystemId RegisterGridPositions = "Entities.Core.Position.Grid";
-        public static readonly EntitySystemId RegisterClearGridPositionChangeTrackerId = "Systems.Core.Position.Grid.ClearChangeTracker";
-        public static readonly EntitySystemId RegisterClearDestroyedEntitiesId = "Systems.Core.Position.Grid.ClearDestroyedEntities";
+        public static readonly EntitySystemId RegisterGridPositionsEntityId = "Entities.Core.Position.Grid";
+        public static readonly EntitySystemId ClearGridPositionChangeTrackerSystemId = "Systems.Core.Position.Grid.ClearChangeTracker";
+        public static readonly EntitySystemId ClearDestroyedEntitiesSystemId = "Systems.Core.Position.Grid.ClearDestroyedEntities";
+        public static readonly EntitySystemId ResetMapDataSystemId = "Systems.Core.Position.Grid.ResetMapData";
         public static readonly EntityRole GridPositionedRole = new EntityRole("Role.Core.Position.GridPositioned");
 
         public GridPositionModule()
@@ -45,11 +46,11 @@ namespace RogueEntity.Core.Positioning.Grid
             EnsureDefaultGridMapExists(initParameter, initializer, role);
 
             var entityContext = initializer.DeclareEntityContext<TActorId>();
-            entityContext.Register(RegisterGridPositions, 0, RegisterGridEntities);
-            entityContext.Register(RegisterClearGridPositionChangeTrackerId, 10, RegisterClearGridPositionChangeTrackers);
-            entityContext.Register(RegisterClearDestroyedEntitiesId, 110_000, RegisterClearDestroyedEntities);
+            entityContext.Register(RegisterGridPositionsEntityId, 0, RegisterGridEntities);
+            entityContext.Register(ResetMapDataSystemId, 0, RegisterResetMapData);
+            entityContext.Register(ClearGridPositionChangeTrackerSystemId, 10, RegisterClearGridPositionChangeTrackers);
+            entityContext.Register(ClearDestroyedEntitiesSystemId, 110_000, RegisterClearDestroyedEntities);
         }
-
 
         /// <summary>
         ///   Ensures that if an entity declares to be grid positioned, that the system contains a
@@ -114,6 +115,33 @@ namespace RogueEntity.Core.Positioning.Grid
             }
         }
 
+        void RegisterResetMapData<TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter,
+                                            IGameLoopSystemRegistration context,
+                                            EntityRegistry<TActorId> registry)
+            where TActorId : IEntityKey
+        {
+            var sr = initParameter.ServiceResolver;
+
+            void ResetMapData()
+            {
+                if (sr.TryResolve(out IGridMapContextInitializer<TActorId> mapContext))
+                {
+                    mapContext.ResetState();
+                    return;
+                }
+
+                if (sr.TryResolve(out IGridMapContext<TActorId> map) &&
+                    map is IGridMapContextInitializer<TActorId> directMapContext)
+                {
+                    directMapContext.ResetState();
+                    return;
+                }
+            }
+
+            context.AddInitializationStepHandler(ResetMapData);
+            context.AddDisposeStepHandler(ResetMapData);
+        }
+
         void RegisterClearGridPositionChangeTrackers<TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter,
                                                                IGameLoopSystemRegistration context,
                                                                EntityRegistry<TActorId> registry)
@@ -135,21 +163,21 @@ namespace RogueEntity.Core.Positioning.Grid
         {
             var sr = initParameter.ServiceResolver;
             var system = new GridPositionCleanUpSystem<TActorId, EntityGridPosition>(sr.Resolve<IItemPlacementServiceContext<TActorId>>());
-            
+
             context.AddFixedStepHandlers(system.StartCollection);
-            context.AddFixedStepHandlers(registry.BuildSystem()
-                                                 .WithoutContext()
-                                                 .WithInputParameter<DestroyedMarker>()
-                                                 .WithInputParameter<EntityGridPosition>()
-                                                 .CreateSystem(system.CollectDestroyedEntities));
+            context.AddFixedStepHandlerSystem(registry.BuildSystem()
+                                                      .WithoutContext()
+                                                      .WithInputParameter<DestroyedMarker>()
+                                                      .WithInputParameter<EntityGridPosition>()
+                                                      .CreateSystem(system.CollectDestroyedEntities));
             context.AddFixedStepHandlers(system.RemoveCollectedEntitiesFromMap);
-            
+
             context.AddInitializationStepHandler(system.StartCollection);
-            context.AddInitializationStepHandler(registry.BuildSystem()
-                                                         .WithoutContext()
-                                                         .WithInputParameter<DestroyedMarker>()
-                                                         .WithInputParameter<EntityGridPosition>()
-                                                         .CreateSystem(system.CollectDestroyedEntities));
+            context.AddInitializationStepHandlerSystem(registry.BuildSystem()
+                                                               .WithoutContext()
+                                                               .WithInputParameter<DestroyedMarker>()
+                                                               .WithInputParameter<EntityGridPosition>()
+                                                               .CreateSystem(system.CollectDestroyedEntities));
             context.AddInitializationStepHandler(system.RemoveCollectedEntitiesFromMap);
         }
 

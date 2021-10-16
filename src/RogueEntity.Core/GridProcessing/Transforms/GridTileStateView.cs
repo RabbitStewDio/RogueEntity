@@ -1,9 +1,6 @@
-using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Utils.DataViews;
-using System.Buffers;
 
 namespace RogueEntity.Core.GridProcessing.Transforms
 {
@@ -13,8 +10,7 @@ namespace RogueEntity.Core.GridProcessing.Transforms
         readonly int offsetY;
         readonly int tileSizeX;
         readonly int tileSizeY;
-        readonly ConcurrentDictionary<int, DynamicBoolDataView> tileStateCache;
-        readonly Func<int, DynamicBoolDataView> getActionDelegate;
+        readonly Dictionary<int, DynamicBoolDataView> tileStateCache;
         bool globallyDirty;
 
         public GridTileStateView(int offsetX, int offsetY, int tileSizeX, int tileSizeY)
@@ -23,9 +19,8 @@ namespace RogueEntity.Core.GridProcessing.Transforms
             this.offsetY = offsetY;
             this.tileSizeX = tileSizeX;
             this.tileSizeY = tileSizeY;
-            this.tileStateCache = new ConcurrentDictionary<int, DynamicBoolDataView>();
+            this.tileStateCache = new Dictionary<int, DynamicBoolDataView>();
             this.globallyDirty = true;
-            this.getActionDelegate = GetOrAddAction;
         }
 
         public void MarkGloballyDirty()
@@ -40,15 +35,15 @@ namespace RogueEntity.Core.GridProcessing.Transforms
 
         public void MarkDirty(in Position p)
         {
-            var view = tileStateCache.GetOrAdd(p.GridZ, getActionDelegate);
+            if (!tileStateCache.TryGetValue(p.GridZ, out var view))
+            {
+                view = new DynamicBoolDataView(offsetX, offsetY, tileSizeX, tileSizeY);
+                tileStateCache[p.GridZ] = view;
+            }
+            
             var dx = DataViewPartitions.TileSplit(p.GridX, offsetX, tileSizeX);
             var dy = DataViewPartitions.TileSplit(p.GridY, offsetY, tileSizeY);
             view[dx, dy] = true;
-        }
-
-        DynamicBoolDataView GetOrAddAction(int key)
-        {
-            return new DynamicBoolDataView(offsetX, offsetY, tileSizeX, tileSizeY);
         }
 
         /// <summary>
@@ -58,18 +53,10 @@ namespace RogueEntity.Core.GridProcessing.Transforms
         public void MarkClean()
         {
             globallyDirty = false;
-            
-            ICollection<KeyValuePair<int, DynamicBoolDataView>> view = tileStateCache;
-            
-            var count = view.Count;
-            var copyBuffer = ArrayPool<KeyValuePair<int, DynamicBoolDataView>>.Shared.Rent(count);
-            view.CopyTo(copyBuffer, tileStateCache.Count);
-            for (var index = 0; index < count; index++)
+            foreach (var l in tileStateCache.Values)
             {
-                var l = copyBuffer[index];
-                l.Value.Clear();
+                l.Clear();
             }
-            ArrayPool<KeyValuePair<int, DynamicBoolDataView>>.Shared.Return(copyBuffer, true);
         }
 
         public bool IsDirty(in Position pos) => IsDirty(pos.GridX, pos.GridY, pos.GridZ);

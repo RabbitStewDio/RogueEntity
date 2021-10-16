@@ -8,6 +8,7 @@ namespace RogueEntity.Core.Utils.DataViews
     public class TransformedView3D<TSource, TTarget> : IReadOnlyDynamicDataView3D<TTarget>, IDisposable
     {
         public event EventHandler<DynamicDataView3DEventArgs<TTarget>> ViewCreated;
+        public event EventHandler<DynamicDataView3DEventArgs<TTarget>> ViewReset;
         public event EventHandler<DynamicDataView3DEventArgs<TTarget>> ViewExpired;
 
         readonly IReadOnlyDynamicDataView3D<TSource> source;
@@ -22,6 +23,7 @@ namespace RogueEntity.Core.Utils.DataViews
             this.index = new Dictionary<int, TransformedView2D<TSource, TTarget>>();
 
             this.source.ViewExpired += OnViewExpired;
+            this.source.ViewReset += OnViewReset;
         }
 
         ~TransformedView3D()
@@ -31,13 +33,23 @@ namespace RogueEntity.Core.Utils.DataViews
 
         void ReleaseUnmanagedResources()
         {
-            this.source.ViewExpired += OnViewExpired;
+            this.source.ViewExpired -= OnViewExpired;
+            this.source.ViewReset -= OnViewReset;
         }
 
         public void Dispose()
         {
             ReleaseUnmanagedResources();
             GC.SuppressFinalize(this);
+        }
+
+        void OnViewReset(object sender, DynamicDataView3DEventArgs<TSource> e)
+        {
+            var dataBounds = e.ZLevel;
+            if (index.TryGetValue(dataBounds, out var ownData))
+            {
+                ViewReset?.Invoke(this, new DynamicDataView3DEventArgs<TTarget>(dataBounds, ownData));
+            }
         }
 
         void OnViewExpired(object sender, DynamicDataView3DEventArgs<TSource> e)

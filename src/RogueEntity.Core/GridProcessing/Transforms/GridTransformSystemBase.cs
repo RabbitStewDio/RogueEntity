@@ -81,7 +81,7 @@ namespace RogueEntity.Core.GridProcessing.Transforms
 
                 // This view is no longer contained in the source, so we can remove it from
                 // here too.
-                TargetData.RemoveView(z);
+                RemoveTargetDataLayer(z);
             }
             
             if (processingParameterCache.Count == 0)
@@ -94,6 +94,8 @@ namespace RogueEntity.Core.GridProcessing.Transforms
             return r.IsCompleted;
         }
 
+        protected abstract void RemoveTargetDataLayer(int z);
+        
         public bool Process(Rectangle bounds)
         {
             processingParameterCache.Clear();
@@ -145,6 +147,11 @@ namespace RogueEntity.Core.GridProcessing.Transforms
 
         protected abstract void ProcessTile(ProcessingParameters args);
 
+        public void ExpireView(int z)
+        {
+            // todo: HERE
+        }
+        
         public void MarkGloballyDirty()
         {
             dirtyMap.MarkGloballyDirty();

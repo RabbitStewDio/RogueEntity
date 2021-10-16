@@ -12,8 +12,8 @@ namespace RogueEntity.Core.Utils.DataViews
     [MessagePackObject]
     public class DynamicBoolDataView : IDynamicDataView2D<bool>
     {
-        public event EventHandler<DynamicDataView2DEventArgs<bool>> ViewCreated;
-        public event EventHandler<DynamicDataView2DEventArgs<bool>> ViewExpired;
+        public event EventHandler<DynamicDataView2DEventArgs<bool>> ViewChunkCreated;
+        public event EventHandler<DynamicDataView2DEventArgs<bool>> ViewChunkExpired;
 
         [DataMember(Order = 0)]
         [Key(0)]
@@ -179,7 +179,7 @@ namespace RogueEntity.Core.Utils.DataViews
                 e.MarkUsedAge();
                 if ((currentTime - e.LastUsed) > age)
                 {
-                    ViewExpired?.Invoke(this, new DynamicDataView2DEventArgs<bool>(entry.Key, e));
+                    ViewChunkExpired?.Invoke(this, new DynamicDataView2DEventArgs<bool>(entry.Key, e));
                     expired.Add(entry.Key);
                 }
             }
@@ -217,7 +217,7 @@ namespace RogueEntity.Core.Utils.DataViews
 
             data = new TrackedDataView(new Rectangle(dx * tileSizeX + offsetX, dy * tileSizeY + offsetY, tileSizeX, tileSizeY), currentTime);
             index[key] = data;
-            ViewCreated?.Invoke(this, new DynamicDataView2DEventArgs<bool>(key, data));
+            ViewChunkCreated?.Invoke(this, new DynamicDataView2DEventArgs<bool>(key, data));
             activeBounds = default;
             return data;
 
@@ -272,7 +272,7 @@ namespace RogueEntity.Core.Utils.DataViews
             var dataRaw = new TrackedDataView(new Rectangle(dx * tileSizeX + offsetX, dy * tileSizeY + offsetY, tileSizeX, tileSizeY), currentTime);
             var key = new TileIndex(dx, dy);
             index[key] = dataRaw;
-            ViewCreated?.Invoke(this, new DynamicDataView2DEventArgs<bool>(key, dataRaw));
+            ViewChunkCreated?.Invoke(this, new DynamicDataView2DEventArgs<bool>(key, dataRaw));
             activeBounds = default;
             
             data = dataRaw;

@@ -16,8 +16,8 @@ namespace RogueEntity.Generator.CellularAutomata
         protected override IReadOnlyDynamicDataView3D<TEntity> SourceData => sourceView;
         protected override IDynamicDataView3D<TEntity> TargetData => targetView;
 
-        IDynamicDataView3D<TEntity> sourceView;
-        IDynamicDataView3D<TEntity> targetView;
+        DynamicDataView3D<TEntity> sourceView;
+        DynamicDataView3D<TEntity> targetView;
         readonly TEntity cellAliveMarker;
         readonly TEntity cellDeadMarker;
 
@@ -33,16 +33,19 @@ namespace RogueEntity.Generator.CellularAutomata
             targetView = new DynamicDataView3D<TEntity>();
             
         }
-        
+
+        protected override void RemoveTargetDataLayer(int z)
+        {
+            targetView.RemoveView(z);
+        }
+
         public IDynamicDataView3D<TEntity> DataView => sourceView;
 
         public bool ProcessAndSwap()
         {
             if (base.Process())
             {
-                var tmp = sourceView;
-                sourceView = targetView;
-                targetView = tmp;
+                (sourceView, targetView) = (targetView, sourceView);
                 return true;
             }
 
@@ -53,9 +56,7 @@ namespace RogueEntity.Generator.CellularAutomata
         {
             if (base.Process(bounds))
             {
-                var tmp = sourceView;
-                sourceView = targetView;
-                targetView = tmp;
+                (sourceView, targetView) = (targetView, sourceView);
                 return true;
             }
 

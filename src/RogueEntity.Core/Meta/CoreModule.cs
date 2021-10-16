@@ -21,6 +21,7 @@ namespace RogueEntity.Core.Meta
 
         public static readonly EntitySystemId DestroyItemsSystemId = "System.Core.Entity.DestroyMarked";
         public static readonly EntitySystemId DestroyCascadingItemsSystemId = "System.Core.Entity.DestroyCascadingMarked";
+        public static readonly EntitySystemId ResetEntitiesSystemId = "System.Core.Entity.ResetEntities";
 
         public static readonly EntityRole EntityRole = new EntityRole("Role.Core.Entity");
         public static readonly EntityRole ItemRole = new EntityRole("Role.Core.Item");
@@ -58,6 +59,7 @@ namespace RogueEntity.Core.Meta
         {
             var entityContext = initializer.DeclareEntityContext<TItemId>();
             entityContext.Register(CommonComponentsId, -20_000, RegisterCoreComponents);
+            entityContext.Register(ResetEntitiesSystemId, -10_000, RegisterResetEntitiesSystems);
             entityContext.Register(DestroyCascadingItemsSystemId, 0, RegisterCascadingDestructionSystems);
             entityContext.Register(DestroyItemsSystemId, int.MaxValue, RegisterEntityCleanupSystems);
         }
@@ -70,6 +72,20 @@ namespace RogueEntity.Core.Meta
         {
             var entityContext = initializer.DeclareEntityContext<TItemId>();
             entityContext.Register(ContainedComponentsId, -20_000, RegisterContainedItemComponents);
+        }
+
+        void RegisterResetEntitiesSystems<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter, 
+                                                   IGameLoopSystemRegistration context, 
+                                                   EntityRegistry<TItemId> registry)
+            where TItemId : IEntityKey
+        {
+            void ResetEntityRegistry()
+            {
+                registry.Clear();
+            }
+            
+            context.AddDisposeStepHandler(ResetEntityRegistry);
+            context.AddInitializationStepHandler(ResetEntityRegistry);
         }
 
         void RegisterCascadingDestructionSystems<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,

@@ -5,8 +5,8 @@ namespace RogueEntity.Core.Utils.DataViews
 {
     public interface IReadOnlyDynamicDataView2D<T> : IReadOnlyView2D<T>
     {
-        public event EventHandler<DynamicDataView2DEventArgs<T>> ViewCreated;
-        public event EventHandler<DynamicDataView2DEventArgs<T>> ViewExpired;
+        public event EventHandler<DynamicDataView2DEventArgs<T>> ViewChunkCreated;
+        public event EventHandler<DynamicDataView2DEventArgs<T>> ViewChunkExpired;
 
         int OffsetX { get; }
         int OffsetY { get; }

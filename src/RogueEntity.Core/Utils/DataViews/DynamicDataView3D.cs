@@ -1,13 +1,13 @@
 using System;
 using System.Collections.Generic;
 using RogueEntity.Api.Utils;
-using System.Buffers;
 
 namespace RogueEntity.Core.Utils.DataViews
 {
     public class DynamicDataView3D<T> : IDynamicDataView3D<T>
     {
         public event EventHandler<DynamicDataView3DEventArgs<T>> ViewCreated;
+        public event EventHandler<DynamicDataView3DEventArgs<T>> ViewReset;
         public event EventHandler<DynamicDataView3DEventArgs<T>> ViewExpired;
         public int OffsetX { get; }
         public int OffsetY { get; }
@@ -34,23 +34,11 @@ namespace RogueEntity.Core.Utils.DataViews
             index = new Dictionary<int, IDynamicDataView2D<T>>();
         }
 
-        public void RemoveAllViews()
-        {
-            var length = index.Count;
-            var k = ArrayPool<int>.Shared.Rent(length);
-            index.Keys.CopyTo(k, 0);
-            for (var i = 0; i < length; i++)
-            {
-                RemoveView(k[i]);
-            }
-
-            ArrayPool<int>.Shared.Return(k);
-        }
-
         public void Clear()
         {
-            foreach (var v in index.Values)
+            foreach (var (z,v) in index)
             {
+                ViewReset?.Invoke(this, new DynamicDataView3DEventArgs<T>(z, v));
                 v.Clear();
             }
         }

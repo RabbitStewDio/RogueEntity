@@ -1,5 +1,6 @@
 using System;
 using FluentAssertions;
+using Microsoft.Extensions.ObjectPool;
 using NUnit.Framework;
 using RogueEntity.Core.Directionality;
 using RogueEntity.Core.Meta.EntityKeys;
@@ -194,7 +195,7 @@ namespace RogueEntity.Core.Tests.Movement.GoalFinding
             var ms = new MovementDataCollector();
             ms.RegisterMovementSource(WalkingMovement.Instance, resistanceMap.As3DMap(0), inboundDirectionalityMap.As3DMap(0), outboundDirectionalityMap.As3DMap(0));
             
-            var pfs = new SingleLevelGoalFinderSource(new SingleLevelGoalFinderPolicy(), goalRegistry, spatialQueryRegistry, ms);
+            var pfs = new SingleLevelGoalFinderSource(new DefaultPooledObjectPolicy<SingleLevelGoalFinder>(), goalRegistry, spatialQueryRegistry, ms);
             return pfs;
         }
     }

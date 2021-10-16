@@ -38,7 +38,7 @@ namespace RogueEntity.Core.Tests.Utils
             qt[keyC].Data.Should().Be("elementC");
             qt[keyD].Data.Should().Be("elementD");
             
-            Console.WriteLine(qt.Print());
+            //Console.WriteLine(qt.Print());
         }
 
         [Test]
@@ -50,7 +50,7 @@ namespace RogueEntity.Core.Tests.Utils
             var keyC = qt.Insert("elementC", new Rectangle(120, 1, 1, 1));
             var keyD = qt.Insert("elementD", new Rectangle(110, 1, 10, 10));
 
-            Console.WriteLine(qt.Print());
+            //Console.WriteLine(qt.Print());
 
             var result = qt.Query(new Rectangle(0, 0, 128, 128));
             result.Should().BeEquivalentTo(new[] {keyA, keyB, keyC, keyD});
@@ -72,7 +72,7 @@ namespace RogueEntity.Core.Tests.Utils
             var result = qt.Query(new Rectangle(0, 0, 8, 8));
             result.Should().BeEquivalentTo(arr);
 
-            Console.WriteLine(qt.Print());
+            //Console.WriteLine(qt.Print());
         }
 
 

@@ -1,3 +1,4 @@
+using Microsoft.Extensions.ObjectPool;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -64,7 +65,7 @@ namespace RogueEntity.Benchmarks
             positions = new List<EntityGridPosition>();
             pathBuffer = new BufferList<(EntityGridPosition, IMovementMode)>(256);
             movementDataCollector = new MovementDataCollector();
-            pathfinderSource = new SingleLevelGoalFinderSource(new SingleLevelGoalFinderPolicy(), goalRegistry, queryRegistry, movementDataCollector);
+            pathfinderSource = new SingleLevelGoalFinderSource(new DefaultPooledObjectPolicy<SingleLevelGoalFinder>(), goalRegistry, queryRegistry, movementDataCollector);
         }
 
         public virtual void SetUpGlobal()

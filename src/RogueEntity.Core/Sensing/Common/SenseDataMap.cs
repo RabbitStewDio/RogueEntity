@@ -49,25 +49,25 @@ namespace RogueEntity.Core.Sensing.Common
     [MessagePackObject]
     public class SenseDataMap : IDynamicSenseDataView2D
     {
-        event EventHandler<DynamicDataView2DEventArgs<float>> IReadOnlyDynamicDataView2D<float>.ViewCreated
+        event EventHandler<DynamicDataView2DEventArgs<float>> IReadOnlyDynamicDataView2D<float>.ViewChunkCreated
         {
             add { }
             remove { }
         }
 
-        event EventHandler<DynamicDataView2DEventArgs<float>> IReadOnlyDynamicDataView2D<float>.ViewExpired
+        event EventHandler<DynamicDataView2DEventArgs<float>> IReadOnlyDynamicDataView2D<float>.ViewChunkExpired
         {
             add { }
             remove { }
         }
 
-        event EventHandler<DynamicDataView2DEventArgs<SenseDirectionStore>> IReadOnlyDynamicDataView2D<SenseDirectionStore>.ViewCreated
+        event EventHandler<DynamicDataView2DEventArgs<SenseDirectionStore>> IReadOnlyDynamicDataView2D<SenseDirectionStore>.ViewChunkCreated
         {
             add { }
             remove { }
         }
 
-        event EventHandler<DynamicDataView2DEventArgs<SenseDirectionStore>> IReadOnlyDynamicDataView2D<SenseDirectionStore>.ViewExpired
+        event EventHandler<DynamicDataView2DEventArgs<SenseDirectionStore>> IReadOnlyDynamicDataView2D<SenseDirectionStore>.ViewChunkExpired
         {
             add { }
             remove { }

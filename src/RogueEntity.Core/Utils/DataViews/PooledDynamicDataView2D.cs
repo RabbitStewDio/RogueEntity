@@ -9,15 +9,15 @@ namespace RogueEntity.Core.Utils.DataViews
 {
     [DataContract]
     [MessagePackObject]
-    public class PooledDynamicDataView2D<T> : IDynamicDataView2D<T>, IPooledDataViewControl
+    public class PooledDynamicDataView2D<T> : IDynamicDataView2D<T>, IPooledDataViewControl2D
     {
-        public event EventHandler<DynamicDataView2DEventArgs<T>> ViewCreated;
-        public event EventHandler<DynamicDataView2DEventArgs<T>> ViewExpired;
+        public event EventHandler<DynamicDataView2DEventArgs<T>> ViewChunkCreated;
+        public event EventHandler<DynamicDataView2DEventArgs<T>> ViewChunkExpired;
 
         readonly Dictionary<TileIndex, IPooledBoundedDataView<T>> index;
 
         long currentTime;
-        readonly List<TileIndex> expired;
+        readonly List<(TileIndex idx, IPooledBoundedDataView<T> view)> expired;
         Rectangle activeBounds;
 
         readonly IBoundedDataViewPool<T> pool;
@@ -28,7 +28,7 @@ namespace RogueEntity.Core.Utils.DataViews
             this.tileConfiguration = pool.TileConfiguration;
             this.pool = pool ?? throw new ArgumentNullException(nameof(pool));
             this.index = new Dictionary<TileIndex, IPooledBoundedDataView<T>>();
-            this.expired = new List<TileIndex>();
+            this.expired = new List<(TileIndex idx, IPooledBoundedDataView<T> view)>();
         }
 
         public int OffsetX => tileConfiguration.OffsetX;
@@ -60,6 +60,36 @@ namespace RogueEntity.Core.Utils.DataViews
 
             activeBounds = r;
             return r;
+        }
+
+        public void ExpireAll()
+        {
+            expired.Clear();
+
+            try
+            {
+                foreach (var entry in index)
+                {
+                    var e = entry.Value;
+                    e.CommitUseTimePeriod();
+                    ViewChunkExpired?.Invoke(this, new DynamicDataView2DEventArgs<T>(entry.Key, e));
+                    expired.Add((entry.Key, entry.Value));
+                }
+
+                if (expired.Count != 0)
+                {
+                    activeBounds = default;
+                    foreach (var e in expired)
+                    {
+                        index.Remove(e.idx);
+                        pool.Return(e.view);
+                    }
+                }
+            }
+            finally
+            {
+                expired.Clear();
+            }
         }
 
         public BufferList<Rectangle> GetActiveTiles(BufferList<Rectangle> data = null)
@@ -124,32 +154,40 @@ namespace RogueEntity.Core.Utils.DataViews
                 return;
             }
 
-            ViewExpired?.Invoke(this, new DynamicDataView2DEventArgs<T>(idx, data));
+            ViewChunkExpired?.Invoke(this, new DynamicDataView2DEventArgs<T>(idx, data));
             index.Remove(idx);
+            pool.Return(data);
         }
-        
+
         public void ExpireFrames(long age)
         {
             expired.Clear();
-
-            foreach (var entry in index)
+            try
             {
-                var e = entry.Value;
-                e.CommitUseTimePeriod();
-                if ((currentTime - e.LastUsed) > age)
+                foreach (var entry in index)
                 {
-                    ViewExpired?.Invoke(this, new DynamicDataView2DEventArgs<T>(entry.Key, e));
-                    expired.Add(entry.Key);
+                    var e = entry.Value;
+                    e.CommitUseTimePeriod();
+                    if ((currentTime - e.LastUsed) >= age)
+                    {
+                        ViewChunkExpired?.Invoke(this, new DynamicDataView2DEventArgs<T>(entry.Key, e));
+                        expired.Add((entry.Key, entry.Value));
+                    }
+                }
+
+                if (expired.Count != 0)
+                {
+                    activeBounds = default;
+                    foreach (var e in expired)
+                    {
+                        index.Remove(e.idx);
+                        pool.Return(e.view);
+                    }
                 }
             }
-
-            if (expired.Count != 0)
+            finally
             {
-                activeBounds = default;
-                foreach (var e in expired)
-                {
-                    index.Remove(e);
-                }
+                expired.Clear();
             }
         }
 
@@ -167,7 +205,7 @@ namespace RogueEntity.Core.Utils.DataViews
             data.MarkUsedForWriting();
 
             index[idx] = data;
-            ViewCreated?.Invoke(this, new DynamicDataView2DEventArgs<T>(idx, data));
+            ViewChunkCreated?.Invoke(this, new DynamicDataView2DEventArgs<T>(idx, data));
             activeBounds = default;
             return data;
         }
@@ -206,7 +244,7 @@ namespace RogueEntity.Core.Utils.DataViews
             data.MarkUsedForWriting();
 
             index[idx] = data;
-            ViewCreated?.Invoke(this, new DynamicDataView2DEventArgs<T>(idx, data));
+            ViewChunkCreated?.Invoke(this, new DynamicDataView2DEventArgs<T>(idx, data));
             activeBounds = default;
             raw = data;
             return true;
@@ -262,7 +300,6 @@ namespace RogueEntity.Core.Utils.DataViews
 
             success = false;
             return ref defaultValue;
-            
         }
 
         [IgnoreDataMember]

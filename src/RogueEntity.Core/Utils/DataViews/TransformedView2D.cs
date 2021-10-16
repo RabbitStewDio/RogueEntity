@@ -8,8 +8,8 @@ namespace RogueEntity.Core.Utils.DataViews
     public class TransformedView2D<TSource, TTarget> : IReadOnlyDynamicDataView2D<TTarget>,
                                                        IDisposable
     {
-        public event EventHandler<DynamicDataView2DEventArgs<TTarget>> ViewCreated;
-        public event EventHandler<DynamicDataView2DEventArgs<TTarget>> ViewExpired;
+        public event EventHandler<DynamicDataView2DEventArgs<TTarget>> ViewChunkCreated;
+        public event EventHandler<DynamicDataView2DEventArgs<TTarget>> ViewChunkExpired;
         readonly IReadOnlyDynamicDataView2D<TSource> source;
         readonly Func<TSource, TTarget> transformation;
         readonly Dictionary<TileIndex, TransformedBoundedDataView<TSource, TTarget>> index;
@@ -21,7 +21,7 @@ namespace RogueEntity.Core.Utils.DataViews
             this.source = source ?? throw new ArgumentNullException(nameof(source));
             this.transformation = transformation ?? throw new ArgumentNullException(nameof(transformation));
 
-            this.source.ViewExpired += OnViewExpired;
+            this.source.ViewChunkExpired += OnViewChunkExpired;
         }
 
         ~TransformedView2D()
@@ -31,7 +31,7 @@ namespace RogueEntity.Core.Utils.DataViews
 
         void ReleaseUnmanagedResources()
         {
-            this.source.ViewExpired += OnViewExpired;
+            this.source.ViewChunkExpired += OnViewChunkExpired;
         }
 
         public void Dispose()
@@ -40,12 +40,12 @@ namespace RogueEntity.Core.Utils.DataViews
             GC.SuppressFinalize(this);
         }
 
-        void OnViewExpired(object sender, DynamicDataView2DEventArgs<TSource> e)
+        void OnViewChunkExpired(object sender, DynamicDataView2DEventArgs<TSource> e)
         {
             var dataBounds = e.Key;
             if (index.TryGetValue(dataBounds, out var ownData))
             {
-                ViewExpired?.Invoke(this, new DynamicDataView2DEventArgs<TTarget>(dataBounds, ownData));
+                ViewChunkExpired?.Invoke(this, new DynamicDataView2DEventArgs<TTarget>(dataBounds, ownData));
                 index.Remove(dataBounds);
             }
         }

@@ -1,6 +1,7 @@
 using RogueEntity.Api.Utils;
 using Serilog;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace RogueEntity.Core.MapLoading.MapRegions
 {
@@ -14,6 +15,8 @@ namespace RogueEntity.Core.MapLoading.MapRegions
         {
             chunks = new Dictionary<TRegionKey, MapRegionLoadRequestStatus<TRegionKey>>();
         }
+
+        public abstract void Initialize();
 
         public bool IsError()
         {
@@ -126,7 +129,25 @@ namespace RogueEntity.Core.MapLoading.MapRegions
 
             return false;
         }
-        
+
+        public virtual bool EvictRegion(TRegionKey region)
+        {
+            chunks.Remove(region);
+            return true;
+        }
+
+        public bool EvictAllRegions()
+        {
+            var keys = chunks.Keys.ToArray();
+            bool result = true;
+            foreach (var k in keys)
+            {
+                result &= EvictRegion(k);
+            }
+
+            return result;
+        }
+
         protected abstract MapRegionLoadingStatus PerformLoadNextChunk(TRegionKey region);
     }
 }

@@ -6,12 +6,12 @@ using RogueEntity.Core.Utils.DataViews;
 
 namespace RogueEntity.Core.Positioning.Grid
 {
-    public class DefaultGridPositionContextBackend<TItemId> : IGridMapContext<TItemId>
+    public class DefaultGridPositionContextBackend<TItemId> : IGridMapContext<TItemId>, IGridMapContextInitializer<TItemId>
     {
         readonly Dictionary<byte, IGridMapDataContext<TItemId>> mapLayerData;
         readonly List<MapLayer> mapLayers;
 
-        public DefaultGridPositionContextBackend(): this(0, 0, 32, 32)
+        public DefaultGridPositionContextBackend(): this(DynamicDataViewConfiguration.Default_32x32)
         {
         }
 
@@ -41,6 +41,17 @@ namespace RogueEntity.Core.Positioning.Grid
         public int OffsetY { get; }
         public int TileSizeX { get; }
         public int TileSizeY { get; }
+
+        public void ResetState()
+        {
+            foreach (var ml in mapLayerData.Values)
+            {
+                if (ml is IGridMapContextInitializer<TItemId> ci)
+                {
+                    ci.ResetState();
+                }
+            }
+        }
 
         public DefaultGridPositionContextBackend<TItemId> WithMapLayer(MapLayer layer, IGridMapDataContext<TItemId> data)
         {

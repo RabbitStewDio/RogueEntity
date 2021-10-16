@@ -8,7 +8,7 @@ namespace RogueEntity.Core.MovementPlaning.Pathfinding.SingleLevel
         readonly ObjectPool<SingleLevelPathFinder> pathFinderPool;
         readonly ObjectPool<DefaultPathFinderTargetEvaluator> targetEvaluatorPool;
 
-        public SingleLevelPathFinderBuilderPolicy([NotNull] SingleLevelPathFinderPolicy policy)
+        public SingleLevelPathFinderBuilderPolicy([NotNull] IPooledObjectPolicy<SingleLevelPathFinder> policy)
         {
             this.pathFinderPool = new DefaultObjectPool<SingleLevelPathFinder>(policy);
             this.targetEvaluatorPool = new DefaultObjectPool<DefaultPathFinderTargetEvaluator>(new DefaultPathFinderTargetEvaluatorPolicy(ReturnTargetEvaluator));

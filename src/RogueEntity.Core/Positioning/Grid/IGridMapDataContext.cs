@@ -1,4 +1,6 @@
-﻿using System;
+﻿using RogueEntity.Api.Utils;
+using RogueEntity.Core.Utils;
+using System;
 using System.Diagnostics.CodeAnalysis;
 using RogueEntity.Core.Utils.DataViews;
 
@@ -8,7 +10,10 @@ namespace RogueEntity.Core.Positioning.Grid
     public interface IGridMapDataContext<TItemId>: IDynamicDataView3D<TItemId>
     {
         public event EventHandler<PositionDirtyEventArgs> PositionDirty;
+        public event EventHandler<MapRegionDirtyEventArgs> RegionDirty;
+        
         void MarkDirty<TPosition>(in TPosition position) where TPosition: IPosition<TPosition>;
+        void MarkRegionDirty(int zPositionFrom, int zPositionTo, Optional<Rectangle> layerArea = default);
     }
 
     public static class GridMapDataContextExtensions

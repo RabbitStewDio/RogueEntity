@@ -7,7 +7,7 @@ using System;
 
 namespace RogueEntity.Core.MovementPlaning.Pathfinding.SingleLevel
 {
-    public class LineOfSightTargetEvaluatorPolicy<TMovementMode>: IPooledObjectPolicy<LineOfSightTargetEvaluator<TMovementMode>>
+    public class LineOfSightTargetEvaluatorPolicy<TMovementMode>: PooledObjectPolicy<LineOfSightTargetEvaluator<TMovementMode>>
     {
         [NotNull] readonly ShadowPropagationResistanceDataSource data;
         [NotNull] readonly IRelativeMovementCostSystem<TMovementMode> resistanceMap;
@@ -25,12 +25,12 @@ namespace RogueEntity.Core.MovementPlaning.Pathfinding.SingleLevel
             this.returnToPoolAction = returnToPoolAction ?? throw new ArgumentNullException(nameof(returnToPoolAction));
         }
 
-        public LineOfSightTargetEvaluator<TMovementMode> Create()
+        public override LineOfSightTargetEvaluator<TMovementMode> Create()
         {
             return new LineOfSightTargetEvaluator<TMovementMode>(data, resistanceMap, directionMap, returnToPoolAction);
         }
 
-        public bool Return(LineOfSightTargetEvaluator<TMovementMode> obj)
+        public override bool Return(LineOfSightTargetEvaluator<TMovementMode> obj)
         {
             return true;
         }

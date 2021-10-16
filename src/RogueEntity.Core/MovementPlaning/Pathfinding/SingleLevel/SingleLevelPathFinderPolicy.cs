@@ -5,7 +5,7 @@ using RogueEntity.Core.Utils.DataViews;
 
 namespace RogueEntity.Core.MovementPlaning.Pathfinding.SingleLevel
 {
-    public class SingleLevelPathFinderPolicy : IPooledObjectPolicy<SingleLevelPathFinder>
+    public class SingleLevelPathFinderPolicy : PooledObjectPolicy<SingleLevelPathFinder>
     {
         readonly IBoundedDataViewPool<AStarNode> nodePool;
         readonly IBoundedDataViewPool<IMovementMode> movementModePool;
@@ -22,12 +22,12 @@ namespace RogueEntity.Core.MovementPlaning.Pathfinding.SingleLevel
             this.movementModePool = movementModePool ?? new DefaultBoundedDataViewPool<IMovementMode>(new DynamicDataViewConfiguration(0, 0, 16, 16));
         }
 
-        public SingleLevelPathFinder Create()
+        public override SingleLevelPathFinder Create()
         {
             return new SingleLevelPathFinder(nodePool, movementModePool);
         }
 
-        public bool Return(SingleLevelPathFinder obj)
+        public override bool Return(SingleLevelPathFinder obj)
         {
             obj.Reset();
             return true;

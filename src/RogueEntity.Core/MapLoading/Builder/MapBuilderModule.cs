@@ -6,6 +6,8 @@ using RogueEntity.Api.Modules.Attributes;
 using RogueEntity.Api.Services;
 using RogueEntity.Api.Utils;
 using RogueEntity.Core.Meta.Items;
+using RogueEntity.Core.Positioning;
+using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Positioning.MapLayers;
 using Serilog;
 using System.Linq;
@@ -60,10 +62,14 @@ namespace RogueEntity.Core.MapLoading.Builder
                 return;
             }
 
+            var r = ip.ServiceResolver;
+            var gridMapContext = r.Resolve<IGridMapContext<TActorId>>();
+            var placementService = r.Resolve<IItemPlacementServiceContext<TActorId>>();
+            
             foreach (var ml in mapLayers)
             {
                 Logger.Debug("Automatically registering map-builder layer {Layer} for entity type {EntityType}", ml, typeof(TActorId));
-                mb.WithLayer<TActorId>(ml, ip.ServiceResolver);
+                mb.WithLayer(ml, itemResolver, gridMapContext, placementService);
             }
         }
 

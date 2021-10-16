@@ -11,8 +11,8 @@ namespace RogueEntity.Core.Utils.DataViews
     [MessagePackObject]
     public class DynamicDataView2D<T> : IDynamicDataView2D<T>
     {
-        public event EventHandler<DynamicDataView2DEventArgs<T>> ViewCreated;
-        public event EventHandler<DynamicDataView2DEventArgs<T>> ViewExpired;
+        public event EventHandler<DynamicDataView2DEventArgs<T>> ViewChunkCreated;
+        public event EventHandler<DynamicDataView2DEventArgs<T>> ViewChunkExpired;
 
         [DataMember(Order = 0)]
         [Key(0)]
@@ -156,7 +156,7 @@ namespace RogueEntity.Core.Utils.DataViews
         {
             foreach (var e in index)
             {
-                ViewExpired?.Invoke(this, new DynamicDataView2DEventArgs<T>(e.Key, e.Value));
+                ViewChunkExpired?.Invoke(this, new DynamicDataView2DEventArgs<T>(e.Key, e.Value));
             }
             
             index.Clear();
@@ -170,7 +170,7 @@ namespace RogueEntity.Core.Utils.DataViews
             var key = new TileIndex(dx, dy);
             if (index.TryGetValue(key, out var existing))
             {
-                ViewExpired?.Invoke(this, new DynamicDataView2DEventArgs<T>(key, existing));
+                ViewChunkExpired?.Invoke(this, new DynamicDataView2DEventArgs<T>(key, existing));
                 index.Remove(key);
                 removedIndex = key;
                 return true;
@@ -192,7 +192,7 @@ namespace RogueEntity.Core.Utils.DataViews
             
             var data = CreateDataViewInternal(dx, dy);
             
-            ViewCreated?.Invoke(this, new DynamicDataView2DEventArgs<T>(new TileIndex(dx, dy), data));
+            ViewChunkCreated?.Invoke(this, new DynamicDataView2DEventArgs<T>(new TileIndex(dx, dy), data));
             return data;
         }
 
@@ -235,7 +235,7 @@ namespace RogueEntity.Core.Utils.DataViews
             var dy = DataViewPartitions.TileSplit(y, offsetY, tileSizeY);
             var data = CreateDataViewInternal(dx, dy);
             
-            ViewCreated?.Invoke(this, new DynamicDataView2DEventArgs<T>(new TileIndex(dx, dy), data));
+            ViewChunkCreated?.Invoke(this, new DynamicDataView2DEventArgs<T>(new TileIndex(dx, dy), data));
 
             raw = data;
             return true;

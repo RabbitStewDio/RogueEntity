@@ -5,8 +5,9 @@ using RogueEntity.Api.ItemTraits;
 using RogueEntity.Api.Modules;
 using RogueEntity.Api.Modules.Attributes;
 using RogueEntity.Api.Services;
+using RogueEntity.Api.Utils;
 using RogueEntity.Core.Players;
-using System;
+using Serilog;
 
 namespace RogueEntity.Core.MapLoading.MapRegions
 {
@@ -15,10 +16,13 @@ namespace RogueEntity.Core.MapLoading.MapRegions
         public static readonly string ModuleId = "Core.MapLoading";
         static readonly EntitySystemId MapLoadingCommandsSystemId = "System.Core.MapLoading.CommandSystem";
         static readonly EntitySystemId MapLoadingSystemId = "System.Core.MapLoading.LoaderSystem";
+        static readonly EntitySystemId MapLoadingInitSystemId = "System.Core.MapLoading.InitializeOnce";
         static readonly EntitySystemId RegisterChangeLevelCommandComponentId = "Entities.Core.MapLoading.ChangeLevelCommands";
 
         public static readonly EntityRole ControlLevelLoadingRole = new EntityRole("Role.Core.MapLoading.ControlLevelLoading");
 
+        public static readonly ILogger Logger = SLog.ForContext<MapLoadingModule>(); 
+        
         public MapLoadingModule()
         {
             Id = ModuleId;
@@ -36,10 +40,22 @@ namespace RogueEntity.Core.MapLoading.MapRegions
                                                            EntityRole r)
             where TItemId : IEntityKey
         {
+            initializer.RegisterFinalizer(MapLoadingInitSystemId, 999_999, RegisterInitalizeMapLoader);
+
+            
             var entityContext = initializer.DeclareEntityContext<TItemId>();
             entityContext.Register(RegisterChangeLevelCommandComponentId, -10_000, RegisterCommandEntities);
             entityContext.Register(MapLoadingCommandsSystemId, 45_500, RegisterMapLoaderCommandsSystem);
             entityContext.Register(MapLoadingSystemId, 48_500, RegisterMapLoaderSystem);
+        }
+
+        void RegisterInitalizeMapLoader(in ModuleInitializationParameter mip, IGameLoopSystemRegistration context)
+        {
+            var sr = mip.ServiceResolver;
+            if (sr.TryResolve(out IMapRegionLoaderService loader))
+            {
+                loader.Initialize();
+            }
         }
 
         void RegisterMapLoaderCommandsSystem<TEntityId>(in ModuleEntityInitializationParameter<TEntityId> initParameter,
@@ -47,7 +63,13 @@ namespace RogueEntity.Core.MapLoading.MapRegions
                                                         EntityRegistry<TEntityId> registry)
             where TEntityId : IEntityKey
         {
-            var system = GetOrResolveMapRegionSystem(initParameter.ServiceResolver);
+            if (!TryGetOrResolveMapRegionSystem(initParameter.ServiceResolver, out var system))
+            {
+                Logger.Error(
+                    "Unable to resolve a valid map region system. Either provide a custom implementation, " +
+                    "provide a basic z-level keyed MapRegionLoaderService or override the map loading system {SystemId}", MapLoadingCommandsSystemId);
+            }
+            
             var handleChangeLevelSystem = registry.BuildSystem()
                                                   .WithoutContext()
                                                   .WithInputParameter<ChangeLevelCommand>()
@@ -74,22 +96,28 @@ namespace RogueEntity.Core.MapLoading.MapRegions
                                                 EntityRegistry<TEntityId> registry)
             where TEntityId : IEntityKey
         {
-            var system = GetOrResolveMapRegionSystem(initParameter.ServiceResolver);
+            if (!TryGetOrResolveMapRegionSystem(initParameter.ServiceResolver, out var system))
+            {
+                Logger.Error(
+                    "Unable to resolve a valid map region system. Either provide a custom implementation, " +
+                    "provide a basic z-level keyed MapRegionLoaderService or override the map loading system {SystemId}", MapLoadingSystemId);
+            }
+            
             context.AddFixedStepHandlers(system.LoadChunks);
             context.AddLateVariableStepHandlers(system.LoadChunks);
         }
 
 
-        IMapRegionSystem GetOrResolveMapRegionSystem(IServiceResolver sr)
+        bool TryGetOrResolveMapRegionSystem(IServiceResolver sr, out IMapRegionSystem rs)
         {
-            if (sr.TryResolve(out IMapRegionSystem rs))
+            if (sr.TryResolve(out rs))
             {
-                return rs;
+                return true;
             }
 
             if (!sr.TryResolve(out IMapRegionLoaderService<int> loader))
             {
-                throw new ArgumentException("Unable to locale map loader; either provide a map source or declare a custom map region server");
+                return false;
             }
 
             if (sr.TryResolve(out IMapRegionLoaderSystemConfiguration conf))
@@ -101,7 +129,7 @@ namespace RogueEntity.Core.MapLoading.MapRegions
                 rs = new BasicMapRegionSystem(loader);
             }
 
-            return rs;
+            return true;
         }
     }
 }

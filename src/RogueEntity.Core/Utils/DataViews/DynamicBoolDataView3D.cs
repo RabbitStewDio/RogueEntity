@@ -15,6 +15,7 @@ namespace RogueEntity.Core.Utils.DataViews
     public class DynamicBoolDataView3D : IDynamicDataView3D<bool>
     {
         public event EventHandler<DynamicDataView3DEventArgs<bool>> ViewCreated;
+        public event EventHandler<DynamicDataView3DEventArgs<bool>> ViewReset;
         public event EventHandler<DynamicDataView3DEventArgs<bool>> ViewExpired;
 
         [DataMember(Order = 4)]
@@ -94,23 +95,11 @@ namespace RogueEntity.Core.Utils.DataViews
             return false;
         }
 
-        public void RemoveAllViews()
-        {
-            var length = index.Count;
-            var k = ArrayPool<int>.Shared.Rent(length);
-            index.Keys.CopyTo(k, 0);
-            for (var i = 0; i < length; i++)
-            {
-                RemoveView(k[i]);
-            }
-
-            ArrayPool<int>.Shared.Return(k);
-        }
-
         public void Clear()
         {
-            foreach (var v in index.Values)
+            foreach (var (z, v) in index)
             {
+                ViewReset?.Invoke(this, new DynamicDataView3DEventArgs<bool>(z, v));
                 v.Clear();
             }
         }

@@ -1,4 +1,5 @@
 using EnTTSharp.Entities;
+using JetBrains.Annotations;
 using RogueEntity.Api.Utils;
 using RogueEntity.Core.MovementPlaning.Goals;
 using RogueEntity.Core.Positioning.SpatialQueries;
@@ -20,10 +21,10 @@ namespace RogueEntity.Core.MovementPlaning.GoalFinding.SingleLevel
         readonly ConcurrentDictionary<(Type, Type), object> data;
         readonly Func<(Type, Type), object> createDelegate;
 
-        public SingleLevelGoalTargetEvaluatorFactory(GoalRegistry goalRegistry, ISpatialQueryLookup queryLookup)
+        public SingleLevelGoalTargetEvaluatorFactory([NotNull] GoalRegistry goalRegistry, [NotNull] ISpatialQueryLookup queryLookup)
         {
-            this.goalRegistry = goalRegistry;
-            this.queryLookup = queryLookup;
+            this.goalRegistry = goalRegistry ?? throw new ArgumentNullException(nameof(goalRegistry));
+            this.queryLookup = queryLookup ?? throw new ArgumentNullException(nameof(queryLookup));
             data = new ConcurrentDictionary<(Type, Type), object>();
             createDelegate = Create;
         }

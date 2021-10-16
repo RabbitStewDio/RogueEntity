@@ -38,7 +38,7 @@ namespace RogueEntity.Core.Utils.DataViews
             }
         }
 
-        class Policy : IPooledObjectPolicy<DefaultPooledBoundedDataView<T>>
+        class Policy : PooledObjectPolicy<DefaultPooledBoundedDataView<T>>
         {
             readonly DynamicDataViewConfiguration config;
 
@@ -47,13 +47,14 @@ namespace RogueEntity.Core.Utils.DataViews
                 this.config = config;
             }
 
-            public DefaultPooledBoundedDataView<T> Create()
+            public override DefaultPooledBoundedDataView<T> Create()
             {
                 return DefaultPooledBoundedDataView<T>.CreateForPool(config);
             }
 
-            public bool Return(DefaultPooledBoundedDataView<T> obj)
+            public override bool Return(DefaultPooledBoundedDataView<T> obj)
             {
+                obj.Clear();
                 return true;
             }
         }

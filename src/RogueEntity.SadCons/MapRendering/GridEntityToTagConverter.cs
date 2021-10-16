@@ -21,8 +21,15 @@ namespace RogueEntity.SadCons.MapRendering
                                         [NotNull] Func<TMapData, WorldEntityTag> tagConverter)
         {
             this.mapData = mapData ?? throw new ArgumentNullException(nameof(mapData));
+            this.mapData.RegionDirty += OnRegionDirty;
             this.tagConverter = tagConverter ?? throw new ArgumentNullException(nameof(tagConverter));
             this.Layer = layer;
+        }
+
+        void OnRegionDirty(object sender, MapRegionDirtyEventArgs e)
+        {
+            cachedLayer = default;
+            cachedMapData = default;
         }
 
         public MapLayer Layer { get; }

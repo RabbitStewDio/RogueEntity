@@ -1,3 +1,4 @@
+using JetBrains.Annotations;
 using Microsoft.Extensions.ObjectPool;
 using RogueEntity.Core.Movement;
 using RogueEntity.Core.MovementPlaning.Goals;
@@ -10,7 +11,7 @@ namespace RogueEntity.Core.MovementPlaning.GoalFinding.SingleLevel
         readonly IMovementDataProvider dataProvider;
         readonly DefaultObjectPool<SingleLevelGoalFinderBuilder> pool;
 
-        public SingleLevelGoalFinderSource(SingleLevelGoalFinderPolicy policy,
+        public SingleLevelGoalFinderSource([NotNull] IPooledObjectPolicy<SingleLevelGoalFinder> policy,
                                            GoalRegistry registry,
                                            ISpatialQueryLookup queryLookUp,
                                            IMovementDataProvider dataProvider)

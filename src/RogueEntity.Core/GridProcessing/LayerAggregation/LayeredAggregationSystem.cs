@@ -14,6 +14,7 @@ namespace RogueEntity.Core.GridProcessing.LayerAggregation
     {
         public event EventHandler<PositionDirtyEventArgs> PositionDirty;
         public event EventHandler<DynamicDataView3DEventArgs<TAggregationType>> ViewCreated;
+        public event EventHandler<DynamicDataView3DEventArgs<TAggregationType>> ViewReset;
         public event EventHandler<DynamicDataView3DEventArgs<TAggregationType>> ViewExpired;
 
         readonly AggregationLayerStore<TAggregationType, TSourceType> resultDataView;
