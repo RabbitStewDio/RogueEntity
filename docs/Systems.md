@@ -1,3 +1,38 @@
+# Entity System Reference
+
+## System initialization
+
+A game is a collection of entity types and their associated behaviours.
+Entity types are identified by their 'ItemDeclarationId'. An item declaration
+is equivalent to a class in object oriented programming and describes the
+potential behaviours a given entity supports. 
+
+Behaviours are registered as traits on each item declaraion. Traits can
+either be stateless (are independent of the entity instance) or stateful.
+
+The RogueEntity system supports two fundamental entity types. ReferenceEntities
+are stateful objects that are stored in an EntityRegistry. Each ReferenceEntity
+is uniquely identified by its EntityKey. Only reference entities can be used
+in entity systems.
+
+Reference entities are used for actors and items that require complex behaviours
+or that can exist only once in the game world. All actors must be ReferenceEntities.
+
+A BulkEntity is a stateless entity and is not uniquely identified in the system.
+For BulkEntities the EntityKey encodes the type information and reserves 16 bit
+of shared state data to be used by entity traits to encode state information.
+BulkEntities exist solely within the map or other entities. 
+
+BulkEntities with a Stackable trait can merge into larger stacks. This way
+a dragon's thousands of coins can form an orderly pile of a single entity 
+encoding a item count.
+
+BulkEntities should be used when the exact instance of an item is not important
+and where many of such entities exist. Bulk entities should be used for modelling
+gold coins and other commodity items. 
+
+## System Execution Order
+
 Module Initialization phases:
 
      before    -10_000 : Entity Registrations

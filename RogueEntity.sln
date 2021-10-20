@@ -1,47 +1,49 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26124.0
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30804.86
 MinimumVisualStudioVersion = 15.0.26124.0
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RogueEntity.Core", "src\RogueEntity.Core\RogueEntity.Core.csproj", "{D8217621-528E-4A0C-B629-00E95012257F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RogueEntity.Core", "src\RogueEntity.Core\RogueEntity.Core.csproj", "{D8217621-528E-4A0C-B629-00E95012257F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RogueEntity.Core.Tests", "tests\RogueEntity.Core.Tests\RogueEntity.Core.Tests.csproj", "{31BE4B64-054B-4642-904D-B96907B9A3CD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RogueEntity.Core.Tests", "tests\RogueEntity.Core.Tests\RogueEntity.Core.Tests.csproj", "{31BE4B64-054B-4642-904D-B96907B9A3CD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RogueEntity.DndKit", "src\RogueEntity.DndKit\RogueEntity.DndKit.csproj", "{13D8F9DA-750E-4F01-B268-118FD4C17008}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RogueEntity.DndKit", "src\RogueEntity.DndKit\RogueEntity.DndKit.csproj", "{13D8F9DA-750E-4F01-B268-118FD4C17008}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RogueEntity.DndKit.Tests", "tests\RogueEntity.DndKit.Tests\RogueEntity.DndKit.Tests.csproj", "{79022EFC-A910-453E-A19D-DFF7DDA0A91B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RogueEntity.DndKit.Tests", "tests\RogueEntity.DndKit.Tests\RogueEntity.DndKit.Tests.csproj", "{79022EFC-A910-453E-A19D-DFF7DDA0A91B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "_build", "build\_build.csproj", "{40387DAD-211D-4961-97EF-4D09D9E1FAE3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RogueEntity.Generator", "src\RogueEntity.Generator\RogueEntity.Generator.csproj", "{D9FB99D7-A7BD-45F0-82CC-84132CFEAA34}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RogueEntity.Generator", "src\RogueEntity.Generator\RogueEntity.Generator.csproj", "{D9FB99D7-A7BD-45F0-82CC-84132CFEAA34}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RogueEntity.Api", "src\RogueEntity.Api\RogueEntity.Api.csproj", "{B5C4EB67-7F0A-437B-B570-170570D9E820}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RogueEntity.Api", "src\RogueEntity.Api\RogueEntity.Api.csproj", "{B5C4EB67-7F0A-437B-B570-170570D9E820}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RogueEntity.EntityKeyGenerator", "src\RogueEntity.EntityKeyGenerator\RogueEntity.EntityKeyGenerator.csproj", "{AD52596F-BF25-48B0-9C57-197A45DD4D46}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RogueEntity.EntityKeyGenerator", "src\RogueEntity.EntityKeyGenerator\RogueEntity.EntityKeyGenerator.csproj", "{AD52596F-BF25-48B0-9C57-197A45DD4D46}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RogueEntity.EntityKeyGenerator.Sample", "src\RogueEntity.EntityKeyGenerator.Sample\RogueEntity.EntityKeyGenerator.Sample.csproj", "{94EB6C80-E67E-457B-8377-5DD6AA4214B0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RogueEntity.EntityKeyGenerator.Sample", "src\RogueEntity.EntityKeyGenerator.Sample\RogueEntity.EntityKeyGenerator.Sample.csproj", "{94EB6C80-E67E-457B-8377-5DD6AA4214B0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RogueEntity.Performance.Tests", "tests\RogueEntity.Performance.Tests\RogueEntity.Performance.Tests.csproj", "{2E0FA4D2-B919-45B6-90DD-B30F2EAF19E0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RogueEntity.Performance.Tests", "tests\RogueEntity.Performance.Tests\RogueEntity.Performance.Tests.csproj", "{2E0FA4D2-B919-45B6-90DD-B30F2EAF19E0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RogueEntity.Generator.Tests", "tests\RogueEntity.Generator.Tests\RogueEntity.Generator.Tests.csproj", "{34037B07-EC58-496F-8DD9-9F4BCDC14E4C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RogueEntity.Generator.Tests", "tests\RogueEntity.Generator.Tests\RogueEntity.Generator.Tests.csproj", "{34037B07-EC58-496F-8DD9-9F4BCDC14E4C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RogueEntity.Benchmarks", "benchmarks\RogueEntity.Benchmarks\RogueEntity.Benchmarks.csproj", "{636449B0-9C97-423F-8528-E597838FD06A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RogueEntity.Benchmarks", "benchmarks\RogueEntity.Benchmarks\RogueEntity.Benchmarks.csproj", "{636449B0-9C97-423F-8528-E597838FD06A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RogueEntity.SadCons", "src\RogueEntity.SadCons\RogueEntity.SadCons.csproj", "{0DA67E24-EB0A-4747-B161-FBEBDEA73388}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RogueEntity.SadCons", "src\RogueEntity.SadCons\RogueEntity.SadCons.csproj", "{0DA67E24-EB0A-4747-B161-FBEBDEA73388}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RogueEntity.Api.Tests", "tests\RogueEntity.Api.Tests\RogueEntity.Api.Tests.csproj", "{35C37FCA-CBEE-49E7-ACC5-85AF4EE782BD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RogueEntity.Api.Tests", "tests\RogueEntity.Api.Tests\RogueEntity.Api.Tests.csproj", "{35C37FCA-CBEE-49E7-ACC5-85AF4EE782BD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RogueEntity.Samples.BoxPusher.Core", "samples\RogueEntity.Samples.BoxPusher.Core\RogueEntity.Samples.BoxPusher.Core.csproj", "{499C01BD-06D1-4197-9D1E-99E8B018FE22}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RogueEntity.Samples.BoxPusher.Core", "samples\RogueEntity.Samples.BoxPusher.Core\RogueEntity.Samples.BoxPusher.Core.csproj", "{499C01BD-06D1-4197-9D1E-99E8B018FE22}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RogueEntity.Samples.MineSweeper.Core", "samples\RogueEntity.Samples.MineSweeper.Core\RogueEntity.Samples.MineSweeper.Core.csproj", "{B54B02ED-09AF-4F03-8023-5E690F4D4A14}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RogueEntity.Samples.MineSweeper.Core", "samples\RogueEntity.Samples.MineSweeper.Core\RogueEntity.Samples.MineSweeper.Core.csproj", "{B54B02ED-09AF-4F03-8023-5E690F4D4A14}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RogueEntity.Samples.BoxPusher.MonoGame", "samples\RogueEntity.Samples.BoxPusher.MonoGame\RogueEntity.Samples.BoxPusher.MonoGame.csproj", "{0D361C78-6B72-46DF-8587-214DDB96878B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RogueEntity.Samples.BoxPusher.MonoGame", "samples\RogueEntity.Samples.BoxPusher.MonoGame\RogueEntity.Samples.BoxPusher.MonoGame.csproj", "{0D361C78-6B72-46DF-8587-214DDB96878B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RogueEntity.Samples.MineSweeper.MonoGame", "samples\RogueEntity.Samples.MineSweeper.MonoGame\RogueEntity.Samples.MineSweeper.MonoGame.csproj", "{962F3DEF-CBC6-4B10-8DBC-8FC76719D2D9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RogueEntity.Samples.MineSweeper.MonoGame", "samples\RogueEntity.Samples.MineSweeper.MonoGame\RogueEntity.Samples.MineSweeper.MonoGame.csproj", "{962F3DEF-CBC6-4B10-8DBC-8FC76719D2D9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RogueEntity.Samples.BoxPusher.Tests", "samples\RogueEntity.Samples.BoxPusher.Tests\RogueEntity.Samples.BoxPusher.Tests.csproj", "{4AFD2E47-37DA-4FDC-8432-3215F82169E3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RogueEntity.Samples.BoxPusher.Tests", "samples\RogueEntity.Samples.BoxPusher.Tests\RogueEntity.Samples.BoxPusher.Tests.csproj", "{4AFD2E47-37DA-4FDC-8432-3215F82169E3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RogueEntity.Samples.MineSweeper.Tests", "samples\RogueEntity.Samples.MineSweeper.Tests\RogueEntity.Samples.MineSweeper.Tests.csproj", "{6BBE2237-2AA5-4DF3-8949-BBF760682416}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RogueEntity.Samples.MineSweeper.Tests", "samples\RogueEntity.Samples.MineSweeper.Tests\RogueEntity.Samples.MineSweeper.Tests.csproj", "{6BBE2237-2AA5-4DF3-8949-BBF760682416}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "docs", "docs\docs.csproj", "{79974B16-A3E6-4A0F-8701-ABCDE95BF751}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -51,9 +53,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 		Release|x64 = Release|x64
 		Release|x86 = Release|x86
-	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{D8217621-528E-4A0C-B629-00E95012257F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -290,5 +289,21 @@ Global
 		{6BBE2237-2AA5-4DF3-8949-BBF760682416}.Release|x64.Build.0 = Release|Any CPU
 		{6BBE2237-2AA5-4DF3-8949-BBF760682416}.Release|x86.ActiveCfg = Release|Any CPU
 		{6BBE2237-2AA5-4DF3-8949-BBF760682416}.Release|x86.Build.0 = Release|Any CPU
+		{79974B16-A3E6-4A0F-8701-ABCDE95BF751}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{79974B16-A3E6-4A0F-8701-ABCDE95BF751}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{79974B16-A3E6-4A0F-8701-ABCDE95BF751}.Debug|x64.Build.0 = Debug|Any CPU
+		{79974B16-A3E6-4A0F-8701-ABCDE95BF751}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{79974B16-A3E6-4A0F-8701-ABCDE95BF751}.Debug|x86.Build.0 = Debug|Any CPU
+		{79974B16-A3E6-4A0F-8701-ABCDE95BF751}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{79974B16-A3E6-4A0F-8701-ABCDE95BF751}.Release|x64.ActiveCfg = Release|Any CPU
+		{79974B16-A3E6-4A0F-8701-ABCDE95BF751}.Release|x64.Build.0 = Release|Any CPU
+		{79974B16-A3E6-4A0F-8701-ABCDE95BF751}.Release|x86.ActiveCfg = Release|Any CPU
+		{79974B16-A3E6-4A0F-8701-ABCDE95BF751}.Release|x86.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {45DB8E44-565F-476A-A0DA-A39B91C061D3}
 	EndGlobalSection
 EndGlobal
