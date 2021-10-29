@@ -42,7 +42,7 @@ namespace RogueEntity.Api.Modules.Initializers
                     initializer.CurrentModuleId = mod.ModuleId;
 
                     mod.FinalizedModule = true;
-                    var contentInitializers = CollectContentInitializers(mod);
+                    var contentInitializers = CollectModuleFinalizers(mod);
                     foreach (var mi in contentInitializers)
                     {
                         mi(in mip, initializer);
@@ -55,7 +55,7 @@ namespace RogueEntity.Api.Modules.Initializers
             }
         }
 
-        static List<ModuleContentInitializerDelegate> CollectContentInitializers(ModuleRecord module)
+        static List<ModuleContentInitializerDelegate> CollectModuleFinalizers(ModuleRecord module)
         {
             var actions = new List<ModuleContentInitializerDelegate>();
             foreach (var m in module.ModuleMethods)
