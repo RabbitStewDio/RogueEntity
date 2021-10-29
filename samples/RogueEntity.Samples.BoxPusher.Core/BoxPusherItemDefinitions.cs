@@ -16,6 +16,9 @@ using RogueEntity.Core.Sensing.Receptors.Light;
 using RogueEntity.Core.Sensing.Resistance;
 using RogueEntity.Core.Sensing.Sources.Light;
 using RogueEntity.Core.Utils;
+using RogueEntity.Generator;
+using RogueEntity.Generator.Commands;
+using RogueEntity.Samples.BoxPusher.Core.Commands;
 using RogueEntity.Samples.BoxPusher.Core.ItemTraits;
 using static RogueEntity.Core.Movement.CostModifier.MovementCostModifiers;
 
@@ -47,6 +50,8 @@ namespace RogueEntity.Samples.BoxPusher.Core
                     .AsPointCost(WalkingMovement.Instance, DistanceCalculation.Euclid, 1)
                     .WithTrait(new BoxPusherPlayerProfileTrait<TActorId>())
                     .WithCommand(CommandType.Of<GridMoveCommand>())
+                    .WithCommand(CommandType.Of<ResetLevelCommand>())
+                    .WithChangeLevelCommand()
                 ;
         }
 

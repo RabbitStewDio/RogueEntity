@@ -2,6 +2,7 @@ using NUnit.Framework;
 using RogueEntity.Api.Modules;
 using RogueEntity.Core.MapLoading.Builder;
 using RogueEntity.Core.MapLoading.MapRegions;
+using RogueEntity.Core.MapLoading.PlayerSpawning;
 using RogueEntity.Core.Meta.EntityKeys;
 using RogueEntity.Core.Movement.GridMovement;
 using RogueEntity.Core.Players;
@@ -34,10 +35,8 @@ namespace RogueEntity.Core.Tests.Fixtures
                 PrepareMapService(mapService);
                 
                 mip.ServiceResolver.Store(mapService);
-                mip.ServiceResolver.Store<IPlayerSpawnInformationSource>(mapService);
-                mip.ServiceResolver.Store<IMapAvailabilityService>(mapService);
-                mip.ServiceResolver.Store<IMapRegionLoaderService<int>>(mapService);
-                mip.ServiceResolver.Store<IMapRegionLoaderService>(mapService);
+                mip.ServiceResolver.Store<IFlatLevelPlayerSpawnInformationSource>(mapService);
+                mip.ServiceResolver.Store<IMapRegionLoadingStrategy<int>>(mapService);
             });
             
 

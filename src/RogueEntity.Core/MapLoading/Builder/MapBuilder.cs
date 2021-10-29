@@ -4,7 +4,6 @@ using RogueEntity.Api.Utils;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Positioning.MapLayers;
-using RogueEntity.Core.Utils.DataViews;
 using System;
 using System.Collections.Generic;
 
@@ -12,8 +11,6 @@ namespace RogueEntity.Core.MapLoading.Builder
 {
     public class MapBuilder
     {
-        public event EventHandler<MapRegionDirtyEventArgs> MapLayerDirty;
-
         readonly Dictionary<byte, EntityMapBuilderLayer> layerProcessors;
         readonly List<MapLayer> mapLayers;
 
@@ -51,25 +48,11 @@ namespace RogueEntity.Core.MapLoading.Builder
                 placementService.TryGetItemPlacementService(mapLayer, out var ps))
             {
                 layerProcessors.Add(mapLayer.LayerId, new MapBuilderLayer<T>(mapLayer, itemResolver, gridData, ps));
-                gridData.RegionDirty += OnMapRegionDirty;
-                gridData.ViewExpired += OnViewLayerDirty;
-                gridData.ViewReset += OnViewLayerDirty;
                 mapLayers.Add(mapLayer);
                 mapLayers.Sort(MapLayer.LayerIdComparer);
             }
 
             return this;
-        }
-
-        void OnViewLayerDirty<T>(object sender, DynamicDataView3DEventArgs<T> e)
-            where T : IEntityKey
-        {
-            MapLayerDirty?.Invoke(this, new MapRegionDirtyEventArgs(e.ZLevel, e.ZLevel));
-        }
-
-        void OnMapRegionDirty(object sender, MapRegionDirtyEventArgs e)
-        {
-            MapLayerDirty?.Invoke(this, e);
         }
 
         public ReadOnlyListWrapper<MapLayer> Layers => mapLayers;

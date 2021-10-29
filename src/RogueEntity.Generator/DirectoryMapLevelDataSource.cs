@@ -22,7 +22,7 @@ namespace RogueEntity.Generator
             this.storageLocations = storageLocations ?? throw new ArgumentNullException(nameof(storageLocations));
         }
 
-        protected override IEnumerable<MapFragment> LoadMapFragments()
+        protected override IEnumerable<MapFragment> LoadAvailableMapFragments()
         {
             var registry = new MapFragmentRegistry("*.map.yml");
             registry.LoadAll(new MapFragmentParser(), storageLocations.ContentLocation);

@@ -4,7 +4,9 @@ using RogueEntity.Api.GameLoops;
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Api.Modules;
 using RogueEntity.Api.Modules.Attributes;
+using RogueEntity.Api.Services;
 using RogueEntity.Api.Time;
+using RogueEntity.Core.Inputs.Commands;
 using RogueEntity.Core.MapLoading.Builder;
 using RogueEntity.Core.MapLoading.MapRegions;
 using RogueEntity.Core.Meta.EntityKeys;
@@ -13,6 +15,7 @@ using RogueEntity.Core.Movement.GridMovement;
 using RogueEntity.Core.Players;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Grid;
+using RogueEntity.Generator;
 using RogueEntity.Samples.BoxPusher.Core.Commands;
 using RogueEntity.Samples.BoxPusher.Core.ItemTraits;
 using System.Diagnostics.CodeAnalysis;
@@ -36,6 +39,9 @@ namespace RogueEntity.Samples.BoxPusher.Core
         static readonly EntitySystemId BoxPusherCollectTargetSpotsSystem = new EntitySystemId("System.BoxPusher.WinSystem.CollectTargetSpots");
         static readonly EntitySystemId BoxPusherCollectBoxesSystem = new EntitySystemId("System.BoxPusher.WinSystem.CollectBoxes");
         static readonly EntitySystemId BoxPusherFinalizeWinSystem = new EntitySystemId("System.BoxPusher.WinSystem.Finalize");
+        
+        static readonly EntitySystemId BoxPusherResetLevelCommandSystem = new EntitySystemId("System.BoxPusher.ResetLevelCommandHandler");
+        static readonly EntitySystemId BoxPusherClearMapBeforeSpawnSystem = new EntitySystemId("System.BoxPusher.ClearMapBeforeSpawnPlayer");
 
         static readonly EntitySystemId BoxPusherEnsureMoveSystem = new EntitySystemId("System.BoxPusher.MoveSystem.Create");
 
@@ -47,7 +53,8 @@ namespace RogueEntity.Samples.BoxPusher.Core
                                 ModuleDependency.Of(PlayerModule.ModuleId),
                                 ModuleDependency.Of(GridMovementModule.ModuleId),
                                 ModuleDependency.Of(MapLoadingModule.ModuleId),
-                                ModuleDependency.Of(MapBuilderModule.ModuleId));
+                                ModuleDependency.Of(MapBuilderModule.ModuleId),
+                                ModuleDependency.Of(GeneratorModule.ModuleId));
 
             RequireRelation(PlayerToBoxRelation);
             RequireRelation(BoxOccupiesTargetRelation);
@@ -65,6 +72,8 @@ namespace RogueEntity.Samples.BoxPusher.Core
             ctx.Register(BoxPusherPlayerEntities, 40_000, RegisterPlayerEntities);
             ctx.Register(BoxPusherInitializeWinSystem, 40_000, RegisterInitializeWinSystem);
             ctx.Register(BoxPusherFinalizeWinSystem, 40_010, RegisterFinalizeWinSystem);
+            ctx.Register(BoxPusherClearMapBeforeSpawnSystem, 48_000, RegisterClearMapBeforeSpawnPlayers);
+            ctx.Register(BoxPusherResetLevelCommandSystem, 20_000, RegisterResetLevelCommandHandler);
         }
 
         [EntityRoleFinalizer("Role.BoxPusher.Box",
@@ -107,7 +116,7 @@ namespace RogueEntity.Samples.BoxPusher.Core
             where TActorId : IEntityKey
         {
             var sr = initParameter.ServiceResolver;
-            var ms = new PushMoveSystem<ActorReference, ItemReference>(sr.ResolveToReference<ITimeSource>(),
+            var ms = new PushMoveCommandSystem<ActorReference, ItemReference>(sr.ResolveToReference<ITimeSource>(),
                                                                        sr.Resolve<IItemResolver<ActorReference>>(),
                                                                        sr.Resolve<IMovementDataProvider>(),
                                                                        sr.Resolve<IItemPlacementService<ActorReference>>(),
@@ -159,6 +168,7 @@ namespace RogueEntity.Samples.BoxPusher.Core
             where TActorId : IEntityKey
         {
             registry.RegisterNonConstructable<BoxPusherPlayerProfile>();
+            registry.RegisterNonConstructable<ResetLevelCommand>();
         }
 
         void RegisterFinalizeWinSystem<TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter, IGameLoopSystemRegistration context, EntityRegistry<TActorId> registry)
@@ -187,6 +197,47 @@ namespace RogueEntity.Samples.BoxPusher.Core
 
             context.AddFixedStepHandlers(system.StartCheckWinCondition);
             context.AddFixedStepHandlerSystem(action);
+        }
+        
+        void RegisterResetLevelCommandHandler<TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter, 
+                                                        IGameLoopSystemRegistration context, 
+                                                        EntityRegistry<TActorId> registry)
+            where TActorId : IEntityKey
+        {
+            var sys = GetOrCreateResetLevelSystem<TActorId>(initParameter.ServiceResolver);
+            var action = registry.BuildSystem()
+                                 .WithoutContext()
+                                 .WithInputParameter<ResetLevelCommand>()
+                                 .WithOutputParameter<CommandInProgress>()
+                                 .CreateSystem(sys.ProcessResetLevelCommand);
+            context.AddFixedStepHandlerSystem(action);
+        }
+
+        void RegisterClearMapBeforeSpawnPlayers<TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter, 
+                                                          IGameLoopSystemRegistration context, 
+                                                          EntityRegistry<TActorId> registry)
+            where TActorId : IEntityKey
+        {
+            var sys = GetOrCreateResetLevelSystem<TActorId>(initParameter.ServiceResolver);
+            var action = registry.BuildSystem()
+                                 .WithoutContext()
+                                 .WithInputParameter<PlayerTag>()
+                                 .WithInputParameter<ChangeLevelRequest>()
+                                 .CreateSystem(sys.ResetMapDataBeforeSpawningPlayer);
+            context.AddFixedStepHandlerSystem(action);
+        }
+
+        ResetLevelSystem<TActorId> GetOrCreateResetLevelSystem<TActorId>(IServiceResolver sr)
+            where TActorId : IEntityKey
+        {
+            if (sr.TryResolve(out ResetLevelSystem<TActorId> sys))
+            {
+                return sys;
+            }
+
+            sys = new ResetLevelSystem<TActorId>(sr.Resolve<IMapStateController>(), sr.Resolve<IItemPlacementService<TActorId>>());
+            sr.Store(sys);
+            return sys;
         }
     }
 }

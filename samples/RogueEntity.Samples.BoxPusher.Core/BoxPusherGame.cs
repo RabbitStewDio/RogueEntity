@@ -1,6 +1,7 @@
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Api.Services;
 using RogueEntity.Api.Time;
+using RogueEntity.Api.Utils;
 using RogueEntity.Core.Infrastructure.Randomness;
 using RogueEntity.Core.MapLoading.MapRegions;
 using RogueEntity.Core.Meta.EntityKeys;
@@ -14,7 +15,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace RogueEntity.Samples.BoxPusher.Core
 {
-    public class BoxPusherGame: SinglePlayerGameBase<ActorReference>
+    public class BoxPusherGame : SinglePlayerGameBase<ActorReference>
     {
         readonly IStorageLocationService storageLocations;
 
@@ -23,9 +24,10 @@ namespace RogueEntity.Samples.BoxPusher.Core
 
         public IPlayerProfileManager<BoxPusherPlayerProfile> ProfileManager { get; private set; }
         public IMapRegionLoaderService<int> LevelLoader { get; private set; }
-        IItemResolver<ActorReference> actorResolver;
-
-        public BoxPusherGame(IStorageLocationService storageLocations): base("BoxPusher")
+        public IItemResolver<ActorReference> ActorResolver { get; private set; }
+        public BoxPusherPlayerStatusService StatusService { get; private set; }
+        
+        public BoxPusherGame(IStorageLocationService storageLocations) : base("BoxPusher")
         {
             this.storageLocations = storageLocations;
             pluginCatalogue = new DirectoryCatalog(".");
@@ -36,9 +38,23 @@ namespace RogueEntity.Samples.BoxPusher.Core
         {
             ProfileManager = ServiceResolver.Resolve<IPlayerProfileManager<BoxPusherPlayerProfile>>();
             LevelLoader = ServiceResolver.Resolve<IMapRegionLoaderService<int>>();
-            actorResolver = ServiceResolver.Resolve<IItemResolver<ActorReference>>();
+            ActorResolver = ServiceResolver.Resolve<IItemResolver<ActorReference>>();
+            StatusService = new BoxPusherPlayerStatusService(this, ActorResolver);
         }
-        
+
+        public Optional<BoxPusherPlayerProfile> CurrentPlayerProfile
+        {
+            get
+            {
+                if (PlayerData.TryGetValue(out var pd) && ActorResolver.TryQueryData(pd.EntityId, out BoxPusherPlayerProfile profileData))
+                {
+                    return profileData;
+                }
+
+                return default;
+            }
+        }
+
         public override bool IsBlockedOrWaitingForInput()
         {
             if (LevelLoader.IsBlocked())
@@ -46,10 +62,10 @@ namespace RogueEntity.Samples.BoxPusher.Core
                 Console.WriteLine("Blocked");
                 return true;
             }
-            
+
             return base.IsBlockedOrWaitingForInput();
         }
-        
+
         protected override GameStatus CheckStatus()
         {
             if (LevelLoader.IsError())
@@ -57,7 +73,7 @@ namespace RogueEntity.Samples.BoxPusher.Core
                 Console.WriteLine("Level Loading failed");
                 return GameStatus.Error;
             }
-            
+
             // our boxpusher game does not have a clear win/lose condition. 
             return GameStatus.Running;
         }
@@ -77,13 +93,13 @@ namespace RogueEntity.Samples.BoxPusher.Core
 
             if (StartGameWithPlayer(profileId) && this.PlayerData.TryGetValue(out var value))
             {
-                if (actorResolver.TryUpdateData(value.EntityId, profile, out _))
+                if (ActorResolver.TryUpdateData(value.EntityId, profile, out _))
                 {
                     Console.WriteLine("Player created");
                     return true;
                 }
 
-                actorResolver.DiscardUnusedItem(value.EntityId);
+                ActorResolver.DiscardUnusedItem(value.EntityId);
             }
 
             return false;

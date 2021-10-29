@@ -7,13 +7,10 @@ using RogueEntity.Core.Utils.DataViews;
 namespace RogueEntity.Core.Positioning.Grid
 {
     [SuppressMessage("ReSharper", "UnusedTypeParameter")]
-    public interface IGridMapDataContext<TItemId>: IDynamicDataView3D<TItemId>
+    public interface IGridMapDataContext<TItemId>: IDynamicDataView3D<TItemId>, IMapStateController
     {
         public event EventHandler<PositionDirtyEventArgs> PositionDirty;
         public event EventHandler<MapRegionDirtyEventArgs> RegionDirty;
-        
-        void MarkDirty<TPosition>(in TPosition position) where TPosition: IPosition<TPosition>;
-        void MarkRegionDirty(int zPositionFrom, int zPositionTo, Optional<Rectangle> layerArea = default);
     }
 
     public static class GridMapDataContextExtensions

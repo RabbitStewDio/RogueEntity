@@ -1,6 +1,6 @@
 namespace RogueEntity.Core.MapLoading.MapRegions
 {
-    public class MapRegionLoadRequestStatus<TChunkKey>: IMapRegionLoadRequestStatus<TChunkKey>
+    public class MapRegionLoadRequestStatus<TChunkKey>: IMapRegionLoadRequestProcess<TChunkKey>
     {
         public TChunkKey RegionKey { get; }
         public MapRegionLoadingStatus Status { get; private set; }
@@ -20,8 +20,7 @@ namespace RogueEntity.Core.MapLoading.MapRegions
 
         public void RequestImmediateLoading()
         {
-            if (Status != MapRegionLoadingStatus.Loaded &&
-                Status != MapRegionLoadingStatus.Error)
+            if (Status is MapRegionLoadingStatus.Unloaded or MapRegionLoadingStatus.LazyLoadRequested)
             {
                 Status = MapRegionLoadingStatus.ImmediateLoadRequested;
             }
@@ -35,6 +34,26 @@ namespace RogueEntity.Core.MapLoading.MapRegions
         public void MarkLoaded()
         {
             Status = MapRegionLoadingStatus.Loaded;
+        }
+
+        public void MarkUnloaded()
+        {
+            Status = MapRegionLoadingStatus.Unloaded;
+        }
+
+        public void MarkInvalid()
+        {
+            Status = MapRegionLoadingStatus.Invalid;
+        }
+
+        public void RequestUnloading()
+        {
+            Status = Status switch
+            {
+                MapRegionLoadingStatus.Loaded => MapRegionLoadingStatus.UnloadingRequested,
+                MapRegionLoadingStatus.ImmediateLoadRequested or MapRegionLoadingStatus.LazyLoadRequested => MapRegionLoadingStatus.Unloaded,
+                _ => Status
+            };
         }
     }
 }

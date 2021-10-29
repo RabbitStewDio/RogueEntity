@@ -1,13 +1,9 @@
+using RogueEntity.Api.Utils;
+
 namespace RogueEntity.Core.MapLoading.MapRegions
 {
     public interface IMapRegionLoaderService
     {
-
-        /// <summary>
-        ///    Attempts to load the next chunk. Returns false if there are no more chunks to load.
-        /// </summary>
-        bool PerformLoadNextChunk();
-
         /// <summary>
         ///   Returns true if there is any pending immediate load request.
         /// </summary>
@@ -19,14 +15,18 @@ namespace RogueEntity.Core.MapLoading.MapRegions
         /// </summary>
         bool IsError();
 
-        bool EvictAllRegions();
-        
         void Initialize();
     }
     
+    /// <summary>
+    ///   Controls the loading and unloading of map chunks. Unloading is an optional
+    ///   system - if not defined any unload request is simply silently ignored.
+    /// </summary>
+    /// <typeparam name="TRegionKey"></typeparam>
     public interface IMapRegionLoaderService<TRegionKey>: IMapRegionLoaderService
     {
         IMapRegionLoadRequestStatus<TRegionKey> RequestLazyLoading(TRegionKey region);
+        
         IMapRegionLoadRequestStatus<TRegionKey> RequestImmediateLoading(TRegionKey region);
 
         /// <summary>
@@ -39,6 +39,10 @@ namespace RogueEntity.Core.MapLoading.MapRegions
         ///    Marks the given region as unloaded.
         /// </summary>
         /// <returns></returns>
-        bool EvictRegion(TRegionKey region);
+        IMapRegionLoadRequestStatus<TRegionKey> EvictRegion(TRegionKey region);
+
+
+        BufferList<IMapRegionLoadRequestProcess<TRegionKey>> QueryPendingRequests(MapRegionLoadingStatus status, 
+                                                                                 BufferList<IMapRegionLoadRequestProcess<TRegionKey>> k = null);
     }
 }

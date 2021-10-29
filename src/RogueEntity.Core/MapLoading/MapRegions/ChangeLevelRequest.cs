@@ -1,10 +1,10 @@
 namespace RogueEntity.Core.MapLoading.MapRegions
 {
-    public readonly struct ChangeLevelCommand
+    public readonly struct ChangeLevelRequest
     {
         public readonly int Level;
 
-        public ChangeLevelCommand(int level)
+        public ChangeLevelRequest(int level)
         {
             Level = level;
         }

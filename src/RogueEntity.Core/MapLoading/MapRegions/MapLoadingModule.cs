@@ -17,12 +17,12 @@ namespace RogueEntity.Core.MapLoading.MapRegions
         static readonly EntitySystemId MapLoadingCommandsSystemId = "System.Core.MapLoading.CommandSystem";
         static readonly EntitySystemId MapLoadingSystemId = "System.Core.MapLoading.LoaderSystem";
         static readonly EntitySystemId MapLoadingInitSystemId = "System.Core.MapLoading.InitializeOnce";
-        static readonly EntitySystemId RegisterChangeLevelCommandComponentId = "Entities.Core.MapLoading.ChangeLevelCommands";
+        static readonly EntitySystemId RegisterChangeLevelRequestComponentId = "Entities.Core.MapLoading.ChangeLevelRequest";
 
         public static readonly EntityRole ControlLevelLoadingRole = new EntityRole("Role.Core.MapLoading.ControlLevelLoading");
 
-        public static readonly ILogger Logger = SLog.ForContext<MapLoadingModule>(); 
-        
+        public static readonly ILogger Logger = SLog.ForContext<MapLoadingModule>();
+
         public MapLoadingModule()
         {
             Id = ModuleId;
@@ -30,9 +30,17 @@ namespace RogueEntity.Core.MapLoading.MapRegions
             Name = "RogueEntity Core Module - Map Loading";
             Description = "Provides base classes and behaviours for loading maps based on observer positions";
             IsFrameworkModule = true;
-            
+
             DeclareDependency(ModuleDependency.Of(PlayerModule.ModuleId));
         }
+
+        [ModuleInitializer]
+        protected void InitializeGlobalMapLoadingSystem(in ModuleInitializationParameter initParameter,
+                                                        IModuleInitializer moduleInitializer)
+        {
+            moduleInitializer.Register(MapLoadingInitSystemId, 0, RegisterInitializeMapLoader);
+        }
+
 
         [EntityRoleInitializer("Role.Core.MapLoading.ControlLevelLoading")]
         protected void InitializeMapLoadingSystem<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
@@ -40,21 +48,27 @@ namespace RogueEntity.Core.MapLoading.MapRegions
                                                            EntityRole r)
             where TItemId : IEntityKey
         {
-            initializer.RegisterFinalizer(MapLoadingInitSystemId, 999_999, RegisterInitalizeMapLoader);
-
-            
             var entityContext = initializer.DeclareEntityContext<TItemId>();
-            entityContext.Register(RegisterChangeLevelCommandComponentId, -10_000, RegisterCommandEntities);
+            entityContext.Register(RegisterChangeLevelRequestComponentId, -10_000, RegisterCommandEntities);
             entityContext.Register(MapLoadingCommandsSystemId, 45_500, RegisterMapLoaderCommandsSystem);
             entityContext.Register(MapLoadingSystemId, 48_500, RegisterMapLoaderSystem);
         }
 
-        void RegisterInitalizeMapLoader(in ModuleInitializationParameter mip, IGameLoopSystemRegistration context)
+        void RegisterInitializeMapLoader(in ModuleInitializationParameter mip, IGameLoopSystemRegistration context)
         {
             var sr = mip.ServiceResolver;
-            if (sr.TryResolve(out IMapRegionLoaderService loader))
+            if (sr.TryResolve(out IMapRegionLoaderService service))
             {
-                loader.Initialize();
+                context.AddInitializationStepHandler(service.Initialize);
+                context.AddDisposeStepHandler(service.Initialize);
+            }
+
+            // Ensure that the map loader is always created.
+            if (!TryGetOrResolveMapRegionSystem(sr, out var system))
+            {
+                Logger.Error(
+                    "Unable to resolve a valid map region system. Either provide a custom implementation, " +
+                    "provide a basic z-level keyed MapRegionLoaderService or override the map loading system {SystemId}", MapLoadingInitSystemId);
             }
         }
 
@@ -69,16 +83,16 @@ namespace RogueEntity.Core.MapLoading.MapRegions
                     "Unable to resolve a valid map region system. Either provide a custom implementation, " +
                     "provide a basic z-level keyed MapRegionLoaderService or override the map loading system {SystemId}", MapLoadingCommandsSystemId);
             }
-            
+
             var handleChangeLevelSystem = registry.BuildSystem()
                                                   .WithoutContext()
-                                                  .WithInputParameter<ChangeLevelCommand>()
+                                                  .WithInputParameter<ChangeLevelRequest>()
                                                   .CreateSystem(system.RequestLoadLevelFromChangeLevelCommand);
             context.AddFixedStepHandlerSystem(handleChangeLevelSystem);
 
             var handleChangePositionSystem = registry.BuildSystem()
                                                      .WithoutContext()
-                                                     .WithInputParameter<ChangeLevelPositionCommand>()
+                                                     .WithInputParameter<ChangeLevelPositionRequest>()
                                                      .CreateSystem(system.RequestLoadLevelFromChangePositionCommand);
             context.AddFixedStepHandlerSystem(handleChangePositionSystem);
         }
@@ -87,8 +101,8 @@ namespace RogueEntity.Core.MapLoading.MapRegions
                                               EntityRegistry<TItemId> registry)
             where TItemId : IEntityKey
         {
-            registry.RegisterNonConstructable<ChangeLevelCommand>();
-            registry.RegisterNonConstructable<ChangeLevelPositionCommand>();
+            registry.RegisterNonConstructable<ChangeLevelRequest>();
+            registry.RegisterNonConstructable<ChangeLevelPositionRequest>();
         }
 
         void RegisterMapLoaderSystem<TEntityId>(in ModuleEntityInitializationParameter<TEntityId> initParameter,
@@ -101,8 +115,9 @@ namespace RogueEntity.Core.MapLoading.MapRegions
                 Logger.Error(
                     "Unable to resolve a valid map region system. Either provide a custom implementation, " +
                     "provide a basic z-level keyed MapRegionLoaderService or override the map loading system {SystemId}", MapLoadingSystemId);
+                return;
             }
-            
+
             context.AddFixedStepHandlers(system.LoadChunks);
             context.AddLateVariableStepHandlers(system.LoadChunks);
         }
@@ -115,18 +130,27 @@ namespace RogueEntity.Core.MapLoading.MapRegions
                 return true;
             }
 
-            if (!sr.TryResolve(out IMapRegionLoaderService<int> loader))
+            // Unable to detect a map region system. That means we try to assemble one
+            // from fragment services instead.
+            if (!sr.TryResolve(out IMapRegionLoadingStrategy<int> strategy))
             {
                 return false;
             }
 
+            if (!sr.TryResolve(out IMapRegionLoaderService<int> loader))
+            {
+                loader = new BasicMapRegionLoaderService<int>();
+                sr.Store(loader);
+                sr.Store<IMapRegionLoaderService>(loader);
+            }
+
             if (sr.TryResolve(out IMapRegionLoaderSystemConfiguration conf))
             {
-                rs = new BasicMapRegionSystem(loader, conf.MapLoadingTimeout);
+                rs = new BasicMapRegionSystem(loader, strategy, conf.MapLoadingTimeout);
             }
             else
             {
-                rs = new BasicMapRegionSystem(loader);
+                rs = new BasicMapRegionSystem(loader, strategy);
             }
 
             return true;

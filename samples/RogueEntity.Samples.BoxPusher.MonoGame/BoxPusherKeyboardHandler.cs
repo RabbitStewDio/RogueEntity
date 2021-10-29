@@ -32,7 +32,10 @@ namespace RogueEntity.Samples.BoxPusher.MonoGame
                 {
                     var targetPos = EntityGridPosition.From(observer.Position) + d.ToCoordinates();
                     var cmd = new GridMoveCommand(targetPos);
-                    game.CommandService.TrySubmit(game.PlayerData.Value.EntityId, cmd);
+                    if (!game.CommandService.TrySubmit(game.PlayerData.Value.EntityId, cmd))
+                    {
+                        System.Console.WriteLine("Unable to move to " + targetPos);
+                    }
                 }
             }
 

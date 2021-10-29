@@ -6,6 +6,8 @@ namespace RogueEntity.Core.MapLoading.MapRegions
         LazyLoadRequested = 1,
         ImmediateLoadRequested = 2,
         Loaded = 3,
-        Error = 4
+        UnloadingRequested = 4,
+        Error = -1,
+        Invalid = -2,
     }
 }

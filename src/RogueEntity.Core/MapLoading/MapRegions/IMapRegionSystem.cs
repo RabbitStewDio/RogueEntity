@@ -12,7 +12,7 @@ namespace RogueEntity.Core.MapLoading.MapRegions
         /// </summary>
         void RequestLoadLevelFromChangeLevelCommand<TItemId>(IEntityViewControl<TItemId> v,
                                                              TItemId k,
-                                                             in ChangeLevelCommand cmd)
+                                                             in ChangeLevelRequest cmd)
             where TItemId : IEntityKey;
 
         /// <summary>
@@ -22,7 +22,7 @@ namespace RogueEntity.Core.MapLoading.MapRegions
         /// </summary>
         void RequestLoadLevelFromChangePositionCommand<TItemId>(IEntityViewControl<TItemId> v,
                                                                 TItemId k,
-                                                                in ChangeLevelPositionCommand cmd)
+                                                                in ChangeLevelPositionRequest cmd)
             where TItemId : IEntityKey;
 
         /// <summary>

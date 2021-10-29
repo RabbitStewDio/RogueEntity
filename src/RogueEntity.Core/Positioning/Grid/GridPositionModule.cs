@@ -19,7 +19,7 @@ namespace RogueEntity.Core.Positioning.Grid
         public static readonly EntitySystemId RegisterGridPositionsEntityId = "Entities.Core.Position.Grid";
         public static readonly EntitySystemId ClearGridPositionChangeTrackerSystemId = "Systems.Core.Position.Grid.ClearChangeTracker";
         public static readonly EntitySystemId ClearDestroyedEntitiesSystemId = "Systems.Core.Position.Grid.ClearDestroyedEntities";
-        public static readonly EntitySystemId ResetMapDataSystemId = "Systems.Core.Position.Grid.ResetMapData";
+        public static readonly EntitySystemId RegisterMapDataAggregateSystemId = "Systems.Core.Position.Grid.RegisterMapDataAggregate";
         public static readonly EntityRole GridPositionedRole = new EntityRole("Role.Core.Position.GridPositioned");
 
         public GridPositionModule()
@@ -47,7 +47,7 @@ namespace RogueEntity.Core.Positioning.Grid
 
             var entityContext = initializer.DeclareEntityContext<TActorId>();
             entityContext.Register(RegisterGridPositionsEntityId, 0, RegisterGridEntities);
-            entityContext.Register(ResetMapDataSystemId, 0, RegisterResetMapData);
+            entityContext.Register(RegisterMapDataAggregateSystemId, 0, RegisterMapDataAggregate);
             entityContext.Register(ClearGridPositionChangeTrackerSystemId, 10, RegisterClearGridPositionChangeTrackers);
             entityContext.Register(ClearDestroyedEntitiesSystemId, 110_000, RegisterClearDestroyedEntities);
         }
@@ -115,31 +115,23 @@ namespace RogueEntity.Core.Positioning.Grid
             }
         }
 
-        void RegisterResetMapData<TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter,
+        void RegisterMapDataAggregate<TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter,
                                             IGameLoopSystemRegistration context,
                                             EntityRegistry<TActorId> registry)
             where TActorId : IEntityKey
         {
             var sr = initParameter.ServiceResolver;
-
-            void ResetMapData()
+            if (sr.TryResolve(out AggregateMapStateController amc) && 
+                sr.TryResolve(out IGridMapContext<TActorId> mapContext))
             {
-                if (sr.TryResolve(out IGridMapContextInitializer<TActorId> mapContext))
+                foreach (var ml in mapContext.GridLayers())
                 {
-                    mapContext.ResetState();
-                    return;
-                }
-
-                if (sr.TryResolve(out IGridMapContext<TActorId> map) &&
-                    map is IGridMapContextInitializer<TActorId> directMapContext)
-                {
-                    directMapContext.ResetState();
-                    return;
+                    if (mapContext.TryGetGridDataFor(ml, out var dataContext))
+                    {
+                        amc.Add(dataContext);
+                    }
                 }
             }
-
-            context.AddInitializationStepHandler(ResetMapData);
-            context.AddDisposeStepHandler(ResetMapData);
         }
 
         void RegisterClearGridPositionChangeTrackers<TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter,

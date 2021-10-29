@@ -30,6 +30,11 @@ namespace RogueEntity.Core.Positioning.Grid
             MarkRegionDirty(e.ZLevel, e.ZLevel);
         }
 
+        public void ResetLevel(int z)
+        {
+            RemoveView(z);
+        }
+
         public void ResetState()
         {
             ExpireAll();

@@ -1,8 +1,10 @@
 ﻿using EnTTSharp.Entities;
+using RogueEntity.Api.GameLoops;
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Api.Modules;
 using RogueEntity.Api.Modules.Attributes;
 using RogueEntity.Core.Positioning.SpatialQueries;
+using RogueEntity.Core.Utils.DataViews;
 
 namespace RogueEntity.Core.Positioning
 {
@@ -11,12 +13,11 @@ namespace RogueEntity.Core.Positioning
     {
         public static readonly string ModuleId = "Core.Position";
 
-        public static readonly EntitySystemId RegisterCommonPositions = "Entities.Core.Position";
-
-        public static readonly EntitySystemId RegisterSpatialQuery = "Systems.Core.Position.RegisterSpatialQuery";
+        public static readonly EntitySystemId RegisterCommonPositionsEntitySystemId = "Entities.Core.Position";
+        public static readonly EntitySystemId RegisterSpatialQuerySystemId = "Systems.Core.Position.RegisterSpatialQuery";
+        public static readonly EntitySystemId RegisterResetMapDataSystemId = "Systems.Core.Position.RegisterResetMapData";
 
         public static readonly EntityRole PositionQueryRole = new EntityRole("Role.Core.Position.PositionQueryable");
-
         public static readonly EntityRole PositionedRole = new EntityRole("Role.Core.Position.Positionable");
 
         public PositionModule()
@@ -35,7 +36,8 @@ namespace RogueEntity.Core.Positioning
             where TActorId : IEntityKey
         {
             var entityContext = initializer.DeclareEntityContext<TActorId>();
-            entityContext.Register(RegisterCommonPositions, 0, RegisterCommonEntities);
+            entityContext.Register(RegisterCommonPositionsEntitySystemId, 0, RegisterCommonEntities);
+            entityContext.Register(RegisterResetMapDataSystemId, 100, RegisterResetMapData);
 
             if (!initParameter.ServiceResolver.TryResolve(out SpatialQueryRegistry r))
             {
@@ -43,8 +45,26 @@ namespace RogueEntity.Core.Positioning
                 initParameter.ServiceResolver.Store(r);
                 initParameter.ServiceResolver.Store<ISpatialQueryLookup>(r);
             }
+
+            if (!initParameter.ServiceResolver.TryResolve(out IMapStateController _))
+            {
+                var mc = new AggregateMapStateController();
+                initParameter.ServiceResolver.Store<IMapStateController>(mc);
+                initParameter.ServiceResolver.Store(mc);
+            }
         }
 
+        void RegisterResetMapData<TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter, 
+                                            IGameLoopSystemRegistration context, 
+                                            EntityRegistry<TActorId> registry)
+            where TActorId : IEntityKey
+        {
+            if (initParameter.ServiceResolver.TryResolve(out IMapStateController mc))
+            {
+                context.AddInitializationStepHandler(mc.ResetState);
+                context.AddDisposeStepHandler(mc.ResetState);
+            }
+        }
 
         [EntityRoleFinalizerAttribute("Role.Core.Position.Positionable")]
         protected void FinalizePositionedRole<TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter,
@@ -53,7 +73,7 @@ namespace RogueEntity.Core.Positioning
             where TActorId : IEntityKey
         {
             var ctx = initializer.DeclareEntityContext<TActorId>();
-            ctx.Register(RegisterSpatialQuery, 9_999_999, RegisterSpatialQueryBruteForce);
+            ctx.Register(RegisterSpatialQuerySystemId, 9_999_999, RegisterSpatialQueryBruteForce);
         }
 
         void RegisterSpatialQueryBruteForce<TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter, EntityRegistry<TActorId> registry)

@@ -63,9 +63,15 @@ namespace RogueEntity.Samples.BoxPusher.Core.ItemTraits
             }
 
             this.levelStats[level] = stats.InProgress();
+            this.CurrentLevel = level;
             return this;
         }
 
+        public bool IsCurrentLevelComplete()
+        {
+            return IsComplete(CurrentLevel);
+        }
+        
         public bool IsComplete(int level)
         {
             if (!this.levelStats.TryGetValue(level, out var stats))

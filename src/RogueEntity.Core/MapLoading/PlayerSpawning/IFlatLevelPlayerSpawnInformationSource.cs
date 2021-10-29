@@ -1,11 +1,11 @@
 using RogueEntity.Core.Players;
 
-namespace RogueEntity.Core.MapLoading.MapRegions
+namespace RogueEntity.Core.MapLoading.PlayerSpawning
 {
-    public interface IPlayerSpawnInformationSource
+    public interface IFlatLevelPlayerSpawnInformationSource
     {
         /// <summary>
-        ///   Todo: This is most likely a separate concern of the PlayerSpawning module.
+        ///   Tells the player spawn service where new players should be placed.
         /// </summary>
         /// <param name="player"></param>
         /// <param name="level"></param>

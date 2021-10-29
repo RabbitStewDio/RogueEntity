@@ -10,6 +10,7 @@ using RogueEntity.Core.MapLoading.MapRegions;
 using RogueEntity.Core.Players;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Grid;
+using System;
 
 namespace RogueEntity.Core.MapLoading.PlayerSpawning
 {
@@ -84,7 +85,7 @@ namespace RogueEntity.Core.MapLoading.PlayerSpawning
             var handleNewPlayersSystem = registry.BuildSystem()
                                                  .WithoutContext()
                                                  .WithInputParameter<PlayerTag>()
-                                                 .WithInputParameter<NewPlayerTag>()
+                                                 .WithInputParameter<NewPlayerSpawnRequest>()
                                                  .CreateSystem(system.RequestLoadLevelFromNewPlayer);
             context.AddFixedStepHandlerSystem(handleNewPlayersSystem);
         }
@@ -118,18 +119,35 @@ namespace RogueEntity.Core.MapLoading.PlayerSpawning
             var spawnAction = registry.BuildSystem()
                                       .WithoutContext()
                                       .WithInputParameter<PlayerTag>()
-                                      .WithInputParameter<ChangeLevelCommand>()
+                                      .WithInputParameter<ChangeLevelRequest>()
                                       .CreateSystem(system.SpawnPlayer);
             context.AddFixedStepHandlerSystem(spawnAction);
 
             var placeAction = registry.BuildSystem()
                                       .WithoutContext()
                                       .WithInputParameter<PlayerTag>()
-                                      .WithInputParameter<ChangeLevelPositionCommand>()
+                                      .WithInputParameter<ChangeLevelPositionRequest>()
                                       .CreateSystem(system.PlacePlayerAfterLevelChange);
             context.AddFixedStepHandlerSystem(placeAction);
         }
 
+        bool TryGetOrCreateMapAvailabilityService(IServiceResolver sr, out IMapAvailabilityService ms)
+        {
+            if (sr.TryResolve(out ms))
+            {
+                return true;
+            }
+
+            if (!sr.TryResolve(out IMapRegionLoaderService<int> mls))
+            {
+                return false;
+            }
+
+            ms = new FlatLevelMapAvailabilityService(mls);
+            sr.Store(ms);
+            return true;
+
+        }
 
         FlatLevelPlayerSpawnSystem<TActorId, TItemId> GetOrCreateSpawnSystem<TActorId, TItemId>(IServiceResolver serviceResolver)
             where TActorId : IEntityKey
@@ -140,11 +158,16 @@ namespace RogueEntity.Core.MapLoading.PlayerSpawning
                 return spawnSystem;
             }
 
+            if (!TryGetOrCreateMapAvailabilityService(serviceResolver, out var ms))
+            {
+                throw new Exception();
+            }
+            
             var system = new FlatLevelPlayerSpawnSystem<TActorId, TItemId>(serviceResolver.Resolve<IItemPlacementService<TActorId>>(),
                                                                            serviceResolver.Resolve<IItemPlacementLocationService<TActorId>>(),
                                                                            serviceResolver.Resolve<IItemResolver<TActorId>>(),
-                                                                           serviceResolver.Resolve<IPlayerSpawnInformationSource>(),
-                                                                           serviceResolver.ResolveToReference<IMapAvailabilityService>(),
+                                                                           serviceResolver.Resolve<IFlatLevelPlayerSpawnInformationSource>(),
+                                                                           ms,
                                                                            serviceResolver.ResolveOptional<IEntityRandomGeneratorSource>());
             serviceResolver.Store(system);
             return system;

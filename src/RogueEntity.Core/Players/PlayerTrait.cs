@@ -21,7 +21,7 @@ namespace RogueEntity.Core.Players
         public override void Initialize(IEntityViewControl<TActorId> v, TActorId k, IItemDeclaration item)
         {
             base.Initialize(v, k, item);
-            v.AssignComponent<NewPlayerTag>(k);
+            v.AssignComponent<NewPlayerSpawnRequest>(k);
         }
 
         public override IEnumerable<EntityRoleInstance> GetEntityRoles()

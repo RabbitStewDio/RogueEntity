@@ -180,7 +180,7 @@ namespace RogueEntity.Core.Players
             where TItemId : IEntityKey
         {
             registry.RegisterNonConstructable<PlayerTag>();
-            registry.RegisterFlag<NewPlayerTag>();
+            registry.RegisterFlag<NewPlayerSpawnRequest>();
         }
 
         void RegisterPlayerObserverComponents<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,

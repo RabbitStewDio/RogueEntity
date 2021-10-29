@@ -12,14 +12,14 @@ using System;
 
 namespace RogueEntity.Samples.BoxPusher.Core.Commands
 {
-    public class PushMoveSystem<TActorId, TItemId> : GridMoveCommandSystem<TActorId>
+    public class PushMoveCommandSystem<TActorId, TItemId> : GridMoveCommandSystem<TActorId>
         where TActorId : IEntityKey
         where TItemId : IEntityKey
     {
         readonly IItemResolver<TItemId> itemResolver;
         readonly IItemPlacementService<TItemId> itemPlacementService;
 
-        public PushMoveSystem([NotNull] Lazy<ITimeSource> timer,
+        public PushMoveCommandSystem([NotNull] Lazy<ITimeSource> timer,
                               [NotNull] IItemResolver<TActorId> actorResolver,
                               [NotNull] IMovementDataProvider movementDataProvider,
                               [NotNull] IItemPlacementService<TActorId> actorPlacementService,

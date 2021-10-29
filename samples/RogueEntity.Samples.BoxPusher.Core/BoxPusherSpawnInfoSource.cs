@@ -1,12 +1,13 @@
 using JetBrains.Annotations;
 using RogueEntity.Core.MapLoading.MapRegions;
+using RogueEntity.Core.MapLoading.PlayerSpawning;
 using RogueEntity.Core.Players;
 using RogueEntity.Samples.BoxPusher.Core.ItemTraits;
 using System;
 
 namespace RogueEntity.Samples.BoxPusher.Core
 {
-    public class BoxPusherSpawnInfoSource : IPlayerSpawnInformationSource
+    public class BoxPusherSpawnInfoSource : IFlatLevelPlayerSpawnInformationSource
     {
         readonly IPlayerProfileManager<BoxPusherPlayerProfile> profileManager;
 

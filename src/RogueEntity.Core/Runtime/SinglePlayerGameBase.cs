@@ -105,17 +105,19 @@ namespace RogueEntity.Core.Runtime
             return false;
         }
 
-        protected virtual bool DeactivatePlayer()
+        public virtual bool DeactivatePlayer()
         {
             if (PlayerData.TryGetValue(out var playerData))
             {
                 if (PlayerManager.TryDeactivatePlayer(playerData.Tag.Id))
                 {
                     PlayerData = default;
+                    return true;
                 }
+                return false;
             }
 
-            return false;
+            return true;
         }
         
         void RemoveRemainingActivePlayer()

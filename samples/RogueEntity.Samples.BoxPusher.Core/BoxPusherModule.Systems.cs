@@ -3,6 +3,7 @@ using RogueEntity.Api.Modules.Attributes;
 using RogueEntity.Core.Infrastructure.Randomness;
 using RogueEntity.Core.MapLoading.Builder;
 using RogueEntity.Core.MapLoading.MapRegions;
+using RogueEntity.Core.MapLoading.PlayerSpawning;
 using RogueEntity.Core.Players;
 using RogueEntity.Core.Sensing.Sources.Light;
 using RogueEntity.Core.Storage;
@@ -27,15 +28,12 @@ namespace RogueEntity.Samples.BoxPusher.Core
             var mapLoader = new DirectoryMapLevelDataSource(mip.ServiceResolver.ResolveToReference<MapBuilder>(),
                                                             mip.ServiceResolver.Resolve<IStorageLocationService>(),
                                                             mip.ServiceResolver.Resolve<IEntityRandomGeneratorSource>());
-            
-            mip.ServiceResolver.Store<IMapAvailabilityService>(mapLoader);
-            mip.ServiceResolver.Store<IMapRegionLoaderService>(mapLoader);
-            mip.ServiceResolver.Store<IMapRegionLoaderService<int>>(mapLoader);
+            mip.ServiceResolver.Store<IMapRegionLoadingStrategy<int>>(mapLoader);
             mip.ServiceResolver.Store<IMapLevelMetaDataService>(mapLoader);
 
             var profileManager = CreateProfileManager();
             mip.ServiceResolver.Store(profileManager);
-            mip.ServiceResolver.Store<IPlayerSpawnInformationSource>(new BoxPusherSpawnInfoSource(profileManager));
+            mip.ServiceResolver.Store<IFlatLevelPlayerSpawnInformationSource>(new BoxPusherSpawnInfoSource(profileManager));
         }
 
         IPlayerProfileManager<BoxPusherPlayerProfile> CreateProfileManager()

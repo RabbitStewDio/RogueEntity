@@ -7,7 +7,7 @@ namespace RogueEntity.Core.Players
     [EntityComponent(EntityConstructor.Flag)]
     [MessagePackObject]
     [DataContract]
-    public readonly struct NewPlayerTag
+    public readonly struct NewPlayerSpawnRequest
     {
     }
 }

@@ -13,8 +13,22 @@ namespace RogueEntity.Core.Runtime
     public abstract class GameBase: IDisposable
     {
         static readonly ILogger Logger = SLog.ForContext<GameBase>();
+
+        event EventHandler gameInitializedInternal;
         
-        public event EventHandler GameInitialized;
+        public event EventHandler GameInitialized
+        {
+            add
+            {
+                gameInitializedInternal += value;
+                if (Status != GameStatus.NotStarted)
+                {
+                    value(this, EventArgs.Empty);
+                }
+            }
+            remove { gameInitializedInternal -= value; }
+        }
+
         public event EventHandler GameStarted;
         public event EventHandler GameFinished;
         public event EventHandler GameStopped;
@@ -50,7 +64,7 @@ namespace RogueEntity.Core.Runtime
             LateInitializeSystemsOverride();
 
             Status = GameStatus.Initialized;
-            GameInitialized?.Invoke(this, EventArgs.Empty);
+            gameInitializedInternal?.Invoke(this, EventArgs.Empty);
         }
 
         protected virtual ModuleSystem CreateModuleSystem()

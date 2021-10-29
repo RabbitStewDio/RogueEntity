@@ -1,6 +1,6 @@
 using RogueEntity.Core.Positioning;
 
-namespace RogueEntity.Core.MapLoading.MapRegions
+namespace RogueEntity.Core.MapLoading.PlayerSpawning
 {
     public interface IMapAvailabilityService
     {

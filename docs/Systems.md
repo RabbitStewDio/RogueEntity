@@ -50,6 +50,11 @@ Module Initialization phases:
      85_000 to  99_999 : Reserved as extension point.
     100_000 and beyond : System Cleanup Events
 
+Commands:
+
+     20_000  - Clear movement Intent Markers (Late step)
+     21_000  - Handle Movement Commands
+
 
 Chunks/Maps:
  

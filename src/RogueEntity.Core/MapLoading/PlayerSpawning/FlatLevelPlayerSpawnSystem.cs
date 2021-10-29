@@ -7,7 +7,6 @@ using RogueEntity.Core.Players;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.MapLayers;
 using Serilog;
-using System;
 using System.Collections.Generic;
 
 namespace RogueEntity.Core.MapLoading.PlayerSpawning
@@ -30,19 +29,19 @@ namespace RogueEntity.Core.MapLoading.PlayerSpawning
         static readonly ILogger Logger = SLog.ForContext<FlatLevelPlayerSpawnSystem<TItemId, TActorId>>();
 
         readonly IItemResolver<TActorId> actorResolver;
-        readonly IPlayerSpawnInformationSource spawnInfoSource;
+        readonly IFlatLevelPlayerSpawnInformationSource spawnInfoSource;
         readonly IItemPlacementService<TActorId> placementService;
         readonly IItemPlacementLocationService<TActorId> spatialQuery;
         readonly Dictionary<int, List<(Position pos, TItemId entity)>> spawnPointsPerLevel;
         readonly Optional<IEntityRandomGeneratorSource> randomSource;
-        readonly Lazy<IMapAvailabilityService> mapLoaderService;
+        readonly IMapAvailabilityService mapLoaderService;
         readonly List<(Position pos, TItemId entity)> filterBuffer;
 
         public FlatLevelPlayerSpawnSystem(IItemPlacementService<TActorId> placementService,
                                           IItemPlacementLocationService<TActorId> spatialQuery,
                                           IItemResolver<TActorId> actorResolver,
-                                          IPlayerSpawnInformationSource spawnInfoSource,
-                                          Lazy<IMapAvailabilityService> mapLoaderService,
+                                          IFlatLevelPlayerSpawnInformationSource spawnInfoSource,
+                                          IMapAvailabilityService mapLoaderService,
                                           Optional<IEntityRandomGeneratorSource> randomSource = default)
         {
             this.mapLoaderService = mapLoaderService;
@@ -62,7 +61,7 @@ namespace RogueEntity.Core.MapLoading.PlayerSpawning
         public void RequestLoadLevelFromNewPlayer(IEntityViewControl<TActorId> v,
                                                   TActorId k,
                                                   in PlayerTag player,
-                                                  in NewPlayerTag newPlayerTag)
+                                                  in NewPlayerSpawnRequest newPlayerSpawnRequest)
         {
             if (!spawnInfoSource.TryCreateInitialLevelRequest(player, out var lvl))
             {
@@ -70,9 +69,9 @@ namespace RogueEntity.Core.MapLoading.PlayerSpawning
                 return;
             }
             
-            var cmd = new ChangeLevelCommand(lvl);
+            var cmd = new ChangeLevelRequest(lvl);
             v.AssignComponent(k, cmd);
-            v.RemoveComponent<NewPlayerTag>(k);
+            v.RemoveComponent<NewPlayerSpawnRequest>(k);
         }
 
         public void StartCollectSpawnLocations()
@@ -128,10 +127,10 @@ namespace RogueEntity.Core.MapLoading.PlayerSpawning
         public void SpawnPlayer(IEntityViewControl<TActorId> v,
                                 TActorId k,
                                 in PlayerTag player,
-                                in ChangeLevelCommand cmd)
+                                in ChangeLevelRequest cmd)
         {
             var level = cmd.Level;
-            if (!mapLoaderService.Value.IsLevelReadyForSpawning(level))
+            if (!mapLoaderService.IsLevelReadyForSpawning(level))
             {
                 return;
             }
@@ -156,17 +155,17 @@ namespace RogueEntity.Core.MapLoading.PlayerSpawning
             {
                 if (PlaceRandomly(l, value, k, mapLayerPref.PreferredLayer))
                 {
-                    v.RemoveComponent<ChangeLevelCommand>(k);
+                    v.RemoveComponent<ChangeLevelRequest>(k);
                     return;
                 }
             }
             else if (PlaceLinearly(l, k, mapLayerPref.PreferredLayer))
             {
-                v.RemoveComponent<ChangeLevelCommand>(k);
+                v.RemoveComponent<ChangeLevelRequest>(k);
                 return;
             }
 
-            v.RemoveComponent<ChangeLevelCommand>(k);
+            v.RemoveComponent<ChangeLevelRequest>(k);
             Logger.Warning("Unable to find any placement for player actor");
         }
 
@@ -243,17 +242,17 @@ namespace RogueEntity.Core.MapLoading.PlayerSpawning
         public void PlacePlayerAfterLevelChange(IEntityViewControl<TActorId> v,
                                                 TActorId k,
                                                 in PlayerTag player,
-                                                in ChangeLevelPositionCommand cmd)
+                                                in ChangeLevelPositionRequest cmd)
         {
             var level = cmd.Position;
             if (cmd.Position.IsInvalid)
             {
                 Logger.Warning("Unable to place actor at position marked as invalid");
-                v.RemoveComponent<ChangeLevelPositionCommand>(k);
+                v.RemoveComponent<ChangeLevelPositionRequest>(k);
                 return;
             }
 
-            if (!mapLoaderService.Value.IsLevelPositionAvailable(level))
+            if (!mapLoaderService.IsLevelPositionAvailable(level))
             {
                 // Wait until the level has fully loaded. This is controlled elsewhere.
                 return;
@@ -265,7 +264,7 @@ namespace RogueEntity.Core.MapLoading.PlayerSpawning
                 return;
             }
 
-            v.RemoveComponent<ChangeLevelPositionCommand>(k);
+            v.RemoveComponent<ChangeLevelPositionRequest>(k);
         }
     }
 }

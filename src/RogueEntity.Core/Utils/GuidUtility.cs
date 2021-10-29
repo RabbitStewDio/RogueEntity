@@ -4,11 +4,12 @@ using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace RogueEntity.Generator
+namespace RogueEntity.Core.Utils
 {
     /// <summary>
     /// Helper methods for working with <see cref="Guid"/>.
     /// </summary>
+    /// Source: https://github.com/Faithlife/FaithlifeUtility/blob/master/src/Faithlife.Utility/GuidUtility.cs (MIT licensed)
     public static class GuidUtility
     {
         /// <summary>
@@ -146,9 +147,7 @@ namespace RogueEntity.Generator
 
         static void SwapBytes(byte[] guid, int left, int right)
         {
-            var temp = guid[left];
-            guid[left] = guid[right];
-            guid[right] = temp;
+            (guid[left], guid[right]) = (guid[right], guid[left]);
         }
     }
 }

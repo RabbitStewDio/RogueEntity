@@ -41,12 +41,10 @@ namespace RogueEntity.Core.Tests.MapLoading.MapRegions
             regionLoader.IsRegionLoaded(1).Should().BeFalse();
 
             regionLoader.RequestImmediateLoading(0);
-            int iterations = 10;
-            while (regionLoader.PerformLoadNextChunk())
-            {
-                iterations.Should().NotBe(0);
-                iterations -= 1;
-            }
+            var buffer = regionLoader.QueryPendingRequests(MapRegionLoadingStatus.ImmediateLoadRequested);
+            buffer.Count.Should().Be(1);
+            buffer[0].RegionKey.Should().Be(0);
+            buffer[0].MarkLoaded();
 
             regionLoader.IsRegionLoaded(0).Should().BeTrue();
             regionLoader.IsRegionLoaded(1).Should().BeFalse();
@@ -56,12 +54,8 @@ namespace RogueEntity.Core.Tests.MapLoading.MapRegions
         public void RegionLoadingStateResets()
         {
             RegionLoading();
-            this.GameFixture.ServiceResolver.TryResolve(out IGridMapContext<ItemReference> gr).Should().BeTrue();
-            gr.TryGetGridDataFor(TestMapLayers.Ground, out var data).Should().BeTrue();
-            
-            var x = (IGridMapContextInitializer<ItemReference>)data;
 
-            x.ResetState();
+            regionLoader.Initialize();
             
             regionLoader.IsRegionLoaded(0).Should().BeFalse();
             regionLoader.IsRegionLoaded(1).Should().BeFalse();
