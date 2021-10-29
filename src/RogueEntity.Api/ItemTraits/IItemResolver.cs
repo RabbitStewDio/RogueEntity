@@ -2,7 +2,7 @@
 
 namespace RogueEntity.Api.ItemTraits
 {
-    public interface IItemResolver<TItemId> where TItemId: IEntityKey
+    public interface IItemResolver<TItemId>
     {
         IBulkDataStorageMetaData<TItemId> EntityMetaData { get; }
         IItemRegistry ItemRegistry { get; }

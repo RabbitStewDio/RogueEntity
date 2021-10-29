@@ -4,7 +4,6 @@ using System.Collections.Generic;
 namespace RogueEntity.Api.ItemTraits
 {
     public interface IReferenceEntityQueryProvider<TEntityKey>
-        where TEntityKey: IEntityKey
     {
         IEnumerable<TEntityKey> QueryById(ItemDeclarationId id);
         IEnumerable<(TEntityKey, TEntityTraitA)> QueryByTrait<TEntityTraitA>();

@@ -2,7 +2,7 @@
 
 namespace RogueEntity.Api.ItemTraits
 {
-    public interface IBulkDataStorageMetaData<TItemId> where TItemId : IEntityKey
+    public interface IBulkDataStorageMetaData<TItemId>
     {
         public int MaxAge { get; }
         TItemId CreateReferenceKey(byte age, int entityId);
