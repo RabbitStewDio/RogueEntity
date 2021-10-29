@@ -3,11 +3,6 @@ using RogueEntity.Api.ItemTraits;
 
 namespace RogueEntity.Core.Inputs.Commands
 {
-    public interface ICommandLift<TActorId, TResult>
-    {
-        TResult PerformCommandAction<TCommand>(TActorId k, TCommand cmd);
-    }
-
     public interface ICommandTrait<TActorId> : IItemTrait
         where TActorId : IEntityKey
     {
@@ -15,7 +10,7 @@ namespace RogueEntity.Core.Inputs.Commands
         
         bool CanHandle<TCommand>();
 
-        bool TryActionOn<TResult>(IItemResolver<TActorId> r, TActorId k, ICommandLift<TActorId, TResult> lifter, out TResult result);
+        bool TryRemoveCompletedCommandData(IItemResolver<TActorId> r, TActorId k);
     }
 
     public interface ICommandTrait<TActorId, TCommand> : ICommandTrait<TActorId>

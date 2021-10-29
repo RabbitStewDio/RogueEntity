@@ -1,6 +1,7 @@
 using EnTTSharp.Entities;
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Api.Utils;
+using Serilog;
 using System;
 
 namespace RogueEntity.Core.Inputs.Commands
@@ -8,15 +9,15 @@ namespace RogueEntity.Core.Inputs.Commands
     public class BasicCommandSystem<TActorId>
         where TActorId : IEntityKey
     {
+        readonly ILogger logger = SLog.ForContext<BasicCommandSystem<TActorId>>();
+        
         readonly IItemResolver<TActorId> itemResolver;
         readonly BufferList<ICommandTrait<TActorId>> traitBuffer;
-        readonly RemoveCommand removeCommandHandler;
 
         public BasicCommandSystem(IItemResolver<TActorId> itemResolver)
         {
             this.itemResolver = itemResolver;
             this.traitBuffer = new BufferList<ICommandTrait<TActorId>>();
-            this.removeCommandHandler = new RemoveCommand(itemResolver);
         }
 
         public void ClearHandledCommands(IEntityViewControl<TActorId> v,
@@ -39,36 +40,15 @@ namespace RogueEntity.Core.Inputs.Commands
                         continue;
                     }
 
-
-                    if (!t.TryActionOn(itemResolver, k, removeCommandHandler, out var result))
+                    logger.Debug("Cleaning stale command data for {Command}", t.CommandId);
+                    if (!t.TryRemoveCompletedCommandData(itemResolver, k))
                     {
                         throw new InvalidOperationException($"This trait seem not to understand a command type {t.Id}");
                     }
-
-                    if (!result)
-                    {
-                        throw new InvalidOperationException($"This trait did not remove the command artifact for {t.Id}");
-                    }
-                    
                 }
             }
             
             v.RemoveComponent<CommandInProgress>(k);
-        }
-
-        class RemoveCommand : ICommandLift<TActorId, bool>
-        {
-            readonly IItemResolver<TActorId> itemResolver;
-
-            public RemoveCommand(IItemResolver<TActorId> itemResolver)
-            {
-                this.itemResolver = itemResolver;
-            }
-
-            public bool PerformCommandAction<TCommand>(TActorId k, TCommand cmd)
-            {
-                return this.itemResolver.TryRemoveData<TCommand>(k, out _);
-            }
         }
     }
 }
