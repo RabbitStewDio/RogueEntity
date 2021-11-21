@@ -50,8 +50,11 @@ namespace RogueEntity.Core.Runtime
         protected override void Dispose(bool disposing)
         {
             base.Dispose(disposing);
-            PlayerManager.PlayerActivated -= OnPlayerActivated;
-            PlayerManager.PlayerDeactivated -= OnPlayerDeactivated;
+            if (PlayerManager != null)
+            {
+                PlayerManager.PlayerActivated -= OnPlayerActivated;
+                PlayerManager.PlayerDeactivated -= OnPlayerDeactivated;
+            }
         }
 
         protected virtual bool StartGameWithPlayer(Guid playerId = default)
