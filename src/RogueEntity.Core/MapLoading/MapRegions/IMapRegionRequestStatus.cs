@@ -1,12 +1,12 @@
 namespace RogueEntity.Core.MapLoading.MapRegions
 {
-    public interface IMapRegionLoadRequestStatus<out TChunkKey>
+    public interface IMapRegionRequestStatus<out TChunkKey>
     {
         TChunkKey RegionKey { get; }
-        MapRegionLoadingStatus Status { get; }
+        MapRegionStatus Status { get; }
     }
 
-    public interface IMapRegionLoadRequestProcess<out TChunkKey>: IMapRegionLoadRequestStatus<TChunkKey>
+    public interface IMapRegionProcessingRequestHandle<out TChunkKey>: IMapRegionRequestStatus<TChunkKey>
     {
         void MarkFailed();
         void MarkLoaded();

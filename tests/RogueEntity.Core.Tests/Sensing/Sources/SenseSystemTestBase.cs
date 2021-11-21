@@ -49,7 +49,7 @@ namespace RogueEntity.Core.Tests.Sensing.Sources
         protected SensoryResistanceDirectionalitySystem<TSense> directionalitySystem;
         protected virtual SensoryResistance<TSense> Convert(float f) => new SensoryResistance<TSense>(Percentage.Of(f));
 
-        protected abstract ReferenceItemDeclaration<ItemReference> AttachTrait(ReferenceItemDeclaration<ItemReference> decl);
+        protected abstract IReferenceItemDeclaration<ItemReference> AttachTrait(IReferenceItemDeclaration<ItemReference> decl);
 
         protected virtual SenseSourceSystem<TSense, TSenseSourceDefinition> CreateSystem()
         {

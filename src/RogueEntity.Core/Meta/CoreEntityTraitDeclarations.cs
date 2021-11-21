@@ -147,5 +147,23 @@ namespace RogueEntity.Core.Meta
             builder.Declaration.WithTrait(new DurabilityTrait<TItemId>(initialCount, stackSize));
             return builder;
         }
+        
+        public static BulkItemDeclarationBuilder<TItemId> WithEvictionBehaviour<TItemId>(this BulkItemDeclarationBuilder<TItemId> builder,
+                                                                                         EvictionBehaviour eb)
+            where TItemId : IBulkDataStorageKey<TItemId>
+        {
+            builder.Declaration.WithTrait(new EvictionBehaviourTrait<TItemId>(eb));
+            return builder;
+        }
+
+        public static ReferenceItemDeclarationBuilder<TItemId> WithEvictionBehaviour<TItemId>(this ReferenceItemDeclarationBuilder<TItemId> builder,
+                                                                                              EvictionBehaviour eb)
+            where TItemId : IEntityKey
+        {
+            builder.Declaration.WithTrait(new EvictionBehaviourTrait<TItemId>(eb));
+            return builder;
+        }
+
+        
     }
 }

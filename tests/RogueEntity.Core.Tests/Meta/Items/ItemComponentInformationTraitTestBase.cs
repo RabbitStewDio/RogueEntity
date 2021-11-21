@@ -65,12 +65,12 @@ namespace RogueEntity.Core.Tests.Meta.Items
         protected virtual void SetUpPrepare() {}
         protected virtual void SetUpOverride() {}
 
-        protected virtual BulkItemDeclaration<TItemId> CreateBulkItemDeclaration(IBulkItemTrait<TItemId> bulkTrait)
+        protected virtual IBulkItemDeclaration<TItemId> CreateBulkItemDeclaration(IBulkItemTrait<TItemId> bulkTrait)
         {
             return new BulkItemDeclaration<TItemId>(BulkItemId).WithTrait(bulkTrait);
         }
 
-        protected virtual ReferenceItemDeclaration<TItemId> CreateReferenceItemDeclaration(IReferenceItemTrait<TItemId> refTrait)
+        protected virtual IReferenceItemDeclaration<TItemId> CreateReferenceItemDeclaration(IReferenceItemTrait<TItemId> refTrait)
         {
             return new ReferenceItemDeclaration<TItemId>(ReferenceItemId).WithTrait(refTrait);
         }

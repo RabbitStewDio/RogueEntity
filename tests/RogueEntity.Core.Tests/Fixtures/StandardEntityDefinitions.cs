@@ -17,7 +17,6 @@ using static RogueEntity.Core.Movement.CostModifier.MovementCostModifiers;
 
 namespace RogueEntity.Core.Tests.Fixtures
 {
-
     public static class StandardEntityDefinitions
     {
         public static readonly ItemDeclarationInfo Player = ItemDeclarationInfo.Of("Player", "Tag.Actors.Player");
@@ -29,14 +28,14 @@ namespace RogueEntity.Core.Tests.Fixtures
         {
             var itemContext = ctx.DeclareContentContext<ItemReference>()
                                  .EnsureEntityRegistered(mp.ServiceResolver);
-            itemContext.Activate(itemContext.CreateReferenceEntityBuilder(mp.ServiceResolver)
+            itemContext.Activate(itemContext.CreateBulkEntityBuilder(mp.ServiceResolver)
                                             .Define(Wall)
                                             .WithGridPosition(TestMapLayers.Ground)
                                             .AsImmobile()
                                             .WithMovementCostModifier(Blocked<WalkingMovement>())
                                             .WithName("wall")
                                             .Declaration);
-            itemContext.Activate(itemContext.CreateReferenceEntityBuilder(mp.ServiceResolver)
+            itemContext.Activate(itemContext.CreateBulkEntityBuilder(mp.ServiceResolver)
                                             .Define(EmptyFloor)
                                             .WithGridPosition(TestMapLayers.Ground)
                                             .AsImmobile()

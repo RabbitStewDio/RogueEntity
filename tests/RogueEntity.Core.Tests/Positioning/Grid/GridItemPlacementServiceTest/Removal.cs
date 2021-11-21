@@ -1,6 +1,7 @@
 using FluentAssertions;
 using NUnit.Framework;
 using RogueEntity.Core.Positioning;
+using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Positioning.MapLayers;
 using RogueEntity.Core.Tests.Fixtures;
 
@@ -29,6 +30,9 @@ namespace RogueEntity.Core.Tests.Positioning.Grid.GridItemPlacementServiceTest
             
             Then_Operation_Should_Fail();
             this.Then_Position(posB).Should().BeEmpty();
+
+            this.ItemEntityContext.ItemResolver.TryQueryData(refC, out Position pos).Should().BeTrue();
+            pos.Should().Be(Position.Invalid);
         }
 
         [Test]
@@ -53,6 +57,9 @@ namespace RogueEntity.Core.Tests.Positioning.Grid.GridItemPlacementServiceTest
             
             Then_Operation_Should_Succeed();
             this.Then_Position(posA).Should().BeEmpty();
+            
+            this.ItemEntityContext.ItemResolver.TryQueryData(refA, out Position pos).Should().BeTrue();
+            pos.Should().Be(Position.Invalid);
         }
 
         [Test]

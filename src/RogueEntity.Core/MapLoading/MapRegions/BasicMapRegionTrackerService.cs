@@ -4,15 +4,20 @@ using System.Collections.Generic;
 
 namespace RogueEntity.Core.MapLoading.MapRegions
 {
-    public class BasicMapRegionLoaderService<TRegionKey> : IMapRegionLoaderService<TRegionKey>
+    /// <summary>
+    ///   Tracks the current status of all known/loaded map regions. This service
+    ///   does not handle loading or eviction of regions.
+    /// </summary>
+    /// <typeparam name="TRegionKey"></typeparam>
+    public class BasicMapRegionTrackerService<TRegionKey> : IMapRegionTrackerService<TRegionKey>
     {
-        static readonly ILogger Logger = SLog.ForContext<BasicMapRegionLoaderService<TRegionKey>>();
+        static readonly ILogger Logger = SLog.ForContext<BasicMapRegionTrackerService<TRegionKey>>();
 
-        readonly Dictionary<TRegionKey, MapRegionLoadRequestStatus<TRegionKey>> chunks;
+        readonly Dictionary<TRegionKey, MapRegionProcessingRequestStatus<TRegionKey>> chunks;
 
-        public BasicMapRegionLoaderService()
+        public BasicMapRegionTrackerService()
         {
-            chunks = new Dictionary<TRegionKey, MapRegionLoadRequestStatus<TRegionKey>>();
+            chunks = new Dictionary<TRegionKey, MapRegionProcessingRequestStatus<TRegionKey>>();
         }
 
         /// <summary>
@@ -21,7 +26,7 @@ namespace RogueEntity.Core.MapLoading.MapRegions
         ///   called because you felt like it. Make sure all underlying maps and data stores
         ///   are reset as well or chaos will strike. 
         /// </summary>
-        public virtual void Initialize()
+        public void Initialize()
         {
             chunks.Clear();
         }
@@ -30,7 +35,7 @@ namespace RogueEntity.Core.MapLoading.MapRegions
         {
             foreach (var c in chunks.Values)
             {
-                if (c.Status == MapRegionLoadingStatus.Error)
+                if (c.Status == MapRegionStatus.Error)
                 {
                     return true;
                 }
@@ -43,7 +48,7 @@ namespace RogueEntity.Core.MapLoading.MapRegions
         {
             foreach (var c in chunks.Values)
             {
-                if (c.Status == MapRegionLoadingStatus.ImmediateLoadRequested)
+                if (c.Status == MapRegionStatus.ImmediateLoadRequested)
                 {
                     return true;
                 }
@@ -52,16 +57,21 @@ namespace RogueEntity.Core.MapLoading.MapRegions
             return false;
         }
 
-        public bool IsRegionLoaded(TRegionKey region)
+        public MapRegionStatus QueryRegionStatus(TRegionKey region)
         {
-            return chunks.TryGetValue(region, out var chunk) && chunk.Status == MapRegionLoadingStatus.Loaded;
+            if (chunks.TryGetValue(region, out var chunk))
+            {
+                return chunk.Status;
+            }
+
+            return MapRegionStatus.Unloaded;
         }
 
-        public IMapRegionLoadRequestStatus<TRegionKey> RequestLazyLoading(TRegionKey region)
+        public IMapRegionRequestStatus<TRegionKey> RequestLazyLoading(TRegionKey region)
         {
             if (!chunks.TryGetValue(region, out var chunk))
             {
-                chunk = new MapRegionLoadRequestStatus<TRegionKey>(region);
+                chunk = new MapRegionProcessingRequestStatus<TRegionKey>(region);
                 chunks.Add(region, chunk);
             }
 
@@ -69,11 +79,11 @@ namespace RogueEntity.Core.MapLoading.MapRegions
             return chunk;
         }
 
-        public IMapRegionLoadRequestStatus<TRegionKey> RequestImmediateLoading(TRegionKey region)
+        public IMapRegionRequestStatus<TRegionKey> RequestImmediateLoading(TRegionKey region)
         {
             if (!chunks.TryGetValue(region, out var chunk))
             {
-                chunk = new MapRegionLoadRequestStatus<TRegionKey>(region);
+                chunk = new MapRegionProcessingRequestStatus<TRegionKey>(region);
                 chunks.Add(region, chunk);
             }
 
@@ -81,8 +91,8 @@ namespace RogueEntity.Core.MapLoading.MapRegions
             return chunk;
         }
 
-        public BufferList<IMapRegionLoadRequestProcess<TRegionKey>> QueryPendingRequests(MapRegionLoadingStatus status,
-                                                                                         BufferList<IMapRegionLoadRequestProcess<TRegionKey>> k = null)
+        public BufferList<IMapRegionProcessingRequestHandle<TRegionKey>> QueryActiveRequests(MapRegionStatus status,
+                                                                                             BufferList<IMapRegionProcessingRequestHandle<TRegionKey>> k = null)
         {
             k = BufferList.PrepareBuffer(k);
 
@@ -97,7 +107,7 @@ namespace RogueEntity.Core.MapLoading.MapRegions
             return k;
         }
 
-        public virtual IMapRegionLoadRequestStatus<TRegionKey> EvictRegion(TRegionKey region)
+        public IMapRegionRequestStatus<TRegionKey> EvictRegion(TRegionKey region)
         {
             if (chunks.TryGetValue(region, out var chunk))
             {
@@ -105,7 +115,7 @@ namespace RogueEntity.Core.MapLoading.MapRegions
             }
             else
             {
-                chunk = new MapRegionLoadRequestStatus<TRegionKey>(region);
+                chunk = new MapRegionProcessingRequestStatus<TRegionKey>(region);
                 chunks[region] = chunk;
             }
 

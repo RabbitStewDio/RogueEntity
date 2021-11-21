@@ -1,5 +1,6 @@
 using FluentAssertions;
 using NUnit.Framework;
+using RogueEntity.Core.MapLoading.FlatLevelMaps;
 using RogueEntity.Core.Runtime;
 using RogueEntity.Core.Storage;
 using RogueEntity.Generator;
@@ -24,7 +25,8 @@ namespace RogueEntity.Samples.BoxPusher.Tests
         [Test]
         public void MapSystemInitialized()
         {
-            game.ServiceResolver.TryResolve(out IMapLevelMetaDataService mds).Should().BeTrue();
+            game.ServiceResolver.TryResolve(out IMapRegionMetaDataService<int> mds).Should().BeTrue();
+            game.ServiceResolver.TryResolve(out IMapRegionEvictionSystem ev).Should().BeTrue();
             var x = (StaticMapLevelDataSource)mds;
             x.Initialized.Should().BeTrue();
         }

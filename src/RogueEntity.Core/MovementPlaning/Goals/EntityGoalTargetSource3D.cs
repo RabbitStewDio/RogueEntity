@@ -26,7 +26,7 @@ namespace RogueEntity.Core.MovementPlaning.Goals
         {
             var receiverBuffer = GoalSet.PrepareBuffer(receiver);
             
-            query.Query3D(origin, range, dc, buffer);
+            query.QuerySphere(origin, range, dc, buffer);
             for (var i = 0; i < buffer.Count; i++)
             {
                 var c = buffer[i];

@@ -11,11 +11,16 @@ namespace RogueEntity.Core.MapLoading.MapRegions
     {
 
         /// <summary>
-        ///    Attempts to load the next chunk. Returns true if the given chunk was
-        ///    loaded or at minimum scheduled to be loaded. 
+        ///    Attempts to load the next chunk.  
         /// </summary>
-        MapRegionLoadingStrategyResult PerformLoadChunk(TRegionKey key);
+        MapRegionProcessingResult PerformLoadChunk(TRegionKey key);
+    }
 
-        MapRegionLoadingStrategyResult PerformUnloadChunk(TRegionKey key);
+    public interface IMapRegionEvictionStrategy<in TRegionKey>
+    {
+        /// <summary>
+        ///    Attempts to unload the next chunk. 
+        /// </summary>
+        MapRegionProcessingResult PerformUnloadChunk(TRegionKey key);
     }
 }

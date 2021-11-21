@@ -8,7 +8,7 @@ using RogueEntity.Core.Positioning.MapLayers;
 
 namespace RogueEntity.Core.MapLoading.Builder
 {
-    public class MapBuilderLayer<TEntity>: EntityMapBuilderLayer
+    public class MapBuilderLayer<TEntity>: IMapBuilderLayer
         where TEntity : IEntityKey
     {
         [UsedImplicitly]
@@ -29,9 +29,9 @@ namespace RogueEntity.Core.MapLoading.Builder
         }
 
 
-        public override IItemRegistry ItemRegistry => resolver.ItemRegistry;
+        public IItemRegistry ItemRegistry => resolver.ItemRegistry;
 
-        public override bool Instantiate(ItemDeclarationId item, Position pos, IMapBuilderInstantiationLifter postProc = null)
+        public bool Instantiate(ItemDeclarationId item, Position pos, IMapBuilderInstantiationLifter postProc = null)
         {
             var entity = resolver.Instantiate(item);
             if (!placementService.TryPlaceItem(entity, pos))
@@ -56,32 +56,37 @@ namespace RogueEntity.Core.MapLoading.Builder
             return false;
         }
 
-        public override bool Clear(Position pos, IMapBuilderInstantiationLifter postProc = null)
+        public bool Clear(Position pos, IMapBuilderInstantiationLifter postProc = null)
         {
-            if (gridMapContext.TryGetView(pos.GridZ, out var view))
+            if (!gridMapContext.TryGetView(pos.GridZ, out var view))
             {
-                var entity = view[pos.GridX, pos.GridY];
-                if (entity.IsEmpty)
-                {
-                    return true;
-                }
-                
-                if (postProc != null && resolver.TryResolve(entity, out var decl))
-                {
-                    if (!postProc.ClearPreProcess(decl.Id, pos, resolver, entity).TryGetValue(out entity))
-                    {
-                        return false;
-                    }
-                }
+                return false;
+            }
 
-                if (placementService.TryRemoveItem(entity, pos))
+            var entity = view[pos.GridX, pos.GridY];
+            if (entity.IsEmpty)
+            {
+                return true;
+            }
+                
+            if (postProc != null && resolver.TryResolve(entity, out var decl))
+            {
+                if (!postProc.ClearPreProcess(decl.Id, pos, resolver, entity).TryGetValue(out entity))
                 {
-                    resolver.Destroy(entity);
-                    return true;
+                    return false;
                 }
             }
 
-            return false;
+            if (placementService.TryRemoveItem(entity, pos))
+            {
+                resolver.Destroy(entity);
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+
         }
     }
 }

@@ -1,8 +1,9 @@
 using EnTTSharp.Entities;
 using RogueEntity.Core.Inputs.Commands;
 using RogueEntity.Core.Meta.ItemBuilder;
+using RogueEntity.Generator;
 
-namespace RogueEntity.Generator.Commands
+namespace RogueEntity.Core.MapLoading.FlatLevelMaps
 {
     public static class ChangeLevelCommandTraitDeclarations
     {
@@ -10,7 +11,7 @@ namespace RogueEntity.Generator.Commands
             where TActorId : IEntityKey
         {
             builder.WithTrait(CommandInProgressTrait<TActorId>.Instance);
-            return builder.WithTrait(new ChangeLevelCommandTrait<TActorId>(builder.ServiceResolver.ResolveToReference<IMapLevelMetaDataService>()));
+            return builder.WithTrait(new ChangeLevelCommandTrait<TActorId>(builder.ServiceResolver.ResolveToReference<IMapRegionMetaDataService<int>>()));
         }
 
 

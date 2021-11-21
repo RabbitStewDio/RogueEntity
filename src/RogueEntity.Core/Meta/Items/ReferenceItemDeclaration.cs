@@ -19,9 +19,15 @@ namespace RogueEntity.Core.Meta.Items
             traits.Add(new DefaultEntityTagTrait<TItemId>(tag));
         }
 
-        public ReferenceItemDeclaration<TItemId> WithTrait(IReferenceItemTrait<TItemId> trait)
+        public IReferenceItemDeclaration<TItemId> WithTrait(IReferenceItemTrait<TItemId> trait)
         {
             traits.Add(trait);
+            return this;
+        }
+
+        public IReferenceItemDeclaration<TItemId> WithoutTrait<TTrait>()
+        {
+            traits.Remove<TTrait>();
             return this;
         }
 

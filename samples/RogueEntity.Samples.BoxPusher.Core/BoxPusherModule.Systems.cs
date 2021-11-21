@@ -2,6 +2,7 @@
 using RogueEntity.Api.Modules.Attributes;
 using RogueEntity.Core.Infrastructure.Randomness;
 using RogueEntity.Core.MapLoading.Builder;
+using RogueEntity.Core.MapLoading.FlatLevelMaps;
 using RogueEntity.Core.MapLoading.MapRegions;
 using RogueEntity.Core.MapLoading.PlayerSpawning;
 using RogueEntity.Core.Players;
@@ -29,7 +30,10 @@ namespace RogueEntity.Samples.BoxPusher.Core
                                                             mip.ServiceResolver.Resolve<IStorageLocationService>(),
                                                             mip.ServiceResolver.Resolve<IEntityRandomGeneratorSource>());
             mip.ServiceResolver.Store<IMapRegionLoadingStrategy<int>>(mapLoader);
-            mip.ServiceResolver.Store<IMapLevelMetaDataService>(mapLoader);
+            mip.ServiceResolver.Store<IMapRegionMetaDataService<int>>(mapLoader);
+            
+            var evictionHandler = new FlatLevelRegionEvictionStrategy(mip.ServiceResolver.ResolveToReference<MapBuilder>(), mapLoader);
+            mip.ServiceResolver.Store<IMapRegionEvictionStrategy<int>>(evictionHandler);
 
             var profileManager = CreateProfileManager();
             mip.ServiceResolver.Store(profileManager);

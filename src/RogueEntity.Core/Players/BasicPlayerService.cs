@@ -157,6 +157,18 @@ namespace RogueEntity.Core.Players
             }
         }
 
+        public BufferList<PlayerTag> QueryPlayers(BufferList<PlayerTag> queryBuffer = null)
+        {
+            queryBuffer = BufferList.PrepareBuffer(queryBuffer);
+
+            foreach (var player in playerDataByGuid)
+            {
+                queryBuffer.Add(player.Key);
+            }
+
+            return queryBuffer;
+        }
+        
         public bool TryQueryPlayer(in PlayerTag playerTag, out TEntity playerEntity)
         {
             if (playerDataByGuid.TryGetValue(playerTag, out var p))

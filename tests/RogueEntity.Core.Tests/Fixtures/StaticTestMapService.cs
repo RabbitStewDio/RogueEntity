@@ -1,6 +1,7 @@
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Core.Infrastructure.Randomness;
 using RogueEntity.Core.MapLoading.Builder;
+using RogueEntity.Core.MapLoading.FlatLevelMaps;
 using RogueEntity.Core.MapLoading.MapRegions;
 using RogueEntity.Core.MapLoading.PlayerSpawning;
 using RogueEntity.Core.Players;
@@ -8,13 +9,16 @@ using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Positioning.MapLayers;
 using RogueEntity.Core.Tests.Players;
 using RogueEntity.Core.Utils;
+using RogueEntity.Generator;
 using System;
 using System.Collections.Generic;
 
 namespace RogueEntity.Core.Tests.Fixtures
 {
-    public class StaticTestMapService : IMapRegionLoadingStrategy<int>, 
-                                        IFlatLevelPlayerSpawnInformationSource
+    public class StaticTestMapService : IMapRegionLoadingStrategy<int>,
+                                        IMapRegionEvictionStrategy<int>,
+                                        IFlatLevelPlayerSpawnInformationSource,
+                                        IMapRegionMetaDataService<int>
     {
         readonly Lazy<MapBuilder> mapBuilder;
         readonly int defaultLevel;
@@ -22,7 +26,7 @@ namespace RogueEntity.Core.Tests.Fixtures
         readonly Dictionary<string, ItemDeclarationId[]> tokens;
 
         public StaticTestMapService(Lazy<MapBuilder> mapBuilder,
-                                int defaultLevel)
+                                    int defaultLevel)
         {
             this.mapBuilder = mapBuilder;
             this.defaultLevel = defaultLevel;
@@ -46,11 +50,30 @@ namespace RogueEntity.Core.Tests.Fixtures
             tokens[tokenCharacter] = tokenData;
         }
 
-        public MapRegionLoadingStrategyResult PerformLoadChunk(int region)
+        public bool TryGetRegionBounds(int region, out Rectangle3D data)
         {
             if (!mapData.TryGetValue(region, out var raw))
             {
-                return MapRegionLoadingStrategyResult.Error;
+                data = default;
+                return false;
+            }
+
+            var tokenParser = new TokenParser();
+            foreach (var t in tokens)
+            {
+                tokenParser.AddToken(t.Key, t.Value);
+            }
+
+            var map = TestHelpers.Parse<ItemDeclarationId[]>(raw, tokenParser, out var mapBounds);
+            data = new Rectangle3D(mapBounds.X, mapBounds.Y, region, mapBounds.Width, mapBounds.Height, 1);
+            return true;
+        }
+
+        public MapRegionProcessingResult PerformLoadChunk(int region)
+        {
+            if (!mapData.TryGetValue(region, out var raw))
+            {
+                return MapRegionProcessingResult.Error;
             }
 
             var tokenParser = new TokenParser();
@@ -62,12 +85,12 @@ namespace RogueEntity.Core.Tests.Fixtures
             var map = TestHelpers.Parse<ItemDeclarationId[]>(raw, tokenParser, out var mapBounds);
             var mf = new TestMapFragmentTool(mapBuilder.Value, new FixedRandomGeneratorSource(100));
             mf.CopyToMap(map, mapBounds, EntityGridPosition.Of(MapLayer.Indeterminate, 0, 0, region));
-            return MapRegionLoadingStrategyResult.Success;
+            return MapRegionProcessingResult.Success;
         }
 
-        public MapRegionLoadingStrategyResult PerformUnloadChunk(int key)
+        public MapRegionProcessingResult PerformUnloadChunk(int key)
         {
-            return MapRegionLoadingStrategyResult.Invalid;
+            return MapRegionProcessingResult.Invalid;
         }
     }
 }

@@ -27,6 +27,11 @@ namespace RogueEntity.Core.Meta.Base
             {
                 foreach (var v in x)
                 {
+                    if (!entityRegistry.IsValid(v))
+                    {
+                        Logger.Warning("Invalid key {Key} in persistent view", v);
+                    }
+                    
                     entityRegistry.Destroy(v);
                 }
             }

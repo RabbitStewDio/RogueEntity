@@ -1,6 +1,6 @@
 namespace RogueEntity.Core.MapLoading.MapRegions
 {
-    public enum MapRegionLoadingStatus
+    public enum MapRegionStatus
     {
         Unloaded = 0,
         LazyLoadRequested = 1,

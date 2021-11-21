@@ -4,6 +4,7 @@ namespace RogueEntity.Core.Players
 {
     public interface IPlayerLookup<TEntity>
     {
+        BufferList<PlayerTag> QueryPlayers(BufferList<PlayerTag> queryBuffer = null);
         bool TryQueryPlayer(in PlayerTag playerTag, out TEntity playerEntity);
     }
     

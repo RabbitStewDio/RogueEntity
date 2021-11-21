@@ -55,7 +55,7 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor
 
         protected SensoryResistance<TSourceSense> Convert(float f) => new SensoryResistance<TSourceSense>(f);
 
-        protected abstract ReferenceItemDeclaration<ItemReference> AttachTrait(ReferenceItemDeclaration<ItemReference> decl);
+        protected abstract IReferenceItemDeclaration<ItemReference> AttachTrait(IReferenceItemDeclaration<ItemReference> decl);
 
         protected SensoryResistanceDirectionalitySystem<TSourceSense> directionalitySourceSystem;
         protected SensoryResistanceDirectionalitySystem<TReceptorSense> directionalityReceptorSystem;

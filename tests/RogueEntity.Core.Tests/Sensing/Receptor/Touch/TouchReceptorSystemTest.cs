@@ -1,7 +1,7 @@
 using System;
 using EnTTSharp.Entities.Systems;
 using NUnit.Framework;
-using RogueEntity.Core.Meta.Items;
+using RogueEntity.Api.ItemTraits;
 using RogueEntity.Core.Sensing;
 using RogueEntity.Core.Sensing.Common;
 using RogueEntity.Core.Sensing.Common.Physics;
@@ -135,7 +135,7 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Touch
                           .CreateSystem(omniSystem.CopySenseSourcesToVisionField);
         }
 
-        protected override ReferenceItemDeclaration<ItemReference> AttachTrait(ReferenceItemDeclaration<ItemReference> decl)
+        protected override IReferenceItemDeclaration<ItemReference> AttachTrait(IReferenceItemDeclaration<ItemReference> decl)
         {
             switch (decl.Id.Id)
             {

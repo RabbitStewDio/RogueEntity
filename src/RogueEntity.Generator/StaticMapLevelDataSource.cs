@@ -13,8 +13,8 @@ using System.Linq;
 
 namespace RogueEntity.Generator
 {
-    public abstract class StaticMapLevelDataSource : IMapRegionLoadingStrategy<int>, 
-                                                     IMapLevelMetaDataService 
+    public abstract class StaticMapLevelDataSource : IMapRegionLoadingStrategy<int>,
+                                                     IMapRegionMetaDataService<int>
     {
         static readonly ILogger Logger = SLog.ForContext<StaticMapLevelDataSource>();
 
@@ -23,7 +23,7 @@ namespace RogueEntity.Generator
         readonly List<MapFragment> levelData;
         bool initialized;
 
-        protected StaticMapLevelDataSource(Lazy<MapBuilder> mapBuilder, 
+        protected StaticMapLevelDataSource(Lazy<MapBuilder> mapBuilder,
                                            IEntityRandomGeneratorSource randomSource)
         {
             this.randomSource = randomSource ?? throw new ArgumentNullException(nameof(randomSource));
@@ -44,7 +44,7 @@ namespace RogueEntity.Generator
 
         public int Count => levelData.Count;
 
-        public MapRegionLoadingStrategyResult PerformLoadChunk(int region)
+        public MapRegionProcessingResult PerformLoadChunk(int region)
         {
             if (!levelData.GetItemAt(region).TryGetValue(out var mapFragment))
             {
@@ -56,23 +56,19 @@ namespace RogueEntity.Generator
                 {
                     Logger.Debug("Unable to serve request for region {RegionKey} - no such level data", region);
                 }
-                return MapRegionLoadingStrategyResult.Error;
+
+                return MapRegionProcessingResult.Error;
             }
 
             mapBuilder.Value.ForFragmentPlacement(randomSource).CopyToMap(mapFragment, EntityGridPosition.Of(MapLayer.Indeterminate, 0, 0, region));
-            return MapRegionLoadingStrategyResult.Success;
+            return MapRegionProcessingResult.Success;
         }
 
-        public MapRegionLoadingStrategyResult PerformUnloadChunk(int key)
-        {
-            return MapRegionLoadingStrategyResult.Invalid;
-        }
-
-        public bool TryGetMapBounds(int key, out Rectangle data)
+        public bool TryGetRegionBounds(int key, out Rectangle3D data)
         {
             if (levelData.GetItemAt(key).TryGetValue(out var mapFragment))
             {
-                data = new Rectangle(0, 0, mapFragment.Size.Width, mapFragment.Size.Height);
+                data = new Rectangle3D(0, 0, key, mapFragment.Size.Width, mapFragment.Size.Height, 1);
                 return true;
             }
 

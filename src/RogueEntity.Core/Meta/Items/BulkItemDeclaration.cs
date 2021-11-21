@@ -19,14 +19,14 @@ namespace RogueEntity.Core.Meta.Items
             traitRegistration.Add(new DefaultEntityTagTrait<TItemId>(tag));
         }
 
-        public BulkItemDeclaration<TItemId> WithTrait(IBulkItemTrait<TItemId> trait)
+        public IBulkItemDeclaration<TItemId> WithTrait(IBulkItemTrait<TItemId> trait)
         {
             EnsureSingleInstanceOfBulkDataTrait(trait);
             traitRegistration.Add(trait);
             return this;
         }
 
-        public BulkItemDeclaration<TItemId> WithoutTrait<TTrait>()
+        public IBulkItemDeclaration<TItemId> WithoutTrait<TTrait>()
         {
             traitRegistration.Remove<TTrait>();
             return this;

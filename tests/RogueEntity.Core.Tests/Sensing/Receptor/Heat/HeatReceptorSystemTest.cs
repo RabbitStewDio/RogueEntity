@@ -1,8 +1,8 @@
 using System;
 using EnTTSharp.Entities.Systems;
 using NUnit.Framework;
+using RogueEntity.Api.ItemTraits;
 using RogueEntity.Api.Time;
-using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Meta.ItemTraits;
 using RogueEntity.Core.Sensing;
 using RogueEntity.Core.Sensing.Cache;
@@ -278,7 +278,7 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor.Heat
                                         sourcePhysics);
         }
 
-        protected override ReferenceItemDeclaration<ItemReference> AttachTrait(ReferenceItemDeclaration<ItemReference> decl)
+        protected override IReferenceItemDeclaration<ItemReference> AttachTrait(IReferenceItemDeclaration<ItemReference> decl)
         {
             switch (decl.Id.Id)
             {

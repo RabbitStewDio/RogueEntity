@@ -26,6 +26,24 @@ namespace RogueEntity.Core.MapLoading.Builder
             return b;
         }
 
+        public static MapBuilder Clear(this MapBuilder b, MapLayer l, Rectangle3D r, IMapBuilderInstantiationLifter postProcessor = null)
+        {
+            var layerSlice = r.ToLayerSlice();
+            foreach (var z in r.Layers)
+            {
+                foreach (var pos in layerSlice.Contents)
+                {
+                    var position = Position.Of(l, pos.X, pos.Y, z);
+                    if (!b.Clear(position, postProcessor))
+                    {
+                        throw new MapBuilderException($"Unable to clear position {position}");
+                    }
+                }
+            }
+
+            return b;
+        }
+
         public static MapBuilder Fill(this MapBuilder b, MapLayer l, float z, Rectangle r, params ItemDeclarationId[] items)
         {
             return Fill(b, l, z, r, null, items);

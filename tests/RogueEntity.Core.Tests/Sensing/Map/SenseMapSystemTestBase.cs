@@ -81,7 +81,7 @@ namespace RogueEntity.Core.Tests.Sensing.Map
 
         protected abstract SensoryResistance<TSourceSense> Convert(float f);
 
-        protected abstract ReferenceItemDeclaration<ItemReference> AttachTrait(ReferenceItemDeclaration<ItemReference> decl);
+        protected abstract IReferenceItemDeclaration<ItemReference> AttachTrait(IReferenceItemDeclaration<ItemReference> decl);
 
         protected abstract SenseMappingSystemBase<TReceptorSense, TSourceSense, TSenseSourceDefinition> CreateSystem();
 

@@ -1,10 +1,8 @@
 using FluentAssertions;
 using NUnit.Framework;
-using RogueEntity.Core.MapLoading.Builder;
 using RogueEntity.Core.Meta.EntityKeys;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Tests.Fixtures;
-using RogueEntity.Core.Tests.Players;
 using RogueEntity.Core.Utils.DataViews;
 
 namespace RogueEntity.Core.Tests.Positioning.Grid

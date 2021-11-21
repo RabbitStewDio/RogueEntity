@@ -1,15 +1,20 @@
 using EnTTSharp.Entities;
+using JetBrains.Annotations;
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Api.Utils;
 using RogueEntity.Core.Infrastructure.Randomness;
 using RogueEntity.Core.MapLoading.MapRegions;
+using RogueEntity.Core.MapLoading.PlayerSpawning;
 using RogueEntity.Core.Players;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.MapLayers;
+using RogueEntity.Core.Positioning.SpatialQueries;
+using RogueEntity.Generator;
 using Serilog;
+using System;
 using System.Collections.Generic;
 
-namespace RogueEntity.Core.MapLoading.PlayerSpawning
+namespace RogueEntity.Core.MapLoading.FlatLevelMaps
 {
     /// <summary>
     ///   A spawn system that expects a map organized in z-layers.
@@ -28,94 +33,36 @@ namespace RogueEntity.Core.MapLoading.PlayerSpawning
     {
         static readonly ILogger Logger = SLog.ForContext<FlatLevelPlayerSpawnSystem<TItemId, TActorId>>();
 
+        readonly ISpatialQueryLookup spatialQuerySource;
         readonly IItemResolver<TActorId> actorResolver;
-        readonly IFlatLevelPlayerSpawnInformationSource spawnInfoSource;
         readonly IItemPlacementService<TActorId> placementService;
-        readonly IItemPlacementLocationService<TActorId> spatialQuery;
-        readonly Dictionary<int, List<(Position pos, TItemId entity)>> spawnPointsPerLevel;
+        readonly IItemPlacementLocationService<TActorId> freePlacementQuery;
         readonly Optional<IEntityRandomGeneratorSource> randomSource;
-        readonly IMapAvailabilityService mapLoaderService;
+        readonly IMapRegionTrackerService<int> mapLoaderService;
+        readonly IMapRegionMetaDataService<int> mapMetadataService;
+
         readonly List<(Position pos, TItemId entity)> filterBuffer;
+        readonly BufferList<SpatialQueryResult<TItemId, PlayerSpawnLocation>> buffer;
 
-        public FlatLevelPlayerSpawnSystem(IItemPlacementService<TActorId> placementService,
-                                          IItemPlacementLocationService<TActorId> spatialQuery,
-                                          IItemResolver<TActorId> actorResolver,
-                                          IFlatLevelPlayerSpawnInformationSource spawnInfoSource,
-                                          IMapAvailabilityService mapLoaderService,
-                                          Optional<IEntityRandomGeneratorSource> randomSource = default)
+        public FlatLevelPlayerSpawnSystem([NotNull] IItemPlacementService<TActorId> placementService,
+                                 [NotNull] IItemPlacementLocationService<TActorId> spatialQuery,
+                                 [NotNull] IItemResolver<TActorId> actorResolver,
+                                 [NotNull] IMapRegionTrackerService<int> mapLoaderService,
+                                 [NotNull] IMapRegionMetaDataService<int> mapMetadataService,
+                                 [NotNull] ISpatialQueryLookup spatialQuerySource,
+                                 Optional<IEntityRandomGeneratorSource> randomSource = default)
         {
-            this.mapLoaderService = mapLoaderService;
-            this.spatialQuery = spatialQuery;
-            this.actorResolver = actorResolver;
-            this.spawnInfoSource = spawnInfoSource;
-            this.placementService = placementService;
+            this.mapLoaderService = mapLoaderService ?? throw new ArgumentNullException(nameof(mapLoaderService));
+            this.spatialQuerySource = spatialQuerySource ?? throw new ArgumentNullException(nameof(spatialQuerySource));
+            this.mapMetadataService = mapMetadataService ?? throw new ArgumentNullException(nameof(mapMetadataService));
+            this.freePlacementQuery = spatialQuery ?? throw new ArgumentNullException(nameof(spatialQuery));
+            this.actorResolver = actorResolver ?? throw new ArgumentNullException(nameof(actorResolver));
+            this.placementService = placementService ?? throw new ArgumentNullException(nameof(placementService));
             this.randomSource = randomSource;
-            this.spawnPointsPerLevel = new Dictionary<int, List<(Position, TItemId)>>();
             this.filterBuffer = new List<(Position pos, TItemId entity)>();
+            this.buffer = new BufferList<SpatialQueryResult<TItemId, PlayerSpawnLocation>>();
         }
 
-        /// <summary>
-        ///   Invoked when a new player has spawned. This uses some built-in default
-        ///   to place the player in the first level as determined by the map loader's new-player-spawn-level property. 
-        /// </summary>
-        public void RequestLoadLevelFromNewPlayer(IEntityViewControl<TActorId> v,
-                                                  TActorId k,
-                                                  in PlayerTag player,
-                                                  in NewPlayerSpawnRequest newPlayerSpawnRequest)
-        {
-            if (!spawnInfoSource.TryCreateInitialLevelRequest(player, out var lvl))
-            {
-                Logger.Error("Unable to create initial level request for player {PlayerId}", player.Id);
-                return;
-            }
-            
-            var cmd = new ChangeLevelRequest(lvl);
-            v.AssignComponent(k, cmd);
-            v.RemoveComponent<NewPlayerSpawnRequest>(k);
-        }
-
-        public void StartCollectSpawnLocations()
-        {
-            foreach (var d in spawnPointsPerLevel)
-            {
-                d.Value.Clear();
-            }
-        }
-
-        public void CollectSpawnLocations<TPosition>(IEntityViewControl<TItemId> v,
-                                                     TItemId k,
-                                                     in TPosition pos,
-                                                     in PlayerSpawnLocation spawnLocation)
-            where TPosition : IPosition<TPosition>
-        {
-            if (pos.IsInvalid)
-            {
-                return;
-            }
-
-            if (!spawnPointsPerLevel.TryGetValue(pos.GridZ, out var positions))
-            {
-                positions = new List<(Position, TItemId)>();
-                spawnPointsPerLevel[pos.GridZ] = positions;
-            }
-
-            var spawnPos = Position.Of(MapLayer.Indeterminate, pos.X, pos.Y, pos.Z);
-            if (IsValidSpawnLocation(k, spawnPos, spawnLocation))
-            {
-                positions.Add((spawnPos, k));
-            }
-        }
-
-        /// <summary>
-        ///   Checks whether the given location is valid for the player. The default implementation
-        ///   makes a simple placement check with a radius of 1.
-        /// </summary>
-        protected virtual bool IsValidSpawnLocation(TItemId k,
-                                                    in Position pos,
-                                                    in PlayerSpawnLocation spawnLocation)
-        {
-            return true;
-        }
 
         /// <summary>
         ///   Spawn a player somewhere in a given level using existing spawn points as target locations.
@@ -130,17 +77,26 @@ namespace RogueEntity.Core.MapLoading.PlayerSpawning
                                 in ChangeLevelRequest cmd)
         {
             var level = cmd.Level;
-            if (!mapLoaderService.IsLevelReadyForSpawning(level))
+            if (!mapLoaderService.IsRegionLoaded(level))
             {
                 return;
             }
 
-            // find spawn points in current level
-            if (!spawnPointsPerLevel.TryGetValue(level, out var levelData) ||
-                levelData.Count == 0)
+            if (!spatialQuerySource.TryGetQuery(out ISpatialQuery<TItemId> query))
+            {
+                throw new ArgumentException("No query source for entity type " + typeof(TItemId).Name);
+            }
+
+            if (!mapMetadataService.TryGetRegionBounds(level, out var levelBounds))
+            {
+                Logger.Warning("There is no map data for z-level {Level}", level);
+                return;
+            }
+
+            query.QueryBox(levelBounds, buffer);
+            if (buffer.Count == 0)
             {
                 Logger.Warning("After loading map data for z-level {Level} no spawn points were detected", level);
-                // Error: Did not actually find a spawn location.
                 return;
             }
 
@@ -150,7 +106,7 @@ namespace RogueEntity.Core.MapLoading.PlayerSpawning
                 return;
             }
 
-            var l = FilterByAvailableSpace(levelData, mapLayerPref);
+            var l = FilterByAvailableSpace(buffer, mapLayerPref);
             if (randomSource.TryGetValue(out var value))
             {
                 if (PlaceRandomly(l, value, k, mapLayerPref.PreferredLayer))
@@ -169,16 +125,16 @@ namespace RogueEntity.Core.MapLoading.PlayerSpawning
             Logger.Warning("Unable to find any placement for player actor");
         }
 
-        List<(Position pos, TItemId entity)> FilterByAvailableSpace(List<(Position pos, TItemId entity)> raw,
+        List<(Position pos, TItemId entity)> FilterByAvailableSpace(BufferList<SpatialQueryResult<TItemId, PlayerSpawnLocation>> raw,
                                                                     in MapLayerPreference mapLayerPref)
         {
             filterBuffer.Clear();
             foreach (var valueTuple in raw)
             {
-                var pos = valueTuple.pos;
-                if (spatialQuery.TryFindEmptySpace(pos.WithLayer(mapLayerPref.PreferredLayer), out _, 1))
+                var pos = valueTuple.Position;
+                if (freePlacementQuery.TryFindEmptySpace(pos.WithLayer(mapLayerPref.PreferredLayer), out _, 1))
                 {
-                    filterBuffer.Add(valueTuple);
+                    filterBuffer.Add((valueTuple.Position, valueTuple.EntityId));
                 }
             }
 
@@ -252,9 +208,8 @@ namespace RogueEntity.Core.MapLoading.PlayerSpawning
                 return;
             }
 
-            if (!mapLoaderService.IsLevelPositionAvailable(level))
+            if (!mapLoaderService.IsRegionLoaded(level.GridZ))
             {
-                // Wait until the level has fully loaded. This is controlled elsewhere.
                 return;
             }
 

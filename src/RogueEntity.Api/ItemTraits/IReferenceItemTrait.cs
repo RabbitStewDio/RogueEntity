@@ -1,7 +1,6 @@
 ﻿using EnTTSharp.Entities;
-using RogueEntity.Api.ItemTraits;
 
-namespace RogueEntity.Core.Meta.Items
+namespace RogueEntity.Api.ItemTraits
 {
     public interface IReferenceItemTrait<TItemId> : IItemTrait where TItemId : IEntityKey
     {

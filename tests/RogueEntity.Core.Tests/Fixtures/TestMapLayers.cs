@@ -24,7 +24,7 @@ namespace RogueEntity.Core.Tests.Fixtures
         {
             Registry = new MapLayerRegistry();
             Indeterminate = Registry.Indeterminate;
-            One = Registry.Create("Layer 1 (Floor)");
+            One = Registry.Create("Layer 1 (Ground)");
             Two = Registry.Create("Layer 2 (Structure)");
             Three = Registry.Create("Layer 3 (Items)");
             Four = Registry.Create("Layer 4 (Actors)");

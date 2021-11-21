@@ -6,5 +6,7 @@ namespace RogueEntity.Api.ItemTraits
     {
         void Apply(IEntityViewControl<TItemId> v, TItemId k);
         void Initialize(IEntityViewControl<TItemId> v, TItemId k);
+        IReferenceItemDeclaration<TItemId> WithTrait(IReferenceItemTrait<TItemId> trait);
+        IReferenceItemDeclaration<TItemId> WithoutTrait<TTrait>();
     }
 }

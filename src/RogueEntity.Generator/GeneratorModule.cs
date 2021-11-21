@@ -5,9 +5,9 @@ using RogueEntity.Api.ItemTraits;
 using RogueEntity.Api.Modules;
 using RogueEntity.Api.Modules.Attributes;
 using RogueEntity.Core.Inputs.Commands;
+using RogueEntity.Core.MapLoading.FlatLevelMaps;
 using RogueEntity.Core.MapLoading.MapRegions;
 using RogueEntity.Core.Positioning;
-using RogueEntity.Generator.Commands;
 
 namespace RogueEntity.Generator
 {
@@ -30,6 +30,8 @@ namespace RogueEntity.Generator
             Description = "Provides services to generate and load maps";
             IsFrameworkModule = true;
 
+            DeclareDependencies(ModuleDependency.Of(FlatLevelMapModule.ModuleId));
+
             this.RequireRole(ChangeLevelCommandRole)
                 .WithRequiredRole(PositionModule.PositionedRole)
                 .WithRequiredRole(MapLoadingModule.ControlLevelLoadingRole);
@@ -44,7 +46,7 @@ namespace RogueEntity.Generator
 
         void RegisterInitializeMapLoader(in ModuleInitializationParameter initParameter, IGameLoopSystemRegistration context)
         {
-            if (initParameter.ServiceResolver.TryResolve(out IMapLevelMetaDataService mds) &&
+            if (initParameter.ServiceResolver.TryResolve(out IMapRegionMetaDataService<int> mds) &&
                 mds is StaticMapLevelDataSource ds)
             {
                 ds.Initialize();
@@ -67,8 +69,9 @@ namespace RogueEntity.Generator
             where TActorId : IEntityKey
         {
             var sr = initParameter.ServiceResolver;
-            var sys = new ChangeLevelCommandSystem<TActorId>(sr.Resolve<IMapLevelMetaDataService>(),
-                                                             sr.Resolve<IItemResolver<TActorId>>());
+            var sys = new ChangeLevelCommandSystem<TActorId>(sr.Resolve<IMapRegionMetaDataService<int>>(),
+                                                             sr.Resolve<IItemResolver<TActorId>>(),
+                                                             sr.Resolve<IItemPlacementService<TActorId>>());
 
             var system = registry.BuildSystem()
                                  .WithoutContext()

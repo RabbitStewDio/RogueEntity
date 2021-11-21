@@ -1,21 +1,20 @@
 using EnTTSharp.Entities.Attributes;
 using MessagePack;
-using System;
 using System.Runtime.Serialization;
 
-namespace RogueEntity.Generator.Commands
+namespace RogueEntity.Core.MapLoading.FlatLevelMaps
 {
-    [EntityComponent(EntityConstructor.NonConstructable)]
+    [EntityComponent]
     [MessagePackObject]
-    [Serializable]
     [DataContract]
-    public readonly struct ChangeLevelCommand
+    public readonly struct EvictLevelRequest
     {
-        [DataMember]
         [Key(0)]
+        [DataMember(Order=0)]
         public readonly int Level;
 
-        public ChangeLevelCommand(int level)
+        [SerializationConstructor]
+        public EvictLevelRequest(int level)
         {
             Level = level;
         }

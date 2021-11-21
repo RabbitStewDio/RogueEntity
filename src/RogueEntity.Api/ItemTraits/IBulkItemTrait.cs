@@ -1,6 +1,4 @@
-﻿using RogueEntity.Api.ItemTraits;
-
-namespace RogueEntity.Core.Meta.Items
+﻿namespace RogueEntity.Api.ItemTraits
 {
     public interface IBulkItemTrait<TItemId> : IItemTrait
     {

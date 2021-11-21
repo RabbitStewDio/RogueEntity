@@ -1,13 +1,13 @@
 using NUnit.Framework;
 using RogueEntity.Api.Modules;
 using RogueEntity.Core.MapLoading.Builder;
+using RogueEntity.Core.MapLoading.FlatLevelMaps;
 using RogueEntity.Core.MapLoading.MapRegions;
-using RogueEntity.Core.MapLoading.PlayerSpawning;
 using RogueEntity.Core.Meta.EntityKeys;
 using RogueEntity.Core.Movement.GridMovement;
 using RogueEntity.Core.Players;
 using RogueEntity.Core.Positioning;
-using RogueEntity.Core.Tests.Players;
+using RogueEntity.Generator;
 
 namespace RogueEntity.Core.Tests.Fixtures
 {
@@ -27,9 +27,7 @@ namespace RogueEntity.Core.Tests.Fixtures
         public virtual void SetUp()
         {
             var tm = new TestModuleBase(GetType().Name);
-            ConfigureTestModule(tm);
-
-            tm.AddLateModuleInitializer((mip, _) =>
+            tm.AddModuleInitializer((mip, _) =>
             {
                 var mapService = new StaticTestMapService(mip.ServiceResolver.ResolveToReference<MapBuilder>(), 0);
                 PrepareMapService(mapService);
@@ -37,9 +35,10 @@ namespace RogueEntity.Core.Tests.Fixtures
                 mip.ServiceResolver.Store(mapService);
                 mip.ServiceResolver.Store<IFlatLevelPlayerSpawnInformationSource>(mapService);
                 mip.ServiceResolver.Store<IMapRegionLoadingStrategy<int>>(mapService);
+                mip.ServiceResolver.Store<IMapRegionMetaDataService<int>>(mapService);
             });
             
-
+            ConfigureTestModule(tm);
 
             GameFixture = new GameFixture<ActorReference>();
             GameFixture.AddExtraModule(tm);

@@ -1,7 +1,7 @@
 using System;
 using NUnit.Framework;
+using RogueEntity.Api.ItemTraits;
 using RogueEntity.Api.Time;
-using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Sensing;
 using RogueEntity.Core.Sensing.Common.Physics;
 using RogueEntity.Core.Sensing.Map;
@@ -87,7 +87,7 @@ namespace RogueEntity.Core.Tests.Sensing.Map.Light
             return new SensoryResistance<VisionSense>(Percentage.Of(f));
         }
 
-        protected override ReferenceItemDeclaration<ItemReference> AttachTrait(ReferenceItemDeclaration<ItemReference> decl)
+        protected override IReferenceItemDeclaration<ItemReference> AttachTrait(IReferenceItemDeclaration<ItemReference> decl)
         {
             switch (decl.Id.Id)
             {

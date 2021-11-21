@@ -1,4 +1,3 @@
-using EnTTSharp.Entities;
 using System.Collections.Generic;
 
 namespace RogueEntity.Api.ItemTraits

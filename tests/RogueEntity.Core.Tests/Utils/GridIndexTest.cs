@@ -3,7 +3,6 @@ using NUnit.Framework;
 using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.DataViews;
 using RogueEntity.Core.Utils.SpatialIndex;
-using System;
 
 namespace RogueEntity.Core.Tests.Utils
 {

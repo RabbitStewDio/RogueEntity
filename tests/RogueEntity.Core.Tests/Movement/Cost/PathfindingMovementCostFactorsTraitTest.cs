@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using FluentAssertions;
 using NUnit.Framework;
+using RogueEntity.Api.ItemTraits;
 using RogueEntity.Core.Meta.EntityKeys;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Movement.Cost;
@@ -38,13 +39,13 @@ namespace RogueEntity.Core.Tests.Movement.Cost
             return new AggregateMovementCostFactorsTrait<ItemReference>();
         }
 
-        protected override BulkItemDeclaration<ItemReference> CreateBulkItemDeclaration(IBulkItemTrait<ItemReference> bulkTrait)
+        protected override IBulkItemDeclaration<ItemReference> CreateBulkItemDeclaration(IBulkItemTrait<ItemReference> bulkTrait)
         {
             return base.CreateBulkItemDeclaration(bulkTrait)
                        .WithTrait(new MovementPointCostBulkItemTrait<ItemReference, WalkingMovement>(WalkingMovement.Instance, DistanceCalculation.Chebyshev, 10, 0));
         }
 
-        protected override ReferenceItemDeclaration<ItemReference> CreateReferenceItemDeclaration(IReferenceItemTrait<ItemReference> refTrait)
+        protected override IReferenceItemDeclaration<ItemReference> CreateReferenceItemDeclaration(IReferenceItemTrait<ItemReference> refTrait)
         {
             return base.CreateReferenceItemDeclaration(refTrait)
                        .WithTrait(new MovementPointCostReferenceItemTrait<ItemReference, WalkingMovement>(WalkingMovement.Instance, DistanceCalculation.Chebyshev, 10, 0));

@@ -1,6 +1,7 @@
 using System;
 using FluentAssertions;
 using NUnit.Framework;
+using RogueEntity.Api.ItemTraits;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Sensing;
@@ -46,7 +47,7 @@ namespace RogueEntity.Core.Tests.Sensing.Sources.Touch
 
         TouchSenseReceptorPhysicsConfiguration physics;
 
-        protected override ReferenceItemDeclaration<ItemReference> AttachTrait(ReferenceItemDeclaration<ItemReference> decl)
+        protected override IReferenceItemDeclaration<ItemReference> AttachTrait(IReferenceItemDeclaration<ItemReference> decl)
         {
             switch (decl.Id.Id)
             {

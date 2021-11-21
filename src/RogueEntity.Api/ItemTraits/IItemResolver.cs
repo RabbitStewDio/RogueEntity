@@ -1,6 +1,4 @@
-﻿using EnTTSharp.Entities;
-
-namespace RogueEntity.Api.ItemTraits
+﻿namespace RogueEntity.Api.ItemTraits
 {
     public interface IItemResolver<TItemId>
     {

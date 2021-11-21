@@ -1,7 +1,7 @@
 using Microsoft.Xna.Framework;
 using RogueEntity.Api.Utils;
+using RogueEntity.Core.MapLoading.FlatLevelMaps;
 using RogueEntity.Core.Runtime;
-using RogueEntity.Generator.Commands;
 using RogueEntity.SadCons;
 using RogueEntity.Samples.BoxPusher.Core;
 using RogueEntity.Samples.BoxPusher.Core.Commands;

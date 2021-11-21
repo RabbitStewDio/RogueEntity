@@ -1,17 +1,15 @@
 using FluentAssertions;
 using NUnit.Framework;
 using RogueEntity.Core.MapLoading.MapRegions;
-using RogueEntity.Core.Meta.EntityKeys;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Tests.Fixtures;
-using RogueEntity.Core.Tests.Players;
 
 namespace RogueEntity.Core.Tests.MapLoading.MapRegions
 {
     [TestFixture]
     public class MapRegionModuleTest: BasicGameIntegrationTestBase
     {
-        IMapRegionLoaderService<int> regionLoader;
+        IMapRegionTrackerService<int> regionTracker;
 
         protected override void PrepareMapService(StaticTestMapService mapService)
         {
@@ -23,9 +21,8 @@ namespace RogueEntity.Core.Tests.MapLoading.MapRegions
         public override void SetUp()
         {
             base.SetUp();
-            GameFixture.ServiceResolver.TryResolve(out IMapRegionLoaderService<int> regionLoader).Should().BeTrue();
-            this.regionLoader = regionLoader;
-
+            GameFixture.ServiceResolver.TryResolve(out IMapRegionTrackerService<int> regionLoader).Should().BeTrue();
+            this.regionTracker = regionLoader;
         }
 
         [Test]
@@ -37,17 +34,17 @@ namespace RogueEntity.Core.Tests.MapLoading.MapRegions
         [Test]
         public void RegionLoading()
         {
-            regionLoader.IsRegionLoaded(0).Should().BeFalse();
-            regionLoader.IsRegionLoaded(1).Should().BeFalse();
+            regionTracker.IsRegionLoaded(0).Should().BeFalse();
+            regionTracker.IsRegionLoaded(1).Should().BeFalse();
 
-            regionLoader.RequestImmediateLoading(0);
-            var buffer = regionLoader.QueryPendingRequests(MapRegionLoadingStatus.ImmediateLoadRequested);
+            regionTracker.RequestImmediateLoading(0);
+            var buffer = regionTracker.QueryActiveRequests(MapRegionStatus.ImmediateLoadRequested);
             buffer.Count.Should().Be(1);
             buffer[0].RegionKey.Should().Be(0);
             buffer[0].MarkLoaded();
 
-            regionLoader.IsRegionLoaded(0).Should().BeTrue();
-            regionLoader.IsRegionLoaded(1).Should().BeFalse();
+            regionTracker.IsRegionLoaded(0).Should().BeTrue();
+            regionTracker.IsRegionLoaded(1).Should().BeFalse();
         }
 
         [Test]
@@ -55,10 +52,10 @@ namespace RogueEntity.Core.Tests.MapLoading.MapRegions
         {
             RegionLoading();
 
-            regionLoader.Initialize();
+            regionTracker.Initialize();
             
-            regionLoader.IsRegionLoaded(0).Should().BeFalse();
-            regionLoader.IsRegionLoaded(1).Should().BeFalse();
+            regionTracker.IsRegionLoaded(0).Should().BeFalse();
+            regionTracker.IsRegionLoaded(1).Should().BeFalse();
         }
     }
 }

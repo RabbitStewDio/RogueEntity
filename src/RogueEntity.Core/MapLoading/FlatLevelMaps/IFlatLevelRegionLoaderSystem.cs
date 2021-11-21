@@ -1,8 +1,9 @@
 using EnTTSharp.Entities;
+using RogueEntity.Core.MapLoading.MapRegions;
 
-namespace RogueEntity.Core.MapLoading.MapRegions
+namespace RogueEntity.Core.MapLoading.FlatLevelMaps
 {
-    public interface IMapRegionSystem
+    public interface IFlatLevelRegionRequestHandlerSystem
     {
         /// <summary>
         ///   Invoked when a existing player requests to be moved to a different level.
@@ -25,9 +26,23 @@ namespace RogueEntity.Core.MapLoading.MapRegions
                                                                 in ChangeLevelPositionRequest cmd)
             where TItemId : IEntityKey;
 
+    }
+    
+    public interface IFlatLevelRegionLoaderSystem
+    {
         /// <summary>
         ///    A basic driver function that loads the next requested chunk.
         /// </summary>
         void LoadChunks();
+    }
+
+    public interface IMapRegionEvictionSystem
+    {
+
+        /// <summary>
+        ///    A basic driver function that loads the next requested chunk.
+        /// </summary>
+        void EvictChunks();
+        
     }
 }

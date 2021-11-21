@@ -3,7 +3,7 @@ using RogueEntity.Api.Modules.Attributes;
 using System;
 using System.Collections.Generic;
 
-namespace RogueEntity.Core.Tests.Players
+namespace RogueEntity.Core.Tests.Fixtures
 {
     public class TestModuleBase : ModuleBase
     {

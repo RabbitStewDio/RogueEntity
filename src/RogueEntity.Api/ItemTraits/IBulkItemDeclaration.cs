@@ -6,5 +6,7 @@ namespace RogueEntity.Api.ItemTraits
         where TItemId: IEntityKey
     {
         TItemId Initialize(TItemId itemReference);
+        IBulkItemDeclaration<TItemId> WithTrait(IBulkItemTrait<TItemId> trait);
+        IBulkItemDeclaration<TItemId> WithoutTrait<TTrait>();
     }
 }

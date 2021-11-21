@@ -26,11 +26,14 @@ namespace RogueEntity.Core.MovementPlaning.Goals
         {
             var receiverBuffer = GoalSet.PrepareBuffer(receiver);
             
-            query.Query2D(origin, range, dc, buffer);
+            query.QuerySphere(origin, range, dc, buffer);
             for (var i = 0; i < buffer.Count; i++)
             {
                 var c = buffer[i];
-                receiverBuffer.Add(c.Position, c.Component.Strength);
+                if (c.Position.GridZ == origin.GridZ)
+                {
+                    receiverBuffer.Add(c.Position, c.Component.Strength);
+                }
             }
             
             return receiverBuffer;

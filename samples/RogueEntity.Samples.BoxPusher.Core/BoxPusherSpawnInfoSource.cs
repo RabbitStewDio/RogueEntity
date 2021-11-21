@@ -1,5 +1,5 @@
 using JetBrains.Annotations;
-using RogueEntity.Core.MapLoading.MapRegions;
+using RogueEntity.Core.MapLoading.FlatLevelMaps;
 using RogueEntity.Core.MapLoading.PlayerSpawning;
 using RogueEntity.Core.Players;
 using RogueEntity.Samples.BoxPusher.Core.ItemTraits;

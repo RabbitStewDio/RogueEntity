@@ -11,13 +11,13 @@ namespace RogueEntity.Core.MapLoading.Builder
 {
     public class MapBuilder
     {
-        readonly Dictionary<byte, EntityMapBuilderLayer> layerProcessors;
+        readonly Dictionary<byte, IMapBuilderLayer> layerProcessors;
         readonly List<MapLayer> mapLayers;
 
         public MapBuilder()
         {
             mapLayers = new List<MapLayer>();
-            layerProcessors = new Dictionary<byte, EntityMapBuilderLayer>();
+            layerProcessors = new Dictionary<byte, IMapBuilderLayer>();
         }
 
         public bool TryGetItemRegistry(MapLayer layer, out IItemRegistry reg)
@@ -79,9 +79,24 @@ namespace RogueEntity.Core.MapLoading.Builder
                 return false;
             }
 
+            // Indeterminate layer
+            if (pos.LayerId == 0)
+            {
+                var result = true;
+                foreach (var l in layerProcessors)
+                {
+                    if (!l.Value.Clear(pos.WithLayer(l.Key), postProcessor))
+                    {
+                        result = false;
+                    }
+                }
+
+                return result;
+            }
+            
             if (!layerProcessors.TryGetValue(pos.LayerId, out var layer))
             {
-                return false;
+                return true;
             }
 
             return layer.Clear(pos, postProcessor);

@@ -1,6 +1,6 @@
 using RogueEntity.Core.Players;
 
-namespace RogueEntity.Core.MapLoading.PlayerSpawning
+namespace RogueEntity.Core.MapLoading.FlatLevelMaps
 {
     public interface IFlatLevelPlayerSpawnInformationSource
     {

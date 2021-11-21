@@ -1,6 +1,7 @@
 using EnTTSharp.Entities;
 using RogueEntity.Core.Inputs.Commands;
 using RogueEntity.Core.Inventory;
+using RogueEntity.Core.MapLoading.FlatLevelMaps;
 using RogueEntity.Core.MapLoading.PlayerSpawning;
 using RogueEntity.Core.Meta.ItemBuilder;
 using RogueEntity.Core.Meta.Naming;
@@ -16,8 +17,6 @@ using RogueEntity.Core.Sensing.Receptors.Light;
 using RogueEntity.Core.Sensing.Resistance;
 using RogueEntity.Core.Sensing.Sources.Light;
 using RogueEntity.Core.Utils;
-using RogueEntity.Generator;
-using RogueEntity.Generator.Commands;
 using RogueEntity.Samples.BoxPusher.Core.Commands;
 using RogueEntity.Samples.BoxPusher.Core.ItemTraits;
 using static RogueEntity.Core.Movement.CostModifier.MovementCostModifiers;

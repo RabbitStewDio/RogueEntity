@@ -3,7 +3,7 @@ using RogueEntity.Core.Positioning;
 
 namespace RogueEntity.Core.MapLoading.Builder
 {
-    public abstract class EntityMapBuilderLayer
+    public interface IMapBuilderLayer
     {
         public abstract IItemRegistry ItemRegistry { get; }
         public abstract bool Instantiate(ItemDeclarationId item, Position pos, IMapBuilderInstantiationLifter postProc = null);

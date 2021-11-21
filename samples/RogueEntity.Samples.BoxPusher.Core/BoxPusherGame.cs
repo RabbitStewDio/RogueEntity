@@ -23,7 +23,7 @@ namespace RogueEntity.Samples.BoxPusher.Core
         readonly DirectoryCatalog pluginCatalogue;
 
         public IPlayerProfileManager<BoxPusherPlayerProfile> ProfileManager { get; private set; }
-        public IMapRegionLoaderService<int> LevelLoader { get; private set; }
+        public IMapRegionTrackerService<int> LevelLoader { get; private set; }
         public IItemResolver<ActorReference> ActorResolver { get; private set; }
         public BoxPusherPlayerStatusService StatusService { get; private set; }
         
@@ -37,7 +37,7 @@ namespace RogueEntity.Samples.BoxPusher.Core
         void OnGameInitialized(object sender, EventArgs e)
         {
             ProfileManager = ServiceResolver.Resolve<IPlayerProfileManager<BoxPusherPlayerProfile>>();
-            LevelLoader = ServiceResolver.Resolve<IMapRegionLoaderService<int>>();
+            LevelLoader = ServiceResolver.Resolve<IMapRegionTrackerService<int>>();
             ActorResolver = ServiceResolver.Resolve<IItemResolver<ActorReference>>();
             StatusService = new BoxPusherPlayerStatusService(this, ActorResolver);
         }

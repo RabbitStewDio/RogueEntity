@@ -1,6 +1,6 @@
 namespace RogueEntity.Core.MapLoading.MapRegions
 {
-    public enum MapRegionLoadingStrategyResult
+    public enum MapRegionProcessingResult
     {
         /// <summary>
         ///    The chunk will be loaded, give it more time. Try your request again.

@@ -1,4 +1,6 @@
+using RogueEntity.Api.ItemTraits;
 using RogueEntity.Api.Modules;
+using RogueEntity.Core.Meta.EntityKeys;
 using RogueEntity.Core.Runtime;
 using System;
 using System.Collections.Generic;
@@ -39,5 +41,16 @@ namespace RogueEntity.Core.Tests.Fixtures
 
             return ms;
         }
+        
+
+        public void AdvanceFrame(int frameTime = 1)
+        {
+            var tickIncrement = GameLoop.TimeSource.FixedTimeStep;
+            var currentTime = GameLoop.TimeSource.CurrentTime;
+            Update(currentTime + TimeSpan.FromTicks(tickIncrement.Ticks * frameTime));
+        }
+
+        public IItemResolver<ActorReference> ActorResolver => ServiceResolver.Resolve<IItemResolver<ActorReference>>();
+        public IItemResolver<ItemReference> ItemResolver => ServiceResolver.Resolve<IItemResolver<ItemReference>>();
     }
 }

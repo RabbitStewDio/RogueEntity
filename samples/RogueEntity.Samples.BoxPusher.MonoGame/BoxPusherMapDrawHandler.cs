@@ -15,7 +15,7 @@ namespace RogueEntity.Samples.BoxPusher.MonoGame
     {
         readonly BoxPusherGame game;
         readonly BoxPusherInputState sharedState;
-        IMapLevelMetaDataService metaDataService;
+        IMapRegionMetaDataService<int> metaDataService;
         readonly BasicMapRenderer br;
 
         public BoxPusherMapDrawHandler(BoxPusherGame game, BoxPusherInputState sharedState)
@@ -74,7 +74,7 @@ namespace RogueEntity.Samples.BoxPusher.MonoGame
                                                       .WithForeground(Color.Yellow)
                                                       .WithBackground(Color.Black)));
 
-            metaDataService = this.game.ServiceResolver.Resolve<IMapLevelMetaDataService>();
+            metaDataService = this.game.ServiceResolver.Resolve<IMapRegionMetaDataService<int>>();
             this.game.GameInitialized -= OnGameInitialized;
         }
 
@@ -97,9 +97,9 @@ namespace RogueEntity.Samples.BoxPusher.MonoGame
                 return;
             }
 
-            if (metaDataService.TryGetMapBounds(pos.GridZ, out var m))
+            if (metaDataService.TryGetRegionBounds(pos.GridZ, out var m))
             {
-                var center = m.Center;
+                var center = m.ToLayerSlice().Center;
                 br.Render(pos.WithPosition(center.X, center.Y), console);
             }
             else

@@ -1,57 +1,57 @@
 namespace RogueEntity.Core.MapLoading.MapRegions
 {
-    public class MapRegionLoadRequestStatus<TChunkKey>: IMapRegionLoadRequestProcess<TChunkKey>
+    public class MapRegionProcessingRequestStatus<TChunkKey>: IMapRegionProcessingRequestHandle<TChunkKey>
     {
         public TChunkKey RegionKey { get; }
-        public MapRegionLoadingStatus Status { get; private set; }
+        public MapRegionStatus Status { get; private set; }
 
-        public MapRegionLoadRequestStatus(TChunkKey regionKey)
+        public MapRegionProcessingRequestStatus(TChunkKey regionKey)
         {
             RegionKey = regionKey;
         }
 
         public void RequestLazyLoading()
         {
-            if (Status == MapRegionLoadingStatus.Unloaded)
+            if (Status == MapRegionStatus.Unloaded)
             {
-                Status = MapRegionLoadingStatus.LazyLoadRequested;
+                Status = MapRegionStatus.LazyLoadRequested;
             }
         }
 
         public void RequestImmediateLoading()
         {
-            if (Status is MapRegionLoadingStatus.Unloaded or MapRegionLoadingStatus.LazyLoadRequested)
+            if (Status is MapRegionStatus.Unloaded or MapRegionStatus.LazyLoadRequested)
             {
-                Status = MapRegionLoadingStatus.ImmediateLoadRequested;
+                Status = MapRegionStatus.ImmediateLoadRequested;
             }
         }
 
         public void MarkFailed()
         {
-            Status = MapRegionLoadingStatus.Error;
+            Status = MapRegionStatus.Error;
         }
 
         public void MarkLoaded()
         {
-            Status = MapRegionLoadingStatus.Loaded;
+            Status = MapRegionStatus.Loaded;
         }
 
         public void MarkUnloaded()
         {
-            Status = MapRegionLoadingStatus.Unloaded;
+            Status = MapRegionStatus.Unloaded;
         }
 
         public void MarkInvalid()
         {
-            Status = MapRegionLoadingStatus.Invalid;
+            Status = MapRegionStatus.Invalid;
         }
 
         public void RequestUnloading()
         {
             Status = Status switch
             {
-                MapRegionLoadingStatus.Loaded => MapRegionLoadingStatus.UnloadingRequested,
-                MapRegionLoadingStatus.ImmediateLoadRequested or MapRegionLoadingStatus.LazyLoadRequested => MapRegionLoadingStatus.Unloaded,
+                MapRegionStatus.Loaded => MapRegionStatus.UnloadingRequested,
+                MapRegionStatus.ImmediateLoadRequested or MapRegionStatus.LazyLoadRequested => MapRegionStatus.Unloaded,
                 _ => Status
             };
         }

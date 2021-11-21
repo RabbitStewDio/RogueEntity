@@ -6,6 +6,7 @@ using RogueEntity.Api.Utils;
 using RogueEntity.Core.Positioning.Algorithms;
 using RogueEntity.Core.Positioning.Continuous;
 using RogueEntity.Core.Positioning.Grid;
+using RogueEntity.Core.Utils;
 
 namespace RogueEntity.Core.Positioning.SpatialQueries
 {
@@ -21,42 +22,38 @@ namespace RogueEntity.Core.Positioning.SpatialQueries
             this.entries = new ConcurrentDictionary<CachedEntryKey, IDisposable>();
         }
 
-
-        public BufferList<SpatialQueryResult<TItemId, TComponent>> Query2D<TComponent>(in Position pos,
-                                                                                       float distance = 1,
-                                                                                       DistanceCalculation d = DistanceCalculation.Euclid,
-                                                                                       BufferList<SpatialQueryResult<TItemId, TComponent>> buffer = null)
+        public BufferList<SpatialQueryResult<TItemId, TComponent>> QuerySphere<TComponent>(in Position pos,
+                                                                                           float distance = 1,
+                                                                                           DistanceCalculation d = DistanceCalculation.Euclid,
+                                                                                           BufferList<SpatialQueryResult<TItemId, TComponent>> buffer = null)
         {
             BufferList.PrepareBuffer(buffer);
 
             if (TryGetView<EntityGridPosition, TComponent>(out var gridView))
             {
-                gridView.Invoke2D(buffer, pos, distance, d);
+                gridView.InvokeSphere(buffer, pos, distance, d);
             }
 
             if (TryGetView<ContinuousMapPosition, TComponent>(out var conView))
             {
-                conView.Invoke2D(buffer, pos, distance, d);
+                conView.InvokeSphere(buffer, pos, distance, d);
             }
 
             return buffer;
         }
 
-        public BufferList<SpatialQueryResult<TItemId, TComponent>> Query3D<TComponent>(in Position pos,
-                                                                                       float distance = 1,
-                                                                                       DistanceCalculation d = DistanceCalculation.Euclid,
-                                                                                       BufferList<SpatialQueryResult<TItemId, TComponent>> buffer = null)
+        public BufferList<SpatialQueryResult<TItemId, TComponent>> QueryBox<TComponent>(in Rectangle3D queryRegion, BufferList<SpatialQueryResult<TItemId, TComponent>> buffer = null)
         {
             BufferList.PrepareBuffer(buffer);
 
             if (TryGetView<EntityGridPosition, TComponent>(out var gridView))
             {
-                gridView.Invoke3D(buffer, pos, distance, d);
+                gridView.InvokeBox(buffer, queryRegion);
             }
 
             if (TryGetView<ContinuousMapPosition, TComponent>(out var conView))
             {
-                conView.Invoke3D(buffer, pos, distance, d);
+                conView.InvokeBox(buffer, queryRegion);
             }
 
             return buffer;
@@ -75,8 +72,8 @@ namespace RogueEntity.Core.Positioning.SpatialQueries
         {
             readonly EntityRegistry<TItemId> registry;
             readonly IEntityView<TItemId, TPosition, TComponent> view;
-            readonly ViewDelegates.ApplyWithContext<TItemId, Context, TPosition, TComponent> add2D;
-            readonly ViewDelegates.ApplyWithContext<TItemId, Context, TPosition, TComponent> add3D;
+            readonly ViewDelegates.ApplyWithContext<TItemId, SphereContext, TPosition, TComponent> addSphereResult;
+            readonly ViewDelegates.ApplyWithContext<TItemId, BoxContext, TPosition, TComponent> addBoxResult;
 
             public CachedEntry(EntityRegistry<TItemId> registry)
             {
@@ -87,55 +84,29 @@ namespace RogueEntity.Core.Positioning.SpatialQueries
                     view = this.registry.PersistentView<TPosition, TComponent>();
                 }
 
-                this.add2D = AddResult2D;
-                this.add3D = AddResult3D;
+                this.addSphereResult = AddResult;
+                this.addBoxResult = AddResult;
             }
 
-            public void Invoke2D(BufferList<SpatialQueryResult<TItemId, TComponent>> receiver,
-                                 in Position pos,
-                                 float distance = 1,
-                                 DistanceCalculation d = DistanceCalculation.Euclid)
+            public void InvokeSphere(BufferList<SpatialQueryResult<TItemId, TComponent>> receiver,
+                                     in Position pos,
+                                     float distance = 1,
+                                     DistanceCalculation d = DistanceCalculation.Euclid)
             {
-                view?.ApplyWithContext(new Context(receiver, pos, distance, d), add2D);
+                view?.ApplyWithContext(new SphereContext(receiver, pos, distance, d), addSphereResult);
             }
 
-            public void Invoke3D(BufferList<SpatialQueryResult<TItemId, TComponent>> receiver,
-                                 in Position pos,
-                                 float distance = 1,
-                                 DistanceCalculation d = DistanceCalculation.Euclid)
+            public void InvokeBox(BufferList<SpatialQueryResult<TItemId, TComponent>> receiver,
+                                     in Rectangle3D bounds)
             {
-                view?.ApplyWithContext(new Context(receiver, pos, distance, d), add3D);
+                view?.ApplyWithContext(new BoxContext(receiver, bounds), addBoxResult);
             }
 
-            static void AddResult2D(IEntityViewControl<TItemId> v,
-                                    Context context,
-                                    TItemId k,
-                                    in TPosition pos,
-                                    in TComponent c)
-            {
-                if (pos.IsInvalid)
-                {
-                    return;
-                }
-
-                if (pos.GridZ != context.Origin.GridZ)
-                {
-                    return;
-                }
-
-                var localPos = Position.From(pos);
-                var dist = context.DistanceCalculator.Calculate(localPos, context.Origin);
-                if (dist <= context.Distance)
-                {
-                    context.Receiver.Add(new SpatialQueryResult<TItemId, TComponent>(k, localPos, c, (float)dist));
-                }
-            }
-
-            static void AddResult3D(IEntityViewControl<TItemId> v,
-                                    Context context,
-                                    TItemId k,
-                                    in TPosition pos,
-                                    in TComponent c)
+            static void AddResult(IEntityViewControl<TItemId> v,
+                                  SphereContext context,
+                                  TItemId k,
+                                  in TPosition pos,
+                                  in TComponent c)
             {
                 if (pos.IsInvalid)
                 {
@@ -150,17 +121,46 @@ namespace RogueEntity.Core.Positioning.SpatialQueries
                 }
             }
 
-            readonly struct Context
+            static void AddResult(IEntityViewControl<TItemId> v,
+                                  BoxContext context,
+                                  TItemId k,
+                                  in TPosition pos,
+                                  in TComponent c)
+            {
+                if (pos.IsInvalid)
+                {
+                    return;
+                }
+
+                if (context.Region.Contains(pos.X, pos.Y, pos.Z))
+                {
+                    context.Receiver.Add(new SpatialQueryResult<TItemId, TComponent>(k, Position.From(pos), c, 0));
+                }
+            }
+
+            readonly struct BoxContext
+            {
+                public readonly BufferList<SpatialQueryResult<TItemId, TComponent>> Receiver;
+                public readonly Rectangle3D Region;
+
+                public BoxContext(BufferList<SpatialQueryResult<TItemId, TComponent>> receiver, Rectangle3D region)
+                {
+                    Receiver = receiver;
+                    Region = region;
+                }
+            }
+
+            readonly struct SphereContext
             {
                 public readonly BufferList<SpatialQueryResult<TItemId, TComponent>> Receiver;
                 public readonly Position Origin;
                 public readonly DistanceCalculation DistanceCalculator;
                 public readonly float Distance;
 
-                public Context(BufferList<SpatialQueryResult<TItemId, TComponent>> receiver,
-                               in Position origin,
-                               float distance,
-                               DistanceCalculation distanceCalculator)
+                public SphereContext(BufferList<SpatialQueryResult<TItemId, TComponent>> receiver,
+                                     in Position origin,
+                                     float distance,
+                                     DistanceCalculation distanceCalculator)
                 {
                     Receiver = receiver;
                     Origin = origin;
