@@ -4,7 +4,6 @@ using RogueEntity.Api.ItemTraits;
 using RogueEntity.Api.Modules;
 using RogueEntity.Api.Modules.Attributes;
 using RogueEntity.Core.Positioning.SpatialQueries;
-using RogueEntity.Core.Utils.DataViews;
 
 namespace RogueEntity.Core.Positioning
 {

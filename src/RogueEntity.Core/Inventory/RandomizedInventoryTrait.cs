@@ -4,7 +4,6 @@ using RogueEntity.Api.ItemTraits;
 using RogueEntity.Api.Utils;
 using RogueEntity.Core.Infrastructure.Randomness;
 using RogueEntity.Core.Meta.ItemBuilder;
-using RogueEntity.Core.Meta.Items;
 
 namespace RogueEntity.Core.Inventory
 {

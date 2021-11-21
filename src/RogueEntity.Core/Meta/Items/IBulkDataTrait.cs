@@ -1,4 +1,6 @@
-﻿namespace RogueEntity.Core.Meta.Items
+﻿using RogueEntity.Api.ItemTraits;
+
+namespace RogueEntity.Core.Meta.Items
 {
     /// <summary>
     ///   A tagging interface telling the system that the trait modifies the
