@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using JetBrains.Annotations;
+using Microsoft.Extensions.Configuration;
 using RogueEntity.Api.Modules.Helpers;
 using RogueEntity.Api.Modules.Initializers;
 using RogueEntity.Api.Services;
@@ -24,6 +25,12 @@ namespace RogueEntity.Api.Modules
 
             this.serviceResolver = serviceResolver ?? throw new ArgumentNullException(nameof(serviceResolver));
             this.registrations = new ModuleEntitySystemRegistrations();
+
+            if (!this.serviceResolver.TryResolve(out IConfigurationHost config))
+            {
+                config = new DefaultConfigurationHost(new ConfigurationBuilder().Build());
+                this.serviceResolver.Store(config);
+            }
         }
 
         public IGameLoopSystemInformation Initialize()
