@@ -1,5 +1,5 @@
+using RogueEntity.Core.GridProcessing.Directionality;
 using System.Diagnostics.CodeAnalysis;
-using RogueEntity.Core.Directionality;
 using RogueEntity.Core.Utils.DataViews;
 
 namespace RogueEntity.Core.Sensing.Resistance.Directions

@@ -1,7 +1,7 @@
 using EnTTSharp.Entities;
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Api.Utils;
-using RogueEntity.Core.Directionality;
+using RogueEntity.Core.GridProcessing.Directionality;
 using RogueEntity.Core.Movement.Cost;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Algorithms;

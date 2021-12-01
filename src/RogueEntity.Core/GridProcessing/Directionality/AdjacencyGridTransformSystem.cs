@@ -4,7 +4,7 @@ using RogueEntity.Core.Positioning.Algorithms;
 using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.DataViews;
 
-namespace RogueEntity.Core.Directionality
+namespace RogueEntity.Core.GridProcessing.Directionality
 {
     public abstract class AdjacencyGridTransformSystem<TSourceData>: GridTransformSystem<TSourceData, DirectionalityInformation>
     {

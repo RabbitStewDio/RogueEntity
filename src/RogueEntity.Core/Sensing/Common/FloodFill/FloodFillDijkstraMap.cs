@@ -3,7 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using EnTTSharp.Entities;
 using JetBrains.Annotations;
 using RogueEntity.Api.Utils;
-using RogueEntity.Core.Directionality;
+using RogueEntity.Core.GridProcessing.Directionality;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Algorithms;
 using RogueEntity.Core.Sensing.Common.Physics;

@@ -1,7 +1,7 @@
 using System;
 using FluentAssertions;
 using NUnit.Framework;
-using RogueEntity.Core.Directionality;
+using RogueEntity.Core.GridProcessing.Directionality;
 using RogueEntity.Core.Positioning.Algorithms;
 using RogueEntity.Core.Sensing;
 using RogueEntity.Core.Sensing.Common;

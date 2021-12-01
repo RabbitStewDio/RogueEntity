@@ -4,7 +4,7 @@ using EnTTSharp.Entities;
 using JetBrains.Annotations;
 using RogueEntity.Api.Time;
 using RogueEntity.Api.Utils;
-using RogueEntity.Core.Directionality;
+using RogueEntity.Core.GridProcessing.Directionality;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Caching;
 using RogueEntity.Core.Sensing.Cache;

@@ -1,8 +1,8 @@
-using System.Collections.Generic;
 using RogueEntity.Api.Utils;
 using RogueEntity.Core.Positioning.Algorithms;
+using System.Collections.Generic;
 
-namespace RogueEntity.Core.Directionality
+namespace RogueEntity.Core.GridProcessing.Directionality
 {
     public static class DirectionalityLookup
     {

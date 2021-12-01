@@ -1,6 +1,6 @@
 using System;
 
-namespace RogueEntity.Core.Directionality
+namespace RogueEntity.Core.GridProcessing.Directionality
 {
     [Flags]
     public enum DirectionalityInformation : byte

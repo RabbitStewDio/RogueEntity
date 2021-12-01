@@ -1,6 +1,6 @@
 using JetBrains.Annotations;
 using RogueEntity.Api.Utils;
-using RogueEntity.Core.Directionality;
+using RogueEntity.Core.GridProcessing.Directionality;
 using RogueEntity.Core.Movement;
 using RogueEntity.Core.Movement.Cost;
 using RogueEntity.Core.Movement.CostModifier;

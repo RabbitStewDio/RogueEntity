@@ -1,11 +1,11 @@
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Runtime.Serialization;
 using EnTTSharp.Entities.Attributes;
 using MessagePack;
 using RogueEntity.Core.Utils.DataViews;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Runtime.Serialization;
 
-namespace RogueEntity.Core.Directionality
+namespace RogueEntity.Core.GridProcessing.Directionality
 {
     [EntityComponent(EntityConstructor.NonConstructable)]
     [DataContract]

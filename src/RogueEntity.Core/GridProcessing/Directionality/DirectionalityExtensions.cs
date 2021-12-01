@@ -1,9 +1,9 @@
-using System;
-using System.Runtime.CompilerServices;
 using RogueEntity.Core.Positioning.Algorithms;
 using RogueEntity.Core.Utils;
+using System;
+using System.Runtime.CompilerServices;
 
-namespace RogueEntity.Core.Directionality
+namespace RogueEntity.Core.GridProcessing.Directionality
 {
     public static class DirectionalityExtensions
     {
