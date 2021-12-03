@@ -4,6 +4,7 @@ using RogueEntity.Api.Utils;
 using RogueEntity.Core.MapLoading.MapRegions;
 using RogueEntity.Core.Players;
 using RogueEntity.Core.Positioning;
+using Serilog;
 using System;
 using System.Collections.Generic;
 
@@ -14,6 +15,7 @@ namespace RogueEntity.Core.MapLoading.FlatLevelMaps
     /// </summary>
     public class FlatLevelAutomaticEvictionService<TActorId>
     {
+        readonly ILogger logger = SLog.ForContext<FlatLevelAutomaticEvictionService<TActorId>>();
         readonly Lazy<ITimeSource> timer;
         readonly IPlayerLookup<TActorId> playerLookupService;
         readonly IItemResolver<TActorId> playerItemResolver;
@@ -43,6 +45,7 @@ namespace RogueEntity.Core.MapLoading.FlatLevelMaps
 
         public void ProcessLevels()
         {
+            logger.Debug("Processing automatic eviction at {Time}", timer.Value.TimeState.FixedGameTimeElapsed);
             CollectPopulatedLevelData();
             RequestEviction();
             PurgeStaleRegionRecords();
@@ -50,7 +53,7 @@ namespace RogueEntity.Core.MapLoading.FlatLevelMaps
 
         void CollectPopulatedLevelData()
         {
-            var currentTime = timer.Value.CurrentTime;
+            var currentTime = timer.Value.TimeState.FixedGameTimeElapsed;
             foreach (var playerTag in playerLookupService.QueryPlayers(playerBuffer))
             {
                 if (!playerLookupService.TryQueryPlayer(playerTag, out var playerEntity))
@@ -63,30 +66,43 @@ namespace RogueEntity.Core.MapLoading.FlatLevelMaps
                     populatedLevels[pos.GridZ] = currentTime;
                 }
             }
+
+            foreach (var region in regionTracker.QueryActiveRequests(MapRegionStatus.Loaded, regionBuffer))
+            {
+                if (!populatedLevels.TryGetValue(region.RegionKey, out _))
+                {
+                    // region is loaded, but has no players, and has not been tracked before. 
+                    populatedLevels[region.RegionKey] = currentTime;
+                }
+            }
         }
 
         void RequestEviction()
         {
             var mapEvictionTimer = config.MapEvictionTimer;
-            var currentTime = timer.Value.CurrentTime;
+            var currentTime = timer.Value.TimeState.FixedGameTimeElapsed;
 
             foreach (var region in regionTracker.QueryActiveRequests(MapRegionStatus.Loaded, regionBuffer))
             {
-                if (populatedLevels.TryGetValue(region.RegionKey, out var lastSeenTime))
+                if (!populatedLevels.TryGetValue(region.RegionKey, out var lastSeenTime))
                 {
-                    if (currentTime - lastSeenTime < mapEvictionTimer)
-                    {
-                        continue;
-                    }
+                    continue;
                 }
 
+                if (currentTime - lastSeenTime < mapEvictionTimer)
+                {
+                    continue;
+                }
+
+                logger.Debug("Requesting automatic eviction of map region {Region}", region.RegionKey);
                 regionTracker.EvictRegion(region.RegionKey);
             }
         }
 
         void PurgeStaleRegionRecords()
         {
-            var currentTime = timer.Value.CurrentTime;
+            regionKeyBuffer.Clear();
+            var currentTime = timer.Value.TimeState.FixedGameTimeElapsed;
             foreach (var level in populatedLevels)
             {
                 var lastSeen = level.Value;
@@ -100,6 +116,8 @@ namespace RogueEntity.Core.MapLoading.FlatLevelMaps
             {
                 populatedLevels.Remove(key);
             }
+
+            logger.Debug("Removing stale records for {Regions}", regionKeyBuffer);
         }
     }
 }

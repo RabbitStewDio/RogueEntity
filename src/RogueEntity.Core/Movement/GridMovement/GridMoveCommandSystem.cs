@@ -62,7 +62,7 @@ namespace RogueEntity.Core.Movement.GridMovement
 
             if (cmd.FinishTime.TryGetValue(out var turn))
             {
-                if (Timer.Value.CurrentTime >= turn)
+                if (Timer.Value.TimeState.FixedGameTimeElapsed >= turn)
                 {
                     progressIndicator = progressIndicator.MarkHandled();
                 }
@@ -96,7 +96,7 @@ namespace RogueEntity.Core.Movement.GridMovement
                 return;
             }
 
-            cmd = cmd.WithFinishTime(movementCost.MovementMode, Timer.Value.CurrentTime.Add(expectedMovementTime));
+            cmd = cmd.WithFinishTime(movementCost.MovementMode, Timer.Value.TimeState.FixedGameTimeElapsed.Add(expectedMovementTime));
         }
 
         protected virtual bool TryPerformMove(IEntityViewControl<TActorId> v,
@@ -112,7 +112,7 @@ namespace RogueEntity.Core.Movement.GridMovement
                 return false;
             }
 
-            v.AssignOrReplace(k, new MovementIntent(Timer.Value.CurrentTime,
+            v.AssignOrReplace(k, new MovementIntent(Timer.Value.TimeState.FixedGameTimeElapsed,
                                                     expectedMovementDuration.TotalSeconds,
                                                     Position.From(position),
                                                     Position.From(targetPosition)));

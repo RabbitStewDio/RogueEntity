@@ -18,7 +18,7 @@ namespace RogueEntity.Core.Movement.GridMovement
             where TEntityId : IEntityKey
         {
             var endTime = mi.StartTime.Add(TimeSpan.FromSeconds(mi.DurationInSeconds));
-            if (endTime > timer.Value.CurrentTime)
+            if (endTime > timer.Value.TimeState.FixedGameTimeElapsed)
             {
                 v.RemoveComponent<MovementIntent>(k);
             }

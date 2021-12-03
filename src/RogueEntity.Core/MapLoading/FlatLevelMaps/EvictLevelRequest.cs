@@ -4,6 +4,10 @@ using System.Runtime.Serialization;
 
 namespace RogueEntity.Core.MapLoading.FlatLevelMaps
 {
+    /// <summary>
+    ///   A notification/request object to signal a manual or forced unloading
+    ///   of a map region.
+    /// </summary>
     [EntityComponent]
     [MessagePackObject]
     [DataContract]

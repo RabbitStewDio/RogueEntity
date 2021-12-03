@@ -158,11 +158,6 @@ namespace RogueEntity.Api.Modules.Initializers
                     var handled = entityInfo.RecordImpliedRelation(s, t, m.ModuleId);
                     if (!handled)
                     {
-                        if (!r.Optional)
-                        {
-                            throw new Exception($"Unable to resolve equivalence relation {r} for module {m.ModuleId}. Subject role {s} is not active.");
-                        }
-
                         Logger.Verbose("Role {Subject} is unused. Originally declared in module {Module} as alias to role {Target}, but no entity requires this role", s.Id, m.ModuleId, t.Id);
                     }
                 }

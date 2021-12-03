@@ -28,7 +28,7 @@ namespace RogueEntity.Core.Meta.ItemTraits
             return data.Count < initialCharge.MaximumCharge;
         }
 
-        public override bool TryRemove(IEntityViewControl<TItemId> v, TItemId k, out TItemId changedItem)
+        protected override bool TryRemoveComponentData(IEntityViewControl<TItemId> v, TItemId k, out TItemId changedItem)
         {
             if (TryQuery(v, k, out var existingData))
             {

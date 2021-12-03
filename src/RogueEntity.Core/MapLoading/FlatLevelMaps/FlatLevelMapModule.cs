@@ -35,7 +35,7 @@ namespace RogueEntity.Core.MapLoading.FlatLevelMaps
         static readonly EntitySystemId RegisterMapChangeRequestComponentId = "Entities.Core.MapLoading.FlatLevel.ChangeLevelRequest";
         static readonly EntitySystemId RegisterChangeLevelCommandComponentId = "Entities.Core.MapLoading.FlatLevel.ChangeLevelCommand";
         static readonly EntitySystemId RegisterCommandSystemId = "Systems.Core.MapLoading.FlatLevel.RegisterCommandSystem";
-        
+
         static readonly EntityRole ChangeLevelCommandRole = CommandRoles.CreateRoleFor(CommandType.Of<ChangeLevelCommand>());
 
         static readonly ILogger Logger = SLog.ForContext<FlatLevelMapModule>();
@@ -116,9 +116,12 @@ namespace RogueEntity.Core.MapLoading.FlatLevelMaps
             where TActorId : IEntityKey
         {
             var sr = initParameter.ServiceResolver;
+            var config = sr.ResolveConfiguration<FlatLevelMapConfiguration>();
             var sys = new ChangeLevelCommandSystem<TActorId>(sr.Resolve<IMapRegionMetaDataService<int>>(),
+                                                             sr.Resolve<IMapRegionTrackerService<int>>(),
                                                              sr.Resolve<IItemResolver<TActorId>>(),
-                                                             sr.Resolve<IItemPlacementService<TActorId>>());
+                                                             sr.Resolve<IItemPlacementService<TActorId>>(),
+                                                             config);
 
             var system = registry.BuildSystem()
                                  .WithoutContext()
@@ -132,6 +135,7 @@ namespace RogueEntity.Core.MapLoading.FlatLevelMaps
             where TActorId : IEntityKey
         {
             registry.RegisterNonConstructable<ChangeLevelCommand>();
+            registry.RegisterNonConstructable<ChangeLevelCommandState>();
         }
 
         void RegisterMapAutoEvictionSystem<TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter,
@@ -151,8 +155,8 @@ namespace RogueEntity.Core.MapLoading.FlatLevelMaps
         }
 
         void RegisterSpawnNewPlayers<TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter,
-                                                        IGameLoopSystemRegistration context,
-                                                        EntityRegistry<TActorId> registry)
+                                               IGameLoopSystemRegistration context,
+                                               EntityRegistry<TActorId> registry)
             where TActorId : IEntityKey
         {
             var system = GetOrCreateSpawnRequestHandlerSystem<TActorId>(initParameter.ServiceResolver);
@@ -219,6 +223,12 @@ namespace RogueEntity.Core.MapLoading.FlatLevelMaps
                                                   .WithInputParameter<ChangeLevelRequest>()
                                                   .CreateSystem(system.RequestLoadLevelFromChangeLevelCommand);
             context.AddFixedStepHandlerSystem(handleChangeLevelSystem);
+
+            var handleEvictLevelSystem = registry.BuildSystem()
+                                                  .WithoutContext()
+                                                  .WithInputParameter<EvictLevelRequest>()
+                                                  .CreateSystem(system.RequestEvictLevelFromRequest);
+            context.AddFixedStepHandlerSystem(handleEvictLevelSystem);
 
             var handleChangePositionSystem = registry.BuildSystem()
                                                      .WithoutContext()
@@ -322,8 +332,8 @@ namespace RogueEntity.Core.MapLoading.FlatLevelMaps
             }
 
             var tracker = GetOrCreateMapRegionTrackerService(sr);
-            var configHost = sr.Resolve<IConfigurationHost>();
-            var config = configHost.GetConfiguration<MapRegionModuleConfiguration>();
+
+            var config = sr.ResolveConfiguration<MapRegionModuleConfiguration>();
             rs = new MapRegionLoaderSystem<int>(tracker, strategy, config.MapLoadingTimeout);
             return true;
         }
@@ -387,7 +397,8 @@ namespace RogueEntity.Core.MapLoading.FlatLevelMaps
             return loader;
         }
 
-        static FlatLevelAutomaticEvictionService<TActorId> GetOrCreateAutoEvictionService<TActorId>(IServiceResolver sr) where TActorId : IEntityKey
+        static FlatLevelAutomaticEvictionService<TActorId> GetOrCreateAutoEvictionService<TActorId>(IServiceResolver sr)
+            where TActorId : IEntityKey
         {
             var config = GetOrCreateMapRegionConfig(sr);
             var tracker = GetOrCreateMapRegionTrackerService(sr);
@@ -399,6 +410,5 @@ namespace RogueEntity.Core.MapLoading.FlatLevelMaps
             sr.Store(autoEvictionSystem);
             return autoEvictionSystem;
         }
-
     }
 }

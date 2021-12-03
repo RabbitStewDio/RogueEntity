@@ -4,7 +4,6 @@ using RogueEntity.Core.MapLoading.FlatLevelMaps;
 using RogueEntity.Core.Runtime;
 using RogueEntity.SadCons;
 using RogueEntity.Samples.BoxPusher.Core;
-using RogueEntity.Samples.BoxPusher.Core.Commands;
 using SadConsole;
 using SadConsole.Controls;
 using Serilog;
@@ -15,7 +14,7 @@ namespace RogueEntity.Samples.BoxPusher.MonoGame
 {
     public class BoxPusherGameUIContext : ConsoleContext<ControlsConsole>
     {
-        readonly ILogger Logger = SLog.ForContext<BoxPusherGameUIContext>();
+        readonly ILogger logger = SLog.ForContext<BoxPusherGameUIContext>();
         readonly BoxPusherGame game;
         Label statusLabel;
         Window quitConfirmWindow;
@@ -111,62 +110,52 @@ namespace RogueEntity.Samples.BoxPusher.MonoGame
             winConfirmWindow.Add(SadConsoleControls.CreateButton("Cancel", 10, 3).WithAction(OnCancelDialogs).WithPlacementAt(28, 12));
         }
 
+        bool TryChangeLevel(int offset)
+        {
+            if (game.PlayerData.TryGetValue(out var player) &&
+                game.CurrentPlayerProfile.TryGetValue(out var profile))
+            {
+                var changeLevelCommand = new ChangeLevelCommand(profile.CurrentLevel + offset);
+                if (game.CommandService.TrySubmit(player.EntityId, changeLevelCommand))
+                {
+                    logger.Debug("Requested start of next level {Level}", changeLevelCommand.Level);
+                    return true;
+                }
+
+                logger.Debug("Failed to request next level change to {Level}", changeLevelCommand.Level);
+                return false;
+            }
+
+            return false;
+        }
+        
         void OnResetLevel()
         {
-            if (game.PlayerData.TryGetValue(out var player))
+            if (TryChangeLevel(0))
             {
-                if (game.CommandService.TrySubmit(player.EntityId, new ResetLevelCommand()))
-                {
-                    Logger.Debug("Requested restart of current level");
-                }
-                else
-                {
-                    Logger.Debug("Failed to request level reset");
-                }
+                winConfirmWindow.Hide();
             }
         }
 
         void OnNextLevel()
         {
-            if (game.PlayerData.TryGetValue(out var player) &&
-                game.CurrentPlayerProfile.TryGetValue(out var profile))
+            if (TryChangeLevel(1))
             {
-                var changeLevelCommand = new ChangeLevelCommand(profile.CurrentLevel + 1);
-                if (game.CommandService.TrySubmit(player.EntityId, changeLevelCommand))
-                {
-                    Logger.Debug("Requested start of next level {Level}", changeLevelCommand.Level);
-                }
-                else
-                {
-                    Logger.Debug("Failed to request next level change to {Level}", changeLevelCommand.Level);
-                }
+                winConfirmWindow.Hide();
             }
-
-            winConfirmWindow.Hide();
         }
 
         void OnPreviousLevel()
         {
-            if (game.PlayerData.TryGetValue(out var player) &&
-                game.CurrentPlayerProfile.TryGetValue(out var profile))
+            if (TryChangeLevel(-1))
             {
-                var changeLevelCommand = new ChangeLevelCommand(profile.CurrentLevel - 1);
-                if (game.CommandService.TrySubmit(player.EntityId, changeLevelCommand))
-                {
-                    Logger.Debug("Requested start of previous level {Level}", changeLevelCommand.Level);
-                }
-                else
-                {
-                    Logger.Debug("Failed to request previous level change to {Level}", changeLevelCommand.Level);
-                }
+                winConfirmWindow.Hide();
             }
-
-            winConfirmWindow.Hide();
         }
 
         public void ShowWinDialog()
         {
-            Logger.Debug("Showing win dialog");
+            logger.Debug("Showing win dialog");
             quitConfirmWindow.Hide();
             winConfirmWindow.Show(true);
         }
@@ -180,7 +169,7 @@ namespace RogueEntity.Samples.BoxPusher.MonoGame
         protected override void OnParentConsoleResized()
         {
             base.OnParentConsoleResized();
-            Logger.Debug("System UI resized to {Bounds} ", ParentContext.Bounds);
+            logger.Debug("System UI resized to {Bounds} ", ParentContext.Bounds);
 
             var size = ParentContext.Bounds.BoundsInCells();
             Console.Resize(size.Width, 1, true, new Rectangle(0, 0, size.Width, 1));

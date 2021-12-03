@@ -19,6 +19,10 @@ namespace RogueEntity.Samples.BoxPusher.Core
         void InitializeModule(in ModuleInitializationParameter mip, IModuleInitializer initializer)
         {
             mip.ServiceResolver.ConfigureLightPhysics();
+            mip.ServiceResolver.Store(new FlatLevelMapConfiguration()
+            {
+                ChangingLevelResetsMapData = true
+            });
         }
 
         [LateModuleInitializer]

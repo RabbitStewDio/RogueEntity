@@ -38,7 +38,7 @@ namespace RogueEntity.Core.Inputs.Commands
         public virtual bool IsCommandValidForState(TActorId actor) => true;
         public abstract bool IsCommandValidForState(TActorId actor, TCommand cmd);
 
-        public bool TryRemoveCompletedCommandData(IItemResolver<TActorId> r, TActorId k)
+        public virtual bool TryRemoveCompletedCommandData(IItemResolver<TActorId> r, TActorId k)
         {
             if (r.TryQueryData(k, out TCommand cmd))
             {

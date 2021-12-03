@@ -8,8 +8,6 @@ namespace RogueEntity.Api.Time
     {
         ITimeSourceDefinition TimeSourceDefinition { get; }
         
-        TimeSpan CurrentTime{ get; }
-        
         /// <summary>
         ///   The time increment for each fixed-update processing step. 
         /// </summary>

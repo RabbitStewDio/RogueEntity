@@ -1,18 +1,15 @@
 using FluentAssertions;
 using NUnit.Framework;
-using RogueEntity.Core.MapLoading.Builder;
 using RogueEntity.Core.MapLoading.FlatLevelMaps;
 using RogueEntity.Core.MapLoading.MapRegions;
 using RogueEntity.Core.Meta.EntityKeys;
 using RogueEntity.Core.Meta.ItemBuilder;
-using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Tests.Fixtures;
-using System;
 
-namespace RogueEntity.Generator.Tests
+namespace RogueEntity.Core.Tests.MapLoading.MapRegions
 {
-    public class MapRegionUnloadingTest : BasicGameIntegrationTestBase
+    public class MapRegionLoadingTest : BasicGameIntegrationTestBase
     {
         public const string SecondLevelCorridor = @"
 // 9x3; an empty room
@@ -44,17 +41,6 @@ namespace RogueEntity.Generator.Tests
                 {
                     playerDefinition.AsBuilder(mp.ServiceResolver).WithChangeLevelCommand();
                 }
-            });
-
-            tm.AddModuleInitializer((mp, mi) =>
-            {
-                mp.ServiceResolver.Store(new MapRegionModuleConfiguration()
-                {
-                    MapEvictionTimer = TimeSpan.Zero
-                });
-                Console.WriteLine("Registering flat-level eviction strategy");
-                mp.ServiceResolver.Store<IMapRegionEvictionStrategy<int>>(new FlatLevelRegionEvictionStrategy(mp.ServiceResolver.ResolveToReference<MapBuilder>(),
-                                                                                                              mp.ServiceResolver.Resolve<IMapRegionMetaDataService<int>>()));
             });
         }
 
@@ -90,15 +76,11 @@ namespace RogueEntity.Generator.Tests
         [Test]
         public void ValidateChangingLevels()
         {
-            var placementService = GameFixture.ServiceResolver.Resolve<IItemPlacementService<ItemReference>>();
-
             GameFixture.StartGame();
             GameFixture.AdvanceFrame();
             var playerEntity = GameFixture.PlayerData.Value.EntityId;
             GameFixture.ActorResolver.TryQueryData(playerEntity, out EntityGridPosition pos).Should().BeTrue();
             pos.Should().Be(EntityGridPosition.Of(TestMapLayers.Actors, 1, 1));
-            placementService.TryQueryItem(EntityGridPosition.Of(TestMapLayers.Ground, 1, 1), out var spawnPoint).Should().BeTrue();
-            spawnPoint.IsReference.Should().BeTrue();
 
             this.GameFixture.CommandService.TrySubmit(playerEntity, new ChangeLevelCommand(1)).Should().BeTrue();
 
@@ -106,11 +88,6 @@ namespace RogueEntity.Generator.Tests
             GameFixture.AdvanceFrame();
             GameFixture.ActorResolver.TryQueryData(playerEntity, out pos).Should().BeTrue();
             pos.Should().Be(EntityGridPosition.Of(TestMapLayers.Actors, 4, 3, 1));
-
-            regionTracker.QueryRegionStatus(0).Should().Be(MapRegionStatus.Unloaded);
-            placementService.TryQueryItem(EntityGridPosition.Of(TestMapLayers.Ground, 1, 1), out var spawnPointAfterUnload).Should().BeTrue();
-            spawnPointAfterUnload.Should().Be(ItemReference.Empty);
-
         }
     }
 }

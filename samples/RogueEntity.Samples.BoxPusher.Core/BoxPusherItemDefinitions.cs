@@ -49,7 +49,6 @@ namespace RogueEntity.Samples.BoxPusher.Core
                     .AsPointCost(WalkingMovement.Instance, DistanceCalculation.Euclid, 1)
                     .WithTrait(new BoxPusherPlayerProfileTrait<TActorId>())
                     .WithCommand(CommandType.Of<GridMoveCommand>())
-                    .WithCommand(CommandType.Of<ResetLevelCommand>())
                     .WithChangeLevelCommand()
                 ;
         }

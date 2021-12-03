@@ -4,11 +4,8 @@ using RogueEntity.Api.GameLoops;
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Api.Modules;
 using RogueEntity.Api.Modules.Attributes;
-using RogueEntity.Api.Services;
 using RogueEntity.Api.Time;
-using RogueEntity.Core.Inputs.Commands;
 using RogueEntity.Core.MapLoading.Builder;
-using RogueEntity.Core.MapLoading.FlatLevelMaps;
 using RogueEntity.Core.MapLoading.MapRegions;
 using RogueEntity.Core.Meta.EntityKeys;
 using RogueEntity.Core.Movement;
@@ -41,11 +38,6 @@ namespace RogueEntity.Samples.BoxPusher.Core
         static readonly EntitySystemId BoxPusherCollectBoxesSystem = new EntitySystemId("System.BoxPusher.WinSystem.CollectBoxes");
         static readonly EntitySystemId BoxPusherFinalizeWinSystem = new EntitySystemId("System.BoxPusher.WinSystem.Finalize");
 
-        static readonly EntitySystemId BoxPusherResetLevelCommandSystem = new EntitySystemId("System.BoxPusher.ResetLevelCommandHandler");
-        static readonly EntitySystemId BoxPusherClearMapBeforeSpawnSystem = new EntitySystemId("System.BoxPusher.ClearMapBeforeSpawnPlayer");
-        static readonly EntitySystemId BoxPusherFinalizeReloadLevelSystem = new EntitySystemId("System.BoxPusher.FinalizeReloadLevel");
-        static readonly EntitySystemId BoxPusherEvictOldLevelWhenLoadingNewLevelSystem = new EntitySystemId("System.BoxPusher.EvictOldLevelWhenLoadingNewLevel");
-
         static readonly EntitySystemId BoxPusherEnsureMoveSystem = new EntitySystemId("System.BoxPusher.MoveSystem.Create");
 
         public BoxPusherModule()
@@ -73,15 +65,9 @@ namespace RogueEntity.Samples.BoxPusher.Core
         {
             var ctx = initializer.DeclareEntityContext<TActorId>();
 
-            ctx.Register(BoxPusherResetLevelCommandSystem, 20_000, RegisterResetLevelCommandHandler);
-
             ctx.Register(BoxPusherPlayerEntities, 40_000, RegisterPlayerEntities);
             ctx.Register(BoxPusherInitializeWinSystem, 40_000, RegisterInitializeWinSystem);
             ctx.Register(BoxPusherFinalizeWinSystem, 40_010, RegisterFinalizeWinSystem);
-            
-            ctx.Register(BoxPusherEvictOldLevelWhenLoadingNewLevelSystem, 45_400, RegisterEvictOldLevelWhenLoadingNewLevel);
-            ctx.Register(BoxPusherClearMapBeforeSpawnSystem, 48_000, RegisterClearMapBeforeSpawnPlayers);
-            ctx.Register(BoxPusherFinalizeReloadLevelSystem, 49_600, RegisterFinalizeReloadLevel);
         }
 
         [EntityRoleFinalizer("Role.BoxPusher.Box",
@@ -176,7 +162,6 @@ namespace RogueEntity.Samples.BoxPusher.Core
             where TActorId : IEntityKey
         {
             registry.RegisterNonConstructable<BoxPusherPlayerProfile>();
-            registry.RegisterNonConstructable<ResetLevelCommand>();
         }
 
         void RegisterFinalizeWinSystem<TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter, IGameLoopSystemRegistration context, EntityRegistry<TActorId> registry)
@@ -207,78 +192,5 @@ namespace RogueEntity.Samples.BoxPusher.Core
             context.AddFixedStepHandlerSystem(action);
         }
 
-        void RegisterResetLevelCommandHandler<TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter,
-                                                        IGameLoopSystemRegistration context,
-                                                        EntityRegistry<TActorId> registry)
-            where TActorId : IEntityKey
-        {
-            var sys = GetOrCreateResetLevelSystem<TActorId>(initParameter.ServiceResolver);
-            var action = registry.BuildSystem()
-                                 .WithoutContext()
-                                 .WithInputParameter<PlayerTag>()
-                                 .WithInputParameter<ResetLevelCommand>()
-                                 .WithOutputParameter<CommandInProgress>()
-                                 .CreateSystem(sys.ProcessResetLevelCommand);
-            context.AddFixedStepHandlerSystem(action);
-        }
-
-
-        void RegisterEvictOldLevelWhenLoadingNewLevel<TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter,
-                                                                IGameLoopSystemRegistration context,
-                                                                EntityRegistry<TActorId> registry)
-            where TActorId : IEntityKey
-        {
-            var sys = GetOrCreateResetLevelSystem<TActorId>(initParameter.ServiceResolver);
-            var action = registry.BuildSystem()
-                                 .WithoutContext()
-                                 .WithInputParameter<PlayerTag>()
-                                 .WithInputParameter<ChangeLevelCommand>()
-                                 .WithInputParameter<CommandInProgress>()
-                                 .CreateSystem(sys.EvictOldLevelOnChangeLevelCommand);
-            context.AddFixedStepHandlerSystem(action);
-        }
-
-        void RegisterClearMapBeforeSpawnPlayers<TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter,
-                                                          IGameLoopSystemRegistration context,
-                                                          EntityRegistry<TActorId> registry)
-            where TActorId : IEntityKey
-        {
-            var sys = GetOrCreateResetLevelSystem<TActorId>(initParameter.ServiceResolver);
-            var action = registry.BuildSystem()
-                                 .WithoutContext()
-                                 .WithInputParameter<PlayerTag>()
-                                 .WithInputParameter<EvictLevelRequest>()
-                                 .CreateSystem(sys.ResetMapDataBeforeSpawningPlayer);
-            context.AddFixedStepHandlerSystem(action);
-        }
-
-        void RegisterFinalizeReloadLevel<TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter,
-                                                   IGameLoopSystemRegistration context,
-                                                   EntityRegistry<TActorId> registry)
-            where TActorId : IEntityKey
-        {
-            var sys = GetOrCreateResetLevelSystem<TActorId>(initParameter.ServiceResolver);
-            var action = registry.BuildSystem()
-                                 .WithoutContext()
-                                 .WithInputParameter<PlayerTag>()
-                                 .WithInputParameter<ChangeLevelRequest>()
-                                 .WithInputParameter<ResetLevelCommand>()
-                                 .WithOutputParameter<CommandInProgress>()
-                                 .CreateSystem(sys.FinalizeResetLevelCommand);
-            context.AddFixedStepHandlerSystem(action);
-        }
-
-        ResetLevelSystem<TActorId> GetOrCreateResetLevelSystem<TActorId>(IServiceResolver sr)
-            where TActorId : IEntityKey
-        {
-            if (sr.TryResolve(out ResetLevelSystem<TActorId> sys))
-            {
-                return sys;
-            }
-
-            sys = new ResetLevelSystem<TActorId>(sr.Resolve<IMapRegionTrackerService<int>>());
-            sr.Store(sys);
-            return sys;
-        }
     }
 }

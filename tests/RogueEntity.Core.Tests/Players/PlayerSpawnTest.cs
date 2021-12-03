@@ -45,11 +45,11 @@ namespace RogueEntity.Core.Tests.Players
         public void RemoveExistingPlayer()
         {
             GameFixture.StartGame();
-            GameFixture.Update(GameFixture.Time.CurrentTime + GameFixture.Time.FixedTimeStep);
+            GameFixture.AdvanceFrame();
             GameFixture.PlayerService.TryQueryPrimaryObserver(GameFixture.PlayerData.Value.Tag, out _).Should().BeTrue("because the default player is its own observer when on map");
-            GameFixture.Update(GameFixture.Time.CurrentTime + GameFixture.Time.FixedTimeStep);
+            GameFixture.AdvanceFrame();
             GameFixture.PlayerManager.TryDeactivatePlayer(GameFixture.PlayerData.Value.Tag.Id).Should().BeTrue();
-            GameFixture.Update(GameFixture.Time.CurrentTime + GameFixture.Time.FixedTimeStep);
+            GameFixture.AdvanceFrame();
             GameFixture.PlayerData.HasValue.Should().BeFalse();
         }
 
@@ -57,19 +57,17 @@ namespace RogueEntity.Core.Tests.Players
         public void ReactivateExistingPlayer()
         {
             GameFixture.StartGame();
-            GameFixture.Update(GameFixture.Time.CurrentTime + GameFixture.Time.FixedTimeStep);
+            GameFixture.AdvanceFrame();
             GameFixture.PlayerService.TryQueryPrimaryObserver(GameFixture.PlayerData.Value.Tag, out _).Should().BeTrue("because the default player is its own observer when on map");
-            GameFixture.Update(GameFixture.Time.CurrentTime + GameFixture.Time.FixedTimeStep);
+            GameFixture.AdvanceFrame();
             GameFixture.PlayerManager.TryDeactivatePlayer(GameFixture.PlayerData.Value.Tag.Id).Should().BeTrue();
-            GameFixture.Update(GameFixture.Time.CurrentTime + GameFixture.Time.FixedTimeStep);
+            GameFixture.AdvanceFrame();
             GameFixture.PlayerData.HasValue.Should().BeFalse();
             
             GameFixture.ReActivatePlayer();
             
-            GameFixture.Update(GameFixture.Time.CurrentTime + GameFixture.Time.FixedTimeStep);
+            GameFixture.AdvanceFrame();
             GameFixture.PlayerService.TryQueryPrimaryObserver(GameFixture.PlayerData.Value.Tag, out _).Should().BeTrue("because the default player is its own observer when on map");
-
-
         }
     }
 }

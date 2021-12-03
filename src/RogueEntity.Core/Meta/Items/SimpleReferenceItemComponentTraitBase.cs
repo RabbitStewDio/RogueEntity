@@ -73,7 +73,12 @@ namespace RogueEntity.Core.Meta.Items
             return false;
         }
 
-        public virtual bool TryRemove(IEntityViewControl<TItemId> entityRegistry, TItemId k, out TItemId changedItem)
+        bool IItemComponentTrait<TItemId, TData>.TryRemove(IEntityViewControl<TItemId> entityRegistry, TItemId k, out TItemId changedItem)
+        {
+            return TryRemoveComponentData(entityRegistry, k, out changedItem);
+        }
+
+        protected virtual bool TryRemoveComponentData(IEntityViewControl<TItemId> entityRegistry, TItemId k, out TItemId changedItem)
         {
             entityRegistry.RemoveComponent<TData>(k);
             changedItem = k;

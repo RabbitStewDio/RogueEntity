@@ -29,6 +29,24 @@ namespace RogueEntity.Core.MapLoading.FlatLevelMaps
             mapTrackerService.RequestImmediateLoading(level);
         }
 
+        public void RequestEvictLevelFromRequest<TItemId>(IEntityViewControl<TItemId> v,
+                                                          TItemId k,
+                                                          in EvictLevelRequest cmd)
+            where TItemId : IEntityKey
+        {
+            var level = cmd.Level;
+            if (mapTrackerService.IsRegionEvicted(level))
+            {
+                v.RemoveComponent<EvictLevelRequest>(k);
+                return;
+            }
+
+            if (mapTrackerService.QueryRegionStatus(level) != MapRegionStatus.UnloadingRequested)
+            {
+                mapTrackerService.EvictRegion(level);
+            }
+        }
+        
         /// <summary>
         ///   Invoked when a player is moving into a new level by falling or by knowing where
         ///   the end point of a given portal is placed. Useful for stairs that should line

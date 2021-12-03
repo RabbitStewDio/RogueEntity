@@ -42,12 +42,17 @@ namespace RogueEntity.Core.Tests.Fixtures
             return ms;
         }
         
-
         public void AdvanceFrame(int frameTime = 1)
         {
             var tickIncrement = GameLoop.TimeSource.FixedTimeStep;
-            var currentTime = GameLoop.TimeSource.CurrentTime;
+            var currentTime = GameLoop.TimeSource.TimeState.TotalGameTimeElapsed;
             Update(currentTime + TimeSpan.FromTicks(tickIncrement.Ticks * frameTime));
+        }
+
+        public void AdvanceTime(TimeSpan frameTime)
+        {
+            var currentTime = GameLoop.TimeSource.TimeState.TotalGameTimeElapsed;
+            Update(currentTime + frameTime);
         }
 
         public IItemResolver<ActorReference> ActorResolver => ServiceResolver.Resolve<IItemResolver<ActorReference>>();
