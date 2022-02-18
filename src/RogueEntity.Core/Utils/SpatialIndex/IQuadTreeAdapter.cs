@@ -9,8 +9,8 @@ namespace RogueEntity.Core.Utils.SpatialIndex
     {
         int ElementIndexRange { get; }
 
-        bool TryGetBounds(int index, out BoundingBox boundingBox);
+        bool TryGetBounds(FreeListIndex index, out BoundingBox boundingBox);
 
-        bool TryGetDebugData(int index, out string data);
+        bool TryGetDebugData(FreeListIndex index, out string data);
     }
 }

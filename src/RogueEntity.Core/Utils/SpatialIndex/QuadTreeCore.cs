@@ -10,6 +10,7 @@ namespace RogueEntity.Core.Utils.SpatialIndex
     public class QuadTreeCore<TSpatialIndexAdapter>
         where TSpatialIndexAdapter : IQuadTreeAdapter
     {
+        static readonly FreeListIndex RootElement = FreeListIndex.Of(0);
         static readonly ThreadLocal<Stack<QuadNodeData>> ProcessingStackHolder = new ThreadLocal<Stack<QuadNodeData>>(() => new Stack<QuadNodeData>());
         readonly TSpatialIndexAdapter adapter;
         readonly FreeList<QuadElementNode> elementNodes;
@@ -30,26 +31,26 @@ namespace RogueEntity.Core.Utils.SpatialIndex
             nodes.Add(QuadNode.Leaf());
         }
 
-        public void InsertElement(int data, in BoundingBox bounds)
+        public void InsertElement(FreeListIndex data, in BoundingBox bounds)
         {
-            InsertNode(0, 0, boundingBox, data, bounds);
+            InsertNode(RootElement, 0, boundingBox, data, bounds);
         }
 
-        public void RemoveElement(int elementIndex, BoundingBox elementBounds)
+        public void RemoveElement(FreeListIndex elementIndex, BoundingBox elementBounds)
         {
             var removeHandler = new RemoveVisitor(this, elementIndex);
-            ProcessLeaves(0, 0, boundingBox, elementBounds, removeHandler);
+            ProcessLeaves(RootElement, 0, boundingBox, elementBounds, removeHandler);
         }
 
         public void CleanUp()
         {
-            if (nodes[0].IsLeaf)
+            if (nodes[RootElement].IsLeaf)
             {
                 return;
             }
 
-            var toProcess = new Stack<int>();
-            toProcess.Push(0);
+            var toProcess = new Stack<FreeListIndex>();
+            toProcess.Push(RootElement);
 
             while (toProcess.Count > 0)
             {
@@ -107,20 +108,20 @@ namespace RogueEntity.Core.Utils.SpatialIndex
             }
         }
 
-        public List<int> Query(in BoundingBox bb, List<int> result, bool[] deduplicator, int skipElement = -1)
+        public List<FreeListIndex> Query(in BoundingBox bb, List<FreeListIndex> result, bool[] deduplicator, FreeListIndex skipElement = default)
         {
-            var x = new CollectQueryVisitor(this, result ?? new List<int>(), bb, deduplicator, skipElement);
-            ProcessLeaves(0, 0, boundingBox, bb, x);
+            var x = new CollectQueryVisitor(this, result ?? new List<FreeListIndex>(), bb, deduplicator, skipElement);
+            ProcessLeaves(RootElement, 0, boundingBox, bb, x);
             return x.ResultCollector;
         }
 
         void ProcessLeaves<TVisitor>(in TVisitor v)
             where TVisitor : ILeafNodeVisitor
         {
-            ProcessLeaves(0, 0, boundingBox, boundingBox, v);
+            ProcessLeaves(RootElement, 0, boundingBox, boundingBox, v);
         }
 
-        void ProcessLeaves<TVisitor>(int node, int depth, in AABB searchSpace, in BoundingBox boundingBox, in TVisitor visitor)
+        void ProcessLeaves<TVisitor>(FreeListIndex node, int depth, in AABB searchSpace, in BoundingBox boundingBox, in TVisitor visitor)
             where TVisitor : ILeafNodeVisitor
         {
             var nodesToProcess = ProcessingStackHolder.Value;
@@ -176,7 +177,7 @@ namespace RogueEntity.Core.Utils.SpatialIndex
             }
         }
 
-        void ProcessLeavesShallow<TVisitor>(int node, int depth, in AABB searchSpace, in BoundingBox boundingBox, in TVisitor v)
+        void ProcessLeavesShallow<TVisitor>(FreeListIndex node, int depth, in AABB searchSpace, in BoundingBox boundingBox, in TVisitor v)
             where TVisitor : ILeafNodeVisitor
         {
             // if branch, first child index points to an element in the nodes collection.
@@ -216,13 +217,13 @@ namespace RogueEntity.Core.Utils.SpatialIndex
             }
         }
 
-        void InsertNode(int index, int depth, in AABB bb, int element, in BoundingBox elementBounds)
+        void InsertNode(FreeListIndex index, int depth, in AABB bb, FreeListIndex element, in BoundingBox elementBounds)
         {
             var v = new CollectLeafNodesVisitor(this, element);
             ProcessLeaves(index, depth, bb, elementBounds, v);
         }
 
-        void InsertLeaf(in QuadNodeData dt, int element)
+        void InsertLeaf(in QuadNodeData dt, FreeListIndex element)
         {
             var node = nodes[dt.Index];
             var elementNodeIndex = elementNodes.Add(new QuadElementNode(node.FirstChildIdx, element));
@@ -255,10 +256,10 @@ namespace RogueEntity.Core.Utils.SpatialIndex
         // Note: This method may be called recursively, so we have to return a new
         // list each time this method is called. The list's life should hopefully be
         // short lived and thus not bother the garbage collector too much. 
-        List<int> CollectElementFromLeafNode(int nfc)
+        List<FreeListIndex> CollectElementFromLeafNode(FreeListIndex nfc)
         {
-            var elementIndices = new List<int>();
-            while (nfc != -1)
+            var elementIndices = new List<FreeListIndex>();
+            while (!nfc.IsEmpty)
             {
                 var elementNode = elementNodes[nfc];
                 elementNodes.Remove(nfc);
@@ -297,9 +298,9 @@ namespace RogueEntity.Core.Utils.SpatialIndex
         readonly struct RemoveVisitor : ILeafNodeVisitor
         {
             readonly QuadTreeCore<TSpatialIndexAdapter> self;
-            readonly int elementToRemove;
+            readonly FreeListIndex elementToRemove;
 
-            public RemoveVisitor(QuadTreeCore<TSpatialIndexAdapter> self, int elementToRemove)
+            public RemoveVisitor(QuadTreeCore<TSpatialIndexAdapter> self, FreeListIndex elementToRemove)
             {
                 this.self = self;
                 this.elementToRemove = elementToRemove;
@@ -310,18 +311,18 @@ namespace RogueEntity.Core.Utils.SpatialIndex
                 var nodeIndex = leaf.Index;
                 var node = self.nodes[nodeIndex];
                 var elementNodeIndex = node.FirstChildIdx;
-                var prevElementNodeIndex = -1;
-                while (elementNodeIndex != -1 &&
+                var prevElementNodeIndex = FreeListIndex.Empty;
+                while (!elementNodeIndex.IsEmpty &&
                        self.elementNodes[elementNodeIndex].ElementIndex != elementToRemove)
                 {
                     prevElementNodeIndex = elementNodeIndex;
                     elementNodeIndex = self.elementNodes[elementNodeIndex].NextElementNodeIndex;
                 }
 
-                if (elementNodeIndex != -1)
+                if (!elementNodeIndex.IsEmpty)
                 {
                     var nextIndex = self.elementNodes[elementNodeIndex].NextElementNodeIndex;
-                    if (prevElementNodeIndex == -1)
+                    if (prevElementNodeIndex.IsEmpty)
                     {
                         // first element in the linked list
                         self.nodes.Replace(nodeIndex, node.RemoveChildFromLeaf(nextIndex));
@@ -347,14 +348,14 @@ namespace RogueEntity.Core.Utils.SpatialIndex
             readonly QuadTreeCore<TSpatialIndexAdapter> tree;
             readonly bool[] resultDeduplicator;
             readonly BoundingBox bb;
-            readonly int skipElement;
-            public readonly List<int> ResultCollector;
+            readonly FreeListIndex skipElement;
+            public readonly List<FreeListIndex> ResultCollector;
 
             public CollectQueryVisitor(QuadTreeCore<TSpatialIndexAdapter> tree,
-                                       List<int> resultCollector,
+                                       List<FreeListIndex> resultCollector,
                                        in BoundingBox bb,
                                        bool[] resultDeduplicator,
-                                       int skipElement = -1)
+                                       FreeListIndex skipElement = default)
             {
                 if (resultDeduplicator.Length < tree.adapter.ElementIndexRange)
                 {
@@ -373,18 +374,18 @@ namespace RogueEntity.Core.Utils.SpatialIndex
             {
                 var nodeIndex = data.Index;
                 var elementNodeIndex = tree.nodes[nodeIndex].FirstChildIdx;
-                while (elementNodeIndex != -1)
+                while (!elementNodeIndex.IsEmpty)
                 {
                     var elementNode = tree.elementNodes[elementNodeIndex];
                     var elementIndex = elementNode.ElementIndex;
-                    if (!resultDeduplicator[elementIndex] &&
+                    if (!resultDeduplicator[elementIndex.Value] &&
                         elementIndex != skipElement)
                     {
                         if (tree.adapter.TryGetBounds(elementIndex, out var elementBounds) &&
                             elementBounds.Intersects(bb))
                         {
                             ResultCollector.Add(elementIndex);
-                            resultDeduplicator[elementIndex] = true;
+                            resultDeduplicator[elementIndex.Value] = true;
                         }
                     }
 
@@ -399,9 +400,9 @@ namespace RogueEntity.Core.Utils.SpatialIndex
         readonly struct CollectLeafNodesVisitor : ILeafNodeVisitor
         {
             readonly QuadTreeCore<TSpatialIndexAdapter> self;
-            readonly int element;
+            readonly FreeListIndex element;
 
-            public CollectLeafNodesVisitor(QuadTreeCore<TSpatialIndexAdapter> self, int element)
+            public CollectLeafNodesVisitor(QuadTreeCore<TSpatialIndexAdapter> self, FreeListIndex element)
             {
                 this.self = self;
                 this.element = element;
@@ -430,7 +431,7 @@ namespace RogueEntity.Core.Utils.SpatialIndex
             public void ProcessLeafNode(in QuadNodeData data)
             {
                 var elementNodeIndex = tree.nodes[data.Index].FirstChildIdx;
-                if (elementNodeIndex == -1)
+                if (elementNodeIndex.IsEmpty)
                 {
                     AppendIndent(data.Depth);
                     b.AppendLine("- L:<Empty>");
@@ -440,7 +441,7 @@ namespace RogueEntity.Core.Utils.SpatialIndex
                 AppendIndent(data.Depth);
                 b.AppendLine("- L");
 
-                while (elementNodeIndex != -1)
+                while (!elementNodeIndex.IsEmpty)
                 {
                     var node = tree.elementNodes[elementNodeIndex];
 
@@ -505,21 +506,21 @@ namespace RogueEntity.Core.Utils.SpatialIndex
     // Represents an element node in the quadtree.
     readonly struct QuadElementNode : ISmartFreeListElement<QuadElementNode>
     {
-        public int FreePointer => NextElementNodeIndex;
+        public FreeListIndex FreePointer => ElementIndex.IsEmpty ? NextElementNodeIndex : FreeListIndex.Empty;
 
-        public QuadElementNode AsFreePointer(int ptr)
+        public QuadElementNode AsFreePointer(FreeListIndex ptr)
         {
-            return new QuadElementNode(ptr, -1);
+            return new QuadElementNode(ptr, FreeListIndex.Empty);
         }
 
         // Points to the next element in the leaf node. A value of -1 
         // indicates the end of the list. This points to elements in QuadTree::elementNodes.
-        public readonly int NextElementNodeIndex;
+        public readonly FreeListIndex NextElementNodeIndex;
 
         // Stores the index to the actual data element (held in QuadTree::elements).
-        public readonly int ElementIndex;
+        public readonly FreeListIndex ElementIndex;
 
-        public QuadElementNode(int nextElementNodeIndex, int elementIndex)
+        public QuadElementNode(FreeListIndex nextElementNodeIndex, FreeListIndex elementIndex)
         {
             NextElementNodeIndex = nextElementNodeIndex;
             ElementIndex = elementIndex;
@@ -533,11 +534,11 @@ namespace RogueEntity.Core.Utils.SpatialIndex
         /// <summary>
         ///   A pointer into QuadTree::Nodes.
         /// </summary>
-        public readonly int Index;
+        public readonly FreeListIndex Index;
 
         public readonly int Depth;
 
-        public QuadNodeData(int index, int depth, in AABB nodeBounds)
+        public QuadNodeData(FreeListIndex index, int depth, in AABB nodeBounds)
         {
             NodeBounds = nodeBounds;
             Index = index;
@@ -547,9 +548,9 @@ namespace RogueEntity.Core.Utils.SpatialIndex
 
     internal readonly struct QuadNode : ISmartFreeListElement<QuadNode>
     {
-        public int FreePointer => FirstChildIdx;
+        public FreeListIndex FreePointer => ChildCount == -1 ? FirstChildIdx : FreeListIndex.Empty;
 
-        public QuadNode AsFreePointer(int ptr)
+        public QuadNode AsFreePointer(FreeListIndex ptr)
         {
             return new QuadNode(ptr, -1);
         }
@@ -558,11 +559,11 @@ namespace RogueEntity.Core.Utils.SpatialIndex
         ///   Contains either the index of the first child node if this node is a branch node,
         ///   or the index of the data element stored in the tree.
         /// </summary>
-        public readonly int FirstChildIdx;
+        public readonly FreeListIndex FirstChildIdx;
 
         public readonly int ChildCount;
 
-        QuadNode(int firstChildIdx, int childCount)
+        QuadNode(FreeListIndex firstChildIdx, int childCount)
         {
             FirstChildIdx = firstChildIdx;
             ChildCount = childCount;
@@ -570,15 +571,15 @@ namespace RogueEntity.Core.Utils.SpatialIndex
 
         public bool IsLeaf => ChildCount >= 0;
 
-        public static QuadNode Leaf() => new QuadNode(-1, 0);
-        public static QuadNode Branch(int childIndex) => new QuadNode(childIndex, -1);
+        public static QuadNode Leaf() => new QuadNode(FreeListIndex.Empty, 0);
+        public static QuadNode Branch(FreeListIndex childIndex) => new QuadNode(childIndex, -1);
 
-        public QuadNode AddChildToLeaf(int elementNodeIndex)
+        public QuadNode AddChildToLeaf(FreeListIndex elementNodeIndex)
         {
             return new QuadNode(elementNodeIndex, ChildCount + 1);
         }
 
-        public QuadNode RemoveChildFromLeaf(int elementNodeIndex)
+        public QuadNode RemoveChildFromLeaf(FreeListIndex elementNodeIndex)
         {
             return new QuadNode(elementNodeIndex, ChildCount - 1);
         }

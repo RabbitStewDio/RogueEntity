@@ -27,7 +27,7 @@ namespace RogueEntity.Core.Utils.SpatialIndex
             //spatialIndex = new QuadTreeCore<QuadTree<T>>(this, bounds, maxElementsPerNode, maxDepth);
         }
 
-        public int Insert(T data, in BoundingBox bounds)
+        public FreeListIndex Insert(T data, in BoundingBox bounds)
         {
             var elementHandle = elements.Add(new QuadElement(data, bounds));
             bounds.PartitionBy(config, partitions);
@@ -47,7 +47,7 @@ namespace RogueEntity.Core.Utils.SpatialIndex
             return elementHandle;
         }
 
-        public void Remove(int elementIndex)
+        public void Remove(FreeListIndex elementIndex)
         {
             if (!elements.TryGetValue(elementIndex, out var element))
             {
@@ -69,13 +69,13 @@ namespace RogueEntity.Core.Utils.SpatialIndex
             elements.Remove(elementIndex);
         }
 
-        public List<int> Query(in BoundingBox bb, List<int> result, int skipElement = -1)
+        public List<FreeListIndex> Query(in BoundingBox bb, List<FreeListIndex> result, FreeListIndex skipElement = default)
         {
             
             var resultDeduplicator = ArrayPool<bool>.Shared.Rent(ElementIndexRange);
             try
             {
-                var queryCollector = result ?? new List<int>();
+                var queryCollector = result ?? new List<FreeListIndex>();
                 
                 bb.PartitionBy(config, partitions);
                 for (var index = 0; index < partitions.Count; index++)
@@ -118,7 +118,7 @@ namespace RogueEntity.Core.Utils.SpatialIndex
             return b.ToString();
         }
 
-        public bool TryGet(int index, out T data, out BoundingBox boundingBox)
+        public bool TryGet(FreeListIndex index, out T data, out BoundingBox boundingBox)
         {
             if (elements.TryGetValue(index, out var node))
             {
@@ -134,7 +134,7 @@ namespace RogueEntity.Core.Utils.SpatialIndex
 
         public int ElementIndexRange => elements.Range;
         
-        public bool TryGetBounds(int index, out BoundingBox boundingBox)
+        public bool TryGetBounds(FreeListIndex index, out BoundingBox boundingBox)
         {
             if (elements.TryGetValue(index, out var node))
             {
@@ -146,7 +146,7 @@ namespace RogueEntity.Core.Utils.SpatialIndex
             return false;
         }
 
-        public bool TryGetDebugData(int index, out string data)
+        public bool TryGetDebugData(FreeListIndex index, out string data)
         {
             if (elements.TryGetValue(index, out var node))
             {
@@ -158,16 +158,16 @@ namespace RogueEntity.Core.Utils.SpatialIndex
             return false;
         }
 
-        internal QuadElement this[int index] => elements[index];
+        internal QuadElement this[FreeListIndex index] => elements[index];
 
         // Represents an element in the quadtree.
         internal readonly struct QuadElement: ISmartFreeListElement<QuadElement>
         {
-            public int FreePointer => Bounds.Top;
+            public FreeListIndex FreePointer => FreeListIndex.Of(Bounds.Top);
 
-            public QuadElement AsFreePointer(int ptr)
+            public QuadElement AsFreePointer(FreeListIndex ptr)
             {
-                return new QuadElement(default, new BoundingBox(ptr, -1, -1, -1));
+                return new QuadElement(default, new BoundingBox(ptr.Value, -1, -1, -1));
             }
 
             // Stores the ID for the element (can be used to

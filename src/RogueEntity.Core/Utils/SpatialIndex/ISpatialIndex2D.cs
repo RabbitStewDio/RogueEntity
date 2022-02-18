@@ -4,19 +4,18 @@ namespace RogueEntity.Core.Utils.SpatialIndex
 {
     public interface ISpatialIndex2D<T>
     {
-        int Insert(T data, in BoundingBox bounds);
-        bool TryGet(int index, out T data, out BoundingBox boundingBox);
-        void Remove(int elementIndex);
+        FreeListIndex Insert(T data, in BoundingBox bounds);
+        bool TryGet(FreeListIndex index, out T data, out BoundingBox boundingBox);
+        void Remove(FreeListIndex elementIndex);
 
-        List<int> Query(in BoundingBox bb, List<int> result, int skipElement = -1);
+        List<FreeListIndex> Query(in BoundingBox bb, List<FreeListIndex> result, FreeListIndex skipElement = default);
     }
 
     public static class SpatialIndexExtensions
     {
-
-        public static List<int> Query<T>(this  ISpatialIndex2D<T> self, in BoundingBox bb, int skipElement = -1)
+        public static List<FreeListIndex> Query<T>(this  ISpatialIndex2D<T> self, in BoundingBox bb, FreeListIndex skipElement = default)
         {
-            return self.Query(bb, new List<int>(), skipElement);
+            return self.Query(bb, new List<FreeListIndex>(), skipElement);
         }
 
     }

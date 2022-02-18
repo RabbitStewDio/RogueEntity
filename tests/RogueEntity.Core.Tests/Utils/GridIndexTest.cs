@@ -62,7 +62,7 @@ namespace RogueEntity.Core.Tests.Utils
         public void ValidatePathologicalInsert()
         {
             var qt = new GridIndex2D<string>(new DynamicDataViewConfiguration(0, 0, 128, 128));
-            var arr = new int[100];
+            var arr = new FreeListIndex[100];
             for (var x = 0; x < arr.Length; x += 1)
             {
                 arr[x] = qt.Insert("element-" + x, new Rectangle(0, 0, 1, 1));

@@ -11,7 +11,7 @@ namespace RogueEntity.Core.Utils.SpatialIndex
         readonly DynamicDataViewConfiguration cellConfig;
         readonly FreeList<GridElement> elements;
         readonly FreeList<GridElementNode> elementNodes;
-        readonly Dictionary<TileIndex, int> elementGrid;
+        readonly Dictionary<TileIndex, FreeListIndex> elementGrid;
 
         public GridIndex2D(DynamicDataViewConfiguration config)
         {
@@ -19,10 +19,10 @@ namespace RogueEntity.Core.Utils.SpatialIndex
 
             elements = new FreeList<GridElement>();
             elementNodes = new FreeList<GridElementNode>();
-            elementGrid = new Dictionary<TileIndex, int>();
+            elementGrid = new Dictionary<TileIndex, FreeListIndex>();
         }
 
-        public int Insert(T data, in BoundingBox bounds)
+        public FreeListIndex Insert(T data, in BoundingBox bounds)
         {
             var e = elements.Add(new GridElement(data, bounds));
 
@@ -39,12 +39,12 @@ namespace RogueEntity.Core.Utils.SpatialIndex
             return e;
         }
 
-        void InsertCellElement(int tx, int ty, int elementIndex)
+        void InsertCellElement(int tx, int ty, FreeListIndex elementIndex)
         {
             var tileIndex = new TileIndex(tx, ty);
             if (!elementGrid.TryGetValue(tileIndex, out var node))
             {
-                node = -1;
+                node = default;
             }
             
             var newNode = new GridElementNode(node, elementIndex);
@@ -52,7 +52,7 @@ namespace RogueEntity.Core.Utils.SpatialIndex
             elementGrid[tileIndex] = newNodeIdx;
         }
 
-        public bool TryGet(int index, out T data, out BoundingBox boundingBox)
+        public bool TryGet(FreeListIndex index, out T data, out BoundingBox boundingBox)
         {
             if (elements.TryGetValue(index, out var ge))
             {
@@ -66,9 +66,9 @@ namespace RogueEntity.Core.Utils.SpatialIndex
             return false;
         }
 
-        internal GridElement this[int index] => elements[index]; 
+        internal GridElement this[FreeListIndex index] => elements[index]; 
         
-        public void Remove(int elementIndex)
+        public void Remove(FreeListIndex elementIndex)
         {
             if (!elements.TryGetValue(elementIndex, out var ge))
             {
@@ -89,25 +89,25 @@ namespace RogueEntity.Core.Utils.SpatialIndex
             elements.Remove(elementIndex);
         }
 
-        void RemoveCellElement(int tx, int ty, int elementToRemove)
+        void RemoveCellElement(int tx, int ty, FreeListIndex elementToRemove)
         {
             if (!elementGrid.TryGetValue(new TileIndex(tx, ty), out var elementNodeIndex))
             {
                 return;
             }
             
-            var prevElementNodeIndex = -1;
-            while (elementNodeIndex != -1 &&
+            var prevElementNodeIndex = FreeListIndex.Empty;
+            while (!elementNodeIndex.IsEmpty &&
                    elementNodes[elementNodeIndex].ElementIndex != elementToRemove)
             {
                 prevElementNodeIndex = elementNodeIndex;
                 elementNodeIndex = elementNodes[elementNodeIndex].NextElementNodeIndex;
             }
 
-            if (elementNodeIndex != -1)
+            if (!elementNodeIndex.IsEmpty)
             {
                 var nextIndex = elementNodes[elementNodeIndex].NextElementNodeIndex;
-                if (prevElementNodeIndex == -1)
+                if (prevElementNodeIndex.IsEmpty)
                 {
                     // first element in the linked list
                     elementGrid[new TileIndex(tx, ty)] = nextIndex;
@@ -124,11 +124,11 @@ namespace RogueEntity.Core.Utils.SpatialIndex
 
         }
 
-        public List<int> Query(in BoundingBox bb, List<int> result, int skipElement = -1)
+        public List<FreeListIndex> Query(in BoundingBox bb, List<FreeListIndex> result, FreeListIndex skipElement = default)
         {
             if (result == null)
             {
-                result = new List<int>();
+                result = new List<FreeListIndex>();
             }
             else
             {
@@ -165,7 +165,7 @@ namespace RogueEntity.Core.Utils.SpatialIndex
             {
                 b.AppendLine($"Grid Cell: {t.Key}");
                 var firstElementIdx = t.Value;
-                while (firstElementIdx != -1)
+                while (!firstElementIdx.IsEmpty)
                 {
                     var elementNode = elementNodes[firstElementIdx];
                     var elementIndex = elementNode.ElementIndex;
@@ -180,25 +180,25 @@ namespace RogueEntity.Core.Utils.SpatialIndex
             return b.ToString();
         }
 
-        void QueryCellElement(in TileIndex tx, in BoundingBox bb, List<int> result, bool[] resultDeduplicator, int skipElement)
+        void QueryCellElement(in TileIndex tx, in BoundingBox bb, List<FreeListIndex> result, bool[] resultDeduplicator, FreeListIndex skipElement)
         {
             if (!elementGrid.TryGetValue(tx, out var firstElementIdx))
             {
                 return;
             }
 
-            while (firstElementIdx != -1)
+            while (!firstElementIdx.IsEmpty)
             {
                 var elementNode = elementNodes[firstElementIdx];
                 var elementIndex = elementNode.ElementIndex;
                 var element = elements[elementIndex];
-                if (!resultDeduplicator[elementIndex] &&
+                if (!resultDeduplicator[elementIndex.Value] &&
                     elementIndex != skipElement)
                 {
                     if (element.Bounds.Intersects(bb))
                     {
                         result.Add(elementIndex);
-                        resultDeduplicator[elementIndex] = true;
+                        resultDeduplicator[elementIndex.Value] = true;
                     }
                 }
 
@@ -209,11 +209,11 @@ namespace RogueEntity.Core.Utils.SpatialIndex
         // Represents an element in the quadtree.
         public readonly struct GridElement : ISmartFreeListElement<GridElement>
         {
-            public int FreePointer => Bounds.Top;
+            public FreeListIndex FreePointer => FreeListIndex.Of(Bounds.Top);
 
-            public GridElement AsFreePointer(int ptr)
+            public GridElement AsFreePointer(FreeListIndex ptr)
             {
-                return new GridElement(default, new BoundingBox(ptr, -1, -1, -1));
+                return new GridElement(default, new BoundingBox(ptr.Value, -1, -1, -1));
             }
 
             // Stores the ID for the element (can be used to
@@ -233,25 +233,26 @@ namespace RogueEntity.Core.Utils.SpatialIndex
         // Represents an element node in the quadtree.
         readonly struct GridElementNode : ISmartFreeListElement<GridElementNode>
         {
-            public int FreePointer => NextElementNodeIndex;
-
-            public GridElementNode AsFreePointer(int ptr)
-            {
-                return new GridElementNode(ptr, -1);
-            }
-
             // Points to the next element in the leaf node. A value of -1 
             // indicates the end of the list. This points to elements in QuadTree::elementNodes.
-            public readonly int NextElementNodeIndex;
+            public readonly FreeListIndex NextElementNodeIndex;
 
             // Stores the index to the actual data element (held in QuadTree::elements).
-            public readonly int ElementIndex;
+            public readonly FreeListIndex ElementIndex;
 
-            public GridElementNode(int nextElementNodeIndex, int elementIndex)
+            public GridElementNode(FreeListIndex nextElementNodeIndex, FreeListIndex elementIndex)
             {
                 NextElementNodeIndex = nextElementNodeIndex;
                 ElementIndex = elementIndex;
             }
+
+            public FreeListIndex FreePointer => ElementIndex.IsEmpty ? NextElementNodeIndex : FreeListIndex.Empty;
+
+            public GridElementNode AsFreePointer(FreeListIndex ptr)
+            {
+                return new GridElementNode(ptr, default);
+            }
+
         }
     }
 }
