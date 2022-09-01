@@ -22,13 +22,10 @@ namespace RogueEntity.Core.Tests.MapLoading.MapRegions
 ";
 
 
-        IMapRegionTrackerService<int> regionTracker;
-
         public override void SetUp()
         {
             base.SetUp();
-            GameFixture.ServiceResolver.TryResolve(out IMapRegionTrackerService<int> regionLoader).Should().BeTrue();
-            this.regionTracker = regionLoader;
+            GameFixture.ServiceResolver.TryResolve(out IMapRegionTrackerService<int> _).Should().BeTrue();
         }
 
         protected override void ConfigureTestModule(TestModuleBase tm)

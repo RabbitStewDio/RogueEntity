@@ -1,7 +1,5 @@
 using JetBrains.Annotations;
-using RogueEntity.Api.Utils;
 using RogueEntity.Core.Positioning;
-using Serilog;
 using System;
 using System.Collections.Generic;
 
@@ -9,8 +7,6 @@ namespace RogueEntity.SadCons.MapRendering
 {
     public class LegacyMapRenderer
     {
-        static readonly ILogger Logger = SLog.ForContext<LegacyMapRenderer>();
-
         readonly List<IConsoleRenderLayer> layers;
 
         public LegacyMapRenderer()

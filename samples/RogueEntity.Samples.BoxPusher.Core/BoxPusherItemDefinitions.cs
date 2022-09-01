@@ -17,7 +17,6 @@ using RogueEntity.Core.Sensing.Receptors.Light;
 using RogueEntity.Core.Sensing.Resistance;
 using RogueEntity.Core.Sensing.Sources.Light;
 using RogueEntity.Core.Utils;
-using RogueEntity.Samples.BoxPusher.Core.Commands;
 using RogueEntity.Samples.BoxPusher.Core.ItemTraits;
 using static RogueEntity.Core.Movement.CostModifier.MovementCostModifiers;
 

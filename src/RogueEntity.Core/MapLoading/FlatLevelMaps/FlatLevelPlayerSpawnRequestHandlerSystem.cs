@@ -1,7 +1,6 @@
 using EnTTSharp.Entities;
 using JetBrains.Annotations;
 using RogueEntity.Api.Utils;
-using RogueEntity.Core.MapLoading.MapRegions;
 using RogueEntity.Core.Players;
 using Serilog;
 using System;

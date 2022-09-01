@@ -8,7 +8,6 @@ using RogueEntity.Core.Meta.ItemBuilder;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Tests.Fixtures;
-using RogueEntity.Generator;
 using System;
 
 namespace RogueEntity.Core.Tests.MapLoading.MapRegions
@@ -47,7 +46,7 @@ namespace RogueEntity.Core.Tests.MapLoading.MapRegions
                 }
             });
 
-            tm.AddModuleInitializer((mp, mi) =>
+            tm.AddModuleInitializer((mp, _) =>
             {
                 mp.ServiceResolver.Store(new MapRegionModuleConfiguration()
                 {

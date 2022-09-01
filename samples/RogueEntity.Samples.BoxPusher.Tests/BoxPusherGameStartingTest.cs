@@ -1,6 +1,7 @@
 using FluentAssertions;
 using NUnit.Framework;
 using RogueEntity.Core.MapLoading.FlatLevelMaps;
+using RogueEntity.Core.MapLoading.MapRegions;
 using RogueEntity.Core.Runtime;
 using RogueEntity.Core.Storage;
 using RogueEntity.Generator;

@@ -4,7 +4,6 @@ using RogueEntity.Api.Utils;
 using RogueEntity.Core.Inputs.Commands;
 using RogueEntity.Core.MapLoading.MapRegions;
 using RogueEntity.Core.Positioning;
-using RogueEntity.Generator;
 using Serilog;
 
 namespace RogueEntity.Core.MapLoading.FlatLevelMaps

@@ -25,7 +25,7 @@ namespace RogueEntity.Core.Tests.Positioning.Grid
             gdc.OffsetY.Should().Be(DynamicDataViewConfiguration.Default_32x32.OffsetY);
             gdc.TileSizeX.Should().Be(DynamicDataViewConfiguration.Default_32x32.TileSizeX);
             gdc.TileSizeY.Should().Be(DynamicDataViewConfiguration.Default_32x32.TileSizeY);
-            gdc.TryGetGridDataFor(TestMapLayers.One, out var dataContext).Should().BeTrue();
+            gdc.TryGetGridDataFor(TestMapLayers.One, out _).Should().BeTrue();
             gdc.TryGetGridDataFor(TestMapLayers.Two, out _).Should().BeFalse();
         }
 

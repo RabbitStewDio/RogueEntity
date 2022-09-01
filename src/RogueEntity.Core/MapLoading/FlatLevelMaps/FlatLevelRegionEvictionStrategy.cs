@@ -6,7 +6,6 @@ using RogueEntity.Core.MapLoading.MapRegions;
 using RogueEntity.Core.Meta.ItemTraits;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.MapLayers;
-using RogueEntity.Generator;
 using Serilog;
 using System;
 

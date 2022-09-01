@@ -65,7 +65,7 @@ namespace RogueEntity.Core.Positioning
             }
         }
 
-        [EntityRoleFinalizerAttribute("Role.Core.Position.Positionable")]
+        [EntityRoleFinalizer("Role.Core.Position.Positionable")]
         protected void FinalizePositionedRole<TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter,
                                                         IModuleInitializer initializer,
                                                         EntityRole role)

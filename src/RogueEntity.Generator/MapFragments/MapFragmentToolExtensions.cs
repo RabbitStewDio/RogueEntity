@@ -1,8 +1,7 @@
 using RogueEntity.Core.Infrastructure.Randomness;
 using RogueEntity.Core.MapLoading.Builder;
-using RogueEntity.Generator.MapFragments;
 
-namespace RogueEntity.Generator
+namespace RogueEntity.Generator.MapFragments
 {
     public static class MapFragmentToolExtensions
     {

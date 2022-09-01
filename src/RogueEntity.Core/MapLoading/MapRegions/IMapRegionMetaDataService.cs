@@ -1,6 +1,6 @@
 using RogueEntity.Core.Utils;
 
-namespace RogueEntity.Generator
+namespace RogueEntity.Core.MapLoading.MapRegions
 {
     public interface IMapRegionMetaDataService<TRegionKey>
     {

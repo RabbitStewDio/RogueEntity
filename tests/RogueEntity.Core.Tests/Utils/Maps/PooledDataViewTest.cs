@@ -77,10 +77,10 @@ namespace RogueEntity.Core.Tests.Utils.Maps
             // create a map layer for all z-positions of 0
             p.TryGetWritableView(0, out var view, DataViewCreateMode.CreateMissing).Should().BeTrue();
             
-            view.TryGetWriteAccess(0, 0, out _, DataViewCreateMode.Nothing).Should().BeFalse("because we never wrote to that page");
+            view.TryGetWriteAccess(0, 0, out _).Should().BeFalse("because we never wrote to that page");
             view[0, 0] = 1;
-            view.TryGetWriteAccess(0, 0, out var rawView, DataViewCreateMode.Nothing).Should().BeTrue("because we just wrote to that page");
-            view.TryGetWriteAccess(100, 100, out _, DataViewCreateMode.Nothing).Should().BeFalse("because we never wrote to that page");
+            view.TryGetWriteAccess(0, 0, out var rawView).Should().BeTrue("because we just wrote to that page");
+            view.TryGetWriteAccess(100, 100, out _).Should().BeFalse("because we never wrote to that page");
             pool.IsLeased(rawView).Should().BeTrue();
         }
 

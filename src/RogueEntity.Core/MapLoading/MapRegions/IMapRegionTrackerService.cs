@@ -58,8 +58,6 @@ namespace RogueEntity.Core.MapLoading.MapRegions
         ///    This will never return true for already loaded regions or regions currently
         ///    waiting to be unloaded.
         /// </summary>
-        /// <param name="region"></param>
-        /// <returns></returns>
         public static bool IsRegionEvicted<TRegionKey>(this IMapRegionTrackerService<TRegionKey> x, TRegionKey region)
         {
             return x.QueryRegionStatus(region) == MapRegionStatus.Unloaded;

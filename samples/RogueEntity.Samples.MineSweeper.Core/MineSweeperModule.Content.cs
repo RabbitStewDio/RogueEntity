@@ -32,9 +32,9 @@ namespace RogueEntity.Samples.MineSweeper.Core
 
             var actorContext = initializer.DeclareContentContext<ActorReference>()
                                           .EnsureEntityRegistered(serviceResolver);
-            var playerId = actorContext.Activate(actorContext.CreateReferenceEntityBuilder(serviceResolver)
-                                                             .DefinePlayer()
-                                                             .Declaration);
+            actorContext.Activate(actorContext.CreateReferenceEntityBuilder(serviceResolver)
+                                              .DefinePlayer()
+                                              .Declaration);
         }
     }
 }

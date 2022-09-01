@@ -1,5 +1,4 @@
 using RogueEntity.Api.Utils;
-using Serilog;
 using System.Collections.Generic;
 
 namespace RogueEntity.Core.MapLoading.MapRegions
@@ -11,8 +10,6 @@ namespace RogueEntity.Core.MapLoading.MapRegions
     /// <typeparam name="TRegionKey"></typeparam>
     public class BasicMapRegionTrackerService<TRegionKey> : IMapRegionTrackerService<TRegionKey>
     {
-        static readonly ILogger Logger = SLog.ForContext<BasicMapRegionTrackerService<TRegionKey>>();
-
         readonly Dictionary<TRegionKey, MapRegionProcessingRequestStatus<TRegionKey>> chunks;
 
         public BasicMapRegionTrackerService()

@@ -1,4 +1,5 @@
 using Microsoft.Xna.Framework;
+using RogueEntity.Core.MapLoading.MapRegions;
 using RogueEntity.Core.Meta.EntityKeys;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Runtime;

@@ -59,7 +59,7 @@ namespace RogueEntity.Core.Tests.Positioning.Grid
             var x = (IGridMapContextInitializer<ItemReference>)data;
             
             bool eventFired = false;
-            data.ViewReset += (s, e) => eventFired = true;
+            data.ViewReset += (_, _) => eventFired = true;
             x.ResetState();
 
             eventFired.Should().BeTrue();

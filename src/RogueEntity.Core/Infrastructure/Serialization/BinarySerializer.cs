@@ -23,6 +23,8 @@ namespace RogueEntity.Core.Infrastructure.Serialization
         {
             registrationScanner = new EntityRegistrationScanner().With(new BinaryEntityRegistrationHandler());
             writeHandlerRegistry = new BinaryWriteHandlerRegistry();
+            readHandlerRegistry = new BinaryReadHandlerRegistry();
+            componentRegistrations = new List<EntityComponentRegistration>();
         }
 
         public void RegisterComponent<TComponent>()
@@ -35,7 +37,7 @@ namespace RogueEntity.Core.Infrastructure.Serialization
             }
         }
 
-        public void RegisterEntityKey<TEntityKey>(IItemResolver<TEntityKey> itemResolver)
+        public void RegisterEntityKey<TEntityKey>()
             where TEntityKey : IEntityKey
         {
             if (registrationScanner.TryRegisterKey<TEntityKey>(out var reg))

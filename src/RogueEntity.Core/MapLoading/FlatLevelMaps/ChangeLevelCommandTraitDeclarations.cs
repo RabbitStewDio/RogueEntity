@@ -1,7 +1,7 @@
 using EnTTSharp.Entities;
 using RogueEntity.Core.Inputs.Commands;
+using RogueEntity.Core.MapLoading.MapRegions;
 using RogueEntity.Core.Meta.ItemBuilder;
-using RogueEntity.Generator;
 
 namespace RogueEntity.Core.MapLoading.FlatLevelMaps
 {

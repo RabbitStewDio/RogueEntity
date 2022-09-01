@@ -1,7 +1,6 @@
 using FluentAssertions;
 using NUnit.Framework;
 using RogueEntity.Core.MapLoading.MapRegions;
-using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Tests.Fixtures;
 
 namespace RogueEntity.Core.Tests.MapLoading.MapRegions

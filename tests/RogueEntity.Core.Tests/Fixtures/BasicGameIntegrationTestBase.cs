@@ -7,7 +7,6 @@ using RogueEntity.Core.Meta.EntityKeys;
 using RogueEntity.Core.Movement.GridMovement;
 using RogueEntity.Core.Players;
 using RogueEntity.Core.Positioning;
-using RogueEntity.Generator;
 
 namespace RogueEntity.Core.Tests.Fixtures
 {

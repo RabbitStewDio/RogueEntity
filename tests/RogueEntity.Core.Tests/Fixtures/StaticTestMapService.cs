@@ -3,13 +3,10 @@ using RogueEntity.Core.Infrastructure.Randomness;
 using RogueEntity.Core.MapLoading.Builder;
 using RogueEntity.Core.MapLoading.FlatLevelMaps;
 using RogueEntity.Core.MapLoading.MapRegions;
-using RogueEntity.Core.MapLoading.PlayerSpawning;
 using RogueEntity.Core.Players;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Positioning.MapLayers;
-using RogueEntity.Core.Tests.Players;
 using RogueEntity.Core.Utils;
-using RogueEntity.Generator;
 using System;
 using System.Collections.Generic;
 
@@ -64,7 +61,7 @@ namespace RogueEntity.Core.Tests.Fixtures
                 tokenParser.AddToken(t.Key, t.Value);
             }
 
-            var map = TestHelpers.Parse<ItemDeclarationId[]>(raw, tokenParser, out var mapBounds);
+            TestHelpers.Parse<ItemDeclarationId[]>(raw, tokenParser, out var mapBounds);
             data = new Rectangle3D(mapBounds.X, mapBounds.Y, region, mapBounds.Width, mapBounds.Height, 1);
             return true;
         }

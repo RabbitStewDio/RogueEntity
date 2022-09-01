@@ -2,6 +2,7 @@ using RogueEntity.Api.GameLoops;
 using RogueEntity.Api.Modules;
 using RogueEntity.Api.Modules.Attributes;
 using RogueEntity.Core.MapLoading.FlatLevelMaps;
+using RogueEntity.Core.MapLoading.MapRegions;
 
 namespace RogueEntity.Generator
 {

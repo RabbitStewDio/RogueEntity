@@ -95,8 +95,8 @@ namespace RogueEntity.Core.Players
             entityContext.Register(RegisterPlayerServiceId, 80_000, RegisterPlayerService);
         }
 
-        [EntityRelationInitializerAttribute("Relation.Core.Player.PlayerHasObservers",
-                                            ConditionalObjectRoles = new[] { "Role.Core.Position.ContinuousPositioned" })]
+        [EntityRelationInitializer("Relation.Core.Player.PlayerHasObservers",
+                                   ConditionalObjectRoles = new[] { "Role.Core.Position.ContinuousPositioned" })]
         protected void InitializeRefreshPlayerObserversContinuous<TActorId, TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                                                      IModuleInitializer initializer,
                                                                                      EntityRelation r)
@@ -107,8 +107,8 @@ namespace RogueEntity.Core.Players
             entityContext.Register(RegisterPlayerObserverRefreshContinuousId, 81_000, RegisterRefreshObservers<TActorId, TItemId, ContinuousMapPosition>);
         }
 
-        [EntityRelationInitializerAttribute("Relation.Core.Player.PlayerHasObservers",
-                                            ConditionalObjectRoles = new[] { "Role.Core.Position.GridPositioned" })]
+        [EntityRelationInitializer("Relation.Core.Player.PlayerHasObservers",
+                                   ConditionalObjectRoles = new[] { "Role.Core.Position.GridPositioned" })]
         protected void InitializeRefreshPlayerObserversGrid<TActorId, TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                                                IModuleInitializer initializer,
                                                                                EntityRelation r)

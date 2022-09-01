@@ -38,7 +38,7 @@ namespace RogueEntity.Core.Utils
                 return false;
             }
 
-            while (ProduceIterator(out var incr, out var start, out _, out int maxPos))
+            while (ProduceIterator(out var incr, out var start, out int maxPos))
             {
                 pos += 1;
                 if (pos < maxPos)
@@ -66,38 +66,33 @@ namespace RogueEntity.Core.Utils
             
         }
 
-        bool ProduceIterator(out Position2D increment, out Position2D start, out Position2D end, out int maxPos)
+        bool ProduceIterator(out Position2D increment, out Position2D start, out int maxPos)
         {
             switch (side)
             {
                 case 0:
                     increment = new Position2D(1, 0);
                     start = new Position2D(minX, minY);
-                    end = new Position2D(maxX, minY);
                     maxPos = maxX - minX;
                     return true;
                 case 1:
                     increment = new Position2D(0, 1);
                     start = new Position2D(maxX, minY);
-                    end = new Position2D(maxX, maxY);
                     maxPos = maxY - minY;
                     return true;
                 case 2:
                     increment = new Position2D(-1, 0);
                     start = new Position2D(maxX, maxY);
-                    end = new Position2D(minX, maxY);
                     maxPos = maxX - minX;
                     return true;
                 case 3:
                     increment = new Position2D(0, -1);
                     start = new Position2D(minX, maxY);
-                    end = new Position2D(minX, minY);
                     maxPos = maxY - minY;
                     return true;
                 default:
                     increment = default;
                     start = default;
-                    end = default;
                     maxPos = 0;
                     return false;
             }

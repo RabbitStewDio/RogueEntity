@@ -11,24 +11,12 @@ namespace RogueEntity.Core.Positioning.SpatialQueries
         /// <summary>
         ///    Returns all entities within a given 3D box volume around the given position. 
         /// </summary>
-        /// <param name="pos"></param>
-        /// <param name="distance"></param>
-        /// <param name="d"></param>
-        /// <param name="buffer"></param>
-        /// <typeparam name="TComponent"></typeparam>
-        /// <returns></returns>
         BufferList<SpatialQueryResult<TEntityId, TComponent>> QueryBox<TComponent>(in Rectangle3D queryRegion,
                                                                                    BufferList<SpatialQueryResult<TEntityId, TComponent>> buffer = null);
 
         /// <summary>
         ///    Returns all entities within a given 3D sphere volume around the given position. 
         /// </summary>
-        /// <param name="pos"></param>
-        /// <param name="distance"></param>
-        /// <param name="d"></param>
-        /// <param name="buffer"></param>
-        /// <typeparam name="TComponent"></typeparam>
-        /// <returns></returns>
         BufferList<SpatialQueryResult<TEntityId, TComponent>> QuerySphere<TComponent>(in Position pos,
                                                                                       float distance = 1,
                                                                                       DistanceCalculation d = DistanceCalculation.Euclid,

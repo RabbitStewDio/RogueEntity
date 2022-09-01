@@ -139,7 +139,7 @@ namespace RogueEntity.Api.Modules
 
         public RequireDependencyBuilder WithRequiredRole(EntityRole r)
         {
-            this.module.RequireRelation(new EntityRelation(ModuleRelationNames.ImpliedRoleRelationId, role, r, false));
+            this.module.RequireRelation(new EntityRelation(ModuleRelationNames.ImpliedRoleRelationId, role, r));
             return this;
         }
 
