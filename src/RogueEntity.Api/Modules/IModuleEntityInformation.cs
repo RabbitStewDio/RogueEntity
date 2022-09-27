@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using RogueEntity.Api.ItemTraits;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RogueEntity.Api.Modules
 {
@@ -26,6 +27,6 @@ namespace RogueEntity.Api.Modules
         public bool HasRole(EntityRole role, EntityRole requiredRole);
         public bool HasRelation(EntityRole role, EntityRelation requiredRelation);
 
-        bool TryQueryRelationTarget(EntityRelation r, out IReadOnlyCollection<Type> result);
+        bool TryQueryRelationTarget(EntityRelation r, [MaybeNullWhen(false)] out IReadOnlyCollection<Type> result);
     }
 }

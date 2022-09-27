@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using EnTTSharp.Entities;
-using JetBrains.Annotations;
 using RogueEntity.Api.Time;
 using RogueEntity.Api.Utils;
 using RogueEntity.Core.GridProcessing.Directionality;
@@ -14,6 +13,7 @@ using RogueEntity.Core.Sensing.Resistance.Directions;
 using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.DataViews;
 using Serilog;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RogueEntity.Core.Sensing.Sources
 {
@@ -21,7 +21,7 @@ namespace RogueEntity.Core.Sensing.Sources
         where TSenseSourceDefinition : ISenseDefinition
         where TSense : ISense
     {
-        static readonly ILogger Logger = SLog.ForContext<SenseSourceSystem<TSense, TSenseSourceDefinition>>();
+        static readonly ILogger logger = SLog.ForContext<SenseSourceSystem<TSense, TSenseSourceDefinition>>();
         const int ZLayerTimeToLive = 50;
 
         readonly Dictionary<int, SenseDataLevel> activeLightsPerLevel;
@@ -34,17 +34,17 @@ namespace RogueEntity.Core.Sensing.Sources
         readonly List<int> zLevelBuffer;
         readonly ISensoryResistanceDirectionView<TSense> directionalitySystem;
 
-        IReadOnlyDynamicDataView3D<float> resistanceSource;
+        IReadOnlyDynamicDataView3D<float>? resistanceSource;
         Optional<IGridStateCache> cacheView;
         int currentTime;
 
-        public SenseSourceSystem([NotNull] Lazy<IReadOnlyDynamicDataView3D<float>> senseProperties,
-                                 [NotNull] Lazy<IGlobalSenseStateCacheProvider> senseCacheProvider,
-                                 [NotNull] Lazy<ITimeSource> timeSource,
-                                 [NotNull] ISensoryResistanceDirectionView<TSense> directionalitySystem,
-                                 [NotNull] ISenseStateCacheControl senseCacheControl,
-                                 [NotNull] ISensePropagationAlgorithm sensePropagationAlgorithm,
-                                 [NotNull] ISensePhysics physics)
+        public SenseSourceSystem(Lazy<IReadOnlyDynamicDataView3D<float>> senseProperties,
+                                 Lazy<IGlobalSenseStateCacheProvider> senseCacheProvider,
+                                 Lazy<ITimeSource> timeSource,
+                                 ISensoryResistanceDirectionView<TSense> directionalitySystem,
+                                 ISenseStateCacheControl senseCacheControl,
+                                 ISensePropagationAlgorithm sensePropagationAlgorithm,
+                                 ISensePhysics physics)
         {
             this.senseProperties = senseProperties ?? throw new ArgumentNullException(nameof(senseProperties));
             this.sensePropagationAlgorithm = sensePropagationAlgorithm ?? throw new ArgumentNullException(nameof(sensePropagationAlgorithm));
@@ -69,7 +69,7 @@ namespace RogueEntity.Core.Sensing.Sources
             }
             else
             {
-                Logger.Verbose("SenseCacheProvider did not return a global sense cache. The sense system will not react to map changes");
+                logger.Verbose("SenseCacheProvider did not return a global sense cache. The sense system will not react to map changes");
             }
 
             if (resistanceSource == null)
@@ -109,7 +109,7 @@ namespace RogueEntity.Core.Sensing.Sources
                                                               in TSenseSourceDefinition definition,
                                                               in TPosition pos,
                                                               ref SenseSourceState<TSense> state)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
             where TPosition : IPosition<TPosition>
         {
             if (definition.Enabled && !pos.IsInvalid)
@@ -179,7 +179,7 @@ namespace RogueEntity.Core.Sensing.Sources
                                                     in SenseDirtyFlag<TSense> dirtyMarker,
                                                     in ObservedSenseSource<TSense> observed,
                                                     ref SenseSourceState<TSense> state)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             if (!definition.Enabled)
             {
@@ -245,7 +245,7 @@ namespace RogueEntity.Core.Sensing.Sources
                                                         in TSenseSourceDefinition definition,
                                                         in SenseDirtyFlag<TSense> dirtyFlag,
                                                         ref SenseSourceState<TSense> state)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             // we only ever clear the dirty state of observed components. This 
             // ensures that unobserved entities remain eligible for processing 
@@ -256,19 +256,19 @@ namespace RogueEntity.Core.Sensing.Sources
                 {
                     if (state.LastPosition.IsInvalid)
                     {
-                        Console.WriteLine($"Pos is invalid, entity sense marked inactive");
+                        logger.Debug("Pos is invalid, entity sense marked inactive");
                         state = state.WithDirtyState(SenseSourceDirtyState.Inactive);
                     }
                     else
                     {
-                        Console.WriteLine($"Pos {state.LastPosition} marked active");
+                        logger.Debug("Pos {LastPosition} marked active", state.LastPosition);
                         state = state.WithDirtyState(SenseSourceDirtyState.Active);
                     }
                 }
 
                 if (!definition.Enabled && state.State != SenseSourceDirtyState.Inactive)
                 {
-                    Console.WriteLine($"Pos {state.LastPosition} marked inactive");
+                    logger.Debug("Pos {LastPosition} marked inactive", state.LastPosition);
                     state = state.WithDirtyState(SenseSourceDirtyState.Inactive);
                 }
             }
@@ -299,7 +299,9 @@ namespace RogueEntity.Core.Sensing.Sources
             zLevelBuffer.Clear();
         }
 
-        protected bool TryGetResistanceView(int z, out IReadOnlyDynamicDataView2D<float> resistanceView, out IReadOnlyDynamicDataView2D<DirectionalityInformation> directionMap)
+        protected bool TryGetResistanceView(int z, 
+                                            [MaybeNullWhen(false)] out IReadOnlyDynamicDataView2D<float> resistanceView, 
+                                            [MaybeNullWhen(false)] out IReadOnlyDynamicDataView2D<DirectionalityInformation> directionMap)
         {
             if (activeLightsPerLevel.TryGetValue(z, out var level))
             {
@@ -309,6 +311,8 @@ namespace RogueEntity.Core.Sensing.Sources
                 return true;
             }
 
+            if (resistanceSource == null) throw new InvalidOperationException();
+            
             if (resistanceSource.TryGetView(z, out var sensePropertiesForLevel) &&
                 directionalitySystem.ResultView.TryGetView(z, out var directionMapForLevel))
             {

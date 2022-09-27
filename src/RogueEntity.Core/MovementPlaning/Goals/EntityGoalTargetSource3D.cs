@@ -7,7 +7,7 @@ using RogueEntity.Core.Positioning.SpatialQueries;
 namespace RogueEntity.Core.MovementPlaning.Goals
 {
     public class EntityGoalTargetSource3D<TItemId, TGoal> : IGoalFinderTargetSource
-        where TItemId : IEntityKey
+        where TItemId : struct, IEntityKey
     {
         readonly BufferList<SpatialQueryResult<TItemId, GoalMarker<TGoal>>> buffer;
         readonly ISpatialQuery<TItemId> query;

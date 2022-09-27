@@ -14,7 +14,7 @@ namespace RogueEntity.Core.MapLoading.FlatLevelMaps
         void RequestLoadLevelFromChangeLevelCommand<TItemId>(IEntityViewControl<TItemId> v,
                                                              TItemId k,
                                                              in ChangeLevelRequest cmd)
-            where TItemId : IEntityKey;
+            where TItemId : struct, IEntityKey;
 
         /// <summary>
         ///   Invoked when a player is moving into a new level by falling or by knowing where
@@ -24,11 +24,11 @@ namespace RogueEntity.Core.MapLoading.FlatLevelMaps
         void RequestLoadLevelFromChangePositionCommand<TItemId>(IEntityViewControl<TItemId> v,
                                                                 TItemId k,
                                                                 in ChangeLevelPositionRequest cmd)
-            where TItemId : IEntityKey;
+            where TItemId : struct, IEntityKey;
 
         public void RequestEvictLevelFromRequest<TItemId>(IEntityViewControl<TItemId> v,
                                                           TItemId k,
                                                           in EvictLevelRequest cmd)
-            where TItemId : IEntityKey;
+            where TItemId : struct, IEntityKey;
     }
 }

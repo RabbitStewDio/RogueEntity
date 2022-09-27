@@ -7,7 +7,7 @@ using System.Linq;
 namespace RogueEntity.Core.Meta.Items
 {
     public class FlagItemTrait<TEntityId, TFlagItem> : SimpleReferenceItemComponentTraitBase<TEntityId, TFlagItem>
-        where TEntityId : IEntityKey
+        where TEntityId : struct, IEntityKey
         where TFlagItem : new()
     {
         readonly bool flagExistsOnNewItems;

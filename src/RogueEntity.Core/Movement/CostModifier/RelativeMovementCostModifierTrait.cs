@@ -7,7 +7,7 @@ using RogueEntity.Core.Movement.MovementModes;
 namespace RogueEntity.Core.Movement.CostModifier
 {
     public class RelativeMovementCostModifierTrait< TItemId, TMovementMode>: StatelessItemComponentTraitBase< TItemId, RelativeMovementCostModifier<TMovementMode>>
-        where TItemId : IEntityKey
+        where TItemId : struct, IEntityKey
     {
         readonly RelativeMovementCostModifier<TMovementMode> sensoryResistance;
 

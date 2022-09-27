@@ -104,7 +104,7 @@ namespace RogueEntity.Core.Tests.Inventory
         {
             var itemToAdd = Context.ItemResolver.Instantiate(ContentDeclaration);
             Inventory.TryAddItem(itemToAdd, out var remainderItem).Should().BeTrue();
-            remainderItem.Should().Be(ItemReference.Empty);
+            remainderItem.Should().BeEmpty();
 
             // item is contained in inventory
             Inventory.Items.Should().ContainInOrder(itemToAdd);
@@ -157,12 +157,12 @@ namespace RogueEntity.Core.Tests.Inventory
         {
             var stackingItem = Context.ItemResolver.Instantiate(BulkContentDeclaration).WithStackData(50);
             Inventory.TryAddItem(stackingItem, out var stackedRemainder).Should().BeTrue();
-            stackedRemainder.Should().Be(ItemReference.Empty);
+            stackedRemainder.Should().BeEmpty();
             Inventory.TotalWeight.Should().Be(Weight.OfKiloGram(50f));
             Inventory.AvailableCarryWeight.Should().Be(Weight.OfKiloGram(50f));
 
             Inventory.TryAddItem(stackingItem.WithStackData(60), out var stackedRemainder2).Should().BeTrue();
-            stackedRemainder2.Should().Be(stackingItem.WithStackData(10));
+            stackedRemainder2.Should().BeEquivalentTo(stackingItem.WithStackData(10));
             Inventory.TotalWeight.Should().Be(Weight.OfKiloGram(100f));
             Inventory.AvailableCarryWeight.Should().Be(Weight.OfKiloGram(0f));
 
@@ -186,7 +186,7 @@ namespace RogueEntity.Core.Tests.Inventory
             // leaves 42.5 kgs of available weight. That is 42 bulk items, leaving 0.5kg unused.
             
             Inventory.TryAddItem(stackingItem, out var remainder).Should().BeTrue();
-            remainder.Should().Be(stackingItem.WithStackData(8));
+            remainder.Should().BeEquivalentTo(stackingItem.WithStackData(8));
 
             Inventory.TotalWeight.Should().Be(Weight.OfKiloGram(99.5f));
             Inventory.AvailableCarryWeight.Should().Be(Weight.OfKiloGram(0.5f));

@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using EnTTSharp.Entities;
-using JetBrains.Annotations;
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Api.Utils;
 using RogueEntity.Core.Meta.Items;
@@ -12,7 +11,7 @@ namespace RogueEntity.Core.Sensing.Sources.Heat
 {
     public class HeatSourceTrait<TItemId> : SenseSourceTraitBase<TItemId, TemperatureSense, HeatSourceDefinition>,
                                             IItemComponentTrait<TItemId, Temperature>
-        where TItemId : IEntityKey
+        where TItemId : struct, IEntityKey
     {
         public override ItemTraitId Id => "Core.Item.Temperature";
         public override int Priority => 100;
@@ -20,7 +19,7 @@ namespace RogueEntity.Core.Sensing.Sources.Heat
         readonly IHeatPhysicsConfiguration physicsConfiguration;
         readonly Optional<Temperature> baseTemperature;
 
-        public HeatSourceTrait([NotNull] IHeatPhysicsConfiguration physicsConfiguration, Optional<Temperature> baseTemperature = default)
+        public HeatSourceTrait(IHeatPhysicsConfiguration physicsConfiguration, Optional<Temperature> baseTemperature = default)
         {
             this.physicsConfiguration = physicsConfiguration ?? throw new ArgumentNullException(nameof(physicsConfiguration));
             this.baseTemperature = baseTemperature;

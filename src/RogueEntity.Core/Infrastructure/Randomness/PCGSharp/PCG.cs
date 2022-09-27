@@ -76,7 +76,7 @@ namespace RogueEntity.Core.Infrastructure.Randomness.PCGSharp
         // An alternative, since PCG supports streams, is to use a different stream per
         // thread. 
         [ThreadStatic]
-        static PCG defaultInstance;
+        static PCG? defaultInstance;
 
         /// <summary>
         /// Default instance.

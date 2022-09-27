@@ -6,15 +6,15 @@ using RogueEntity.Api.Services;
 namespace RogueEntity.Api.Modules
 {
     public readonly struct ModuleEntityInitializationParameter<TEntityId>
-        where TEntityId : IEntityKey
+        where TEntityId : struct, IEntityKey
     {
         public readonly IModuleEntityInformation EntityInformation;
         public readonly IServiceResolver ServiceResolver;
         public readonly IModuleContentDeclarations<TEntityId> ContentDeclarations;
 
-        public ModuleEntityInitializationParameter([NotNull] IModuleEntityInformation entityInformation,
-                                                   [NotNull] IServiceResolver serviceResolver,
-                                                   [NotNull] IModuleContentDeclarations<TEntityId> contentDeclarations)
+        public ModuleEntityInitializationParameter(IModuleEntityInformation entityInformation,
+                                                   IServiceResolver serviceResolver,
+                                                   IModuleContentDeclarations<TEntityId> contentDeclarations)
         {
             EntityInformation = entityInformation ?? throw new ArgumentNullException(nameof(entityInformation));
             ServiceResolver = serviceResolver ?? throw new ArgumentNullException(nameof(serviceResolver));

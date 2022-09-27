@@ -1,5 +1,4 @@
 using EnTTSharp.Entities;
-using JetBrains.Annotations;
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Runtime;
@@ -13,15 +12,15 @@ namespace RogueEntity.Core.Players
     /// </summary>
     /// <typeparam name="TEntity"></typeparam>
     public class BasicPlayerManager<TEntity> : IPlayerManager<TEntity>
-        where TEntity : IEntityKey
+        where TEntity : struct, IEntityKey
     {
         readonly IItemResolver<TEntity> itemResolver;
         readonly Lazy<IPlayerServiceConfiguration> playerItemId;
-        public event EventHandler<PlayerReference<TEntity>> PlayerActivated;
-        public event EventHandler<PlayerReference<TEntity>> PlayerDeactivated;
+        public event EventHandler<PlayerReference<TEntity>>? PlayerActivated;
+        public event EventHandler<PlayerReference<TEntity>>? PlayerDeactivated;
 
-        public BasicPlayerManager([NotNull] IItemResolver<TEntity> itemResolver,
-                                  [NotNull] Lazy<IPlayerServiceConfiguration> playerItemId)
+        public BasicPlayerManager(IItemResolver<TEntity> itemResolver,
+                                  Lazy<IPlayerServiceConfiguration> playerItemId)
         {
             this.itemResolver = itemResolver ?? throw new ArgumentNullException(nameof(itemResolver));
             this.playerItemId = playerItemId ?? throw new ArgumentNullException(nameof(playerItemId));

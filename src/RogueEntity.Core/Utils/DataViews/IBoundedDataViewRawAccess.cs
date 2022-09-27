@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace RogueEntity.Core.Utils.DataViews
 {
     public interface IReadOnlyBoundedDataView<TData> : IReadOnlyView2D<TData>
@@ -8,7 +10,8 @@ namespace RogueEntity.Core.Utils.DataViews
     
     public interface IBoundedDataView<TData>: IView2D<TData>, IReadOnlyBoundedDataView<TData>
     {
-        ref TData TryGetForUpdate(int x, int y, ref TData defaultValue, out bool success);
+        [return: NotNullIfNotNull("defaultValue")]
+        ref TData? TryGetForUpdate(int x, int y, ref TData? defaultValue, out bool success);
     }
     
     public interface IBoundedDataViewRawAccess<TData>: IBoundedDataView<TData>

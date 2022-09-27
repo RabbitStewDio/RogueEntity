@@ -41,7 +41,7 @@ namespace RogueEntity.Core.Positioning.Grid
         protected void InitializeGridPositioned<TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter,
                                                           IModuleInitializer initializer,
                                                           EntityRole role)
-            where TActorId : IEntityKey
+            where TActorId : struct, IEntityKey
         {
             EnsureDefaultGridMapExists(initParameter, initializer, role);
 
@@ -64,7 +64,7 @@ namespace RogueEntity.Core.Positioning.Grid
         protected void EnsureDefaultGridMapExists<TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter,
                                                             IModuleInitializer initializer,
                                                             EntityRole role)
-            where TActorId : IEntityKey
+            where TActorId : struct, IEntityKey
         {
             if (!initParameter.ServiceResolver.TryResolve<IItemResolver<TActorId>>(out var itemResolver))
             {
@@ -118,11 +118,11 @@ namespace RogueEntity.Core.Positioning.Grid
         void RegisterMapDataAggregate<TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter,
                                             IGameLoopSystemRegistration context,
                                             EntityRegistry<TActorId> registry)
-            where TActorId : IEntityKey
+            where TActorId : struct, IEntityKey
         {
             var sr = initParameter.ServiceResolver;
-            if (sr.TryResolve(out AggregateMapStateController amc) && 
-                sr.TryResolve(out IGridMapContext<TActorId> mapContext))
+            if (sr.TryResolve<AggregateMapStateController>(out var amc) && 
+                sr.TryResolve<IGridMapContext<TActorId>>(out var mapContext))
             {
                 foreach (var ml in mapContext.GridLayers())
                 {
@@ -137,7 +137,7 @@ namespace RogueEntity.Core.Positioning.Grid
         void RegisterClearGridPositionChangeTrackers<TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter,
                                                                IGameLoopSystemRegistration context,
                                                                EntityRegistry<TActorId> registry)
-            where TActorId : IEntityKey
+            where TActorId : struct, IEntityKey
         {
             void ClearGridPositionAction()
             {
@@ -151,7 +151,7 @@ namespace RogueEntity.Core.Positioning.Grid
         void RegisterClearDestroyedEntities<TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter,
                                                       IGameLoopSystemRegistration context,
                                                       EntityRegistry<TActorId> registry)
-            where TActorId : IEntityKey
+            where TActorId : struct, IEntityKey
         {
             var sr = initParameter.ServiceResolver;
             var system = new GridPositionCleanUpSystem<TActorId, EntityGridPosition>(sr.Resolve<IItemPlacementServiceContext<TActorId>>());
@@ -175,7 +175,7 @@ namespace RogueEntity.Core.Positioning.Grid
 
         void RegisterGridEntities<TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter,
                                             EntityRegistry<TActorId> registry)
-            where TActorId : IEntityKey
+            where TActorId : struct, IEntityKey
         {
             registry.RegisterNonConstructable<EntityGridPosition>();
             registry.RegisterNonConstructable<EntityGridPositionChangedMarker>();

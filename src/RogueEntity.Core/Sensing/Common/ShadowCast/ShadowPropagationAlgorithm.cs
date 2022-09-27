@@ -1,5 +1,4 @@
 using System;
-using JetBrains.Annotations;
 using RogueEntity.Core.GridProcessing.Directionality;
 using RogueEntity.Core.Positioning.Algorithms;
 using RogueEntity.Core.Sensing.Common.Physics;
@@ -35,11 +34,11 @@ namespace RogueEntity.Core.Sensing.Common.ShadowCast
 
         readonly ISensePhysics sensePhysics;
         readonly ShadowPropagationResistanceDataSource dataSource;
-        IReadOnlyBoundedDataView<float> resistanceTile;
-        IReadOnlyBoundedDataView<DirectionalityInformation> directionalityTile;
+        IReadOnlyBoundedDataView<float>? resistanceTile;
+        IReadOnlyBoundedDataView<DirectionalityInformation>? directionalityTile;
 
-        public ShadowPropagationAlgorithm([NotNull] ISensePhysics sensePhysics,
-                                          [NotNull] ShadowPropagationResistanceDataSource dataSource)
+        public ShadowPropagationAlgorithm(ISensePhysics sensePhysics,
+                                          ShadowPropagationResistanceDataSource dataSource)
         {
             this.sensePhysics = sensePhysics ?? throw new ArgumentNullException(nameof(sensePhysics));
             this.dataSource = dataSource ?? throw new ArgumentNullException(nameof(dataSource));
@@ -50,7 +49,7 @@ namespace RogueEntity.Core.Sensing.Common.ShadowCast
                                          in Position2D position,
                                          IReadOnlyDynamicDataView2D<float> resistanceMap,
                                          IReadOnlyDynamicDataView2D<DirectionalityInformation> directionalityView,
-                                         SenseSourceData data = null)
+                                         SenseSourceData? data = null)
         {
             var radius = (int)Math.Ceiling(sensePhysics.SignalRadiusForIntensity(intensity));
             if (data == null || data.Radius != radius)

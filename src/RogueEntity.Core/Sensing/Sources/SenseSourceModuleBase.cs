@@ -41,7 +41,7 @@ namespace RogueEntity.Core.Sensing.Sources
         where TSense : ISense
         where TSenseSourceDefinition : ISenseDefinition
     {
-        static readonly ILogger Logger = SLog.ForContext<SenseSourceModuleBase<TSense, TSenseSourceDefinition>>();
+        static readonly ILogger logger = SLog.ForContext<SenseSourceModuleBase<TSense, TSenseSourceDefinition>>();
 
         public static readonly EntityRole SenseSourceRole = SenseSourceModules.GetSourceRole<TSense>();
         public static readonly EntityRole ResistanceDataProviderRole = SenseSourceModules.GetResistanceRole<TSense>();
@@ -77,7 +77,7 @@ namespace RogueEntity.Core.Sensing.Sources
         public IEnumerable<ModuleEntityRoleInitializerInfo<TItemId>> CollectRoleInitializers<TItemId>(IServiceResolver serviceResolver,
                                                                                                       IModuleEntityInformation entityInformation,
                                                                                                       EntityRole role)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             if (role == SenseSourceRole)
             {
@@ -110,7 +110,7 @@ namespace RogueEntity.Core.Sensing.Sources
         public IEnumerable<ModuleEntityRoleInitializerInfo<TItemId>> CollectRoleFinalizers<TItemId>(IServiceResolver serviceResolver,
                                                                                                     IModuleEntityInformation entityInformation,
                                                                                                     EntityRole role)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             if (role != ResistanceDataProviderRole)
             {
@@ -127,11 +127,11 @@ namespace RogueEntity.Core.Sensing.Sources
         void InitializeResistanceRelation<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                    IModuleInitializer initializer,
                                                    EntityRole role)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             var layers = PositionModuleServices.CollectMapLayers<TItemId, SensoryResistance<TSense>>(initParameter);
             var mapLayers = layers.ToList();
-            Logger.Debug("{Sense} will use map layers {Layers} as resistance source for {EntityId}", typeof(TSense), mapLayers, typeof(TItemId));
+            logger.Debug("{Sense} will use map layers {Layers} as resistance source for {EntityId}", typeof(TSense), mapLayers, typeof(TItemId));
             
             var systemId = SenseSourceModules.CreateResistanceSourceSystemId<TSense>();
             var ctx = initializer.DeclareEntityContext<TItemId>();
@@ -142,7 +142,7 @@ namespace RogueEntity.Core.Sensing.Sources
         protected void InitializeSenseSourceRole<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                           IModuleInitializer initializer,
                                                           EntityRole role)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             var ctx = initializer.DeclareEntityContext<TItemId>();
             ctx.Register(RegisterEntityId, 0, RegisterSenseSourceEntities);
@@ -157,7 +157,7 @@ namespace RogueEntity.Core.Sensing.Sources
         protected void InitializeSenseSourceCollectionGrid<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                                     IModuleInitializer initializer,
                                                                     EntityRole role)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             var ctx = initializer.DeclareEntityContext<TItemId>();
             ctx.Register(CollectionGridSystemId, 55000, RegisterCollectSenseSourceGridSystem);
@@ -166,7 +166,7 @@ namespace RogueEntity.Core.Sensing.Sources
         protected void InitializeSenseSourceCollectionContinuous<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                                           IModuleInitializer initializer,
                                                                           EntityRole role)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             var ctx = initializer.DeclareEntityContext<TItemId>();
             ctx.Register(CollectionGridSystemId, 55000, RegisterCollectSenseSourceContinuousSystem);
@@ -176,9 +176,9 @@ namespace RogueEntity.Core.Sensing.Sources
         protected void InitializeSenseCache<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                      IModuleInitializer initializer,
                                                      EntityRole role)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
-            if (initParameter.ServiceResolver.TryResolve(out SenseCacheSetUpSystem o))
+            if (initParameter.ServiceResolver.TryResolve<SenseCacheSetUpSystem>(out var o))
             {
                 o.RegisterSense<TSense>();
             }
@@ -187,7 +187,7 @@ namespace RogueEntity.Core.Sensing.Sources
         protected void InitializeResistanceEntities<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                              IModuleInitializer initializer,
                                                              EntityRole role)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             var ctx = initializer.DeclareEntityContext<TItemId>();
             ctx.Register(RegisterResistanceEntitiesId, 0, RegisterResistanceEntities);
@@ -196,7 +196,7 @@ namespace RogueEntity.Core.Sensing.Sources
         protected void InitializeResistanceRole<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                          IModuleInitializer initializer,
                                                          EntityRole role)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             // The sense resistance system is only needed if there is at least one sense source of this type active.
 
@@ -209,7 +209,7 @@ namespace RogueEntity.Core.Sensing.Sources
         protected void RegisterResistanceSystemLifecycle<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                                   IGameLoopSystemRegistration context,
                                                                   EntityRegistry<TItemId> registry)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             var serviceResolver = initParameter.ServiceResolver;
             var system = GetOrCreateSensePropertiesSystem<TItemId>(serviceResolver);
@@ -221,7 +221,7 @@ namespace RogueEntity.Core.Sensing.Sources
         protected void RegisterResistanceSystemExecution<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                                   IGameLoopSystemRegistration context,
                                                                   EntityRegistry<TItemId> registry)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             var serviceResolver = initParameter.ServiceResolver;
             var system = GetOrCreateSensePropertiesSystem<TItemId>(serviceResolver);
@@ -233,7 +233,7 @@ namespace RogueEntity.Core.Sensing.Sources
         protected void RegisterPrepareSenseSourceSystem<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                                  IGameLoopSystemRegistration context,
                                                                  EntityRegistry<TItemId> registry)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             var serviceResolver = initParameter.ServiceResolver;
             var ls = GetOrCreateSenseSourceSystem<TItemId>(serviceResolver);
@@ -245,7 +245,7 @@ namespace RogueEntity.Core.Sensing.Sources
         protected void RegisterCollectSenseSourceGridSystem<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                                      IGameLoopSystemRegistration context,
                                                                      EntityRegistry<TItemId> registry)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             var serviceResolver = initParameter.ServiceResolver;
             var ls = GetOrCreateSenseSourceSystem<TItemId>(serviceResolver);
@@ -261,7 +261,7 @@ namespace RogueEntity.Core.Sensing.Sources
         protected void RegisterCollectSenseSourceContinuousSystem<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                                            IGameLoopSystemRegistration context,
                                                                            EntityRegistry<TItemId> registry)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             var serviceResolver = initParameter.ServiceResolver;
             var ls = GetOrCreateSenseSourceSystem<TItemId>(serviceResolver);
@@ -277,7 +277,7 @@ namespace RogueEntity.Core.Sensing.Sources
         protected void RegisterCalculateSenseSourceStateSystem<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                                         IGameLoopSystemRegistration context,
                                                                         EntityRegistry<TItemId> registry)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             var serviceResolver = initParameter.ServiceResolver;
             var ls = GetOrCreateSenseSourceSystem<TItemId>(serviceResolver);
@@ -295,7 +295,7 @@ namespace RogueEntity.Core.Sensing.Sources
         protected void RegisterCleanUpSystem<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                       IGameLoopSystemRegistration context,
                                                       EntityRegistry<TItemId> registry)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             var serviceResolver = initParameter.ServiceResolver;
             var ls = GetOrCreateSenseSourceSystem<TItemId>(serviceResolver);
@@ -318,7 +318,7 @@ namespace RogueEntity.Core.Sensing.Sources
         protected void RegisterProcessSenseDirectionalitySystem<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                                          IGameLoopSystemRegistration context,
                                                                          EntityRegistry<TItemId> registry)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             var serviceResolver = initParameter.ServiceResolver;
             var system = GetOrCreateDirectionalitySystem<TItemId>(serviceResolver);
@@ -337,21 +337,22 @@ namespace RogueEntity.Core.Sensing.Sources
         protected void RegisterSenseResistanceCacheLifeCycle<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                                       IGameLoopSystemRegistration context,
                                                                       EntityRegistry<TItemId> registry)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             var resolver = initParameter.ServiceResolver;
             // Ensure that the connection is only made once. The sense properties system will
             // forward all invalidation events to the sense cache.
-            if (!resolver.TryResolve(out SensePropertiesConnectorSystem<TSense> system))
+            if (!resolver.TryResolve<SensePropertiesConnectorSystem<TSense>>(out var system))
             {
-                if (!resolver.TryResolve(out SensePropertiesSystem<TSense> sensePropertiesSystem))
+                if (!resolver.TryResolve<SensePropertiesSystem<TSense>>(out var sensePropertiesSystem))
                 {
-                    Logger.Verbose("Not registering SensePropertiesConnector. No Sense Properties System defined");
+                    logger.Verbose("Not registering SensePropertiesConnector. No Sense Properties System defined");
+                    return;
                 }
 
-                if (!resolver.TryResolve(out SenseStateCache cacheProvider))
+                if (!resolver.TryResolve<SenseStateCache>(out var cacheProvider))
                 {
-                    Logger.Warning("Not registering SensePropertiesConnector. No SenseStateCache defined");
+                    logger.Warning("Not registering SensePropertiesConnector. No SenseStateCache defined");
                     return;
                 }
 
@@ -365,7 +366,7 @@ namespace RogueEntity.Core.Sensing.Sources
 
         protected virtual SensePropertiesSystem<TSense> GetOrCreateSensePropertiesSystem<TEntityId>(IServiceResolver serviceResolver)
         {
-            if (serviceResolver.TryResolve(out SensePropertiesSystem<TSense> system))
+            if (serviceResolver.TryResolve<SensePropertiesSystem<TSense>>(out var system))
             {
                 return system;
             }
@@ -381,12 +382,12 @@ namespace RogueEntity.Core.Sensing.Sources
 
         protected virtual SensoryResistanceDirectionalitySystem<TSense> GetOrCreateDirectionalitySystem<TItemId>(IServiceResolver serviceResolver)
         {
-            if (serviceResolver.TryResolve(out SensoryResistanceDirectionalitySystem<TSense> system))
+            if (serviceResolver.TryResolve<SensoryResistanceDirectionalitySystem<TSense>>(out var system))
             {
                 return system;
             }
 
-            if (!serviceResolver.TryResolve(out ISensePropertiesDataView<TSense> data))
+            if (!serviceResolver.TryResolve<ISensePropertiesDataView<TSense>>(out var data))
             {
                 data = GetOrCreateSensePropertiesSystem<TItemId>(serviceResolver);
             }
@@ -400,12 +401,12 @@ namespace RogueEntity.Core.Sensing.Sources
         protected virtual SenseSourceSystem<TSense, TSenseSourceDefinition> GetOrCreateSenseSourceSystem<TItemId>(IServiceResolver serviceResolver)
         {
             var physicsConfig = GetOrCreateSensePhysics(serviceResolver);
-            if (serviceResolver.TryResolve(out SenseSourceSystem<TSense, TSenseSourceDefinition> ls))
+            if (serviceResolver.TryResolve<SenseSourceSystem<TSense, TSenseSourceDefinition>>(out var ls))
             {
                 return ls;
             }
 
-            if (!serviceResolver.TryResolve(out ISensoryResistanceDirectionView<TSense> senseDirections))
+            if (!serviceResolver.TryResolve<ISensoryResistanceDirectionView<TSense>>(out var senseDirections))
             {
                 senseDirections = GetOrCreateDirectionalitySystem<TItemId>(serviceResolver);
             }
@@ -426,7 +427,7 @@ namespace RogueEntity.Core.Sensing.Sources
 
         protected void RegisterSenseSourceEntities<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                             EntityRegistry<TItemId> registry)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             registry.RegisterNonConstructable<TSenseSourceDefinition>();
             registry.RegisterNonConstructable<SenseSourceState<TSense>>();
@@ -436,7 +437,7 @@ namespace RogueEntity.Core.Sensing.Sources
 
         protected void RegisterResistanceEntities<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                            EntityRegistry<TItemId> registry)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             registry.RegisterNonConstructable<SensoryResistance<TSense>>();
         }

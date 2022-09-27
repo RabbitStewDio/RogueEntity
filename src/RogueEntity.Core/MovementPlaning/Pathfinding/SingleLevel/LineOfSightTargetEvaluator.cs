@@ -1,4 +1,3 @@
-using JetBrains.Annotations;
 using RogueEntity.Core.Movement.CostModifier.Directions;
 using RogueEntity.Core.Movement.CostModifier.Map;
 using RogueEntity.Core.Positioning;
@@ -20,16 +19,16 @@ namespace RogueEntity.Core.MovementPlaning.Pathfinding.SingleLevel
         int zLevel;
         Position2D targetPosition;
         Position2D sourcePosition;
-        SenseSourceData result;
+        SenseSourceData? result;
         
         readonly IRelativeMovementCostSystem<TMovementMode> resistanceMap;
         readonly IOutboundMovementDirectionView<TMovementMode> directionMap;
-        readonly Action<LineOfSightTargetEvaluator<TMovementMode>> returnToPoolAction;
+        readonly Action<LineOfSightTargetEvaluator<TMovementMode>>? returnToPoolAction;
 
-        public LineOfSightTargetEvaluator([NotNull] ShadowPropagationResistanceDataSource data,
-                                          [NotNull] IRelativeMovementCostSystem<TMovementMode> resistanceMap,
-                                          [NotNull] IOutboundMovementDirectionView<TMovementMode> directionMap,
-                                          [CanBeNull] Action<LineOfSightTargetEvaluator<TMovementMode>> returnToPoolAction = null)
+        public LineOfSightTargetEvaluator(ShadowPropagationResistanceDataSource data,
+                                          IRelativeMovementCostSystem<TMovementMode> resistanceMap,
+                                          IOutboundMovementDirectionView<TMovementMode> directionMap,
+                                          Action<LineOfSightTargetEvaluator<TMovementMode>>? returnToPoolAction = null)
         {
             if (data == null)
             {
@@ -83,6 +82,8 @@ namespace RogueEntity.Core.MovementPlaning.Pathfinding.SingleLevel
 
         public bool IsTargetNode(int z, in Position2D pos)
         {
+            Assert.NotNull(result);
+            
             if (z == zLevel && pos == targetPosition) return true;
             return result[pos.X - sourcePosition.X, pos.Y - sourcePosition.Y] > 0;
         }

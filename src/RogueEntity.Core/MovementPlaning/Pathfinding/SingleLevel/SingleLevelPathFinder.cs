@@ -1,4 +1,3 @@
-using JetBrains.Annotations;
 using RogueEntity.Api.Utils;
 using RogueEntity.Core.GridProcessing.Directionality;
 using RogueEntity.Core.Movement;
@@ -24,12 +23,12 @@ namespace RogueEntity.Core.MovementPlaning.Pathfinding.SingleLevel
         readonly SingleLevelPathFinderWorker singleLevelPathFinder;
         readonly Stopwatch sw;
 
-        SingleLevelPathFinderBuilder currentOwner;
-        IPathFinderTargetEvaluator targetEvaluator;
+        SingleLevelPathFinderBuilder? currentOwner;
+        IPathFinderTargetEvaluator? targetEvaluator;
         bool disposed;
 
-        public SingleLevelPathFinder([NotNull] IBoundedDataViewPool<AStarNode> astarNodePool,
-                                     [NotNull] IBoundedDataViewPool<IMovementMode> movementModePool)
+        public SingleLevelPathFinder(IBoundedDataViewPool<AStarNode> astarNodePool,
+                                     IBoundedDataViewPool<IMovementMode> movementModePool)
         {
             this.movementSourceData = new List<MovementCostData3D>();
             this.singleLevelPathFinder = new SingleLevelPathFinderWorker(astarNodePool, movementModePool);
@@ -44,18 +43,18 @@ namespace RogueEntity.Core.MovementPlaning.Pathfinding.SingleLevel
             }
 
             disposed = true;
-            currentOwner.Return(this);
+            currentOwner?.Return(this);
             currentOwner = null;
             targetEvaluator = null;
         }
 
-        public IPathFinderTargetEvaluator TargetEvaluator
+        public IPathFinderTargetEvaluator? TargetEvaluator
         {
             get { return targetEvaluator; }
         }
 
-        public void Configure([NotNull] SingleLevelPathFinderBuilder owner,
-                              [NotNull] IPathFinderTargetEvaluator evaluator)
+        public void Configure(SingleLevelPathFinderBuilder owner,
+                              IPathFinderTargetEvaluator evaluator)
         {
             this.disposed = false;
             this.movementSourceData.Clear();
@@ -75,7 +74,7 @@ namespace RogueEntity.Core.MovementPlaning.Pathfinding.SingleLevel
 
         public PathFinderResult TryFindPath<TPosition>(in TPosition source,
                                                        out BufferList<(TPosition, IMovementMode)> path,
-                                                       BufferList<(TPosition, IMovementMode)> pathBuffer = null,
+                                                       BufferList<(TPosition, IMovementMode)>? pathBuffer = null,
                                                        int searchLimit = Int32.MaxValue)
             where TPosition : IPosition<TPosition>
         {
@@ -99,7 +98,7 @@ namespace RogueEntity.Core.MovementPlaning.Pathfinding.SingleLevel
 
             singleLevelPathFinder.ConfigureFinished(heuristics.AsAdjacencyRule());
 
-            if (!targetEvaluator.Initialize(source, heuristics))
+            if (targetEvaluator == null || !targetEvaluator.Initialize(source, heuristics))
             {
                 path = pathBuffer;
                 return PathFinderResult.NotFound;
@@ -121,8 +120,8 @@ namespace RogueEntity.Core.MovementPlaning.Pathfinding.SingleLevel
         public TimeSpan TimeElapsed { get; private set; }
 
         public void ConfigureMovementProfile(in MovementCost costProfile,
-                                             [NotNull] IReadOnlyDynamicDataView3D<float> costs,
-                                             [NotNull] IReadOnlyDynamicDataView3D<DirectionalityInformation> directions)
+                                             IReadOnlyDynamicDataView3D<float> costs,
+                                             IReadOnlyDynamicDataView3D<DirectionalityInformation> directions)
         {
             this.movementSourceData.Add(new MovementCostData3D(in costProfile, costs, directions));
         }

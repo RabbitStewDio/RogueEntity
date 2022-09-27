@@ -10,7 +10,7 @@ namespace RogueEntity.Core.Meta.ItemTraits
 {
     public class StackingBulkTrait< TItemId> : IItemComponentTrait< TItemId, StackCount>,
                                                         IBulkDataTrait< TItemId>
-        where TItemId : IBulkDataStorageKey<TItemId>
+        where TItemId : struct, IBulkDataStorageKey<TItemId>
     {
         readonly ushort stackSize;
         readonly ushort initialCount;

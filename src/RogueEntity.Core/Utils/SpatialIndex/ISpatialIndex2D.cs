@@ -1,11 +1,12 @@
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RogueEntity.Core.Utils.SpatialIndex
 {
     public interface ISpatialIndex2D<T>
     {
         FreeListIndex Insert(T data, in BoundingBox bounds);
-        bool TryGet(FreeListIndex index, out T data, out BoundingBox boundingBox);
+        bool TryGet(FreeListIndex index, [MaybeNullWhen(false)] out T data, out BoundingBox boundingBox);
         void Remove(FreeListIndex elementIndex);
 
         List<FreeListIndex> Query(in BoundingBox bb, List<FreeListIndex> result, FreeListIndex skipElement = default);

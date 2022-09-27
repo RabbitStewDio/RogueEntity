@@ -1,17 +1,19 @@
-﻿namespace RogueEntity.Api.ItemTraits
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace RogueEntity.Api.ItemTraits
 {
     public interface IItemResolver<TItemId>
     {
         IBulkDataStorageMetaData<TItemId> EntityMetaData { get; }
         IItemRegistry ItemRegistry { get; }
 
-        bool TryResolve(in TItemId itemRef, out IItemDeclaration item);
+        bool TryResolve(in TItemId itemRef, [MaybeNullWhen(false)] out IItemDeclaration item);
 
         TItemId Instantiate(IItemDeclaration item);
 
-        bool TryQueryTrait<TItemData>(TItemId itemRef, out TItemData data) where TItemData: IItemTrait;
+        bool TryQueryTrait<TItemData>(TItemId itemRef, [MaybeNullWhen(false)] out TItemData data) where TItemData: IItemTrait;
 
-        bool TryQueryData<TData>(TItemId itemRef, out TData data);
+        bool TryQueryData<TData>(TItemId itemRef, [MaybeNullWhen(false)] out TData data);
 
         bool TryUpdateData<TData>(TItemId itemRef,
                                   in TData data,
@@ -39,14 +41,14 @@
         /// </summary>
         /// <param name="item"></param>
         /// <returns></returns>
-        TItemId Destroy(in TItemId item);
+        void Destroy(in TItemId item);
         
         /// <summary>
         ///   Destroys the given entity at the end of the next turn.
         /// </summary>
         /// <param name="item"></param>
         /// <returns></returns>
-        TItemId DestroyNext(in TItemId item);
+        void DestroyNext(in TItemId item);
 
         /// <summary>
         ///   Returns true if this item is a reference item that has been marked as destroyed

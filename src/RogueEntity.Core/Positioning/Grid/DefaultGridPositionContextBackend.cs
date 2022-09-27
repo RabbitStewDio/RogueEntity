@@ -11,7 +11,7 @@ namespace RogueEntity.Core.Positioning.Grid
         readonly Dictionary<byte, IGridMapDataContext<TItemId>> mapLayerData;
         readonly List<MapLayer> mapLayers;
 
-        public DefaultGridPositionContextBackend(): this(DynamicDataViewConfiguration.Default_32x32)
+        public DefaultGridPositionContextBackend(): this(DynamicDataViewConfiguration.Default32X32)
         {
         }
 

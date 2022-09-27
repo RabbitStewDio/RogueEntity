@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Caching;
 using RogueEntity.Core.Positioning.MapLayers;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RogueEntity.Core.Sensing.Cache
 {
@@ -68,7 +69,7 @@ namespace RogueEntity.Core.Sensing.Cache
             return true;
         }
 
-        public bool TryGetSenseCache<TSense>(out IGridStateCache senseCache)
+        public bool TryGetSenseCache<TSense>([MaybeNullWhen(false)] out IGridStateCache senseCache)
         {
             if (senseCaches.TryGetValue(typeof(TSense), out var raw))
             {

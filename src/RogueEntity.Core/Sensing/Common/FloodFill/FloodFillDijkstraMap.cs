@@ -1,7 +1,6 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using EnTTSharp.Entities;
-using JetBrains.Annotations;
 using RogueEntity.Api.Utils;
 using RogueEntity.Core.GridProcessing.Directionality;
 using RogueEntity.Core.Positioning;
@@ -15,14 +14,14 @@ namespace RogueEntity.Core.Sensing.Common.FloodFill
     public class FloodFillDijkstraMap : DijkstraGridBase<Unit>
     {
         bool valid;
-        IReadOnlyDynamicDataView2D<float> resistanceMap;
-        IReadOnlyDynamicDataView2D<DirectionalityInformation> directionalityView;
-        IReadOnlyBoundedDataView<float> resistanceTile;
-        IReadOnlyBoundedDataView<DirectionalityInformation> directionalityTile;
-        ReadOnlyListWrapper<Direction>[] directionData;
+        IReadOnlyDynamicDataView2D<float>? resistanceMap;
+        IReadOnlyDynamicDataView2D<DirectionalityInformation>? directionalityView;
+        IReadOnlyBoundedDataView<float>? resistanceTile;
+        IReadOnlyBoundedDataView<DirectionalityInformation>? directionalityTile;
+        ReadOnlyListWrapper<Direction>[]? directionData;
 
         SenseSourceDefinition Sense { get; set; }
-        ISensePhysics SensePhysics { get; set; }
+        ISensePhysics? SensePhysics { get; set; }
         Position2D origin;
         float radius;
         float intensity;
@@ -35,9 +34,9 @@ namespace RogueEntity.Core.Sensing.Common.FloodFill
         public static FloodFillDijkstraMap Create(in SenseSourceDefinition sense,
                                                   float intensity,
                                                   in Position2D origin, 
-                                                  [NotNull] ISensePhysics sensePhysics,
-                                                  [NotNull] IReadOnlyDynamicDataView2D<float> resistanceMap,
-                                                  [NotNull] IReadOnlyDynamicDataView2D<DirectionalityInformation> directionalityView)
+                                                  ISensePhysics sensePhysics,
+                                                  IReadOnlyDynamicDataView2D<float> resistanceMap,
+                                                  IReadOnlyDynamicDataView2D<DirectionalityInformation> directionalityView)
         {
             var radius = sensePhysics.SignalRadiusForIntensity(intensity);
             var radiusInt = (int)Math.Ceiling(radius);
@@ -50,9 +49,9 @@ namespace RogueEntity.Core.Sensing.Common.FloodFill
         public void Configure(in SenseSourceDefinition sense,
                               float intensity,
                               in Position2D origin, 
-                              [NotNull] ISensePhysics sensePhysics,
-                              [NotNull] IReadOnlyDynamicDataView2D<float> resistanceMap,
-                              [NotNull] IReadOnlyDynamicDataView2D<DirectionalityInformation> directionalityView)
+                              ISensePhysics sensePhysics,
+                              IReadOnlyDynamicDataView2D<float> resistanceMap,
+                              IReadOnlyDynamicDataView2D<DirectionalityInformation> directionalityView)
         {
             this.intensity = intensity;
             this.radius = sensePhysics.SignalRadiusForIntensity(intensity);
@@ -80,6 +79,8 @@ namespace RogueEntity.Core.Sensing.Common.FloodFill
 
         public void Compute(SenseSourceData data)
         {
+            Assert.NotNull(resistanceMap);
+            
             try
             {
                 base.PrepareScan();
@@ -126,6 +127,11 @@ namespace RogueEntity.Core.Sensing.Common.FloodFill
 
         protected override ReadOnlyListWrapper<Direction> PopulateTraversableDirections(ShortPosition2D basePos)
         {
+            Assert.NotNull(directionalityView);
+            Assert.NotNull(directionData);
+            
+            if (directionalityView == null || directionData == null) throw new InvalidOperationException();
+            
             var targetPosX = basePos.X + origin.X;
             var targetPosY = basePos.Y + origin.Y;
             var allowedMovements = directionalityView.TryGetMapValue(ref directionalityTile, targetPosX, targetPosY, DirectionalityInformation.All);
@@ -139,6 +145,9 @@ namespace RogueEntity.Core.Sensing.Common.FloodFill
 
         protected override bool EdgeCostInformation(in ShortPosition2D stepOrigin, in Direction d, float stepOriginCost, out float totalPathCost, out Unit nodeInfo)
         {
+            Assert.NotNull(resistanceMap);
+            Assert.NotNull(SensePhysics);
+            
             var targetPoint = origin + stepOrigin + d.ToCoordinates();
             if (!valid)
             {

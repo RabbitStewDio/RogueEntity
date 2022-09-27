@@ -1,13 +1,14 @@
 ﻿using System.Collections.Generic;
 using EnTTSharp.Entities;
 using RogueEntity.Api.ItemTraits;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RogueEntity.Api.Modules.Helpers
 {
     public class ModuleEntityContext<TEntityId> : IModuleEntityContext<TEntityId>,
                                                   IModuleInitializationData<TEntityId>,
                                                   IModuleContentContext<TEntityId>
-        where TEntityId : IEntityKey
+        where TEntityId : struct, IEntityKey
     {
         readonly Dictionary<ItemDeclarationId, (ModuleId, IBulkItemDeclaration<TEntityId>)> declaredBulkItems;
         readonly Dictionary<ItemDeclarationId, (ModuleId, IReferenceItemDeclaration<TEntityId>)> declaredReferenceItems;
@@ -50,7 +51,7 @@ namespace RogueEntity.Api.Modules.Helpers
         public void DeclareTraitRelations<TItemTrait>(params EntityRelation[] relations)
         { }
 
-        public bool TryGetDefinedBulkItem(ItemDeclarationId id, out IBulkItemDeclaration<TEntityId> item)
+        public bool TryGetDefinedBulkItem(ItemDeclarationId id, [MaybeNullWhen(false)] out IBulkItemDeclaration<TEntityId> item)
         {
             if (declaredBulkItems.TryGetValue(id, out var raw))
             {
@@ -62,7 +63,7 @@ namespace RogueEntity.Api.Modules.Helpers
             return false;
         }
 
-        public bool TryGetDefinedReferenceItem(ItemDeclarationId id, out IReferenceItemDeclaration<TEntityId> item)
+        public bool TryGetDefinedReferenceItem(ItemDeclarationId id, [MaybeNullWhen(false)] out IReferenceItemDeclaration<TEntityId> item)
         {
             if (declaredReferenceItems.TryGetValue(id, out var raw))
             {
@@ -115,7 +116,7 @@ namespace RogueEntity.Api.Modules.Helpers
 
         public void Register(EntitySystemId id,
                              int priority,
-                             EntitySystemRegistrationDelegate<TEntityId> entitySystemRegistration)
+                             EntitySystemRegistrationDelegate<TEntityId>? entitySystemRegistration)
         {
             systemFactories.Add(new EntitySystemFactory
             {
@@ -135,9 +136,9 @@ namespace RogueEntity.Api.Modules.Helpers
             public int Priority { get; set; }
             public int InsertionOrder { get; set; }
 
-            public EntityRegistrationDelegate<TEntityId> EntityRegistration { get; set; }
+            public EntityRegistrationDelegate<TEntityId>? EntityRegistration { get; set; }
 
-            public EntitySystemRegistrationDelegate<TEntityId> EntitySystemRegistration { get; set; }
+            public EntitySystemRegistrationDelegate<TEntityId>? EntitySystemRegistration { get; set; }
         }
     }
 }

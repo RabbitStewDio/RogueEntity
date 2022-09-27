@@ -1,6 +1,5 @@
 using System;
 using System.Threading;
-using JetBrains.Annotations;
 using RogueEntity.Core.GridProcessing.Directionality;
 using RogueEntity.Core.Sensing.Common.Physics;
 using RogueEntity.Core.Utils;
@@ -19,15 +18,15 @@ namespace RogueEntity.Core.Sensing.Common.FloodFill
 
         public void Dispose()
         {
-            dataStore?.Dispose();
+            dataStore.Dispose();
         }
 
         public FloodFillWorkingData Create(in SenseSourceDefinition sense,
                                            float intensity,
                                            in Position2D origin,
-                                           [NotNull] ISensePhysics sensePhysics,
-                                           [NotNull] IReadOnlyDynamicDataView2D<float> resistanceMap,
-                                           [NotNull] IReadOnlyDynamicDataView2D<DirectionalityInformation> directionalityView)
+                                           ISensePhysics sensePhysics,
+                                           IReadOnlyDynamicDataView2D<float> resistanceMap,
+                                           IReadOnlyDynamicDataView2D<DirectionalityInformation> directionalityView)
         {
             if (dataStore.IsValueCreated)
             {

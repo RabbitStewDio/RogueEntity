@@ -8,7 +8,7 @@ namespace RogueEntity.Core.MapLoading.FlatLevelMaps
     public static class ChangeLevelCommandTraitDeclarations
     {
         public static ReferenceItemDeclarationBuilder<TActorId> WithChangeLevelCommand<TActorId>(this ReferenceItemDeclarationBuilder<TActorId> builder)
-            where TActorId : IEntityKey
+            where TActorId : struct, IEntityKey
         {
             builder.WithTrait(CommandInProgressTrait<TActorId>.Instance);
             return builder.WithTrait(new ChangeLevelCommandTrait<TActorId>(builder.ServiceResolver.ResolveToReference<IMapRegionMetaDataService<int>>()));

@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RogueEntity.Core.Utils.DataViews
 {
@@ -13,7 +14,7 @@ namespace RogueEntity.Core.Utils.DataViews
             this.transformation = transformation;
         }
 
-        public bool TryGet(int x, int y, out TTarget data)
+        public bool TryGet(int x, int y, [MaybeNullWhen(false)] out TTarget data)
         {
             if (source.TryGet(x, y, out var sourceData))
             {
@@ -34,7 +35,7 @@ namespace RogueEntity.Core.Utils.DataViews
                     return r;
                 }
 
-                return default;
+                return default!;
             }
         }
 

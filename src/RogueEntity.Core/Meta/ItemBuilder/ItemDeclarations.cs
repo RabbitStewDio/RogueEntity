@@ -15,33 +15,33 @@ namespace RogueEntity.Core.Meta.ItemBuilder
 
         public static ItemDeclarationBuilderWithReferenceContext<TItemId> CreateReferenceEntityBuilder<TItemId>(this IModuleContentContext<TItemId> ctx,
                                                                                                                 IServiceResolver serviceResolver)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             return new ItemDeclarationBuilderWithReferenceContext<TItemId>(serviceResolver);
         }
 
         public static ItemDeclarationBuilderWithBulkContext<TItemId> CreateBulkEntityBuilder<TItemId>(this IModuleContentContext<TItemId> ctx,
                                                                                                       IServiceResolver serviceResolver)
-            where TItemId : IBulkDataStorageKey<TItemId>
+            where TItemId : struct, IBulkDataStorageKey<TItemId>
         {
             return new ItemDeclarationBuilderWithBulkContext<TItemId>(serviceResolver);
         }
 
         public static ReferenceItemDeclarationBuilder<TItemId> AsBuilder<TItemId>(this IReferenceItemDeclaration<TItemId> item, IServiceResolver serviceResolver)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             return new ReferenceItemDeclarationBuilder<TItemId>(serviceResolver, item);
         }
         
         public static BulkItemDeclarationBuilder<TItemId> AsBuilder<TItemId>(this IBulkItemDeclaration<TItemId> item, IServiceResolver serviceResolver)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             return new BulkItemDeclarationBuilder<TItemId>(serviceResolver, item);
         }
     }
 
     public readonly struct ReferenceItemDeclarationBuilder<TItemId>
-        where TItemId : IEntityKey
+        where TItemId : struct, IEntityKey
     {
         public readonly IServiceResolver ServiceResolver;
         public readonly IReferenceItemDeclaration<TItemId> Declaration;
@@ -61,7 +61,7 @@ namespace RogueEntity.Core.Meta.ItemBuilder
     }
 
     public readonly struct BulkItemDeclarationBuilder<TItemId>
-        where TItemId : IEntityKey
+        where TItemId : struct, IEntityKey
     {
         public readonly IServiceResolver ServiceResolver;
         public readonly IBulkItemDeclaration<TItemId> Declaration;

@@ -17,7 +17,7 @@ namespace RogueEntity.Api.Services
         readonly HashSet<Type> promisedReferences;
         readonly IServiceResolverDelegate resolveDelegate;
 
-        public DelegatingServiceResolver([NotNull] IServiceResolverDelegate resolveDelegate)
+        public DelegatingServiceResolver(IServiceResolverDelegate resolveDelegate)
         {
             this.resolveDelegate = resolveDelegate ?? throw new ArgumentNullException(nameof(resolveDelegate));
             backend = new Dictionary<Type, object>();
@@ -58,7 +58,7 @@ namespace RogueEntity.Api.Services
 
         public void Store<TServiceObject>(in TServiceObject service)
         {
-            backend[typeof(TServiceObject)] = service;
+            backend[typeof(TServiceObject)] = service!;
         }
 
         public Lazy<T> ResolveToReference<T>()

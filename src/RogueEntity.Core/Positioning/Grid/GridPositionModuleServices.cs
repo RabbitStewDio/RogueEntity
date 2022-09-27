@@ -3,6 +3,7 @@ using RogueEntity.Api.ItemTraits;
 using RogueEntity.Api.Services;
 using RogueEntity.Core.Utils.DataViews;
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RogueEntity.Core.Positioning.Grid
 {
@@ -15,13 +16,13 @@ namespace RogueEntity.Core.Positioning.Grid
 
         public static IGridMapContext<TEntityId> GetOrCreateGridMapContext<TEntityId>(this IServiceResolver serviceResolver, DynamicDataViewConfiguration config)
         {
-            if (serviceResolver.TryResolve(out IGridMapContext<TEntityId> map))
+            if (serviceResolver.TryResolve<IGridMapContext<TEntityId>>(out var map))
             {
                 return map;
             }
 
             map = new DefaultGridPositionContextBackend<TEntityId>(config);
-            if (!serviceResolver.TryResolve(out IGridMapConfiguration<TEntityId> _))
+            if (!serviceResolver.TryResolve<IGridMapConfiguration<TEntityId>>(out  _))
             {
                 serviceResolver.Store<IGridMapConfiguration<TEntityId>>(new GridMapConfiguration<TEntityId>(config));
             }
@@ -36,8 +37,8 @@ namespace RogueEntity.Core.Positioning.Grid
         }
 
         public static bool TryGetOrCreateDefaultMapServices<TEntityId>(IServiceResolver serviceResolver,
-                                                                       out DefaultGridPositionContextBackend<TEntityId> map,
-                                                                       out ItemPlacementServiceContext<TEntityId> placementService)
+                                                                       [MaybeNullWhen(false)] out DefaultGridPositionContextBackend<TEntityId> map,
+                                                                       [MaybeNullWhen(false)] out ItemPlacementServiceContext<TEntityId> placementService)
         {
             if (!TryGetOrCreateDefaultGridMapContext(serviceResolver,
                                                      PositionModuleServices.LookupDefaultConfiguration<TEntityId>(serviceResolver),
@@ -47,7 +48,7 @@ namespace RogueEntity.Core.Positioning.Grid
                 return false;
             }
 
-            if (serviceResolver.TryResolve(out IItemPlacementServiceContext<TEntityId> ctx))
+            if (serviceResolver.TryResolve<IItemPlacementServiceContext<TEntityId>>(out var ctx))
             {
                 if (ctx is ItemPlacementServiceContext<TEntityId> ps)
                 {
@@ -64,9 +65,11 @@ namespace RogueEntity.Core.Positioning.Grid
             return true;
         }
 
-        static bool TryGetOrCreateDefaultGridMapContext<TEntityId>(this IServiceResolver serviceResolver, DynamicDataViewConfiguration config, out DefaultGridPositionContextBackend<TEntityId> map)
+        static bool TryGetOrCreateDefaultGridMapContext<TEntityId>(this IServiceResolver serviceResolver, 
+                                                                   DynamicDataViewConfiguration config, 
+                                                                   [MaybeNullWhen(false)] out DefaultGridPositionContextBackend<TEntityId> map)
         {
-            if (serviceResolver.TryResolve(out IGridMapContext<TEntityId> maybeMap))
+            if (serviceResolver.TryResolve<IGridMapContext<TEntityId>>(out var maybeMap))
             {
                 if (maybeMap is DefaultGridPositionContextBackend<TEntityId> defaultImpl)
                 {
@@ -79,7 +82,7 @@ namespace RogueEntity.Core.Positioning.Grid
             }
 
             var created = new DefaultGridPositionContextBackend<TEntityId>(config);
-            if (!serviceResolver.TryResolve(out IGridMapConfiguration<TEntityId> _))
+            if (!serviceResolver.TryResolve<IGridMapConfiguration<TEntityId>>(out _))
             {
                 serviceResolver.Store<IGridMapConfiguration<TEntityId>>(new GridMapConfiguration<TEntityId>(config));
             }
@@ -100,9 +103,9 @@ namespace RogueEntity.Core.Positioning.Grid
         }
 
         public static IItemPlacementService<TEntityId> GetOrCreateGridItemPlacementService<TEntityId>(this IServiceResolver serviceResolver)
-            where TEntityId : IEntityKey
+            where TEntityId : struct, IEntityKey
         {
-            if (serviceResolver.TryResolve(out IItemPlacementService<TEntityId> gs))
+            if (serviceResolver.TryResolve<IItemPlacementService<TEntityId>>(out var gs))
             {
                 return gs;
             }
@@ -115,9 +118,9 @@ namespace RogueEntity.Core.Positioning.Grid
         }
 
         public static IItemPlacementLocationService<TEntityId> GetOrCreateGridItemPlacementLocationService<TEntityId>(this IServiceResolver serviceResolver)
-            where TEntityId : IEntityKey
+            where TEntityId : struct, IEntityKey
         {
-            if (serviceResolver.TryResolve(out IItemPlacementLocationService<TEntityId> gs))
+            if (serviceResolver.TryResolve<IItemPlacementLocationService<TEntityId>>(out var gs))
             {
                 return gs;
             }

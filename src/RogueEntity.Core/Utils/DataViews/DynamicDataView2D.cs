@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
-using JetBrains.Annotations;
 using MessagePack;
 using RogueEntity.Api.Utils;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RogueEntity.Core.Utils.DataViews
 {
@@ -11,8 +11,8 @@ namespace RogueEntity.Core.Utils.DataViews
     [MessagePackObject]
     public class DynamicDataView2D<T> : IDynamicDataView2D<T>
     {
-        public event EventHandler<DynamicDataView2DEventArgs<T>> ViewChunkCreated;
-        public event EventHandler<DynamicDataView2DEventArgs<T>> ViewChunkExpired;
+        public event EventHandler<DynamicDataView2DEventArgs<T>>? ViewChunkCreated;
+        public event EventHandler<DynamicDataView2DEventArgs<T>>? ViewChunkExpired;
 
         [DataMember(Order = 0)]
         [Key(0)]
@@ -81,7 +81,7 @@ namespace RogueEntity.Core.Utils.DataViews
         [SerializationConstructor]
         protected DynamicDataView2D(int tileSizeX,
                                   int tileSizeY,
-                                  [NotNull] Dictionary<TileIndex, BoundedDataView<T>> index,
+                                  Dictionary<TileIndex, BoundedDataView<T>> index,
                                   long currentTime,
                                   int offsetX,
                                   int offsetY)
@@ -124,7 +124,7 @@ namespace RogueEntity.Core.Utils.DataViews
             return r;
         }
 
-        public BufferList<Rectangle> GetActiveTiles(BufferList<Rectangle> data = null)
+        public BufferList<Rectangle> GetActiveTiles(BufferList<Rectangle>? data = null)
         {
             data = BufferList.PrepareBuffer(data);
 
@@ -205,7 +205,7 @@ namespace RogueEntity.Core.Utils.DataViews
             return data;
         }
 
-        public bool TryGetData(int x, int y, out IReadOnlyBoundedDataView<T> raw)
+        public bool TryGetData(int x, int y, [MaybeNullWhen(false)] out IReadOnlyBoundedDataView<T> raw)
         {
             if (TryGetDataInternal(x, y, out BoundedDataView<T> t))
             {
@@ -217,7 +217,7 @@ namespace RogueEntity.Core.Utils.DataViews
             return false;
         }
 
-        public bool TryGetWriteAccess(int x, int y, out IBoundedDataView<T> raw, DataViewCreateMode mode = DataViewCreateMode.Nothing)
+        public bool TryGetWriteAccess(int x, int y, [MaybeNullWhen(false)] out IBoundedDataView<T> raw, DataViewCreateMode mode = DataViewCreateMode.Nothing)
         {
             if (TryGetDataInternal(x, y, out BoundedDataView<T> t))
             {
@@ -241,7 +241,7 @@ namespace RogueEntity.Core.Utils.DataViews
             return true;
         }
 
-        public bool TryGetRawAccess(int x, int y, out IBoundedDataViewRawAccess<T> raw)
+        public bool TryGetRawAccess(int x, int y, [MaybeNullWhen(false)] out IBoundedDataViewRawAccess<T> raw)
         {
             if (TryGetDataInternal(x, y, out BoundedDataView<T> t))
             {
@@ -272,7 +272,7 @@ namespace RogueEntity.Core.Utils.DataViews
             return true;
         }
 
-        public bool TryGet(int x, int y, out T result)
+        public bool TryGet(int x, int y, [MaybeNullWhen(false)] out T result)
         {
             if (TryGetDataInternal(x, y, out BoundedDataView<T> data))
             {
@@ -283,9 +283,9 @@ namespace RogueEntity.Core.Utils.DataViews
             return false;
         }
 
-        public ref T TryGetForUpdate(int x, int y, ref T defaultValue, out bool success, DataViewCreateMode mode = DataViewCreateMode.Nothing)
+        public ref T? TryGetForUpdate(int x, int y, ref T? defaultValue, out bool success, DataViewCreateMode mode = DataViewCreateMode.Nothing)
         {
-            if (TryGetWriteAccess(x, y, out IBoundedDataView<T> data, mode))
+            if (TryGetWriteAccess(x, y, out var data, mode))
             {
                 return ref data.TryGetForUpdate(x, y, ref defaultValue, out success);
             }
@@ -306,7 +306,7 @@ namespace RogueEntity.Core.Utils.DataViews
                     return result;
                 }
 
-                return default;
+                return default!;
             }
             set
             {

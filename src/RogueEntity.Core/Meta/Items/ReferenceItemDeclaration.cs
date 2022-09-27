@@ -1,12 +1,13 @@
 ﻿using EnTTSharp.Entities;
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Api.Utils;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RogueEntity.Core.Meta.Items
 {
     public class ReferenceItemDeclaration<TItemId> : ItemDeclaration,
                                                      IReferenceItemDeclaration<TItemId>
-        where TItemId : IEntityKey
+        where TItemId : struct, IEntityKey
     {
         readonly TraitRegistration<IReferenceItemTrait<TItemId>> traits;
 
@@ -31,12 +32,12 @@ namespace RogueEntity.Core.Meta.Items
             return this;
         }
 
-        public override bool TryQuery<TTrait>(out TTrait t)
+        public override bool TryQuery<TTrait>([MaybeNullWhen(false)] out TTrait t)
         {
             return traits.TryQuery(out t);
         }
 
-        public override BufferList<TTrait> QueryAll<TTrait>(BufferList<TTrait> cache = null)
+        public override BufferList<TTrait> QueryAll<TTrait>(BufferList<TTrait>? cache = null)
         {
             return traits.QueryAll(cache);
         }

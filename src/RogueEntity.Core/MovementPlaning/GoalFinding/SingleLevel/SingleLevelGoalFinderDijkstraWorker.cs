@@ -1,4 +1,3 @@
-using JetBrains.Annotations;
 using RogueEntity.Api.Utils;
 using RogueEntity.Core.GridProcessing.Directionality;
 using RogueEntity.Core.Movement;
@@ -11,6 +10,7 @@ using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.DataViews;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RogueEntity.Core.MovementPlaning.GoalFinding.SingleLevel
 {
@@ -23,9 +23,9 @@ namespace RogueEntity.Core.MovementPlaning.GoalFinding.SingleLevel
         readonly List<MovementCostData2D> movementCostsOnLevel;
         readonly BufferList<ShortPosition2D> pathBuffer;
 
-        IReadOnlyBoundedDataView<DirectionalityInformation>[] directionsTile;
-        IReadOnlyBoundedDataView<float>[] costsTile;
-        ReadOnlyListWrapper<Direction>[] directionData;
+        IReadOnlyBoundedDataView<DirectionalityInformation>?[] directionsTile;
+        IReadOnlyBoundedDataView<float>?[] costsTile;
+        ReadOnlyListWrapper<Direction>[]? directionData;
         int activeLevel;
         readonly BoundedDataView<IMovementMode> nodesSources;
         Position2D origin;
@@ -35,8 +35,8 @@ namespace RogueEntity.Core.MovementPlaning.GoalFinding.SingleLevel
             pathBuffer = new BufferList<ShortPosition2D>();
             nodesSources = new BoundedDataView<IMovementMode>(default);
             movementCostsOnLevel = new List<MovementCostData2D>();
-            directionsTile = new IReadOnlyBoundedDataView<DirectionalityInformation>[0];
-            costsTile = new IReadOnlyBoundedDataView<float>[0];
+            directionsTile = Array.Empty<IReadOnlyBoundedDataView<DirectionalityInformation>>();
+            costsTile = Array.Empty<IReadOnlyBoundedDataView<float>>();
         }
 
         public void Reset()
@@ -63,8 +63,8 @@ namespace RogueEntity.Core.MovementPlaning.GoalFinding.SingleLevel
 
 
         public void ConfigureMovementProfile(in MovementCost costProfile,
-                                             [NotNull] IReadOnlyDynamicDataView3D<float> movementCosts,
-                                             [NotNull] IReadOnlyDynamicDataView3D<DirectionalityInformation> movementDirections)
+                                             IReadOnlyDynamicDataView3D<float> movementCosts,
+                                             IReadOnlyDynamicDataView3D<DirectionalityInformation> movementDirections)
         {
             if (movementCosts.TryGetView(activeLevel, out var costView) &&
                 movementDirections.TryGetView(activeLevel, out var directionView))
@@ -133,6 +133,8 @@ namespace RogueEntity.Core.MovementPlaning.GoalFinding.SingleLevel
 
         protected override ReadOnlyListWrapper<Direction> PopulateTraversableDirections(ShortPosition2D basePos)
         {
+            if (directionData == null) throw new InvalidOperationException("Configure not complete");
+            
             var targetPosX = basePos.X + origin.X;
             var targetPosY = basePos.Y + origin.Y;
             var allowedMovements = DirectionalityInformation.None;
@@ -153,7 +155,8 @@ namespace RogueEntity.Core.MovementPlaning.GoalFinding.SingleLevel
         ///   We have to take into account that movement options may be different in that direction, thus the edge we
         ///   compute is the edge from (source + direction to source). 
         /// </summary>
-        protected override bool EdgeCostInformation(in ShortPosition2D sourceNode, in Direction d, float sourceNodeCost, out float totalPathCost, out IMovementMode movementMode)
+        protected override bool EdgeCostInformation(in ShortPosition2D sourceNode, in Direction d, float sourceNodeCost, out float totalPathCost, 
+                                                    [MaybeNullWhen(false)] out IMovementMode movementMode)
         {
             var inverseDirection = d.Inverse();
             var dx = d.ToCoordinates();

@@ -2,12 +2,13 @@ using System.Collections.Generic;
 using EnTTSharp.Entities;
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Core.Meta.Items;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RogueEntity.Core.Sensing.Receptors.InfraVision
 {
     public class InfraVisionSenseTrait< TActorId> : SenseReceptorTraitBase< TActorId, VisionSense, TemperatureSense>,
                                                                  IItemComponentInformationTrait< TActorId, IHeatMap>
-        where TActorId : IEntityKey
+        where TActorId : struct, IEntityKey
     {
         readonly IInfraVisionSenseReceptorPhysicsConfiguration physics;
 
@@ -19,7 +20,7 @@ namespace RogueEntity.Core.Sensing.Receptors.InfraVision
         public override ItemTraitId Id => "Core.Sense.Receptor.InfraVision";
         public override int Priority => 200;
 
-        public bool TryQuery(IEntityViewControl<TActorId> v, TActorId k, out IHeatMap t)
+        public bool TryQuery(IEntityViewControl<TActorId> v, TActorId k, [MaybeNullWhen(false)] out IHeatMap t)
         {
             if (v.GetComponent(k, out SingleLevelSenseDirectionMapData<VisionSense, TemperatureSense> d))
             {

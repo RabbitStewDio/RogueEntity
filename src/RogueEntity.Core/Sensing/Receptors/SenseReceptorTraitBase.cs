@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using EnTTSharp.Entities;
-using JetBrains.Annotations;
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Sensing.Common;
@@ -12,7 +11,7 @@ namespace RogueEntity.Core.Sensing.Receptors
 {
     public abstract class SenseReceptorTraitBase<TActorId, TReceptorSense, TSourceSense> : IReferenceItemTrait<TActorId>,
                                                                                            IItemComponentTrait<TActorId, SensoryReceptorData<TReceptorSense, TSourceSense>>
-        where TActorId : IEntityKey
+        where TActorId : struct, IEntityKey
         where TReceptorSense : ISense
         where TSourceSense : ISense
     {
@@ -20,7 +19,7 @@ namespace RogueEntity.Core.Sensing.Receptors
         protected readonly float Intensity;
         readonly bool active;
 
-        protected SenseReceptorTraitBase([NotNull] ISensePhysics physics, float intensity, bool active)
+        protected SenseReceptorTraitBase(ISensePhysics physics, float intensity, bool active)
         {
             this.physics = physics ?? throw new ArgumentNullException(nameof(physics));
             this.Intensity = intensity;

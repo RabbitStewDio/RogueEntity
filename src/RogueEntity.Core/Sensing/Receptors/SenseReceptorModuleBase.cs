@@ -40,7 +40,7 @@ namespace RogueEntity.Core.Sensing.Receptors
         public static readonly EntitySystemId ReceptorFinalizeSystemId = SenseReceptorModules.CreateSystemId<TReceptorSense, TSourceSense>("Finalize");
 
         public static readonly EntityRole SenseReceptorActorRole = SenseReceptorModules.GetReceptorRole<TReceptorSense, TSourceSense>();
-        static readonly EntityRole SenseSourceRole = SenseSourceModules.GetSourceRole<TSourceSense>();
+        static readonly EntityRole senseSourceRole = SenseSourceModules.GetSourceRole<TSourceSense>();
 
         protected SenseReceptorModuleBase()
         {
@@ -56,7 +56,7 @@ namespace RogueEntity.Core.Sensing.Receptors
         public IEnumerable<ModuleEntityRoleInitializerInfo<TItemId>> CollectRoleInitializers<TItemId>(IServiceResolver serviceResolver,
                                                                                                       IModuleEntityInformation entityInformation,
                                                                                                       EntityRole role)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             if (role == SenseReceptorActorRole)
             {
@@ -73,9 +73,9 @@ namespace RogueEntity.Core.Sensing.Receptors
                                                             .WithRequiredRoles(GridPositionModule.GridPositionedRole);
             }
 
-            if (role == SenseSourceRole)
+            if (role == senseSourceRole)
             {
-                yield return ModuleEntityRoleInitializerInfo.CreateFor<TItemId>(SenseSourceRole, InitializeCollectSenseSources);
+                yield return ModuleEntityRoleInitializerInfo.CreateFor<TItemId>(senseSourceRole, InitializeCollectSenseSources);
             }
         }
 
@@ -83,10 +83,10 @@ namespace RogueEntity.Core.Sensing.Receptors
         protected void InitializeSenseCache<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                      IModuleInitializer initializer,
                                                      EntityRole role)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             var serviceResolver = initParameter.ServiceResolver;
-            if (serviceResolver.TryResolve(out SenseCacheSetUpSystem o))
+            if (serviceResolver.TryResolve<SenseCacheSetUpSystem>(out var o))
             {
                 o.RegisterSense<TReceptorSense>();
                 o.RegisterSense<TSourceSense>();
@@ -96,7 +96,7 @@ namespace RogueEntity.Core.Sensing.Receptors
         protected void InitializeSenseReceptorRole<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                             IModuleInitializer initializer,
                                                             EntityRole role)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             var ctx = initializer.DeclareEntityContext<TItemId>();
             ctx.Register(RegisterEntityId, 0, RegisterEntities);
@@ -109,7 +109,7 @@ namespace RogueEntity.Core.Sensing.Receptors
         protected void InitializeCollectReceptorsGrid<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                                IModuleInitializer initializer,
                                                                EntityRole role)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             var ctx = initializer.DeclareEntityContext<TItemId>();
             ctx.Register(ReceptorCollectionGridSystemId, 55500, RegisterCollectReceptorsGridSystem);
@@ -118,7 +118,7 @@ namespace RogueEntity.Core.Sensing.Receptors
         protected void InitializeCollectReceptorsContinuous<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                                      IModuleInitializer initializer,
                                                                      EntityRole role)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             var ctx = initializer.DeclareEntityContext<TItemId>();
             ctx.Register(ReceptorCollectionContinuousSystemId, 55500, RegisterCollectReceptorsContinuousSystem);
@@ -127,7 +127,7 @@ namespace RogueEntity.Core.Sensing.Receptors
         protected void InitializeCollectSenseSources<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                               IModuleInitializer initializer,
                                                               EntityRole role)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             var ctx = initializer.DeclareEntityContext<TItemId>();
             ctx.Register(SenseSourceCollectionSystemId, 57500, RegisterCollectSenseSourcesSystem);
@@ -136,7 +136,7 @@ namespace RogueEntity.Core.Sensing.Receptors
         protected void RegisterPrepareSystem<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                       IGameLoopSystemRegistration context,
                                                       EntityRegistry<TItemId> registry)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             var serviceResolver = initParameter.ServiceResolver;
             var ls = GetOrCreateSenseReceptorSystem<TItemId>(serviceResolver);
@@ -148,7 +148,7 @@ namespace RogueEntity.Core.Sensing.Receptors
         protected void RegisterCollectReceptorsGridSystem<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                                    IGameLoopSystemRegistration context,
                                                                    EntityRegistry<TItemId> registry)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             var serviceResolver = initParameter.ServiceResolver;
             var ls = GetOrCreateSenseReceptorSystem<TItemId>(serviceResolver);
@@ -166,7 +166,7 @@ namespace RogueEntity.Core.Sensing.Receptors
         protected void RegisterCollectReceptorsContinuousSystem<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                                          IGameLoopSystemRegistration context,
                                                                          EntityRegistry<TItemId> registry)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             var serviceResolver = initParameter.ServiceResolver;
             var ls = GetOrCreateSenseReceptorSystem<TItemId>(serviceResolver);
@@ -184,7 +184,7 @@ namespace RogueEntity.Core.Sensing.Receptors
         protected void RegisterCollectSenseSourcesSystem<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                                   IGameLoopSystemRegistration context,
                                                                   EntityRegistry<TItemId> registry)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             var serviceResolver = initParameter.ServiceResolver;
             var ls = GetOrCreateSenseReceptorSystem<TItemId>(serviceResolver);
@@ -199,7 +199,7 @@ namespace RogueEntity.Core.Sensing.Receptors
         protected void RegisterComputeReceptorFieldOfView<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                                    IGameLoopSystemRegistration context,
                                                                    EntityRegistry<TItemId> registry)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             var serviceResolver = initParameter.ServiceResolver;
             var ls = GetOrCreateSenseReceptorSystem<TItemId>(serviceResolver);
@@ -219,17 +219,17 @@ namespace RogueEntity.Core.Sensing.Receptors
         protected abstract void RegisterCalculateDirectionalSystem<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                                             IGameLoopSystemRegistration context,
                                                                             EntityRegistry<TItemId> registry)
-            where TItemId : IEntityKey;
+            where TItemId : struct, IEntityKey;
 
         protected void RegisterCalculateOmniDirectionalSystem<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                                        IGameLoopSystemRegistration context,
                                                                        EntityRegistry<TItemId> registry)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             var serviceResolver = initParameter.ServiceResolver;
             var ls = GetOrCreateSenseReceptorSystem<TItemId>(serviceResolver);
 
-            if (!serviceResolver.TryResolve(out IRadiationSenseReceptorBlitter senseBlitter))
+            if (!serviceResolver.TryResolve<IRadiationSenseReceptorBlitter>(out var senseBlitter))
             {
                 senseBlitter = new DefaultRadiationSenseReceptorBlitter();
             }
@@ -249,12 +249,12 @@ namespace RogueEntity.Core.Sensing.Receptors
         protected void RegisterCalculateUniDirectionalSystem<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                                       IGameLoopSystemRegistration context,
                                                                       EntityRegistry<TItemId> registry)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             var serviceResolver = initParameter.ServiceResolver;
             var ls = GetOrCreateSenseReceptorSystem<TItemId>(serviceResolver);
 
-            if (!serviceResolver.TryResolve(out IDirectionalSenseReceptorBlitter senseBlitter))
+            if (!serviceResolver.TryResolve<IDirectionalSenseReceptorBlitter>(out var senseBlitter))
             {
                 senseBlitter = new DefaultDirectionalSenseReceptorBlitter();
             }
@@ -276,7 +276,7 @@ namespace RogueEntity.Core.Sensing.Receptors
         protected void RegisterFinalizeSystem<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                        IGameLoopSystemRegistration context,
                                                        EntityRegistry<TItemId> registry)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             var serviceResolver = initParameter.ServiceResolver;
             var ls = GetOrCreateSenseReceptorSystem<TItemId>(serviceResolver);
@@ -309,7 +309,7 @@ namespace RogueEntity.Core.Sensing.Receptors
 
         protected virtual SensePropertiesSystem<TReceptorSense> GetOrCreateSensePropertiesSystem<TEntityId>(IServiceResolver serviceResolver)
         {
-            if (serviceResolver.TryResolve(out SensePropertiesSystem<TReceptorSense> system))
+            if (serviceResolver.TryResolve<SensePropertiesSystem<TReceptorSense>>(out var system))
             {
                 return system;
             }
@@ -325,12 +325,12 @@ namespace RogueEntity.Core.Sensing.Receptors
 
         protected virtual SensoryResistanceDirectionalitySystem<TReceptorSense> GetOrCreateDirectionalitySystem<TItemId>(IServiceResolver serviceResolver)
         {
-            if (serviceResolver.TryResolve(out SensoryResistanceDirectionalitySystem<TReceptorSense> system))
+            if (serviceResolver.TryResolve<SensoryResistanceDirectionalitySystem<TReceptorSense>>(out var system))
             {
                 return system;
             }
 
-            if (!serviceResolver.TryResolve(out ISensePropertiesDataView<TReceptorSense> data))
+            if (!serviceResolver.TryResolve<ISensePropertiesDataView<TReceptorSense>>(out var data))
             {
                 data = GetOrCreateSensePropertiesSystem<TItemId>(serviceResolver);
             }
@@ -346,7 +346,7 @@ namespace RogueEntity.Core.Sensing.Receptors
 
         protected virtual SenseReceptorSystem<TReceptorSense, TSourceSense> GetOrCreateSenseReceptorSystem<TItemId>(IServiceResolver serviceResolver)
         {
-            if (!serviceResolver.TryResolve(out SenseReceptorSystem<TReceptorSense, TSourceSense> ls))
+            if (!serviceResolver.TryResolve<SenseReceptorSystem<TReceptorSense, TSourceSense>>(out var ls))
             {
                 var physics = GetOrCreatePhysics(serviceResolver);
                 var senseProperties = serviceResolver.ResolveToReference<ISensePropertiesDataView<TReceptorSense>>().Map(l => l.ResultView);
@@ -365,7 +365,7 @@ namespace RogueEntity.Core.Sensing.Receptors
 
         protected void RegisterEntities<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                  EntityRegistry<TItemId> registry)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             registry.RegisterNonConstructable<SensoryReceptorData<TReceptorSense, TSourceSense>>();
             registry.RegisterNonConstructable<SensoryReceptorState<TReceptorSense, TSourceSense>>();

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using JetBrains.Annotations;
 using Microsoft.Extensions.Configuration;
 using RogueEntity.Api.Modules.Helpers;
 using RogueEntity.Api.Modules.Initializers;
@@ -19,14 +18,14 @@ namespace RogueEntity.Api.Modules
         readonly ModuleEntitySystemRegistrations registrations;
         bool initialized;
 
-        public ModuleSystem([NotNull] IServiceResolver serviceResolver)
+        public ModuleSystem(IServiceResolver serviceResolver)
         {
             modulesById = new Dictionary<ModuleId, ModuleRecord>();
 
             this.serviceResolver = serviceResolver ?? throw new ArgumentNullException(nameof(serviceResolver));
             this.registrations = new ModuleEntitySystemRegistrations();
 
-            if (!this.serviceResolver.TryResolve(out IConfigurationHost config))
+            if (!this.serviceResolver.TryResolve<IConfigurationHost>(out var config))
             {
                 config = new DefaultConfigurationHost(new ConfigurationBuilder().Build());
                 this.serviceResolver.Store(config);

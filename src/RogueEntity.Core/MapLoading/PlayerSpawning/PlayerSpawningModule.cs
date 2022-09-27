@@ -14,7 +14,7 @@ namespace RogueEntity.Core.MapLoading.PlayerSpawning
         public static readonly EntityRole PlayerSpawnPointRole = new EntityRole("Role.Core.PlayerSpawning.PlayerSpawnPoint");
         public static readonly EntityRelation PlayerToSpawnPointRelation = new EntityRelation("Relation.Core.PlayerSpawning.PlayerToSpawnPoint", PlayerModule.PlayerRole, PlayerSpawnPointRole, true);
 
-        static readonly EntitySystemId PlayerSpawnPointComponentsId = "Entities.Core.PlayerSpawning.PlayerSpawnPoint";
+        static readonly EntitySystemId playerSpawnPointComponentsId = "Entities.Core.PlayerSpawning.PlayerSpawnPoint";
 
         public PlayerSpawningModule()
         {
@@ -35,15 +35,15 @@ namespace RogueEntity.Core.MapLoading.PlayerSpawning
         protected void InitializePlayerSpawnPointRole<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                                IModuleInitializer initializer,
                                                                EntityRole r)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             var entityContext = initializer.DeclareEntityContext<TItemId>();
-            entityContext.Register(PlayerSpawnPointComponentsId, -20_000, RegisterPlayerSpawnPointComponents);
+            entityContext.Register(playerSpawnPointComponentsId, -20_000, RegisterPlayerSpawnPointComponents);
         }
 
         void RegisterPlayerSpawnPointComponents<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                          EntityRegistry<TItemId> registry)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             registry.RegisterNonConstructable<PlayerSpawnLocation>();
         }

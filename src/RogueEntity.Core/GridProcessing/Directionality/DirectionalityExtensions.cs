@@ -7,27 +7,27 @@ namespace RogueEntity.Core.GridProcessing.Directionality
 {
     public static class DirectionalityExtensions
     {
-        static readonly DirectionalityInformation[] Masks;
+        static readonly DirectionalityInformation[] masks;
 
         static DirectionalityExtensions()
         {
-            Masks = new DirectionalityInformation[9];
-            Masks[(int)Direction.None] = (DirectionalityInformation) 0xFF; // Dummy mask to disallow any movement.
-            Masks[(int)Direction.Up] = DirectionalityInformation.Up;
-            Masks[(int)Direction.UpRight] = DirectionalityInformation.UpRight;
-            Masks[(int)Direction.Right] = DirectionalityInformation.Right;
-            Masks[(int)Direction.DownRight] = DirectionalityInformation.DownRight;
-            Masks[(int)Direction.Down] = DirectionalityInformation.Down;
-            Masks[(int)Direction.DownLeft] = DirectionalityInformation.DownLeft;
-            Masks[(int)Direction.Left] = DirectionalityInformation.Left;
-            Masks[(int)Direction.UpLeft] = DirectionalityInformation.UpLeft;
+            masks = new DirectionalityInformation[9];
+            masks[(int)Direction.None] = (DirectionalityInformation) 0xFF; // Dummy mask to disallow any movement.
+            masks[(int)Direction.Up] = DirectionalityInformation.Up;
+            masks[(int)Direction.UpRight] = DirectionalityInformation.UpRight;
+            masks[(int)Direction.Right] = DirectionalityInformation.Right;
+            masks[(int)Direction.DownRight] = DirectionalityInformation.DownRight;
+            masks[(int)Direction.Down] = DirectionalityInformation.Down;
+            masks[(int)Direction.DownLeft] = DirectionalityInformation.DownLeft;
+            masks[(int)Direction.Left] = DirectionalityInformation.Left;
+            masks[(int)Direction.UpLeft] = DirectionalityInformation.UpLeft;
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsMovementAllowed(this DirectionalityInformation d, Direction dir)
         {
             var idx = (int)dir;
-            var mask = Masks[idx.Clamp(0, 9)];
+            var mask = masks[idx.Clamp(0, 9)];
             return (d & mask) == mask;
         }
 
@@ -35,7 +35,7 @@ namespace RogueEntity.Core.GridProcessing.Directionality
         public static DirectionalityInformation With(this DirectionalityInformation d, Direction dir)
         {
             var idx = (int)dir;
-            var mask = Masks[idx.Clamp(0, 9)];
+            var mask = masks[idx.Clamp(0, 9)];
             return d | mask;
         }
 
@@ -43,7 +43,7 @@ namespace RogueEntity.Core.GridProcessing.Directionality
         public static DirectionalityInformation WithOut(this DirectionalityInformation d, Direction dir)
         {
             var idx = (int)dir;
-            var mask = Masks[idx.Clamp(0, 9)];
+            var mask = masks[idx.Clamp(0, 9)];
             return d & ~mask;
         }
 

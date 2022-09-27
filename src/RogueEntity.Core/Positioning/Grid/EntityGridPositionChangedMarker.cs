@@ -25,7 +25,7 @@ namespace RogueEntity.Core.Positioning.Grid
         EntityGridPosition IPositionChangeMarker<EntityGridPosition>.PreviousPosition => PreviousPosition;
 
         public static void Update<TKey>(IEntityViewControl<TKey> v, TKey k, EntityGridPosition previous) 
-            where TKey : IEntityKey
+            where TKey : struct, IEntityKey
         {
             if (!v.IsValid(k))
             {
@@ -44,7 +44,7 @@ namespace RogueEntity.Core.Positioning.Grid
         }
 
         public static IDisposable InstallChangeHandler<TEntityKey>(EntityRegistry<TEntityKey> registry) 
-            where TEntityKey : IEntityKey
+            where TEntityKey : struct, IEntityKey
         {
             var x = new PositionChangeTracker<TEntityKey>(registry);
             x.Install();
@@ -52,7 +52,7 @@ namespace RogueEntity.Core.Positioning.Grid
         }
 
         class PositionChangeTracker<TEntityKey> : EntityChangeTracker<TEntityKey, EntityGridPosition> 
-            where TEntityKey : IEntityKey
+            where TEntityKey : struct, IEntityKey
         {
             public PositionChangeTracker(EntityRegistry<TEntityKey> registry) : base(registry)
             {

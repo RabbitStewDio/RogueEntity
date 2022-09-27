@@ -1,10 +1,11 @@
 using EnTTSharp.Entities;
-using JetBrains.Annotations;
 using RogueEntity.Api.Utils;
 using RogueEntity.Core.MovementPlaning.Goals;
 using RogueEntity.Core.Positioning.SpatialQueries;
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RogueEntity.Core.MovementPlaning.GoalFinding.SingleLevel
 {
@@ -16,59 +17,36 @@ namespace RogueEntity.Core.MovementPlaning.GoalFinding.SingleLevel
     /// </summary>
     public class SingleLevelGoalTargetEvaluatorFactory
     {
-        readonly GoalRegistry goalRegistry;
         readonly ISpatialQueryLookup queryLookup;
-        readonly ConcurrentDictionary<(Type, Type), object> data;
-        readonly Func<(Type, Type), object> createDelegate;
+        readonly Dictionary<(Type, Type), object> data;
 
-        public SingleLevelGoalTargetEvaluatorFactory([NotNull] GoalRegistry goalRegistry, [NotNull] ISpatialQueryLookup queryLookup)
+        public SingleLevelGoalTargetEvaluatorFactory(ISpatialQueryLookup queryLookup)
         {
-            this.goalRegistry = goalRegistry ?? throw new ArgumentNullException(nameof(goalRegistry));
+            this.data = new Dictionary<(Type, Type), object>();
             this.queryLookup = queryLookup ?? throw new ArgumentNullException(nameof(queryLookup));
-            data = new ConcurrentDictionary<(Type, Type), object>();
-            createDelegate = Create;
         }
 
-        public bool TryGet<TEntityId, TGoal>(out EntityGoalTargetSource2D<TEntityId, TGoal> result)
-            where TEntityId : IEntityKey
+        public bool TryGet<TEntityId, TGoal>([MaybeNullWhen(false)] out EntityGoalTargetSource2D<TEntityId, TGoal> result)
+            where TEntityId : struct, IEntityKey
         {
-            var maybeResult = data.GetOrAdd((typeof(TEntityId), typeof(TGoal)), createDelegate);
-            if (maybeResult is EntityGoalTargetSource2D<TEntityId, TGoal> r)
+            lock (data)
             {
-                result = r;
-                return true;
+                if (data.TryGetValue((typeof(TEntityId), typeof(TGoal)), out var maybeResult) && (maybeResult is EntityGoalTargetSource2D<TEntityId, TGoal> r))
+                {
+                    result = r;
+                    return true;
+                }
+
+                if (queryLookup.TryGetQuery<TEntityId>(out var q))
+                {
+                    result = new EntityGoalTargetSource2D<TEntityId, TGoal>(q);
+                    data[(typeof(TEntityId), typeof(TGoal))] = result;
+                    return true;
+                }
             }
 
             result = default;
             return false;
-        }
-
-        object Create((Type entityType, Type goalType) arg)
-        {
-            var genericLifter = new SpatialQueryLifter(queryLookup);
-            return goalRegistry.LiftInstance(arg.entityType, arg.goalType, genericLifter);
-        }
-
-        class SpatialQueryLifter : IGenericLifterFunction<IEntityKey, IGoal>
-        {
-            readonly ISpatialQueryLookup queryLookup;
-
-            public SpatialQueryLifter(ISpatialQueryLookup queryLookup)
-            {
-                this.queryLookup = queryLookup;
-            }
-
-            public object Invoke<TEntityKey, TGoal>()
-                where TEntityKey : IEntityKey
-                where TGoal : IGoal
-            {
-                if (queryLookup.TryGetQuery<TEntityKey>(out var q))
-                {
-                    return new EntityGoalTargetSource2D<TEntityKey, TGoal>(q);
-                }
-
-                return null;
-            }
         }
     }
 }

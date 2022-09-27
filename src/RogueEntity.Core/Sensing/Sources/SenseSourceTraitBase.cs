@@ -11,7 +11,7 @@ namespace RogueEntity.Core.Sensing.Sources
 {
     public abstract class SenseSourceTraitBase<TItemId, TSense, TSenseDefinition> : IReferenceItemTrait<TItemId>,
                                                                                     IItemComponentTrait<TItemId, TSenseDefinition>
-        where TItemId : IEntityKey
+        where TItemId : struct, IEntityKey
         where TSenseDefinition : ISenseDefinition
     {
         public abstract ItemTraitId Id { get; }

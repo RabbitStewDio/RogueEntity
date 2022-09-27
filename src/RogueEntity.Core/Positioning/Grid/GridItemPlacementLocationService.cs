@@ -14,9 +14,9 @@ namespace RogueEntity.Core.Positioning.Grid
     /// </summary>
     /// <typeparam name="TItemId"></typeparam>
     public class GridItemPlacementLocationService<TItemId> : IItemPlacementLocationService<TItemId>
-        where TItemId : IEntityKey
+        where TItemId : struct, IEntityKey
     {
-        static readonly ILogger Logger = SLog.ForContext<GridItemPlacementService<TItemId>>();
+        static readonly ILogger logger = SLog.ForContext<GridItemPlacementService<TItemId>>();
         readonly IItemResolver<TItemId> itemResolver;
         readonly IGridMapContext<TItemId> mapContext;
         readonly IBulkDataStorageMetaData<TItemId> itemIdMetaData;
@@ -37,28 +37,28 @@ namespace RogueEntity.Core.Positioning.Grid
 
             if (origin.LayerId == MapLayer.Indeterminate.LayerId)
             {
-                Logger.Verbose("Given position {Position} has an indeterminate map layer", origin);
+                logger.Verbose("Given position {Position} has an indeterminate map layer", origin);
                 placementPos = default;
                 return false;
             }
             
             if (origin.IsInvalid)
             {
-                Logger.Verbose("Given position {Position} is invalid", origin);
+                logger.Verbose("Given position {Position} is invalid", origin);
                 placementPos = default;
                 return false;
             }
 
             if (!mapContext.TryGetGridDataFor(origin.LayerId, out var mapData))
             {
-                Logger.Verbose("Unable to resolve grid data for map layer {LayerId} of position {Position}", origin.LayerId, origin);
+                logger.Verbose("Unable to resolve grid data for map layer {LayerId} of position {Position}", origin.LayerId, origin);
                 placementPos = default;
                 return false;
             }
 
             if (!mapData.TryGetWritableView(origin.GridZ, out var map, DataViewCreateMode.CreateMissing))
             {
-                Logger.Verbose("Requested grid position for map layer {LayerId} is out of range for position {Position}", origin.LayerId, origin);
+                logger.Verbose("Requested grid position for map layer {LayerId} is out of range for position {Position}", origin.LayerId, origin);
                 placementPos = default;
                 return false;
             }
@@ -67,7 +67,7 @@ namespace RogueEntity.Core.Positioning.Grid
             var gx = origin.GridX;
             var gy = origin.GridY;
             var defaultItem = default(TItemId);
-            IReadOnlyBoundedDataView<TItemId> tile = null;
+            IReadOnlyBoundedDataView<TItemId>? tile = null;
             for (int r = 0; r < searchRadius; r += 1)
             {
                 foreach (var c in new Rectangle(gx, gy, searchRadius, searchRadius).PerimeterPositions())
@@ -103,14 +103,14 @@ namespace RogueEntity.Core.Positioning.Grid
         {
             if (origin.IsInvalid)
             {
-                Logger.Verbose("Given position {Position} is invalid", origin);
+                logger.Verbose("Given position {Position} is invalid", origin);
                 placementPos = default;
                 return false;
             }
 
             if (origin.LayerId == MapLayer.Indeterminate.LayerId)
             {
-                Logger.Verbose("Given position {Position} has an indeterminate map layer", origin);
+                logger.Verbose("Given position {Position} has an indeterminate map layer", origin);
                 placementPos = default;
                 return false;
             }
@@ -118,14 +118,14 @@ namespace RogueEntity.Core.Positioning.Grid
 
             if (!mapContext.TryGetGridDataFor(origin.LayerId, out var mapData))
             {
-                Logger.Verbose("Unable to resolve grid data for map layer {LayerId} of position {Position}", origin.LayerId, origin);
+                logger.Verbose("Unable to resolve grid data for map layer {LayerId} of position {Position}", origin.LayerId, origin);
                 placementPos = default;
                 return false;
             }
 
             if (!mapData.TryGetWritableView(origin.GridZ, out var map, DataViewCreateMode.CreateMissing))
             {
-                Logger.Verbose("Requested grid position for map layer {LayerId} is out of range for position {Position}", origin.LayerId, origin);
+                logger.Verbose("Requested grid position for map layer {LayerId} is out of range for position {Position}", origin.LayerId, origin);
                 placementPos = default;
                 return false;
             }
@@ -133,7 +133,7 @@ namespace RogueEntity.Core.Positioning.Grid
             var gx = origin.GridX;
             var gy = origin.GridY;
             var defaultValue = default(TItemId);
-            IReadOnlyBoundedDataView<TItemId> tile = null;
+            IReadOnlyBoundedDataView<TItemId>? tile = null;
 
             for (int r = 0; r < searchRadius; r += 1)
             {

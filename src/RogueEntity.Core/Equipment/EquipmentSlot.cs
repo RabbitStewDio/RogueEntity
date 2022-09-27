@@ -82,15 +82,15 @@ namespace RogueEntity.Core.Equipment
 
         public override int GetHashCode()
         {
-            return (Id != null ? Id.GetHashCode() : 0);
+            return Id.GetHashCode();
         }
 
-        public static bool operator ==(EquipmentSlot left, EquipmentSlot right)
+        public static bool operator ==(EquipmentSlot? left, EquipmentSlot? right)
         {
             return Equals(left, right);
         }
 
-        public static bool operator !=(EquipmentSlot left, EquipmentSlot right)
+        public static bool operator !=(EquipmentSlot? left, EquipmentSlot? right)
         {
             return !Equals(left, right);
         }

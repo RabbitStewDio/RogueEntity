@@ -61,7 +61,7 @@ namespace RogueEntity.Samples.BoxPusher.Core
         public void InitializePlayer<TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter,
                                                IModuleInitializer initializer,
                                                EntityRole r)
-            where TActorId : IEntityKey
+            where TActorId : struct, IEntityKey
         {
             var ctx = initializer.DeclareEntityContext<TActorId>();
 
@@ -75,7 +75,7 @@ namespace RogueEntity.Samples.BoxPusher.Core
         public void InitializeBox<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                            IModuleInitializer initializer,
                                            EntityRole r)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             var ctx = initializer.DeclareEntityContext<TItemId>();
             ctx.Register(BoxPusherBoxEntities, 40_000, RegisterBoxEntities);
@@ -87,7 +87,7 @@ namespace RogueEntity.Samples.BoxPusher.Core
         public void InitializeTargetSpot<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                   IModuleInitializer initializer,
                                                   EntityRole r)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             var ctx = initializer.DeclareEntityContext<TItemId>();
             ctx.Register(BoxPusherTargetSpotEntities, 40_000, RegisterTargetSpotEntities);
@@ -99,15 +99,15 @@ namespace RogueEntity.Samples.BoxPusher.Core
         public void InitializePlayerBoxRelation<TActorId, TItemId>(in ModuleEntityInitializationParameter<TActorId> initParameter,
                                                                    IModuleInitializer initializer,
                                                                    EntityRelation r)
-            where TActorId : IEntityKey
-            where TItemId : IEntityKey
+            where TActorId : struct, IEntityKey
+            where TItemId : struct, IEntityKey
         {
             var ctx = initializer.DeclareEntityContext<TActorId>();
             ctx.Register(BoxPusherEnsureMoveSystem, 1000, EnsureMoveSystemExists);
         }
 
         void EnsureMoveSystemExists<TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter, EntityRegistry<TActorId> registry)
-            where TActorId : IEntityKey
+            where TActorId : struct, IEntityKey
         {
             var sr = initParameter.ServiceResolver;
             var ms = new PushMoveCommandSystem<ActorReference, ItemReference>(sr.ResolveToReference<ITimeSource>(),
@@ -123,7 +123,7 @@ namespace RogueEntity.Samples.BoxPusher.Core
         }
 
         void RegisterBoxWinConditionSystem<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter, IGameLoopSystemRegistration context, EntityRegistry<TItemId> registry)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             var system = initParameter.ServiceResolver.Resolve<BoxPusherWinConditionSystems>();
             var action = registry.BuildSystem()
@@ -135,7 +135,7 @@ namespace RogueEntity.Samples.BoxPusher.Core
         }
 
         void RegisterTargetSpotWinConditionSystem<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter, IGameLoopSystemRegistration context, EntityRegistry<TItemId> registry)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             var system = initParameter.ServiceResolver.Resolve<BoxPusherWinConditionSystems>();
             var action = registry.BuildSystem()
@@ -147,25 +147,25 @@ namespace RogueEntity.Samples.BoxPusher.Core
         }
 
         void RegisterBoxEntities<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter, EntityRegistry<TItemId> registry)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             registry.RegisterFlag<BoxPusherBoxMarker>();
         }
 
         void RegisterTargetSpotEntities<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter, EntityRegistry<TItemId> registry)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             registry.RegisterFlag<BoxPusherTargetFieldMarker>();
         }
 
         void RegisterPlayerEntities<TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter, EntityRegistry<TActorId> registry)
-            where TActorId : IEntityKey
+            where TActorId : struct, IEntityKey
         {
             registry.RegisterNonConstructable<BoxPusherPlayerProfile>();
         }
 
         void RegisterFinalizeWinSystem<TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter, IGameLoopSystemRegistration context, EntityRegistry<TActorId> registry)
-            where TActorId : IEntityKey
+            where TActorId : struct, IEntityKey
         {
             var system = initParameter.ServiceResolver.Resolve<BoxPusherWinConditionSystems>();
             var action = registry.BuildSystem()
@@ -178,7 +178,7 @@ namespace RogueEntity.Samples.BoxPusher.Core
         }
 
         void RegisterInitializeWinSystem<TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter, IGameLoopSystemRegistration context, EntityRegistry<TActorId> registry)
-            where TActorId : IEntityKey
+            where TActorId : struct, IEntityKey
         {
             var system = initParameter.ServiceResolver.Resolve<BoxPusherWinConditionSystems>();
             var action = registry.BuildSystem()

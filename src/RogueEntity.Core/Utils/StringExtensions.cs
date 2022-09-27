@@ -27,10 +27,10 @@ namespace RogueEntity.Core.Utils
         /// <param name="separator">Characters to separate the IEnumerable's elements by.</param>
         /// <param name="end">Character(s) that should follow the string representation of the IEnumerable's elements.</param>
         /// <returns>A string representation of the IEnumerable.</returns>
-        public static string ExtendToString<T>(this IEnumerable<T> enumerable, string begin = "[", Func<T, string> elementStringifier = null, string separator = ", ", string end = "]")
+        public static string ExtendToString<T>(this IEnumerable<T> enumerable, string begin = "[", Func<T, string>? elementStringifier = null, string separator = ", ", string end = "]")
         {
             if (elementStringifier == null)
-                elementStringifier = obj => obj.ToString();
+                elementStringifier = obj => obj?.ToString() ?? "";
 
             var result = new StringBuilder(begin);
             bool first = true;
@@ -69,7 +69,7 @@ namespace RogueEntity.Core.Utils
 		/// <param name="separator">Characters to separate the set's items by.</param>
 		/// <param name="end">Character(s) that should follow the string representation of the set's elements.</param>
 		/// <returns>A string representation of the ISet.</returns>
-		public static string ExtendToString<T>(this ISet<T> set, string begin = "set(", Func<T, string> elementStringifier = null, string separator = ", ", string end = ")")
+		public static string ExtendToString<T>(this ISet<T> set, string begin = "set(", Func<T, string>? elementStringifier = null, string separator = ", ", string end = ")")
 			=> ExtendToString((IEnumerable<T>)set, begin, elementStringifier, separator, end);
 
 		/// <summary>
@@ -82,8 +82,8 @@ namespace RogueEntity.Core.Utils
 		/// When no customization paramters are specified, it defaults to a representation looking something
 		/// like {key1 : value, key2 : value}.
 		/// </remarks>
-		/// <typeparam name="K"/>
-		/// <typeparam name="V"/>
+		/// <typeparam name="TK"/>
+		/// <typeparam name="TV"/>
 		/// <param name="dictionary"/>
 		/// <param name="begin">Character(s) that should precede the string representation of the dictionary's elements.</param>
 		/// <param name="keyStringifier">
@@ -98,8 +98,8 @@ namespace RogueEntity.Core.Utils
 		/// <param name="pairSeparator">Characters used to separate each key-value pair from the next.</param>
 		/// <param name="end">Character(s) that should follow the string representation of the dictionary's elements.</param>
 		/// <returns>A string representation of the IDictionary.</returns>
-		public static string ExtendToString<K, V>(this IDictionary<K, V> dictionary, string begin = "{", Func<K, string> keyStringifier = null,
-												   Func<V, string> valueStringifier = null, string kvSeparator = " : ", string pairSeparator = ", ", string end = "}")
+		public static string ExtendToString<TK, TV>(this IDictionary<TK, TV> dictionary, string begin = "{", Func<TK, string>? keyStringifier = null,
+												   Func<TV, string>? valueStringifier = null, string kvSeparator = " : ", string pairSeparator = ", ", string end = "}")
 		{
 			if (keyStringifier == null)
 				keyStringifier = DefaultStringConversion;
@@ -142,11 +142,11 @@ namespace RogueEntity.Core.Utils
 		/// <param name="endRow">Character(s) that should follow the string representation of each row.</param>
 		/// <param name="end">Character(s) that should follow the string representation of the 2D array.</param>
 		/// <returns>A string representation of the 2D array.</returns>
-		public static string ExtendToString<T>(this T[,] array, string begin = "[\n", string beginRow = "\t[", Func<T, string> elementStringifier = null,
+		public static string ExtendToString<T>(this T[,] array, string begin = "[\n", string beginRow = "\t[", Func<T, string>? elementStringifier = null,
 												 string rowSeparator = ",\n", string elementSeparator = ", ", string endRow = "]", string end = "\n]")
 		{
 			if (elementStringifier == null)
-				elementStringifier = obj => obj.ToString();
+				elementStringifier = obj => obj?.ToString() ?? "";
 
 			var result = new StringBuilder(begin);
 			for (int x = 0; x < array.GetLength(0); x++)

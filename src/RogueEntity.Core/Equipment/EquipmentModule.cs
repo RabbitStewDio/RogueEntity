@@ -37,7 +37,7 @@ namespace RogueEntity.Core.Equipment
         protected void InitializeContainedItemRole<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                             IModuleInitializer initializer,
                                                             EntityRole r)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             var entityContext = initializer.DeclareEntityContext<TItemId>();
             entityContext.Register(ContainedItemsComponentId, -19000, RegisterContainedItemEntities);
@@ -47,8 +47,8 @@ namespace RogueEntity.Core.Equipment
         protected void InitializeContainerEntities<TActorId, TItemId>(in ModuleEntityInitializationParameter<TActorId> initParameter,
                                                                       IModuleInitializer initializer,
                                                                       EntityRelation r)
-            where TActorId : IEntityKey
-            where TItemId : IEntityKey
+            where TActorId : struct, IEntityKey
+            where TItemId : struct, IEntityKey
         {
             var entityContext = initializer.DeclareEntityContext<TActorId>();
             entityContext.Register(ContainerComponentId, -19000, RegisterContainerEntities<TActorId, TItemId>);
@@ -58,8 +58,8 @@ namespace RogueEntity.Core.Equipment
         void RegisterCascadingDestruction<TActorId, TItemId>(in ModuleEntityInitializationParameter<TActorId> initParameter,
                                                              IGameLoopSystemRegistration context,
                                                              EntityRegistry<TActorId> registry)
-            where TActorId : IEntityKey
-            where TItemId : IEntityKey
+            where TActorId : struct, IEntityKey
+            where TItemId : struct, IEntityKey
         {
             var itemResolver = initParameter.ServiceResolver.Resolve<IItemResolver<TItemId>>();
             var system = new DestroyContainerContentsSystem<TActorId, TItemId>(itemResolver);
@@ -74,15 +74,15 @@ namespace RogueEntity.Core.Equipment
 
         void RegisterContainedItemEntities<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                     EntityRegistry<TItemId> registry)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             registry.RegisterNonConstructable<SlottedEquipmentData<TItemId>>();
         }
 
         void RegisterContainerEntities<TActorId, TItemId>(in ModuleEntityInitializationParameter<TActorId> initParameter,
                                                           EntityRegistry<TActorId> registry)
-            where TActorId : IEntityKey
-            where TItemId : IEntityKey
+            where TActorId : struct, IEntityKey
+            where TItemId : struct, IEntityKey
         {
             registry.RegisterNonConstructable<SlottedEquipmentData<TItemId>>();
         }

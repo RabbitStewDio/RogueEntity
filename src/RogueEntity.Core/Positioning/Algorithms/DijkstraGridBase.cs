@@ -3,6 +3,7 @@ using RogueEntity.Api.Utils;
 using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.DataViews;
 using Serilog;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RogueEntity.Core.Positioning.Algorithms
 {
@@ -27,7 +28,7 @@ namespace RogueEntity.Core.Positioning.Algorithms
     /// </summary>
     public abstract class DijkstraGridBase<TExtraNodeInfo>
     {
-        static readonly ILogger Logger = SLog.ForContext<DijkstraGridBase<TExtraNodeInfo>>();
+        static readonly ILogger logger = SLog.ForContext<DijkstraGridBase<TExtraNodeInfo>>();
 
         Rectangle bounds;
         readonly BoundedDataView<Direction> resultMapCoords;
@@ -105,7 +106,7 @@ namespace RogueEntity.Core.Positioning.Algorithms
                         continue;
                     }
 
-                    if (!EdgeCostInformation(in openNodePosition, in d, openNodeWeight, out var totalPathCost, out TExtraNodeInfo ni))
+                    if (!EdgeCostInformation(in openNodePosition, in d, openNodeWeight, out var totalPathCost, out var ni))
                     {
                         continue;
                     }
@@ -122,7 +123,7 @@ namespace RogueEntity.Core.Positioning.Algorithms
                 }
             }
 
-            Logger.Verbose("Evaluated {Count} nodes during rescan", nodeCount);
+            logger.Verbose("Evaluated {Count} nodes during rescan", nodeCount);
             NodesEvaluated = nodeCount;
             return nodeCount > 0;
         }
@@ -131,7 +132,8 @@ namespace RogueEntity.Core.Positioning.Algorithms
 
         protected abstract void UpdateNode(in ShortPosition2D nextNodePos, TExtraNodeInfo nodeInfo);
 
-        protected abstract bool EdgeCostInformation(in ShortPosition2D sourceNode, in Direction d, float sourceNodeCost, out float totalPathCost, out TExtraNodeInfo nodeInfo);
+        protected abstract bool EdgeCostInformation(in ShortPosition2D sourceNode, in Direction d, float sourceNodeCost, out float totalPathCost, 
+                                                    [MaybeNullWhen(false)] out TExtraNodeInfo nodeInfo);
 
         /// <summary>
         /// 
@@ -221,7 +223,7 @@ namespace RogueEntity.Core.Positioning.Algorithms
         /// <returns></returns>
         protected BufferList<ShortPosition2D> FindPath(ShortPosition2D p,
                                                        out float goalStrength,
-                                                       BufferList<ShortPosition2D> pathAccumulator = null,
+                                                       BufferList<ShortPosition2D>? pathAccumulator = null,
                                                        int maxLength = int.MaxValue)
         {
             pathAccumulator = BufferList.PrepareBuffer(pathAccumulator);

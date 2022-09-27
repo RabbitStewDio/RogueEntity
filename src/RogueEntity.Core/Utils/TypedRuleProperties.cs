@@ -1,6 +1,7 @@
 ﻿using MessagePack;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RogueEntity.Core.Utils
 {
@@ -21,17 +22,23 @@ namespace RogueEntity.Core.Utils
 
         public void Define<T>(T property)
         {
-            properties[typeof(T)] = property;
+            object? o = property;
+            if (o == null) return;
+            
+            properties[typeof(T)] = o;
         }
 
         public TypedRuleProperties With<T>(T property)
         {
+            object? o = property;
+            if (o == null) return this;
+            
             var copy = Copy();
-            copy.properties[typeof(T)] = property;
+            copy.properties[typeof(T)] = o;
             return copy;
         }
 
-        public bool TryGet<T>(out T data)
+        public bool TryGet<T>([MaybeNullWhen(false)] out T data)
         {
             if (properties.TryGetValue(typeof(T), out object raw))
             {

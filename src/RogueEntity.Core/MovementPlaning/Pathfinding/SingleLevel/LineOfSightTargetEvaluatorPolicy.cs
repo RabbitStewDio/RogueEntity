@@ -1,4 +1,3 @@
-using JetBrains.Annotations;
 using Microsoft.Extensions.ObjectPool;
 using RogueEntity.Core.Movement.CostModifier.Directions;
 using RogueEntity.Core.Movement.CostModifier.Map;
@@ -9,15 +8,15 @@ namespace RogueEntity.Core.MovementPlaning.Pathfinding.SingleLevel
 {
     public class LineOfSightTargetEvaluatorPolicy<TMovementMode>: PooledObjectPolicy<LineOfSightTargetEvaluator<TMovementMode>>
     {
-        [NotNull] readonly ShadowPropagationResistanceDataSource data;
-        [NotNull] readonly IRelativeMovementCostSystem<TMovementMode> resistanceMap;
-        [NotNull] readonly IOutboundMovementDirectionView<TMovementMode> directionMap;
+        readonly ShadowPropagationResistanceDataSource data;
+        readonly IRelativeMovementCostSystem<TMovementMode> resistanceMap;
+        readonly IOutboundMovementDirectionView<TMovementMode> directionMap;
         readonly Action<LineOfSightTargetEvaluator<TMovementMode>> returnToPoolAction;
 
-        public LineOfSightTargetEvaluatorPolicy([NotNull] ShadowPropagationResistanceDataSource data,
-                                                [NotNull] IRelativeMovementCostSystem<TMovementMode> resistanceMap,
-                                                [NotNull] IOutboundMovementDirectionView<TMovementMode> directionMap,
-                                                [NotNull] Action<LineOfSightTargetEvaluator<TMovementMode>> returnToPoolAction)
+        public LineOfSightTargetEvaluatorPolicy(ShadowPropagationResistanceDataSource data,
+                                                IRelativeMovementCostSystem<TMovementMode> resistanceMap,
+                                                IOutboundMovementDirectionView<TMovementMode> directionMap,
+                                                Action<LineOfSightTargetEvaluator<TMovementMode>> returnToPoolAction)
         {
             this.data = data ?? throw new ArgumentNullException(nameof(data));
             this.resistanceMap = resistanceMap ?? throw new ArgumentNullException(nameof(resistanceMap));

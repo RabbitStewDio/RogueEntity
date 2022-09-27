@@ -22,7 +22,7 @@ namespace RogueEntity.Api.Modules
                 throw new InvalidOperationException("Cannot add modules to an already initialized system");
             }
 
-            if (module.Id == null)
+            if (string.IsNullOrEmpty(module.Id.Id))
             {
                 throw new ArgumentNullException("Module of type " + module.GetType() + " does not declare a module identifier.");
             }
@@ -59,9 +59,9 @@ namespace RogueEntity.Api.Modules
             }
         }
         
-        public void ScanForModules(Assembly assembly, params string[] domain)
+        public void ScanForModules(Assembly assembly, params string[]? domain)
         {
-            domain ??= new string[0];
+            domain ??= Array.Empty<string>();
             Logger.Verbose("Processing assembly {Assembly}", assembly.FullName);
             
             foreach (var typeInfo in assembly.DefinedTypes)
@@ -103,7 +103,7 @@ namespace RogueEntity.Api.Modules
             }
         }
 
-        static bool DomainMatches(string[] domainSpec, string moduleDomain)
+        static bool DomainMatches(string[] domainSpec, string? moduleDomain)
         {
             if (string.IsNullOrEmpty(moduleDomain))
             {

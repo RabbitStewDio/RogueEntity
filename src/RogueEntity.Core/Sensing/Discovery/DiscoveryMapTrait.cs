@@ -3,12 +3,13 @@ using System.Linq;
 using EnTTSharp.Entities;
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Core.Meta.Items;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RogueEntity.Core.Sensing.Discovery
 {
     public sealed class DiscoveryMapTrait<TActorId> : IReferenceItemTrait<TActorId>,
                                                       IItemComponentInformationTrait<TActorId, IDiscoveryMap>
-        where TActorId : IEntityKey
+        where TActorId : struct, IEntityKey
     {
         public ItemTraitId Id => "Actor.Generic.DiscoveryMap";
         public int Priority => 100;
@@ -26,7 +27,7 @@ namespace RogueEntity.Core.Sensing.Discovery
         public void Apply(IEntityViewControl<TActorId> v, TActorId k, IItemDeclaration item)
         { }
 
-        public bool TryQuery(IEntityViewControl<TActorId> v, TActorId k, out IDiscoveryMap t)
+        public bool TryQuery(IEntityViewControl<TActorId> v, TActorId k, [MaybeNullWhen(false)] out IDiscoveryMap t)
         {
             if (v.GetComponent(k, out DiscoveryMapData data))
             {

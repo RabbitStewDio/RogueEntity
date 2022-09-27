@@ -17,10 +17,10 @@ namespace RogueEntity.Core.Sensing.Sources.Noise
         /// </summary>
         [Key(1)]
         [DataMember(Order = 1)]
-        public readonly string Tag;
+        public readonly string? Tag;
 
         [SerializationConstructor]
-        public NoiseClip(float intensity, string tag = default)
+        public NoiseClip(float intensity, string? tag = default)
         {
             Intensity = intensity;
             Tag = tag;

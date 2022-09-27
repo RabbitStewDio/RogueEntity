@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 using System.Threading;
-using JetBrains.Annotations;
 using MessagePack;
 using RogueEntity.Api.Utils;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RogueEntity.Core.Utils.DataViews
 {
@@ -12,8 +12,8 @@ namespace RogueEntity.Core.Utils.DataViews
     [MessagePackObject]
     public class DynamicBoolDataView : IDynamicDataView2D<bool>
     {
-        public event EventHandler<DynamicDataView2DEventArgs<bool>> ViewChunkCreated;
-        public event EventHandler<DynamicDataView2DEventArgs<bool>> ViewChunkExpired;
+        public event EventHandler<DynamicDataView2DEventArgs<bool>>? ViewChunkCreated;
+        public event EventHandler<DynamicDataView2DEventArgs<bool>>? ViewChunkExpired;
 
         [DataMember(Order = 0)]
         [Key(0)]
@@ -83,7 +83,7 @@ namespace RogueEntity.Core.Utils.DataViews
         [SerializationConstructor]
         internal DynamicBoolDataView(int tileSizeX,
                                      int tileSizeY,
-                                     [NotNull] Dictionary<TileIndex, TrackedDataView> index,
+                                     Dictionary<TileIndex, TrackedDataView> index,
                                      long currentTime,
                                      int offsetX,
                                      int offsetY)
@@ -127,7 +127,7 @@ namespace RogueEntity.Core.Utils.DataViews
             return r;
         }
 
-        public BufferList<Rectangle> GetActiveTiles(BufferList<Rectangle> data = null)
+        public BufferList<Rectangle> GetActiveTiles(BufferList<Rectangle>? data = null)
         {
             data = BufferList.PrepareBuffer(data);
 
@@ -196,7 +196,7 @@ namespace RogueEntity.Core.Utils.DataViews
 
         public bool Any(int x, int y)
         {
-            if (TryGetDataInternal(x, y, out TrackedDataView data))
+            if (TryGetDataInternal(x, y, out var data))
             {
                 return data.Any(x, y);
             }
@@ -229,7 +229,7 @@ namespace RogueEntity.Core.Utils.DataViews
             return data[x, y] = value;
         }
 
-        bool IReadOnlyDynamicDataView2D<bool>.TryGetData(int x, int y, out IReadOnlyBoundedDataView<bool> raw)
+        bool IReadOnlyDynamicDataView2D<bool>.TryGetData(int x, int y, [MaybeNullWhen(false)] out IReadOnlyBoundedDataView<bool> raw)
         {
             if (TryGetData(x, y, out var data))
             {
@@ -241,9 +241,9 @@ namespace RogueEntity.Core.Utils.DataViews
             return false;
         }
 
-        public bool TryGetData(int x, int y, out IReadOnlyBoundedBoolDataView data)
+        public bool TryGetData(int x, int y, [MaybeNullWhen(false)] out IReadOnlyBoundedBoolDataView data)
         {
-            if (TryGetDataInternal(x, y, out TrackedDataView v))
+            if (TryGetDataInternal(x, y, out var v))
             {
                 data = v;
                 return true;
@@ -253,9 +253,9 @@ namespace RogueEntity.Core.Utils.DataViews
             return false;
         }
 
-        public bool TryGetWriteAccess(int x, int y, out IBoundedDataView<bool> data, DataViewCreateMode mode = DataViewCreateMode.Nothing)
+        public bool TryGetWriteAccess(int x, int y, [MaybeNullWhen(false)] out IBoundedDataView<bool> data, DataViewCreateMode mode = DataViewCreateMode.Nothing)
         {
-            if (TryGetDataInternal(x, y, out TrackedDataView v))
+            if (TryGetDataInternal(x, y, out var v))
             {
                 data = v;
                 return true;
@@ -284,13 +284,13 @@ namespace RogueEntity.Core.Utils.DataViews
             throw new InvalidOperationException();
         }
 
-        public bool TryGetRawAccess(int x, int y, out IBoundedDataViewRawAccess<bool> raw)
+        public bool TryGetRawAccess(int x, int y, [MaybeNullWhen(false)] out IBoundedDataViewRawAccess<bool> raw)
         {
             raw = default;
             return false;
         }
 
-        bool TryGetDataInternal(int x, int y, out TrackedDataView data)
+        bool TryGetDataInternal(int x, int y, [MaybeNullWhen(false)] out TrackedDataView data)
         {
             var dx = DataViewPartitions.TileSplit(x, offsetX, tileSizeX);
             var dy = DataViewPartitions.TileSplit(y, offsetY, tileSizeY);
@@ -305,7 +305,7 @@ namespace RogueEntity.Core.Utils.DataViews
 
         public bool TryGet(int x, int y, out bool result)
         {
-            if (TryGetDataInternal(x, y, out TrackedDataView data))
+            if (TryGetDataInternal(x, y, out var data))
             {
                 result = data[x, y];
                 return true;
@@ -363,7 +363,7 @@ namespace RogueEntity.Core.Utils.DataViews
             int usedForWriting;
 
             [SerializationConstructor]
-            protected internal TrackedDataView(Rectangle bounds, [NotNull] byte[] data, int anyValueSet) : base(bounds, data, anyValueSet)
+            protected internal TrackedDataView(Rectangle bounds, byte[] data, int anyValueSet) : base(bounds, data, anyValueSet)
             {
             }
 

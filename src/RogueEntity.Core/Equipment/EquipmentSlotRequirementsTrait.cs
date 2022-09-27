@@ -6,7 +6,7 @@ using RogueEntity.Core.Meta.Items;
 namespace RogueEntity.Core.Equipment
 {
     public class EquipmentSlotRequirementsTrait<TItemId> : StatelessItemComponentTraitBase<TItemId, EquipmentSlotRequirements> 
-        where TItemId : IEntityKey
+        where TItemId : struct, IEntityKey
     {
         readonly EquipmentSlotRequirements r;
 

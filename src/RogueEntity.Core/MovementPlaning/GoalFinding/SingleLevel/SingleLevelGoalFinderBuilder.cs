@@ -1,17 +1,15 @@
-using EnTTSharp.Entities;
-using JetBrains.Annotations;
 using Microsoft.Extensions.ObjectPool;
-using RogueEntity.Api.Utils;
 using RogueEntity.Core.Movement;
 using RogueEntity.Core.Movement.Cost;
 using RogueEntity.Core.MovementPlaning.Goals;
 using RogueEntity.Core.MovementPlaning.Goals.Filters;
+using RogueEntity.Core.Utils;
 using System;
 using System.Collections.Generic;
 
 namespace RogueEntity.Core.MovementPlaning.GoalFinding.SingleLevel
 {
-    public class SingleLevelGoalFinderBuilder: IGoalFinderBuilder, IGenericLifter<IEntityKey, IGoal>
+    public class SingleLevelGoalFinderBuilder: IGoalFinderBuilder, IGoalLift
     {
         readonly ObjectPool<SingleLevelGoalFinder> pathFinderPool;
         readonly ObjectPool<CompoundGoalTargetSource> compoundTargetEvaluatorPool;
@@ -38,13 +36,13 @@ namespace RogueEntity.Core.MovementPlaning.GoalFinding.SingleLevel
             this.goalSources = new List<IGoalFinderTargetSource>();
         }
 
-        public void Configure([NotNull] IReadOnlyDictionary<IMovementMode, MovementSourceData> data)
+        public void Configure(IReadOnlyDictionary<IMovementMode, MovementSourceData> data)
         {
             MovementCostData = data ?? throw new ArgumentNullException(nameof(data));
             searchRadius = 16;
         }
         
-        IReadOnlyDictionary<IMovementMode, MovementSourceData> MovementCostData { get; set; }
+        IReadOnlyDictionary<IMovementMode, MovementSourceData>? MovementCostData { get; set; }
 
         public IGoalFinderBuilder WithGoal<TGoal>()
             where TGoal : IGoal
@@ -67,6 +65,8 @@ namespace RogueEntity.Core.MovementPlaning.GoalFinding.SingleLevel
 
         public IGoalFinder Build(in AggregateMovementCostFactors movementProfile)
         {
+            Assert.NotNull(MovementCostData);
+            
             var e = compoundTargetEvaluatorPool.Get();
             foreach (var goal in goalSources)
             {
@@ -116,7 +116,7 @@ namespace RogueEntity.Core.MovementPlaning.GoalFinding.SingleLevel
             pathFinderPool.Return(pf);
         }
 
-        void IGenericLifter<IEntityKey, IGoal>.Invoke<TEntityKey, TGoal>()
+        void IGoalLift.Invoke<TEntityKey, TGoal>()
         {
             if (evaluatorFactory.TryGet<TEntityKey, TGoal>(out var q))
             {

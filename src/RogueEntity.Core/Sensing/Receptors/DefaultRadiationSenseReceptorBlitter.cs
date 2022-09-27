@@ -9,7 +9,7 @@ namespace RogueEntity.Core.Sensing.Receptors
 {
     public class DefaultRadiationSenseReceptorBlitter: IRadiationSenseReceptorBlitter
     {
-        readonly ILogger Logger = SLog.ForContext<DefaultRadiationSenseReceptorBlitter>();
+        readonly ILogger logger = SLog.ForContext<DefaultRadiationSenseReceptorBlitter>();
         
         public void Blit(Rectangle bounds, 
                          Position2D sensePosition, 
@@ -42,7 +42,7 @@ namespace RogueEntity.Core.Sensing.Receptors
                         {
                             // if there is no overlapping directionality in the light emitted by the sense source
                             // and the receptor, then the light shines on an obstructed view and is not visible.
-                            Logger.Verbose("{X}, {Y} is blocked outright", x, y);
+                            logger.Verbose("{X}, {Y} is blocked outright", x, y);
                             continue;
                         }
 
@@ -52,7 +52,7 @@ namespace RogueEntity.Core.Sensing.Receptors
                         {
                             if (IsBlocked(senseSource, x - sensePosition.X - dx.x, y - sensePosition.Y))
                             {
-                                Logger.Verbose("{Overlapping} - {Position} is blocked horizontally at {BlockPosition}", overlapping, new Position2D(x, y), new Position2D(x - dx.x, y));
+                                logger.Verbose("{Overlapping} - {Position} is blocked horizontally at {BlockPosition}", overlapping, new Position2D(x, y), new Position2D(x - dx.x, y));
                                 continue;
                             }
                         }
@@ -60,7 +60,7 @@ namespace RogueEntity.Core.Sensing.Receptors
                         {
                             if (IsBlocked(senseSource, x - sensePosition.X, y - sensePosition.Y - dx.y))
                             {
-                                Logger.Verbose("{Overlapping} - {Position} is blocked horizontally at {BlockPosition}", overlapping, new Position2D(x, y), new Position2D(x, y - dx.y));
+                                logger.Verbose("{Overlapping} - {Position} is blocked horizontally at {BlockPosition}", overlapping, new Position2D(x, y), new Position2D(x, y - dx.y));
                                 continue;
                             }
                         }

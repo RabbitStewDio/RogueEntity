@@ -7,14 +7,14 @@ namespace RogueEntity.Core.Positioning.Grid
     public static class GridPositionItemDeclarations
     {
         public static BulkItemDeclarationBuilder<TItemId> WithGridPosition<TItemId>(this BulkItemDeclarationBuilder<TItemId> builder, MapLayer layer, params MapLayer[] layers)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             builder.Declaration.WithTrait(new BulkItemGridPositionTrait<TItemId>(layer, layers));
             return builder;
         }
 
         public static ReferenceItemDeclarationBuilder<TItemId> WithGridPosition<TItemId>(this ReferenceItemDeclarationBuilder<TItemId> builder, MapLayer layer, params MapLayer[] layers)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             builder.Declaration.WithTrait(new ReferenceItemGridPositionTrait<TItemId>(layer, layers));
             return builder;

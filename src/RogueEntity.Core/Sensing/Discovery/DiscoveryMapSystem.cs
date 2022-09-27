@@ -30,7 +30,7 @@ namespace RogueEntity.Core.Sensing.Discovery
                                                                                  in SensoryReceptorState<TReceptorSense, TSourceSense> receptor,
                                                                                  in SingleLevelSenseDirectionMapData<TReceptorSense, TSourceSense> vision,
                                                                                  in SenseReceptorDirtyFlag<TReceptorSense, TSourceSense> unused)
-            where TActorId : IEntityKey
+            where TActorId : struct, IEntityKey
             where TReceptorSense : ISense
             where TSourceSense : ISense
         {

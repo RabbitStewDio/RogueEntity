@@ -6,7 +6,7 @@ namespace RogueEntity.Core.MapLoading.PlayerSpawning
     public static class PlayerSpawnLocationDeclarations
     {
         public static ReferenceItemDeclarationBuilder<TItemId> AsSpawnLocation<TItemId>(this ReferenceItemDeclarationBuilder<TItemId> builder)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             builder.Declaration.WithTrait(new PlayerSpawnLocationTrait<TItemId>());
             return builder;

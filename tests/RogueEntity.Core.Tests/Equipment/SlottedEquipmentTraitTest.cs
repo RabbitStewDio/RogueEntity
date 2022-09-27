@@ -119,7 +119,7 @@ namespace RogueEntity.Core.Tests.Equipment
     public static class SlottedEquipmentExtensions
     {
         public static SlottedEquipmentData<TItemId> Equip<TItemId>(this SlottedEquipmentData<TItemId> data, TItemId item, EquipmentSlot primary, List<EquipmentSlot> slots)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             if (data.TryEquip(item, primary, slots, out var result))
             {

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Text;
 
@@ -38,8 +39,8 @@ namespace RogueEntity.Api.Utils
 
         public static bool IsSameGenericAction(this MethodInfo m,
                                                Type[] generics,
-                                               out MethodInfo genericMethod,
-                                               out string errorHint,
+                                               [MaybeNullWhen(false)] out MethodInfo genericMethod,
+                                               [MaybeNullWhen(false)] out string errorHint,
                                                params Type[] parameter)
         {
             errorHint = default;
@@ -61,8 +62,8 @@ namespace RogueEntity.Api.Utils
 
         public static bool IsSameGenericFunction(this MethodInfo m,
                                                  Type[] generics,
-                                                 out MethodInfo genericMethod,
-                                                 out string errorHint,
+                                                 [MaybeNullWhen(false)] out MethodInfo genericMethod,
+                                                 [MaybeNullWhen(false)] out string errorHint,
                                                  Type returnValue,
                                                  params Type[] parameter)
         {

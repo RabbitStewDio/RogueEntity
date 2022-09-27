@@ -1,6 +1,7 @@
 ﻿using RogueEntity.Core.Storage;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 namespace RogueEntity.Core.Players
@@ -14,7 +15,7 @@ namespace RogueEntity.Core.Players
             this.repository = repository;
         }
 
-        public bool TryCreatePlayer(in TProfileData profile, out Guid playerId, out TProfileData profileData)
+        public bool TryCreatePlayer(in TProfileData profile, out Guid playerId, [MaybeNullWhen(false)] out TProfileData profileData)
         {
             for (var attempt = 0; attempt < 100; attempt += 1)
             {
@@ -40,7 +41,7 @@ namespace RogueEntity.Core.Players
             return repository.TryDelete(playerId);
         }
 
-        public bool TryLoadPlayerData(Guid playerId, out TProfileData profileData)
+        public bool TryLoadPlayerData(Guid playerId, [MaybeNullWhen(false)] out TProfileData profileData)
         {
             return repository.TryRead(playerId, out profileData);
         }

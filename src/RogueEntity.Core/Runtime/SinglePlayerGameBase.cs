@@ -8,7 +8,7 @@ namespace RogueEntity.Core.Runtime
 {
     public abstract class SinglePlayerGameBase<TPlayerEntity>: GameBase
     {
-        static readonly ILogger Logger = SLog.ForContext<SinglePlayerGameBase<TPlayerEntity>>();
+        static readonly ILogger logger = SLog.ForContext<SinglePlayerGameBase<TPlayerEntity>>();
 
         protected SinglePlayerGameBase(params string[] moduleIds): base(moduleIds)
         {
@@ -16,13 +16,15 @@ namespace RogueEntity.Core.Runtime
             GameStopped += (_,_) => RemoveRemainingActivePlayer();
         }
 
-        public IPlayerService PlayerService { get; private set; }
-        public IPlayerManager<TPlayerEntity> PlayerManager { get; private set; }
+        public IPlayerService? PlayerService { get; private set; }
+        public IPlayerManager<TPlayerEntity>? PlayerManager { get; private set; }
         public Optional<PlayerReference<TPlayerEntity>> PlayerData { get; private set; }
-        public IBasicCommandService<TPlayerEntity> CommandService { get; private set; }
+        public IBasicCommandService<TPlayerEntity>? CommandService { get; private set; }
 
         protected override void LateInitializeSystemsOverride()
         {
+            if (ServiceResolver == null) throw new InvalidOperationException();
+            
             PlayerService = ServiceResolver.Resolve<IPlayerService>();
             PlayerManager = ServiceResolver.Resolve<IPlayerManager<TPlayerEntity>>();
             PlayerManager.PlayerActivated += OnPlayerActivated;
@@ -64,7 +66,7 @@ namespace RogueEntity.Core.Runtime
                 return false;
             }
 
-            GameLoop.Initialize(IsBlockedOrWaitingForInput);
+            GameLoop?.Initialize(IsBlockedOrWaitingForInput);
             
             if (ActivatePlayer(playerId))
             {
@@ -84,7 +86,7 @@ namespace RogueEntity.Core.Runtime
                 return false;
             }
 
-            GameLoop.Initialize(IsBlockedOrWaitingForInput);
+            GameLoop?.Initialize(IsBlockedOrWaitingForInput);
                 
             Status = GameStatus.Running;
             FireGameStartedEvent();
@@ -94,6 +96,8 @@ namespace RogueEntity.Core.Runtime
 
         protected virtual bool ActivatePlayer(Guid playerId = default)
         {
+            if (PlayerManager == null) throw new InvalidOperationException();
+            
             if (playerId == default)
             {
                 playerId = PlayerIds.SinglePlayer;
@@ -110,6 +114,8 @@ namespace RogueEntity.Core.Runtime
 
         public virtual bool DeactivatePlayer()
         {
+            if (PlayerManager == null) throw new InvalidOperationException();
+            
             if (PlayerData.TryGetValue(out var playerData))
             {
                 if (PlayerManager.TryDeactivatePlayer(playerData.Tag.Id))
@@ -125,11 +131,13 @@ namespace RogueEntity.Core.Runtime
         
         void RemoveRemainingActivePlayer()
         {
+            if (PlayerManager == null) throw new InvalidOperationException();
+            
             if (PlayerData.TryGetValue(out var playerData) &&
                 !PlayerManager.TryDeactivatePlayer(playerData.Tag.Id))
             {
                 // Big warning, unable to kill player.
-                Logger.Warning("Unable to remove player while disposing game state");
+                logger.Warning("Unable to remove player while disposing game state");
             }
             
             PlayerData = default;

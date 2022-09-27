@@ -20,6 +20,8 @@ namespace RogueEntity.Core.Infrastructure.Services
 
         public static IServiceResolver WithService<TServiceObject>(this IServiceResolver r, in TServiceObject service, params Type[] alternativeTypes)
         {
+            if (service == null) throw new ArgumentNullException();
+            
             r.Store(service);
             foreach (var t in alternativeTypes)
             {

@@ -46,7 +46,7 @@ namespace RogueEntity.Core.Sensing.Discovery
         protected void Initialize<TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter,
                                             IModuleInitializer initializer,
                                             EntityRole role)
-            where TActorId : IEntityKey
+            where TActorId : struct, IEntityKey
         {
             var ctx = initializer.DeclareEntityContext<TActorId>();
             ctx.Register(RegisterEntities, 0, RegisterDiscoveryEntities);
@@ -57,7 +57,7 @@ namespace RogueEntity.Core.Sensing.Discovery
         protected void InitializeVision<TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter,
                                                   IModuleInitializer initializer,
                                                   EntityRole role)
-            where TActorId : IEntityKey
+            where TActorId : struct, IEntityKey
         {
             var ctx = initializer.DeclareEntityContext<TActorId>();
             ctx.Register(RegisterVisionSystem, 60_000, RegisterDiscoveryActionsVision);
@@ -68,7 +68,7 @@ namespace RogueEntity.Core.Sensing.Discovery
         protected void InitializeInfraVision<TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter,
                                                        IModuleInitializer initializer,
                                                        EntityRole role)
-            where TActorId : IEntityKey
+            where TActorId : struct, IEntityKey
         {
             var ctx = initializer.DeclareEntityContext<TActorId>();
             ctx.Register(RegisterInfraVisionSystem, 60_100, RegisterDiscoveryActionsInfraVision);
@@ -79,7 +79,7 @@ namespace RogueEntity.Core.Sensing.Discovery
         protected void InitializeTouch<TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter,
                                                  IModuleInitializer initializer,
                                                  EntityRole role)
-            where TActorId : IEntityKey
+            where TActorId : struct, IEntityKey
         {
             var ctx = initializer.DeclareEntityContext<TActorId>();
             ctx.Register(RegisterTouchSystem, 60_200, RegisterDiscoveryActionsTouch);
@@ -88,7 +88,7 @@ namespace RogueEntity.Core.Sensing.Discovery
         void RegisterDiscoveryActionsVision<TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter,
                                                       IGameLoopSystemRegistration context,
                                                       EntityRegistry<TActorId> registry)
-            where TActorId : IEntityKey
+            where TActorId : struct, IEntityKey
         {
             var serviceResolver = initParameter.ServiceResolver;
             var system = GetOrCreate(serviceResolver);
@@ -108,7 +108,7 @@ namespace RogueEntity.Core.Sensing.Discovery
         void RegisterDiscoveryActionsInfraVision<TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter,
                                                            IGameLoopSystemRegistration context,
                                                            EntityRegistry<TActorId> registry)
-            where TActorId : IEntityKey
+            where TActorId : struct, IEntityKey
         {
             var serviceResolver = initParameter.ServiceResolver;
             var system = GetOrCreate(serviceResolver);
@@ -128,7 +128,7 @@ namespace RogueEntity.Core.Sensing.Discovery
         void RegisterDiscoveryActionsTouch<TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter,
                                                      IGameLoopSystemRegistration context,
                                                      EntityRegistry<TActorId> registry)
-            where TActorId : IEntityKey
+            where TActorId : struct, IEntityKey
         {
             var serviceResolver = initParameter.ServiceResolver;
             var system = GetOrCreate(serviceResolver);
@@ -147,7 +147,7 @@ namespace RogueEntity.Core.Sensing.Discovery
 
         DiscoveryMapSystem GetOrCreate(IServiceResolver resolver)
         {
-            if (resolver.TryResolve(out DiscoveryMapSystem s))
+            if (resolver.TryResolve<DiscoveryMapSystem>(out var s))
             {
                 return s;
             }
@@ -159,7 +159,7 @@ namespace RogueEntity.Core.Sensing.Discovery
 
         void RegisterDiscoveryEntities<TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter,
                                                  EntityRegistry<TActorId> registry)
-            where TActorId : IEntityKey
+            where TActorId : struct, IEntityKey
         {
             registry.RegisterNonConstructable<DiscoveryMapData>();
         }

@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using JetBrains.Annotations;
 using RogueEntity.Core.Positioning.MapLayers;
 
 namespace RogueEntity.Core.Sensing.Cache
@@ -16,7 +15,7 @@ namespace RogueEntity.Core.Sensing.Cache
         readonly HashSet<MapLayer> layers;
         readonly HashSet<Type> senses;
 
-        public SenseCacheSetUpSystem([NotNull] Lazy<SenseStateCache> cacheProvider)
+        public SenseCacheSetUpSystem(Lazy<SenseStateCache> cacheProvider)
         {
             this.cacheProvider = cacheProvider ?? throw new ArgumentNullException(nameof(cacheProvider));
             this.layers = new HashSet<MapLayer>();

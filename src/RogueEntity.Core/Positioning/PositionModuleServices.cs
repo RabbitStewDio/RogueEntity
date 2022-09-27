@@ -13,7 +13,7 @@ namespace RogueEntity.Core.Positioning
     {
         public static DynamicDataViewConfiguration LookupDefaultConfiguration<TEntityId>(IServiceResolver serviceResolver)
         {
-            if (serviceResolver.TryResolve(out IGridMapConfiguration<TEntityId> mapConfig))
+            if (serviceResolver.TryResolve<IGridMapConfiguration<TEntityId>>(out var mapConfig))
             {
                 return new DynamicDataViewConfiguration(mapConfig.OffsetX, mapConfig.OffsetY, mapConfig.TileSizeX, mapConfig.TileSizeY);
             }
@@ -28,13 +28,13 @@ namespace RogueEntity.Core.Positioning
 
 
         public static HashSet<MapLayer> CollectMapLayers<TItemId, TAdditionalComponent>(ModuleEntityInitializationParameter<TItemId> initParameter)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             var moduleContext = initParameter.ContentDeclarations;
             var layers = new HashSet<MapLayer>();
             foreach (var bi in moduleContext.DeclaredBulkItems)
             {
-                if (bi.itemDeclaration.TryQuery(out IItemComponentDesignTimeInformationTrait<MapLayerPreference> layerPref) &&
+                if (bi.itemDeclaration.TryQuery<IItemComponentDesignTimeInformationTrait<MapLayerPreference>>(out var layerPref) &&
                     bi.itemDeclaration.HasItemComponent<TItemId, TAdditionalComponent>() &&
                     layerPref.TryQuery(out var layerPreferences))
                 {
@@ -44,7 +44,7 @@ namespace RogueEntity.Core.Positioning
 
             foreach (var bi in moduleContext.DeclaredReferenceItems)
             {
-                if (bi.itemDeclaration.TryQuery(out IItemComponentDesignTimeInformationTrait<MapLayerPreference> layerPref) &&
+                if (bi.itemDeclaration.TryQuery<IItemComponentDesignTimeInformationTrait<MapLayerPreference>>(out var layerPref) &&
                     bi.itemDeclaration.HasItemComponent<TItemId, TAdditionalComponent>() &&
                     layerPref.TryQuery(out var layerPreferences))
                 {
@@ -56,13 +56,13 @@ namespace RogueEntity.Core.Positioning
         }
 
         public static HashSet<MapLayer> CollectMapLayers<TItemId>(ModuleEntityInitializationParameter<TItemId> initParameter)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             var moduleContext = initParameter.ContentDeclarations;
             var layers = new HashSet<MapLayer>();
             foreach (var bi in moduleContext.DeclaredBulkItems)
             {
-                if (bi.itemDeclaration.TryQuery(out IItemComponentDesignTimeInformationTrait<MapLayerPreference> layerPref) &&
+                if (bi.itemDeclaration.TryQuery<IItemComponentDesignTimeInformationTrait<MapLayerPreference>>(out var layerPref) &&
                     layerPref.TryQuery(out var layerPreferences))
                 {
                     layers.UnionWith(layerPreferences.AcceptableLayers);
@@ -71,7 +71,7 @@ namespace RogueEntity.Core.Positioning
 
             foreach (var bi in moduleContext.DeclaredReferenceItems)
             {
-                if (bi.itemDeclaration.TryQuery(out IItemComponentDesignTimeInformationTrait<MapLayerPreference> layerPref) &&
+                if (bi.itemDeclaration.TryQuery<IItemComponentDesignTimeInformationTrait<MapLayerPreference>>(out var layerPref) &&
                     layerPref.TryQuery(out var layerPreferences))
                 {
                     layers.UnionWith(layerPreferences.AcceptableLayers);

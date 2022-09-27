@@ -48,7 +48,7 @@ namespace RogueEntity.Core.GridProcessing.Directionality
             this.backend = new Dictionary<int, DynamicDataView2D<DirectionalityInformation>>();
         }
 
-        public bool TryGetMap(int z, out IReadOnlyDynamicDataView2D<DirectionalityInformation> data)
+        public bool TryGetMap(int z, [MaybeNullWhen(false)] out IReadOnlyDynamicDataView2D<DirectionalityInformation> data)
         {
             if (backend.TryGetValue(z, out var dataRaw))
             {

@@ -9,7 +9,7 @@ namespace RogueEntity.Core.Sensing.Receptors.Light
     {
         readonly ShadowPropagationResistanceDataSource dataSource;
         
-        public VisionSenseReceptorPhysicsConfiguration(ILightPhysicsConfiguration lightPhysics, ShadowPropagationResistanceDataSource dataSource = null)
+        public VisionSenseReceptorPhysicsConfiguration(ILightPhysicsConfiguration lightPhysics, ShadowPropagationResistanceDataSource? dataSource = null)
         {
             this.dataSource = dataSource ?? new ShadowPropagationResistanceDataSource();
             VisionPhysics = new FullStrengthSensePhysics(lightPhysics.LightPhysics);

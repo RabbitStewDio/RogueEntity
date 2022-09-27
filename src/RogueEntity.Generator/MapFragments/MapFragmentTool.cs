@@ -142,13 +142,13 @@ namespace RogueEntity.Generator.MapFragments
             }
 
             public Optional<TEntity> ClearPreProcess<TEntity>(ItemDeclarationId item, Position pos, IItemResolver<TEntity> itemResolver, TEntity entityKey)
-                where TEntity : IEntityKey
+                where TEntity : struct, IEntityKey
             {
                 return entityKey;
             }
 
             public Optional<TEntity> InstantiatePostProcess<TEntity>(ItemDeclarationId item, Position pos, IItemResolver<TEntity> itemResolver, TEntity entityKey)
-                where TEntity : IEntityKey
+                where TEntity : struct, IEntityKey
             {
                 if (itemResolver.TryQueryData(entityKey, out StackCount stackSize))
                 {

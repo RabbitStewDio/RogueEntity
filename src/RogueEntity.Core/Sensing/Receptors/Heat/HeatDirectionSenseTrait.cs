@@ -1,19 +1,19 @@
 using System.Collections.Generic;
 using EnTTSharp.Entities;
-using JetBrains.Annotations;
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Sensing.Receptors.InfraVision;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RogueEntity.Core.Sensing.Receptors.Heat
 {
     public class HeatDirectionSenseTrait< TActorId> : SenseReceptorTraitBase< TActorId, TemperatureSense, TemperatureSense>,
                                                                    IItemComponentInformationTrait< TActorId, IHeatMap>
-        where TActorId : IEntityKey
+        where TActorId : struct, IEntityKey
     {
-        [NotNull] readonly IHeatSenseReceptorPhysicsConfiguration physicsConfiguration;
+        readonly IHeatSenseReceptorPhysicsConfiguration physicsConfiguration;
 
-        public HeatDirectionSenseTrait([NotNull] IHeatSenseReceptorPhysicsConfiguration physicsConfiguration,
+        public HeatDirectionSenseTrait(IHeatSenseReceptorPhysicsConfiguration physicsConfiguration,
                                        float intensity,
                                        bool active = true) : base(physicsConfiguration.HeatPhysics, intensity, active)
         {
@@ -23,7 +23,7 @@ namespace RogueEntity.Core.Sensing.Receptors.Heat
         public override ItemTraitId Id => "Core.Sense.Receptor.Heat";
         public override int Priority => 100;
 
-        public bool TryQuery(IEntityViewControl<TActorId> v, TActorId k, out IHeatMap t)
+        public bool TryQuery(IEntityViewControl<TActorId> v, TActorId k, [MaybeNullWhen(false)] out IHeatMap t)
         {
             if (v.GetComponent(k, out SingleLevelSenseDirectionMapData<TemperatureSense, TemperatureSense> m))
             {

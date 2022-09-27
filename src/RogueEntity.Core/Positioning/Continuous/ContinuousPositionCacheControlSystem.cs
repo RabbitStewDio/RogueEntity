@@ -4,7 +4,7 @@ using RogueEntity.Core.Positioning.MapLayers;
 namespace RogueEntity.Core.Positioning.Continuous
 {
     public class ContinuousPositionCacheControlSystem<TItemId>
-        where TItemId : IEntityKey
+        where TItemId : struct, IEntityKey
     {
         readonly IMapLayerRegistry mapLayers;
         readonly IContinuousMapContext<TItemId> mapContext;

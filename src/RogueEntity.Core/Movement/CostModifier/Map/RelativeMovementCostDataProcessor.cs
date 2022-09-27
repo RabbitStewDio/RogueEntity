@@ -1,5 +1,4 @@
 using EnTTSharp.Entities;
-using JetBrains.Annotations;
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Core.GridProcessing.LayerAggregation;
 using RogueEntity.Core.Positioning.Grid;
@@ -8,13 +7,13 @@ using RogueEntity.Core.Positioning.MapLayers;
 namespace RogueEntity.Core.Movement.CostModifier.Map
 {
     public class RelativeMovementCostDataProcessor< TItemId, TMovementMode> : GridAggregationPropertiesDataProcessor< TItemId, RelativeMovementCostModifier<TMovementMode>>
-        where TItemId : IEntityKey
+        where TItemId : struct, IEntityKey
     {
-        [NotNull] readonly IItemResolver< TItemId> itemContext;
+        readonly IItemResolver< TItemId> itemContext;
 
         public RelativeMovementCostDataProcessor(MapLayer layer,
-                                               [NotNull] IGridMapContext<TItemId> mapContext,
-                                               [NotNull] IItemResolver< TItemId> itemContext,
+                                               IGridMapContext<TItemId> mapContext,
+                                               IItemResolver< TItemId> itemContext,
                                                int zPosition,
                                                int offsetX,
                                                int offsetY,

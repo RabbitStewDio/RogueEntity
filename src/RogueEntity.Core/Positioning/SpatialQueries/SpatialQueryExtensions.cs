@@ -8,8 +8,8 @@ namespace RogueEntity.Core.Positioning.SpatialQueries
     {
         public static BufferList<SpatialQueryResult<TEntityId, TComponent>> Query2D<TEntityId, TComponent>(this ISpatialQuery<TEntityId> q,
                                                                                                            in Position pos,
-                                                                                                           BufferList<SpatialQueryResult<TEntityId, TComponent>> buffer = null)
-            where TEntityId : IEntityKey
+                                                                                                           BufferList<SpatialQueryResult<TEntityId, TComponent>>? buffer = null)
+            where TEntityId : struct, IEntityKey
         {
             return q.QuerySphere(pos, 1, DistanceCalculation.Euclid, buffer);
         }
@@ -17,8 +17,8 @@ namespace RogueEntity.Core.Positioning.SpatialQueries
         public static BufferList<SpatialQueryResult<TEntityId, TComponent>> Query2D<TEntityId, TComponent>(this ISpatialQuery<TEntityId> q,
                                                                                                            in Position pos,
                                                                                                            int radius,
-                                                                                                           BufferList<SpatialQueryResult<TEntityId, TComponent>> buffer = null)
-            where TEntityId : IEntityKey
+                                                                                                           BufferList<SpatialQueryResult<TEntityId, TComponent>>? buffer = null)
+            where TEntityId : struct, IEntityKey
         {
             return q.QuerySphere(pos, radius, DistanceCalculation.Euclid, buffer);
         }
@@ -26,8 +26,8 @@ namespace RogueEntity.Core.Positioning.SpatialQueries
         public static BufferList<SpatialQueryResult<TEntityId, TComponent>> Query2D<TEntityId, TComponent>(this ISpatialQuery<TEntityId> q,
                                                                                                            in Position pos,
                                                                                                            DistanceCalculation c,
-                                                                                                           BufferList<SpatialQueryResult<TEntityId, TComponent>> buffer = null)
-            where TEntityId : IEntityKey
+                                                                                                           BufferList<SpatialQueryResult<TEntityId, TComponent>>? buffer = null)
+            where TEntityId : struct, IEntityKey
         {
             return q.QuerySphere(pos, 1, c, buffer);
         }

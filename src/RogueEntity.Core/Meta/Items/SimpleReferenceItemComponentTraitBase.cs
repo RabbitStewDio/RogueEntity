@@ -3,12 +3,13 @@ using System.Linq;
 using EnTTSharp.Entities;
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Api.Utils;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RogueEntity.Core.Meta.Items
 {
     public abstract class SimpleReferenceItemComponentTraitBase<TItemId, TData> : IItemComponentTrait<TItemId, TData>,
                                                                                   IReferenceItemTrait<TItemId>
-        where TItemId : IEntityKey
+        where TItemId : struct, IEntityKey
     {
         protected SimpleReferenceItemComponentTraitBase(ItemTraitId id, int priority)
         {
@@ -26,7 +27,7 @@ namespace RogueEntity.Core.Meta.Items
             return this;
         }
 
-        public bool TryQuery(IEntityViewControl<TItemId> v, TItemId k, out TData t)
+        public bool TryQuery(IEntityViewControl<TItemId> v, TItemId k, [MaybeNullWhen(false)] out TData t)
         {
             if (v.IsValid(k) &&
                 v.GetComponent(k, out t))

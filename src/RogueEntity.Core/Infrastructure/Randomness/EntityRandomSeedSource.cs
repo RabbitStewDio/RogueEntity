@@ -2,7 +2,7 @@
 
 namespace RogueEntity.Core.Infrastructure.Randomness
 {
-    public readonly struct EntityRandomSeedSource<TEntityKey> : IRandomSeedSource where TEntityKey : IEntityKey
+    public readonly struct EntityRandomSeedSource<TEntityKey> : IRandomSeedSource where TEntityKey : struct, IEntityKey
     {
         readonly TEntityKey entity;
 

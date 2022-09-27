@@ -3,13 +3,14 @@ using RogueEntity.Api.Utils;
 using Serilog;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 
 namespace RogueEntity.Core.Storage
 {
     public abstract class FileDataRepositoryBase<TKey, TData> : IDataRepository<TKey, TData>
     {
-        static readonly ILogger Logger = SLog.ForContext<FileDataRepository<TKey, TData>>();
+        static readonly ILogger logger = SLog.ForContext<FileDataRepository<TKey, TData>>();
         readonly IFileKeyConverter<TKey> fileKeyConverter;
         readonly string baseDirectory;
         readonly DirectoryInfo dirInfo;
@@ -33,7 +34,7 @@ namespace RogueEntity.Core.Storage
             }
         }
 
-        public bool TryRead(in TKey k, out TData value)
+        public bool TryRead(in TKey k, [MaybeNullWhen(false)] out TData value)
         {
             if (!fileKeyConverter.TryConvertToFileName(k, out var filename))
             {
@@ -49,7 +50,7 @@ namespace RogueEntity.Core.Storage
             }
             catch (Exception e)
             {
-                Logger.Information(e, "Unable to deserialize stored profile data for key {Key}", k);
+                logger.Information(e, "Unable to deserialize stored profile data for key {Key}", k);
                 value = default;
                 return false;
             }
@@ -87,7 +88,7 @@ namespace RogueEntity.Core.Storage
                     // Ignored completely.
                 }
 
-                Logger.Information(e, "Unable to serialize stored profile data for key {Key}", k);
+                logger.Information(e, "Unable to serialize stored profile data for key {Key}", k);
                 return false;
             }
         }
@@ -109,7 +110,7 @@ namespace RogueEntity.Core.Storage
             }
             catch(Exception e)
             {
-                Logger.Information(e, "Unable to serialize stored profile data for key {Key}", k);
+                logger.Information(e, "Unable to serialize stored profile data for key {Key}", k);
                 return false;
             }
         }

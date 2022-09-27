@@ -14,7 +14,7 @@ namespace RogueEntity.Core.Meta.Items
         {
             foreach (var i in r.Items)
             {
-                if (i.TryQuery(out IItemComponentDesignTimeInformationTrait<TDesignTimeData> t))
+                if (i.TryQuery<IItemComponentDesignTimeInformationTrait<TDesignTimeData>>(out var t))
                 {
                     if (t.TryQuery(out var data))
                     {

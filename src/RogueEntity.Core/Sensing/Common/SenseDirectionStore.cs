@@ -6,14 +6,14 @@ namespace RogueEntity.Core.Sensing.Common
 {
     public readonly struct SenseDirectionStore : IEquatable<SenseDirectionStore>
     {
-        static readonly Dictionary<(int x, int y), SenseDirection> DirectionMapping;
-        static readonly Dictionary<SenseDirection, (int x, int y)> ReverseDirectionMapping;
-        static readonly bool[,] SenseBlocking;
+        static readonly Dictionary<(int x, int y), SenseDirection> directionMapping;
+        static readonly Dictionary<SenseDirection, (int x, int y)> reverseDirectionMapping;
+        static readonly bool[,] senseBlocking;
         const byte DirectionMask = 0xF;
 
         static SenseDirectionStore()
         {
-            DirectionMapping = new Dictionary<(int, int), SenseDirection>
+            directionMapping = new Dictionary<(int, int), SenseDirection>
             {
                 [(-1, -1)] = SenseDirection.North | SenseDirection.West,
                 [(0, -1)] = SenseDirection.North,
@@ -28,35 +28,35 @@ namespace RogueEntity.Core.Sensing.Common
                 [(1, 1)] = SenseDirection.South | SenseDirection.East
             };
 
-            ReverseDirectionMapping = new Dictionary<SenseDirection, (int, int)>(9);
-            foreach (var d in DirectionMapping)
+            reverseDirectionMapping = new Dictionary<SenseDirection, (int, int)>(9);
+            foreach (var d in directionMapping)
             {
-                ReverseDirectionMapping[d.Value] = d.Key;
+                reverseDirectionMapping[d.Value] = d.Key;
             }
 
-            SenseBlocking = new bool[16, 16];
+            senseBlocking = new bool[16, 16];
             for (var a = 0; a < 16; a += 1)
             {
                 for (var b = 0; b < 16; b += 1)
                 {
-                    if (!ReverseDirectionMapping.TryGetValue((SenseDirection)a, out var da) ||
-                        !ReverseDirectionMapping.TryGetValue((SenseDirection)b, out var db))
+                    if (!reverseDirectionMapping.TryGetValue((SenseDirection)a, out var da) ||
+                        !reverseDirectionMapping.TryGetValue((SenseDirection)b, out var db))
                     {
-                        SenseBlocking[a, b] = false;
+                        senseBlocking[a, b] = false;
                         continue;
                     }
 
                     if (da.x == 0 && db.x == 0)
                     {
-                        SenseBlocking[a, b] = da.y != db.y;
+                        senseBlocking[a, b] = da.y != db.y;
                     }
                     else if (da.y == 0 && db.y == 0)
                     {
-                        SenseBlocking[a, b] = da.x != db.x;
+                        senseBlocking[a, b] = da.x != db.x;
                     }
                     else
                     {
-                        SenseBlocking[a, b] = da.x != db.x && da.y != db.y;
+                        senseBlocking[a, b] = da.x != db.x && da.y != db.y;
                     }
                 }
             }
@@ -64,7 +64,7 @@ namespace RogueEntity.Core.Sensing.Common
 
         public static bool IsViewBlocked(SenseDirection a, SenseDirection b)
         {
-            return SenseBlocking[(int)a, (int)b];
+            return senseBlocking[(int)a, (int)b];
         }
         
         public readonly byte RawData;
@@ -88,7 +88,7 @@ namespace RogueEntity.Core.Sensing.Common
 
         public static SenseDirectionStore From(int x, int y)
         {
-            if (DirectionMapping.TryGetValue((Math.Sign(x), Math.Sign(y)), out var d))
+            if (directionMapping.TryGetValue((Math.Sign(x), Math.Sign(y)), out var d))
             {
                 return new SenseDirectionStore((byte)d);
             }
@@ -117,7 +117,7 @@ namespace RogueEntity.Core.Sensing.Common
 
         public static (int x, int y) ToDirectionalMovement(SenseDirection d)
         {
-            if (ReverseDirectionMapping.TryGetValue(d, out var result))
+            if (reverseDirectionMapping.TryGetValue(d, out var result))
             {
                 return result;
             }

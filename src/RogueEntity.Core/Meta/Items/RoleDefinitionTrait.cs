@@ -6,7 +6,7 @@ using System.Collections.Generic;
 namespace RogueEntity.Core.Meta.Items
 {
     public class RoleDefinitionTrait<TItemId>: IBulkItemTrait<TItemId>, IReferenceItemTrait<TItemId>
-        where TItemId : IEntityKey
+        where TItemId : struct, IEntityKey
     {
         readonly ReadOnlyListWrapper<EntityRole> roles;
 

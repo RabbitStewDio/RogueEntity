@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using EnTTSharp.Entities;
-using JetBrains.Annotations;
 using RogueEntity.Api.Utils;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Positioning.MapLayers;
@@ -13,9 +12,9 @@ using Serilog;
 namespace RogueEntity.Core.GridProcessing.LayerAggregation
 {
     public abstract class GridAggregationPropertiesDataProcessor<TItemId, TAggregateType> : IAggregationPropertiesDataProcessor<TAggregateType>
-        where TItemId : IEntityKey
+        where TItemId : struct, IEntityKey
     {
-        static readonly ILogger Logger = SLog.ForContext<GridAggregationPropertiesDataProcessor<TItemId, TAggregateType>>();
+        static readonly ILogger logger = SLog.ForContext<GridAggregationPropertiesDataProcessor<TItemId, TAggregateType>>();
 
         readonly Action<TileProcessingParameters> processFastDelegate;
         readonly IGridMapContext<TItemId> mapContext;
@@ -27,7 +26,7 @@ namespace RogueEntity.Core.GridProcessing.LayerAggregation
         bool dirtyAfterCreation;
 
         protected GridAggregationPropertiesDataProcessor(MapLayer layer,
-                                                         [NotNull] IGridMapContext<TItemId> mapContext,
+                                                         IGridMapContext<TItemId> mapContext,
                                                          int zPosition,
                                                          int offsetX,
                                                          int offsetY,
@@ -104,7 +103,7 @@ namespace RogueEntity.Core.GridProcessing.LayerAggregation
                 return;
             }
 
-            Logger.Verbose("Processing {Count} map tiles for z-Layer {ZLayer}", processingFastParameterCache.Count, zPosition);
+            logger.Verbose("Processing {Count} map tiles for z-Layer {ZLayer}", processingFastParameterCache.Count, zPosition);
             Parallel.ForEach(processingFastParameterCache, processFastDelegate);
         }
 

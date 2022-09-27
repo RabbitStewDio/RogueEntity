@@ -11,7 +11,7 @@ namespace RogueEntity.Core.Movement.Cost
     public class AggregateMovementCostFactorsTrait<TActorId> : IItemComponentInformationTrait<TActorId, AggregateMovementCostFactors>,
                                                                IBulkItemTrait<TActorId>,
                                                                IReferenceItemTrait<TActorId>
-        where TActorId : IEntityKey
+        where TActorId : struct, IEntityKey
     {
         readonly BufferList<IMovementCostTrait<TActorId>> sourceTraits;
         readonly List<MovementCost> movementCosts;

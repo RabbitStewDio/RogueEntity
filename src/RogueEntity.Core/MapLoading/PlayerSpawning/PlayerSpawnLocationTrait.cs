@@ -7,7 +7,7 @@ using System.Collections.Generic;
 namespace RogueEntity.Core.MapLoading.PlayerSpawning
 {
     public class PlayerSpawnLocationTrait<TItemId> : SimpleReferenceItemComponentTraitBase<TItemId, PlayerSpawnLocation>
-        where TItemId : IEntityKey
+        where TItemId : struct, IEntityKey
     {
         public PlayerSpawnLocationTrait() : base("Core.Players.SpawnLocation", 100)
         {

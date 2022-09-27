@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections;
-using System.Diagnostics;
 
 namespace RogueEntity.Core.Utils
 {
@@ -21,7 +20,7 @@ namespace RogueEntity.Core.Utils
     /// </summary>
     public class CircularBuffer<T> : IReadOnlyList<T>
     {
-        static readonly EqualityComparer<T> EqualityComparer = EqualityComparer<T>.Default;
+        static readonly EqualityComparer<T> equalityComparer = EqualityComparer<T>.Default;
 
         T[] buffer;
 
@@ -132,7 +131,7 @@ namespace RogueEntity.Core.Utils
             for (var i = 0; i < count; i++)
             {
                 var m = this[i];
-                if (EqualityComparer.Equals(m, value))
+                if (equalityComparer.Equals(m, value))
                 {
                     return i;
                 }
@@ -172,7 +171,7 @@ namespace RogueEntity.Core.Utils
             {
                 // normal single linear index.
                 Array.Copy(buffer, actualIndex + 1, buffer, actualIndex, count - index - 1);
-                buffer[end] = default;
+                buffer[end] = default!;
                 end -= 1;
                 return value;
             }
@@ -189,7 +188,7 @@ namespace RogueEntity.Core.Utils
             {
                 Array.Copy(buffer, actualIndex + 1, buffer, actualIndex, end - actualIndex - 1);
             }
-            buffer[end] = default;
+            buffer[end] = default!;
             end -= 1;
             return value;
         }
@@ -328,7 +327,7 @@ namespace RogueEntity.Core.Utils
         {
             if (IsEmpty)
             {
-                value = default;
+                value = default!;
                 return false;
             }
 
@@ -344,7 +343,7 @@ namespace RogueEntity.Core.Utils
         {
             ThrowIfEmpty("Cannot take elements from an empty buffer.");
             Decrement(ref end);
-            buffer[end] = default(T);
+            buffer[end] = default!;
             --count;
         }
 
@@ -352,7 +351,7 @@ namespace RogueEntity.Core.Utils
         {
             if (IsEmpty)
             {
-                value = default;
+                value = default!;
                 return false;
             }
 
@@ -374,7 +373,7 @@ namespace RogueEntity.Core.Utils
         public void SkipFront()
         {
             ThrowIfEmpty("Cannot take elements from an empty buffer.");
-            buffer[start] = default(T);
+            buffer[start] = default!;
             Increment(ref start);
             --count;
         }
@@ -391,8 +390,9 @@ namespace RogueEntity.Core.Utils
             var s1 = ArrayOne();
             var s2 = ArrayTwo();
 
-            Debug.Assert(s1.Array != null, "s1.Array != null");
-            Debug.Assert(s2.Array != null, "s2.Array != null");
+            
+            Assert.NotNull(s1.Array);
+            Assert.NotNull(s2.Array);
 
             Array.Copy(s1.Array, s1.Offset, newArray, 0, s1.Count);
             Array.Copy(s2.Array, s2.Offset, newArray, s1.Count, s2.Count);
@@ -411,8 +411,8 @@ namespace RogueEntity.Core.Utils
             var s1 = ArrayOne();
             var s2 = ArrayTwo();
 
-            Debug.Assert(s1.Array != null, "s1.Array != null");
-            Debug.Assert(s2.Array != null, "s2.Array != null");
+            Assert.NotNull(s1.Array);
+            Assert.NotNull(s2.Array);
 
             Array.Copy(s1.Array, s1.Offset, array, offset + 0, s1.Count);
             Array.Copy(s2.Array, s2.Offset, array, offset + s1.Count, s2.Count);
@@ -423,14 +423,14 @@ namespace RogueEntity.Core.Utils
             var s1 = ArrayOne();
             for (int i = 0; i < s1.Count; i++)
             {
-                Debug.Assert(s1.Array != null, "s1.Array != null");
+                Assert.NotNull(s1.Array);
                 yield return s1.Array[s1.Offset + i];
             }
 
             var s2 = ArrayTwo();
             for (int i = 0; i < s2.Count; i++)
             {
-                Debug.Assert(s2.Array != null, "s2.Array != null");
+                Assert.NotNull(s2.Array);
                 yield return s2.Array[s2.Offset + i];
             }
         }
@@ -532,7 +532,7 @@ namespace RogueEntity.Core.Utils
         {
             for (int i = Count - 1; i >= 0; i--)
             {
-                if (EqualityComparer.Equals(this[i], value))
+                if (equalityComparer.Equals(this[i], value))
                 {
                     RemoveAt(i);
                 }

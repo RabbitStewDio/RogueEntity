@@ -25,7 +25,7 @@ namespace RogueEntity.Api.Modules.Helpers
         public bool FinalizedRelations { get; set; }
         public bool FinalizedModule { get; set; }
         
-        List<MethodInfo> moduleMethods;
+        List<MethodInfo>? moduleMethods;
         public ReadOnlyListWrapper<MethodInfo> ModuleMethods
         {
             get

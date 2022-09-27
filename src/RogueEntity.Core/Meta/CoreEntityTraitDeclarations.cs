@@ -9,7 +9,7 @@ namespace RogueEntity.Core.Meta
     public static class CoreEntityTraitDeclarations
     {
         public readonly struct ContentDeclarationBuilder<TItemId>
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             readonly ReferenceItemDeclarationBuilder<TItemId> builder;
 
@@ -27,13 +27,13 @@ namespace RogueEntity.Core.Meta
         }
 
         public static ContentDeclarationBuilder<TItemId> CanPlaceIntoContainer<TItemId>(this ReferenceItemDeclarationBuilder<TItemId> builder)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             return new ContentDeclarationBuilder<TItemId>(builder);
         }
 
         public static ReferenceItemDeclarationBuilder<TItemId> WithWeight<TItemId>(this ReferenceItemDeclarationBuilder<TItemId> builder, Weight weight)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             var itemResolver = builder.ServiceResolver.Resolve<IItemResolver<TItemId>>();
             var trait = new WeightTrait<TItemId>(weight);
@@ -43,7 +43,7 @@ namespace RogueEntity.Core.Meta
         }
 
         public static BulkItemDeclarationBuilder<TItemId> WithWeight<TItemId>(this BulkItemDeclarationBuilder<TItemId> builder, Weight weight)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             var itemResolver = builder.ServiceResolver.Resolve<IItemResolver<TItemId>>();
             var trait = new WeightTrait<TItemId>(weight);
@@ -54,7 +54,7 @@ namespace RogueEntity.Core.Meta
 
         public static ReferenceItemDeclarationBuilder<TItemId> WithTemperature<TItemId>(this ReferenceItemDeclarationBuilder<TItemId> builder,
                                                                                         Temperature t)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             builder.Declaration.WithTrait(new TemperatureTrait<TItemId>(t));
             return builder;
@@ -62,7 +62,7 @@ namespace RogueEntity.Core.Meta
 
         public static BulkItemDeclarationBuilder<TItemId> WithTemperature<TItemId>(this BulkItemDeclarationBuilder<TItemId> builder,
                                                                                    Temperature t)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             builder.Declaration.WithTrait(new TemperatureTrait<TItemId>(t));
             return builder;
@@ -70,7 +70,7 @@ namespace RogueEntity.Core.Meta
 
         public static BulkItemDeclarationBuilder<TItemId> WithStackCount<TItemId>(this BulkItemDeclarationBuilder<TItemId> builder,
                                                                                   ushort stackSize)
-            where TItemId : IBulkDataStorageKey<TItemId>
+            where TItemId : struct, IBulkDataStorageKey<TItemId>
         {
             return builder.WithStackCount(stackSize, stackSize);
         }
@@ -78,7 +78,7 @@ namespace RogueEntity.Core.Meta
         public static BulkItemDeclarationBuilder<TItemId> WithStackCount<TItemId>(this BulkItemDeclarationBuilder<TItemId> builder,
                                                                                   ushort initialCount,
                                                                                   ushort stackSize)
-            where TItemId : IBulkDataStorageKey<TItemId>
+            where TItemId : struct, IBulkDataStorageKey<TItemId>
         {
             builder.Declaration.WithTrait(new StackingBulkTrait<TItemId>(initialCount, stackSize));
             return builder;
@@ -86,7 +86,7 @@ namespace RogueEntity.Core.Meta
 
         public static BulkItemDeclarationBuilder<TItemId> WithItemCharge<TItemId>(this BulkItemDeclarationBuilder<TItemId> builder,
                                                                                   ushort stackSize)
-            where TItemId : IBulkDataStorageKey<TItemId>
+            where TItemId : struct, IBulkDataStorageKey<TItemId>
         {
             return builder.WithItemCharge(stackSize, stackSize);
         }
@@ -94,7 +94,7 @@ namespace RogueEntity.Core.Meta
         public static BulkItemDeclarationBuilder<TItemId> WithItemCharge<TItemId>(this BulkItemDeclarationBuilder<TItemId> builder,
                                                                                   ushort initialCount,
                                                                                   ushort stackSize)
-            where TItemId : IBulkDataStorageKey<TItemId>
+            where TItemId : struct, IBulkDataStorageKey<TItemId>
         {
             builder.Declaration.WithTrait(new ItemChargeBulkTrait<TItemId>(initialCount, stackSize));
             return builder;
@@ -102,7 +102,7 @@ namespace RogueEntity.Core.Meta
 
         public static ReferenceItemDeclarationBuilder<TItemId> WithItemCharge<TItemId>(this ReferenceItemDeclarationBuilder<TItemId> builder,
                                                                                        ushort stackSize)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             return builder.WithItemCharge(stackSize, stackSize);
         }
@@ -110,7 +110,7 @@ namespace RogueEntity.Core.Meta
         public static ReferenceItemDeclarationBuilder<TItemId> WithItemCharge<TItemId>(this ReferenceItemDeclarationBuilder<TItemId> builder,
                                                                                        ushort initialCount,
                                                                                        ushort stackSize)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             builder.Declaration.WithTrait(new ItemChargeTrait<TItemId>(initialCount, stackSize));
             return builder;
@@ -118,7 +118,7 @@ namespace RogueEntity.Core.Meta
 
         public static BulkItemDeclarationBuilder<TItemId> WithDurability<TItemId>(this BulkItemDeclarationBuilder<TItemId> builder,
                                                                                   ushort stackSize)
-            where TItemId : IBulkDataStorageKey<TItemId>
+            where TItemId : struct, IBulkDataStorageKey<TItemId>
         {
             return builder.WithDurability(stackSize, stackSize);
         }
@@ -126,7 +126,7 @@ namespace RogueEntity.Core.Meta
         public static BulkItemDeclarationBuilder<TItemId> WithDurability<TItemId>(this BulkItemDeclarationBuilder<TItemId> builder,
                                                                                   ushort initialCount,
                                                                                   ushort stackSize)
-            where TItemId : IBulkDataStorageKey<TItemId>
+            where TItemId : struct, IBulkDataStorageKey<TItemId>
         {
             builder.Declaration.WithTrait(new DurabilityBulkTrait<TItemId>(initialCount, stackSize));
             return builder;
@@ -134,7 +134,7 @@ namespace RogueEntity.Core.Meta
 
         public static ReferenceItemDeclarationBuilder<TItemId> WithDurability<TItemId>(this ReferenceItemDeclarationBuilder<TItemId> builder,
                                                                                        ushort stackSize)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             return builder.WithDurability(stackSize, stackSize);
         }
@@ -142,7 +142,7 @@ namespace RogueEntity.Core.Meta
         public static ReferenceItemDeclarationBuilder<TItemId> WithDurability<TItemId>(this ReferenceItemDeclarationBuilder<TItemId> builder,
                                                                                        ushort initialCount,
                                                                                        ushort stackSize)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             builder.Declaration.WithTrait(new DurabilityTrait<TItemId>(initialCount, stackSize));
             return builder;
@@ -150,7 +150,7 @@ namespace RogueEntity.Core.Meta
         
         public static BulkItemDeclarationBuilder<TItemId> WithEvictionBehaviour<TItemId>(this BulkItemDeclarationBuilder<TItemId> builder,
                                                                                          EvictionBehaviour eb)
-            where TItemId : IBulkDataStorageKey<TItemId>
+            where TItemId : struct, IBulkDataStorageKey<TItemId>
         {
             builder.Declaration.WithTrait(new EvictionBehaviourTrait<TItemId>(eb));
             return builder;
@@ -158,7 +158,7 @@ namespace RogueEntity.Core.Meta
 
         public static ReferenceItemDeclarationBuilder<TItemId> WithEvictionBehaviour<TItemId>(this ReferenceItemDeclarationBuilder<TItemId> builder,
                                                                                               EvictionBehaviour eb)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             builder.Declaration.WithTrait(new EvictionBehaviourTrait<TItemId>(eb));
             return builder;

@@ -1,4 +1,3 @@
-using JetBrains.Annotations;
 using RogueEntity.Api.Utils;
 using RogueEntity.Core.GridProcessing.Directionality;
 using RogueEntity.Core.Movement;
@@ -8,6 +7,7 @@ using RogueEntity.Core.MovementPlaning.Goals;
 using RogueEntity.Core.MovementPlaning.Pathfinding;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Algorithms;
+using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.DataViews;
 using Serilog;
 using System;
@@ -18,7 +18,7 @@ namespace RogueEntity.Core.MovementPlaning.GoalFinding.SingleLevel
 {
     public class SingleLevelGoalFinder : IGoalFinder, IPathFinderPerformanceView
     {
-        static readonly ILogger Logger = SLog.ForContext<SingleLevelGoalFinder>();
+        static readonly ILogger logger = SLog.ForContext<SingleLevelGoalFinder>();
         
         readonly List<MovementCostData3D> movementSourceData;
         readonly GoalSet goalRecordSet;
@@ -27,9 +27,9 @@ namespace RogueEntity.Core.MovementPlaning.GoalFinding.SingleLevel
         readonly SingleLevelGoalFinderDijkstraWorker singleLevelPathFinderDijkstra;
         readonly Stopwatch sw;
 
-        SingleLevelGoalFinderBuilder currentOwner;
-        IGoalFinderTargetSource targetSource;
-        IGoalFinderFilter filter;
+        SingleLevelGoalFinderBuilder? currentOwner;
+        IGoalFinderTargetSource? targetSource;
+        IGoalFinderFilter? filter;
         bool disposed;
         float searchRadius;
 
@@ -51,7 +51,7 @@ namespace RogueEntity.Core.MovementPlaning.GoalFinding.SingleLevel
             }
 
             disposed = true;
-            currentOwner.Return(this);
+            currentOwner?.Return(this);
             goalRecordSet.Clear();
             goalRecordBuffer.Clear();
             goalFilterBuffer.Clear();
@@ -60,9 +60,9 @@ namespace RogueEntity.Core.MovementPlaning.GoalFinding.SingleLevel
             targetSource = null;
         }
 
-        public void Configure([NotNull] SingleLevelGoalFinderBuilder owner,
-                              [NotNull] IGoalFinderTargetSource source,
-                              [NotNull] IGoalFinderFilter filterFromBuilder,
+        public void Configure(SingleLevelGoalFinderBuilder owner,
+                              IGoalFinderTargetSource source,
+                              IGoalFinderFilter filterFromBuilder,
                               float searchRadiusParam)
         {
             this.filter = filterFromBuilder;
@@ -76,7 +76,7 @@ namespace RogueEntity.Core.MovementPlaning.GoalFinding.SingleLevel
 
         public PathFinderResult TryFindPath<TPosition>(in TPosition source, 
                                                        out BufferList<(TPosition, IMovementMode)> path, 
-                                                       BufferList<(TPosition, IMovementMode)> pathBuffer = null, 
+                                                       BufferList<(TPosition, IMovementMode)>? pathBuffer = null, 
                                                        int searchLimit = Int32.MaxValue)
             where TPosition : IPosition<TPosition>
         {
@@ -84,7 +84,7 @@ namespace RogueEntity.Core.MovementPlaning.GoalFinding.SingleLevel
             if (source.IsInvalid)
             {
                 path = pathBuffer;
-                Logger.Verbose("Goal not found: source is invalid");
+                logger.Verbose("Goal not found: source is invalid");
                 return PathFinderResult.NotFound;
             }
 
@@ -92,7 +92,7 @@ namespace RogueEntity.Core.MovementPlaning.GoalFinding.SingleLevel
             if (searchRadiusInt == 0)
             {
                 path = pathBuffer;
-                Logger.Verbose("Goal not found: search area is empty");
+                logger.Verbose("Goal not found: search area is empty");
                 return PathFinderResult.NotFound;
             }
 
@@ -139,25 +139,30 @@ namespace RogueEntity.Core.MovementPlaning.GoalFinding.SingleLevel
         bool TryApplyGoals<TPosition>(TPosition source, DistanceCalculation heuristics, out GoalSet goals)
             where TPosition : IPosition<TPosition>
         {
+            Assert.NotNull(TargetSource);
+            
             var position = Position.From(source);
             goals = TargetSource.CollectGoals(position, searchRadius, heuristics, goalRecordSet);
             if (goals.Count == 0)
             {
-                Logger.Verbose("Goal not found: no goals specified");
+                logger.Verbose("Goal not found: no goals specified");
                 return false;
             }
 
-            goals = filter.FilterGoals(position, searchRadius, heuristics, goals);
+            if (filter != null)
+            {
+                goals = filter.FilterGoals(position, searchRadius, heuristics, goals);
+            }
             return goals.Count > 0;
         }
 
-        public IGoalFinderTargetSource TargetSource => targetSource;
+        public IGoalFinderTargetSource? TargetSource => targetSource;
         public int NodesEvaluated => singleLevelPathFinderDijkstra.NodesEvaluated;
         public TimeSpan TimeElapsed { get; private set; }
 
         public void ConfigureMovementProfile(in MovementCost costProfile,
-                                             [NotNull] IReadOnlyDynamicDataView3D<float> costs,
-                                             [NotNull] IReadOnlyDynamicDataView3D<DirectionalityInformation> directions)
+                                             IReadOnlyDynamicDataView3D<float> costs,
+                                             IReadOnlyDynamicDataView3D<DirectionalityInformation> directions)
         {
             this.movementSourceData.Add(new MovementCostData3D(in costProfile, costs, directions));
         }

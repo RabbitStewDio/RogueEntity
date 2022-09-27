@@ -27,7 +27,7 @@ namespace RogueEntity.Core.Sensing.Sources.Heat
 
         protected override SenseSourceSystem<TemperatureSense, HeatSourceDefinition> GetOrCreateSenseSourceSystem< TItemId>(IServiceResolver serviceResolver)
         {
-            if (!serviceResolver.TryResolve(out SenseSourceSystem<TemperatureSense, HeatSourceDefinition> ls))
+            if (!serviceResolver.TryResolve<SenseSourceSystem<TemperatureSense, HeatSourceDefinition>>(out var ls))
             {
                 var physics = serviceResolver.Resolve<IHeatPhysicsConfiguration>();
                 ls = new HeatSourceSystem(serviceResolver.ResolveToReference<ISensePropertiesDataView<TemperatureSense>>().Map(l => l.ResultView),

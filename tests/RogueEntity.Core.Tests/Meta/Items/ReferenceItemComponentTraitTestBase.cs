@@ -7,7 +7,7 @@ using RogueEntity.Core.Meta.EntityKeys;
 namespace RogueEntity.Core.Tests.Meta.Items
 {
     public abstract class ReferenceItemComponentTraitTestBase<TItemId, TData, TItemTrait>
-        where TItemId : IBulkDataStorageKey<TItemId>
+        where TItemId : struct, IBulkDataStorageKey<TItemId>
         where TItemTrait: IReferenceItemTrait<TItemId>, IItemComponentTrait<TItemId, TData>
     {
         protected static readonly ItemDeclarationId ItemId = "TestSubject";

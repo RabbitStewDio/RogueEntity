@@ -80,7 +80,7 @@ namespace RogueEntity.Api.Modules
             }
 
             public void PerformInitialization<TEntityId>(IModuleInitializationData<TEntityId> moduleContext)
-                where TEntityId : IEntityKey
+                where TEntityId : struct, IEntityKey
             {
                 if (!globalInformation.TryGetModuleEntityInformation<TEntityId>(out var mi))
                 {
@@ -88,7 +88,7 @@ namespace RogueEntity.Api.Modules
                     return;
                 }
 
-                if (!serviceResolver.TryResolve(out IItemContextBackend<TEntityId> ctx))
+                if (!serviceResolver.TryResolve<IItemContextBackend<TEntityId>>(out var ctx))
                 {
                     Logger.Debug("No ItemContextBackend for entity type {EntityType}; Skipping EntitySystem initialization", typeof(TEntityId));
                     return;
@@ -126,7 +126,7 @@ namespace RogueEntity.Api.Modules
 
             static List<IEntitySystemDeclaration<TEntityId>>
                 CollectEntitySystemDeclarations<TEntityId>(IModuleInitializationData<TEntityId> moduleContext)
-                where TEntityId : IEntityKey
+                where TEntityId : struct, IEntityKey
             {
                 var entitySystems = new Dictionary<EntitySystemId, IEntitySystemDeclaration<TEntityId>>();
                 foreach (var system in moduleContext.EntitySystems)

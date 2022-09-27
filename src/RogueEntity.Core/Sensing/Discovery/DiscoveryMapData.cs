@@ -1,7 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Serialization;
 using EnTTSharp.Entities.Attributes;
-using JetBrains.Annotations;
 using MessagePack;
 using RogueEntity.Core.Utils.DataViews;
 using System.Collections.Generic;
@@ -31,7 +30,7 @@ namespace RogueEntity.Core.Sensing.Discovery
                                 int tileSizeY,
                                 int offsetX,
                                 int offsetY,
-                                [NotNull] Dictionary<int, DynamicBoolDataView> index) : base(tileSizeX, tileSizeY, offsetX, offsetY, index)
+                                Dictionary<int, DynamicBoolDataView> index) : base(tileSizeX, tileSizeY, offsetX, offsetY, index)
         { }
     }
 }

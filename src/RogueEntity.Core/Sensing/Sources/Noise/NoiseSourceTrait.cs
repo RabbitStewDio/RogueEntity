@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using EnTTSharp.Entities;
-using JetBrains.Annotations;
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Sensing.Common;
@@ -10,14 +9,14 @@ namespace RogueEntity.Core.Sensing.Sources.Noise
 {
     public class NoiseSourceTrait<TItemId> : SenseSourceTraitBase<TItemId, NoiseSense, NoiseSourceDefinition>,
                                              IItemComponentTrait<TItemId, NoiseClip>
-        where TItemId : IEntityKey
+        where TItemId : struct, IEntityKey
     {
         public override ItemTraitId Id => "Core.Item.NoiseSource";
         public override int Priority => 100;
 
         readonly INoisePhysicsConfiguration physics;
 
-        public NoiseSourceTrait([NotNull] INoisePhysicsConfiguration physics)
+        public NoiseSourceTrait(INoisePhysicsConfiguration physics)
         {
             this.physics = physics ?? throw new ArgumentNullException(nameof(physics));
         }

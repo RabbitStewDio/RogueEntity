@@ -34,7 +34,7 @@ namespace RogueEntity.Core.Inputs.Commands
         protected void InitializePlayerObserverRole<TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter,
                                                               IModuleInitializer initializer,
                                                               EntityRole r)
-            where TActorId : IEntityKey
+            where TActorId : struct, IEntityKey
         {
             var entityContext = initializer.DeclareEntityContext<TActorId>();
             entityContext.Register(RegisterEntitiesSystemId, 20_000, RegisterCommandComponents);
@@ -44,7 +44,7 @@ namespace RogueEntity.Core.Inputs.Commands
         void RegisterClearExpiredCommandsSystem<TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter,
                                                           IGameLoopSystemRegistration context,
                                                           EntityRegistry<TActorId> registry)
-            where TActorId : IEntityKey
+            where TActorId : struct, IEntityKey
         {
             EnsureAnyCommandServiceExists(initParameter);
             
@@ -57,7 +57,7 @@ namespace RogueEntity.Core.Inputs.Commands
             context.AddVariableStepHandlerSystem(clearCommandsSystem);
         }
 
-        static void EnsureAnyCommandServiceExists<TActorId>(ModuleEntityInitializationParameter<TActorId> initParameter) where TActorId : IEntityKey
+        static void EnsureAnyCommandServiceExists<TActorId>(ModuleEntityInitializationParameter<TActorId> initParameter) where TActorId : struct, IEntityKey
         {
             if (!initParameter.ServiceResolver.TryResolve(out IBasicCommandService<TActorId> _))
             {
@@ -67,7 +67,7 @@ namespace RogueEntity.Core.Inputs.Commands
         }
 
         void RegisterCommandComponents<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter, EntityRegistry<TItemId> registry)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             registry.RegisterNonConstructable<CommandInProgress>();
         }

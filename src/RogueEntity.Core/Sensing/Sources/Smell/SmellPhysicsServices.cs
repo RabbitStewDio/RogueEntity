@@ -9,9 +9,9 @@ namespace RogueEntity.Core.Sensing.Sources.Smell
     {
         public static IServiceResolver ConfigureSmellPhysics(this IServiceResolver serviceResolver, DistanceCalculation d = DistanceCalculation.Euclid)
         {
-            if (!serviceResolver.TryResolve(out ISmellPhysicsConfiguration physicsConfiguration))
+            if (!serviceResolver.TryResolve<ISmellPhysicsConfiguration>(out var physicsConfiguration))
             {
-                if (!serviceResolver.TryResolve(out FloodFillWorkingDataSource ds))
+                if (!serviceResolver.TryResolve<FloodFillWorkingDataSource>(out var ds))
                 {
                     ds = new FloodFillWorkingDataSource();
                     serviceResolver.Store(ds);

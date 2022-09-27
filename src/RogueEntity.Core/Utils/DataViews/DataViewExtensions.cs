@@ -2,20 +2,21 @@ using System;
 using System.Runtime.CompilerServices;
 using System.Text;
 using RogueEntity.Api.Utils;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RogueEntity.Core.Utils.DataViews
 {
     public static class DataViewExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TData TryGetMapValue<TResistanceMap, TData>(this TResistanceMap resistanceMap,
-                                                          ref IReadOnlyBoundedDataView<TData> resistanceTile,
-                                                          int tx,
-                                                          int ty,
-                                                          in TData defaultValue)
+        public static TData? TryGetMapValue<TResistanceMap, TData>(this TResistanceMap resistanceMap,
+                                                                   ref IReadOnlyBoundedDataView<TData>? resistanceTile,
+                                                                   int tx,
+                                                                   int ty,
+                                                                   in TData? defaultValue)
             where TResistanceMap : IReadOnlyDynamicDataView2D<TData>
         {
-            if (resistanceTile == null || !resistanceTile.TryGet(tx, ty, out var resistance))
+            if (resistanceTile == null! || !resistanceTile.TryGet(tx, ty, out var resistance))
             {
                 if (!resistanceMap.TryGetData(tx, ty, out resistanceTile) ||
                     !resistanceTile.TryGet(tx, ty, out resistance))
@@ -27,13 +28,14 @@ namespace RogueEntity.Core.Utils.DataViews
             return resistance;
         }
 
-        public static ref T TryGetRefForUpdate<T>(this IDynamicDataView2D<T> data,
-                                                  ref IBoundedDataView<T> tile,
-                                                  int x,
-                                                  int y,
-                                                  ref T defaultValue,
-                                                  out bool success,
-                                                  DataViewCreateMode mode = DataViewCreateMode.Nothing)
+        [return: NotNullIfNotNull("defaultValue")]
+        public static ref T? TryGetRefForUpdate<T>(this IDynamicDataView2D<T> data,
+                                                   ref IBoundedDataView<T>? tile,
+                                                   int x,
+                                                   int y,
+                                                   ref T? defaultValue,
+                                                   out bool success,
+                                                   DataViewCreateMode mode = DataViewCreateMode.Nothing)
         {
             if (tile != null)
             {
@@ -55,7 +57,7 @@ namespace RogueEntity.Core.Utils.DataViews
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool TryGetTileForUpdate<TResistanceMap, TData>(this TResistanceMap resistanceMap,
-                                                                      ref IBoundedDataView<TData> resistanceTile,
+                                                                      ref IBoundedDataView<TData>? resistanceTile,
                                                                       int tx,
                                                                       int ty,
                                                                       DataViewCreateMode mode = DataViewCreateMode.Nothing)
@@ -103,19 +105,19 @@ namespace RogueEntity.Core.Utils.DataViews
 
         class DataViewWrapper3D<T> : IReadOnlyDynamicDataView3D<T>
         {
-            public event EventHandler<DynamicDataView3DEventArgs<T>> ViewCreated
+            public event EventHandler<DynamicDataView3DEventArgs<T>>? ViewCreated
             {
                 add { }
                 remove { }
             }
 
-            public event EventHandler<DynamicDataView3DEventArgs<T>> ViewExpired
+            public event EventHandler<DynamicDataView3DEventArgs<T>>? ViewExpired
             {
                 add { }
                 remove { }
             }
 
-            public event EventHandler<DynamicDataView3DEventArgs<T>> ViewReset
+            public event EventHandler<DynamicDataView3DEventArgs<T>>? ViewReset
             {
                 add { }
                 remove { }
@@ -130,7 +132,7 @@ namespace RogueEntity.Core.Utils.DataViews
                 this.backend = backend;
             }
 
-            public bool TryGetView(int zLevel, out IReadOnlyDynamicDataView2D<T> view)
+            public bool TryGetView(int zLevel, [MaybeNullWhen(false)] out IReadOnlyDynamicDataView2D<T> view)
             {
                 if (this.z == zLevel)
                 {
@@ -142,7 +144,7 @@ namespace RogueEntity.Core.Utils.DataViews
                 return false;
             }
 
-            public BufferList<int> GetActiveLayers(BufferList<int> buffer = null)
+            public BufferList<int> GetActiveLayers(BufferList<int>? buffer = null)
             {
                 buffer = BufferList.PrepareBuffer(buffer);
                 buffer.Add(z);
@@ -194,13 +196,13 @@ namespace RogueEntity.Core.Utils.DataViews
                                                in Rectangle bounds,
                                                string begin = "",
                                                string beginRow = "",
-                                               Func<T, string> elementStringifier = null,
+                                               Func<T, string>? elementStringifier = null,
                                                string rowSeparator = "\n",
                                                string elementSeparator = " ",
                                                string endRow = "",
                                                string end = "")
         {
-            elementStringifier ??= obj => obj.ToString();
+            elementStringifier ??= obj => obj?.ToString() ?? "";
 
             var result = new StringBuilder(begin);
             for (var y = bounds.MinExtentY; y <= bounds.MaxExtentY; y++)
@@ -260,14 +262,14 @@ namespace RogueEntity.Core.Utils.DataViews
                                                int fieldSize,
                                                string begin = "",
                                                string beginRow = "",
-                                               Func<T, string> elementStringifier = null,
+                                               Func<T, string>? elementStringifier = null,
                                                string rowSeparator = "\n",
                                                string elementSeparator = " ",
                                                string endRow = "",
                                                string end = "")
         {
             if (elementStringifier == null)
-                elementStringifier = obj => obj.ToString();
+                elementStringifier = obj => obj?.ToString() ?? "";
 
             var result = new StringBuilder(begin);
             for (var y = bounds.MinExtentY; y <= bounds.MaxExtentY; y++)
@@ -301,9 +303,9 @@ namespace RogueEntity.Core.Utils.DataViews
             string Format(float f) => $"{f:0.00}";
             return map.ExtendToString(bounds, fieldSize, "", "", Format);
         }
-        
-        
-        public static void RemoveAllViews<T>(this IDynamicDataView3D<T> data, BufferList<int> buffer = null)
+
+
+        public static void RemoveAllViews<T>(this IDynamicDataView3D<T> data, BufferList<int>? buffer = null)
         {
             buffer = data.GetActiveLayers(buffer);
             foreach (var b in buffer)
@@ -311,6 +313,5 @@ namespace RogueEntity.Core.Utils.DataViews
                 data.RemoveView(b);
             }
         }
-
     }
 }

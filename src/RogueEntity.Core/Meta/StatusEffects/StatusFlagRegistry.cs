@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RogueEntity.Core.Meta.StatusEffects
 {
@@ -73,7 +74,7 @@ namespace RogueEntity.Core.Meta.StatusEffects
             }
         }
 
-        public bool TryGet(int index, out StatusFlag t)
+        public bool TryGet(int index, [MaybeNullWhen(false)] out StatusFlag t)
         {
             lock (statusEffectsById)
             {

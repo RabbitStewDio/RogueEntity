@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using EnTTSharp.Entities;
-using JetBrains.Annotations;
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Api.Utils;
 using RogueEntity.Core.Meta.Items;
@@ -9,17 +8,18 @@ using RogueEntity.Core.Positioning.Algorithms;
 using RogueEntity.Core.Sensing.Common;
 using RogueEntity.Core.Sensing.Sources;
 using RogueEntity.Core.Sensing.Sources.Touch;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RogueEntity.Core.Sensing.Receptors.Touch
 {
     public sealed class TouchSenseTrait<TActorId> : SenseReceptorTraitBase<TActorId, TouchSense, TouchSense>,
                                                     IItemComponentInformationTrait<TActorId, ITouchDirectionMap>,
                                                     IItemComponentTrait<TActorId, TouchSourceDefinition>
-        where TActorId : IEntityKey
+        where TActorId : struct, IEntityKey
     {
         readonly ITouchReceptorPhysicsConfiguration touchPhysics;
 
-        public TouchSenseTrait([NotNull] ITouchReceptorPhysicsConfiguration touchPhysics, bool active = true) : base(touchPhysics.TouchPhysics, GetStandardIntensity(touchPhysics), active)
+        public TouchSenseTrait(ITouchReceptorPhysicsConfiguration touchPhysics, bool active = true) : base(touchPhysics.TouchPhysics, GetStandardIntensity(touchPhysics), active)
         {
             this.touchPhysics = touchPhysics;
         }
@@ -71,7 +71,7 @@ namespace RogueEntity.Core.Sensing.Receptors.Touch
             return true;
         }
 
-        public bool TryQuery(IEntityViewControl<TActorId> v, TActorId k, out ITouchDirectionMap t)
+        public bool TryQuery(IEntityViewControl<TActorId> v, TActorId k, [MaybeNullWhen(false)] out ITouchDirectionMap t)
         {
             if (v.GetComponent(k, out SingleLevelSenseDirectionMapData<TouchSense, TouchSense> m))
             {

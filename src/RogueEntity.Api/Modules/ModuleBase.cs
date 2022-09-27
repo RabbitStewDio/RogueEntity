@@ -25,9 +25,9 @@ namespace RogueEntity.Api.Modules
 
         public bool IsFrameworkModule { get; protected set; }
         public ModuleId Id { get; protected set; }
-        public string Name { get; protected set; }
-        public string Author { get; protected set; }
-        public string Description { get; protected set; }
+        public string? Name { get; protected set; }
+        public string? Author { get; protected set; }
+        public string? Description { get; protected set; }
 
         public ReadOnlyListWrapper<ModuleDependency> ModuleDependencies => moduleDependencies;
 

@@ -11,7 +11,7 @@ using RogueEntity.Core.Utils.DataViews;
 namespace RogueEntity.Generator.Tests.Fixtures
 {
     public readonly struct EntityContext<TItemFixture, TEntityId> where TItemFixture: IItemFixture<TEntityId>
-                                                                  where TEntityId : IEntityKey
+                                                                  where TEntityId : struct, IEntityKey
     {
         public readonly TItemFixture Context;
         public readonly TEntityId Item;

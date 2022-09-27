@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace RogueEntity.Core.Utils.DataViews
 {
     public readonly struct TranslatedDataView<TData>: IReadOnlyView2D<TData>
@@ -13,7 +15,7 @@ namespace RogueEntity.Core.Utils.DataViews
             this.offsetY = offsetY;
         }
 
-        public bool TryGet(int x, int y, out TData dataRaw)
+        public bool TryGet(int x, int y, [MaybeNullWhen(false)] out TData dataRaw)
         {
             return data.TryGet(x - offsetX, y - offsetY, out dataRaw);
         }
@@ -22,12 +24,12 @@ namespace RogueEntity.Core.Utils.DataViews
         {
             get
             {
-                if (TryGet(x, y, out TData dataRaw))
+                if (TryGet(x, y, out var dataRaw))
                 {
                     return dataRaw;
                 }
 
-                return dataRaw;
+                return default!;
             }
         }
     }

@@ -11,9 +11,9 @@ namespace RogueEntity.Core.Meta.Naming
 
         public static IDisplayName ToItemName<TItemId>(this TItemId actor,
                                                        IItemResolver<TItemId> itemResolver)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
-            if (itemResolver.TryQueryData(actor, out IDisplayName name))
+            if (itemResolver.TryQueryData<IDisplayName>(actor, out var name))
             {
                 return name;
             }
@@ -23,7 +23,7 @@ namespace RogueEntity.Core.Meta.Naming
 
         public static BulkItemDeclarationBuilder<TItemId> WithName<TItemId>(this BulkItemDeclarationBuilder<TItemId> builder,
                                                                             string name)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             builder.Declaration.WithTrait(new DefaultItemNameTrait<TItemId>(new CountableNounDisplayName(name)));
             return builder;
@@ -31,7 +31,7 @@ namespace RogueEntity.Core.Meta.Naming
 
         public static ReferenceItemDeclarationBuilder<TItemId> WithName<TItemId>(this ReferenceItemDeclarationBuilder<TItemId> builder,
                                                                                  string name)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             builder.Declaration.WithTrait(new DefaultItemNameTrait<TItemId>(new CountableNounDisplayName(name)));
             return builder;
@@ -39,7 +39,7 @@ namespace RogueEntity.Core.Meta.Naming
 
         public static BulkItemDeclarationBuilder<TItemId> WithUniqueName<TItemId>(this BulkItemDeclarationBuilder<TItemId> builder,
                                                                                   string name)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             builder.Declaration.WithTrait(new DefaultItemNameTrait<TItemId>(new NonCountableNounDisplayName(name)));
             return builder;
@@ -47,7 +47,7 @@ namespace RogueEntity.Core.Meta.Naming
 
         public static ReferenceItemDeclarationBuilder<TItemId> WithUniqueName<TItemId>(this ReferenceItemDeclarationBuilder<TItemId> builder,
                                                                                        string name)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             builder.Declaration.WithTrait(new DefaultItemNameTrait<TItemId>(new NonCountableNounDisplayName(name)));
             return builder;
@@ -56,9 +56,9 @@ namespace RogueEntity.Core.Meta.Naming
         public static string ToDefiniteItemName<TItemId>(this TItemId actor,
                                                          IItemResolver<TItemId> itemResolver,
                                                          int count = 1)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
-            if (itemResolver.TryQueryData(actor, out IDisplayName name))
+            if (itemResolver.TryQueryData<IDisplayName>(actor, out var name))
             {
                 return name.GetDefiniteFormName(count);
             }
@@ -69,9 +69,9 @@ namespace RogueEntity.Core.Meta.Naming
         public static string ToIndefiniteItemName<TItemId>(this TItemId actor,
                                                            IItemResolver<TItemId> itemResolver,
                                                            int count = 1)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
-            if (itemResolver.TryQueryData(actor, out IDisplayName name))
+            if (itemResolver.TryQueryData<IDisplayName>(actor, out var name))
             {
                 return name.GetIndefiniteFormName(count);
             }

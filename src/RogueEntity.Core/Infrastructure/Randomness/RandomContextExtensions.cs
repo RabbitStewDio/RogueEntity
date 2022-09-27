@@ -7,7 +7,7 @@ namespace RogueEntity.Core.Infrastructure.Randomness
         public static IRandomGenerator FromEntity<TEntity>(this IEntityRandomGeneratorSource generatorSource,
                                                            TEntity entity,
                                                            int seedVariance)
-            where TEntity : IEntityKey
+            where TEntity : struct, IEntityKey
         {
             return generatorSource.RandomGenerator(new EntityRandomSeedSource<TEntity>(entity), seedVariance);
         }

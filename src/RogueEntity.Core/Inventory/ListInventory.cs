@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 using EnTTSharp.Entities;
-using JetBrains.Annotations;
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Api.Utils;
 using RogueEntity.Core.Meta.Base;
@@ -18,16 +17,16 @@ namespace RogueEntity.Core.Inventory
     /// <typeparam name="TOwnerId"></typeparam>
     /// <typeparam name="TItemId"></typeparam>
     public class ListInventory< TOwnerId, TItemId> : IInventory< TItemId>, IEquatable<ListInventory< TOwnerId, TItemId>>
-        where TItemId : IEntityKey
-        where TOwnerId : IEntityKey
+        where TItemId : struct, IEntityKey
+        where TOwnerId : struct, IEntityKey
     {
-        static readonly ILogger Logger = SLog.ForContext<ListInventory< TOwnerId, TItemId>>();
+        static readonly ILogger logger = SLog.ForContext<ListInventory< TOwnerId, TItemId>>();
 
         readonly IItemResolver< TItemId> itemResolver;
         readonly IBulkDataStorageMetaData<TItemId> itemMetaData;
 
-        public ListInventory([NotNull] IBulkDataStorageMetaData<TItemId> itemMetaData,
-                             [NotNull] IItemResolver< TItemId> itemResolver,
+        public ListInventory(IBulkDataStorageMetaData<TItemId> itemMetaData,
+                             IItemResolver< TItemId> itemResolver,
                              ListInventoryData<TOwnerId, TItemId> data)
         {
             this.itemResolver = itemResolver ?? throw new ArgumentNullException(nameof(itemResolver));
@@ -66,7 +65,7 @@ namespace RogueEntity.Core.Inventory
             var insertSlot = Math.Max(0, Math.Min(slot, Data.Items.Count));
             if (itemMetaData.IsReferenceEntity(r))
             {
-                if (itemResolver.TryQueryData(r,  out IContainerEntityMarker _))
+                if (itemResolver.TryQueryData<IContainerEntityMarker>(r,  out  _))
                 {
                     throw new ArgumentException("Do not attempt to use TryReAddItem for general purpose inventory operations");
                 }
@@ -77,7 +76,7 @@ namespace RogueEntity.Core.Inventory
                     return true;
                 }
 
-                Logger.Warning("ItemReference {ItemReference} could not be marked as owned by this inventory", r);
+                logger.Warning("ItemReference {ItemReference} could not be marked as owned by this inventory", r);
                 return false;
             }
 
@@ -88,25 +87,26 @@ namespace RogueEntity.Core.Inventory
         }
 
         public bool TryAddItem(TItemId r,
-                               out TItemId remainder,
+                               out Optional<TItemId> remainder,
                                bool ignoreWeight = false)
         {
             if (itemMetaData.IsReferenceEntity(r))
             {
-                remainder = default;
                 var itemWeight = itemResolver.QueryWeight(r).TotalWeight;
                 if (!ignoreWeight)
                 {
                     if (itemWeight > AvailableCarryWeight)
                     {
-                        Logger.Debug("Unable to add Item {ItemReference} as the combined weight of {TotalWeight} and {ItemWeight} exceeds the allowed capacity {AvailableCarryWeight}",
+                        logger.Debug("Unable to add Item {ItemReference} as the combined weight of {TotalWeight} and {ItemWeight} exceeds the allowed capacity {AvailableCarryWeight}",
                                      r, TotalWeight, itemWeight, AvailableCarryWeight);
+                        remainder = default;
                         return false;
                     }
                 }
 
-                if (!TryReleaseFromInventory(r, out r))
+                if (!TryReleaseFromInventory(r))
                 {
+                    remainder = default;
                     return false;
                 }
 
@@ -115,17 +115,20 @@ namespace RogueEntity.Core.Inventory
                 {
                     // This item should not be on a map right now.
                     // This item is misconfigured. 
-                    Logger.Warning("ItemReference {ItemReference} is still positioned on the map. Aborting AddItem operation to prevent item duplication", r);
+                    logger.Warning("ItemReference {ItemReference} is still positioned on the map. Aborting AddItem operation to prevent item duplication", r);
+                    remainder = default;
                     return false;
                 }
 
                 if (itemResolver.TryUpdateData(r, new ContainerEntityMarker<TOwnerId>(Data.OwnerData), out _))
                 {
                     Data = Data.InsertAt(Data.Items.Count, itemWeight, r);
+                    remainder = default;
                     return true;
                 }
 
-                Logger.Warning("ItemReference {ItemReference} could not be marked as owned by this inventory", r);
+                logger.Warning("ItemReference {ItemReference} could not be marked as owned by this inventory", r);
+                remainder = default;
                 return false;
             }
 
@@ -134,7 +137,7 @@ namespace RogueEntity.Core.Inventory
 
 
         bool AddBulkItem(TItemId r,
-                         out TItemId remainder,
+                         out Optional<TItemId> remainder,
                          bool ignoreWeight)
         {
             var itemWeight = itemResolver.QueryWeight(r).BaseWeight;
@@ -212,14 +215,16 @@ namespace RogueEntity.Core.Inventory
             }
 
             // Something has been picked up. (This should only apply to stackable items.)
-            if (!itemResolver.TryUpdateData(r, stackSize.WithCount((ushort)itemsRemaining), out remainder))
+            if (!itemResolver.TryUpdateData(r, stackSize.WithCount((ushort)itemsRemaining), out var remainderRaw))
             {
                 // Should not happen with all the precautions in the code. Items without stack-size
                 // have an implied stack size of 1, and should be caught by the previous two checks.
-                Logger.Warning("Unable to update stack count for bulk item. Remainder of item lost");
+                logger.Warning("Unable to update stack count for bulk item. Remainder of item lost");
                 remainder = default;
+                return false;
             }
 
+            remainder = remainderRaw;
             return true;
         }
 
@@ -231,7 +236,7 @@ namespace RogueEntity.Core.Inventory
                 var maxItemsFit = AvailableCarryWeight / itemWeight;
                 if (maxItemsFit <= 0)
                 {
-                    Logger.Debug(
+                    logger.Debug(
                         "Unable to add BulkItem {ItemReference} as the combined weight of {TotalWeight} and {ItemWeight} exceeds the allowed capacity {AvailableCarryWeight}",
                         r, TotalWeight, itemWeight * desiredItemCount, AvailableCarryWeight);
                 }
@@ -272,7 +277,7 @@ namespace RogueEntity.Core.Inventory
             {
                 if (!itemResolver.TryRemoveData<ContainerEntityMarker<TOwnerId>>(itemRef, out _))
                 {
-                    Logger.Warning("ItemReference {ItemReference} could not be unmarked as owned by this inventory", itemRef);
+                    logger.Warning("ItemReference {ItemReference} could not be unmarked as owned by this inventory", itemRef);
                     return false;
                 }
             }
@@ -291,7 +296,7 @@ namespace RogueEntity.Core.Inventory
         /// <param name="itemByType"></param>
         /// <param name="removedItem"></param>
         /// <returns></returns>
-        public bool TryRemoveItem( ItemDeclarationId itemByType, out TItemId removedItem)
+        public bool TryRemoveItem( ItemDeclarationId itemByType, [MaybeNullWhen(false)] out TItemId removedItem)
         {
             for (int i = Data.Items.Count - 1; i >= 0; i--)
             {
@@ -312,12 +317,13 @@ namespace RogueEntity.Core.Inventory
                         return true;
                     }
 
-                    Logger.Warning("ItemReference {ItemReference} could not be unmarked as owned by this inventory", itemRef);
+                    logger.Warning("ItemReference {ItemReference} could not be unmarked as owned by this inventory", itemRef);
                     removedItem = default;
                     return false;
                 }
 
-                if (!itemResolver.SplitStack(itemRef, 1, out var takeItem, out var remainingItem, out _))
+                if (!itemResolver.SplitStack(itemRef, 1, out var takeItemOpt, out var remainingItemOpt, out _) || 
+                    takeItemOpt.TryGetValue(out var takeItem))
                 {
                     continue;
                 }
@@ -327,7 +333,7 @@ namespace RogueEntity.Core.Inventory
                 var removedWeight = takenItemWeight.TotalWeight * stackSize.Count;
                 removedItem = takeItem;
 
-                if (remainingItem.IsEmpty)
+                if (!remainingItemOpt.TryGetValue(out var remainingItem))
                 {
                     Data = Data.RemoveAt(i, removedWeight);
                 }
@@ -353,7 +359,7 @@ namespace RogueEntity.Core.Inventory
         /// <returns></returns>
         public BufferList<TItemId> TryRemoveItemsInBulk(ItemDeclarationId itemByType,
                                                         int count,
-                                                        BufferList<TItemId> removedItems = null)
+                                                        BufferList<TItemId>? removedItems = null)
         {
             removedItems = BufferList.PrepareBuffer(removedItems);
 
@@ -378,7 +384,7 @@ namespace RogueEntity.Core.Inventory
                     }
                     else
                     {
-                        Logger.Warning("ItemReference {ItemReference} could not be unmarked as owned by this inventory", itemRef);
+                        logger.Warning("ItemReference {ItemReference} could not be unmarked as owned by this inventory", itemRef);
                     }
 
                     continue;
@@ -388,7 +394,7 @@ namespace RogueEntity.Core.Inventory
                 if (existingItemStackSize.Count == 0)
                 {
                     // cleanup inventory.
-                    Logger.Warning("Inventory contained stale zero-stack item {ItemReference}", itemRef);
+                    logger.Warning("Inventory contained stale zero-stack item {ItemReference}", itemRef);
                     Data = Data.RemoveAt(i, default);
                     continue;
                 }
@@ -402,7 +408,8 @@ namespace RogueEntity.Core.Inventory
                     continue;
                 }
 
-                if (!itemResolver.SplitLargeStack(itemRef, count, out var takenItem, out var remainingItem, out var stillToBeTaken))
+                if (!itemResolver.SplitLargeStack(itemRef, count, out var takenItemOpt, out var remainingItemOpt, out var stillToBeTakenCount) ||
+                    !takenItemOpt.TryGetValue(out var takenItem))
                 {
                     // failed to apply split. This only happens if either count is zero (we can exclude that)
                     // or if the (stackable) item cannot update their stack size. At this point the whole
@@ -413,7 +420,7 @@ namespace RogueEntity.Core.Inventory
                 var takenBaseWeight = itemResolver.QueryWeight(takenItem);
                 var removedWeight = (takenBaseWeight.TotalWeight);
 
-                if (remainingItem.IsEmpty)
+                if (!remainingItemOpt.TryGetValue(out var remainingItem))
                 {
                     Data = Data.RemoveAt(i, removedWeight);
                 }
@@ -423,30 +430,26 @@ namespace RogueEntity.Core.Inventory
                 }
 
                 removedItems.Add(takenItem);
-                count = stillToBeTaken;
+                count = stillToBeTakenCount;
             }
 
             return removedItems;
         }
 
-        bool TryReleaseFromInventory(TItemId item,
-                                     out TItemId removedItem)
+        bool TryReleaseFromInventory(TItemId item)
         {
             if (itemMetaData.IsReferenceEntity(item))
             {
-                if (!itemResolver.TryQueryData(item, out IContainerEntityMarker _))
+                if (!itemResolver.TryQueryData<IContainerEntityMarker>(item, out _))
                 {
                     // no one has a claim on this item.
-                    removedItem = item;
                     return true;
                 }
 
-                removedItem = default;
                 return false;
             }
 
             // Bulk items are never claimed.
-            removedItem = item;
             return true;
         }
 

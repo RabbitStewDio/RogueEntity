@@ -1,5 +1,4 @@
 using System;
-using JetBrains.Annotations;
 using RogueEntity.Core.Positioning.Algorithms;
 
 namespace RogueEntity.Core.Sensing.Common.Physics
@@ -8,7 +7,7 @@ namespace RogueEntity.Core.Sensing.Common.Physics
     {
         readonly ISensePhysics physics;
 
-        public FullStrengthSensePhysics([NotNull] ISensePhysics physics)
+        public FullStrengthSensePhysics(ISensePhysics physics)
         {
             this.physics = physics ?? throw new ArgumentNullException(nameof(physics));
         }

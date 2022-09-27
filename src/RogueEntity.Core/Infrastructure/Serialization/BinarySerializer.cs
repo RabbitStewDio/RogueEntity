@@ -12,13 +12,13 @@ using System.Collections.Generic;
 namespace RogueEntity.Core.Infrastructure.Serialization
 {
     public class BinarySerializer<TEntityId>
-        where TEntityId : IEntityKey
+        where TEntityId : struct, IEntityKey
     {
         readonly EntityRegistrationScanner registrationScanner;
         readonly BinaryWriteHandlerRegistry writeHandlerRegistry;
         readonly BinaryReadHandlerRegistry readHandlerRegistry;
         readonly List<EntityComponentRegistration> componentRegistrations;
-        
+
         BinarySerializer()
         {
             registrationScanner = new EntityRegistrationScanner().With(new BinaryEntityRegistrationHandler());
@@ -38,7 +38,7 @@ namespace RogueEntity.Core.Infrastructure.Serialization
         }
 
         public void RegisterEntityKey<TEntityKey>()
-            where TEntityKey : IEntityKey
+            where TEntityKey : struct, IEntityKey
         {
             if (registrationScanner.TryRegisterKey<TEntityKey>(out var reg))
             {
@@ -54,13 +54,13 @@ namespace RogueEntity.Core.Infrastructure.Serialization
             var msgPackOptions = MessagePackSerializerOptions.Standard.WithResolver(CreateMessageResolver(new DefaultEntityKeyMapper().Register(ld.Map)));
             return new BinaryBulkArchiveReader<TEntityId>(readerBackend, msgPackOptions);
         }
-        
+
         IFormatterResolver CreateMessageResolver(IEntityKeyMapper mapper)
         {
             var bs = new BinarySerializationContext();
-            
+
             bs.Register(new EntityKeyDataFormatter());
-            
+
             foreach (var c in componentRegistrations)
             {
                 bs.AddComponentRegistration(c);
@@ -75,17 +75,21 @@ namespace RogueEntity.Core.Infrastructure.Serialization
         }
 
         class EntityKeyRegistration<TEntityKey>
-            where TEntityKey : IEntityKey
+            where TEntityKey : struct, IEntityKey
         {
             readonly IItemResolver<TEntityKey> itemResolver;
 
+            public EntityKeyRegistration(IItemResolver<TEntityKey> itemResolver)
+            {
+                this.itemResolver = itemResolver;
+            }
+
             public void Register(BinarySerializationContext ctx, IEntityKeyMapper mapper)
             {
-                var bulkIdSerializationMapper = new BulkItemIdSerializationMapper<TEntityKey>(itemResolver.EntityMetaData, 
-                                                                                             itemResolver.ItemRegistry.BulkItemMapping, 
-                                                                                             itemResolver.ItemRegistry.BulkItemMapping);
+                var bulkIdSerializationMapper = new BulkItemIdSerializationMapper<TEntityKey>(itemResolver.EntityMetaData,
+                                                                                              itemResolver.ItemRegistry.BulkItemMapping,
+                                                                                              itemResolver.ItemRegistry.BulkItemMapping);
                 ctx.Register(new BulkKeyMessagePackFormatter<TEntityKey>(itemResolver.EntityMetaData, mapper, bulkIdSerializationMapper.TryMap));
-                
             }
         }
     }

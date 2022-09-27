@@ -1,4 +1,3 @@
-using JetBrains.Annotations;
 using Microsoft.Extensions.ObjectPool;
 
 namespace RogueEntity.Core.MovementPlaning.Pathfinding.SingleLevel
@@ -8,7 +7,7 @@ namespace RogueEntity.Core.MovementPlaning.Pathfinding.SingleLevel
         readonly ObjectPool<SingleLevelPathFinder> pathFinderPool;
         readonly ObjectPool<DefaultPathFinderTargetEvaluator> targetEvaluatorPool;
 
-        public SingleLevelPathFinderBuilderPolicy([NotNull] IPooledObjectPolicy<SingleLevelPathFinder> policy)
+        public SingleLevelPathFinderBuilderPolicy(IPooledObjectPolicy<SingleLevelPathFinder> policy)
         {
             this.pathFinderPool = new DefaultObjectPool<SingleLevelPathFinder>(policy);
             this.targetEvaluatorPool = new DefaultObjectPool<DefaultPathFinderTargetEvaluator>(new DefaultPathFinderTargetEvaluatorPolicy(ReturnTargetEvaluator));

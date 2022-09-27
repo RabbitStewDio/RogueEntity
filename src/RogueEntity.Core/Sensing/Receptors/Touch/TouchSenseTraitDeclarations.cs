@@ -8,7 +8,7 @@ namespace RogueEntity.Core.Sensing.Receptors.Touch
     {
         public static ReferenceItemDeclarationBuilder< TItemId> WithTouchSense< TItemId>(this ReferenceItemDeclarationBuilder< TItemId> builder,
                                                                                                                    bool enabled = true)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             var physics = builder.ServiceResolver.GetOrCreateTouchPhysics();
             var trait = new TouchSenseTrait< TItemId>(physics, enabled);

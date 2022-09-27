@@ -1,22 +1,22 @@
 using System;
 using System.Collections.Generic;
-using JetBrains.Annotations;
 using RogueEntity.Api.Utils;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RogueEntity.Core.Utils.DataViews
 {
     public class TransformedView3D<TSource, TTarget> : IReadOnlyDynamicDataView3D<TTarget>, IDisposable
     {
-        public event EventHandler<DynamicDataView3DEventArgs<TTarget>> ViewCreated;
-        public event EventHandler<DynamicDataView3DEventArgs<TTarget>> ViewReset;
-        public event EventHandler<DynamicDataView3DEventArgs<TTarget>> ViewExpired;
+        public event EventHandler<DynamicDataView3DEventArgs<TTarget>>? ViewCreated;
+        public event EventHandler<DynamicDataView3DEventArgs<TTarget>>? ViewReset;
+        public event EventHandler<DynamicDataView3DEventArgs<TTarget>>? ViewExpired;
 
         readonly IReadOnlyDynamicDataView3D<TSource> source;
         readonly Func<TSource, TTarget> transformation;
         readonly Dictionary<int, TransformedView2D<TSource, TTarget>> index;
 
-        public TransformedView3D([NotNull] IReadOnlyDynamicDataView3D<TSource> source,
-                                 [NotNull] Func<TSource, TTarget> transformation)
+        public TransformedView3D(IReadOnlyDynamicDataView3D<TSource> source,
+                                 Func<TSource, TTarget> transformation)
         {
             this.source = source ?? throw new ArgumentNullException(nameof(source));
             this.transformation = transformation ?? throw new ArgumentNullException(nameof(transformation));
@@ -82,12 +82,12 @@ namespace RogueEntity.Core.Utils.DataViews
             get { return source.TileSizeY; }
         }
 
-        public BufferList<int> GetActiveLayers(BufferList<int> buffer = null)
+        public BufferList<int> GetActiveLayers(BufferList<int>? buffer = null)
         {
             return source.GetActiveLayers(buffer);
         }
 
-        public bool TryGetView(int z, out IReadOnlyDynamicDataView2D<TTarget> view)
+        public bool TryGetView(int z, [MaybeNullWhen(false)] out IReadOnlyDynamicDataView2D<TTarget> view)
         {
             if (index.TryGetValue(z, out var targetRaw))
             {

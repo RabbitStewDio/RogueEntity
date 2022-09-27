@@ -8,7 +8,7 @@ namespace RogueEntity.Api.Services
     {
         readonly IConfiguration config;
 
-        public DefaultConfigurationHost([NotNull] IConfiguration config)
+        public DefaultConfigurationHost(IConfiguration config)
         {
             this.config = config ?? throw new ArgumentNullException(nameof(config));
         }

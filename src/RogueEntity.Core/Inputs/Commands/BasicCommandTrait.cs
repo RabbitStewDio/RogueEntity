@@ -10,11 +10,11 @@ namespace RogueEntity.Core.Inputs.Commands
     /// <typeparam name="TActorId"></typeparam>
     /// <typeparam name="TCommand"></typeparam>
     public class BasicCommandTrait<TActorId, TCommand> : CommandTraitBase<TActorId, TCommand>
-        where TActorId : IEntityKey
+        where TActorId : struct, IEntityKey
     {
         readonly ICommandHandler<TActorId, TCommand> handler;
 
-        public BasicCommandTrait(ICommandHandler<TActorId, TCommand> handler = null,
+        public BasicCommandTrait(ICommandHandler<TActorId, TCommand>? handler = null,
                                  int priority = 100) : base(priority)
         {
             this.handler = handler ?? AllowAllCommandHandler<TActorId, TCommand>.Instance;

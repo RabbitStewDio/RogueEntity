@@ -18,7 +18,7 @@ namespace RogueEntity.Api.Modules.Initializers
         readonly GlobalModuleEntityInformation entityInfo;
         readonly IServiceResolver serviceResolver;
         readonly ModuleInitializer moduleInitializer;
-        ModuleRecord currentModule;
+        ModuleRecord? currentModule;
 
         public ModuleSystemPhaseFinalizeRoleSystems(in ModuleSystemPhaseInitModuleResult p,
                                                 IServiceResolver serviceResolver)
@@ -52,7 +52,7 @@ namespace RogueEntity.Api.Modules.Initializers
                 }
                 finally
                 {
-                    moduleInitializer.CurrentModuleId = null;
+                    moduleInitializer.CurrentModuleId = default;
                 }
             }
         }
@@ -64,6 +64,8 @@ namespace RogueEntity.Api.Modules.Initializers
                 Logger.Debug("No such entity");
                 return;
             }
+
+            if (currentModule == null) return;
 
             var moduleInitializerParams = new ModuleEntityInitializationParameter<TEntityId>(mi, serviceResolver, moduleContext);
             
@@ -87,7 +89,7 @@ namespace RogueEntity.Api.Modules.Initializers
         }
 
         List<ModuleEntityRoleInitializerInfo<TEntityId>> CollectRoleInitializers<TEntityId>(ModuleRecord module, IModuleEntityInformation mi, EntityRole role)
-            where TEntityId : IEntityKey
+            where TEntityId : struct, IEntityKey
         {
             var entityType = typeof(TEntityId);
             var retval = new List<ModuleEntityRoleInitializerInfo<TEntityId>>();

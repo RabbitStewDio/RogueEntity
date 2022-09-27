@@ -16,7 +16,7 @@ namespace RogueEntity.Core.Meta.Items
     [EntityBinarySerialization]
     [DataContract]
     public readonly struct ItemDeclarationHolder<TItemId>
-        where TItemId : IEntityKey
+        where TItemId : struct, IEntityKey
     {
         public readonly IReferenceItemDeclaration<TItemId> ItemDeclaration;
 
@@ -30,7 +30,7 @@ namespace RogueEntity.Core.Meta.Items
 
     public class DefaultEntityTagTrait<TItemId>: StatelessItemComponentTraitBase<TItemId, WorldEntityTag>,
                                                  IItemComponentDesignTimeInformationTrait<WorldEntityTag>
-        where TItemId : IEntityKey
+        where TItemId : struct, IEntityKey
     {
         readonly WorldEntityTag tag;
 

@@ -1,41 +1,42 @@
 using System;
 using System.Collections.Generic;
 using EnTTSharp.Entities;
-using JetBrains.Annotations;
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Api.Utils;
 using RogueEntity.Core.Meta.ItemTraits;
 using RogueEntity.Core.Positioning.MapLayers;
+using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.DataViews;
 using Serilog;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RogueEntity.Core.Positioning.Grid
 {
     public class GridItemPlacementService<TItemId> : IItemPlacementService<TItemId>
-        where TItemId : IEntityKey
+        where TItemId : struct, IEntityKey
     {
-        public event EventHandler<ItemPositionChangedEvent<TItemId>> ItemPositionChanged;
-        static readonly EqualityComparer<TItemId> Equality = EqualityComparer<TItemId>.Default;
-        static readonly ILogger Logger = SLog.ForContext<GridItemPlacementService<TItemId>>();
+        public event EventHandler<ItemPositionChangedEvent<TItemId>>? ItemPositionChanged;
+        static readonly EqualityComparer<TItemId> equality = EqualityComparer<TItemId>.Default;
+        static readonly ILogger logger = SLog.ForContext<GridItemPlacementService<TItemId>>();
 
         readonly IBulkDataStorageMetaData<TItemId> itemIdMetaData;
         readonly IItemResolver<TItemId> itemResolver;
         readonly IGridMapContext<TItemId> mapContext;
 
-        public GridItemPlacementService([NotNull] IItemResolver<TItemId> itemResolver,
-                                        [NotNull] IGridMapContext<TItemId> mapContext)
+        public GridItemPlacementService(IItemResolver<TItemId> itemResolver,
+                                        IGridMapContext<TItemId> mapContext)
         {
             this.itemResolver = itemResolver ?? throw new ArgumentNullException(nameof(itemResolver));
             this.mapContext = mapContext ?? throw new ArgumentNullException(nameof(mapContext));
             this.itemIdMetaData = itemResolver.EntityMetaData;
         }
 
-        public bool TryQueryItem<TPosition>(in TPosition placementPos, out TItemId item)
+        public bool TryQueryItem<TPosition>(in TPosition placementPos, [MaybeNullWhen(false)] out TItemId item)
             where TPosition : IPosition<TPosition>
         {
             if (placementPos.IsInvalid)
             {
-                Logger.Verbose("Given position {Position} is invalid", placementPos);
+                logger.Verbose("Given position {Position} is invalid", placementPos);
                 item = default;
                 return false;
             }
@@ -48,14 +49,14 @@ namespace RogueEntity.Core.Positioning.Grid
 
             if (!mapContext.TryGetGridDataFor(placementPos.LayerId, out var mapData))
             {
-                Logger.Verbose("Unable to resolve grid data for map layer {LayerId} of position {Position}", placementPos.LayerId, placementPos);
+                logger.Verbose("Unable to resolve grid data for map layer {LayerId} of position {Position}", placementPos.LayerId, placementPos);
                 item = default;
                 return false;
             }
 
             if (!mapData.TryGetView(placementPos.GridZ, out var map))
             {
-                Logger.Verbose("Requested grid position for map layer {LayerId} is out of range for position {Position}", placementPos.LayerId, placementPos);
+                logger.Verbose("Requested grid position for map layer {LayerId} is out of range for position {Position}", placementPos.LayerId, placementPos);
                 item = default;
                 return false;
             }
@@ -81,7 +82,7 @@ namespace RogueEntity.Core.Positioning.Grid
 
             if (placementPos.IsInvalid)
             {
-                Logger.Verbose("Given position {Position} is invalid", placementPos);
+                logger.Verbose("Given position {Position} is invalid", placementPos);
                 return false;
             }
 
@@ -92,13 +93,13 @@ namespace RogueEntity.Core.Positioning.Grid
 
             if (!mapContext.TryGetGridDataFor(placementPos.LayerId, out var mapData))
             {
-                Logger.Verbose("Unable to resolve grid data for map layer {LayerId} of position {Position}", placementPos.LayerId, placementPos);
+                logger.Verbose("Unable to resolve grid data for map layer {LayerId} of position {Position}", placementPos.LayerId, placementPos);
                 return false;
             }
 
             if (!mapData.TryGetWritableView(placementPos.GridZ, out var map))
             {
-                Logger.Verbose("Requested grid position for map layer {LayerId} is out of range for position {Position}", placementPos.LayerId, placementPos);
+                logger.Verbose("Requested grid position for map layer {LayerId} is out of range for position {Position}", placementPos.LayerId, placementPos);
                 return false;
             }
 
@@ -106,22 +107,24 @@ namespace RogueEntity.Core.Positioning.Grid
             ref var existingItem = ref map.TryGetForUpdate(placementPos.GridX, placementPos.GridY, ref defaultItem, out var success);
             if (!success)
             {
-                Logger.Verbose("Unable to query item at {Position}", placementPos);
+                logger.Verbose("Unable to query item at {Position}", placementPos);
                 return false;
             }
 
+            Assert.NotNull(existingItem);
+            
             // Check the easy path: Is this a reference item?
             if (itemIdMetaData.IsReferenceEntity(targetItem))
             {
-                if (!Equality.Equals(existingItem, targetItem))
+                if (!equality.Equals(existingItem, targetItem))
                 {
-                    Logger.Verbose("Safety check failed: Unable to locate source item {ExistingItem} at position {Position}", targetItem, placementPos);
+                    logger.Verbose("Safety check failed: Unable to locate source item {ExistingItem} at position {Position}", targetItem, placementPos);
                     return false;
                 }
 
                 if (!itemResolver.TryUpdateData(targetItem, EntityGridPositionUpdateMessage.From(EntityGridPosition.Invalid), out _))
                 {
-                    Logger.Warning("Unable to update entity data for position update on entity {ExistingItem}", targetItem);
+                    logger.Warning("Unable to update entity data for position update on entity {ExistingItem}", targetItem);
                     return false;
                 }
 
@@ -134,7 +137,7 @@ namespace RogueEntity.Core.Positioning.Grid
             // Not so easy: Bulk items require special handling as they can be stackable.
             if (!itemIdMetaData.IsSameBulkType(targetItem, existingItem))
             {
-                Logger.Verbose("Safety check failed: Unable to locate the correct bulk item type for {ExistingItem} at position {Position}", targetItem, placementPos);
+                logger.Verbose("Safety check failed: Unable to locate the correct bulk item type for {ExistingItem} at position {Position}", targetItem, placementPos);
                 return false;
             }
 
@@ -196,7 +199,7 @@ namespace RogueEntity.Core.Positioning.Grid
         {
             if (placementPos.IsInvalid)
             {
-                Logger.Verbose("Given position {Position} is invalid", placementPos);
+                logger.Verbose("Given position {Position} is invalid", placementPos);
                 return false;
             }
 
@@ -207,13 +210,13 @@ namespace RogueEntity.Core.Positioning.Grid
 
             if (!mapContext.TryGetGridDataFor(placementPos.LayerId, out var mapData))
             {
-                Logger.Verbose("Unable to resolve grid data for map layer {LayerId} of position {Position}", placementPos.LayerId, placementPos);
+                logger.Verbose("Unable to resolve grid data for map layer {LayerId} of position {Position}", placementPos.LayerId, placementPos);
                 return false;
             }
 
             if (!mapData.TryGetWritableView(placementPos.GridZ, out var map, DataViewCreateMode.CreateMissing))
             {
-                Logger.Verbose("Requested grid position for map layer {LayerId} is out of range for position {Position}", placementPos.LayerId, placementPos);
+                logger.Verbose("Requested grid position for map layer {LayerId} is out of range for position {Position}", placementPos.LayerId, placementPos);
                 return false;
             }
 
@@ -221,21 +224,22 @@ namespace RogueEntity.Core.Positioning.Grid
             ref var existingItem = ref map.TryGetForUpdate(placementPos.GridX, placementPos.GridY, ref defaultItem, out var success, DataViewCreateMode.CreateMissing);
             if (!success)
             {
-                Logger.Verbose("Unable to query item at {Position}", placementPos);
+                logger.Verbose("Unable to query item at {Position}", placementPos);
                 return false;
             }
+            Assert.NotNull(existingItem);
 
             if (itemIdMetaData.IsReferenceEntity(targetItem))
             {
                 if (!existingItem.IsEmpty)
                 {
-                    Logger.Verbose("Precondition check failed: Placement position is not empty at {Position}", placementPos);
+                    logger.Verbose("Precondition check failed: Placement position is not empty at {Position}", placementPos);
                     return false;
                 }
 
                 if (!itemResolver.TryUpdateData(targetItem, new EntityGridPositionUpdateMessage(EntityGridPosition.From(placementPos)), out _))
                 {
-                    Logger.Verbose("Failed to update entity data for {TargetItem} at position {Position}", targetItem, placementPos);
+                    logger.Verbose("Failed to update entity data for {TargetItem} at position {Position}", targetItem, placementPos);
                     return false;
                 }
 
@@ -255,14 +259,14 @@ namespace RogueEntity.Core.Positioning.Grid
 
             if (!itemIdMetaData.IsSameBulkType(targetItem, existingItem))
             {
-                Logger.Verbose("Precondition check failed: Placement position is not empty or is not compatible with bulk item {TargetItem} at {Position}", targetItem, placementPos);
+                logger.Verbose("Precondition check failed: Placement position is not empty or is not compatible with bulk item {TargetItem} at {Position}", targetItem, placementPos);
                 return false;
             }
 
             var stackSize = itemResolver.QueryStackSize(targetItem);
             if (stackSize.IsFullStack)
             {
-                Logger.Verbose("Precondition check failed: Non stackable (or full stack of) bulk item {TargetItem} cannot be placed at non-empty position {Position}", targetItem, placementPos);
+                logger.Verbose("Precondition check failed: Non stackable (or full stack of) bulk item {TargetItem} cannot be placed at non-empty position {Position}", targetItem, placementPos);
                 return false;
             }
 
@@ -312,25 +316,25 @@ namespace RogueEntity.Core.Positioning.Grid
 
             if (!mapContext.TryGetGridDataFor(currentPos.LayerId, out var sourceMapContext))
             {
-                Logger.Verbose("Unable to resolve grid data for map layer {LayerId} of position {Position}", currentPos.LayerId, currentPos);
+                logger.Verbose("Unable to resolve grid data for map layer {LayerId} of position {Position}", currentPos.LayerId, currentPos);
                 return false;
             }
 
             if (!sourceMapContext.TryGetWritableView(currentPos.GridZ, out var sourceMap))
             {
-                Logger.Verbose("Requested grid position for map layer {LayerId} is out of range for position {Position}", currentPos.LayerId, currentPos);
+                logger.Verbose("Requested grid position for map layer {LayerId} is out of range for position {Position}", currentPos.LayerId, currentPos);
                 return false;
             }
 
             if (!mapContext.TryGetGridDataFor(placementPos.LayerId, out var targetMapContext))
             {
-                Logger.Verbose("Unable to resolve grid data for map layer {LayerId} of position {Position}", placementPos.LayerId, placementPos);
+                logger.Verbose("Unable to resolve grid data for map layer {LayerId} of position {Position}", placementPos.LayerId, placementPos);
                 return false;
             }
 
             if (!targetMapContext.TryGetWritableView(placementPos.GridZ, out var targetMap, DataViewCreateMode.CreateMissing))
             {
-                Logger.Verbose("Requested grid position for map layer {LayerId} is out of range for position {Position}", placementPos.LayerId, placementPos);
+                logger.Verbose("Requested grid position for map layer {LayerId} is out of range for position {Position}", placementPos.LayerId, placementPos);
                 return false;
             }
 
@@ -338,34 +342,36 @@ namespace RogueEntity.Core.Positioning.Grid
             ref var existingItemRef = ref sourceMap.TryGetForUpdate(currentPos.GridX, currentPos.GridY, ref defaultItem, out var success);
             if (!success)
             {
-                Logger.Verbose("Unable to query map at current position {Position}", currentPos);
+                logger.Verbose("Unable to query map at current position {Position}", currentPos);
                 return false;
             }
+            Assert.NotNull(existingItemRef);
 
             ref var targetItemRef = ref targetMap.TryGetForUpdate(placementPos.GridX, placementPos.GridY, ref defaultItem, out success, DataViewCreateMode.CreateMissing);
             if (!success)
             {
-                Logger.Verbose("Unable to query map at target position {Position}", placementPos);
+                logger.Verbose("Unable to query map at target position {Position}", placementPos);
                 return false;
             }
+            Assert.NotNull(targetItemRef);
 
             if (itemIdMetaData.IsReferenceEntity(item))
             {
-                if (!Equality.Equals(existingItemRef, item))
+                if (!equality.Equals(existingItemRef, item))
                 {
-                    Logger.Verbose("Pre-condition failed: Item {ExistingItem} on map position {Position} does not match the given entity {Item}", existingItemRef, currentPos, item);
+                    logger.Verbose("Pre-condition failed: Item {ExistingItem} on map position {Position} does not match the given entity {Item}", existingItemRef, currentPos, item);
                     return false;
                 }
 
                 if (!targetItemRef.IsEmpty)
                 {
-                    Logger.Verbose("Pre-condition failed: Map position {Position} is not empty", placementPos);
+                    logger.Verbose("Pre-condition failed: Map position {Position} is not empty", placementPos);
                     return false;
                 }
 
                 if (!itemResolver.TryUpdateData(item, new EntityGridPositionUpdateMessage(EntityGridPosition.From(placementPos)), out _))
                 {
-                    Logger.Verbose("Failed to update entity data for {TargetItem} at position {Position}", targetItemRef, placementPos);
+                    logger.Verbose("Failed to update entity data for {TargetItem} at position {Position}", targetItemRef, placementPos);
                     return false;
                 }
 
@@ -378,7 +384,7 @@ namespace RogueEntity.Core.Positioning.Grid
             }
 
             // are we moving a full stack?
-            if (Equality.Equals(existingItemRef, item))
+            if (equality.Equals(existingItemRef, item))
             {
                 if (targetItemRef.IsEmpty)
                 {
@@ -392,7 +398,7 @@ namespace RogueEntity.Core.Positioning.Grid
 
                 if (!itemIdMetaData.IsSameBulkType(item, targetItemRef))
                 {
-                    Logger.Verbose("Precondition failed: Target position is occupied by an incompatible item type");
+                    logger.Verbose("Precondition failed: Target position is occupied by an incompatible item type");
                     return false;
                 }
 
@@ -417,7 +423,7 @@ namespace RogueEntity.Core.Positioning.Grid
             {
                 if (!itemIdMetaData.IsSameBulkType(item, existingItemRef))
                 {
-                    Logger.Verbose("Precondition failed: Source item {ExistingItem} on map does not match the incompatible item type {Item}", existingItemRef, item);
+                    logger.Verbose("Precondition failed: Source item {ExistingItem} on map does not match the incompatible item type {Item}", existingItemRef, item);
                     return false;
                 }
 
@@ -462,7 +468,7 @@ namespace RogueEntity.Core.Positioning.Grid
 
                 if (!itemIdMetaData.IsSameBulkType(item, targetItemRef))
                 {
-                    Logger.Verbose("Precondition failed: Target position is occupied by an incompatible item type");
+                    logger.Verbose("Precondition failed: Target position is occupied by an incompatible item type");
                     return false;
                 }
 
@@ -521,25 +527,25 @@ namespace RogueEntity.Core.Positioning.Grid
             // a combined remove from currentPos and subsequence move to placement pos
             if (!mapContext.TryGetGridDataFor(sourcePosition.LayerId, out var sourceMapContext))
             {
-                Logger.Verbose("Unable to resolve grid data for map layer {LayerId} of position {Position}", sourcePosition.LayerId, sourcePosition);
+                logger.Verbose("Unable to resolve grid data for map layer {LayerId} of position {Position}", sourcePosition.LayerId, sourcePosition);
                 return false;
             }
 
             if (!sourceMapContext.TryGetWritableView(sourcePosition.GridZ, out var sourceMap))
             {
-                Logger.Verbose("Requested grid position for map layer {LayerId} is out of range for position {Position}", sourcePosition.LayerId, sourcePosition);
+                logger.Verbose("Requested grid position for map layer {LayerId} is out of range for position {Position}", sourcePosition.LayerId, sourcePosition);
                 return false;
             }
 
             if (!mapContext.TryGetGridDataFor(targetPosition.LayerId, out var targetMapContext))
             {
-                Logger.Verbose("Unable to resolve grid data for map layer {LayerId} of position {Position}", targetPosition.LayerId, targetPosition);
+                logger.Verbose("Unable to resolve grid data for map layer {LayerId} of position {Position}", targetPosition.LayerId, targetPosition);
                 return false;
             }
 
             if (!targetMapContext.TryGetWritableView(targetPosition.GridZ, out var targetMap, DataViewCreateMode.CreateMissing))
             {
-                Logger.Verbose("Requested grid position for map layer {LayerId} is out of range for position {Position}", targetPosition.LayerId, targetPosition);
+                logger.Verbose("Requested grid position for map layer {LayerId} is out of range for position {Position}", targetPosition.LayerId, targetPosition);
                 return false;
             }
 
@@ -547,22 +553,25 @@ namespace RogueEntity.Core.Positioning.Grid
             ref var sourceMapItem = ref sourceMap.TryGetForUpdate(sourcePosition.GridX, sourcePosition.GridY, ref defaultItem, out var success);
             if (!success)
             {
-                Logger.Verbose("Unable to query map at current position {Position}", sourcePosition);
+                logger.Verbose("Unable to query map at current position {Position}", sourcePosition);
                 return false;
             }
 
             ref var targetMapItem = ref targetMap.TryGetForUpdate(targetPosition.GridX, targetPosition.GridY, ref defaultItem, out success);
             if (!success)
             {
-                Logger.Verbose("Unable to query map at target position {Position}", targetPosition);
+                logger.Verbose("Unable to query map at target position {Position}", targetPosition);
                 return false;
             }
 
+            Assert.NotNull(sourceMapItem);
+            Assert.NotNull(targetMapItem);
+            
             var sourceStackSize = itemResolver.QueryStackSize(sourceItem);
             var targetStackSize = itemResolver.QueryStackSize(targetItem);
 
-            var isExactSourceCell = Equality.Equals(sourceItem, sourceMapItem);
-            var isExactTargetCell = Equality.Equals(targetItem, targetMapItem);
+            var isExactSourceCell = equality.Equals(sourceItem, sourceMapItem);
+            var isExactTargetCell = equality.Equals(targetItem, targetMapItem);
             if (isExactSourceCell || isExactTargetCell)
             {
                 // if either item is a reference item, a non-stackable bulk item or a full stack, we have to move the entire map cell. 
@@ -570,25 +579,25 @@ namespace RogueEntity.Core.Positioning.Grid
 
                 if (!isExactSourceCell)
                 {
-                    Logger.Verbose("Precondition failed: Source item is not found at map position {SourcePosition}", sourcePosition);
+                    logger.Verbose("Precondition failed: Source item is not found at map position {SourcePosition}", sourcePosition);
                     return false;
                 }
 
                 if (!isExactTargetCell)
                 {
-                    Logger.Verbose("Precondition failed: Target item is not found at map position {TargetPosition}", targetPosition);
+                    logger.Verbose("Precondition failed: Target item is not found at map position {TargetPosition}", targetPosition);
                     return false;
                 }
 
                 if (!itemResolver.TryUpdateData(targetItem, EntityGridPositionUpdateMessage.From(sourcePosition), out _))
                 {
-                    Logger.Verbose("Execution failed: Unable to update entity data for target item {TargetItem}", targetItem);
+                    logger.Verbose("Execution failed: Unable to update entity data for target item {TargetItem}", targetItem);
                     return false;
                 }
 
                 if (!itemResolver.TryUpdateData(sourceItem, EntityGridPositionUpdateMessage.From(targetPosition), out _))
                 {
-                    Logger.Verbose("Execution failed: Unable to update entity data for source item {SourceItem}", sourceItem);
+                    logger.Verbose("Execution failed: Unable to update entity data for source item {SourceItem}", sourceItem);
                     return false;
                 }
 
@@ -606,7 +615,7 @@ namespace RogueEntity.Core.Positioning.Grid
                 !itemIdMetaData.IsSameBulkType(sourceItem, sourceMapItem) ||
                 !itemIdMetaData.IsSameBulkType(targetItem, targetMapItem))
             {
-                Logger.Verbose("Precondition failed: Can only swap partial stacks of items between compatible item types");
+                logger.Verbose("Precondition failed: Can only swap partial stacks of items between compatible item types");
                 return false;
             }
 
@@ -618,13 +627,13 @@ namespace RogueEntity.Core.Positioning.Grid
 
             if (sourceMapResultStack < 0 || sourceMapResultStack > sourceStackSize.MaximumStackSize)
             {
-                Logger.Verbose("Precondition failed: Source item type would exceed stack size");
+                logger.Verbose("Precondition failed: Source item type would exceed stack size");
                 return false;
             }
 
             if (targetMapResultStack < 0 || targetMapResultStack > targetStackSize.MaximumStackSize)
             {
-                Logger.Verbose("Precondition failed: Target item type would exceed stack size");
+                logger.Verbose("Precondition failed: Target item type would exceed stack size");
                 return false;
             }
 

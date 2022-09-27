@@ -8,10 +8,10 @@ namespace RogueEntity.Core.Sensing.Receptors.Light
     {
         public static IVisionSenseReceptorPhysicsConfiguration GetOrCreateVisionSensorPhysics(this IServiceResolver serviceResolver)
         {
-            if (!serviceResolver.TryResolve(out IVisionSenseReceptorPhysicsConfiguration physics))
+            if (!serviceResolver.TryResolve<IVisionSenseReceptorPhysicsConfiguration>(out var physics))
             {
                 var physicsConfig = serviceResolver.Resolve<ILightPhysicsConfiguration>();
-                if (!serviceResolver.TryResolve(out ShadowPropagationResistanceDataSource ds))
+                if (!serviceResolver.TryResolve<ShadowPropagationResistanceDataSource>(out var ds))
                 {
                     ds = new ShadowPropagationResistanceDataSource();
                     serviceResolver.Store(ds);

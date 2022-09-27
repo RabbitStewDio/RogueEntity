@@ -32,7 +32,9 @@ namespace RogueEntity.Core.Infrastructure.GameLoops
         TimeSpan fixedTimeUpdateTargetTime;
         TimeSpan fixedTimeUpdateHandledTime;
 
-        public RealTimeGameLoop(ITimeSourceDefinition timeSourceDefinition, double fps = 60, Optional<TimeSpan> gameFixedTimeStep = default)
+        public RealTimeGameLoop(ITimeSourceDefinition timeSourceDefinition, 
+                                double fps = 60, 
+                                Optional<TimeSpan> gameFixedTimeStep = default)
         {
             this.gameFixedTimeStep = gameFixedTimeStep;
             timeProcessor = GameTimeProcessor.WithFramesPerSecond(fps);
@@ -81,17 +83,17 @@ namespace RogueEntity.Core.Infrastructure.GameLoops
 
         public List<ActionSystemEntry> LateVariableStepHandlers { get; }
 
-        public Func<bool> IsWaitingForInputDelegate { get; set; }
+        public Func<bool>? IsWaitingForInputDelegate { get; set; }
 
-        public event EventHandler<WorldStepEventArgs> FixStepProgress;
-        public event EventHandler<WorldStepEventArgs> VariableStepProgress;
+        public event EventHandler<WorldStepEventArgs>? FixStepProgress;
+        public event EventHandler<WorldStepEventArgs>? VariableStepProgress;
 
         bool IsWaitingForInput()
         {
             return IsWaitingForInputDelegate?.Invoke() ?? true;
         }
 
-        public void Initialize(Func<bool> isWaitingForInputDelegate = null)
+        public void Initialize(Func<bool>? isWaitingForInputDelegate = null)
         {
             if (IsRunning)
             {
@@ -131,7 +133,7 @@ namespace RogueEntity.Core.Infrastructure.GameLoops
                 handler.PerformAction(ActionSystemExecutionContext.ShutDown);
             }
 
-            IsWaitingForInputDelegate = null;
+            IsWaitingForInputDelegate = default;
         }
 
         public void Dispose()

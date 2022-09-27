@@ -11,7 +11,7 @@ namespace RogueEntity.Core.Positioning.Algorithms
 
     public static class DistanceCalculationExtensions
     {
-        static readonly float Sqrt = (float) Math.Sqrt(2);
+        static readonly float sqrt = (float) Math.Sqrt(2);
 
         public static bool IsOtherMoreAccurate(this DistanceCalculation current, DistanceCalculation replacement)
         {
@@ -38,7 +38,7 @@ namespace RogueEntity.Core.Positioning.Algorithms
             switch (c)
             {
                 case DistanceCalculation.Euclid:
-                    return Sqrt;
+                    return sqrt;
                 case DistanceCalculation.Manhattan:
                     return 1;
                 case DistanceCalculation.Chebyshev:

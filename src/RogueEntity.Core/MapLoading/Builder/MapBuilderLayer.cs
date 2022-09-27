@@ -9,7 +9,7 @@ using RogueEntity.Core.Positioning.MapLayers;
 namespace RogueEntity.Core.MapLoading.Builder
 {
     public class MapBuilderLayer<TEntity>: IMapBuilderLayer
-        where TEntity : IEntityKey
+        where TEntity : struct, IEntityKey
     {
         [UsedImplicitly]
         readonly MapLayer layer;
@@ -31,7 +31,7 @@ namespace RogueEntity.Core.MapLoading.Builder
 
         public IItemRegistry ItemRegistry => resolver.ItemRegistry;
 
-        public bool Instantiate(ItemDeclarationId item, Position pos, IMapBuilderInstantiationLifter postProc = null)
+        public bool Instantiate(ItemDeclarationId item, Position pos, IMapBuilderInstantiationLifter? postProc = null)
         {
             var entity = resolver.Instantiate(item);
             if (!placementService.TryPlaceItem(entity, pos))
@@ -56,15 +56,15 @@ namespace RogueEntity.Core.MapLoading.Builder
             return false;
         }
 
-        public bool Clear(Position pos, IMapBuilderInstantiationLifter postProc = null)
+        public bool Clear(Position pos, IMapBuilderInstantiationLifter? postProc = null)
         {
             if (!gridMapContext.TryGetView(pos.GridZ, out var view))
             {
                 return false;
             }
 
-            var entity = view[pos.GridX, pos.GridY];
-            if (entity.IsEmpty)
+            if (!view.TryGet(pos.GridX, pos.GridY, out var entity) || 
+                entity.IsEmpty)
             {
                 return true;
             }

@@ -6,11 +6,11 @@ namespace RogueEntity.Core.GridProcessing.Directionality
 {
     public static class DirectionalityLookup
     {
-        static readonly Dictionary<AdjacencyRule, ReadOnlyListWrapper<Direction>[]> Data;
+        static readonly Dictionary<AdjacencyRule, ReadOnlyListWrapper<Direction>[]> data;
 
         static DirectionalityLookup()
         {
-            Data = new Dictionary<AdjacencyRule, ReadOnlyListWrapper<Direction>[]>();
+            data = new Dictionary<AdjacencyRule, ReadOnlyListWrapper<Direction>[]>();
             foreach (var rule in new [] {AdjacencyRule.Cardinals, AdjacencyRule.Diagonals, AdjacencyRule.EightWay})
             {
                 var availableDirections = rule.DirectionsOfNeighbors();
@@ -31,14 +31,14 @@ namespace RogueEntity.Core.GridProcessing.Directionality
                     directionsSet[i] = acceptableDirections;
                 }
 
-                Data[rule] = directionsSet;
+                data[rule] = directionsSet;
             }
         }
 
 
         public static ReadOnlyListWrapper<Direction>[] Get(AdjacencyRule adjacencyRule)
         {
-            return Data[adjacencyRule];
+            return data[adjacencyRule];
         }
     }
 }

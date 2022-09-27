@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RogueEntity.Core.Positioning
 {
@@ -53,7 +54,7 @@ namespace RogueEntity.Core.Positioning
         /// <param name="item"></param>
         /// <typeparam name="TPosition"></typeparam>
         /// <returns></returns>
-        bool TryQueryItem<TPosition>(in TPosition pos, out TItemId item)
+        bool TryQueryItem<TPosition>(in TPosition pos, [MaybeNullWhen(false)] out TItemId item)
             where TPosition : IPosition<TPosition>;
 
         /// <summary>

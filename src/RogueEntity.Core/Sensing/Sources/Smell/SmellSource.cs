@@ -13,10 +13,10 @@ namespace RogueEntity.Core.Sensing.Sources.Smell
         public readonly float Intensity;
         [DataMember(Order = 1)]
         [Key(1)]
-        public readonly string Tag;
+        public readonly string? Tag;
 
         [SerializationConstructor]
-        public SmellSource(float intensity, string tag = null)
+        public SmellSource(float intensity, string? tag = null)
         {
             Intensity = intensity;
             Tag = tag;

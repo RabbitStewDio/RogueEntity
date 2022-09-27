@@ -8,7 +8,7 @@ namespace RogueEntity.Core.Meta.ItemTraits
 {
     public sealed class DurabilityBulkTrait<TItemId> : IItemComponentTrait<TItemId, Durability>,
                                                        IBulkDataTrait<TItemId>
-        where TItemId : IBulkDataStorageKey<TItemId>
+        where TItemId : struct, IBulkDataStorageKey<TItemId>
     {
         readonly Durability baseValue;
 

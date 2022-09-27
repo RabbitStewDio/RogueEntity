@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using JetBrains.Annotations;
 using RogueEntity.Core.Meta.ItemTraits;
 using RogueEntity.Core.Sensing.Common;
 using RogueEntity.Core.Sensing.Common.Physics;
@@ -14,9 +13,9 @@ namespace RogueEntity.Core.Sensing.Sources.Heat
         readonly Dictionary<int, Temperature> environmentTemperatures;
         readonly Temperature fallbackTemperature;
 
-        public HeatPhysicsConfiguration([NotNull] ISensePhysics heatPhysics,
+        public HeatPhysicsConfiguration(ISensePhysics heatPhysics,
                                         Temperature fallbackTemperature,
-                                        ShadowPropagationResistanceDataSource dataSource = null)
+                                        ShadowPropagationResistanceDataSource? dataSource = null)
         {
             this.HeatPhysics = heatPhysics ?? throw new ArgumentNullException(nameof(heatPhysics));
             this.fallbackTemperature = fallbackTemperature;

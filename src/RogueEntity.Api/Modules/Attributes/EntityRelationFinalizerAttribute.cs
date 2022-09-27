@@ -23,8 +23,8 @@ namespace RogueEntity.Api.Modules.Attributes
         public EntityRelationFinalizerAttribute(string roleName)
         {
             RelationName = roleName;
-            ConditionalObjectRoles = new string[0];
-            ConditionalSubjectRoles = new string[0];
+            ConditionalObjectRoles = Array.Empty<string>();
+            ConditionalSubjectRoles = Array.Empty<string>();
         }
     }
 }

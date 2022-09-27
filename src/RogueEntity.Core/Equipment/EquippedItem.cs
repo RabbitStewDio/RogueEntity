@@ -10,14 +10,15 @@ namespace RogueEntity.Core.Equipment
     [MessagePackObject]
     public readonly struct EquippedItem<TItemId> : IEquatable<EquippedItem<TItemId>>
     {
-        static readonly EqualityComparer<TItemId> ItemEquality = EqualityComparer<TItemId>.Default;
+        static readonly EqualityComparer<TItemId> itemEquality = EqualityComparer<TItemId>.Default;
+
         [DataMember]
         [Key(0)]
-        public readonly TItemId Reference;
+        public readonly TItemId? Reference;
 
         [DataMember]
         [Key(1)]
-        public readonly EquipmentSlot PrimarySlot;
+        public readonly EquipmentSlot? PrimarySlot;
 
         public EquippedItem(TItemId reference, EquipmentSlot primarySlot)
         {
@@ -32,8 +33,15 @@ namespace RogueEntity.Core.Equipment
 
         public bool Equals(EquippedItem<TItemId> other)
         {
-            return ItemEquality.Equals(Reference, other.Reference) && 
-                   Equals(PrimarySlot, other.PrimarySlot);
+            if (Reference == null && other.Reference != null) return false;
+            if (Reference != null && other.Reference == null) return false;
+            if (Reference != null && other.Reference != null)
+            {
+                if (!itemEquality.Equals(Reference, other.Reference))
+                    return false;
+            }
+            
+            return Equals(PrimarySlot, other.PrimarySlot);
         }
 
         public override bool Equals(object obj)
@@ -45,7 +53,7 @@ namespace RogueEntity.Core.Equipment
         {
             unchecked
             {
-                return (Reference.GetHashCode() * 397) ^ PrimarySlot.GetHashCode();
+                return ((Reference?.GetHashCode() ?? 0) * 397) ^ (PrimarySlot?.GetHashCode() ?? 0);
             }
         }
 
@@ -63,12 +71,22 @@ namespace RogueEntity.Core.Equipment
         {
             public int Compare(EquippedItem<TItemId> x, EquippedItem<TItemId> y)
             {
-                return x.PrimarySlot.Order.CompareTo(y.PrimarySlot.Order);
+                return x.PrimarySlot switch
+                {
+                    null => y.PrimarySlot switch
+                    {
+                        null => 0,
+                        _ => 1
+                    },
+                    _ => y.PrimarySlot switch
+                    {
+                        null => -1,
+                        _ => x.PrimarySlot.Order.CompareTo(y.PrimarySlot.Order)
+                    }
+                };
             }
         }
 
         public static IComparer<EquippedItem<TItemId>> OrderComparer { get; } = new OrderRelationalComparer();
-
-
     }
 }

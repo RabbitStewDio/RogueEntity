@@ -22,7 +22,7 @@ namespace RogueEntity.Samples.MineSweeper.Core
         public static readonly ItemDeclarationId Flag = "Items.Flag";
 
         public static ReferenceItemDeclarationBuilder<TItemId> DefinePlayer<TItemId>(this ItemDeclarationBuilderWithReferenceContext<TItemId> b)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             return b.Define(PlayerId)
                     .AsPlayer()
@@ -34,7 +34,7 @@ namespace RogueEntity.Samples.MineSweeper.Core
         }
         
         public static BulkItemDeclarationBuilder<TItemId> DefineWall<TItemId>(this ItemDeclarationBuilderWithBulkContext<TItemId> b)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             return b.Define(Wall)
                     .WithGridPosition(MineSweeperMapLayers.Items)
@@ -43,7 +43,7 @@ namespace RogueEntity.Samples.MineSweeper.Core
         }
 
         public static BulkItemDeclarationBuilder<TItemId> DefineFloor<TItemId>(this ItemDeclarationBuilderWithBulkContext<TItemId> b)
-            where TItemId : IBulkDataStorageKey<TItemId>
+            where TItemId : struct, IBulkDataStorageKey<TItemId>
         {
             return b.Define(Floor)
                     .WithGridPosition(MineSweeperMapLayers.Items)
@@ -53,7 +53,7 @@ namespace RogueEntity.Samples.MineSweeper.Core
         }
 
         public static BulkItemDeclarationBuilder<TItemId> DefineFlag<TItemId>(this ItemDeclarationBuilderWithBulkContext<TItemId> b)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             return b.Define(Flag)
                     .WithGridPosition(MineSweeperMapLayers.Flags)
@@ -63,7 +63,7 @@ namespace RogueEntity.Samples.MineSweeper.Core
         }
 
         public static ReferenceItemDeclarationBuilder<TItemId> DefineMine<TItemId>(this ItemDeclarationBuilderWithReferenceContext<TItemId> b)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             return b.Define(Mine)
                     .WithGridPosition(MineSweeperMapLayers.Items)

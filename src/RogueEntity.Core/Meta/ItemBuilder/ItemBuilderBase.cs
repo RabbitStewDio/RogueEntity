@@ -8,7 +8,7 @@ namespace RogueEntity.Core.Meta.ItemBuilder
 {
     public abstract class ItemBuilderBase<TItemId, TBuilder>
         where TBuilder : ItemBuilderBase<TItemId, TBuilder>
-        where TItemId : IEntityKey
+        where TItemId : struct, IEntityKey
     {
         protected readonly IItemResolver<TItemId> ItemResolver;
         protected TItemId Reference;

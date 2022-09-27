@@ -1,6 +1,5 @@
 ﻿using System;
 using EnTTSharp.Entities;
-using JetBrains.Annotations;
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Core.GridProcessing.LayerAggregation;
 using RogueEntity.Core.Positioning.Grid;
@@ -9,13 +8,13 @@ using RogueEntity.Core.Positioning.MapLayers;
 namespace RogueEntity.Core.Sensing.Resistance.Maps
 {
     public class SensePropertiesDataProcessor<TItemId, TSense> : GridAggregationPropertiesDataProcessor<TItemId, SensoryResistance<TSense>>
-        where TItemId : IEntityKey
+        where TItemId : struct, IEntityKey
     {
         readonly IItemResolver<TItemId> itemContext;
 
         public SensePropertiesDataProcessor(MapLayer layer,
-                                            [NotNull] IGridMapContext<TItemId> mapContext,
-                                            [NotNull] IItemResolver<TItemId> itemContext,
+                                            IGridMapContext<TItemId> mapContext,
+                                            IItemResolver<TItemId> itemContext,
                                             int zPosition,
                                             int offsetX,
                                             int offsetY,

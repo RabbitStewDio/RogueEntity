@@ -9,7 +9,7 @@ namespace RogueEntity.Generator.Tests.Fixtures
 {
     public class PlacementAssertions<TItemFixture, TEntityId>
         where TItemFixture : IItemFixture<TEntityId>
-        where TEntityId : IEntityKey
+        where TEntityId : struct, IEntityKey
     {
         readonly TItemFixture fixture;
         readonly Position position;

@@ -112,6 +112,7 @@ namespace RogueEntity.Core.Meta.StatusEffects
                 this.data = data;
                 this.registry = registry;
                 position = -1;
+                Current = default!;
             }
 
             public bool MoveNext()

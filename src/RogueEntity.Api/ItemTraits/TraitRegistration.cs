@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using RogueEntity.Api.Utils;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RogueEntity.Api.ItemTraits
 {
@@ -23,7 +24,7 @@ namespace RogueEntity.Api.ItemTraits
             cachedByType = new ConcurrentDictionary<Type, object>();
         }
 
-        bool FindById(ItemTraitId id, out TTrait trait)
+        bool FindById(ItemTraitId id, [MaybeNullWhen(false)] out TTrait trait)
         {
             foreach (var x in traits)
             {
@@ -68,7 +69,7 @@ namespace RogueEntity.Api.ItemTraits
             cachedByType.Clear();
         }
 
-        public bool TryQuery<TTraitImpl>(out TTraitImpl t) 
+        public bool TryQuery<TTraitImpl>([MaybeNullWhen(false)] out TTraitImpl t) 
         {
             var cacheKey = typeof(TTraitImpl);
             if (cachedByType.TryGetValue(cacheKey, out var existing))
@@ -106,7 +107,7 @@ namespace RogueEntity.Api.ItemTraits
             return GetEnumerator();
         }
 
-        public BufferList<TTraitImpl> QueryAll<TTraitImpl>(BufferList<TTraitImpl> cache)
+        public BufferList<TTraitImpl> QueryAll<TTraitImpl>(BufferList<TTraitImpl>? cache)
         {
             cache = BufferList.PrepareBuffer(cache);
             foreach (var t in traits)

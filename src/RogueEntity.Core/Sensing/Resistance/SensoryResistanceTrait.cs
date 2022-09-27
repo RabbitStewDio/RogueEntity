@@ -8,7 +8,7 @@ using RogueEntity.Core.Utils;
 namespace RogueEntity.Core.Sensing.Resistance
 {
     public class SensoryResistanceTrait< TItemId, TSense>: StatelessItemComponentTraitBase< TItemId, SensoryResistance<TSense>>
-        where TItemId : IEntityKey
+        where TItemId : struct, IEntityKey
     {
         readonly SensoryResistance<TSense> sensoryResistance;
 

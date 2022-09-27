@@ -5,7 +5,7 @@ using RogueEntity.Api.ItemTraits;
 namespace RogueEntity.Api.Modules
 {
     public interface IModuleContentDeclarations<TEntityId>
-        where TEntityId : IEntityKey
+        where TEntityId : struct, IEntityKey
     {
         IEnumerable<(ModuleId declaringModule, IBulkItemDeclaration<TEntityId> itemDeclaration)> DeclaredBulkItems { get; }
         IEnumerable<(ModuleId declaringModule, IReferenceItemDeclaration<TEntityId> itemDeclaration)> DeclaredReferenceItems { get; }

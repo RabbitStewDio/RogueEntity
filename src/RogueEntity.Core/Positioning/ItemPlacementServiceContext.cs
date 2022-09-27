@@ -1,7 +1,7 @@
-using JetBrains.Annotations;
 using RogueEntity.Core.Positioning.MapLayers;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RogueEntity.Core.Positioning
 {
@@ -15,8 +15,8 @@ namespace RogueEntity.Core.Positioning
         }
 
         public ItemPlacementServiceContext<TItemId> WithLayer(MapLayer layer,
-                                                              [NotNull] IItemPlacementService<TItemId> service,
-                                                              [NotNull] IItemPlacementLocationService<TItemId> locator)
+                                                              IItemPlacementService<TItemId> service,
+                                                              IItemPlacementLocationService<TItemId> locator)
         {
             this.services[layer.LayerId] = (service ?? throw new ArgumentNullException(nameof(service)), 
                                             locator ?? throw new ArgumentNullException(nameof(locator)));
@@ -29,7 +29,7 @@ namespace RogueEntity.Core.Positioning
             
         }
 
-        public bool TryGetItemPlacementService(byte layer, out IItemPlacementService<TItemId> service)
+        public bool TryGetItemPlacementService(byte layer, [MaybeNullWhen(false)] out IItemPlacementService<TItemId> service)
         {
             if (this.services.TryGetValue(layer, out var servicesForLayer))
             {
@@ -41,12 +41,12 @@ namespace RogueEntity.Core.Positioning
             return false;
         }
         
-        public bool TryGetItemPlacementService(MapLayer layer, out IItemPlacementService<TItemId> service)
+        public bool TryGetItemPlacementService(MapLayer layer, [MaybeNullWhen(false)] out IItemPlacementService<TItemId> service)
         {
             return TryGetItemPlacementService(layer.LayerId, out service);
         }
         
-        public bool TryGetItemPlacementLocationService(MapLayer layer, out IItemPlacementLocationService<TItemId> service)
+        public bool TryGetItemPlacementLocationService(MapLayer layer, [MaybeNullWhen(false)] out IItemPlacementLocationService<TItemId> service)
         {
             if (this.services.TryGetValue(layer.LayerId, out var servicesForLayer))
             {

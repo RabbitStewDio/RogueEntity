@@ -29,7 +29,7 @@ namespace RogueEntity.Core.Positioning.Continuous
         protected void InitializeContinuousPositioned<TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter,
                                                                 IModuleInitializer initializer,
                                                                 EntityRole role)
-            where TActorId : IEntityKey
+            where TActorId : struct, IEntityKey
         {
             var entityContext = initializer.DeclareEntityContext<TActorId>();
             entityContext.Register(RegisterContinuousPositions, 0, RegisterContinuousEntities);
@@ -38,7 +38,7 @@ namespace RogueEntity.Core.Positioning.Continuous
 
         void RegisterContinuousEntities<TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter,
                                                   EntityRegistry<TActorId> registry)
-            where TActorId : IEntityKey
+            where TActorId : struct, IEntityKey
         {
             registry.RegisterNonConstructable<ContinuousMapPosition>();
             registry.RegisterNonConstructable<ContinuousMapPositionChangedMarker>();
@@ -47,7 +47,7 @@ namespace RogueEntity.Core.Positioning.Continuous
         void RegisterClearContinuousPositionChangeTrackers<TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter,
                                                                      IGameLoopSystemRegistration context,
                                                                      EntityRegistry<TActorId> registry)
-            where TActorId : IEntityKey
+            where TActorId : struct, IEntityKey
         {
             void ClearContinuousPositionAction()
             {

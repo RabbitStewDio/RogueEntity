@@ -1,5 +1,4 @@
 using System;
-using JetBrains.Annotations;
 using RogueEntity.Core.GridProcessing.Directionality;
 using RogueEntity.Core.Sensing.Common.Physics;
 using RogueEntity.Core.Utils;
@@ -12,7 +11,7 @@ namespace RogueEntity.Core.Sensing.Common.FloodFill
         readonly FloodFillWorkingDataSource dataSource;
         readonly ISensePhysics sensePhysics;
 
-        public FloodFillPropagationAlgorithm([NotNull] ISensePhysics sensePhysics, [NotNull] FloodFillWorkingDataSource dataSource)
+        public FloodFillPropagationAlgorithm(ISensePhysics sensePhysics, FloodFillWorkingDataSource dataSource)
         {
             this.dataSource = dataSource ?? throw new ArgumentNullException(nameof(dataSource));
             this.sensePhysics = sensePhysics ?? throw new ArgumentNullException(nameof(sensePhysics));
@@ -23,7 +22,7 @@ namespace RogueEntity.Core.Sensing.Common.FloodFill
                                          in Position2D position,
                                          IReadOnlyDynamicDataView2D<float> resistanceMap,
                                          IReadOnlyDynamicDataView2D<DirectionalityInformation> directionalityView,
-                                         SenseSourceData data = null)
+                                         SenseSourceData? data = null)
         {
             var radius = (int)Math.Ceiling(sensePhysics.SignalRadiusForIntensity(intensity));
             if (data == null || data.Radius != radius)

@@ -1,6 +1,5 @@
 ﻿using System;
 using EnTTSharp.Entities;
-using JetBrains.Annotations;
 using MessagePack;
 using MessagePack.Formatters;
 using RogueEntity.Api.ItemTraits;
@@ -8,11 +7,11 @@ using RogueEntity.Api.ItemTraits;
 namespace RogueEntity.Core.Meta.Items
 {
     public class ItemDeclarationHolderMessagePackFormatter<TItemId> : IMessagePackFormatter<ItemDeclarationHolder<TItemId>> 
-        where TItemId : IEntityKey
+        where TItemId : struct, IEntityKey
     {
         readonly IItemResolver<TItemId> itemResolver;
 
-        public ItemDeclarationHolderMessagePackFormatter([NotNull] IItemResolver<TItemId> itemResolver)
+        public ItemDeclarationHolderMessagePackFormatter(IItemResolver<TItemId> itemResolver)
         {
             this.itemResolver = itemResolver ?? throw new ArgumentNullException(nameof(itemResolver));
         }

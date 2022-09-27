@@ -4,7 +4,7 @@ using RogueEntity.Api.ItemTraits;
 namespace RogueEntity.Core.Inputs.Commands
 {
     public interface ICommandTrait<TActorId> : IItemTrait
-        where TActorId : IEntityKey
+        where TActorId : struct, IEntityKey
     {
         CommandTypeId CommandId { get; }
         
@@ -14,7 +14,7 @@ namespace RogueEntity.Core.Inputs.Commands
     }
 
     public interface ICommandTrait<TActorId, TCommand> : ICommandTrait<TActorId>
-        where TActorId : IEntityKey
+        where TActorId : struct, IEntityKey
     {
         bool IsCommandValidForState(TActorId actor);
         bool IsCommandValidForState(TActorId actor, TCommand cmd);

@@ -4,7 +4,9 @@ namespace RogueEntity.Core.Positioning.Continuous
 {
     public class ContinuousItemPlacementService<TItemId>: IItemPlacementService<TItemId>
     {
-        public event EventHandler<ItemPositionChangedEvent<TItemId>> ItemPositionChanged;
+#pragma warning disable CS0067 
+        public event EventHandler<ItemPositionChangedEvent<TItemId>>? ItemPositionChanged;
+#pragma warning restore CS0067 
 
         public bool TryQueryItem<TPosition>(in TPosition pos, out TItemId item)
             where TPosition : IPosition<TPosition>

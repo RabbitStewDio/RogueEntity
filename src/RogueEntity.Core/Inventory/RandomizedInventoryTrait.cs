@@ -7,17 +7,17 @@ using RogueEntity.Core.Meta.ItemBuilder;
 
 namespace RogueEntity.Core.Inventory
 {
-    public sealed class RandomizedInventoryTrait< TOwnerId, TItemId> : IReferenceItemTrait< TOwnerId>
-        where TOwnerId : IEntityKey, IRandomSeedSource
-        where TItemId : IEntityKey
+    public sealed class RandomizedInventoryTrait<TOwnerId, TItemId> : IReferenceItemTrait<TOwnerId>
+        where TOwnerId : struct, IEntityKey, IRandomSeedSource
+        where TItemId : struct, IEntityKey
     {
         readonly IEntityRandomGeneratorSource randomGenerator;
-        readonly IItemResolver< TOwnerId> ownerResolver;
-        readonly IItemResolver< TItemId> itemResolver;
+        readonly IItemResolver<TOwnerId> ownerResolver;
+        readonly IItemResolver<TItemId> itemResolver;
         readonly ReadOnlyListWrapper<InventoryLootEntry> itemPool;
 
-        public RandomizedInventoryTrait(IItemResolver< TOwnerId> ownerResolver,
-                                        IItemResolver< TItemId> itemResolver,
+        public RandomizedInventoryTrait(IItemResolver<TOwnerId> ownerResolver,
+                                        IItemResolver<TItemId> itemResolver,
                                         IEntityRandomGeneratorSource randomGenerator,
                                         params InventoryLootEntry[] items)
         {
@@ -30,14 +30,14 @@ namespace RogueEntity.Core.Inventory
         public ItemTraitId Id => "Core.Inventory.RandomContent";
         public int Priority => 10000;
 
-        public IReferenceItemTrait< TOwnerId> CreateInstance()
+        public IReferenceItemTrait<TOwnerId> CreateInstance()
         {
             return this;
         }
 
         public void Initialize(IEntityViewControl<TOwnerId> v, TOwnerId k, IItemDeclaration actor)
         {
-            if (!ownerResolver.TryQueryData(k, out IInventory< TItemId> inventory))
+            if (!ownerResolver.TryQueryData<IInventory<TItemId>>(k, out var inventory))
             {
                 return;
             }
@@ -54,8 +54,8 @@ namespace RogueEntity.Core.Inventory
                                        .WithRandomizedProperties(rng)
                                        .ToItemReference;
 
-                if (!inventory.TryAddItem(item, out var remains) ||
-                    !remains.IsEmpty)
+                if (!inventory.TryAddItem(item, out var remainsOpt) && 
+                    remainsOpt.TryGetValue(out var remains))
                 {
                     itemResolver.DiscardUnusedItem(remains);
                 }

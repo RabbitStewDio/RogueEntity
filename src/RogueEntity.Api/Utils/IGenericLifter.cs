@@ -15,7 +15,7 @@ namespace RogueEntity.Api.Utils
 
     public interface IGenericLifterFunction<in TBaseTypeA, in TBaseTypeB>
     {
-        object Invoke<TContextA, TContextB>()
+        object? Invoke<TContextA, TContextB>()
             where TContextA : TBaseTypeA
             where TContextB : TBaseTypeB;
     }

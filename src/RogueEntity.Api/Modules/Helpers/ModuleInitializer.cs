@@ -9,7 +9,7 @@ namespace RogueEntity.Api.Modules.Helpers
 {
     public class ModuleInitializer : IModuleInitializer, IModuleInitializationData
     {
-        static readonly ILogger Logger = SLog.ForContext<ModuleInitializer>();
+        static readonly ILogger logger = SLog.ForContext<ModuleInitializer>();
 
         readonly List<GlobalDeclarationRecord> globalSystems;
         readonly List<GlobalDeclarationRecord> globalFinalizerSystems;
@@ -26,7 +26,7 @@ namespace RogueEntity.Api.Modules.Helpers
         }
 
         public IModuleContentContext<TEntityId> DeclareContentContext<TEntityId>()
-            where TEntityId : IEntityKey
+            where TEntityId : struct, IEntityKey
         {
             if (moduleInitializers.TryGetValue(typeof(TEntityId), out var raw))
             {
@@ -38,12 +38,12 @@ namespace RogueEntity.Api.Modules.Helpers
             var retval = new ModuleEntityContext<TEntityId>(CurrentModuleId);
             moduleInitializers[typeof(TEntityId)] = retval;
             moduleInitializerCallbacks[typeof(TEntityId)] = CallInit<TEntityId>;
-            Logger.Debug("Activated entity type {EntityId} via content context creation", typeof(TEntityId));
+            logger.Debug("Activated entity type {EntityId} via content context creation", typeof(TEntityId));
             return retval;
         }
 
         public IModuleEntityContext<TEntityId> DeclareEntityContext<TEntityId>()
-            where TEntityId : IEntityKey
+            where TEntityId : struct, IEntityKey
         {
             if (moduleInitializers.TryGetValue(typeof(TEntityId), out var raw))
             {
@@ -55,12 +55,12 @@ namespace RogueEntity.Api.Modules.Helpers
             var retval = new ModuleEntityContext<TEntityId>(CurrentModuleId);
             moduleInitializers[typeof(TEntityId)] = retval;
             moduleInitializerCallbacks[typeof(TEntityId)] = CallInit<TEntityId>;
-            Logger.Debug("Activated entity type {EntityId} via entity system context creation", typeof(TEntityId));
+            logger.Debug("Activated entity type {EntityId} via entity system context creation", typeof(TEntityId));
             return retval;
         }
 
         void CallInit<TEntityId>(IModuleEntityInitializationCallback callback)
-            where TEntityId : IEntityKey
+            where TEntityId : struct, IEntityKey
         {
             if (moduleInitializers.TryGetValue(typeof(TEntityId), out var context))
             {
@@ -78,24 +78,22 @@ namespace RogueEntity.Api.Modules.Helpers
 
         public void Register(EntitySystemId id, int priority, GlobalSystemRegistrationDelegate entityRegistration)
         {
-            globalSystems.Add(new GlobalDeclarationRecord()
+            globalSystems.Add(new GlobalDeclarationRecord(entityRegistration)
             {
                 DeclaringModule = CurrentModuleId,
                 Id = id,
                 Priority = priority,
-                SystemRegistration = entityRegistration,
                 InsertionOrder = globalSystems.Count
             });
         }
 
         public void RegisterFinalizer(EntitySystemId id, int priority, GlobalSystemRegistrationDelegate entityRegistration)
         {
-            globalFinalizerSystems.Add(new GlobalDeclarationRecord()
+            globalFinalizerSystems.Add(new GlobalDeclarationRecord(entityRegistration)
             {
                 DeclaringModule = CurrentModuleId,
                 Id = id,
                 Priority = priority,
-                SystemRegistration = entityRegistration,
                 InsertionOrder = globalFinalizerSystems.Count
             });
         }
@@ -105,11 +103,16 @@ namespace RogueEntity.Api.Modules.Helpers
 
         class GlobalDeclarationRecord : IGlobalSystemDeclaration
         {
+            public GlobalDeclarationRecord(GlobalSystemRegistrationDelegate systemRegistration)
+            {
+                SystemRegistration = systemRegistration;
+            }
+
             public ModuleId DeclaringModule { get; set; }
             public EntitySystemId Id { get; set; }
             public int Priority { get; set; }
             public int InsertionOrder { get; set; }
-            public GlobalSystemRegistrationDelegate SystemRegistration { get; set; }
+            public GlobalSystemRegistrationDelegate SystemRegistration { get; }
         }
     }
 }

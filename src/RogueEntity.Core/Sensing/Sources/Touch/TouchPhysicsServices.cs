@@ -9,9 +9,9 @@ namespace RogueEntity.Core.Sensing.Sources.Touch
     {
         public static IServiceResolver ConfigureTouchPhysics(this IServiceResolver serviceResolver, DistanceCalculation d = DistanceCalculation.Euclid)
         {
-            if (!serviceResolver.TryResolve(out ITouchReceptorPhysicsConfiguration physicsConfiguration))
+            if (!serviceResolver.TryResolve<ITouchReceptorPhysicsConfiguration>(out var physicsConfiguration))
             {
-                if (!serviceResolver.TryResolve(out FloodFillWorkingDataSource ds))
+                if (!serviceResolver.TryResolve<FloodFillWorkingDataSource>(out var ds))
                 {
                     ds = new FloodFillWorkingDataSource();
                     serviceResolver.Store(ds);

@@ -1,12 +1,13 @@
 using EnTTSharp.Entities;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
 namespace RogueEntity.Api.ItemTraits
 {
     public static class EntityKeyMetaData
     {
-        public static bool TryGetMetaData<TEntityKey>(out IBulkDataStorageMetaData<TEntityKey> meta)
-            where TEntityKey : IEntityKey
+        public static bool TryGetMetaData<TEntityKey>([MaybeNullWhen(false)]out IBulkDataStorageMetaData<TEntityKey> meta)
+            where TEntityKey : struct, IEntityKey
         {
             var attr = typeof(TEntityKey).GetCustomAttribute<EntityKeyMetaDataAttribute>();
             if (attr == null)

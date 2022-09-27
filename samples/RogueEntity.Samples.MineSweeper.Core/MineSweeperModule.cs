@@ -38,7 +38,7 @@ namespace RogueEntity.Samples.MineSweeper.Core
         public void InitializePlayer<TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter,
                                                IModuleInitializer initializer,
                                                EntityRole r)
-            where TActorId : IEntityKey
+            where TActorId : struct, IEntityKey
         {
             var ctx = initializer.DeclareEntityContext<TActorId>();
             ctx.Register(RegisterEntitiesSystemId, 40_000, RegisterPlayerEntities);
@@ -49,7 +49,7 @@ namespace RogueEntity.Samples.MineSweeper.Core
         void RegisterGenerateMapSystem<TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter,
                                                  IGameLoopSystemRegistration context,
                                                  EntityRegistry<TActorId> registry)
-            where TActorId : IEntityKey
+            where TActorId : struct, IEntityKey
         {
             var sr = initParameter.ServiceResolver;
             var generator = new MineSweeperMapGenerator<ItemReference>(sr.Resolve<IEntityRandomGeneratorSource>(),
@@ -64,7 +64,7 @@ namespace RogueEntity.Samples.MineSweeper.Core
         void RegisterProcessCommandsSystem<TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter,
                                                      IGameLoopSystemRegistration context,
                                                      EntityRegistry<TActorId> registry)
-            where TActorId : IEntityKey
+            where TActorId : struct, IEntityKey
         {
             var sr = initParameter.ServiceResolver;
             var sysMapReveal = registry.BuildSystem()
@@ -92,7 +92,7 @@ namespace RogueEntity.Samples.MineSweeper.Core
         }
 
         void RegisterPlayerEntities<TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter, EntityRegistry<TActorId> registry)
-            where TActorId : IEntityKey
+            where TActorId : struct, IEntityKey
         {
             registry.RegisterNonConstructable<RevealMapPositionCommand>();
             registry.RegisterNonConstructable<ToggleFlagCommand>();

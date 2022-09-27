@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 using MessagePack;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RogueEntity.Core.Utils
 {
@@ -30,8 +31,8 @@ namespace RogueEntity.Core.Utils
         public readonly TB Right;
 
         [SerializationConstructor]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members",
-                                                         Justification = "Used implicitly by the serializer")]
+        [SuppressMessage("CodeQuality", "IDE0051:Remove unused private members",
+                         Justification = "Used implicitly by the serializer")]
         Either(int state, TA left, TB right)
         {
             this.state = state;
@@ -43,17 +44,17 @@ namespace RogueEntity.Core.Utils
         {
             state = 1;
             Left = a;
-            Right = default;
+            Right = default!;
         }
 
         public Either(in TB b)
         {
             state = 2;
-            Left = default;
+            Left = default!;
             Right = b;
         }
 
-        public bool TryGet(out TA a)
+        public bool TryGet([MaybeNullWhen(false)] out TA a)
         {
             if (state == 1)
             {
@@ -61,11 +62,11 @@ namespace RogueEntity.Core.Utils
                 return true;
             }
 
-            a = default;
+            a = default!;
             return false;
         }
 
-        public bool TryGet(out TB a)
+        public bool TryGet([MaybeNullWhen(false)] out TB a)
         {
             if (state == 2)
             {
@@ -79,12 +80,12 @@ namespace RogueEntity.Core.Utils
 
         public override string ToString()
         {
-            if (TryGet(out TA a))
+            if (TryGet(out TA? a))
             {
                 return $"{a}";
             }
 
-            if (TryGet(out TB b))
+            if (TryGet(out TB? b))
             {
                 return $"{b}";
             }

@@ -26,7 +26,7 @@ namespace RogueEntity.Api.Tests.Modules
 
     
     public class ActivateEntityModule<TItemId> : ModuleBase
-        where TItemId : IEntityKey
+        where TItemId : struct, IEntityKey
     {
         public static readonly EntityRole ActivatorRole = new EntityRole("Role.Test.ActiveEntity+" + typeof(TItemId).Name);
 

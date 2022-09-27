@@ -3,6 +3,7 @@ using System.Runtime.CompilerServices;
 using RogueEntity.Api.Utils;
 using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.DataViews;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RogueEntity.Core.Positioning.Algorithms
 {
@@ -17,7 +18,7 @@ namespace RogueEntity.Core.Positioning.Algorithms
     {
         readonly IDynamicDataView2D<AStarNode> nodes;
         readonly PriorityQueue<float, Position2D> openNodes;
-        IBoundedDataView<AStarNode> nodeTile;
+        IBoundedDataView<AStarNode>? nodeTile;
 
         protected AStarGridBase(IBoundedDataViewPool<AStarNode> pool)
         {
@@ -36,7 +37,8 @@ namespace RogueEntity.Core.Positioning.Algorithms
         /// <param name="basePosition"></param>
         /// <returns></returns>
         protected abstract ReadOnlyListWrapper<Direction> PopulateTraversableDirections(in Position2D basePosition);
-        protected abstract bool EdgeCostInformation(in Position2D sourceNode, in Direction d, float sourceNodeCost, out float totalPathCost, out TExtraNodeInfo nodeInfo);
+        protected abstract bool EdgeCostInformation(in Position2D sourceNode, in Direction d, float sourceNodeCost, 
+                                                    out float totalPathCost, [MaybeNullWhen(false)] out TExtraNodeInfo nodeInfo);
 
         protected abstract bool IsTargetNode(in Position2D pos);
 

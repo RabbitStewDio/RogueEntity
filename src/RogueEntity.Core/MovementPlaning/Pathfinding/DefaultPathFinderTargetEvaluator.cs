@@ -7,13 +7,13 @@ namespace RogueEntity.Core.MovementPlaning.Pathfinding
 {
     public class DefaultPathFinderTargetEvaluator: IPathFinderTargetEvaluator
     {
-        readonly Action<DefaultPathFinderTargetEvaluator> returnToPoolFunction;
+        readonly Action<DefaultPathFinderTargetEvaluator>? returnToPoolFunction;
         DistanceCalculation distanceCalculation;
         Position2D targetPosition;
         int targetZLevel;
         bool disposed;
 
-        public DefaultPathFinderTargetEvaluator(Action<DefaultPathFinderTargetEvaluator> returnToPoolFunction = null)
+        public DefaultPathFinderTargetEvaluator(Action<DefaultPathFinderTargetEvaluator>? returnToPoolFunction = null)
         {
             this.returnToPoolFunction = returnToPoolFunction;
         }

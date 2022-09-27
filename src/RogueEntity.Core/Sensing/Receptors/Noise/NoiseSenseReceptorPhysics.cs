@@ -9,10 +9,10 @@ namespace RogueEntity.Core.Sensing.Receptors.Noise
         
         public static INoiseSenseReceptorPhysicsConfiguration GetOrCreateNoiseSensorPhysics(this IServiceResolver serviceResolver)
         {
-            if (!serviceResolver.TryResolve(out INoiseSenseReceptorPhysicsConfiguration physics))
+            if (!serviceResolver.TryResolve<INoiseSenseReceptorPhysicsConfiguration>(out var physics))
             {
                 var physicsConfig = serviceResolver.Resolve<INoisePhysicsConfiguration>();
-                if (!serviceResolver.TryResolve(out FloodFillWorkingDataSource ds))
+                if (!serviceResolver.TryResolve<FloodFillWorkingDataSource>(out var ds))
                 {
                     ds = new FloodFillWorkingDataSource();
                     serviceResolver.Store(ds);

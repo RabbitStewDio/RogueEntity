@@ -1,6 +1,7 @@
 using Microsoft.Extensions.ObjectPool;
 using RogueEntity.Core.Movement;
 using RogueEntity.Core.Movement.Cost;
+using System;
 using System.Collections.Generic;
 
 namespace RogueEntity.Core.MovementPlaning.Pathfinding.SingleLevel
@@ -10,7 +11,7 @@ namespace RogueEntity.Core.MovementPlaning.Pathfinding.SingleLevel
         readonly ObjectPool<SingleLevelPathFinder> pathFinderPool;
         readonly ObjectPool<DefaultPathFinderTargetEvaluator> defaultTargetEvaluators;
 
-        IPathFinderTargetEvaluator targetEvaluator;
+        IPathFinderTargetEvaluator? targetEvaluator;
         
         public SingleLevelPathFinderBuilder(ObjectPool<SingleLevelPathFinder> pathFinderPool,
                                             ObjectPool<DefaultPathFinderTargetEvaluator> defaultTargetEvaluators)
@@ -25,7 +26,7 @@ namespace RogueEntity.Core.MovementPlaning.Pathfinding.SingleLevel
             pathFinderPool.Return(pf);
         }
 
-        public IReadOnlyDictionary<IMovementMode, MovementSourceData> MovementCostData { get; set; }
+        public IReadOnlyDictionary<IMovementMode, MovementSourceData>? MovementCostData { get; set; }
 
         public IPathFinderBuilder WithTarget(IPathFinderTargetEvaluator evaluator)
         {
@@ -35,6 +36,8 @@ namespace RogueEntity.Core.MovementPlaning.Pathfinding.SingleLevel
 
         public IPathFinder Build(in AggregateMovementCostFactors movementProfile)
         {
+            if (MovementCostData == null) throw new InvalidOperationException();
+            
             var pf = pathFinderPool.Get();
             var te = targetEvaluator ?? defaultTargetEvaluators.Get(); 
             te.Activate();

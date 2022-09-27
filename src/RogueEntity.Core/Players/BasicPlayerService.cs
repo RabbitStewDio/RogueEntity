@@ -1,5 +1,4 @@
 using EnTTSharp.Entities;
-using JetBrains.Annotations;
 using RogueEntity.Api.Time;
 using RogueEntity.Api.Utils;
 using RogueEntity.Core.Meta.Base;
@@ -7,6 +6,7 @@ using RogueEntity.Core.Positioning;
 using Serilog;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RogueEntity.Core.Players
 {
@@ -15,9 +15,9 @@ namespace RogueEntity.Core.Players
     /// </summary>
     /// <typeparam name="TEntity"></typeparam>
     public class BasicPlayerService<TEntity> : IPlayerService, IPlayerLookup<TEntity>
-        where TEntity : IEntityKey
+        where TEntity : struct, IEntityKey
     {
-        static readonly ILogger Logger = SLog.ForContext<BasicPlayerService<TEntity>>();
+        static readonly ILogger logger = SLog.ForContext<BasicPlayerService<TEntity>>();
 
         readonly Lazy<ITimeSource> timeSource;
         readonly Dictionary<PlayerTag, PlayerData> playerDataByGuid;
@@ -25,7 +25,7 @@ namespace RogueEntity.Core.Players
         readonly List<PlayerData> playerDataBuffer;
         readonly List<Guid> observerIdBuffer;
 
-        public BasicPlayerService([NotNull] Lazy<ITimeSource> timeSource)
+        public BasicPlayerService(Lazy<ITimeSource> timeSource)
         {
             this.timeSource = timeSource ?? throw new ArgumentNullException(nameof(timeSource));
             
@@ -48,7 +48,7 @@ namespace RogueEntity.Core.Players
             {
                 if (playerData.Tag != playerTag)
                 {
-                    Logger.Warning("Player Entity {PlayerEntity} changed identity; old player tag was {Existing}, new tag is {New}", k, playerData.Tag, playerTag);
+                    logger.Warning("Player Entity {PlayerEntity} changed identity; old player tag was {Existing}, new tag is {New}", k, playerData.Tag, playerTag);
                     playerData.Active = false;
                     return;
                 }
@@ -101,7 +101,7 @@ namespace RogueEntity.Core.Players
         /// <typeparam name="TItemId"></typeparam>
         public void RefreshObservers<TItemId, TPosition>(IEntityViewControl<TItemId> v, TItemId k, in PlayerObserverTag o, in TPosition pos)
             where TPosition : IPosition<TPosition>
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             if (!playerDataByGuid.TryGetValue(o.ControllingPlayer, out var data))
             {
@@ -157,7 +157,7 @@ namespace RogueEntity.Core.Players
             }
         }
 
-        public BufferList<PlayerTag> QueryPlayers(BufferList<PlayerTag> queryBuffer = null)
+        public BufferList<PlayerTag> QueryPlayers(BufferList<PlayerTag>? queryBuffer = null)
         {
             queryBuffer = BufferList.PrepareBuffer(queryBuffer);
 
@@ -169,7 +169,7 @@ namespace RogueEntity.Core.Players
             return queryBuffer;
         }
         
-        public bool TryQueryPlayer(in PlayerTag playerTag, out TEntity playerEntity)
+        public bool TryQueryPlayer(in PlayerTag playerTag, [MaybeNullWhen(false)] out TEntity playerEntity)
         {
             if (playerDataByGuid.TryGetValue(playerTag, out var p))
             {
@@ -181,7 +181,7 @@ namespace RogueEntity.Core.Players
             return false;
         }
 
-        public BufferList<PlayerObserver> QueryObservers(PlayerTag player, BufferList<PlayerObserver> queryBuffer = null)
+        public BufferList<PlayerObserver> QueryObservers(PlayerTag player, BufferList<PlayerObserver>? queryBuffer = null)
         {
             queryBuffer = BufferList.PrepareBuffer(queryBuffer);
 

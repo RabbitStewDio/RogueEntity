@@ -1,6 +1,5 @@
 using System;
 using EnTTSharp.Entities;
-using JetBrains.Annotations;
 using RogueEntity.Api.Utils;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Positioning.MapLayers;
@@ -9,13 +8,13 @@ using RogueEntity.Core.Utils.DataViews;
 namespace RogueEntity.Core.GridProcessing.LayerAggregation
 {
     public abstract class DynamicGridAggregateLayerFactoryBase<TItemId, TAggregateType> : IAggregationLayerController<TAggregateType>
-        where TItemId : IEntityKey
+        where TItemId : struct, IEntityKey
     {
         readonly MapLayer layer;
         readonly IGridMapContext<TItemId> mapContext;
         readonly BufferList<int> cachedZLevels;
 
-        protected DynamicGridAggregateLayerFactoryBase(MapLayer layer, [NotNull] IGridMapContext<TItemId> mapContext)
+        protected DynamicGridAggregateLayerFactoryBase(MapLayer layer, IGridMapContext<TItemId> mapContext)
         {
             this.layer = layer;
             this.mapContext = mapContext ?? throw new ArgumentNullException(nameof(mapContext));

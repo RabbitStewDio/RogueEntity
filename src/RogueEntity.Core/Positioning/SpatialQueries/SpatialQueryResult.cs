@@ -15,8 +15,8 @@ namespace RogueEntity.Core.Positioning.SpatialQueries
 
         public static IComparer<SpatialQueryResult<TEntityId, TComponent>> DistanceComparer { get; } = new DistanceRelationalComparer();
 
-        static readonly EqualityComparer<TEntityId> EntityComparer = EqualityComparer<TEntityId>.Default;
-        static readonly EqualityComparer<TComponent> ComponentComparer = EqualityComparer<TComponent>.Default;
+        static readonly EqualityComparer<TEntityId> entityComparer = EqualityComparer<TEntityId>.Default;
+        static readonly EqualityComparer<TComponent> componentComparer = EqualityComparer<TComponent>.Default;
 
         public readonly TEntityId EntityId;
         public readonly Position Position;
@@ -33,9 +33,9 @@ namespace RogueEntity.Core.Positioning.SpatialQueries
 
         public bool Equals(SpatialQueryResult<TEntityId, TComponent> other)
         {
-            return EntityComparer.Equals(EntityId, other.EntityId) &&
+            return entityComparer.Equals(EntityId, other.EntityId) &&
                    Position.Equals(other.Position) &&
-                   ComponentComparer.Equals(Component, other.Component);
+                   componentComparer.Equals(Component, other.Component);
         }
 
         public override bool Equals(object obj)
@@ -47,9 +47,9 @@ namespace RogueEntity.Core.Positioning.SpatialQueries
         {
             unchecked
             {
-                var hashCode = EntityComparer.GetHashCode(EntityId);
+                var hashCode = entityComparer.GetHashCode(EntityId);
                 hashCode = (hashCode * 397) ^ Position.GetHashCode();
-                hashCode = (hashCode * 397) ^ ComponentComparer.GetHashCode(Component);
+                hashCode = (hashCode * 397) ^ componentComparer.GetHashCode(Component);
                 return hashCode;
             }
         }

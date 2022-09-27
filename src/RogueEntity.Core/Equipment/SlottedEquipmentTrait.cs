@@ -1,19 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 using EnTTSharp.Entities;
-using JetBrains.Annotations;
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Api.Utils;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Meta.ItemTraits;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RogueEntity.Core.Equipment
 {
     public class SlottedEquipmentTrait<TActorId, TItemId> : IReferenceItemTrait<TActorId>,
                                                             IItemComponentTrait<TActorId, ISlottedEquipment<TItemId>>,
                                                             IItemComponentInformationTrait<TActorId, MaximumCarryWeight>
-        where TItemId : IEntityKey
-        where TActorId : IEntityKey
+        where TItemId : struct, IEntityKey
+        where TActorId : struct, IEntityKey
     {
         readonly Weight maximumCarryWeight;
         readonly ReadOnlyListWrapper<EquipmentSlot> availableSlots;
@@ -21,16 +21,16 @@ namespace RogueEntity.Core.Equipment
         readonly IItemResolver<TItemId> itemResolver;
         readonly IItemResolver<TActorId> actorResolver;
 
-        public SlottedEquipmentTrait([NotNull] IItemResolver<TActorId> actorResolver,
-                                     [NotNull] IItemResolver<TItemId> itemResolver,
-                                     [NotNull] IBulkDataStorageMetaData<TItemId> itemIdMetaData,
+        public SlottedEquipmentTrait(IItemResolver<TActorId> actorResolver,
+                                     IItemResolver<TItemId> itemResolver,
+                                     IBulkDataStorageMetaData<TItemId> itemIdMetaData,
                                      Weight maximumCarryWeight,
                                      params EquipmentSlot[] availableSlots) : this(actorResolver, itemResolver, itemIdMetaData, maximumCarryWeight, (IEnumerable<EquipmentSlot>)availableSlots)
         { }
 
-        public SlottedEquipmentTrait([NotNull] IItemResolver<TActorId> actorResolver,
-                                     [NotNull] IItemResolver<TItemId> itemResolver,
-                                     [NotNull] IBulkDataStorageMetaData<TItemId> itemIdMetaData,
+        public SlottedEquipmentTrait(IItemResolver<TActorId> actorResolver,
+                                     IItemResolver<TItemId> itemResolver,
+                                     IBulkDataStorageMetaData<TItemId> itemIdMetaData,
                                      Weight maximumCarryWeight,
                                      IEnumerable<EquipmentSlot> availableSlots)
         {
@@ -74,7 +74,7 @@ namespace RogueEntity.Core.Equipment
             return true;
         }
 
-        public bool TryQuery(IEntityViewControl<TActorId> v,  TActorId k, out ISlottedEquipment<TItemId> t)
+        public bool TryQuery(IEntityViewControl<TActorId> v,  TActorId k, [MaybeNullWhen(false)] out ISlottedEquipment<TItemId> t)
         {
             if (v.GetComponent(k, out SlottedEquipmentData<TItemId> data))
             {

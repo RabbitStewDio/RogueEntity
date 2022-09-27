@@ -7,7 +7,7 @@ using RogueEntity.Core.Meta.Items;
 namespace RogueEntity.Core.Meta.ItemTraits
 {
     public class WeightViewTrait< TItemId> : StatelessItemComponentTraitBase< TItemId, WeightView>
-        where TItemId : IEntityKey
+        where TItemId : struct, IEntityKey
     {
         readonly IItemResolver< TItemId> itemResolver;
 

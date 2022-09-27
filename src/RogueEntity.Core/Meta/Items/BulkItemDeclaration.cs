@@ -2,11 +2,12 @@
 using EnTTSharp.Entities;
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Api.Utils;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RogueEntity.Core.Meta.Items
 {
     public class BulkItemDeclaration<TItemId> : ItemDeclaration, IBulkItemDeclaration<TItemId> 
-        where TItemId : IEntityKey
+        where TItemId : struct, IEntityKey
     {
         readonly TraitRegistration<IBulkItemTrait<TItemId>> traitRegistration;
 
@@ -43,12 +44,12 @@ namespace RogueEntity.Core.Meta.Items
             }
         }
 
-        public override bool TryQuery<TTrait>(out TTrait t)
+        public override bool TryQuery<TTrait>([MaybeNullWhen(false)] out TTrait t)
         {
             return traitRegistration.TryQuery(out t);
         }
 
-        public override BufferList<TTrait> QueryAll<TTrait>(BufferList<TTrait> cache = null)
+        public override BufferList<TTrait> QueryAll<TTrait>(BufferList<TTrait>? cache = null)
         {
             return traitRegistration.QueryAll(cache);
         }

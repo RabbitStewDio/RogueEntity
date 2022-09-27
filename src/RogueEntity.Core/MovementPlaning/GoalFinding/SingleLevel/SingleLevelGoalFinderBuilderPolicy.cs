@@ -1,4 +1,3 @@
-using JetBrains.Annotations;
 using Microsoft.Extensions.ObjectPool;
 using RogueEntity.Core.MovementPlaning.Goals;
 using RogueEntity.Core.MovementPlaning.Goals.Filters;
@@ -14,12 +13,12 @@ namespace RogueEntity.Core.MovementPlaning.GoalFinding.SingleLevel
         readonly ObjectPool<CompoundGoalTargetSource> compoundTargetEvaluatorPool;
         readonly ObjectPool<AnyOfGoalFinderFilter> filterPool;
 
-        public SingleLevelGoalFinderBuilderPolicy([NotNull] IPooledObjectPolicy<SingleLevelGoalFinder> policy,
-                                                  [NotNull] GoalRegistry goalRegistry,
-                                                  [NotNull] ISpatialQueryLookup queryLookup)
+        public SingleLevelGoalFinderBuilderPolicy(IPooledObjectPolicy<SingleLevelGoalFinder> policy,
+                                                  GoalRegistry goalRegistry,
+                                                  ISpatialQueryLookup queryLookup)
         {
             this.goalRegistry = goalRegistry;
-            this.factory = new SingleLevelGoalTargetEvaluatorFactory(goalRegistry, queryLookup);
+            this.factory = new SingleLevelGoalTargetEvaluatorFactory(queryLookup);
             this.pathFinderPool = new DefaultObjectPool<SingleLevelGoalFinder>(policy);
             this.compoundTargetEvaluatorPool = new DefaultObjectPool<CompoundGoalTargetSource>(new DefaultPooledObjectPolicy<CompoundGoalTargetSource>());
             this.filterPool = new DefaultObjectPool<AnyOfGoalFinderFilter>(new DefaultPooledObjectPolicy<AnyOfGoalFinderFilter>());

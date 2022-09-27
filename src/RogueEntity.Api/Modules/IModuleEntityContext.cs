@@ -1,11 +1,12 @@
 using EnTTSharp.Entities;
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Api.Modules.Helpers;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RogueEntity.Api.Modules
 {
     public interface IModuleEntityContext<TEntityId>
-        where TEntityId : IEntityKey
+        where TEntityId : struct, IEntityKey
     {
         void Register(EntitySystemId id,
                       int priority,
@@ -13,14 +14,14 @@ namespace RogueEntity.Api.Modules
 
         void Register(EntitySystemId id,
                       int priority,
-                      EntitySystemRegistrationDelegate<TEntityId> entitySystemRegistration = null);
+                      EntitySystemRegistrationDelegate<TEntityId>? entitySystemRegistration = null);
     }
 
     public interface IModuleContentContext<TEntityId>
-        where TEntityId : IEntityKey
+        where TEntityId : struct, IEntityKey
     {
-        bool TryGetDefinedBulkItem(ItemDeclarationId id, out IBulkItemDeclaration<TEntityId> item);
-        bool TryGetDefinedReferenceItem(ItemDeclarationId id, out IReferenceItemDeclaration<TEntityId> item);
+        bool TryGetDefinedBulkItem(ItemDeclarationId id, [MaybeNullWhen(false)] out IBulkItemDeclaration<TEntityId> item);
+        bool TryGetDefinedReferenceItem(ItemDeclarationId id, [MaybeNullWhen(false)] out IReferenceItemDeclaration<TEntityId> item);
 
         void DefineBulkItemTemplate(IBulkItemDeclaration<TEntityId> item);
         void DefineReferenceItemTemplate(IReferenceItemDeclaration<TEntityId> item);

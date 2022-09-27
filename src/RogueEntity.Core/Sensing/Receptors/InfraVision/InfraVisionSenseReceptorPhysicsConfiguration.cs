@@ -12,7 +12,7 @@ namespace RogueEntity.Core.Sensing.Receptors.InfraVision
         readonly ShadowPropagationResistanceDataSource dataSource;
 
         public InfraVisionSenseReceptorPhysicsConfiguration(IHeatPhysicsConfiguration heatPhysics,
-                                                            ShadowPropagationResistanceDataSource dataSource = null)
+                                                            ShadowPropagationResistanceDataSource? dataSource = null)
         {
             this.heatPhysics = heatPhysics;
             this.dataSource = dataSource ?? new ShadowPropagationResistanceDataSource();

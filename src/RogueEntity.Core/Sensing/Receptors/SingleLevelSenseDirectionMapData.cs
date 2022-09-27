@@ -1,6 +1,7 @@
 using System.Runtime.Serialization;
 using MessagePack;
 using RogueEntity.Core.Sensing.Common;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RogueEntity.Core.Sensing.Receptors
 {
@@ -31,7 +32,7 @@ namespace RogueEntity.Core.Sensing.Receptors
             Z = z;
         }
 
-        public bool TryGetIntensity(int z, out IDynamicSenseDataView2D intensities)
+        public bool TryGetIntensity(int z, [MaybeNullWhen(false)] out IDynamicSenseDataView2D intensities)
         {
             if (z == this.Z)
             {

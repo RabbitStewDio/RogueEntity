@@ -1,5 +1,4 @@
 ﻿using EnTTSharp.Entities;
-using JetBrains.Annotations;
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Api.Time;
 using RogueEntity.Core.Inputs.Commands;
@@ -12,17 +11,17 @@ using System;
 namespace RogueEntity.Core.Movement.GridMovement
 {
     public class GridMoveCommandSystem<TActorId>
-        where TActorId : IEntityKey
+        where TActorId : struct, IEntityKey
     {
         protected readonly Lazy<ITimeSource> Timer;
         protected readonly IItemPlacementService<TActorId> PlacementService;
         protected readonly GridStepMovementService<TActorId> MovementService;
 
 
-        public GridMoveCommandSystem([NotNull] Lazy<ITimeSource> timer,
-                                     [NotNull] IItemResolver<TActorId> actorResolver,
-                                     [NotNull] IMovementDataProvider movementDataProvider,
-                                     [NotNull] IItemPlacementService<TActorId> placementService)
+        public GridMoveCommandSystem(Lazy<ITimeSource> timer,
+                                     IItemResolver<TActorId> actorResolver,
+                                     IMovementDataProvider movementDataProvider,
+                                     IItemPlacementService<TActorId> placementService)
         {
             this.Timer = timer ?? throw new ArgumentNullException(nameof(timer));
             this.PlacementService = placementService ?? throw new ArgumentNullException(nameof(placementService));

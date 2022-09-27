@@ -7,7 +7,7 @@ namespace RogueEntity.Api.Modules.Attributes
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct)]
     public class ModuleAttribute : Attribute
     {
-        public string Domain { get; set; }
+        public string? Domain { get; set; }
 
         public ModuleAttribute()
         {

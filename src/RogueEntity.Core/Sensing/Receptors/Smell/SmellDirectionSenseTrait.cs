@@ -1,16 +1,16 @@
 using System.Collections.Generic;
 using EnTTSharp.Entities;
-using JetBrains.Annotations;
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Core.Meta.Items;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RogueEntity.Core.Sensing.Receptors.Smell
 {
     public class SmellDirectionSenseTrait<TActorId> : SenseReceptorTraitBase<TActorId, SmellSense, SmellSense>,
                                                       IItemComponentInformationTrait<TActorId, ISmellDirectionMap>
-        where TActorId : IEntityKey
+        where TActorId : struct, IEntityKey
     {
-        public SmellDirectionSenseTrait([NotNull] ISmellSenseReceptorPhysicsConfiguration physicsConfiguration,
+        public SmellDirectionSenseTrait(ISmellSenseReceptorPhysicsConfiguration physicsConfiguration,
                                         float intensity,
                                         bool active = true) : base(physicsConfiguration.SmellPhysics, intensity, active)
         { }
@@ -18,7 +18,7 @@ namespace RogueEntity.Core.Sensing.Receptors.Smell
         public override ItemTraitId Id => "Core.Sense.Receptor.Smell";
         public override int Priority => 100;
 
-        public bool TryQuery(IEntityViewControl<TActorId> v, TActorId k, out ISmellDirectionMap t)
+        public bool TryQuery(IEntityViewControl<TActorId> v, TActorId k, [MaybeNullWhen(false)] out ISmellDirectionMap t)
         {
             if (v.GetComponent(k, out SingleLevelSenseDirectionMapData<SmellSense, SmellSense> m))
             {

@@ -1,5 +1,4 @@
 using EnTTSharp.Entities;
-using JetBrains.Annotations;
 using RogueEntity.Core.MapLoading.MapRegions;
 using System;
 
@@ -9,7 +8,7 @@ namespace RogueEntity.Core.MapLoading.FlatLevelMaps
     {
         readonly IMapRegionTrackerService<int> mapTrackerService;
 
-        public BasicFlatLevelRegionRequestHandlerSystem([NotNull] IMapRegionTrackerService<int> mapTrackerService)
+        public BasicFlatLevelRegionRequestHandlerSystem(IMapRegionTrackerService<int> mapTrackerService)
         {
             this.mapTrackerService = mapTrackerService ?? throw new ArgumentNullException(nameof(mapTrackerService));
         }
@@ -23,7 +22,7 @@ namespace RogueEntity.Core.MapLoading.FlatLevelMaps
         public void RequestLoadLevelFromChangeLevelCommand<TItemId>(IEntityViewControl<TItemId> v,
                                                                     TItemId k,
                                                                     in ChangeLevelRequest cmd)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             var level = cmd.Level;
             mapTrackerService.RequestImmediateLoading(level);
@@ -32,7 +31,7 @@ namespace RogueEntity.Core.MapLoading.FlatLevelMaps
         public void RequestEvictLevelFromRequest<TItemId>(IEntityViewControl<TItemId> v,
                                                           TItemId k,
                                                           in EvictLevelRequest cmd)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             var level = cmd.Level;
             if (mapTrackerService.IsRegionEvicted(level))
@@ -55,7 +54,7 @@ namespace RogueEntity.Core.MapLoading.FlatLevelMaps
         public void RequestLoadLevelFromChangePositionCommand<TItemId>(IEntityViewControl<TItemId> v,
                                                                        TItemId k,
                                                                        in ChangeLevelPositionRequest cmd)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             if (cmd.Position.IsInvalid)
             {

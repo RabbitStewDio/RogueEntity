@@ -1,5 +1,4 @@
-﻿using JetBrains.Annotations;
-using MessagePack;
+﻿using MessagePack;
 using RogueEntity.Api.Utils;
 using System;
 using System.Collections.Generic;
@@ -13,9 +12,9 @@ namespace RogueEntity.Core.Utils.DataViews
     [SuppressMessage("ReSharper", "ConvertToAutoProperty")]
     public class DynamicBoolDataView3D : IDynamicDataView3D<bool>
     {
-        public event EventHandler<DynamicDataView3DEventArgs<bool>> ViewCreated;
-        public event EventHandler<DynamicDataView3DEventArgs<bool>> ViewReset;
-        public event EventHandler<DynamicDataView3DEventArgs<bool>> ViewExpired;
+        public event EventHandler<DynamicDataView3DEventArgs<bool>>? ViewCreated;
+        public event EventHandler<DynamicDataView3DEventArgs<bool>>? ViewReset;
+        public event EventHandler<DynamicDataView3DEventArgs<bool>>? ViewExpired;
 
         [DataMember(Order = 4)]
         [Key(4)]
@@ -57,7 +56,7 @@ namespace RogueEntity.Core.Utils.DataViews
         }
 
         [SerializationConstructor]
-        public DynamicBoolDataView3D(int tileSizeX, int tileSizeY, int offsetX, int offsetY, [NotNull] Dictionary<int, DynamicBoolDataView> index)
+        public DynamicBoolDataView3D(int tileSizeX, int tileSizeY, int offsetX, int offsetY, Dictionary<int, DynamicBoolDataView> index)
         {
             this.index = index ?? throw new ArgumentNullException(nameof(index));
             this.tileSizeX = tileSizeX;
@@ -103,7 +102,7 @@ namespace RogueEntity.Core.Utils.DataViews
             }
         }
 
-        public bool TryGetView(int z, out IReadOnlyDynamicDataView2D<bool> view)
+        public bool TryGetView(int z, [MaybeNullWhen(false)] out IReadOnlyDynamicDataView2D<bool> view)
         {
             if (TryGetWritableView(z, out var raw))
             {
@@ -115,7 +114,7 @@ namespace RogueEntity.Core.Utils.DataViews
             return false;
         }
 
-        public bool TryGetWritableView(int z, out IDynamicDataView2D<bool> data, DataViewCreateMode mode = DataViewCreateMode.Nothing)
+        public bool TryGetWritableView(int z, [MaybeNullWhen(false)] out IDynamicDataView2D<bool> data, DataViewCreateMode mode = DataViewCreateMode.Nothing)
         {
             if (index.TryGetValue(z, out var rdata))
             {
@@ -136,7 +135,7 @@ namespace RogueEntity.Core.Utils.DataViews
             return true;
         }
 
-        public BufferList<int> GetActiveLayers(BufferList<int> buffer = null)
+        public BufferList<int> GetActiveLayers(BufferList<int>? buffer = null)
         {
             buffer = BufferList.PrepareBuffer(buffer);
 

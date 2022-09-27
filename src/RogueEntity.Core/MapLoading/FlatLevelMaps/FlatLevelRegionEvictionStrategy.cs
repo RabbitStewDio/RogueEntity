@@ -42,7 +42,7 @@ namespace RogueEntity.Core.MapLoading.FlatLevelMaps
         class SelectForPreservationHandler : IMapBuilderInstantiationLifter
         {
             public Optional<TEntity> ClearPreProcess<TEntity>(ItemDeclarationId item, Position pos, IItemResolver<TEntity> itemResolver, TEntity entityKey)
-                where TEntity : IEntityKey
+                where TEntity : struct, IEntityKey
             {
                 if (!itemResolver.TryQueryData(entityKey, out EvictionBehaviour eb))
                 {
@@ -58,7 +58,7 @@ namespace RogueEntity.Core.MapLoading.FlatLevelMaps
             }
 
             public Optional<TEntity> InstantiatePostProcess<TEntity>(ItemDeclarationId item, Position pos, IItemResolver<TEntity> itemResolver, TEntity entityKey)
-                where TEntity : IEntityKey
+                where TEntity : struct, IEntityKey
             {
                 throw new NotImplementedException();
             }

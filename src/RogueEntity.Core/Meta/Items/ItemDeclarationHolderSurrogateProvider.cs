@@ -1,17 +1,16 @@
 ﻿using System;
 using EnTTSharp.Entities;
 using EnTTSharp.Serialization.Xml;
-using JetBrains.Annotations;
 using RogueEntity.Api.ItemTraits;
 
 namespace RogueEntity.Core.Meta.Items
 {
     public class ItemDeclarationHolderSurrogateProvider<TItemId>: SerializationSurrogateProviderBase<ItemDeclarationHolder<TItemId>, SurrogateContainer<string>> 
-        where TItemId : IEntityKey
+        where TItemId : struct, IEntityKey
     {
         readonly IItemResolver<TItemId> itemResolver;
 
-        public ItemDeclarationHolderSurrogateProvider([NotNull] IItemResolver<TItemId> itemResolver)
+        public ItemDeclarationHolderSurrogateProvider(IItemResolver<TItemId> itemResolver)
         {
             this.itemResolver = itemResolver ?? throw new ArgumentNullException(nameof(itemResolver));
         }

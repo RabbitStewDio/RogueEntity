@@ -6,7 +6,7 @@ namespace RogueEntity.Core.Sensing.Sources.Smell
     public static class SmellSourceTraitDeclarations
     {
         public static ReferenceItemDeclarationBuilder< TItemId> WithNoiseSource< TItemId>(this ReferenceItemDeclarationBuilder< TItemId> builder)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             var physics = builder.ServiceResolver.Resolve<ISmellPhysicsConfiguration>();
             var trait = new SmellSourceTrait< TItemId>(physics);

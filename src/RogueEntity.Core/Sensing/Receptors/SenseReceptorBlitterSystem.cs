@@ -1,6 +1,5 @@
 using System;
 using EnTTSharp.Entities;
-using JetBrains.Annotations;
 using RogueEntity.Core.Utils;
 
 namespace RogueEntity.Core.Sensing.Receptors
@@ -13,7 +12,7 @@ namespace RogueEntity.Core.Sensing.Receptors
         readonly SenseReceptorSystem<TTargetSense, TSourceSense> receptorSystem;
 
         public SenseReceptorBlitterSystem(SenseReceptorSystem<TTargetSense, TSourceSense> receptorSystem,
-                                          [NotNull] ISenseReceptorBlitter receptorBlitter)
+                                          ISenseReceptorBlitter receptorBlitter)
         {
             this.receptorSystem = receptorSystem;
             this.receptorBlitter = receptorBlitter ?? throw new ArgumentNullException(nameof(receptorBlitter));
@@ -23,7 +22,7 @@ namespace RogueEntity.Core.Sensing.Receptors
                                                                          TItemId k,
                                                                          in SensoryReceptorState<TTargetSense, TSourceSense> receptorState,
                                                                          ref SingleLevelSenseDirectionMapData<TTargetSense, TSourceSense> receptorSenseMap)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             if (receptorState.LastPosition.IsInvalid ||
                 !receptorSystem.TryGetLevel(receptorState.LastPosition.GridZ, out var level) ||

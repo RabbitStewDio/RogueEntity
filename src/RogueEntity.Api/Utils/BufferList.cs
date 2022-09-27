@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
 namespace RogueEntity.Api.Utils
@@ -90,9 +91,7 @@ namespace RogueEntity.Api.Utils
 
         public void Swap(int src, int dst)
         {
-            var tmp = data[src];
-            data[src] = data[dst];
-            data[dst] = tmp;
+            (data[src], data[dst]) = (data[dst], data[src]);
 
             this.version += 1;
         }
@@ -114,7 +113,7 @@ namespace RogueEntity.Api.Utils
             return ref data[index];
         }
 
-        public bool TryGet(int index, out T output)
+        public bool TryGet(int index, [MaybeNullWhen(false)] out T output)
         {
             if (index >= 0 && index < Count)
             {
@@ -150,7 +149,7 @@ namespace RogueEntity.Api.Utils
 
         public void RemoveLast()
         {
-            this.data[Count - 1] = default;
+            this.data[Count - 1] = default!;
             this.Count -= 1;
             this.version += 1;
         }
@@ -172,7 +171,7 @@ namespace RogueEntity.Api.Utils
                 this.contents = widget;
                 this.versionAtStart = widget.version;
                 index = -1;
-                current = default;
+                current = default!;
             }
 
             public void Dispose()
@@ -192,17 +191,17 @@ namespace RogueEntity.Api.Utils
                     return true;
                 }
 
-                current = default;
+                current = default!;
                 return false;
             }
 
             public void Reset()
             {
                 index = -1;
-                current = default;
+                current = default!;
             }
 
-            object IEnumerator.Current => Current;
+            object IEnumerator.Current => Current!;
 
             public T Current
             {
@@ -222,7 +221,7 @@ namespace RogueEntity.Api.Utils
     public static class BufferList
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static BufferList<T> PrepareBuffer<T>(BufferList<T> buffer)
+        public static BufferList<T> PrepareBuffer<T>(BufferList<T>? buffer)
         {
             if (buffer == null)
             {

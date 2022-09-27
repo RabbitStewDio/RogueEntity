@@ -8,7 +8,7 @@ namespace RogueEntity.Core.Inventory
     public static class ListInventoryTraitDeclarations
     {
         public readonly struct InventoryDeclarationBuilder< TContainerEntityId>
-            where TContainerEntityId : IEntityKey
+            where TContainerEntityId : struct, IEntityKey
         {
             readonly ReferenceItemDeclarationBuilder< TContainerEntityId> builder;
             readonly Weight defaultCarryWeight;
@@ -20,7 +20,7 @@ namespace RogueEntity.Core.Inventory
             }
 
             public ReferenceItemDeclarationBuilder< TContainerEntityId> Of<TContentEntityId>()
-                where TContentEntityId : IEntityKey
+                where TContentEntityId : struct, IEntityKey
             {
                 var resolver = builder.ServiceResolver.Resolve<IItemResolver< TContentEntityId>>();
                 var meta = builder.ServiceResolver.Resolve<IBulkDataStorageMetaData<TContentEntityId>>();
@@ -33,7 +33,7 @@ namespace RogueEntity.Core.Inventory
         public static InventoryDeclarationBuilder< TContainerEntityId>
             WithInventory< TContainerEntityId>(this ReferenceItemDeclarationBuilder< TContainerEntityId> builder,
                                                                               Weight defaultCarryWeight = default)
-            where TContainerEntityId : IEntityKey
+            where TContainerEntityId : struct, IEntityKey
         {
             return new InventoryDeclarationBuilder< TContainerEntityId>(builder, defaultCarryWeight);
         }

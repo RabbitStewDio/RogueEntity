@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace RogueEntity.Core.Utils.SpatialIndex
 {
     /// <summary>
@@ -11,6 +13,6 @@ namespace RogueEntity.Core.Utils.SpatialIndex
 
         bool TryGetBounds(FreeListIndex index, out BoundingBox boundingBox);
 
-        bool TryGetDebugData(FreeListIndex index, out string data);
+        bool TryGetDebugData(FreeListIndex index, [MaybeNullWhen(false)] out string data);
     }
 }

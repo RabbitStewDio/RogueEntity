@@ -1,5 +1,4 @@
-﻿using JetBrains.Annotations;
-using MessagePack;
+﻿using MessagePack;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -22,7 +21,7 @@ namespace RogueEntity.Core.Storage
             this.options = options;
         }
 
-        public FileDataRepositoryFactory WithKey<TKey>([NotNull] IFileKeyConverter<TKey> valueConverter)
+        public FileDataRepositoryFactory WithKey<TKey>(IFileKeyConverter<TKey> valueConverter)
         {
             this.converters[typeof(TKey)] = valueConverter ?? throw new ArgumentNullException(nameof(valueConverter));
             return this;

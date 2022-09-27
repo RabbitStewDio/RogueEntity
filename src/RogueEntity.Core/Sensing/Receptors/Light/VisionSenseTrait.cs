@@ -2,12 +2,13 @@ using System.Collections.Generic;
 using EnTTSharp.Entities;
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Core.Meta.Items;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RogueEntity.Core.Sensing.Receptors.Light
 {
     public class VisionSenseTrait< TActorId> : SenseReceptorTraitBase< TActorId, VisionSense, VisionSense>,
                                                             IItemComponentInformationTrait< TActorId, IBrightnessMap>
-        where TActorId : IEntityKey
+        where TActorId : struct, IEntityKey
     {
         public VisionSenseTrait(IVisionSenseReceptorPhysicsConfiguration physics, float senseIntensity, bool active = true): base(physics.VisionPhysics, senseIntensity, active)
         {
@@ -16,7 +17,7 @@ namespace RogueEntity.Core.Sensing.Receptors.Light
         public override ItemTraitId Id => "Core.Sense.Receptor.Vision";
         public override int Priority => 100;
 
-        public bool TryQuery(IEntityViewControl<TActorId> v, TActorId k, out IBrightnessMap t)
+        public bool TryQuery(IEntityViewControl<TActorId> v, TActorId k, [MaybeNullWhen(false)] out IBrightnessMap t)
         {
             if (v.GetComponent(k, out SingleLevelSenseDirectionMapData<VisionSense, VisionSense> m))
             {

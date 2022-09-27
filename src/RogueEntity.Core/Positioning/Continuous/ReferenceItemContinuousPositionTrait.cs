@@ -17,7 +17,7 @@ namespace RogueEntity.Core.Positioning.Continuous
                                                                  IItemComponentInformationTrait<TItemId, MapLayerPreference>,
                                                                  IItemComponentDesignTimeInformationTrait<MapLayerPreference>,
                                                                  IItemComponentInformationTrait<TItemId, MapContainerEntityMarker>
-        where TItemId : IEntityKey
+        where TItemId : struct, IEntityKey
     {
         readonly IContinuousMapContext<TItemId> context;
         readonly IItemResolver<TItemId> itemResolver;

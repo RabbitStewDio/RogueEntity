@@ -1,4 +1,3 @@
-using JetBrains.Annotations;
 using RogueEntity.Api.Utils;
 using RogueEntity.Core.MapLoading.FlatLevelMaps;
 using Serilog;
@@ -19,8 +18,8 @@ namespace RogueEntity.Core.MapLoading.MapRegions
         readonly Stopwatch processingTimeStopWatch;
         readonly BufferList<IMapRegionProcessingRequestHandle<TRegionKey>> buffer;
 
-        public MapRegionEvictionSystem([NotNull] IMapRegionTrackerService<TRegionKey> mapTrackerService,
-                                       [NotNull] IMapRegionEvictionStrategy<TRegionKey> mapLoadingStrategy,
+        public MapRegionEvictionSystem(IMapRegionTrackerService<TRegionKey> mapTrackerService,
+                                       IMapRegionEvictionStrategy<TRegionKey> mapLoadingStrategy,
                                        TimeSpan maximumProcessingTime = default)
         {
             this.mapTrackerService = mapTrackerService ?? throw new ArgumentNullException(nameof(mapTrackerService));

@@ -14,7 +14,7 @@ using System.Collections.Generic;
 namespace RogueEntity.Samples.MineSweeper.Core.Services
 {
     public class MineSweeperMapGenerator<TItemId>
-        where TItemId : IEntityKey
+        where TItemId : struct, IEntityKey
     {
         readonly IMineSweeperGameParameterService worldGeneratorParameterService;
         readonly IEntityRandomGeneratorSource randomSource;

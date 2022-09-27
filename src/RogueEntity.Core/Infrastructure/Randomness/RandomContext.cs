@@ -37,7 +37,7 @@ namespace RogueEntity.Core.Infrastructure.Randomness
         }
 
         public static EntityRandomSeedSource<TEntityKey> ToRandomSeedSource<TEntityKey>(this TEntityKey k)
-            where TEntityKey : IEntityKey
+            where TEntityKey : struct, IEntityKey
         {
             return new EntityRandomSeedSource<TEntityKey>(k);
         }

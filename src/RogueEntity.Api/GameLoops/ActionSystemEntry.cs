@@ -31,7 +31,7 @@ namespace RogueEntity.Api.GameLoops
             }
         }
         
-        static readonly ILogger Logger = SLog.ForContext<ActionSystemEntry>();
+        static readonly ILogger logger = SLog.ForContext<ActionSystemEntry>();
 
         readonly string text;
         readonly Action action;
@@ -39,21 +39,22 @@ namespace RogueEntity.Api.GameLoops
         readonly Stopwatch performanceCounter;
         int invocationCount;
 
-        public ActionSystemEntry(Action action, ISystemDeclaration d, int declarationOrder, string context)
+        public ActionSystemEntry(Action action, ISystemDeclaration? d, int declarationOrder, string context)
         {
             this.action = action;
-            this.Name = d.Id;
-            this.Priority = d.Priority;
+            this.Name = d?.Id ?? "";
+            this.Priority = d?.Priority ?? 0;
             this.DeclarationOrder = declarationOrder;
             this.performanceCounter = new Stopwatch();
             this.frameCounter = new Stopwatch();
+            var moduleSuffix = $"@{d?.DeclaringModule}";
             if (string.IsNullOrEmpty(context))
             {
-                this.text = $"[{Priority,13:N0} ({DeclarationOrder,4}) - {Name}@{d.DeclaringModule}]";
+                this.text = $"[{Priority,13:N0} ({DeclarationOrder,4}) - {Name}{moduleSuffix}]";
             }
             else
             {
-                this.text = $"[{Priority,13:N0} ({DeclarationOrder,4}) - {Name}@{d.DeclaringModule}<{context}>]";
+                this.text = $"[{Priority,13:N0} ({DeclarationOrder,4}) - {Name}{moduleSuffix}<{context}>]";
             }
         }
 
@@ -65,7 +66,7 @@ namespace RogueEntity.Api.GameLoops
             try
             {
                 action();
-                Logger.Verbose("[{Context}] Processed {Handler} ({HandleTime})",
+                logger.Verbose("[{Context}] Processed {Handler} ({HandleTime})",
                                contextName, ToString(), 
                                new ActionSystemTime(invocationCount, frameCounter.Elapsed.TotalMilliseconds, performanceCounter.Elapsed.TotalMilliseconds));
             }

@@ -7,7 +7,7 @@ using RogueEntity.Core.Meta.Items;
 namespace RogueEntity.Core.Meta.ItemTraits
 {
     public sealed class ItemChargeTrait<TItemId> : SimpleReferenceItemComponentTraitBase<TItemId, ItemCharge>
-        where TItemId : IEntityKey
+        where TItemId : struct, IEntityKey
     {
         readonly ItemCharge initialCharge;
 
@@ -50,7 +50,7 @@ namespace RogueEntity.Core.Meta.ItemTraits
 
     public sealed class ItemChargeBulkTrait<TItemId> : SimpleBulkItemComponentTraitBase<TItemId, ItemCharge>,
                                                        IBulkDataTrait<TItemId>
-        where TItemId : IBulkDataStorageKey<TItemId>
+        where TItemId : struct, IBulkDataStorageKey<TItemId>
     {
         readonly ItemCharge initialCharge;
 

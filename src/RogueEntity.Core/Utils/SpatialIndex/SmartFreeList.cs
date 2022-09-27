@@ -26,6 +26,7 @@ namespace RogueEntity.Core.Utils.SpatialIndex
             elementData = new T[initialSize];
         }
 
+        public int Count => count;
         public bool IsEmpty => count == 0;
 
         public FreeListIndex Add(in T element)

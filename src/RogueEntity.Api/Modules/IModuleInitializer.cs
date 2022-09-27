@@ -6,10 +6,10 @@ namespace RogueEntity.Api.Modules
     public interface IModuleInitializer
     {
         IModuleContentContext<TEntityId> DeclareContentContext<TEntityId>()
-            where TEntityId : IEntityKey;
+            where TEntityId : struct, IEntityKey;
 
         IModuleEntityContext<TEntityId> DeclareEntityContext<TEntityId>()
-            where TEntityId : IEntityKey;
+            where TEntityId : struct, IEntityKey;
 
         void Register(EntitySystemId id, int priority, GlobalSystemRegistrationDelegate entityRegistration);
 

@@ -7,7 +7,7 @@ using System;
 namespace RogueEntity.Core.Inputs.Commands
 {
     public class BasicCommandSystem<TActorId>
-        where TActorId : IEntityKey
+        where TActorId : struct, IEntityKey
     {
         readonly ILogger logger = SLog.ForContext<BasicCommandSystem<TActorId>>();
         

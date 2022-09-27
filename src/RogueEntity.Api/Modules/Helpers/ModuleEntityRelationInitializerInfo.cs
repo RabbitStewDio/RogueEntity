@@ -1,11 +1,12 @@
 using System.Linq;
 using EnTTSharp.Entities;
 using RogueEntity.Api.ItemTraits;
+using System;
 
 namespace RogueEntity.Api.Modules.Helpers
 {
     public readonly struct ModuleEntityRelationInitializerInfo<TEntityId>
-        where TEntityId : IEntityKey
+        where TEntityId : struct, IEntityKey
     {
         public readonly EntityRelation Relation;
         public readonly EntityRole[] RequiredSubjectRoles;
@@ -41,18 +42,18 @@ namespace RogueEntity.Api.Modules.Helpers
     {
         public static ModuleEntityRelationInitializerInfo<TEntityId> CreateFor<TEntityId>(EntityRelation role,
                                                                                           ModuleEntityRelationInitializerDelegate<TEntityId> initializer)
-            where TEntityId : IEntityKey
+            where TEntityId : struct, IEntityKey
         {
             var sourceHint = initializer.Target.GetType() + "#" + initializer.Method.Name;
-            return new ModuleEntityRelationInitializerInfo<TEntityId>(role, initializer, new EntityRole[0], new EntityRole[0], sourceHint);
+            return new ModuleEntityRelationInitializerInfo<TEntityId>(role, initializer, Array.Empty<EntityRole>(), Array.Empty<EntityRole>(), sourceHint);
         }
 
         public static ModuleEntityRelationInitializerInfo<TEntityId> CreateFor<TEntityId>(EntityRelation role,
                                                                                           ModuleEntityRelationInitializerDelegate<TEntityId> initializer,
                                                                                           string sourceHint)
-            where TEntityId : IEntityKey
+            where TEntityId : struct, IEntityKey
         {
-            return new ModuleEntityRelationInitializerInfo<TEntityId>(role, initializer, new EntityRole[0], new EntityRole[0], sourceHint);
+            return new ModuleEntityRelationInitializerInfo<TEntityId>(role, initializer, Array.Empty<EntityRole>(), Array.Empty<EntityRole>(), sourceHint);
         }
     }
 }

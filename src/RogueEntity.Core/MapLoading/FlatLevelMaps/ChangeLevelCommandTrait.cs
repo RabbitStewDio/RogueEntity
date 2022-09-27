@@ -9,7 +9,7 @@ namespace RogueEntity.Core.MapLoading.FlatLevelMaps
 {
     public class ChangeLevelCommandTrait<TActorId> : CommandTraitBase<TActorId, ChangeLevelCommand>,
                                                      IItemComponentTrait<TActorId, ChangeLevelCommandState>
-        where TActorId : IEntityKey
+        where TActorId : struct, IEntityKey
     {
         readonly Lazy<IMapRegionMetaDataService<int>> mapData;
 

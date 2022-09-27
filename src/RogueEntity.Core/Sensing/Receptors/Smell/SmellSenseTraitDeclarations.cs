@@ -7,7 +7,7 @@ namespace RogueEntity.Core.Sensing.Receptors.Smell
     {
         public static ReferenceItemDeclarationBuilder< TItemId> WithTouchSense< TItemId>(this ReferenceItemDeclarationBuilder< TItemId> builder,
                                                                                                                    float sensorStrength, bool enabled = true)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             var physics = builder.ServiceResolver.GetOrCreateSmellSensorPhysics();
             var trait = new SmellDirectionSenseTrait< TItemId>(physics, sensorStrength, enabled);

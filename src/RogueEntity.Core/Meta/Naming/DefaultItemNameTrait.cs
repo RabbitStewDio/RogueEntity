@@ -6,7 +6,7 @@ using RogueEntity.Core.Meta.Items;
 namespace RogueEntity.Core.Meta.Naming
 {
     public class DefaultItemNameTrait<TItemId> : StatelessItemComponentTraitBase<TItemId, IDisplayName>
-        where TItemId : IEntityKey
+        where TItemId : struct, IEntityKey
     {
         public DefaultItemNameTrait(IDisplayName displayName) : base("Core.Item.DisplayName", 100)
         {

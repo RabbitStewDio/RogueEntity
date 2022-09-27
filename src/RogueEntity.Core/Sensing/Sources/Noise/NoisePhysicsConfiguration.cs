@@ -1,5 +1,4 @@
 using System;
-using JetBrains.Annotations;
 using RogueEntity.Core.Sensing.Common;
 using RogueEntity.Core.Sensing.Common.FloodFill;
 using RogueEntity.Core.Sensing.Common.Physics;
@@ -10,7 +9,7 @@ namespace RogueEntity.Core.Sensing.Sources.Noise
     {
         readonly FloodFillWorkingDataSource workingDataSource;
 
-        public NoisePhysicsConfiguration([NotNull] ISensePhysics noisePhysics, FloodFillWorkingDataSource workingDataSource = null)
+        public NoisePhysicsConfiguration(ISensePhysics noisePhysics, FloodFillWorkingDataSource? workingDataSource = null)
         {
             this.NoisePhysics = noisePhysics ?? throw new ArgumentNullException(nameof(noisePhysics));
             this.workingDataSource = workingDataSource ?? new FloodFillWorkingDataSource();

@@ -1,5 +1,4 @@
 using EnTTSharp.Entities;
-using JetBrains.Annotations;
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Api.Utils;
 using Serilog;
@@ -8,12 +7,12 @@ using System;
 namespace RogueEntity.Core.Inputs.Commands
 {
     public class BasicCommandService<TActor> : IBasicCommandService<TActor>
-        where TActor : IEntityKey
+        where TActor : struct, IEntityKey
     {
-        static readonly ILogger Logger = SLog.ForContext<BasicCommandService<TActor>>();
+        static readonly ILogger logger = SLog.ForContext<BasicCommandService<TActor>>();
         readonly IItemResolver<TActor> itemResolver;
 
-        public BasicCommandService([NotNull] IItemResolver<TActor> itemResolver)
+        public BasicCommandService(IItemResolver<TActor> itemResolver)
         {
             this.itemResolver = itemResolver ?? throw new ArgumentNullException(nameof(itemResolver));
         }
@@ -25,7 +24,7 @@ namespace RogueEntity.Core.Inputs.Commands
 
         public bool IsValid<TCommand>(TActor actor)
         {
-            if (itemResolver.TryQueryTrait(actor, out ICommandTrait<TActor, TCommand> trait))
+            if (itemResolver.TryQueryTrait<ICommandTrait<TActor, TCommand>>(actor, out var trait))
             {
                 return trait.IsCommandValidForState(actor);
             }
@@ -37,11 +36,11 @@ namespace RogueEntity.Core.Inputs.Commands
         {
             if (itemResolver.TryQueryData(actor, out CommandInProgress c))
             {
-                Logger.Debug("Unable to schedule new command - command {CommandId} still in progress", c.ActiveCommand);
+                logger.Debug("Unable to schedule new command - command {CommandId} still in progress", c.ActiveCommand);
                 return false;
             }
             
-            if (itemResolver.TryQueryTrait(actor, out ICommandTrait<TActor, TCommand> trait))
+            if (itemResolver.TryQueryTrait<ICommandTrait<TActor, TCommand>>(actor, out var trait))
             {
                 return trait.IsCommandValidForState(actor, cmd);
             }
@@ -56,26 +55,26 @@ namespace RogueEntity.Core.Inputs.Commands
                 return false;
             }
 
-            if (!itemResolver.TryQueryTrait(actor, out ICommandTrait<TActor, TCommand> _))
+            if (!itemResolver.TryQueryTrait<ICommandTrait<TActor, TCommand>>(actor, out _))
             {
-                Logger.Debug("Unable to schedule command, no handler for {Command}", typeof(TCommand));
+                logger.Debug("Unable to schedule command, no handler for {Command}", typeof(TCommand));
                 return false;
             }
             
             if (!itemResolver.TryUpdateData(actor, cmd, out _))
             {
-                Logger.Debug("Unable to schedule command, unable to write component data for {Command}", typeof(TCommand));
+                logger.Debug("Unable to schedule command, unable to write component data for {Command}", typeof(TCommand));
                 return false;
             }
 
             if (!itemResolver.TryUpdateData(actor, new CommandInProgress(false, CommandTypeId.Create<TCommand>()), out _))
             {
                 itemResolver.TryRemoveData<TCommand>(actor, out _);
-                Logger.Debug("Unable to schedule command, unable to write progress marker for {Command}", typeof(TCommand));
+                logger.Debug("Unable to schedule command, unable to write progress marker for {Command}", typeof(TCommand));
                 return false;
             }
 
-            Logger.Information("Submitted command {Command}", cmd);            
+            logger.Information("Submitted command {Command}", cmd);            
             return true;
         }
     }

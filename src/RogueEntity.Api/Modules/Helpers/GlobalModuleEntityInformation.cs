@@ -6,12 +6,13 @@ using RogueEntity.Api.ItemTraits;
 using RogueEntity.Api.Utils;
 using Serilog;
 using Serilog.Events;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RogueEntity.Api.Modules.Helpers
 {
     public interface IModuleEntityRecord: IModuleEntityInformation
     {
-        void RecordRole(EntityRole s, string messageTemplateFragment = null, params object[] args);
+        void RecordRole(EntityRole s, string? messageTemplateFragment = null, params object[] args);
         bool RecordImpliedRelation(EntityRole s, EntityRole t, ModuleId declaringModule);
         void RecordRelation(EntityRelation r, Type target);
     }
@@ -36,7 +37,7 @@ namespace RogueEntity.Api.Modules.Helpers
             return retval;
         }
 
-        public bool TryGetModuleEntityInformation(Type entityId, out IModuleEntityInformation mi)
+        public bool TryGetModuleEntityInformation(Type entityId, [MaybeNullWhen(false)] out IModuleEntityInformation mi)
         {
             if (rolesPerType.TryGetValue(entityId, out var miRaw))
             {
@@ -48,7 +49,7 @@ namespace RogueEntity.Api.Modules.Helpers
             return false;
         }
         
-        public bool TryGetModuleEntityInformation<TEntityId>(out IModuleEntityInformation mi)
+        public bool TryGetModuleEntityInformation<TEntityId>([MaybeNullWhen(false)] out IModuleEntityInformation mi)
         {
             if (rolesPerType.TryGetValue(typeof(TEntityId), out var miRaw))
             {
@@ -60,21 +61,26 @@ namespace RogueEntity.Api.Modules.Helpers
             return false;
         }
 
-        public bool TryQueryRelationTarget(EntityRelation r, out IReadOnlyCollection<Type> result)
+        public bool TryQueryRelationTarget(EntityRelation r, [MaybeNullWhen(false)] out IReadOnlyCollection<Type> result)
         {
-            var roles = new HashSet<Type>();
-            var resultIndicator = false;
+            HashSet<Type>? roles = null;
             foreach (var rec in rolesPerType.Values)
             {
                 if (rec.TryQueryRelationTarget(r, out var resultForType))
                 {
-                    resultIndicator = true;
+                    roles ??= new HashSet<Type>();
                     roles.UnionWith(resultForType);
                 }
             }
 
+            if (roles == null)
+            {
+                result = default;
+                return false;
+            }
+            
             result = roles;
-            return resultIndicator;
+            return true;
         }
 
         public IEnumerable<EntityRole> Roles
@@ -177,7 +183,7 @@ namespace RogueEntity.Api.Modules.Helpers
         }
 
         public bool IsValidRole<TEntityId>(ModuleEntityRoleInitializerInfo< TEntityId> r, EntityRole role)
-            where TEntityId : IEntityKey
+            where TEntityId : struct, IEntityKey
         {
             if (rolesPerType.TryGetValue(typeof(TEntityId), out var rec))
             {
@@ -187,11 +193,11 @@ namespace RogueEntity.Api.Modules.Helpers
             return false;
         }
         
-        public EntityRelation[] ResolveRelationsById(string[] relationNames)
+        public EntityRelation[] ResolveRelationsById(string[]? relationNames)
         {
             if (relationNames == null || relationNames.Length == 0)
             {
-                return new EntityRelation[0];
+                return Array.Empty<EntityRelation>();
             }
 
             var l = new List<EntityRelation>();
@@ -216,8 +222,8 @@ namespace RogueEntity.Api.Modules.Helpers
             readonly EntityRoleRecord rolesPerType;
             readonly EntityRelationRecord relationRecord;
 
-            public ModuleEntityInformation([NotNull] IModuleEntityInformation globalInformation,
-                                           [NotNull] Type entitySubject)
+            public ModuleEntityInformation(IModuleEntityInformation globalInformation,
+                                           Type entitySubject)
             {
                 this.globalInformation = globalInformation ?? throw new ArgumentNullException(nameof(globalInformation));
                 this.entitySubject = entitySubject ?? throw new ArgumentNullException(nameof(entitySubject));
@@ -244,7 +250,7 @@ namespace RogueEntity.Api.Modules.Helpers
                 return false;
             }
             
-            public void RecordRole(EntityRole s, string messageTemplateFragment = null, params object[] args)
+            public void RecordRole(EntityRole s, string? messageTemplateFragment = null, params object[] args)
             {
                 rolesPerType.RecordRole(s, messageTemplateFragment, args);
             }
@@ -285,7 +291,7 @@ namespace RogueEntity.Api.Modules.Helpers
             }
 
             public bool IsValidRole<TEntityId>(ModuleEntityRoleInitializerInfo< TEntityId> r, EntityRole role)
-                where TEntityId : IEntityKey
+                where TEntityId : struct, IEntityKey
             {
                 if (r.Role != role)
                 {
@@ -319,7 +325,7 @@ namespace RogueEntity.Api.Modules.Helpers
                 return true;
             }
 
-            public bool TryQueryRelationTarget(EntityRelation r, out IReadOnlyCollection<Type> result)
+            public bool TryQueryRelationTarget(EntityRelation r, [MaybeNullWhen(false)] out IReadOnlyCollection<Type> result)
             {
                 return relationRecord.TryQueryTarget(r, out result);
             }
@@ -349,7 +355,7 @@ namespace RogueEntity.Api.Modules.Helpers
 
             public IEnumerable<EntityRelation> Relations => relations.Keys;
 
-            public bool TryQueryTarget(EntityRelation r, out IReadOnlyCollection<Type> result)
+            public bool TryQueryTarget(EntityRelation r, [MaybeNullWhen(false)] out IReadOnlyCollection<Type> result)
             {
                 if (relations.TryGetValue(r, out var resultRaw))
                 {
@@ -373,7 +379,7 @@ namespace RogueEntity.Api.Modules.Helpers
                 this.rolesPerType = new HashSet<EntityRole>();
             }
 
-            public void RecordRole(EntityRole s, string messageTemplateFragment = null, params object[] args)
+            public void RecordRole(EntityRole s, string? messageTemplateFragment = null, params object[] args)
             {
                 if (rolesPerType.Contains(s))
                 {

@@ -1,11 +1,12 @@
 using System.Linq;
 using EnTTSharp.Entities;
 using RogueEntity.Api.ItemTraits;
+using System;
 
 namespace RogueEntity.Api.Modules.Helpers
 {
     public readonly struct ModuleEntityRoleInitializerInfo<TEntityId>
-        where TEntityId : IEntityKey
+        where TEntityId : struct, IEntityKey
     {
         public readonly EntityRole Role;
         public readonly EntityRole[] RequiredRoles;
@@ -24,9 +25,9 @@ namespace RogueEntity.Api.Modules.Helpers
             Initializer = initializer;
             SourceHint = sourceHint;
             Role = role;
-            RequiredRoles = requiredRoles ?? new EntityRole[0];
-            RequiredRelations = requiredRelations ?? new EntityRelation[0];
-            RequiredRolesAnywhereInSystem = requiredRolesAnywhereInSystem ?? new EntityRole[0];
+            RequiredRoles = requiredRoles ?? Array.Empty<EntityRole>();
+            RequiredRelations = requiredRelations ?? Array.Empty<EntityRelation>();
+            RequiredRolesAnywhereInSystem = requiredRolesAnywhereInSystem ?? Array.Empty<EntityRole>();
         }
 
         public ModuleEntityRoleInitializerInfo<TEntityId> WithRequiredRolesAnywhereInSystem(params EntityRole[] roles)
@@ -50,16 +51,16 @@ namespace RogueEntity.Api.Modules.Helpers
         public static ModuleEntityRoleInitializerInfo<TEntityId> CreateFor<TEntityId>(EntityRole role,
                                                                                       ModuleEntityRoleInitializerDelegate<TEntityId> initializer,
                                                                                       string sourceHint)
-            where TEntityId : IEntityKey
+            where TEntityId : struct, IEntityKey
         {
-            return new ModuleEntityRoleInitializerInfo<TEntityId>(role, initializer, new EntityRole[0], new EntityRelation[0], new EntityRole[0], sourceHint);
+            return new ModuleEntityRoleInitializerInfo<TEntityId>(role, initializer, Array.Empty<EntityRole>(), Array.Empty<EntityRelation>(), Array.Empty<EntityRole>(), sourceHint);
         }
 
         public static ModuleEntityRoleInitializerInfo<TEntityId> CreateFor<TEntityId>(EntityRole role, ModuleEntityRoleInitializerDelegate<TEntityId> initializer)
-            where TEntityId : IEntityKey
+            where TEntityId : struct, IEntityKey
         {
             var sourceHint = initializer.Target.GetType() + "#" + initializer.Method.Name;
-            return new ModuleEntityRoleInitializerInfo<TEntityId>(role, initializer, new EntityRole[0], new EntityRelation[0], new EntityRole[0], sourceHint);
+            return new ModuleEntityRoleInitializerInfo<TEntityId>(role, initializer, Array.Empty<EntityRole>(), Array.Empty<EntityRelation>(), Array.Empty<EntityRole>(), sourceHint);
         }
     }
 }

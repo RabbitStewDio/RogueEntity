@@ -2,11 +2,12 @@
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Core.Meta.Base;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RogueEntity.Core.Meta.Items
 {
     public class ItemResolver<TItemId> : IItemResolver<TItemId>
-        where TItemId : IEntityKey
+        where TItemId : struct, IEntityKey
     {
         readonly ItemRegistry<TItemId> registry;
         readonly EntityRegistry<TItemId> entityRegistry;
@@ -49,7 +50,7 @@ namespace RogueEntity.Core.Meta.Items
             return item.Initialize(id);
         }
 
-        public bool TryResolve(in TItemId itemRef, out IItemDeclaration item)
+        public bool TryResolve(in TItemId itemRef, [MaybeNullWhen(false)] out IItemDeclaration item)
         {
             if (itemRef.IsEmpty)
             {
@@ -92,7 +93,7 @@ namespace RogueEntity.Core.Meta.Items
         /// <param name="itemRef"></param>
         /// <param name="data"></param>
         /// <returns></returns>
-        public bool TryQueryTrait<TItemTrait>(TItemId itemRef, out TItemTrait data)
+        public bool TryQueryTrait<TItemTrait>(TItemId itemRef, [MaybeNullWhen(false)] out TItemTrait data)
             where TItemTrait : IItemTrait
         {
             if (TryResolve(itemRef, out var itemDeclaration))
@@ -104,7 +105,7 @@ namespace RogueEntity.Core.Meta.Items
             return false;
         }
 
-        public bool TryQueryData<TData>(TItemId itemRef, out TData data)
+        public bool TryQueryData<TData>(TItemId itemRef, [MaybeNullWhen(false)] out TData data)
         {
             if (TryQueryTrait<IItemComponentInformationTrait<TItemId, TData>>(itemRef, out var trait))
             {
@@ -153,36 +154,30 @@ namespace RogueEntity.Core.Meta.Items
             }
         }
 
-        public TItemId Destroy(in TItemId item)
+        public void Destroy(in TItemId item)
         {
             if (!entityMetaData.IsReferenceEntity(item))
             {
-                return default;
+                return;
             }
 
             if (entityRegistry.IsValid(item))
             {
                 entityRegistry.AssignOrReplace<DestroyedMarker>(item);
-                return default;
             }
-
-            return item;
         }
 
-        public TItemId DestroyNext(in TItemId item)
+        public void DestroyNext(in TItemId item)
         {
             if (!entityMetaData.IsReferenceEntity(item))
             {
-                return default;
+                return;
             }
 
             if (entityRegistry.IsValid(item))
             {
                 entityRegistry.AssignOrReplace<CascadingDestroyedMarker>(item);
-                return default;
             }
-
-            return item;
         }
 
         public bool IsDestroyed(in TItemId item)
@@ -227,7 +222,7 @@ namespace RogueEntity.Core.Meta.Items
 
 
         class ReferenceEntityQueryProvider<TEntityId> : IReferenceEntityQueryProvider<TEntityId>
-            where TEntityId : IEntityKey
+            where TEntityId : struct, IEntityKey
         {
             readonly ItemResolver<TEntityId> resolver;
 

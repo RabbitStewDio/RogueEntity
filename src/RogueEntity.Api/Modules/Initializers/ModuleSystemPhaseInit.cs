@@ -119,7 +119,7 @@ namespace RogueEntity.Api.Modules.Initializers
         /// <param name="open"></param>
         /// <param name="diagnostics"></param>
         /// <returns></returns>
-        List<ModuleRecord> ComputeModuleOrder(IEnumerable<ModuleRecord> open, Stack<ModuleId> diagnostics = null)
+        List<ModuleRecord> ComputeModuleOrder(IEnumerable<ModuleRecord> open, Stack<ModuleId>? diagnostics = null)
         {
             if (diagnostics == null)
             {

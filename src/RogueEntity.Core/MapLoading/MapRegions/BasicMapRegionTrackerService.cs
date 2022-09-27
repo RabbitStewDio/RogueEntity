@@ -89,7 +89,7 @@ namespace RogueEntity.Core.MapLoading.MapRegions
         }
 
         public BufferList<IMapRegionProcessingRequestHandle<TRegionKey>> QueryActiveRequests(MapRegionStatus status,
-                                                                                             BufferList<IMapRegionProcessingRequestHandle<TRegionKey>> k = null)
+                                                                                             BufferList<IMapRegionProcessingRequestHandle<TRegionKey>>? k = null)
         {
             k = BufferList.PrepareBuffer(k);
 

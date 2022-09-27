@@ -13,8 +13,8 @@ namespace RogueEntity.Api.Modules.Helpers
                                                    IGameLoopSystemInformation
     {
         static readonly ILogger Logger = SLog.ForContext<ModuleEntitySystemRegistrations>();
-        ISystemDeclaration CurrentSystem { get; set; }
-        string contextPattern;
+        ISystemDeclaration? CurrentSystem { get; set; }
+        string? contextPattern;
 
         readonly List<ActionSystemEntry> initializationEntries;
         readonly List<ActionSystemEntry> preFixedStepEntries;
@@ -43,7 +43,7 @@ namespace RogueEntity.Api.Modules.Helpers
         }
 
         public void EnterEntityContext<TEntity>(IEntitySystemDeclaration<TEntity> d)
-            where TEntity : IEntityKey
+            where TEntity : struct, IEntityKey
         {
             Logger.Debug("{Order} - Processing entity system {SystemId} in module {ModuleId} for {EntityId}", 
                          d.InsertionOrder,d.Id, d.DeclaringModule, typeof(TEntity));
@@ -52,7 +52,7 @@ namespace RogueEntity.Api.Modules.Helpers
         }
 
         public void EnterActionContext<TEntity>(IEntitySystemDeclaration<TEntity> d)
-            where TEntity : IEntityKey
+            where TEntity : struct, IEntityKey
         {
             Logger.Debug("{Order} - Processing action system {SystemId} in module {ModuleId} for {EntityId}", 
                          d.InsertionOrder,d.Id, d.DeclaringModule, typeof(TEntity));
@@ -66,7 +66,7 @@ namespace RogueEntity.Api.Modules.Helpers
             contextPattern = null;
         }
         
-        ActionSystemEntry Wrap(Action c, string description, int order)
+        ActionSystemEntry Wrap(Action c, string? description, int order)
         {
             var d = string.IsNullOrEmpty(description) ? EntitySystemReference.CreateSystemDescription(c) : description;
             return new ActionSystemEntry(c, CurrentSystem, order, $"{contextPattern}|{d}");
@@ -74,43 +74,43 @@ namespace RogueEntity.Api.Modules.Helpers
 
         void AddEntry(List<ActionSystemEntry> entries,
                       Action c,
-                      string description)
+                      string? description)
         {
             var entry = Wrap(c, description, entries.Count);
             entries.Add(entry);
         }
 
-        public void AddInitializationStepHandler(Action c, string description = null)
+        public void AddInitializationStepHandler(Action c, string? description = null)
         {
             AddEntry(initializationEntries, c, description);
         }
 
-        public void AddPreFixedStepHandlers(Action c, string description = null)
+        public void AddPreFixedStepHandlers(Action c, string? description = null)
         {
             AddEntry(preFixedStepEntries, c, description);
         }
 
-        public void AddFixedStepHandlers(Action c, string description = null)
+        public void AddFixedStepHandlers(Action c, string? description = null)
         {
             AddEntry(fixedStepEntries, c, description);
         }
 
-        public void AddLateFixedStepHandlers(Action c, string description = null)
+        public void AddLateFixedStepHandlers(Action c, string? description = null)
         {
             AddEntry(lateFixedStepEntries, c, description);
         }
 
-        public void AddVariableStepHandlers(Action c, string description = null)
+        public void AddVariableStepHandlers(Action c, string? description = null)
         {
             AddEntry(variableStepEntries, c, description);
         }
 
-        public void AddLateVariableStepHandlers(Action c, string description = null)
+        public void AddLateVariableStepHandlers(Action c, string? description = null)
         {
             AddEntry(lateVariableStepEntries, c, description);
         }
 
-        public void AddDisposeStepHandler(Action c, string description = null)
+        public void AddDisposeStepHandler(Action c, string? description = null)
         {
             AddEntry(disposeEntries, c, description);
         }

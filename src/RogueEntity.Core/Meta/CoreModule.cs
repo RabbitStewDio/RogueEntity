@@ -45,7 +45,7 @@ namespace RogueEntity.Core.Meta
         protected void InitializeItemRole<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                    IModuleInitializer initializer,
                                                    EntityRole r)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             var entityContext = initializer.DeclareEntityContext<TItemId>();
             entityContext.Register(WorldItemComponentsId, -19_999, RegisterSharedItemComponents);
@@ -55,7 +55,7 @@ namespace RogueEntity.Core.Meta
         protected void InitializeEntityRole<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                      IModuleInitializer initializer,
                                                      EntityRole r)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             var entityContext = initializer.DeclareEntityContext<TItemId>();
             entityContext.Register(CommonComponentsId, -20_000, RegisterCoreComponents);
@@ -68,7 +68,7 @@ namespace RogueEntity.Core.Meta
         protected void InitializeContainedItemRole<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                             IModuleInitializer initializer,
                                                             EntityRole r)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             var entityContext = initializer.DeclareEntityContext<TItemId>();
             entityContext.Register(ContainedComponentsId, -20_000, RegisterContainedItemComponents);
@@ -77,7 +77,7 @@ namespace RogueEntity.Core.Meta
         void RegisterResetEntitiesSystems<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter, 
                                                    IGameLoopSystemRegistration context, 
                                                    EntityRegistry<TItemId> registry)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             void ResetEntityRegistry()
             {
@@ -91,7 +91,7 @@ namespace RogueEntity.Core.Meta
         void RegisterCascadingDestructionSystems<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                           IGameLoopSystemRegistration context,
                                                           EntityRegistry<TItemId> registry)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             var markCascades = registry.BuildSystem()
                                        .WithoutContext()
@@ -103,7 +103,7 @@ namespace RogueEntity.Core.Meta
         void RegisterEntityCleanupSystems<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                    IGameLoopSystemRegistration context,
                                                    EntityRegistry<TItemId> registry)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             var deleteMarkedEntitiesSystem = new DestroyedEntitiesSystem<TItemId>(registry);
             context.AddInitializationStepHandler(deleteMarkedEntitiesSystem.DeleteMarkedEntities);
@@ -112,7 +112,7 @@ namespace RogueEntity.Core.Meta
 
         void RegisterCoreComponents<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                              EntityRegistry<TItemId> registry)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             registry.RegisterNonConstructable<ItemDeclarationHolder<TItemId>>();
             
@@ -123,7 +123,7 @@ namespace RogueEntity.Core.Meta
 
         void RegisterSharedItemComponents<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                    EntityRegistry<TItemId> registry)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             // All entities carry a reference to their trait declaration with them. This allows
             // systems to lookup traits and to perform actions on them.
@@ -136,7 +136,7 @@ namespace RogueEntity.Core.Meta
 
         void RegisterContainedItemComponents<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                       EntityRegistry<TItemId> registry)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             registry.RegisterNonConstructable<ContainerEntityMarker<TItemId>>();
         }

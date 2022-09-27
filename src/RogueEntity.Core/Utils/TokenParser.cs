@@ -1,12 +1,13 @@
 using System;
 using System.Collections.Generic;
 using RogueEntity.Api.Utils;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RogueEntity.Core.Utils
 {
     public interface ITokenParser
     {
-        bool TryParse<TData>(string text, out TData data);
+        bool TryParse<TData>(string text, [MaybeNullWhen(false)] out TData data);
     }
 
     public class TokenParser: ITokenParser
@@ -50,7 +51,7 @@ namespace RogueEntity.Core.Utils
             return x.Weight.CompareTo(y.Weight);
         }
 
-        public bool TryParse<TData1>(string text, out TData1 data)
+        public bool TryParse<TData1>(string text, [MaybeNullWhen(false)] out TData1 data)
         {
             if (tokenDefinitions.TryGetValue(typeof(TData1), out var tokens))
             {
@@ -79,7 +80,7 @@ namespace RogueEntity.Core.Utils
 
         public interface ITokenDefinition<TData> : ITokenDefinition
         {
-            public bool TryParse(string text, ITokenParser p, out TData data);
+            public bool TryParse(string text, ITokenParser p, [MaybeNullWhen(false)]  out TData data);
         }
 
         public delegate bool TokenProducer<TToken>(float data, out TToken result);
@@ -94,7 +95,7 @@ namespace RogueEntity.Core.Utils
                 this.producer = producer;
             }
 
-            public bool TryParse(string text, ITokenParser p, out TData data)
+            public bool TryParse(string text, ITokenParser p, [MaybeNullWhen(false)] out TData data)
             {
                 if (float.TryParse(text, out var rawData))
                 {
@@ -120,7 +121,7 @@ namespace RogueEntity.Core.Utils
                 this.producer = producer;
             }
 
-            public bool TryParse(string text, ITokenParser p, out TToken data)
+            public bool TryParse(string text, ITokenParser p, [MaybeNullWhen(false)] out TToken data)
             {
                 var idx = text.IndexOf(separator, StringComparison.Ordinal);
                 if (idx == -1)
@@ -178,7 +179,7 @@ namespace RogueEntity.Core.Utils
 
             public int Weight => 0;
 
-            public bool TryParse(string text, ITokenParser p, out TData data)
+            public bool TryParse(string text, ITokenParser p, [MaybeNullWhen(false)] out TData data)
             {
                 if (string.Equals(symbol, text, StringComparison.Ordinal))
                 {

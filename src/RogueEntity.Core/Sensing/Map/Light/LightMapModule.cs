@@ -60,7 +60,7 @@ namespace RogueEntity.Core.Sensing.Map.Light
         protected void InitializeSenseCollection<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                           IModuleInitializer initializer,
                                                           EntityRole role)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             if (!IsServiceEnabled(initParameter.ServiceResolver))
             {
@@ -75,13 +75,13 @@ namespace RogueEntity.Core.Sensing.Map.Light
 
         bool IsServiceEnabled(IServiceResolver serviceResolver)
         {
-            return serviceResolver.TryResolve(out IConfiguration config) && config.GetValue("RogueEntity:Core:Sensing:Map:InfraVision:Enabled", false);
+            return serviceResolver.TryResolve<IConfiguration>(out var config) && config.GetValue("RogueEntity:Core:Sensing:Map:InfraVision:Enabled", false);
         }
 
         void RegisterCollectSenseSourcesSystem<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                         IGameLoopSystemRegistration context,
                                                         EntityRegistry<TItemId> registry)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             var resolver = initParameter.ServiceResolver;
             var hs = GetOrCreate(resolver);
@@ -99,7 +99,7 @@ namespace RogueEntity.Core.Sensing.Map.Light
         void RegisterComputeSenseMapSystem<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                     IGameLoopSystemRegistration context,
                                                     EntityRegistry<TItemId> registry)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             var resolver = initParameter.ServiceResolver;
             var hs = GetOrCreate(resolver);
@@ -111,7 +111,7 @@ namespace RogueEntity.Core.Sensing.Map.Light
         void RegisterFinalizeSenseMapSystem<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                      IGameLoopSystemRegistration context,
                                                      EntityRegistry<TItemId> registry)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             var resolver = initParameter.ServiceResolver;
             var hs = GetOrCreate(resolver);
@@ -131,12 +131,12 @@ namespace RogueEntity.Core.Sensing.Map.Light
 
         LightMapSystem GetOrCreate(IServiceResolver resolver)
         {
-            if (resolver.TryResolve(out LightMapSystem system))
+            if (resolver.TryResolve<LightMapSystem>(out var system))
             {
                 return system;
             }
 
-            if (!resolver.TryResolve(out ISenseMapDataBlitter blitter))
+            if (!resolver.TryResolve<ISenseMapDataBlitter>(out var blitter))
             {
                 blitter = new DefaultSenseMapDataBlitter();
             }

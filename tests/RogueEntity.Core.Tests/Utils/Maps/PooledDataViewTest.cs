@@ -71,7 +71,7 @@ namespace RogueEntity.Core.Tests.Utils.Maps
         [Test]
         public void ValidateReserveViewOnDirectWrite()
         {
-            var pool = new TestPool(DynamicDataViewConfiguration.Default_16x16);
+            var pool = new TestPool(DynamicDataViewConfiguration.Default16X16);
             var p = new PooledDynamicDataView3D<byte>(pool);
             
             // create a map layer for all z-positions of 0
@@ -87,7 +87,7 @@ namespace RogueEntity.Core.Tests.Utils.Maps
         [Test]
         public void ValidateReserveViewOnDemand()
         {
-            var pool = new TestPool(DynamicDataViewConfiguration.Default_16x16);
+            var pool = new TestPool(DynamicDataViewConfiguration.Default16X16);
             var p = new PooledDynamicDataView3D<byte>(pool);
             
             // create a map layer for all z-positions of 0
@@ -99,7 +99,7 @@ namespace RogueEntity.Core.Tests.Utils.Maps
         [Test]
         public void ValidateExpiration()
         {
-            var pool = new TestPool(DynamicDataViewConfiguration.Default_16x16);
+            var pool = new TestPool(DynamicDataViewConfiguration.Default16X16);
             var p = new PooledDynamicDataView3D<byte>(pool);
             
             // create a map layer for all z-positions of 0

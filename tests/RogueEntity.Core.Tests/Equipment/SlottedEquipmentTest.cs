@@ -55,7 +55,7 @@ namespace RogueEntity.Core.Tests.Equipment
             var item = Context.ItemResolver.Instantiate(HeavyContentDeclaration);
             Equipment.TryEquipItem(item, out var modItem, Optional.Empty(), out var actualSlot).Should().BeTrue();
             actualSlot.Should().Be(slotLeftHand);
-            modItem.Should().Be(ItemReference.Empty);
+            modItem.Should().BeEmpty();
             Equipment.QueryItems().Should().ContainInOrder(new EquippedItem<ItemReference>(item, actualSlot));
             Equipment.TotalWeight.Should().Be(Weight.OfKiloGram(97.5f));
             Equipment.MaximumCarryWeight.Should().Be(Weight.OfKiloGram(100f));
@@ -74,7 +74,7 @@ namespace RogueEntity.Core.Tests.Equipment
             Context.ActorResolver.TryQueryData(actor2, out ISlottedEquipment<ItemReference> _).Should().BeTrue();
             Equipment.TryEquipItem(item, out var modItemOther, Optional.Empty(), out var actualSlotOther).Should().BeFalse();
             actualSlotOther.Should().Be(default(EquipmentSlot));
-            modItemOther.Should().Be(ItemReference.Empty);
+            modItemOther.Should().BeEmpty();
         }
 
         [Test]
@@ -85,7 +85,7 @@ namespace RogueEntity.Core.Tests.Equipment
 
             Equipment.TryEquipItem(item, out var modItem, Optional.Empty(), out var actualSlot).Should().BeFalse();
             actualSlot.Should().Be(default(EquipmentSlot));
-            modItem.Should().Be(ItemReference.Empty);
+            modItem.Should().BeEmpty();
         }
 
         [Test]
@@ -100,7 +100,7 @@ namespace RogueEntity.Core.Tests.Equipment
             Equipment.TryEquipItem(bulkItem, out _, Optional.ValueOf(slotLeftHand), out _).Should().BeFalse();
 
             Equipment.TryEquipItem(bulkItem, out var modItemBulk, Optional.Empty(), out var actualSlotBulk).Should().BeTrue();
-            modItemBulk.Should().Be(ItemReference.Empty);
+            modItemBulk.Should().BeEmpty();
             actualSlotBulk.Should().Be(slotRightHand);
         }
 
@@ -127,14 +127,14 @@ namespace RogueEntity.Core.Tests.Equipment
             this.GivenAnEntity(BulkCombinedItemDeclaration).WithStackSize(15).InstantiatedAsEquipment(slotHead);
             var addedItem = this.GivenAnEntity(BulkCombinedItemDeclaration).WithStackSize(15).InstantiatedWithoutPosition();
             var expectedItem = this.GivenAnEntity(BulkCombinedItemDeclaration).WithStackSize(30).InstantiatedWithoutPosition();
-            ItemReference remainderItem = ItemReference.Empty;
+            Optional<ItemReference> remainderItem = default;
             
             // Requesting to be placed on an already occupied spot should fail.
             When(() => Equipment.TryEquipItem(addedItem, out remainderItem, Optional.ValueOf(slotLeftHand), out _));
             
             Then_Operation_Should_Succeed();
             Equipment.QueryItems().Should().ContainInOrder(new EquippedItem<ItemReference>(expectedItem, slotHead));
-            remainderItem.Should().Be(ItemReference.Empty);
+            remainderItem.Should().BeEmpty();
         }
 
         [Test]
@@ -146,13 +146,13 @@ namespace RogueEntity.Core.Tests.Equipment
             var expectedResultItem = this.GivenAnEntity(BulkCombinedItemDeclaration).WithStackSize(60).InstantiatedWithoutPosition();
             var expectedRemainderItem = this.GivenAnEntity(BulkCombinedItemDeclaration).WithStackSize(5).InstantiatedWithoutPosition();
             
-            ItemReference remainderItem = ItemReference.Empty;
+            Optional<ItemReference> remainderItem = default;
             When(_ => Equipment.TryEquipItem(addedItem, out remainderItem, Optional.Empty(), out var _));
             
             Then_Operation_Should_Succeed();
             
             Equipment.QueryItems().Should().ContainInOrder(new EquippedItem<ItemReference>(expectedResultItem, slotHead));
-            remainderItem.Should().Be(expectedRemainderItem);
+            remainderItem.Should().BeEquivalentTo(expectedRemainderItem);
         }
 
         [Test]

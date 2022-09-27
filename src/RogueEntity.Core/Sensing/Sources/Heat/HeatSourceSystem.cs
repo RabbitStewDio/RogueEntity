@@ -1,5 +1,4 @@
 using System;
-using JetBrains.Annotations;
 using RogueEntity.Api.Time;
 using RogueEntity.Core.GridProcessing.Directionality;
 using RogueEntity.Core.Positioning;
@@ -18,15 +17,15 @@ namespace RogueEntity.Core.Sensing.Sources.Heat
     /// </summary>
     public class HeatSourceSystem : SenseSourceSystem<TemperatureSense, HeatSourceDefinition>
     {
-        [NotNull] readonly IHeatPhysicsConfiguration heatPhysics;
+        readonly IHeatPhysicsConfiguration heatPhysics;
 
-        public HeatSourceSystem([NotNull] Lazy<IReadOnlyDynamicDataView3D<float>> senseProperties,
-                                [NotNull] Lazy<IGlobalSenseStateCacheProvider> senseCacheProvider,
-                                [NotNull] Lazy<ITimeSource> timeSource,
-                                [NotNull] ISensoryResistanceDirectionView<TemperatureSense> directionalitySystem,
-                                [NotNull] ISenseStateCacheControl senseCacheControl,
-                                [NotNull] ISensePropagationAlgorithm sensePropagationAlgorithm,
-                                [NotNull] IHeatPhysicsConfiguration heatPhysics) :
+        public HeatSourceSystem(Lazy<IReadOnlyDynamicDataView3D<float>> senseProperties,
+                                Lazy<IGlobalSenseStateCacheProvider> senseCacheProvider,
+                                Lazy<ITimeSource> timeSource,
+                                ISensoryResistanceDirectionView<TemperatureSense> directionalitySystem,
+                                ISenseStateCacheControl senseCacheControl,
+                                ISensePropagationAlgorithm sensePropagationAlgorithm,
+                                IHeatPhysicsConfiguration heatPhysics) :
             base(senseProperties, senseCacheProvider, timeSource, directionalitySystem, senseCacheControl, sensePropagationAlgorithm, heatPhysics.HeatPhysics)
         {
             this.heatPhysics = heatPhysics ?? throw new ArgumentNullException(nameof(heatPhysics));

@@ -11,7 +11,7 @@ namespace RogueEntity.Core.Positioning.Algorithms
     /// </summary>
     public abstract class DynamicDijkstraGridBase
     {
-        static readonly ILogger Logger = SLog.ForContext<DynamicDijkstraGridBase>();
+        static readonly ILogger logger = SLog.ForContext<DynamicDijkstraGridBase>();
 
         readonly IDynamicDataView2D<float> nodesWeight;
         readonly IDynamicDataView2D<Direction> nodesDirection;
@@ -87,7 +87,7 @@ namespace RogueEntity.Core.Positioning.Algorithms
             }
 
             lowestNode = openNodePosition;
-            Logger.Verbose("Evaluated {Count} nodes during rescan", nodeCount);
+            logger.Verbose("Evaluated {Count} nodes during rescan", nodeCount);
             return nodeCount > 0;
         }
 

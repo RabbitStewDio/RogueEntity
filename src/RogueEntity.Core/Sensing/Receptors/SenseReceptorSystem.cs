@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using EnTTSharp.Entities;
-using JetBrains.Annotations;
 using RogueEntity.Api.Time;
 using RogueEntity.Api.Utils;
 using RogueEntity.Core.GridProcessing.Directionality;
@@ -15,6 +14,7 @@ using RogueEntity.Core.Sensing.Sources;
 using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.DataViews;
 using Serilog;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RogueEntity.Core.Sensing.Receptors
 {
@@ -30,7 +30,7 @@ namespace RogueEntity.Core.Sensing.Receptors
         where TReceptorSense : ISense
         where TSourceSense : ISense
     {
-        static readonly ILogger Logger = SLog.ForContext<SenseReceptorSystem<TReceptorSense, TSourceSense>>();
+        static readonly ILogger logger = SLog.ForContext<SenseReceptorSystem<TReceptorSense, TSourceSense>>();
         const int ZLayerTimeToLive = 50;
 
         readonly Lazy<IReadOnlyDynamicDataView3D<float>> senseProperties;
@@ -45,16 +45,16 @@ namespace RogueEntity.Core.Sensing.Receptors
 
         Optional<IGridStateCache> cacheView;
         Optional<IGridStateCache> globalCacheView;
-        IReadOnlyDynamicDataView3D<float> resistanceSource;
+        IReadOnlyDynamicDataView3D<float>? resistanceSource;
         int currentTime;
 
-        public SenseReceptorSystem([NotNull] Lazy<IReadOnlyDynamicDataView3D<float>> senseProperties,
-                                   [NotNull] Lazy<ISenseStateCacheProvider> senseCacheProvider,
-                                   [NotNull] Lazy<IGlobalSenseStateCacheProvider> globalSenseCacheProvider,
-                                   [NotNull] Lazy<ITimeSource> timeSource,
-                                   [NotNull] ISensoryResistanceDirectionView<TReceptorSense> directionalitySystem,
-                                   [NotNull] ISensePhysics physics,
-                                   [NotNull] ISensePropagationAlgorithm sensePropagationAlgorithm)
+        public SenseReceptorSystem(Lazy<IReadOnlyDynamicDataView3D<float>> senseProperties,
+                                   Lazy<ISenseStateCacheProvider> senseCacheProvider,
+                                   Lazy<IGlobalSenseStateCacheProvider> globalSenseCacheProvider,
+                                   Lazy<ITimeSource> timeSource,
+                                   ISensoryResistanceDirectionView<TReceptorSense> directionalitySystem,
+                                   ISensePhysics physics,
+                                   ISensePropagationAlgorithm sensePropagationAlgorithm)
         {
             this.sensePropagationAlgorithm = sensePropagationAlgorithm ?? throw new ArgumentNullException(nameof(sensePropagationAlgorithm));
             this.senseProperties = senseProperties ?? throw new ArgumentNullException(nameof(senseProperties));
@@ -68,7 +68,7 @@ namespace RogueEntity.Core.Sensing.Receptors
             this.zLevelBuffer = new List<int>();
         }
 
-        public bool TryGetLevel(int z, out ISenseReceptorProcessor level)
+        public bool TryGetLevel(int z, [MaybeNullWhen(false)] out ISenseReceptorProcessor level)
         {
             if (activeLightsPerLevel.TryGetValue(z, out var levelRaw))
             {
@@ -92,7 +92,7 @@ namespace RogueEntity.Core.Sensing.Receptors
             }
             else
             {
-                Logger.Verbose("No sense cache for {SourceSense}: This Sense Receptor System will not react to sense source changes", typeof(TSourceSense).Name);
+                logger.Verbose("No sense cache for {SourceSense}: This Sense Receptor System will not react to sense source changes", typeof(TSourceSense).Name);
             }
 
             var globalProvider = globalSenseCacheProvider.Value;
@@ -102,13 +102,13 @@ namespace RogueEntity.Core.Sensing.Receptors
             }
             else
             {
-                Logger.Verbose("No Global Sense Cache: This Sense Receptor System will not react to map changes");
+                logger.Verbose("No Global Sense Cache: This Sense Receptor System will not react to map changes");
             }
 
             if (resistanceSource == null)
             {
                 this.resistanceSource = senseProperties.Value;
-                Logger.Information("Retrieved resistance source for {SourceSense}:{TargetSense}", typeof(TSourceSense).Name, typeof(TReceptorSense).Name);
+                logger.Information("Retrieved resistance source for {SourceSense}:{TargetSense}", typeof(TSourceSense).Name, typeof(TReceptorSense).Name);
             }
         }
 
@@ -135,7 +135,7 @@ namespace RogueEntity.Core.Sensing.Receptors
                                                         in SensoryReceptorData<TReceptorSense, TSourceSense> definition,
                                                         in TPosition pos,
                                                         ref SensoryReceptorState<TReceptorSense, TSourceSense> state)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
             where TPosition : IPosition<TPosition>
         {
             if (definition.Enabled && !pos.IsInvalid)
@@ -208,6 +208,8 @@ namespace RogueEntity.Core.Sensing.Receptors
 
         void AddActiveSenseReceptor(float intensity, in Position pos)
         {
+            Assert.NotNull(resistanceSource);
+            
             var level = pos.GridZ;
             if (!activeLightsPerLevel.TryGetValue(level, out var lights))
             {
@@ -239,7 +241,7 @@ namespace RogueEntity.Core.Sensing.Receptors
                                                                       TItemId k,
                                                                       in TSenseSource senseDefinition,
                                                                       in SenseSourceState<TSourceSense> senseState)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
             where TSenseSource : ISenseDefinition
         {
             if (senseDefinition.Enabled &&
@@ -256,6 +258,8 @@ namespace RogueEntity.Core.Sensing.Receptors
 
         void AddActiveSenseSource(SenseSourceState<TSourceSense> s)
         {
+            Assert.NotNull(resistanceSource);
+            
             var level = s.LastPosition.GridZ;
             if (!activeLightsPerLevel.TryGetValue(level, out var lights))
             {
@@ -287,7 +291,7 @@ namespace RogueEntity.Core.Sensing.Receptors
                                                        in SensoryReceptorData<TReceptorSense, TSourceSense> definition,
                                                        in SenseReceptorDirtyFlag<TReceptorSense, TSourceSense> dirtyMarker,
                                                        ref SensoryReceptorState<TReceptorSense, TSourceSense> state)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             var pos = state.LastPosition;
             if (pos.IsInvalid)
@@ -331,7 +335,7 @@ namespace RogueEntity.Core.Sensing.Receptors
                                                      in SensoryReceptorData<TReceptorSense, TSourceSense> definition,
                                                      in SenseReceptorDirtyFlag<TReceptorSense, TSourceSense> dirty,
                                                      ref SensoryReceptorState<TReceptorSense, TSourceSense> state)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             if (definition.Enabled && state.State != SenseSourceDirtyState.Active)
             {
@@ -354,7 +358,7 @@ namespace RogueEntity.Core.Sensing.Receptors
         public void ResetSenseSourceObservedState<TItemId>(IEntityViewControl<TItemId> v,
                                                            TItemId k,
                                                            in ObservedSenseSource<TSourceSense> dirty)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             v.RemoveComponent<ObservedSenseSource<TSourceSense>>(k);
         }
@@ -381,7 +385,9 @@ namespace RogueEntity.Core.Sensing.Receptors
             }
         }
 
-        protected bool TryGetResistanceView(int z, out IReadOnlyDynamicDataView2D<float> resistanceView, out IReadOnlyDynamicDataView2D<DirectionalityInformation> directionalityView)
+        protected bool TryGetResistanceView(int z, 
+                                            [MaybeNullWhen(false)] out IReadOnlyDynamicDataView2D<float> resistanceView, 
+                                            [MaybeNullWhen(false)] out IReadOnlyDynamicDataView2D<DirectionalityInformation> directionalityView)
         {
             if (activeLightsPerLevel.TryGetValue(z, out var level))
             {

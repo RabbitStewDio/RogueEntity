@@ -1,4 +1,3 @@
-using JetBrains.Annotations;
 using RogueEntity.Core.GridProcessing.Directionality;
 using RogueEntity.Core.Utils.DataViews;
 using System;
@@ -51,9 +50,9 @@ namespace RogueEntity.Core.Movement
         public readonly IReadOnlyDynamicDataView3D<DirectionalityInformation> InboundDirections;
         public readonly IReadOnlyDynamicDataView3D<DirectionalityInformation> OutboundDirections;
 
-        public MovementSourceData([NotNull] IReadOnlyDynamicDataView3D<float> costs,
-                                  [NotNull] IReadOnlyDynamicDataView3D<DirectionalityInformation> inboundDirections,
-                                  [NotNull] IReadOnlyDynamicDataView3D<DirectionalityInformation> outboundDirections)
+        public MovementSourceData(IReadOnlyDynamicDataView3D<float> costs,
+                                  IReadOnlyDynamicDataView3D<DirectionalityInformation> inboundDirections,
+                                  IReadOnlyDynamicDataView3D<DirectionalityInformation> outboundDirections)
         {
             Costs = costs ?? throw new ArgumentNullException(nameof(costs));
             InboundDirections = inboundDirections ?? throw new ArgumentNullException(nameof(inboundDirections));

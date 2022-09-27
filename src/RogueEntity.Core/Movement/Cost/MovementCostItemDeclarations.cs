@@ -9,19 +9,19 @@ namespace RogueEntity.Core.Movement.Cost
     public static class MovementCostItemDeclarations
     {
         public static MovementCostBulkItemBuilder<TItemId> WithMovement<TItemId>(this BulkItemDeclarationBuilder<TItemId> builder)
-            where TItemId : IBulkDataStorageKey<TItemId>
+            where TItemId : struct, IBulkDataStorageKey<TItemId>
         {
             return new MovementCostBulkItemBuilder<TItemId>(builder);
         }
 
         public static MovementCostReferenceItemBuilder<TItemId> WithMovement<TItemId>(this ReferenceItemDeclarationBuilder<TItemId> builder)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             return new MovementCostReferenceItemBuilder<TItemId>(builder);
         }
 
         public readonly struct MovementCostReferenceItemBuilder<TItemId>
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             readonly ReferenceItemDeclarationBuilder<TItemId> builder;
 
@@ -51,7 +51,7 @@ namespace RogueEntity.Core.Movement.Cost
         }
 
         public readonly struct MovementCostBulkItemBuilder<TItemId>
-            where TItemId : IBulkDataStorageKey<TItemId>
+            where TItemId : struct, IBulkDataStorageKey<TItemId>
         {
             readonly BulkItemDeclarationBuilder<TItemId> builder;
 

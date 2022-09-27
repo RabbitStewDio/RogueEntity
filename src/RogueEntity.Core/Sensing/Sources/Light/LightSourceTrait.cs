@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using EnTTSharp.Entities;
-using JetBrains.Annotations;
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Core.Sensing.Common;
 using RogueEntity.Core.Utils;
@@ -9,7 +8,7 @@ using RogueEntity.Core.Utils;
 namespace RogueEntity.Core.Sensing.Sources.Light
 {
     public class LightSourceTrait< TItemId> : SenseSourceTraitBase< TItemId, VisionSense, LightSourceDefinition>
-        where TItemId : IEntityKey
+        where TItemId : struct, IEntityKey
     {
         readonly ILightPhysicsConfiguration lightPhysics;
         public float Hue { get; }
@@ -17,7 +16,7 @@ namespace RogueEntity.Core.Sensing.Sources.Light
         public float Intensity { get; }
         public bool Enabled { get; }
 
-        public LightSourceTrait([NotNull] ILightPhysicsConfiguration lightPhysics, float hue, float saturation, float intensity, bool enabled)
+        public LightSourceTrait(ILightPhysicsConfiguration lightPhysics, float hue, float saturation, float intensity, bool enabled)
         {
             this.lightPhysics = lightPhysics ?? throw new ArgumentNullException(nameof(lightPhysics));
             Hue = hue.Clamp(0, 1);

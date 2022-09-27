@@ -1,4 +1,3 @@
-using JetBrains.Annotations;
 using System;
 using System.Runtime.Serialization;
 
@@ -10,7 +9,7 @@ namespace RogueEntity.Core.MapLoading.Builder
         {
         }
 
-        protected MapBuilderException([NotNull] SerializationInfo info, StreamingContext context) : base(info, context)
+        protected MapBuilderException(SerializationInfo info, StreamingContext context) : base(info, context)
         {
         }
 

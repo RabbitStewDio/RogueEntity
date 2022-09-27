@@ -1,5 +1,4 @@
 using EnTTSharp.Entities.Attributes;
-using JetBrains.Annotations;
 using MessagePack;
 using RogueEntity.Api.Utils;
 using RogueEntity.Core.Positioning.Grid;
@@ -33,7 +32,7 @@ namespace RogueEntity.Core.Movement.GridMovement
             FinishTime = finishTurn;
         }
 
-        public GridMoveCommand WithFinishTime([NotNull] IMovementMode mode, TimeSpan targetTurn)
+        public GridMoveCommand WithFinishTime(IMovementMode mode, TimeSpan targetTurn)
         {
             if (mode == null)
             {

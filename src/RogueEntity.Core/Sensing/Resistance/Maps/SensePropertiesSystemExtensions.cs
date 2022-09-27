@@ -12,7 +12,7 @@ namespace RogueEntity.Core.Sensing.Resistance.Maps
                                                                    IGridMapContext<TItemId> mapContext,
                                                                    IItemResolver< TItemId> itemContext,
                                                                    MapLayer mapLayer)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             system.AddSenseLayerFactory(new DynamicSenseLayerFactory< TItemId, TSense>(mapLayer, mapContext, itemContext));
         }

@@ -11,13 +11,13 @@ namespace RogueEntity.Core.MapLoading.Builder
                                                           Position pos, 
                                                           IItemResolver<TEntity> itemResolver, 
                                                           TEntity entityKey)
-            where TEntity : IEntityKey;
+            where TEntity : struct, IEntityKey;
 
         public Optional<TEntity> InstantiatePostProcess<TEntity>(ItemDeclarationId item, 
                                                                  Position pos, 
                                                                  IItemResolver<TEntity> itemResolver, 
                                                                  TEntity entityKey)
-            where TEntity : IEntityKey;
+            where TEntity : struct, IEntityKey;
     }
 
 }

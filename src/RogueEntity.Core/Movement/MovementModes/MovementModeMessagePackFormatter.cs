@@ -30,7 +30,7 @@ namespace RogueEntity.Core.Movement.MovementModes
             }
         }
 
-        public IMovementMode Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
+        public IMovementMode? Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
         {
             if (!reader.ReadBoolean())
             {

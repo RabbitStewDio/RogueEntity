@@ -6,7 +6,7 @@ using System.Collections.Generic;
 namespace RogueEntity.Samples.MineSweeper.Core.Traits
 {
     public class MineSweeperMineCountItemTrait<TItemId> : SimpleBulkItemComponentTraitBase<TItemId, MineSweeperMineCount>
-        where TItemId : IBulkDataStorageKey<TItemId>
+        where TItemId : struct, IBulkDataStorageKey<TItemId>
     {
         public MineSweeperMineCountItemTrait() : base("MineSweeper.MineCount", 100)
         {

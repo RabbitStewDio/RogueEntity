@@ -1,7 +1,6 @@
 ﻿using System;
 using EnTTSharp.Entities;
 using EnTTSharp.Entities.Helpers;
-using JetBrains.Annotations;
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Api.Utils;
 using Serilog;
@@ -9,9 +8,9 @@ using Serilog;
 namespace RogueEntity.Core.Meta.Base
 {
     public class DestroyedEntitiesSystem<TEntity>
-        where TEntity : IEntityKey
+        where TEntity : struct, IEntityKey
     {
-        static readonly ILogger Logger = SLog.ForContext(typeof(DestroyedEntitiesSystem<TEntity>));
+        static readonly ILogger logger = SLog.ForContext(typeof(DestroyedEntitiesSystem<TEntity>));
         readonly EntityRegistry<TEntity> entityRegistry;
 
         public DestroyedEntitiesSystem(EntityRegistry<TEntity> entityRegistry)
@@ -29,7 +28,7 @@ namespace RogueEntity.Core.Meta.Base
                 {
                     if (!entityRegistry.IsValid(v))
                     {
-                        Logger.Warning("Invalid key {Key} in persistent view", v);
+                        logger.Warning("Invalid key {Key} in persistent view", v);
                     }
                     
                     entityRegistry.Destroy(v);
@@ -45,20 +44,20 @@ namespace RogueEntity.Core.Meta.Base
                                                                        TEntity k,
                                                                        in CascadingDestroyedMarker m)
         {
-            Logger.Debug("Activate destruction for inventory item {InventoryItem}", k);
+            logger.Debug("Activate destruction for inventory item {InventoryItem}", k);
             v.AssignOrReplace(k, new DestroyedMarker());
             v.RemoveComponent<CascadingDestroyedMarker>(k);
         }
     }
 
     public class DestroyContainerContentsSystem<TContainerEntity, TItemId>
-        where TItemId : IEntityKey
-        where TContainerEntity : IEntityKey
+        where TItemId : struct, IEntityKey
+        where TContainerEntity : struct, IEntityKey
     {
-        static readonly ILogger Logger = SLog.ForContext<DestroyContainerContentsSystem<TContainerEntity, TItemId>>();
+        static readonly ILogger logger = SLog.ForContext<DestroyContainerContentsSystem<TContainerEntity, TItemId>>();
         readonly IItemResolver<TItemId> itemContext;
 
-        public DestroyContainerContentsSystem([NotNull] IItemResolver<TItemId> itemContext)
+        public DestroyContainerContentsSystem(IItemResolver<TItemId> itemContext)
         {
             this.itemContext = itemContext ?? throw new ArgumentNullException(nameof(itemContext));
         }
@@ -69,10 +68,10 @@ namespace RogueEntity.Core.Meta.Base
                                                                in TInventory inventory)
             where TInventory : IContainerView<TItemId>
         {
-            Logger.Debug("Schedule destruction for contents of container {Container} of type {ContainerType} ", k, typeof(TContainerEntity));
+            logger.Debug("Schedule destruction for contents of container {Container} of type {ContainerType} ", k, typeof(TContainerEntity));
             foreach (var inventoryItem in inventory.Items)
             {
-                Logger.Debug("Schedule destruction for inventory item {InventoryItem}", inventoryItem);
+                logger.Debug("Schedule destruction for inventory item {InventoryItem}", inventoryItem);
                 itemContext.DestroyNext(inventoryItem);
             }
         }

@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using EnTTSharp.Entities;
-using JetBrains.Annotations;
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Api.Modules.Helpers;
 using RogueEntity.Api.Services;
@@ -76,7 +75,7 @@ namespace RogueEntity.Api.Modules.Initializers
         }
 
         void AddRolesFromTraits<TEntityId>()
-            where TEntityId : IEntityKey
+            where TEntityId : struct, IEntityKey
         {
             foreach (var rk in roles)
             {
@@ -127,9 +126,9 @@ namespace RogueEntity.Api.Modules.Initializers
         }
 
         void DeclareUniqueItems<TEntityId>(IModuleInitializationData<TEntityId> moduleContext)
-            where TEntityId : IEntityKey
+            where TEntityId : struct, IEntityKey
         {
-            if (!serviceResolver.TryResolve(out IItemContextBackend<TEntityId> ctx))
+            if (!serviceResolver.TryResolve<IItemContextBackend<TEntityId>>(out var ctx))
             {
                 Logger.Warning("Unable to locate ItemContextBackend for entity type {EntityType}. Did you forget to declare item definitions?", typeof(TEntityId));
                 return;
@@ -208,7 +207,7 @@ namespace RogueEntity.Api.Modules.Initializers
             readonly object[] messageParameter;
             readonly GlobalModuleEntityInformation entityInformation;
 
-            public RegisterRelationTargetCallback([NotNull] GlobalModuleEntityInformation entityInformation,
+            public RegisterRelationTargetCallback(GlobalModuleEntityInformation entityInformation,
                                                   EntityRole role,
                                                   string messageTemplate,
                                                   params object[] messageParameter)
@@ -220,7 +219,7 @@ namespace RogueEntity.Api.Modules.Initializers
             }
 
             public void PerformInitialization<TTarget>(IModuleInitializationData<TTarget> moduleContext)
-                where TTarget : IEntityKey
+                where TTarget : struct, IEntityKey
             {
                 var roleSet = this.entityInformation.CreateEntityInformation<TTarget>();
                 roleSet.RecordRole(role, messageTemplate, messageParameter);

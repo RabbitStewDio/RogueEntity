@@ -4,6 +4,7 @@ using System.Text;
 using RogueEntity.Api.Modules.Helpers;
 using RogueEntity.Api.Services;
 using RogueEntity.Core.Utils;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RogueEntity.Core.Infrastructure.Services
 {
@@ -18,7 +19,7 @@ namespace RogueEntity.Core.Infrastructure.Services
             promisedReferences = new Dictionary<Type, object>();
         }
 
-        public bool TryResolve<TServiceObject>(out TServiceObject o)
+        public bool TryResolve<TServiceObject>([MaybeNullWhen(false)] out TServiceObject o)
         {
             if (backend.TryGetValue(typeof(TServiceObject), out var raw))
             {
@@ -43,9 +44,9 @@ namespace RogueEntity.Core.Infrastructure.Services
             throw new ArgumentException("Unable to resolve service of type " + typeof(TServiceObject));
         }
 
-        public void Store(Type t, object service)
+        public void Store(Type t, object? service)
         {
-            if (!t.IsInstanceOfType(service))
+            if (service == null || !t.IsInstanceOfType(service))
             {
                 throw new ArgumentException();
             }

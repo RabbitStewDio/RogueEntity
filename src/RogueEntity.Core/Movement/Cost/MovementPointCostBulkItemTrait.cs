@@ -9,7 +9,7 @@ namespace RogueEntity.Core.Movement.Cost
 {
     public class MovementPointCostBulkItemTrait< TActorId, TMovementMode> : SimpleBulkItemComponentTraitBase< TActorId, MovementPointCost<TMovementMode>>,
                                                                             IMovementCostTrait<TActorId>
-        where TActorId : IBulkDataStorageKey<TActorId>
+        where TActorId : struct, IBulkDataStorageKey<TActorId>
         where TMovementMode : IMovementMode
     {
         readonly TMovementMode movementMode;

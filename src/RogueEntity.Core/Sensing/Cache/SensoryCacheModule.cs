@@ -41,7 +41,7 @@ namespace RogueEntity.Core.Sensing.Cache
         protected void InitializeRole<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                IModuleInitializer initializer,
                                                EntityRole role)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             var ctx = initializer.DeclareEntityContext<TItemId>();
             ctx.Register(SenseCacheLifecycleId, 0, RegisterSenseCacheLifeCycle);
@@ -50,10 +50,10 @@ namespace RogueEntity.Core.Sensing.Cache
         void RegisterSenseCacheLifeCycle<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                   IGameLoopSystemRegistration context,
                                                   EntityRegistry<TItemId> registry)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             var resolver = initParameter.ServiceResolver;
-            if (!resolver.TryResolve(out SenseCacheSetUpSystem system))
+            if (!resolver.TryResolve<SenseCacheSetUpSystem>(out var system))
             {
                 system = new SenseCacheSetUpSystem(resolver.ResolveToReference<SenseStateCache>());
                 resolver.Store(system);
@@ -68,7 +68,7 @@ namespace RogueEntity.Core.Sensing.Cache
                                       IGameLoopSystemRegistration context)
         {
             var resolver = initParameter.ServiceResolver;
-            if (!resolver.TryResolve(out SenseStateCache cache))
+            if (!resolver.TryResolve<SenseStateCache>(out var cache))
             {
                 cache = new SenseStateCache(4, 64, 64);
                 resolver.Store(cache);

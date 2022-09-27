@@ -9,7 +9,7 @@ namespace RogueEntity.Core.Meta.Items
     public static class ItemContextServices
     {
         public static IModuleContentContext<TEntityId> EnsureEntityRegistered<TEntityId>(this IModuleContentContext<TEntityId> ctx, IServiceResolver serviceResolver)
-            where TEntityId : IEntityKey
+            where TEntityId : struct, IEntityKey
         {
             if (EntityKeyMetaData.TryGetMetaData<TEntityId>(out var md))
             {
@@ -23,9 +23,9 @@ namespace RogueEntity.Core.Meta.Items
         }
 
         public static IServiceResolver ConfigureEntityType<TEntity>(this IServiceResolver serviceResolver, IBulkDataStorageMetaData<TEntity> meta)
-            where TEntity : IEntityKey
+            where TEntity : struct, IEntityKey
         {
-            if (!serviceResolver.TryResolve(out IItemContextBackend<TEntity> actorBackend))
+            if (!serviceResolver.TryResolve<IItemContextBackend<TEntity>>(out var actorBackend))
             {
                 actorBackend = new ItemContextBackend<TEntity>(meta);
                 serviceResolver.Store(actorBackend);
@@ -33,12 +33,12 @@ namespace RogueEntity.Core.Meta.Items
                 serviceResolver.Store(actorBackend.EntityMetaData);
             }
 
-            if (!serviceResolver.TryResolve(out IItemResolver<TEntity> _))
+            if (!serviceResolver.TryResolve<IItemResolver<TEntity>>(out _))
             {
                 serviceResolver.Store(actorBackend.ItemResolver);
             }
 
-            if (!serviceResolver.TryResolve(out IBulkDataStorageMetaData<TEntity> _))
+            if (!serviceResolver.TryResolve<IBulkDataStorageMetaData<TEntity>>(out _))
             {
                 serviceResolver.Store(actorBackend.EntityMetaData);
             }

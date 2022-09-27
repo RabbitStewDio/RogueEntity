@@ -1,5 +1,4 @@
-﻿using JetBrains.Annotations;
-using RogueEntity.Api.GameLoops;
+﻿using RogueEntity.Api.GameLoops;
 using RogueEntity.Api.Time;
 using RogueEntity.Api.Utils;
 using Serilog;
@@ -27,7 +26,7 @@ namespace RogueEntity.Core.Infrastructure.GameLoops
         readonly GameTimeProcessor timeProcessor;
         GameTimeState timeState;
 
-        public FixedTimeStepGameLoop([NotNull] ITimeSourceDefinition timeSourceDefinition, 
+        public FixedTimeStepGameLoop(ITimeSourceDefinition timeSourceDefinition, 
                                      int maxFixStepsPerUpdate, 
                                      TimeSpan fixedDeltaTime, 
                                      Optional<TimeSpan> gameFixedTimeStep = default)
@@ -76,17 +75,17 @@ namespace RogueEntity.Core.Infrastructure.GameLoops
 
         public List<ActionSystemEntry> DisposeStepHandlers { get; }
 
-        public Func<bool> IsWaitingForInputDelegate { get; set; }
+        public Func<bool>? IsWaitingForInputDelegate { get; set; }
 
-        public event EventHandler<WorldStepEventArgs> FixStepProgress;
-        public event EventHandler<WorldStepEventArgs> VariableStepProgress;
+        public event EventHandler<WorldStepEventArgs>? FixStepProgress;
+        public event EventHandler<WorldStepEventArgs>? VariableStepProgress;
 
         bool IsWaitingForInput()
         {
             return IsWaitingForInputDelegate?.Invoke() ?? true;
         }
 
-        public void Initialize(Func<bool> isWaitingForInputDelegate = null)
+        public void Initialize(Func<bool>? isWaitingForInputDelegate = null)
         {
             if (IsRunning)
             {

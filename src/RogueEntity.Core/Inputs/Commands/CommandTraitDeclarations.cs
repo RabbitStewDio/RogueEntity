@@ -6,7 +6,7 @@ namespace RogueEntity.Core.Inputs.Commands
     public static class CommandTraitDeclarations
     {
         public static ReferenceItemDeclarationBuilder<TActorId> WithCommand<TActorId, TCommand>(this ReferenceItemDeclarationBuilder<TActorId> builder)
-            where TActorId : IEntityKey
+            where TActorId : struct, IEntityKey
         {
             builder.WithTrait(CommandInProgressTrait<TActorId>.Instance);
             return builder.WithTrait(new BasicCommandTrait<TActorId, TCommand>());
@@ -14,7 +14,7 @@ namespace RogueEntity.Core.Inputs.Commands
         
         public static ReferenceItemDeclarationBuilder<TActorId> WithCommand<TActorId, TCommand>(this ReferenceItemDeclarationBuilder<TActorId> builder,
                                                                                                 CommandType<TCommand> cmd)
-            where TActorId : IEntityKey
+            where TActorId : struct, IEntityKey
         {
             builder.WithTrait(CommandInProgressTrait<TActorId>.Instance);
             return builder.WithTrait(new BasicCommandTrait<TActorId, TCommand>());
@@ -22,7 +22,7 @@ namespace RogueEntity.Core.Inputs.Commands
         
         public static ReferenceItemDeclarationBuilder<TActorId> WithCommand<TActorId, TCommand>(this ReferenceItemDeclarationBuilder<TActorId> builder,
                                                                                                 CommandType<TActorId, TCommand> cmd)
-            where TActorId : IEntityKey
+            where TActorId : struct, IEntityKey
         {
             builder.WithTrait(CommandInProgressTrait<TActorId>.Instance);
             return builder.WithTrait(new BasicCommandTrait<TActorId, TCommand>(cmd.Handler));

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using EnTTSharp.Entities;
-using JetBrains.Annotations;
 using RogueEntity.Api.Time;
 using RogueEntity.Api.Utils;
 using RogueEntity.Core.Positioning;
@@ -20,9 +19,9 @@ namespace RogueEntity.Core.Sensing.Map
         where TSourceSense : ISense
     {
         [SuppressMessage("ReSharper", "UnusedMember.Local")]
-        static readonly ILogger Logger = SLog.ForContext<SenseMappingSystemBase<TTargetSense, TSourceSense, TSenseSourceDefinition>>();
+        static readonly ILogger logger = SLog.ForContext<SenseMappingSystemBase<TTargetSense, TSourceSense, TSenseSourceDefinition>>();
 
-        static readonly Action<SenseDataLevel> ProcessSenseMapInstance = v => v.ProcessSenseSources();
+        static readonly Action<SenseDataLevel> processSenseMapInstance = v => v.ProcessSenseSources();
         const int ZLayerTimeToLive = 50;
 
         readonly Lazy<ITimeSource> timeSource;
@@ -30,8 +29,8 @@ namespace RogueEntity.Core.Sensing.Map
         readonly ISenseMapDataBlitter blitterFactory;
         readonly List<int> zLevelBuffer;
 
-        protected SenseMappingSystemBase([NotNull] Lazy<ITimeSource> timeSource,
-                                         ISenseMapDataBlitter blitterFactory)
+        protected SenseMappingSystemBase(Lazy<ITimeSource> timeSource,
+                                         ISenseMapDataBlitter? blitterFactory = null)
         {
             this.timeSource = timeSource;
             this.blitterFactory = blitterFactory ?? new DefaultSenseMapDataBlitter();
@@ -59,7 +58,7 @@ namespace RogueEntity.Core.Sensing.Map
                                                  TItemId k,
                                                  in TSenseSourceDefinition definition,
                                                  in SenseSourceState<TSourceSense> state)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             if (!state.LastPosition.IsInvalid)
             {
@@ -74,11 +73,11 @@ namespace RogueEntity.Core.Sensing.Map
         /// <param name="v"></param>
         /// <typeparam name="TItemId"></typeparam>
         public void ProcessSenseMap<TItemId>(EntityRegistry<TItemId> v)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             if (activeLightsPerLevel.Count > 0)
             {
-                Parallel.ForEach(activeLightsPerLevel.Values, ProcessSenseMapInstance);
+                Parallel.ForEach(activeLightsPerLevel.Values, processSenseMapInstance);
                 v.ResetComponent<SenseDirtyFlag<TSourceSense>>();
             }
         }
@@ -123,7 +122,7 @@ namespace RogueEntity.Core.Sensing.Map
             lights.Add(p, s);
         }
 
-        public bool TryGetSenseData(int z, out IDynamicSenseDataView2D data)
+        public bool TryGetSenseData(int z, [MaybeNullWhen(false)] out IDynamicSenseDataView2D data)
         {
             if (activeLightsPerLevel.TryGetValue(z, out var level))
             {

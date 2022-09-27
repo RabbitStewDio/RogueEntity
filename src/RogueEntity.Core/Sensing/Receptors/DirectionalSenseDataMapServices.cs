@@ -9,10 +9,10 @@ namespace RogueEntity.Core.Sensing.Receptors
 {
     public class DirectionalSenseDataMapServices
     {
-        static readonly Action<ProcessData> ProcessDataDelegate = ProcessTile;
+        static readonly Action<ProcessData> processDataDelegate = ProcessTile;
         
         readonly List<ProcessData> parameterBuffer;
-        List<Rectangle> partitionsBuffer;
+        List<Rectangle>? partitionsBuffer;
 
         public DirectionalSenseDataMapServices()
         {
@@ -95,7 +95,7 @@ namespace RogueEntity.Core.Sensing.Receptors
 
             parameterBuffer.Clear();
             QuerySenseDataTiles(receptorSenseMap, targetBounds, targetPos, receptorBlitter, senses);
-            Parallel.ForEach(parameterBuffer, ProcessDataDelegate);
+            Parallel.ForEach(parameterBuffer, processDataDelegate);
             parameterBuffer.Clear();
         }
 

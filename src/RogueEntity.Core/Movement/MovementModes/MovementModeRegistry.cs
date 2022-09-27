@@ -1,10 +1,11 @@
 using System;
 using System.Collections.Generic;
 using RogueEntity.Api.Utils;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RogueEntity.Core.Movement.MovementModes
 {
-    public class MovementModeRegistry: IMovementModeRegistry
+    public class MovementModeRegistry : IMovementModeRegistry
     {
         readonly List<IMovementMode> modes;
         readonly Dictionary<Type, (IMovementMode mode, Action<IGenericLifter<IMovementMode>> lifter)> modesByType;
@@ -31,7 +32,7 @@ namespace RogueEntity.Core.Movement.MovementModes
             get { return modes; }
         }
 
-        public bool TryGetMode<TMode>(out TMode mode)
+        public bool TryGetMode<TMode>([MaybeNullWhen(false)] out TMode mode)
         {
             if (modesByType.TryGetValue(typeof(TMode), out var m))
             {

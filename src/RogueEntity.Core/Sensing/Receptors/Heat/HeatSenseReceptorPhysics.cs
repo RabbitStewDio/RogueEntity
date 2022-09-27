@@ -8,10 +8,10 @@ namespace RogueEntity.Core.Sensing.Receptors.Heat
     {
         public static IHeatSenseReceptorPhysicsConfiguration GetOrCreateHeatSensorPhysics(this IServiceResolver serviceResolver)
         {
-            if (!serviceResolver.TryResolve(out IHeatSenseReceptorPhysicsConfiguration physics))
+            if (!serviceResolver.TryResolve<IHeatSenseReceptorPhysicsConfiguration>(out var physics))
             {
                 var physicsConfig = serviceResolver.Resolve<IHeatPhysicsConfiguration>();
-                if (!serviceResolver.TryResolve(out FloodFillWorkingDataSource ds))
+                if (!serviceResolver.TryResolve<FloodFillWorkingDataSource>(out var ds))
                 {
                     ds = new FloodFillWorkingDataSource();
                     serviceResolver.Store(ds);

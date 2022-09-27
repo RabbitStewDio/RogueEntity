@@ -14,11 +14,11 @@ namespace RogueEntity.Api.Modules.Initializers
 {
     public class ModuleSystemPhaseFinalizeRelationSystems : IModuleEntityInitializationCallback
     {
-        static readonly ILogger Logger = SLog.ForContext<ModuleSystem>();
+        static readonly ILogger logger = SLog.ForContext<ModuleSystem>();
         readonly GlobalModuleEntityInformation entityInfo;
         readonly IServiceResolver serviceResolver;
         readonly ModuleInitializer moduleInitializer;
-        ModuleRecord currentModule;
+        ModuleRecord? currentModule;
 
         public ModuleSystemPhaseFinalizeRelationSystems(in ModuleSystemPhaseInitModuleResult p,
                                                         IServiceResolver serviceResolver)
@@ -51,7 +51,7 @@ namespace RogueEntity.Api.Modules.Initializers
                 }
                 finally
                 {
-                    moduleInitializer.CurrentModuleId = null;
+                    moduleInitializer.CurrentModuleId = default;
                 }
             }
         }
@@ -63,6 +63,8 @@ namespace RogueEntity.Api.Modules.Initializers
                 return;
             }
 
+            if (currentModule == null) return;
+
             var moduleInitializerParams = new ModuleEntityInitializationParameter<TEntityId>(mi, serviceResolver, moduleContext);
 
             foreach (var relation in mi.Relations)
@@ -70,23 +72,23 @@ namespace RogueEntity.Api.Modules.Initializers
                 // check precondition - is there no relation data available? ... then skip
                 if (!mi.TryQueryRelationTarget(relation, out var targetTypes))
                 {
-                    Logger.Debug("Skipping initialization for relation {Relation} as no entity uses its target role", relation);
+                    logger.Debug("Skipping initialization for relation {Relation} as no entity uses its target role", relation);
                     continue;
                 }
-
+                
                 foreach (var targetType in targetTypes)
                 {
                     foreach (var roleInitializer in CollectRelationInitializers<TEntityId>(targetType, currentModule, mi, relation))
                     {
                         if (IsValidRelation(roleInitializer, mi, relation))
                         {
-                            Logger.Debug("Invoking module initializer {SourceHint} for entity {Entity} with relation {EntityRelation}",
+                            logger.Debug("Invoking module initializer {SourceHint} for entity {Entity} with relation {EntityRelation}",
                                          roleInitializer.SourceHint, typeof(TEntityId), relation);
                             roleInitializer.Initializer(in moduleInitializerParams, moduleInitializer, relation);
                         }
                         else
                         {
-                            Logger.Debug("Skipping module initializer {SourceHint} for entity {Entity} with relation {EntityRelation}",
+                            logger.Debug("Skipping module initializer {SourceHint} for entity {Entity} with relation {EntityRelation}",
                                          roleInitializer.SourceHint, typeof(TEntityId), relation);
                         }
                     }
@@ -95,7 +97,7 @@ namespace RogueEntity.Api.Modules.Initializers
         }
 
         public bool IsValidRelation<TEntityId>(ModuleEntityRelationInitializerInfo<TEntityId> r, IModuleEntityInformation mi, EntityRelation relation)
-            where TEntityId : IEntityKey
+            where TEntityId : struct, IEntityKey
         {
             if (r.Relation != relation)
             {
@@ -125,7 +127,7 @@ namespace RogueEntity.Api.Modules.Initializers
                                                                                                     ModuleRecord module,
                                                                                                     IModuleEntityInformation mi,
                                                                                                     EntityRelation relation)
-            where TEntityId : IEntityKey
+            where TEntityId : struct, IEntityKey
         {
             var subjectType = typeof(TEntityId);
             var retval = new List<ModuleEntityRelationInitializerInfo<TEntityId>>();
@@ -151,7 +153,7 @@ namespace RogueEntity.Api.Modules.Initializers
                             $"Expected a generic method with signature 'IEnumerable<ModuleEntityRoleInitializerInfo<TEntityId, TRelationTargetId>> Declare<TEntityId>(IServiceResolver, IModuleInitializer, EntityRelation), but found {m} in module {module.ModuleId}");
                     }
 
-                    Logger.Information("Generic constraints on module {Module} with method {Method} do not match. {ErrorHint}", module.ModuleId, m.Name, errorHint);
+                    logger.Information("Generic constraints on module {Module} with method {Method} do not match. {ErrorHint}", module.ModuleId, m.Name, errorHint);
                     continue;
                 }
 
@@ -184,11 +186,11 @@ namespace RogueEntity.Api.Modules.Initializers
                             $"Expected a generic method with signature 'void XXX<TEntityId, TRelationTargetId>(ModuleEntityInitializationParameter ByRef, IModuleInitializer, EntityRole), but found {m} in module {module.ModuleId}");
                     }
 
-                    Logger.Information("Generic constraints on module {Module} with method {Method} do not match. {ErrorHint}", module.ModuleId, m.Name, errorHint);
+                    logger.Information("Generic constraints on module {Module} with method {Method} do not match. {ErrorHint}", module.ModuleId, m.Name, errorHint);
                     continue;
                 }
 
-                Logger.Verbose("Invoking role initializer {Method}", genericMethod.Name);
+                logger.Verbose("Invoking role initializer {Method}", genericMethod.Name);
                 var initializer = (ModuleEntityRelationInitializerDelegate<TEntityId>)
                     Delegate.CreateDelegate(typeof(ModuleEntityRelationInitializerDelegate<TEntityId>), module.Module, genericMethod);
                 retval.Add(ModuleEntityRelationInitializerInfo.CreateFor(relation, initializer)
@@ -199,7 +201,7 @@ namespace RogueEntity.Api.Modules.Initializers
 
             if (retval.Count == 0)
             {
-                Logger.Verbose("No relation initializers defined for {Relation} with subject {Subject} and {Target}", relation, subjectType, targetType);
+                logger.Verbose("No relation initializers defined for {Relation} with subject {Subject} and {Target}", relation, subjectType, targetType);
             }
 
             return retval;

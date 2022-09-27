@@ -1,11 +1,12 @@
 ﻿using EnTTSharp.Entities;
 using RogueEntity.Api.ItemTraits;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RogueEntity.Core.Meta.Items
 {
     public interface IItemComponentInformationTrait<TItemId, TComponent> : IItemTrait 
-        where TItemId : IEntityKey
+        where TItemId : struct, IEntityKey
     {
-        bool TryQuery(IEntityViewControl<TItemId> v, TItemId k, out TComponent t);
+        bool TryQuery(IEntityViewControl<TItemId> v, TItemId k, [MaybeNullWhen(false)] out TComponent t);
     }
 }

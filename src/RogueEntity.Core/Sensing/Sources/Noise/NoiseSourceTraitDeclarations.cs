@@ -6,7 +6,7 @@ namespace RogueEntity.Core.Sensing.Sources.Noise
     public static class NoiseSourceTraitDeclarations
     {
         public static ReferenceItemDeclarationBuilder< TItemId> WithNoiseSource< TItemId>(this ReferenceItemDeclarationBuilder< TItemId> builder)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             var physics = builder.ServiceResolver.Resolve<INoisePhysicsConfiguration>();
             var trait = new NoiseSourceTrait< TItemId>(physics);

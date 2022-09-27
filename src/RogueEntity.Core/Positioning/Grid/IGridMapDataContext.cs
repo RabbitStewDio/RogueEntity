@@ -13,7 +13,7 @@ namespace RogueEntity.Core.Positioning.Grid
 
     public static class GridMapDataContextExtensions
     {
-        public static bool TryGet<TItemId, TPosition>(this IGridMapDataContext<TItemId> data, in TPosition pos, out TItemId d)
+        public static bool TryGet<TItemId, TPosition>(this IGridMapDataContext<TItemId> data, in TPosition pos, [MaybeNullWhen(false)] out TItemId d)
             where TPosition: IPosition<TPosition>
         {
             if (!data.TryGetView(pos.GridZ, out var map))

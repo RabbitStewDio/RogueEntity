@@ -1,4 +1,5 @@
 using RogueEntity.Api.Utils;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RogueEntity.Core.Movement
 {
@@ -8,7 +9,7 @@ namespace RogueEntity.Core.Movement
     /// </summary>
     public interface IMovementModeRegistry
     {
-        public bool TryGetMode<TMode>(out TMode mode);
+        public bool TryGetMode<TMode>([MaybeNullWhen(false)] out TMode mode);
         public ReadOnlyListWrapper<IMovementMode> Modes { get; }
         public void ExecuteAsGeneric(IMovementMode mode, IGenericLifter<IMovementMode> lifter);
     }

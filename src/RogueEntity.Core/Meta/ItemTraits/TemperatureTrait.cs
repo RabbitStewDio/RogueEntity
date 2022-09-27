@@ -6,7 +6,7 @@ using RogueEntity.Core.Meta.Items;
 namespace RogueEntity.Core.Meta.ItemTraits
 {
     public class TemperatureTrait<TItemId>: StatelessItemComponentTraitBase<TItemId, Temperature>
-        where TItemId : IEntityKey
+        where TItemId : struct, IEntityKey
     {
         readonly Temperature temperature;
 

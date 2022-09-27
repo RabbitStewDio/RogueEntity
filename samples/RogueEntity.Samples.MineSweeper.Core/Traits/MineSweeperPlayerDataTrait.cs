@@ -8,7 +8,7 @@ using System.Collections.Generic;
 namespace RogueEntity.Samples.MineSweeper.Core.Traits
 {
     public class MineSweeperPlayerDataTrait<TActorId>: SimpleReferenceItemComponentTraitBase<TActorId, MineSweeperPlayerData>
-        where TActorId : IEntityKey
+        where TActorId : struct, IEntityKey
     {
         public MineSweeperPlayerDataTrait() : base("ItemTrait.MineSweeper.PlayerData", 100)
         {

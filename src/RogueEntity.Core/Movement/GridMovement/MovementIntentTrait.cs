@@ -6,7 +6,7 @@ using System.Collections.Generic;
 namespace RogueEntity.Core.Movement.GridMovement
 {
     public class MovementIntentTrait<TItemId>: SimpleReferenceItemComponentTraitBase<TItemId, MovementIntent>
-        where TItemId : IEntityKey
+        where TItemId : struct, IEntityKey
     {
         public MovementIntentTrait() : base("Trait.Core.Movement.MovementIntent", 100)
         {

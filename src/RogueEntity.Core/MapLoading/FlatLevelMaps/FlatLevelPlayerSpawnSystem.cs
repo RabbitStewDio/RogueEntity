@@ -1,5 +1,4 @@
 using EnTTSharp.Entities;
-using JetBrains.Annotations;
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Api.Utils;
 using RogueEntity.Core.Infrastructure.Randomness;
@@ -27,10 +26,10 @@ namespace RogueEntity.Core.MapLoading.FlatLevelMaps
     /// <typeparam name="TActorId"></typeparam>
     /// <typeparam name="TItemId"></typeparam>
     public class FlatLevelPlayerSpawnSystem<TActorId, TItemId>
-        where TActorId : IEntityKey
-        where TItemId : IEntityKey
+        where TActorId : struct, IEntityKey
+        where TItemId : struct, IEntityKey
     {
-        static readonly ILogger Logger = SLog.ForContext<FlatLevelPlayerSpawnSystem<TItemId, TActorId>>();
+        static readonly ILogger logger = SLog.ForContext<FlatLevelPlayerSpawnSystem<TItemId, TActorId>>();
 
         readonly ISpatialQueryLookup spatialQuerySource;
         readonly IItemResolver<TActorId> actorResolver;
@@ -43,12 +42,12 @@ namespace RogueEntity.Core.MapLoading.FlatLevelMaps
         readonly List<(Position pos, TItemId entity)> filterBuffer;
         readonly BufferList<SpatialQueryResult<TItemId, PlayerSpawnLocation>> buffer;
 
-        public FlatLevelPlayerSpawnSystem([NotNull] IItemPlacementService<TActorId> placementService,
-                                 [NotNull] IItemPlacementLocationService<TActorId> spatialQuery,
-                                 [NotNull] IItemResolver<TActorId> actorResolver,
-                                 [NotNull] IMapRegionTrackerService<int> mapLoaderService,
-                                 [NotNull] IMapRegionMetaDataService<int> mapMetadataService,
-                                 [NotNull] ISpatialQueryLookup spatialQuerySource,
+        public FlatLevelPlayerSpawnSystem(IItemPlacementService<TActorId> placementService,
+                                 IItemPlacementLocationService<TActorId> spatialQuery,
+                                 IItemResolver<TActorId> actorResolver,
+                                 IMapRegionTrackerService<int> mapLoaderService,
+                                 IMapRegionMetaDataService<int> mapMetadataService,
+                                 ISpatialQueryLookup spatialQuerySource,
                                  Optional<IEntityRandomGeneratorSource> randomSource = default)
         {
             this.mapLoaderService = mapLoaderService ?? throw new ArgumentNullException(nameof(mapLoaderService));
@@ -81,27 +80,27 @@ namespace RogueEntity.Core.MapLoading.FlatLevelMaps
                 return;
             }
 
-            if (!spatialQuerySource.TryGetQuery(out ISpatialQuery<TItemId> query))
+            if (!spatialQuerySource.TryGetQuery<TItemId>(out var query))
             {
                 throw new ArgumentException("No query source for entity type " + typeof(TItemId).Name);
             }
 
             if (!mapMetadataService.TryGetRegionBounds(level, out var levelBounds))
             {
-                Logger.Warning("There is no map data for z-level {Level}", level);
+                logger.Warning("There is no map data for z-level {Level}", level);
                 return;
             }
 
             query.QueryBox(levelBounds, buffer);
             if (buffer.Count == 0)
             {
-                Logger.Warning("After loading map data for z-level {Level} no spawn points were detected", level);
+                logger.Warning("After loading map data for z-level {Level} no spawn points were detected", level);
                 return;
             }
 
             if (!actorResolver.TryQueryData(k, out MapLayerPreference mapLayerPref))
             {
-                Logger.Warning("Unable to determine map layer preference for player actor");
+                logger.Warning("Unable to determine map layer preference for player actor");
                 return;
             }
 
@@ -121,7 +120,7 @@ namespace RogueEntity.Core.MapLoading.FlatLevelMaps
             }
 
             v.RemoveComponent<ChangeLevelRequest>(k);
-            Logger.Warning("Unable to find any placement for player actor");
+            logger.Warning("Unable to find any placement for player actor");
         }
 
         List<(Position pos, TItemId entity)> FilterByAvailableSpace(BufferList<SpatialQueryResult<TItemId, PlayerSpawnLocation>> raw,
@@ -151,12 +150,12 @@ namespace RogueEntity.Core.MapLoading.FlatLevelMaps
                 spawnPosition = spawnPosition.WithLayer(preferredLayer);
                 if (placementService.TryPlaceItem(k, spawnPosition))
                 {
-                    Logger.Warning("Spawned player actor at position {SpawnPosition}", spawnPosition);
+                    logger.Warning("Spawned player actor at position {SpawnPosition}", spawnPosition);
                     levelData.RemoveAt(index);
                     return true;
                 }
 
-                Logger.Warning("Unable to place actor at position {SpawnLocation}", spawnPosition);
+                logger.Warning("Unable to place actor at position {SpawnLocation}", spawnPosition);
             }
 
             return false;
@@ -175,12 +174,12 @@ namespace RogueEntity.Core.MapLoading.FlatLevelMaps
                 spawnPosition = spawnPosition.WithLayer(preferredLayer);
                 if (placementService.TryPlaceItem(k, spawnPosition))
                 {
-                    Logger.Warning("Spawned player actor at random position {SpawnPosition}", spawnPosition);
+                    logger.Warning("Spawned player actor at random position {SpawnPosition}", spawnPosition);
                     levelData.RemoveAt(rnd);
                     return true;
                 }
 
-                Logger.Warning("Unable to place actor at position {SpawnLocation}", spawnPosition);
+                logger.Warning("Unable to place actor at position {SpawnLocation}", spawnPosition);
             }
 
             return false;
@@ -202,7 +201,7 @@ namespace RogueEntity.Core.MapLoading.FlatLevelMaps
             var level = cmd.Position;
             if (cmd.Position.IsInvalid)
             {
-                Logger.Warning("Unable to place actor at position marked as invalid");
+                logger.Warning("Unable to place actor at position marked as invalid");
                 v.RemoveComponent<ChangeLevelPositionRequest>(k);
                 return;
             }
@@ -214,7 +213,7 @@ namespace RogueEntity.Core.MapLoading.FlatLevelMaps
 
             if (!placementService.TryPlaceItem(k, level))
             {
-                Logger.Warning("Unable to place actor at position {SpawnLocation}", level);
+                logger.Warning("Unable to place actor at position {SpawnLocation}", level);
                 return;
             }
 

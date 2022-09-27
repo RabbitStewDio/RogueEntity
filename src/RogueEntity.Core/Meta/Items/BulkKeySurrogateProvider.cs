@@ -6,7 +6,7 @@ using RogueEntity.Api.ItemTraits;
 namespace RogueEntity.Core.Meta.Items
 {
     public class BulkKeySurrogateProvider<TItemId> : SerializationSurrogateProviderBase<TItemId, BulkKeyData>
-        where TItemId : IEntityKey
+        where TItemId : struct, IEntityKey
     {
         readonly IEntityKeyMapper mapper;
         readonly IBulkDataStorageMetaData<TItemId> metaData;

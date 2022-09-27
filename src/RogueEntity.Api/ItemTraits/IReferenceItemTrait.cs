@@ -2,7 +2,7 @@
 
 namespace RogueEntity.Api.ItemTraits
 {
-    public interface IReferenceItemTrait<TItemId> : IItemTrait where TItemId : IEntityKey
+    public interface IReferenceItemTrait<TItemId> : IItemTrait where TItemId : struct, IEntityKey
     {
         /// <summary>
         ///   This method is called right after an character has been spawned. Use this for

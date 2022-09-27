@@ -7,7 +7,7 @@ namespace RogueEntity.Core.Utils.DataViews
         readonly ObjectPool<DefaultPooledBoundedDataView<T>> pool;
         
         public DefaultBoundedDataViewPool(DynamicDataViewConfiguration config,
-                                          ObjectPoolProvider poolProvider = null)
+                                          ObjectPoolProvider? poolProvider = null)
         {
             if (poolProvider == null)
             {

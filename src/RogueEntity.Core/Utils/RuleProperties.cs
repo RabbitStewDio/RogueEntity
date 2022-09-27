@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using RogueEntity.Api.Utils;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RogueEntity.Core.Utils
 {
@@ -82,7 +83,7 @@ namespace RogueEntity.Core.Utils
             AddProperty(key, val);
         }
 
-        public bool TryGetValue(string key, out string value)
+        public bool TryGetValue(string key, [MaybeNullWhen(false)] out string value)
         {
             if (data.TryGetValue(key, out var list) &&
                 list.Count > 0)

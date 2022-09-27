@@ -10,9 +10,13 @@ namespace RogueEntity.Core.MapLoading.Builder
 {
     public static class MapOperations
     {
-        static readonly ILogger Logger = SLog.ForContext(typeof(MapOperations)); 
+        static readonly ILogger logger = SLog.ForContext(typeof(MapOperations)); 
         
-        public static MapBuilder Clear(this MapBuilder b, MapLayer l, float z, Rectangle r, IMapBuilderInstantiationLifter postProcessor = null)
+        public static MapBuilder Clear(this MapBuilder b, 
+                                       MapLayer l, 
+                                       float z, 
+                                       Rectangle r, 
+                                       IMapBuilderInstantiationLifter? postProcessor = null)
         {
             foreach (var pos in r.Contents)
             {
@@ -26,7 +30,7 @@ namespace RogueEntity.Core.MapLoading.Builder
             return b;
         }
 
-        public static MapBuilder Clear(this MapBuilder b, MapLayer l, Rectangle3D r, IMapBuilderInstantiationLifter postProcessor = null)
+        public static MapBuilder Clear(this MapBuilder b, MapLayer l, Rectangle3D r, IMapBuilderInstantiationLifter? postProcessor = null)
         {
             var layerSlice = r.ToLayerSlice();
             foreach (var z in r.Layers)
@@ -49,7 +53,7 @@ namespace RogueEntity.Core.MapLoading.Builder
             return Fill(b, l, z, r, null, items);
         }
         
-        public static MapBuilder Fill(this MapBuilder b, MapLayer l, float z, Rectangle r, IMapBuilderInstantiationLifter postProcessor, params ItemDeclarationId[] items)
+        public static MapBuilder Fill(this MapBuilder b, MapLayer l, float z, Rectangle r, IMapBuilderInstantiationLifter? postProcessor, params ItemDeclarationId[] items)
         {
             foreach (var pos in r.Contents)
             {
@@ -64,7 +68,7 @@ namespace RogueEntity.Core.MapLoading.Builder
             return Draw(b, l, z, r, null, items);
         }
         
-        public static MapBuilder Draw(this MapBuilder b, MapLayer l, float z, Rectangle r, IMapBuilderInstantiationLifter postProcessor, params ItemDeclarationId[] items)
+        public static MapBuilder Draw(this MapBuilder b, MapLayer l, float z, Rectangle r, IMapBuilderInstantiationLifter? postProcessor, params ItemDeclarationId[] items)
         {
             foreach (var pos in r.PerimeterPositions())
             {
@@ -79,7 +83,7 @@ namespace RogueEntity.Core.MapLoading.Builder
             return InstantiateAll(b, pos, null, items);
         }
         
-        public static MapBuilder InstantiateAll(this MapBuilder b, Position pos, IMapBuilderInstantiationLifter postProcessor, params ItemDeclarationId[] items)
+        public static MapBuilder InstantiateAll(this MapBuilder b, Position pos, IMapBuilderInstantiationLifter? postProcessor, params ItemDeclarationId[] items)
         {
             var layers = b.Layers;
             var maxIterationCount = Math.Min(layers.Count, items.Length);
@@ -98,7 +102,7 @@ namespace RogueEntity.Core.MapLoading.Builder
                     throw new MapBuilderException($"Unable to instantiate {item.Id} at {position}");
                 }
 
-                Logger.Verbose("Instantiated {ItemId} at {Position}", item.Id, position);
+                logger.Verbose("Instantiated {ItemId} at {Position}", item.Id, position);
             }
 
             return b;

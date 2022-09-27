@@ -8,7 +8,7 @@ namespace RogueEntity.Core.Meta.Items
     public abstract class StatelessItemComponentTraitBase<TItemId, TData> : IItemComponentInformationTrait<TItemId, TData>,
                                                                             IBulkItemTrait<TItemId>,
                                                                             IReferenceItemTrait<TItemId>
-        where TItemId : IEntityKey
+        where TItemId : struct, IEntityKey
 
     {
         protected StatelessItemComponentTraitBase(ItemTraitId id, int priority)

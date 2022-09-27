@@ -4,6 +4,7 @@ using EnTTSharp.Entities;
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Api.Utils;
 using RogueEntity.Core.Meta.Items;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RogueEntity.Core.Meta.Base
 {
@@ -14,7 +15,7 @@ namespace RogueEntity.Core.Meta.Base
     /// <typeparam name="TItemId"></typeparam>
     public sealed class ContainerEntityMarkerResolverTrait<TItemId> : IReferenceItemTrait<TItemId>,
                                                                       IItemComponentInformationTrait<TItemId, IContainerEntityMarker>
-        where TItemId : IEntityKey
+        where TItemId : struct, IEntityKey
     {
         readonly BufferList<IItemComponentInformationTrait<TItemId, IContainerEntityMarker>> traits;
         public ItemTraitId Id => "Core.Common.ContainerEntityMarkerQuery";
@@ -38,7 +39,7 @@ namespace RogueEntity.Core.Meta.Base
         public void Apply(IEntityViewControl<TItemId> v,  TItemId k, IItemDeclaration item)
         { }
 
-        public bool TryQuery(IEntityViewControl<TItemId> v, TItemId k, out IContainerEntityMarker t)
+        public bool TryQuery(IEntityViewControl<TItemId> v, TItemId k, [MaybeNullWhen(false)] out IContainerEntityMarker t)
         {
             foreach (var trait in traits)
             {

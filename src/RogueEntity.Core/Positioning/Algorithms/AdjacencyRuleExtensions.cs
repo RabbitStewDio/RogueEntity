@@ -7,21 +7,21 @@ namespace RogueEntity.Core.Positioning.Algorithms
 {
     public static class AdjacencyRuleExtensions
     {
-        static readonly ReadOnlyListWrapper<Direction> CardinalNeighbours;
-        static readonly ReadOnlyListWrapper<Direction> DiagonalNeighbours;
-        static readonly ReadOnlyListWrapper<Direction> EightWayNeighbours;
+        static readonly ReadOnlyListWrapper<Direction> cardinalNeighbours;
+        static readonly ReadOnlyListWrapper<Direction> diagonalNeighbours;
+        static readonly ReadOnlyListWrapper<Direction> eightWayNeighbours;
 
         static AdjacencyRuleExtensions()
         {
-            CardinalNeighbours = new List<Direction>()
+            cardinalNeighbours = new List<Direction>()
             {
                 Direction.Up, Direction.Left, Direction.Down, Direction.Right
             };
-            DiagonalNeighbours = new List<Direction>()
+            diagonalNeighbours = new List<Direction>()
             {
                 Direction.UpLeft, Direction.UpRight, Direction.DownRight, Direction.DownLeft
             };
-            EightWayNeighbours = new List<Direction>()
+            eightWayNeighbours = new List<Direction>()
             {
                 Direction.Up, Direction.Left, Direction.Down, Direction.Right, 
                 Direction.UpLeft, Direction.UpRight, Direction.DownRight, Direction.DownLeft
@@ -284,17 +284,17 @@ namespace RogueEntity.Core.Positioning.Algorithms
             {
                 case AdjacencyRule.Cardinals:
                 {
-                    return CardinalNeighbours;
+                    return cardinalNeighbours;
                 }
 
                 case AdjacencyRule.Diagonals:
                 {
-                    return DiagonalNeighbours;
+                    return diagonalNeighbours;
                 }
 
                 case AdjacencyRule.EightWay:
                 {
-                    return EightWayNeighbours;
+                    return eightWayNeighbours;
                 }
                 default:
                     throw new ArgumentException();

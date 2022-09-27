@@ -40,8 +40,8 @@ namespace RogueEntity.Core.Inventory
         protected void InitializeContainerEntities<TActorId, TItemId>(in ModuleEntityInitializationParameter<TActorId> initParameter,
                                                                       IModuleInitializer initializer,
                                                                       EntityRelation r)
-            where TActorId : IEntityKey
-            where TItemId : IEntityKey
+            where TActorId : struct, IEntityKey
+            where TItemId : struct, IEntityKey
         {
             var entityContext = initializer.DeclareEntityContext<TActorId>();
             entityContext.Register(ContainerComponentId, -19000, RegisterEntities<TActorId, TItemId>);
@@ -50,8 +50,8 @@ namespace RogueEntity.Core.Inventory
 
         void RegisterEntities<TActorId, TItemId>(in ModuleEntityInitializationParameter<TActorId> initParameter,
                                                  EntityRegistry<TActorId> registry)
-            where TActorId : IEntityKey
-            where TItemId : IEntityKey
+            where TActorId : struct, IEntityKey
+            where TItemId : struct, IEntityKey
         {
             registry.RegisterNonConstructable<ListInventoryData<TActorId, TItemId>>();
         }
@@ -59,8 +59,8 @@ namespace RogueEntity.Core.Inventory
         void RegisterCascadingDestruction<TActorId, TItemId>(in ModuleEntityInitializationParameter<TActorId> initParameter,
                                                              IGameLoopSystemRegistration context,
                                                              EntityRegistry<TActorId> registry)
-            where TActorId : IEntityKey
-            where TItemId : IEntityKey
+            where TActorId : struct, IEntityKey
+            where TItemId : struct, IEntityKey
         {
             var itemResolver = initParameter.ServiceResolver.Resolve<IItemResolver<TItemId>>();
             var system = new DestroyContainerContentsSystem<TActorId, TItemId>(itemResolver);

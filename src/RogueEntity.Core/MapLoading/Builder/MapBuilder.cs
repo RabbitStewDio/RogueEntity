@@ -6,6 +6,7 @@ using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Positioning.MapLayers;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RogueEntity.Core.MapLoading.Builder
 {
@@ -20,7 +21,7 @@ namespace RogueEntity.Core.MapLoading.Builder
             layerProcessors = new Dictionary<byte, IMapBuilderLayer>();
         }
 
-        public bool TryGetItemRegistry(MapLayer layer, out IItemRegistry reg)
+        public bool TryGetItemRegistry(MapLayer layer, [MaybeNullWhen(false)] out IItemRegistry reg)
         {
             if (layerProcessors.TryGetValue(layer.LayerId, out var layerData))
             {
@@ -36,7 +37,7 @@ namespace RogueEntity.Core.MapLoading.Builder
                                        IItemResolver<T> itemResolver,
                                        IGridMapContext<T> gridContext,
                                        IItemPlacementServiceContext<T> placementService)
-            where T : IEntityKey
+            where T : struct, IEntityKey
         {
             if (mapLayer == MapLayer.Indeterminate)
             {
@@ -57,7 +58,7 @@ namespace RogueEntity.Core.MapLoading.Builder
 
         public ReadOnlyListWrapper<MapLayer> Layers => mapLayers;
 
-        public bool Instantiate(ItemDeclarationId item, Position pos, IMapBuilderInstantiationLifter postProcessor = null)
+        public bool Instantiate(ItemDeclarationId item, Position pos, IMapBuilderInstantiationLifter? postProcessor = null)
         {
             if (pos.IsInvalid)
             {
@@ -72,7 +73,7 @@ namespace RogueEntity.Core.MapLoading.Builder
             return layer.Instantiate(item, pos, postProcessor);
         }
 
-        public bool Clear(Position pos, IMapBuilderInstantiationLifter postProcessor = null)
+        public bool Clear(Position pos, IMapBuilderInstantiationLifter? postProcessor = null)
         {
             if (pos.IsInvalid)
             {

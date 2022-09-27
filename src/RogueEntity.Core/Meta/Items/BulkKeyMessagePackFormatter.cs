@@ -8,7 +8,7 @@ using RogueEntity.Api.ItemTraits;
 namespace RogueEntity.Core.Meta.Items
 {
     public class BulkKeyMessagePackFormatter<TItemId> : IMessagePackFormatter<TItemId> 
-        where TItemId: IEntityKey
+        where TItemId: struct, IEntityKey
     {
         readonly IBulkDataStorageMetaData<TItemId> metaData;
         readonly IEntityKeyMapper entityKeyMapper;

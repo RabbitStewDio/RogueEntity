@@ -9,7 +9,7 @@ using System.Collections.Generic;
 namespace RogueEntity.SadCons.MapRendering
 {
     public class ConsoleRenderLayer<TMapData> : IConsoleRenderLayer
-        where TMapData : IEntityKey
+        where TMapData : struct, IEntityKey
     {
         readonly IGridMapDataContext<TMapData> layer;
         readonly IItemResolver<TMapData> itemResolver;

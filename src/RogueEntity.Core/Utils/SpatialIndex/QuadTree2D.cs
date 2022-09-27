@@ -2,6 +2,7 @@ using RogueEntity.Api.Utils;
 using RogueEntity.Core.Utils.DataViews;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 namespace RogueEntity.Core.Utils.SpatialIndex
@@ -69,7 +70,7 @@ namespace RogueEntity.Core.Utils.SpatialIndex
             elements.Remove(elementIndex);
         }
 
-        public List<FreeListIndex> Query(in BoundingBox bb, List<FreeListIndex> result, FreeListIndex skipElement = default)
+        public List<FreeListIndex> Query(in BoundingBox bb, List<FreeListIndex>? result, FreeListIndex skipElement = default)
         {
             
             var resultDeduplicator = ArrayPool<bool>.Shared.Rent(ElementIndexRange);
@@ -118,13 +119,13 @@ namespace RogueEntity.Core.Utils.SpatialIndex
             return b.ToString();
         }
 
-        public bool TryGet(FreeListIndex index, out T data, out BoundingBox boundingBox)
+        public bool TryGet(FreeListIndex index, [MaybeNullWhen(false)] out T data, out BoundingBox boundingBox)
         {
             if (elements.TryGetValue(index, out var node))
             {
                 data = node.Data;
                 boundingBox = node.Bounds;
-                return true;
+                return data != null;
             }
             
             data = default;
@@ -146,7 +147,7 @@ namespace RogueEntity.Core.Utils.SpatialIndex
             return false;
         }
 
-        public bool TryGetDebugData(FreeListIndex index, out string data)
+        public bool TryGetDebugData(FreeListIndex index, [MaybeNullWhen(false)] out string data)
         {
             if (elements.TryGetValue(index, out var node))
             {
@@ -172,12 +173,12 @@ namespace RogueEntity.Core.Utils.SpatialIndex
 
             // Stores the ID for the element (can be used to
             // refer to external data).
-            public readonly T Data;
+            public readonly T? Data;
 
             // Stores the rectangle for the element.
             public readonly BoundingBox Bounds;
 
-            public QuadElement(T data, in BoundingBox bounds)
+            public QuadElement(T? data, in BoundingBox bounds)
             {
                 Data = data;
                 Bounds = bounds;

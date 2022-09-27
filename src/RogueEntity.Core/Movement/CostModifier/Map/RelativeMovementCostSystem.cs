@@ -48,7 +48,7 @@ namespace RogueEntity.Core.Movement.CostModifier.Map
                                                             IGridMapContext<TItemId> mapContext,
                                                             IItemResolver<TItemId> itemContext,
                                                             MapLayer mapLayer)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             system.AddSenseLayerFactory(new RelativeMovementCostLayerFactory<TItemId, TMovementMode>(mapLayer, mapContext, itemContext));
         }

@@ -1,30 +1,31 @@
 using EnTTSharp.Entities;
 using RogueEntity.Api.Utils;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RogueEntity.Core.Equipment
 {
     public static class SlottedEquipmentExtensions
     {
-        public static bool TryEquipItem< TItemId>(this ISlottedEquipment< TItemId> equipment,
-                                                               TItemId item,
-                                                               out TItemId modifiedItem,
-                                                               out EquipmentSlot actualSlot,
-                                                               bool ignoreWeight = false)
-            where TItemId : IEntityKey
+        public static bool TryEquipItem<TItemId>(this ISlottedEquipment<TItemId> equipment,
+                                                 TItemId item,
+                                                 out Optional<TItemId> modifiedItem,
+                                                 [MaybeNullWhen(false)] out EquipmentSlot actualSlot,
+                                                 bool ignoreWeight = false)
+            where TItemId : struct, IEntityKey
         {
             return equipment.TryEquipItem(item, out modifiedItem, Optional.Empty(), out actualSlot, ignoreWeight);
         }
 
-        public static bool TryUnequipItem< TItemId>(this ISlottedEquipment< TItemId> equipment,
-                                                                 TItemId item)
-            where TItemId : IEntityKey
+        public static bool TryUnequipItem<TItemId>(this ISlottedEquipment<TItemId> equipment,
+                                                   TItemId item)
+            where TItemId : struct, IEntityKey
         {
             return equipment.TryUnequipItem(item, out _);
         }
 
-        public static BufferList<EquippedItem<TItemId>> QueryItems< TItemId>(this ISlottedEquipment< TItemId> equipment,
-                                                                                          BufferList<EquippedItem<TItemId>> data = null)
-            where TItemId : IEntityKey
+        public static BufferList<EquippedItem<TItemId>> QueryItems<TItemId>(this ISlottedEquipment<TItemId> equipment,
+                                                                            BufferList<EquippedItem<TItemId>>? data = null)
+            where TItemId : struct, IEntityKey
         {
             data = BufferList.PrepareBuffer(data);
 
@@ -40,9 +41,9 @@ namespace RogueEntity.Core.Equipment
             return data;
         }
 
-        public static BufferList<EquippedItem<TItemId>> QueryEquipmentSlots< TItemId>(this ISlottedEquipment< TItemId> equipment,
-                                                                                                   BufferList<EquippedItem<TItemId>> data = null)
-            where TItemId : IEntityKey
+        public static BufferList<EquippedItem<TItemId>> QueryEquipmentSlots<TItemId>(this ISlottedEquipment<TItemId> equipment,
+                                                                                     BufferList<EquippedItem<TItemId>>? data = null)
+            where TItemId : struct, IEntityKey
         {
             data = BufferList.PrepareBuffer(data);
 

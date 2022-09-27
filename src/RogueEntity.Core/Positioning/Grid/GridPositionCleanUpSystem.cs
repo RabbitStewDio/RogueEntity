@@ -5,7 +5,7 @@ using System.Collections.Generic;
 namespace RogueEntity.Core.Positioning.Grid
 {
     public class GridPositionCleanUpSystem<TEntityId, TPosition>
-        where TEntityId : IEntityKey
+        where TEntityId : struct, IEntityKey
         where TPosition: IPosition<TPosition>
     {
         readonly List<(TEntityId k, TPosition pos)> removedEntities;

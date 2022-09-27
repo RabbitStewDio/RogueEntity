@@ -20,7 +20,7 @@ namespace RogueEntity.Core.MapLoading.Builder
         public static readonly EntitySystemId RegisterMapBuilderSystemId = "Systems.Core.MapBuilder.RegisterMapLayers";
         public static readonly EntitySystemId PrintMapBuilderConfigurationId = "Systems.Core.MapBuilder.PrintConfiguration";
 
-        readonly ILogger Logger = SLog.ForContext<MapBuilderModule>();
+        readonly ILogger logger = SLog.ForContext<MapBuilderModule>();
         
         public MapBuilderModule()
         {
@@ -35,7 +35,7 @@ namespace RogueEntity.Core.MapLoading.Builder
         protected void InitializeGridPositioned<TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter,
                                                           IModuleInitializer initializer,
                                                           EntityRole role)
-            where TActorId : IEntityKey
+            where TActorId : struct, IEntityKey
         {
             initializer.RegisterFinalizer(PrintMapBuilderConfigurationId, 999_000, PrintMapBuilderStructure);
             
@@ -44,7 +44,7 @@ namespace RogueEntity.Core.MapLoading.Builder
         }
 
         void RegisterMapBuilder<TActorId>(in ModuleEntityInitializationParameter<TActorId> ip, EntityRegistry<TActorId> registry)
-            where TActorId : IEntityKey
+            where TActorId : struct, IEntityKey
         {
             var mb = GetOrCreateMapBuilder(ip.ServiceResolver);
             
@@ -68,14 +68,14 @@ namespace RogueEntity.Core.MapLoading.Builder
             
             foreach (var ml in mapLayers)
             {
-                Logger.Debug("Automatically registering map-builder layer {Layer} for entity type {EntityType}", ml, typeof(TActorId));
+                logger.Debug("Automatically registering map-builder layer {Layer} for entity type {EntityType}", ml, typeof(TActorId));
                 mb.WithLayer(ml, itemResolver, gridMapContext, placementService);
             }
         }
 
         MapBuilder GetOrCreateMapBuilder(IServiceResolver r)
         {
-            if (r.TryResolve(out MapBuilder b))
+            if (r.TryResolve<MapBuilder>(out var b))
             {
                 return b;
             }
@@ -88,12 +88,12 @@ namespace RogueEntity.Core.MapLoading.Builder
         protected void PrintMapBuilderStructure(in ModuleInitializationParameter initParam, IGameLoopSystemRegistration context)
         {
             var r = initParam.ServiceResolver;
-            if (!r.TryResolve(out MapBuilder b))
+            if (!r.TryResolve<MapBuilder>(out var b))
             {
                 return;
             }
 
-            Logger.Debug("MapBuilder final layer structure: {Layers}", b.Layers);
+            logger.Debug("MapBuilder final layer structure: {Layers}", b.Layers);
         }
     }
 }

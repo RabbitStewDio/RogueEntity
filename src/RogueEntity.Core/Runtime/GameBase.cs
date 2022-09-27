@@ -12,43 +12,43 @@ namespace RogueEntity.Core.Runtime
 {
     public abstract class GameBase: IDisposable
     {
-        static readonly ILogger Logger = SLog.ForContext<GameBase>();
+        static readonly ILogger logger = SLog.ForContext<GameBase>();
 
-        event EventHandler gameInitializedInternal;
+        event EventHandler? gameInitializedInternal;
         
-        public event EventHandler GameInitialized
+        public event EventHandler? GameInitialized
         {
             add
             {
                 gameInitializedInternal += value;
                 if (Status != GameStatus.NotStarted)
                 {
-                    value(this, EventArgs.Empty);
+                    value?.Invoke(this, EventArgs.Empty);
                 }
             }
             remove { gameInitializedInternal -= value; }
         }
 
-        public event EventHandler GameStarted;
-        public event EventHandler GameFinished;
-        public event EventHandler GameStopped;
-        public event EventHandler<TimeSpan> GameUpdate;
+        public event EventHandler? GameStarted;
+        public event EventHandler? GameFinished;
+        public event EventHandler? GameStopped;
+        public event EventHandler<TimeSpan>? GameUpdate;
         
         string[] ModuleIds { get; }
 
-        protected GameBase(params string[] moduleIds)
+        protected GameBase(params string[]? moduleIds)
         {
             ModuleIds = moduleIds ?? Array.Empty<string>();
         }
 
-        public IServiceResolver ServiceResolver { get; private set; }
+        public IServiceResolver? ServiceResolver { get; private set; }
         public GameStatus Status { get; protected set; }
-        protected IGameLoop GameLoop { get; private set; }
+        protected IGameLoop? GameLoop { get; private set; }
         protected virtual IServiceResolver CreateServiceResolver() => new DefaultServiceResolver();
         
-        public void InitializeSystems(ITimeSourceDefinition timeSourceDefinition = null)
+        public void InitializeSystems(ITimeSourceDefinition? timeSourceDefinition = null)
         {
-            Logger.Debug("Starting");
+            logger.Debug("Starting");
             timeSourceDefinition ??= new RealTimeSourceDefinition(30);
             
             ServiceResolver = CreateServiceResolver();
@@ -69,6 +69,8 @@ namespace RogueEntity.Core.Runtime
 
         protected virtual ModuleSystem CreateModuleSystem()
         {
+            if (ServiceResolver == null) throw new InvalidOperationException();
+            
             var ms = new ModuleSystem(ServiceResolver);
             ms.ScanForModules(ModuleIds);
             return ms;
@@ -114,7 +116,7 @@ namespace RogueEntity.Core.Runtime
                 return;
             }
 
-            GameLoop.Update(absoluteGameTime);
+            GameLoop?.Update(absoluteGameTime);
             UpdateOverride(absoluteGameTime);
             GameUpdate?.Invoke(this, absoluteGameTime);
 
@@ -126,9 +128,9 @@ namespace RogueEntity.Core.Runtime
             }
         }
 
-        public ITimeSource Time => GameLoop.TimeSource;
+        public ITimeSource? Time => GameLoop?.TimeSource ?? null;
         
-        protected virtual GameStatus CheckStatus() => GameLoop.IsRunning ? GameStatus.Running : Status;
+        protected virtual GameStatus CheckStatus() => (GameLoop?.IsRunning ?? false) ? GameStatus.Running : Status;
                 
         protected virtual void UpdateOverride(TimeSpan absoluteGameTime)
         {
@@ -141,7 +143,7 @@ namespace RogueEntity.Core.Runtime
                 return;
             }
 
-            GameLoop.Stop();
+            GameLoop?.Stop();
             Status = GameStatus.Initialized;
             GameStopped?.Invoke(this, EventArgs.Empty);
         }

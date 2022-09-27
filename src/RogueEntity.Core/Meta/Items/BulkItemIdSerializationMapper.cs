@@ -1,23 +1,22 @@
 using System;
 using System.Collections.Generic;
 using EnTTSharp.Entities;
-using JetBrains.Annotations;
 using RogueEntity.Api.ItemTraits;
 
 namespace RogueEntity.Core.Meta.Items
 {
     public delegate bool BulkItemSerializationMapperDelegate<TItemId>(in TItemId remoteId, out TItemId localId)
-        where TItemId : IEntityKey;
+        where TItemId : struct, IEntityKey;
     
-    public class BulkItemIdSerializationMapper<TItemId> where TItemId : IEntityKey
+    public class BulkItemIdSerializationMapper<TItemId> where TItemId : struct, IEntityKey
     {
         readonly IBulkDataStorageMetaData<TItemId> metaData;
         readonly IBulkItemIdMapping localMapper;
         readonly Dictionary<int, int> remoteMapping;
 
-        public BulkItemIdSerializationMapper([NotNull] IBulkDataStorageMetaData<TItemId> metaData,
-                                             [NotNull] IBulkItemIdMapping localMapper,
-                                             [NotNull] IBulkItemIdMapping remoteMapper)
+        public BulkItemIdSerializationMapper(IBulkDataStorageMetaData<TItemId> metaData,
+                                             IBulkItemIdMapping localMapper,
+                                             IBulkItemIdMapping remoteMapper)
         {
             if (remoteMapper == null)
             {

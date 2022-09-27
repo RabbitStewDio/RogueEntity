@@ -48,7 +48,7 @@ namespace RogueEntity.Core.Movement.GridMovement
         protected void InitializeMoveIntent<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                      IModuleInitializer initializer,
                                                      EntityRole r)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             var entityContext = initializer.DeclareEntityContext<TItemId>();
             entityContext.Register(RegisterMovementIntentComponentsId, -20_000, RegisterMovementIntent);
@@ -56,7 +56,7 @@ namespace RogueEntity.Core.Movement.GridMovement
         }
 
         void RegisterClearMovementIntentSystem<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter, IGameLoopSystemRegistration context, EntityRegistry<TItemId> registry)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             var s = new MovementIntentSystem(initParameter.ServiceResolver.ResolveToReference<ITimeSource>());
             var systemRef = registry.BuildSystem().WithoutContext().WithInputParameter<MovementIntent>().CreateSystem(s.ClearMovementIntents);
@@ -67,7 +67,7 @@ namespace RogueEntity.Core.Movement.GridMovement
         protected void InitializeMoveCommand<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                       IModuleInitializer initializer,
                                                       EntityRole r)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             var entityContext = initializer.DeclareEntityContext<TItemId>();
             entityContext.Register(RegisterMovementCommandComponentsId, -20_000, RegisterMovementCommand);
@@ -75,10 +75,10 @@ namespace RogueEntity.Core.Movement.GridMovement
         }
 
         void RegisterMovementSystem<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter, IGameLoopSystemRegistration context, EntityRegistry<TItemId> registry)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             var sr = initParameter.ServiceResolver;
-            if (!sr.TryResolve(out GridMoveCommandSystem<TItemId> ms))
+            if (!sr.TryResolve<GridMoveCommandSystem<TItemId>>(out var ms))
             {
                 ms = new GridMoveCommandSystem<TItemId>(sr.ResolveToReference<ITimeSource>(),
                                                         sr.Resolve<IItemResolver<TItemId>>(),
@@ -104,13 +104,13 @@ namespace RogueEntity.Core.Movement.GridMovement
 
 
         void RegisterMovementIntent<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter, EntityRegistry<TItemId> registry)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             registry.RegisterNonConstructable<MovementIntent>();
         }
 
         void RegisterMovementCommand<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter, EntityRegistry<TItemId> registry)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             registry.RegisterNonConstructable<GridMoveCommand>();
         }

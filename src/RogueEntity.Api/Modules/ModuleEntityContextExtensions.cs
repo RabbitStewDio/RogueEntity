@@ -9,11 +9,11 @@ namespace RogueEntity.Api.Modules
         static void EmptyInitializer<TEntityId>(in ModuleEntityInitializationParameter<TEntityId> initParameter,
                                                 IGameLoopSystemRegistration context,
                                                 EntityRegistry<TEntityId> registry)
-            where TEntityId : IEntityKey
+            where TEntityId : struct, IEntityKey
         { }
 
         public static EntitySystemRegistrationDelegate<TEntityId> Empty<TEntityId>(this IModuleEntityContext<TEntityId> ctx)
-            where TEntityId : IEntityKey
+            where TEntityId : struct, IEntityKey
         {
             return EmptyInitializer;
         }

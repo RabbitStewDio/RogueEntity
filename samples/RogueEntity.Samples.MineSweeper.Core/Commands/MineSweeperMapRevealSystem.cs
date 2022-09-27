@@ -16,7 +16,7 @@ using System.Collections.Generic;
 namespace RogueEntity.Samples.MineSweeper.Core.Commands
 {
     public class MineSweeperMapRevealSystem<TItemId>
-        where TItemId : IEntityKey
+        where TItemId : struct, IEntityKey
     {
         static readonly ILogger Logger = SLog.ForContext<MineSweeperMapRevealSystem<TItemId>>();
         
@@ -39,7 +39,7 @@ namespace RogueEntity.Samples.MineSweeper.Core.Commands
                                                   in DiscoveryMapData discoveryMap,
                                                   in RevealMapPositionCommand revealCommand,
                                                   ref MineSweeperPlayerData playerData)
-            where TActorId : IEntityKey
+            where TActorId : struct, IEntityKey
         {
             try
             {

@@ -51,7 +51,7 @@ namespace RogueEntity.SadCons.MapRendering
         }
 
         public static Func<TMapData, WorldEntityTag> StandardTagConverter<TMapData>(IServiceResolver r)
-            where TMapData : IEntityKey
+            where TMapData : struct, IEntityKey
         {
             var itemResolver = r.Resolve<IItemResolver<TMapData>>();
             return (t) =>

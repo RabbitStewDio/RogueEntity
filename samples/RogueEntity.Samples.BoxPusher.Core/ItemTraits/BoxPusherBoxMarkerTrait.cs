@@ -7,7 +7,7 @@ using System.Collections.Generic;
 namespace RogueEntity.Samples.BoxPusher.Core.ItemTraits
 {
     public class BoxPusherBoxMarkerTrait<TItemId>: SimpleReferenceItemComponentTraitBase<TItemId, BoxPusherBoxMarker>
-        where TItemId : IEntityKey
+        where TItemId : struct, IEntityKey
     {
         public BoxPusherBoxMarkerTrait() : base("BoxPusher.BoxMarker", 100)
         {

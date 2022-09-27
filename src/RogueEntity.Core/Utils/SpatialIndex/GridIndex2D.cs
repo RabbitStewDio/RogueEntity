@@ -2,6 +2,7 @@ using RogueEntity.Core.Utils.DataViews;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 namespace RogueEntity.Core.Utils.SpatialIndex
@@ -52,13 +53,13 @@ namespace RogueEntity.Core.Utils.SpatialIndex
             elementGrid[tileIndex] = newNodeIdx;
         }
 
-        public bool TryGet(FreeListIndex index, out T data, out BoundingBox boundingBox)
+        public bool TryGet(FreeListIndex index, [MaybeNullWhen(false)] out T data, out BoundingBox boundingBox)
         {
             if (elements.TryGetValue(index, out var ge))
             {
                 data = ge.Data;
                 boundingBox = ge.Bounds;
-                return true;
+                return data != null;
             }
 
             data = default;
@@ -124,7 +125,7 @@ namespace RogueEntity.Core.Utils.SpatialIndex
 
         }
 
-        public List<FreeListIndex> Query(in BoundingBox bb, List<FreeListIndex> result, FreeListIndex skipElement = default)
+        public List<FreeListIndex> Query(in BoundingBox bb, List<FreeListIndex>? result, FreeListIndex skipElement = default)
         {
             if (result == null)
             {
@@ -218,12 +219,12 @@ namespace RogueEntity.Core.Utils.SpatialIndex
 
             // Stores the ID for the element (can be used to
             // refer to external data).
-            public readonly T Data;
+            public readonly T? Data;
 
             // Stores the rectangle for the element.
             public readonly BoundingBox Bounds;
 
-            public GridElement(T data, in BoundingBox bounds)
+            public GridElement(T? data, in BoundingBox bounds)
             {
                 Data = data;
                 Bounds = bounds;

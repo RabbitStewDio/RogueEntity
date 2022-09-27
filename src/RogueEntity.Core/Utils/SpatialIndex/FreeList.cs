@@ -73,7 +73,7 @@ namespace RogueEntity.Core.Utils.SpatialIndex
                 throw new ArgumentException("This index position is not occupied");
             }
 
-            elementData[index] = default;
+            elementData[index] = default!;
             freeIndex[index] = firstFreeElement + 1;
             firstFreeElement = index;
             count -= 1;
@@ -110,13 +110,13 @@ namespace RogueEntity.Core.Utils.SpatialIndex
             var index = idx.Value;
             if (index < 0 || index >= Range)
             {
-                data = default;
+                data = default!;
                 return false;
             }
 
             if (freeIndex[index] != -1)
             {
-                data = default;
+                data = default!;
                 return false;
             }
 

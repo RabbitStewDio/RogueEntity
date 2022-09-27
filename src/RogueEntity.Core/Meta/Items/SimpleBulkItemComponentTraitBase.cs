@@ -7,7 +7,7 @@ namespace RogueEntity.Core.Meta.Items
 {
     public abstract class SimpleBulkItemComponentTraitBase<TItemId, TData> : IItemComponentTrait<TItemId, TData>,
                                                                              IBulkItemTrait<TItemId>
-        where TItemId : IBulkDataStorageKey<TItemId>
+        where TItemId : struct, IBulkDataStorageKey<TItemId>
     {
         protected SimpleBulkItemComponentTraitBase(ItemTraitId id, int priority)
         {

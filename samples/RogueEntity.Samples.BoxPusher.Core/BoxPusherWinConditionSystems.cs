@@ -29,13 +29,13 @@ namespace RogueEntity.Samples.BoxPusher.Core
         }
 
         public void FindPlayer<TActorId>(IEntityViewControl<TActorId> actors, TActorId k, in EntityGridPosition pos, in PlayerTag playerTag, in BoxPusherPlayerProfile levelStats)
-            where TActorId : IEntityKey
+            where TActorId : struct, IEntityKey
         {
             playerPosition = pos;
         }
 
         public void CollectTargetSpots<TItemId>(IEntityViewControl<TItemId> items, TItemId k, in EntityGridPosition pos, in BoxPusherTargetFieldMarker targetMarker)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             if (playerPosition.IsInvalid)
             {
@@ -51,7 +51,7 @@ namespace RogueEntity.Samples.BoxPusher.Core
         }
 
         public void CollectBoxPositions<TItemId>(IEntityViewControl<TItemId> items, TItemId k, in EntityGridPosition pos, in BoxPusherBoxMarker targetMarker)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             if (playerPosition.IsInvalid)
             {
@@ -67,7 +67,7 @@ namespace RogueEntity.Samples.BoxPusher.Core
         }
 
         public void FinishEvaluateWinCondition<TActorId>(IEntityViewControl<TActorId> actors, TActorId k, in EntityGridPosition pos, in PlayerTag playerTag, in BoxPusherPlayerProfile levelStats)
-            where TActorId : IEntityKey
+            where TActorId : struct, IEntityKey
         {
             if (pos.IsInvalid)
             {

@@ -8,10 +8,10 @@ namespace RogueEntity.Core.Sensing.Receptors.InfraVision
     {
         public static IInfraVisionSenseReceptorPhysicsConfiguration GetOrCreateInfraVisionSensorPhysics(this IServiceResolver serviceResolver)
         {
-            if (!serviceResolver.TryResolve(out IInfraVisionSenseReceptorPhysicsConfiguration physics))
+            if (!serviceResolver.TryResolve<IInfraVisionSenseReceptorPhysicsConfiguration>(out var physics))
             {
                 var physicsConfig = serviceResolver.Resolve<IHeatPhysicsConfiguration>();
-                if (!serviceResolver.TryResolve(out ShadowPropagationResistanceDataSource ds))
+                if (!serviceResolver.TryResolve<ShadowPropagationResistanceDataSource>(out var ds))
                 {
                     ds = new ShadowPropagationResistanceDataSource();
                     serviceResolver.Store(ds);

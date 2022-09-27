@@ -24,9 +24,9 @@ namespace RogueEntity.Api.Modules.Attributes
         public EntityRoleInitializerAttribute(string roleName)
         {
             RoleName = roleName;
-            ConditionalRoles = new string[0];
-            ConditionalRelations = new string[0];
-            WithAnyRoles = new string[0];
+            ConditionalRoles = Array.Empty<string>();
+            ConditionalRelations = Array.Empty<string>();
+            WithAnyRoles = Array.Empty<string>();
         }
     }
 }

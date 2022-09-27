@@ -22,24 +22,24 @@ namespace RogueEntity.Core.Positioning.Algorithms
 
     public static class Directions
     {
-        static readonly Direction[] MoveDirections;
-        static readonly Direction[] InverseDirections;
-        static readonly ShortPosition2D[] Deltas;
+        static readonly Direction[] moveDirections;
+        static readonly Direction[] inverseDirections;
+        static readonly ShortPosition2D[] deltas;
 
         static Directions()
         {
-            Deltas = new ShortPosition2D[9];
-            Deltas[(int) Direction.None] = new ShortPosition2D(0, 0);
-            Deltas[(int) Direction.Up] = new ShortPosition2D(0, -1);
-            Deltas[(int) Direction.UpRight] = new ShortPosition2D(1, -1);
-            Deltas[(int) Direction.Right] = new ShortPosition2D(1, 0);
-            Deltas[(int) Direction.DownRight] = new ShortPosition2D(1, 1);
-            Deltas[(int) Direction.Down] = new ShortPosition2D(0, 1);
-            Deltas[(int) Direction.DownLeft] = new ShortPosition2D(-1, 1);
-            Deltas[(int) Direction.Left] = new ShortPosition2D(-1, 0);
-            Deltas[(int) Direction.UpLeft] = new ShortPosition2D(-1, -1);
+            deltas = new ShortPosition2D[9];
+            deltas[(int) Direction.None] = new ShortPosition2D(0, 0);
+            deltas[(int) Direction.Up] = new ShortPosition2D(0, -1);
+            deltas[(int) Direction.UpRight] = new ShortPosition2D(1, -1);
+            deltas[(int) Direction.Right] = new ShortPosition2D(1, 0);
+            deltas[(int) Direction.DownRight] = new ShortPosition2D(1, 1);
+            deltas[(int) Direction.Down] = new ShortPosition2D(0, 1);
+            deltas[(int) Direction.DownLeft] = new ShortPosition2D(-1, 1);
+            deltas[(int) Direction.Left] = new ShortPosition2D(-1, 0);
+            deltas[(int) Direction.UpLeft] = new ShortPosition2D(-1, -1);
 
-            MoveDirections = new []
+            moveDirections = new []
             {
                 Direction.Up, 
                 Direction.UpRight, 
@@ -50,7 +50,7 @@ namespace RogueEntity.Core.Positioning.Algorithms
                 Direction.Left, 
                 Direction.UpLeft
             };
-            InverseDirections = new []
+            inverseDirections = new []
             {
                 Direction.None, 
                 Direction.Down, 
@@ -66,12 +66,12 @@ namespace RogueEntity.Core.Positioning.Algorithms
 
         public static Direction Inverse(this Direction d)
         {
-            return InverseDirections[(int)d];
+            return inverseDirections[(int)d];
         }
         
         public static ShortPosition2D ToCoordinates(this Direction d)
         {
-            return Deltas[(int)d];
+            return deltas[(int)d];
         }
 
         public static bool IsCardinal(this Direction d) => ((int)d % 2) == 1;
@@ -234,7 +234,7 @@ namespace RogueEntity.Core.Positioning.Algorithms
         /// <returns>
         /// The given direction moved counter-clockwise <paramref name="i"/> times.
         /// </returns>
-        public static Direction MoveCounterClockwise (this Direction d, int i = 1) => (d == Direction.None) ? Direction.None : MoveDirections[MathHelpers.WrapAround((int)d - i, 8)];
+        public static Direction MoveCounterClockwise (this Direction d, int i = 1) => (d == Direction.None) ? Direction.None : moveDirections[MathHelpers.WrapAround((int)d - i, 8)];
 
         /// <summary>
         /// Moves the direction clockwise <paramref name="i"/> times.
@@ -244,6 +244,6 @@ namespace RogueEntity.Core.Positioning.Algorithms
         /// <returns>
         /// The given direction moved clockwise <paramref name="i"/> times.
         /// </returns>
-        public static Direction MoveClockwise (this Direction d, int i = 1) => (d == Direction.None) ? Direction.None : MoveDirections[MathHelpers.WrapAround((int)d + i, 8)];
+        public static Direction MoveClockwise (this Direction d, int i = 1) => (d == Direction.None) ? Direction.None : moveDirections[MathHelpers.WrapAround((int)d + i, 8)];
     }
 }

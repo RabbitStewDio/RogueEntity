@@ -13,7 +13,7 @@ namespace RogueEntity.Core.Meta.ItemBuilder
             Tag = tag.Tag == null ? new WorldEntityTag(id.Id) : tag;
         }
 
-        public static ItemDeclarationInfo Of(ItemDeclarationId id, string tag = default)
+        public static ItemDeclarationInfo Of(ItemDeclarationId id, string? tag = default)
         {
             return new ItemDeclarationInfo(id, new WorldEntityTag(tag ?? id.Id));
         }

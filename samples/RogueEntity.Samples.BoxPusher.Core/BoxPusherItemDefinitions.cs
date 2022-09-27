@@ -33,8 +33,8 @@ namespace RogueEntity.Samples.BoxPusher.Core
         public static readonly ItemDeclarationInfo SpawnPointFloor = ItemDeclarationInfo.Of("Items.Floor.SpawnPoint", "Tag.Floor.Empty"); 
         
         public static ReferenceItemDeclarationBuilder<TActorId> DefinePlayer<TActorId, TItemId>(this ItemDeclarationBuilderWithReferenceContext<TActorId> b)
-            where TActorId : IEntityKey
-            where TItemId : IEntityKey
+            where TActorId : struct, IEntityKey
+            where TItemId : struct, IEntityKey
         {
             return b.Define(Player)
                     .AsPlayer()
@@ -53,7 +53,7 @@ namespace RogueEntity.Samples.BoxPusher.Core
         }
 
         public static ReferenceItemDeclarationBuilder<TItemId> DefineBox<TItemId>(this ItemDeclarationBuilderWithReferenceContext<TItemId> b)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             return b.Define(Box)
                     .WithGridPosition(BoxPusherMapLayers.Items)
@@ -65,7 +65,7 @@ namespace RogueEntity.Samples.BoxPusher.Core
         }
 
         public static ReferenceItemDeclarationBuilder<TItemId> DefineWall<TItemId>(this ItemDeclarationBuilderWithReferenceContext<TItemId> b)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             return b.Define(Wall)
                     .WithGridPosition(BoxPusherMapLayers.Items)
@@ -76,7 +76,7 @@ namespace RogueEntity.Samples.BoxPusher.Core
         }
 
         public static BulkItemDeclarationBuilder<TItemId> DefineWall<TItemId>(this ItemDeclarationBuilderWithBulkContext<TItemId> b)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             return b.Define(Wall)
                     .WithGridPosition(BoxPusherMapLayers.Items)
@@ -87,7 +87,7 @@ namespace RogueEntity.Samples.BoxPusher.Core
         }
 
         public static BulkItemDeclarationBuilder<TItemId> DefineFloor<TItemId>(this ItemDeclarationBuilderWithBulkContext<TItemId> b)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             return b.Define(EmptyFloor)
                     .WithGridPosition(BoxPusherMapLayers.Floor)
@@ -98,7 +98,7 @@ namespace RogueEntity.Samples.BoxPusher.Core
         }
 
         public static ReferenceItemDeclarationBuilder<TItemId> DefineFloorTargetZone<TItemId>(this ItemDeclarationBuilderWithReferenceContext<TItemId> b)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             return b.Define(TargetZoneFloor)
                     .WithGridPosition(BoxPusherMapLayers.Floor)
@@ -110,7 +110,7 @@ namespace RogueEntity.Samples.BoxPusher.Core
         }
 
         public static ReferenceItemDeclarationBuilder<TItemId> DefineSpawnPoint<TItemId>(this ItemDeclarationBuilderWithReferenceContext<TItemId> b)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             return b.Define(SpawnPointFloor)
                     .WithGridPosition(BoxPusherMapLayers.Floor)

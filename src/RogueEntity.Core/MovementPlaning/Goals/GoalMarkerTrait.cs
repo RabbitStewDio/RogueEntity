@@ -7,7 +7,7 @@ using System.Collections.Generic;
 namespace RogueEntity.Core.MovementPlaning.Goals
 {
     public class GoalMarkerTrait< TItemId, TDiscriminator>: SimpleReferenceItemComponentTraitBase< TItemId, GoalMarker<TDiscriminator>>
-        where TItemId : IEntityKey
+        where TItemId : struct, IEntityKey
     {
         readonly float goalStrength;
 

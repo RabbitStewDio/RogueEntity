@@ -13,7 +13,7 @@ namespace RogueEntity.Core.Meta.ItemTraits
     }
     
     public class EvictionBehaviourTrait<TActorId>: StatelessItemComponentTraitBase<TActorId, EvictionBehaviour>
-        where TActorId : IEntityKey
+        where TActorId : struct, IEntityKey
     {
         readonly EvictionBehaviour behaviour;
         

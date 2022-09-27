@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using EnTTSharp.Entities;
-using JetBrains.Annotations;
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Sensing.Common;
@@ -10,14 +9,14 @@ namespace RogueEntity.Core.Sensing.Sources.Smell
 {
     public class SmellSourceTrait<TItemId> : SenseSourceTraitBase<TItemId, SmellSense, SmellSourceDefinition>,
                                              IItemComponentTrait<TItemId, SmellSource>
-        where TItemId : IEntityKey
+        where TItemId : struct, IEntityKey
     {
         public override ItemTraitId Id => "Core.Item.SmellSource";
         public override int Priority => 100;
 
         readonly ISmellPhysicsConfiguration physics;
 
-        public SmellSourceTrait([NotNull] ISmellPhysicsConfiguration physics)
+        public SmellSourceTrait(ISmellPhysicsConfiguration physics)
         {
             this.physics = physics ?? throw new ArgumentNullException(nameof(physics));
         }

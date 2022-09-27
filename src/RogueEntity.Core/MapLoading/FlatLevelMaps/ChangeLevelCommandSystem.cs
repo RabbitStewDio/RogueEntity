@@ -9,7 +9,7 @@ using Serilog;
 namespace RogueEntity.Core.MapLoading.FlatLevelMaps
 {
     public class ChangeLevelCommandSystem<TActor>
-        where TActor : IEntityKey
+        where TActor : struct, IEntityKey
     {
         readonly ILogger logger = SLog.ForContext<ChangeLevelCommandSystem<TActor>>();
         

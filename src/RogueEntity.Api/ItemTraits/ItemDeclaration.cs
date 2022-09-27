@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using RogueEntity.Api.Utils;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RogueEntity.Api.ItemTraits
 {
@@ -16,10 +17,10 @@ namespace RogueEntity.Api.ItemTraits
             Tag = tag;
         }
 
-        public abstract bool TryQuery<TTrait>(out TTrait t)
+        public abstract bool TryQuery<TTrait>([MaybeNullWhen(false)] out TTrait t)
             where TTrait : IItemTrait;
 
-        public abstract BufferList<TTrait> QueryAll<TTrait>(BufferList<TTrait> cache = null)
+        public abstract BufferList<TTrait> QueryAll<TTrait>(BufferList<TTrait>? cache = null)
             where TTrait : IItemTrait;
 
         public bool Equals(ItemDeclaration other)
@@ -59,7 +60,7 @@ namespace RogueEntity.Api.ItemTraits
 
         public override int GetHashCode()
         {
-            return (Id != null ? Id.GetHashCode() : 0);
+            return (Id.GetHashCode());
         }
 
         public static bool operator ==(ItemDeclaration left, ItemDeclaration right)

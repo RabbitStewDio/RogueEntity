@@ -9,10 +9,10 @@ namespace RogueEntity.Core.Sensing.Map
 {
     public class SenseMapBlitterService
     {
-        static readonly Action<ProcessData> ProcessDataDelegate = ProcessTile;
+        static readonly Action<ProcessData> processDataDelegate = ProcessTile;
         
         readonly List<ProcessData> parameterBuffer;
-        List<Rectangle> partitionsBuffer;
+        List<Rectangle>? partitionsBuffer;
         
         public SenseMapBlitterService()
         {
@@ -96,7 +96,7 @@ namespace RogueEntity.Core.Sensing.Map
 
             parameterBuffer.Clear();
             QuerySenseDataTiles(m, targetBounds, blitter, senses);
-            Parallel.ForEach(parameterBuffer, ProcessDataDelegate);
+            Parallel.ForEach(parameterBuffer, processDataDelegate);
             parameterBuffer.Clear();
         }
 

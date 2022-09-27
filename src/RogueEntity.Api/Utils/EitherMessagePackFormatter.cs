@@ -24,21 +24,19 @@ namespace RogueEntity.Api.Utils
         {
             var hasLeft = reader.ReadBoolean();
             var hasRight = reader.ReadBoolean();
-            byte state = 0;
-            TLeft left = default;
             if (hasLeft)
             {
-                state += 1;
-                left = MessagePackSerializer.Deserialize<TLeft>(ref reader, options);
+                var left = MessagePackSerializer.Deserialize<TLeft>(ref reader, options);
+                return new Either<TLeft, TRight>(left);
             }
-            TRight right = default;
+
             if (hasRight)
             {
-                state += 2;
-                right = MessagePackSerializer.Deserialize<TRight>(ref reader, options);
+                var right = MessagePackSerializer.Deserialize<TRight>(ref reader, options);
+                return new Either<TLeft, TRight>(right);
             }
             
-            return new Either<TLeft, TRight>(state, left, right);
+            return default;
         }
     }
 }

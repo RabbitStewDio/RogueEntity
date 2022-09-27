@@ -147,7 +147,7 @@ namespace RogueEntity.Core.Utils.DataViews
             return false;
         }
 
-        public bool TryGet(int x, int y, out TData result)
+        public bool TryGet(int x, int y, [MaybeNullWhen(false)] out TData result)
         {
             var rawX = x - bounds.X;
             var rawY = y - bounds.Y;
@@ -169,13 +169,14 @@ namespace RogueEntity.Core.Utils.DataViews
             return bounds.Contains(x, y);
         }
 
-        public bool TryGet<TPosition2D>(in TPosition2D pos, out TData result)
+        public bool TryGet<TPosition2D>(in TPosition2D pos, [MaybeNullWhen(false)] out TData result)
             where TPosition2D : IPosition2D<TPosition2D>
         {
             return TryGet(pos.X, pos.Y, out result);
         }
 
-        public ref TData TryGetForUpdate(int x, int y, ref TData defaultValue, out bool success)
+        [return: NotNullIfNotNull("defaultValue")]
+        public ref TData? TryGetForUpdate(int x, int y, ref TData? defaultValue, out bool success)
         {
             var rawX = x - bounds.X;
             var rawY = y - bounds.Y;
@@ -189,7 +190,7 @@ namespace RogueEntity.Core.Utils.DataViews
             
             var linIdx = rawX + rawY * bounds.Width;
             success = true; 
-            return ref data[linIdx];
+            return ref data[linIdx]!;
         }
 
         public bool TrySet(int x, int y, in TData result)
@@ -279,7 +280,7 @@ namespace RogueEntity.Core.Utils.DataViews
             return true;
         }
 
-        public bool Equals(BoundedDataView<TData> other)
+        public bool Equals(BoundedDataView<TData>? other)
         {
             if (ReferenceEquals(null, other))
             {
@@ -294,7 +295,7 @@ namespace RogueEntity.Core.Utils.DataViews
             return bounds.Equals(other.bounds) && CoreExtensions.EqualsList(data, other.data);
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (ReferenceEquals(null, obj))
             {
@@ -320,12 +321,12 @@ namespace RogueEntity.Core.Utils.DataViews
             return bounds.GetHashCode();
         }
 
-        public static bool operator ==(BoundedDataView<TData> left, BoundedDataView<TData> right)
+        public static bool operator ==(BoundedDataView<TData>? left, BoundedDataView<TData>? right)
         {
             return Equals(left, right);
         }
 
-        public static bool operator !=(BoundedDataView<TData> left, BoundedDataView<TData> right)
+        public static bool operator !=(BoundedDataView<TData>? left, BoundedDataView<TData>? right)
         {
             return !Equals(left, right);
         }

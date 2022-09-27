@@ -12,7 +12,7 @@ namespace RogueEntity.Core.Meta.ItemTraits
     /// </summary>
     /// <typeparam name="TItemId"></typeparam>
     public class WeightTrait< TItemId> : StatelessItemComponentTraitBase< TItemId, Weight>
-        where TItemId : IEntityKey
+        where TItemId : struct, IEntityKey
     {
         readonly Weight baseWeight;
 

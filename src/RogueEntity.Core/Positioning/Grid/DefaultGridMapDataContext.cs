@@ -9,8 +9,8 @@ namespace RogueEntity.Core.Positioning.Grid
 {
     public sealed class DefaultGridMapDataContext<TItemId> : PooledDynamicDataView3D<TItemId>, IGridMapDataContext<TItemId>, IGridMapContextInitializer<TItemId>
     {
-        public event EventHandler<PositionDirtyEventArgs> PositionDirty;
-        public event EventHandler<MapRegionDirtyEventArgs> RegionDirty;
+        public event EventHandler<PositionDirtyEventArgs>? PositionDirty;
+        public event EventHandler<MapRegionDirtyEventArgs>? RegionDirty;
 
         public DefaultGridMapDataContext(MapLayer layer, int tileWidth, int tileHeight) : this(layer, 0, 0, tileWidth, tileHeight) { }
 

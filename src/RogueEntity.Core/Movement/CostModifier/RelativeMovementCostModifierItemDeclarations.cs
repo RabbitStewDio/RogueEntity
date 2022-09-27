@@ -16,7 +16,7 @@ namespace RogueEntity.Core.Movement.CostModifier
         public static BulkItemDeclarationBuilder< TItemId> 
             WithMovementCostModifier< TItemId, TMovementMode>(this BulkItemDeclarationBuilder< TItemId> builder,
                                                                            RelativeMovementCostModifier<TMovementMode> m)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             return builder.WithTrait(new RelativeMovementCostModifierTrait< TItemId, TMovementMode>(m));
         }
@@ -24,7 +24,7 @@ namespace RogueEntity.Core.Movement.CostModifier
         public static ReferenceItemDeclarationBuilder< TItemId> 
             WithMovementCostModifier< TItemId, TMovementMode>(this ReferenceItemDeclarationBuilder< TItemId> builder,
                                                                            RelativeMovementCostModifier<TMovementMode> m)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             return builder.WithTrait(new RelativeMovementCostModifierTrait< TItemId, TMovementMode>(m));
         }

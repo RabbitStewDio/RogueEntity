@@ -8,7 +8,7 @@ namespace RogueEntity.Core.Meta.ItemBuilder
     {
         public static ItemBuilder<TItemId> Build<TItemId>(this IItemResolver<TItemId> resolver,
                                                           ItemDeclarationId declaration)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             if (resolver.ItemRegistry.TryGetItemById(declaration, out var itemDefinition))
             {

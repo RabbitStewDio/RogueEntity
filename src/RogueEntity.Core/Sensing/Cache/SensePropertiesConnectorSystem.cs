@@ -1,6 +1,5 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
-using JetBrains.Annotations;
 using RogueEntity.Core.GridProcessing.LayerAggregation;
 using RogueEntity.Core.Positioning;
 
@@ -12,8 +11,8 @@ namespace RogueEntity.Core.Sensing.Cache
         readonly IAggregationLayerSystem<float> sensePropertiesSystem;
         readonly SenseStateCache cache;
 
-        public SensePropertiesConnectorSystem([NotNull] IAggregationLayerSystem<float> sensePropertiesSystem,
-                                              [NotNull] SenseStateCache cache)
+        public SensePropertiesConnectorSystem(IAggregationLayerSystem<float> sensePropertiesSystem,
+                                              SenseStateCache cache)
         {
             this.sensePropertiesSystem = sensePropertiesSystem ?? throw new ArgumentNullException(nameof(sensePropertiesSystem));
             this.cache = cache ?? throw new ArgumentNullException(nameof(cache));

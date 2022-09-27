@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using JetBrains.Annotations;
 using RogueEntity.Api.Utils;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Positioning.MapLayers;
@@ -13,7 +12,7 @@ namespace RogueEntity.Core.GridProcessing.LayerAggregation
 {
     public class AggregatePropertiesLayer< TAggregateData, TSourceType> : IAggregationPropertiesLayer< TSourceType>
     {
-        static readonly ILogger Logger = SLog.ForContext<AggregatePropertiesLayer< TAggregateData, TSourceType>>();
+        static readonly ILogger logger = SLog.ForContext<AggregatePropertiesLayer< TAggregateData, TSourceType>>();
 
         readonly int z;
         readonly Action<AggregationProcessingParameter<TAggregateData, TSourceType>> processor;
@@ -25,7 +24,7 @@ namespace RogueEntity.Core.GridProcessing.LayerAggregation
         bool combinerDirty;
 
         public AggregatePropertiesLayer(int z,
-                                        [NotNull] Action<AggregationProcessingParameter<TAggregateData, TSourceType>> processor,
+                                        Action<AggregationProcessingParameter<TAggregateData, TSourceType>> processor,
                                         int offsetX,
                                         int offsetY,
                                         int tileSizeX,
@@ -139,7 +138,7 @@ namespace RogueEntity.Core.GridProcessing.LayerAggregation
             }
 
             Parallel.ForEach(processingParameterCollector.Values, processor);
-            Logger.Verbose("Processed {ProcessedLayerCount} layers with {ProcessedTiles} tiles", processedLayers, processedLayerTiles);
+            logger.Verbose("Processed {ProcessedLayerCount} layers with {ProcessedTiles} tiles", processedLayers, processedLayerTiles);
         }
     }
 }

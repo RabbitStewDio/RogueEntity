@@ -8,10 +8,10 @@ namespace RogueEntity.Core.Sensing.Receptors.Smell
     {
         public static ISmellSenseReceptorPhysicsConfiguration GetOrCreateSmellSensorPhysics(this IServiceResolver serviceResolver)
         {
-            if (!serviceResolver.TryResolve(out ISmellSenseReceptorPhysicsConfiguration physics))
+            if (!serviceResolver.TryResolve<ISmellSenseReceptorPhysicsConfiguration>(out var physics))
             {
                 var physicsConfig = serviceResolver.Resolve<ISmellPhysicsConfiguration>();
-                if (!serviceResolver.TryResolve(out FloodFillWorkingDataSource ds))
+                if (!serviceResolver.TryResolve<FloodFillWorkingDataSource>(out var ds))
                 {
                     ds = new FloodFillWorkingDataSource();
                     serviceResolver.Store(ds);

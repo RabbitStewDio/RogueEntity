@@ -1,14 +1,13 @@
 ﻿using System;
 using EnTTSharp.Entities;
-using JetBrains.Annotations;
 using RogueEntity.Api.ItemTraits;
 
 namespace RogueEntity.Core.Meta.Items
 {
     public class ItemContextBackend<TItemId>: IItemContextBackend<TItemId>
-        where TItemId : IEntityKey
+        where TItemId : struct, IEntityKey
     {
-        public ItemContextBackend([NotNull] IBulkDataStorageMetaData<TItemId> meta)
+        public ItemContextBackend(IBulkDataStorageMetaData<TItemId> meta)
         {
             EntityMetaData = meta ?? throw new ArgumentNullException(nameof(meta));
             ItemRegistry = new ItemRegistry<TItemId>(meta);

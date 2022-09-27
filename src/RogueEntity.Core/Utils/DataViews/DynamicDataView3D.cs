@@ -1,14 +1,15 @@
 using System;
 using System.Collections.Generic;
 using RogueEntity.Api.Utils;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RogueEntity.Core.Utils.DataViews
 {
     public class DynamicDataView3D<T> : IDynamicDataView3D<T>
     {
-        public event EventHandler<DynamicDataView3DEventArgs<T>> ViewCreated;
-        public event EventHandler<DynamicDataView3DEventArgs<T>> ViewReset;
-        public event EventHandler<DynamicDataView3DEventArgs<T>> ViewExpired;
+        public event EventHandler<DynamicDataView3DEventArgs<T>>? ViewCreated;
+        public event EventHandler<DynamicDataView3DEventArgs<T>>? ViewReset;
+        public event EventHandler<DynamicDataView3DEventArgs<T>>? ViewExpired;
         public int OffsetX { get; }
         public int OffsetY { get; }
         public int TileSizeX { get; }
@@ -55,7 +56,7 @@ namespace RogueEntity.Core.Utils.DataViews
             return false;
         }
 
-        public bool TryGetView(int z, out IReadOnlyDynamicDataView2D<T> view)
+        public bool TryGetView(int z, [MaybeNullWhen(false)] out IReadOnlyDynamicDataView2D<T> view)
         {
             if (TryGetWritableView(z, out var raw))
             {
@@ -67,7 +68,7 @@ namespace RogueEntity.Core.Utils.DataViews
             return false;
         }
 
-        public bool TryGetWritableView(int z, out IDynamicDataView2D<T> data, DataViewCreateMode mode = DataViewCreateMode.Nothing)
+        public bool TryGetWritableView(int z, [MaybeNullWhen(false)] out IDynamicDataView2D<T> data, DataViewCreateMode mode = DataViewCreateMode.Nothing)
         {
             if (index.TryGetValue(z, out var rdata))
             {
@@ -88,7 +89,7 @@ namespace RogueEntity.Core.Utils.DataViews
             return true;
         }
 
-        public BufferList<int> GetActiveLayers(BufferList<int> buffer = null)
+        public BufferList<int> GetActiveLayers(BufferList<int>? buffer = null)
         {
             buffer = BufferList.PrepareBuffer(buffer);
 

@@ -88,7 +88,7 @@ namespace RogueEntity.Core.Tests.Movement.GoalFinding
         public void SetUp()
         {
             var gridMapContext = new DefaultGridPositionContextBackend<ItemReference>();
-            gridMapContext.WithDefaultMapLayer(TestMapLayers.One, DynamicDataViewConfiguration.Default_16x16);
+            gridMapContext.WithDefaultMapLayer(TestMapLayers.One, DynamicDataViewConfiguration.Default16X16);
 
 
             context = new ItemContextBackend<ItemReference>(new ItemReferenceMetaData());

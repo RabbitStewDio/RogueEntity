@@ -1,6 +1,7 @@
 ﻿using System;
 using EnTTSharp.Entities;
 using RogueEntity.Api.ItemTraits;
+using RogueEntity.Api.Utils;
 
 namespace RogueEntity.Core.Meta.ItemTraits
 {
@@ -8,7 +9,7 @@ namespace RogueEntity.Core.Meta.ItemTraits
     {
         public static StackCount QueryStackSize<TItemId>(this IItemResolver<TItemId> resolver,
                                                          TItemId item)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             if (item.IsEmpty)
             {
@@ -25,7 +26,7 @@ namespace RogueEntity.Core.Meta.ItemTraits
 
         public static WeightView QueryWeight<TItemId>(this IItemResolver<TItemId> resolver,
                                                       TItemId item)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             if (resolver.TryQueryData(item, out WeightView p))
             {
@@ -37,7 +38,7 @@ namespace RogueEntity.Core.Meta.ItemTraits
 
         public static Weight QueryBaseWeight<TItemId>(this IItemResolver<TItemId> resolver,
                                                       TItemId r)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             if (resolver.TryQueryData(r, out Weight p))
             {
@@ -50,10 +51,10 @@ namespace RogueEntity.Core.Meta.ItemTraits
         public static bool SplitLargeStack<TItemId>(this IItemResolver<TItemId> itemResolver,
                                                     TItemId r,
                                                     int count,
-                                                    out TItemId taken,
-                                                    out TItemId remainder,
+                                                    out Optional<TItemId> taken,
+                                                    out Optional<TItemId> remainder,
                                                     out int remainingCount)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             if (count < 0)
             {
@@ -87,10 +88,10 @@ namespace RogueEntity.Core.Meta.ItemTraits
         public static bool SplitStack<TItemId>(this IItemResolver<TItemId> itemResolver,
                                                TItemId r,
                                                int count,
-                                               out TItemId taken,
-                                               out TItemId remainder,
+                                               out Optional<TItemId> taken,
+                                               out Optional<TItemId> remainder,
                                                out int remainingCount)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             if (count < 0)
             {
@@ -128,10 +129,12 @@ namespace RogueEntity.Core.Meta.ItemTraits
             var takeResult = p.Take(count);
             if (takeResult.ItemsLeftInStack.TryGetValue(out var remainderStack))
             {
-                if (itemResolver.TryUpdateData(r, in remainderStack, out remainder) &&
-                    itemResolver.TryUpdateData(r, in takeResult.ItemsTakenFromStack, out taken))
+                if (itemResolver.TryUpdateData(r, in remainderStack, out var remainderItem) &&
+                    itemResolver.TryUpdateData(r, in takeResult.ItemsTakenFromStack, out var takenItem))
                 {
                     remainingCount = takeResult.ItemsNotAvailableInStack;
+                    remainder = remainderItem;
+                    taken = takenItem;
                     return true;
                 }
 

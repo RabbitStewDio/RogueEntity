@@ -16,9 +16,9 @@ namespace RogueEntity.Core.Movement.GridMovement
     ///    (aka modifying the map) is done via the IItemPlacementService.
     /// </summary>
     public class GridStepMovementService<TActorId>
-        where TActorId : IEntityKey
+        where TActorId : struct, IEntityKey
     {
-        static readonly ILogger Logger = SLog.ForContext<GridStepMovementService<TActorId>>();
+        static readonly ILogger logger = SLog.ForContext<GridStepMovementService<TActorId>>();
         readonly IItemResolver<TActorId> itemResolver;
         readonly IMovementDataProvider dataProvider;
 
@@ -76,7 +76,7 @@ namespace RogueEntity.Core.Movement.GridMovement
             {
                 // No resistance data or movement data for this movement mode. This usually 
                 // points to a configuration error.
-                Logger.Warning("Unable to locate movement data for movement mode {MovementMode}", cost.MovementMode);
+                logger.Warning("Unable to locate movement data for movement mode {MovementMode}", cost.MovementMode);
                 movementCost = default;
                 return false;
             }
@@ -86,7 +86,7 @@ namespace RogueEntity.Core.Movement.GridMovement
                 // The movement data should have been computed for all active layers where actors exist.
                 // If that has not happened, you might have moved this actor before the data can be
                 // refreshed, which would mean your system ordering is wrong to allow that to happen.
-                Logger.Warning("Unable to locate outbound direction movement data for actor position {Position}", currentPosition);
+                logger.Warning("Unable to locate outbound direction movement data for actor position {Position}", currentPosition);
                 movementCost = default;
                 return false;
             }
@@ -149,7 +149,7 @@ namespace RogueEntity.Core.Movement.GridMovement
                 {
                     // No resistance data or movement data for this movement mode. This usually 
                     // points to a configuration error.
-                    Logger.Warning("Unable to locate movement data for movement mode {MovementMode}", cost.MovementMode);
+                    logger.Warning("Unable to locate movement data for movement mode {MovementMode}", cost.MovementMode);
                     continue;
                 }
 
@@ -158,7 +158,7 @@ namespace RogueEntity.Core.Movement.GridMovement
                     // The movement data should have been computed for all active layers where actors exist.
                     // If that has not happened, you might have moved this actor before the data can be
                     // refreshed, which would mean your system ordering is wrong to allow that to happen.
-                    Logger.Warning("Unable to locate outbound direction movement data for actor position {Position}", currentPosition);
+                    logger.Warning("Unable to locate outbound direction movement data for actor position {Position}", currentPosition);
                     continue;
                 }
 

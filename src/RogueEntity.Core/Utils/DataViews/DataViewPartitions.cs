@@ -17,7 +17,7 @@ namespace RogueEntity.Core.Utils.DataViews
         public static List<Rectangle> PartitionBy(in this Rectangle bounds,
                                                   int tileWidth,
                                                   int tileHeight,
-                                                  List<Rectangle> data = null)
+                                                  List<Rectangle>? data = null)
         {
             return bounds.PartitionBy(0, 0, tileWidth, tileHeight, data);
         }
@@ -25,7 +25,7 @@ namespace RogueEntity.Core.Utils.DataViews
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static List<Rectangle> PartitionBy(in this Rectangle bounds,
                                                   in DynamicDataViewConfiguration config,
-                                                  List<Rectangle> data = null)
+                                                  List<Rectangle>? data = null)
         {
             return PartitionBy(in bounds, config.OffsetX, config.OffsetY, config.TileSizeX, config.TileSizeY, data);
         }
@@ -35,7 +35,7 @@ namespace RogueEntity.Core.Utils.DataViews
                                                   int offsetY,
                                                   int tileWidth,
                                                   int tileHeight,
-                                                  List<Rectangle> data = null)
+                                                  List<Rectangle>? data = null)
         {
             if (data == null)
             {
@@ -63,7 +63,7 @@ namespace RogueEntity.Core.Utils.DataViews
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static List<BoundingBox> PartitionBy(in this BoundingBox bounds,
                                                     in DynamicDataViewConfiguration config,
-                                                    List<BoundingBox> data = null)
+                                                    List<BoundingBox>? data = null)
         {
             return PartitionBy(in bounds, config.OffsetX, config.OffsetY, config.TileSizeX, config.TileSizeY, data);
         }
@@ -73,7 +73,7 @@ namespace RogueEntity.Core.Utils.DataViews
                                                     int offsetY,
                                                     int tileWidth,
                                                     int tileHeight,
-                                                    List<BoundingBox> data = null)
+                                                    List<BoundingBox>? data = null)
         {
             if (data == null)
             {

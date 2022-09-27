@@ -8,7 +8,7 @@ namespace RogueEntity.Core.MovementPlaning.Goals
 {
     public class GoalSet
     {
-        static readonly ThreadLocal<Dictionary<Position, float>> IntersectionBuffer = new ThreadLocal<Dictionary<Position, float>>(() => new Dictionary<Position, float>());
+        static readonly ThreadLocal<Dictionary<Position, float>> intersectionBuffer = new ThreadLocal<Dictionary<Position, float>>(() => new Dictionary<Position, float>());
         readonly Dictionary<Position, float> goals;
 
         public GoalSet()
@@ -76,7 +76,7 @@ namespace RogueEntity.Core.MovementPlaning.Goals
 
         public void Intersect(GoalSet workingSet)
         {
-            var tmp = IntersectionBuffer.Value; 
+            var tmp = intersectionBuffer.Value; 
             foreach (var pair in goals)
             {
                 if (!workingSet.goals.TryGetValue(pair.Key, out var wsStr))

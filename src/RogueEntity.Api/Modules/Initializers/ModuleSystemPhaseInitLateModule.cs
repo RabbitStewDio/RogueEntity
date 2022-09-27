@@ -50,7 +50,7 @@ namespace RogueEntity.Api.Modules.Initializers
                 }
                 finally
                 {
-                    initializer.CurrentModuleId = null;
+                    initializer.CurrentModuleId = default;
                 }
             }
         }

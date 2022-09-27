@@ -8,7 +8,7 @@ using System.Linq;
 namespace RogueEntity.Core.Players
 {
     public class PlayerTrait<TActorId> : SimpleReferenceItemComponentTraitBase<TActorId, PlayerTag>
-        where TActorId : IEntityKey
+        where TActorId : struct, IEntityKey
     {
         public PlayerTrait() : base("Actor.Generic.Player", 1)
         { }

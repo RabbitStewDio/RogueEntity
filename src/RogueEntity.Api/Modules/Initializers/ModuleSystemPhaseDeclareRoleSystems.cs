@@ -14,11 +14,11 @@ namespace RogueEntity.Api.Modules.Initializers
 {
     public class ModuleSystemPhaseDeclareRoleSystems : IModuleEntityInitializationCallback
     {
-        static readonly ILogger Logger = SLog.ForContext<ModuleSystem>();
+        static readonly ILogger logger = SLog.ForContext<ModuleSystem>();
         readonly GlobalModuleEntityInformation entityInfo;
         readonly IServiceResolver serviceResolver;
         readonly ModuleInitializer moduleInitializer;
-        ModuleRecord currentModule;
+        ModuleRecord? currentModule;
 
         public ModuleSystemPhaseDeclareRoleSystems(in ModuleSystemPhaseInitModuleResult p,
                                                    IServiceResolver serviceResolver)
@@ -52,7 +52,7 @@ namespace RogueEntity.Api.Modules.Initializers
                 }
                 finally
                 {
-                    moduleInitializer.CurrentModuleId = null;
+                    moduleInitializer.CurrentModuleId = default;
                 }
             }
         }
@@ -61,10 +61,12 @@ namespace RogueEntity.Api.Modules.Initializers
         {
             if (!entityInfo.TryGetModuleEntityInformation<TEntityId>(out var mi))
             {
-                Logger.Debug("No such entity");
+                logger.Debug("No such entity");
                 return;
             }
 
+            if (currentModule == null) return;
+            
             var moduleInitializerParams = new ModuleEntityInitializationParameter<TEntityId>(mi, serviceResolver, moduleContext);
 
             foreach (var role in mi.Roles)
@@ -73,13 +75,13 @@ namespace RogueEntity.Api.Modules.Initializers
                 {
                     if (entityInfo.IsValidRole(roleInitializer, role))
                     {
-                        Logger.Debug("Invoking module initializer {SourceHint} for entity {Entity} with role {EntityRole}",
+                        logger.Debug("Invoking module initializer {SourceHint} for entity {Entity} with role {EntityRole}",
                                      roleInitializer.SourceHint, typeof(TEntityId), role);
                         roleInitializer.Initializer(in moduleInitializerParams, moduleInitializer, role);
                     }
                     else
                     {
-                        Logger.Debug("Skipping module initializer {SourceHint} for entity {Entity} with role {EntityRole}",
+                        logger.Debug("Skipping module initializer {SourceHint} for entity {Entity} with role {EntityRole}",
                                      roleInitializer.SourceHint, typeof(TEntityId), role);
                     }
                 }
@@ -87,7 +89,7 @@ namespace RogueEntity.Api.Modules.Initializers
         }
 
         List<ModuleEntityRoleInitializerInfo<TEntityId>> CollectRoleInitializers<TEntityId>(ModuleRecord module, IModuleEntityInformation mi, EntityRole role)
-            where TEntityId : IEntityKey
+            where TEntityId : struct, IEntityKey
         {
             var entityType = typeof(TEntityId);
             var retval = new List<ModuleEntityRoleInitializerInfo<TEntityId>>();
@@ -113,7 +115,7 @@ namespace RogueEntity.Api.Modules.Initializers
                             $"Expected a generic method with signature 'IEnumerable<ModuleEntityRoleInitializerInfo<TEntityId>> DeclareInitializers<TEntityId>(IServiceResolver, IModuleInitializer, EntityRole), but found {m} in module {module.ModuleId}");
                     }
 
-                    Logger.Information("Generic constraints on module {Module} with method {Method} do not match. {ErrorHint}", module.ModuleId, m.Name, errorHint);
+                    logger.Information("Generic constraints on module {Module} with method {Method} do not match. {ErrorHint}", module.ModuleId, m.Name, errorHint);
                     continue;
                 }
 
@@ -146,11 +148,11 @@ namespace RogueEntity.Api.Modules.Initializers
                             $"Expected a generic method with signature 'void XXX<TEntityId>(ModuleInitializationParameter ByRef, IModuleInitializer, EntityRole), but found {m} in module {module.ModuleId}");
                     }
 
-                    Logger.Information("Generic constraints on module {Module} with method {Method} do not match. {ErrorHint}", module.ModuleId, m.Name, errorHint);
+                    logger.Information("Generic constraints on module {Module} with method {Method} do not match. {ErrorHint}", module.ModuleId, m.Name, errorHint);
                     continue;
                 }
 
-                Logger.Verbose("Invoking role initializer {Method}", genericMethod.Name);
+                logger.Verbose("Invoking role initializer {Method}", genericMethod.Name);
                 var initializer = (ModuleEntityRoleInitializerDelegate<TEntityId>)
                     Delegate.CreateDelegate(typeof(ModuleEntityRoleInitializerDelegate<TEntityId>), module.Module, genericMethod);
                 retval.Add(ModuleEntityRoleInitializerInfo.CreateFor(role, initializer, "<Reflect> " + module.Module.GetType() + "#" + genericMethod.Name)
@@ -162,7 +164,7 @@ namespace RogueEntity.Api.Modules.Initializers
 
             if (retval.Count == 0)
             {
-                Logger.Verbose("{Module} does not define initializers for {Role} with subject {Subject}", module.ModuleId, role, entityType);
+                logger.Verbose("{Module} does not define initializers for {Role} with subject {Subject}", module.ModuleId, role, entityType);
             }
 
             return retval;

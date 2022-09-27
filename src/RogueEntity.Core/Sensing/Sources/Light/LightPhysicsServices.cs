@@ -9,9 +9,9 @@ namespace RogueEntity.Core.Sensing.Sources.Light
     {
         public static IServiceResolver ConfigureLightPhysics(this IServiceResolver serviceResolver, DistanceCalculation d = DistanceCalculation.Euclid)
         {
-            if (!serviceResolver.TryResolve(out ILightPhysicsConfiguration physicsConfiguration))
+            if (!serviceResolver.TryResolve<ILightPhysicsConfiguration>(out var physicsConfiguration))
             {
-                if (!serviceResolver.TryResolve(out ShadowPropagationResistanceDataSource ds))
+                if (!serviceResolver.TryResolve<ShadowPropagationResistanceDataSource>(out var ds))
                 {
                     ds = new ShadowPropagationResistanceDataSource();
                     serviceResolver.Store(ds);

@@ -13,8 +13,8 @@ using System;
 namespace RogueEntity.Samples.BoxPusher.Core.Commands
 {
     public class PushMoveCommandSystem<TActorId, TItemId> : GridMoveCommandSystem<TActorId>
-        where TActorId : IEntityKey
-        where TItemId : IEntityKey
+        where TActorId : struct, IEntityKey
+        where TItemId : struct, IEntityKey
     {
         readonly IItemResolver<TItemId> itemResolver;
         readonly IItemPlacementService<TItemId> itemPlacementService;

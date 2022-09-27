@@ -1,13 +1,13 @@
 using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
-using JetBrains.Annotations;
 
 namespace RogueEntity.Core.Utils
 {
     public interface ITraceableObject
     {
-        bool TryGetTraceInfo(out StackTrace s);
+        bool TryGetTraceInfo([MaybeNullWhen(false)] out StackTrace s);
     }
     
     public class TraceableLazy<T> : Lazy<T>, ITraceableObject
@@ -20,13 +20,19 @@ namespace RogueEntity.Core.Utils
         }
 
 #if DEBUG
-        StackTrace TraceInfo { get; set; }
+        StackTrace? TraceInfo { get; set; }
 #endif
 
-        public bool TryGetTraceInfo(out StackTrace s)
+        public bool TryGetTraceInfo([MaybeNullWhen(false)] out StackTrace s)
         {
             
 #if DEBUG
+            if (TraceInfo == null)
+            {
+                s = default;
+                return false;
+            }
+            
             s = TraceInfo;
             return true;
 #else
@@ -45,17 +51,17 @@ namespace RogueEntity.Core.Utils
             CollectTraceInformation();
         }
 
-        public TraceableLazy([NotNull] Func<T> valueFactory) : base(valueFactory)
+        public TraceableLazy(Func<T> valueFactory) : base(valueFactory)
         {
             CollectTraceInformation();
         }
 
-        public TraceableLazy([NotNull] Func<T> valueFactory, bool isThreadSafe) : base(valueFactory, isThreadSafe)
+        public TraceableLazy(Func<T> valueFactory, bool isThreadSafe) : base(valueFactory, isThreadSafe)
         {
             CollectTraceInformation();
         }
 
-        public TraceableLazy([NotNull] Func<T> valueFactory, LazyThreadSafetyMode mode) : base(valueFactory, mode)
+        public TraceableLazy(Func<T> valueFactory, LazyThreadSafetyMode mode) : base(valueFactory, mode)
         {
             CollectTraceInformation();
         }

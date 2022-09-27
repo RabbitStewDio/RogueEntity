@@ -83,13 +83,13 @@ namespace RogueEntity.Api.Utils
         {
             this.state = 1;
             this.Left = left;
-            this.Right = default;
+            this.Right = default!;
         }
 
         internal Either(TRight right)
         {
             this.state = 2;
-            this.Left = default;
+            this.Left = default!;
             this.Right = right;
         }
 
@@ -100,40 +100,40 @@ namespace RogueEntity.Api.Utils
             this.Right = right;
         }
 
-        public Optional<TLeft> LeftOption => state == 1 ? Optional.ValueOf(Left) : Optional.Empty();
-        public Optional<TRight> RightOption => state == 2 ? Optional.ValueOf(Right) : Optional.Empty();
+        public Optional<TLeft> LeftOption => state == 1 ? Optional.ValueOf(Left!) : Optional.Empty();
+        public Optional<TRight> RightOption => state == 2 ? Optional.ValueOf(Right!) : Optional.Empty();
 
         public bool HasLeft => state == 1;
         public bool HasRight => state == 2;
 
         public static implicit operator TLeft(Either<TLeft, TRight> e)
         {
-            return e.Left;
+            return e.Left!;
         }
 
         public static implicit operator TRight(Either<TLeft, TRight> e)
         {
-            return e.Right;
+            return e.Right!;
         }
 
         public static implicit operator EitherLeft<TLeft>(Either<TLeft, TRight> e)
         {
-            return new EitherLeft<TLeft>(e.Left);
+            return new EitherLeft<TLeft>(e.Left!);
         }
 
         public static implicit operator EitherRight<TRight>(Either<TLeft, TRight> e)
         {
-            return new EitherRight<TRight>(e.Right);
+            return new EitherRight<TRight>(e.Right!);
         }
 
         public static implicit operator Either<TLeft, TRight>(TLeft e)
         {
-            return new Either<TLeft, TRight>(1, e, default);
+            return new Either<TLeft, TRight>(1, e, default!);
         }
 
         public static implicit operator Either<TLeft, TRight>(TRight e)
         {
-            return new Either<TLeft, TRight>(2, default, e);
+            return new Either<TLeft, TRight>(2, default!, e);
         }
 
         public IEnumerable<TResult> Select<TResult>(Func<TLeft, TResult> fn)

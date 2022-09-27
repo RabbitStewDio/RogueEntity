@@ -8,7 +8,7 @@ using System.Collections.Generic;
 namespace RogueEntity.Samples.BoxPusher.Core.ItemTraits
 {
     public class BoxPusherPlayerProfileTrait<TActorId>: SimpleReferenceItemComponentTraitBase<TActorId, BoxPusherPlayerProfile>
-        where TActorId : IEntityKey
+        where TActorId : struct, IEntityKey
     {
         public BoxPusherPlayerProfileTrait() : base("BoxPusher.PlayerProfile-Trait", 100)
         {

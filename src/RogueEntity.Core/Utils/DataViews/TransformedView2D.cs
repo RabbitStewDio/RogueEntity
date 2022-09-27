@@ -1,21 +1,24 @@
 using System;
 using System.Collections.Generic;
-using JetBrains.Annotations;
 using RogueEntity.Api.Utils;
+using System.Diagnostics.CodeAnalysis;
+
 
 namespace RogueEntity.Core.Utils.DataViews
 {
     public class TransformedView2D<TSource, TTarget> : IReadOnlyDynamicDataView2D<TTarget>,
                                                        IDisposable
     {
-        public event EventHandler<DynamicDataView2DEventArgs<TTarget>> ViewChunkCreated;
-        public event EventHandler<DynamicDataView2DEventArgs<TTarget>> ViewChunkExpired;
+#pragma warning disable CS0067 
+        public event EventHandler<DynamicDataView2DEventArgs<TTarget>>? ViewChunkCreated;
+        public event EventHandler<DynamicDataView2DEventArgs<TTarget>>? ViewChunkExpired;
+#pragma warning restore CS0067 
         readonly IReadOnlyDynamicDataView2D<TSource> source;
         readonly Func<TSource, TTarget> transformation;
         readonly Dictionary<TileIndex, TransformedBoundedDataView<TSource, TTarget>> index;
 
-        public TransformedView2D([NotNull] IReadOnlyDynamicDataView2D<TSource> source,
-                                 [NotNull] Func<TSource, TTarget> transformation)
+        public TransformedView2D(IReadOnlyDynamicDataView2D<TSource> source,
+                                 Func<TSource, TTarget> transformation)
         {
             this.index = new Dictionary<TileIndex, TransformedBoundedDataView<TSource, TTarget>>();
             this.source = source ?? throw new ArgumentNullException(nameof(source));
@@ -70,7 +73,7 @@ namespace RogueEntity.Core.Utils.DataViews
             get { return source.TileSizeY; }
         }
 
-        public BufferList<Rectangle> GetActiveTiles(BufferList<Rectangle> data = null)
+        public BufferList<Rectangle> GetActiveTiles(BufferList<Rectangle>? data = null)
         {
             return source.GetActiveTiles(data);
         }
@@ -80,7 +83,7 @@ namespace RogueEntity.Core.Utils.DataViews
             return source.GetActiveBounds();
         }
 
-        public bool TryGetData(int x, int y, out IReadOnlyBoundedDataView<TTarget> raw)
+        public bool TryGetData(int x, int y, [MaybeNullWhen(false)] out IReadOnlyBoundedDataView<TTarget> raw)
         {
             var dx = DataViewPartitions.TileSplit(x, OffsetX, TileSizeX);
             var dy = DataViewPartitions.TileSplit(y, OffsetY, TileSizeY);
@@ -103,7 +106,7 @@ namespace RogueEntity.Core.Utils.DataViews
             return false;
         }
 
-        public bool TryGet(int x, int y, out TTarget data)
+        public bool TryGet(int x, int y, [MaybeNullWhen(false)] out TTarget data)
         {
             if (source.TryGet(x, y, out var sourceData))
             {
@@ -124,7 +127,7 @@ namespace RogueEntity.Core.Utils.DataViews
                     return r;
                 }
 
-                return default;
+                return default!;
             }
         }
     }

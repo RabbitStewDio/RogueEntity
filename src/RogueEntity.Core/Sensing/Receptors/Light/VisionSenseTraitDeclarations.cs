@@ -7,7 +7,7 @@ namespace RogueEntity.Core.Sensing.Receptors.Light
     {
         public static ReferenceItemDeclarationBuilder< TItemId> WithVisionSense< TItemId>(this ReferenceItemDeclarationBuilder< TItemId> builder,
                                                                                                                          float receptorIntensity, bool enabled = true)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             var physics = builder.ServiceResolver.GetOrCreateVisionSensorPhysics();
             var trait = new VisionSenseTrait< TItemId>(physics, receptorIntensity, enabled);

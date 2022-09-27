@@ -3,6 +3,7 @@ using EnTTSharp.Entities.Attributes;
 using MessagePack;
 using RogueEntity.Core.Sensing.Common;
 using RogueEntity.Core.Utils.DataViews;
+using System.Diagnostics.CodeAnalysis;
 using Rectangle = RogueEntity.Core.Utils.Rectangle;
 
 namespace RogueEntity.Core.Sensing.Receptors.Light
@@ -18,16 +19,17 @@ namespace RogueEntity.Core.Sensing.Receptors.Light
         
         [DataMember(Order = 1)]
         [Key(1)]
-        public BoundedDataView<Color> RawColorData { get; private set; }
+        public BoundedDataView<Color>? RawColorData { get; private set; }
 
         [SerializationConstructor]
-        public SingleLevelBrightnessMap(SingleLevelSenseDirectionMapData<VisionSense, VisionSense> backend, BoundedDataView<Color> rawColorData)
+        public SingleLevelBrightnessMap(SingleLevelSenseDirectionMapData<VisionSense, VisionSense> backend, 
+                                        BoundedDataView<Color>? rawColorData)
         {
             this.backend = backend;
             RawColorData = rawColorData;
         }
 
-        public bool TryGetLightColors(int z, out IReadOnlyView2D<Color> colorData)
+        public bool TryGetLightColors(int z, [MaybeNullWhen(false)] out IReadOnlyView2D<Color> colorData)
         {
             if (RawColorData != null && z == this.backend.Z)
             {
@@ -39,7 +41,7 @@ namespace RogueEntity.Core.Sensing.Receptors.Light
             return false;
         }
 
-        public bool TryGetSenseData(int z, out IDynamicSenseDataView2D intensities)
+        public bool TryGetSenseData(int z, [MaybeNullWhen(false)] out IDynamicSenseDataView2D intensities)
         {
             return backend.TryGetIntensity(z, out intensities);
         }

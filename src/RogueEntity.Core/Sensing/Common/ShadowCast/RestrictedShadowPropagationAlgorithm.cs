@@ -1,5 +1,4 @@
 using System;
-using JetBrains.Annotations;
 using RogueEntity.Core.GridProcessing.Directionality;
 using RogueEntity.Core.Positioning.Algorithms;
 using RogueEntity.Core.Sensing.Common.Physics;
@@ -13,7 +12,7 @@ namespace RogueEntity.Core.Sensing.Common.ShadowCast
     {
         readonly ISensePhysics sensePhysics;
 
-        public RestrictedShadowPropagationAlgorithm([NotNull] ISensePhysics sensePhysics)
+        public RestrictedShadowPropagationAlgorithm(ISensePhysics sensePhysics)
         {
             this.sensePhysics = sensePhysics ?? throw new ArgumentNullException(nameof(sensePhysics));
         }
@@ -24,7 +23,7 @@ namespace RogueEntity.Core.Sensing.Common.ShadowCast
                                          in Position2D position,
                                          IReadOnlyDynamicDataView2D<float> resistanceMap,
                                          IReadOnlyDynamicDataView2D<DirectionalityInformation> directionalityView,
-                                         SenseSourceData data = null)
+                                         SenseSourceData? data = null)
         {
             var radius = (int)Math.Ceiling(sensePhysics.SignalRadiusForIntensity(intensity));
             if (data == null ||

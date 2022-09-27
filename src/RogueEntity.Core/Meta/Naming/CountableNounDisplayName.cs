@@ -3,15 +3,15 @@ using RogueEntity.Api.Utils;
 
 namespace RogueEntity.Core.Meta.Naming
 {
-    public class CountableNounDisplayName: IDisplayName
+    public class CountableNounDisplayName : IDisplayName
     {
         readonly string singular;
         readonly bool vowelSound;
         readonly string plural;
 
-        public CountableNounDisplayName(string singular, 
-                                         string plural = default,
-                                         Optional<bool> vowelSound = default)
+        public CountableNounDisplayName(string singular,
+                                        string? plural = default,
+                                        Optional<bool> vowelSound = default)
         {
             if (string.IsNullOrWhiteSpace(singular))
             {
@@ -23,6 +23,7 @@ namespace RogueEntity.Core.Meta.Naming
             {
                 this.vowelSound = singular[0].IsVowel();
             }
+
             this.plural = plural ?? ComputePlural(singular);
         }
 
@@ -60,7 +61,7 @@ namespace RogueEntity.Core.Meta.Naming
 
             return $"the {EnglishPluralGrammarRules.NumberToString(number)} {plural}";
         }
-        
+
 
         /// <summary>
         ///  See https://www.grammarly.com/blog/plural-nouns/
@@ -104,6 +105,7 @@ namespace RogueEntity.Core.Meta.Naming
             {
                 return singular.ReplaceSuffix("f", "ve");
             }
+
             if (singular.EndsWith("fe", StringComparison.InvariantCulture))
             {
                 return singular.ReplaceSuffix("fe", "ve");
@@ -111,9 +113,9 @@ namespace RogueEntity.Core.Meta.Naming
 
             if (singular.EndsWith("s", StringComparison.InvariantCulture) ||
                 singular.EndsWith("ss", StringComparison.InvariantCulture) ||
-                singular.EndsWith("sh", StringComparison.InvariantCulture)||
-                singular.EndsWith("ch", StringComparison.InvariantCulture)||
-                singular.EndsWith("x", StringComparison.InvariantCulture)||
+                singular.EndsWith("sh", StringComparison.InvariantCulture) ||
+                singular.EndsWith("ch", StringComparison.InvariantCulture) ||
+                singular.EndsWith("x", StringComparison.InvariantCulture) ||
                 singular.EndsWith("z", StringComparison.InvariantCulture))
             {
                 return singular + "es";

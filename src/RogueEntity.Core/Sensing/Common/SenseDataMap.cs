@@ -1,10 +1,10 @@
 using System;
 using System.Runtime.Serialization;
-using JetBrains.Annotations;
 using MessagePack;
 using RogueEntity.Api.Utils;
 using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.DataViews;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RogueEntity.Core.Sensing.Common
 {
@@ -12,7 +12,7 @@ namespace RogueEntity.Core.Sensing.Common
     {
         readonly IReadOnlyBoundedDataView<byte> raw;
 
-        public SenseDirectionStoreTileWrapper([NotNull] IReadOnlyBoundedDataView<byte> raw)
+        public SenseDirectionStoreTileWrapper(IReadOnlyBoundedDataView<byte> raw)
         {
             this.raw = raw ?? throw new ArgumentNullException(nameof(raw));
         }
@@ -49,25 +49,25 @@ namespace RogueEntity.Core.Sensing.Common
     [MessagePackObject]
     public class SenseDataMap : IDynamicSenseDataView2D
     {
-        event EventHandler<DynamicDataView2DEventArgs<float>> IReadOnlyDynamicDataView2D<float>.ViewChunkCreated
+        event EventHandler<DynamicDataView2DEventArgs<float>>? IReadOnlyDynamicDataView2D<float>.ViewChunkCreated
         {
             add { }
             remove { }
         }
 
-        event EventHandler<DynamicDataView2DEventArgs<float>> IReadOnlyDynamicDataView2D<float>.ViewChunkExpired
+        event EventHandler<DynamicDataView2DEventArgs<float>>? IReadOnlyDynamicDataView2D<float>.ViewChunkExpired
         {
             add { }
             remove { }
         }
 
-        event EventHandler<DynamicDataView2DEventArgs<SenseDirectionStore>> IReadOnlyDynamicDataView2D<SenseDirectionStore>.ViewChunkCreated
+        event EventHandler<DynamicDataView2DEventArgs<SenseDirectionStore>>? IReadOnlyDynamicDataView2D<SenseDirectionStore>.ViewChunkCreated
         {
             add { }
             remove { }
         }
 
-        event EventHandler<DynamicDataView2DEventArgs<SenseDirectionStore>> IReadOnlyDynamicDataView2D<SenseDirectionStore>.ViewChunkExpired
+        event EventHandler<DynamicDataView2DEventArgs<SenseDirectionStore>>? IReadOnlyDynamicDataView2D<SenseDirectionStore>.ViewChunkExpired
         {
             add { }
             remove { }
@@ -92,7 +92,7 @@ namespace RogueEntity.Core.Sensing.Common
         }
 
         [SerializationConstructor]
-        public SenseDataMap([NotNull] DynamicDataView2D<float> sensitivityData, [NotNull] DynamicDataView2D<byte> directionData)
+        public SenseDataMap(DynamicDataView2D<float> sensitivityData, DynamicDataView2D<byte> directionData)
         {
             this.sensitivityData = sensitivityData ?? throw new ArgumentNullException(nameof(sensitivityData));
             this.directionData = directionData ?? throw new ArgumentNullException(nameof(directionData));
@@ -149,7 +149,7 @@ namespace RogueEntity.Core.Sensing.Common
             get { return sensitivityData.OffsetY; }
         }
 
-        public BufferList<Rectangle> GetActiveTiles(BufferList<Rectangle> data = null)
+        public BufferList<Rectangle> GetActiveTiles(BufferList<Rectangle>? data = null)
         {
             return sensitivityData.GetActiveTiles(data);
         }
@@ -179,7 +179,7 @@ namespace RogueEntity.Core.Sensing.Common
             return sensitivityData.TryGet(x, y, out data);
         }
 
-        public bool TryGetData(int x, int y, out IReadOnlyBoundedDataView<float> raw)
+        public bool TryGetData(int x, int y, [MaybeNullWhen(false)] out IReadOnlyBoundedDataView<float> raw)
         {
             return sensitivityData.TryGetData(x, y, out raw);
         }
@@ -196,7 +196,7 @@ namespace RogueEntity.Core.Sensing.Common
             return false;
         }
 
-        public bool TryGetData(int x, int y, out IReadOnlyBoundedDataView<SenseDirectionStore> raw)
+        public bool TryGetData(int x, int y, [MaybeNullWhen(false)] out IReadOnlyBoundedDataView<SenseDirectionStore> raw)
         {
             if (directionData.TryGetData(x, y, out var rawBytes))
             {

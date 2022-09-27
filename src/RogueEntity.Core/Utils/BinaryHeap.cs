@@ -23,7 +23,7 @@ namespace RogueEntity.Core.Utils
         int numberOfItems;
 
         public BinaryHeap(int numberOfElements, 
-                          IComparer<T> comparer = null)
+                          IComparer<T>? comparer = null)
         {
             if (numberOfElements <= 0)
             {
@@ -90,7 +90,7 @@ namespace RogueEntity.Core.Utils
             this.numberOfItems = 1;
             for (var i = 0; i < Data.Length; i++)
             {
-                Data[i] = default;
+                Data[i] = default!;
             }
         }
 
@@ -132,14 +132,14 @@ namespace RogueEntity.Core.Utils
             if (index == numberOfItems)
             {
                 var returnItemX = Data[index];
-                Data[index] = default;
+                Data[index] = default!;
                 NodeRemoved(returnItemX);
                 return returnItemX;
             }
 
             var returnItem = Data[index];
             Data[index] = Data[numberOfItems];
-            Data[numberOfItems] = default;
+            Data[numberOfItems] = default!;
 
             // Notify of removal of old node
             NodeRemoved(returnItem);
@@ -224,9 +224,7 @@ namespace RogueEntity.Core.Utils
         
         protected virtual void Swap(int parentIndex, int bubbleIndex)
         {
-            var tmpValue = Data[parentIndex];
-            Data[parentIndex] = Data[bubbleIndex];
-            Data[bubbleIndex] = tmpValue;
+            (Data[parentIndex], Data[bubbleIndex]) = (Data[bubbleIndex], Data[parentIndex]);
         }
 
         /** Returns a nicely formatted string describing the tree structure. '!!!' marks after a value means that the tree is not correct at that node (i.e it should be swapped with it's parent) */

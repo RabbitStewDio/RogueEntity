@@ -8,7 +8,7 @@ namespace RogueEntity.Core.Sensing.Sources.Noise
         public static void PlayNoise<TItemId>(this IItemResolver<TItemId> resolver,
                                               TItemId item,
                                               in NoiseClip clip)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             resolver.TryUpdateData(item, in clip, out _);
         }

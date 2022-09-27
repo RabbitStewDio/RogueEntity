@@ -11,7 +11,7 @@ namespace RogueEntity.Api.Utils
     {
         public static Optional<T> Empty<T>()
         {
-            return new Optional<T>(false, default);
+            return new Optional<T>(false, default!);
         }
 
         public static OptionalEmptyPlaceholder Empty()
@@ -34,7 +34,7 @@ namespace RogueEntity.Api.Utils
             return new Optional<T>(true, value.Value);
         }
 
-        public static Optional<T> OfNullable<T>(T value) where T: class
+        public static Optional<T> OfNullable<T>(T? value) where T: class
         {
             if (value == null)
             {

@@ -1,5 +1,4 @@
 using System;
-using JetBrains.Annotations;
 using RogueEntity.Core.Sensing.Common;
 using RogueEntity.Core.Sensing.Common.Physics;
 using RogueEntity.Core.Sensing.Common.ShadowCast;
@@ -10,8 +9,8 @@ namespace RogueEntity.Core.Sensing.Sources.Light
     {
         readonly ShadowPropagationResistanceDataSource dataSource;
         
-        public LightPhysicsConfiguration([NotNull] ISensePhysics lightPhysics, 
-                                         ShadowPropagationResistanceDataSource dataSource = null)
+        public LightPhysicsConfiguration(ISensePhysics lightPhysics, 
+                                         ShadowPropagationResistanceDataSource? dataSource = null)
         {
             LightPhysics = lightPhysics ?? throw new ArgumentNullException(nameof(lightPhysics));
             this.dataSource = dataSource ?? new ShadowPropagationResistanceDataSource();

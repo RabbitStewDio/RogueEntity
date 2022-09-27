@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using JetBrains.Annotations;
 using RogueEntity.Api.Utils;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Utils.DataViews;
@@ -11,8 +10,8 @@ namespace RogueEntity.Core.GridProcessing.LayerAggregation
     public class AggregationLayerStore<TAggregateType, TSourceType>
     {
         readonly Dictionary<int, AggregatePropertiesLayer<TAggregateType, TSourceType>> layers;
-        public event EventHandler<DynamicDataView3DEventArgs<TAggregateType>> ViewCreated;
-        public event EventHandler<DynamicDataView3DEventArgs<TAggregateType>> ViewExpired;
+        public event EventHandler<DynamicDataView3DEventArgs<TAggregateType>>? ViewCreated;
+        public event EventHandler<DynamicDataView3DEventArgs<TAggregateType>>? ViewExpired;
 
         public AggregationLayerStore()
         {
@@ -30,7 +29,7 @@ namespace RogueEntity.Core.GridProcessing.LayerAggregation
             }
         }
 
-        public void DefineLayer(int z, [NotNull] AggregatePropertiesLayer<TAggregateType, TSourceType> layerData)
+        public void DefineLayer(int z, AggregatePropertiesLayer<TAggregateType, TSourceType> layerData)
         {
             if (layers.TryGetValue(z, out var existingView))
             {

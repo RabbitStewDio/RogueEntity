@@ -17,14 +17,14 @@ namespace RogueEntity.Core.Meta.ItemBuilder
         }
 
         public ItemDeclarationBuilderWithReferenceContext<TItemId> ForEntity<TItemId>()
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             mod.DeclareContentContext<TItemId>();
             return new ItemDeclarationBuilderWithReferenceContext<TItemId>(serviceResolver);
         }
 
         public ItemDeclarationBuilderWithBulkContext<TItemId> ForBulkEntity<TItemId>()
-            where TItemId : IBulkDataStorageKey<TItemId>
+            where TItemId : struct, IBulkDataStorageKey<TItemId>
         {
             mod.DeclareContentContext<TItemId>();
             return new ItemDeclarationBuilderWithBulkContext<TItemId>(serviceResolver);

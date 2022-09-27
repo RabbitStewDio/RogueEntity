@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using EnTTSharp.Entities;
-using JetBrains.Annotations;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RogueEntity.Core.Positioning.SpatialQueries
 {
@@ -14,14 +14,14 @@ namespace RogueEntity.Core.Positioning.SpatialQueries
             backend = new Dictionary<Type, object>();
         }
 
-        public void Register<TEntityKey>([NotNull] ISpatialQuery<TEntityKey> q)
-            where TEntityKey : IEntityKey
+        public void Register<TEntityKey>(ISpatialQuery<TEntityKey> q)
+            where TEntityKey : struct, IEntityKey
         {
             backend[typeof(TEntityKey)] = q ?? throw new ArgumentNullException(nameof(q));
         }
 
-        public bool TryGetQuery<TEntityKey>(out ISpatialQuery<TEntityKey> q)
-            where TEntityKey : IEntityKey
+        public bool TryGetQuery<TEntityKey>([MaybeNullWhen(false)] out ISpatialQuery<TEntityKey> q)
+            where TEntityKey : struct, IEntityKey
         {
             if (backend.TryGetValue(typeof(TEntityKey), out var raw) &&
                 raw is ISpatialQuery<TEntityKey> qq)

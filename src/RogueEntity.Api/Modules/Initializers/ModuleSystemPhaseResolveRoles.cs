@@ -9,10 +9,10 @@ namespace RogueEntity.Api.Modules.Initializers
 {
     public class ModuleSystemPhaseResolveRoles : IModuleEntityInitializationCallback
     {
-        static readonly ILogger Logger = SLog.ForContext<ModuleSystem>();
+        static readonly ILogger logger = SLog.ForContext<ModuleSystem>();
         readonly GlobalModuleEntityInformation entityInfo;
-        IModule currentModule;
-        ModuleInitializer moduleInitializer;
+        IModule? currentModule;
+        readonly ModuleInitializer moduleInitializer;
 
         public ModuleSystemPhaseResolveRoles(in ModuleSystemPhaseInitModuleResult p)
         {
@@ -33,21 +33,21 @@ namespace RogueEntity.Api.Modules.Initializers
             {
                 if (entityInfo.TryGetModuleEntityInformation(entityType, out var entityInfoForType))
                 {
-                    Logger.Debug("[EntityStructure] Using Entity {EntityType}", entityType);
-                    Logger.Debug("[EntityStructure]    Roles: {Count}", entityInfoForType.Roles.Count());
+                    logger.Debug("[EntityStructure] Using Entity {EntityType}", entityType);
+                    logger.Debug("[EntityStructure]    Roles: {Count}", entityInfoForType.Roles.Count());
                     foreach (var role in entityInfoForType.Roles)
                     {
-                        Logger.Debug("[EntityStructure]      - {Role}", role);
+                        logger.Debug("[EntityStructure]      - {Role}", role);
                     }
-                    Logger.Debug("[EntityStructure]    Relations: {Count}", entityInfoForType.Relations.Count());
+                    logger.Debug("[EntityStructure]    Relations: {Count}", entityInfoForType.Relations.Count());
                     foreach (var relation in entityInfoForType.Relations)
                     {
-                        Logger.Debug("[EntityStructure]      - {Relation}", relation);
+                        logger.Debug("[EntityStructure]      - {Relation}", relation);
                         if (entityInfoForType.TryQueryRelationTarget(relation, out var targetCollection))
                         {
                             foreach (var target in targetCollection)
                             {
-                                Logger.Debug("[EntityStructure]          -> {RelationTarget}", target);
+                                logger.Debug("[EntityStructure]          -> {RelationTarget}", target);
                             }
                         }
                     }
@@ -56,7 +56,7 @@ namespace RogueEntity.Api.Modules.Initializers
         }
 
         void CollectDeclaredRoles(ReadOnlyListWrapper<ModuleRecord> open,
-                                  Stack<ModuleId> diagnostics = null)
+                                  Stack<ModuleId>? diagnostics = null)
         {
             if (diagnostics == null)
             {
@@ -93,6 +93,8 @@ namespace RogueEntity.Api.Modules.Initializers
 
         void IModuleEntityInitializationCallback.PerformInitialization<TEntityId>(IModuleInitializationData<TEntityId> moduleContext)
         {
+            if (currentModule == null) return;
+            
             var roleSet = entityInfo.CreateEntityInformation<TEntityId>();
             var subject = typeof(TEntityId);
 
@@ -127,7 +129,7 @@ namespace RogueEntity.Api.Modules.Initializers
 
                 foreach (var relationTarget in entityInfo.FindEntityTypeForRole(targetRole))
                 {
-                    Logger.Debug("Entity {EntityType} requires relation {Relation} with target {Target} as explicit declaration in module {Module}",
+                    logger.Debug("Entity {EntityType} requires relation {Relation} with target {Target} as explicit declaration in module {Module}",
                                  subject, relation.Id, relationTarget, currentModule.Id);
                     roleSet.RecordRelation(relation, relationTarget);
                 }
@@ -158,7 +160,7 @@ namespace RogueEntity.Api.Modules.Initializers
                     var handled = entityInfo.RecordImpliedRelation(s, t, m.ModuleId);
                     if (!handled)
                     {
-                        Logger.Verbose("Role {Subject} is unused. Originally declared in module {Module} as alias to role {Target}, but no entity requires this role", s.Id, m.ModuleId, t.Id);
+                        logger.Verbose("Role {Subject} is unused. Originally declared in module {Module} as alias to role {Target}, but no entity requires this role", s.Id, m.ModuleId, t.Id);
                     }
                 }
             }

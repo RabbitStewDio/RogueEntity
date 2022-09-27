@@ -18,7 +18,7 @@ namespace RogueEntity.Api.Modules.Initializers
         readonly GlobalModuleEntityInformation entityInfo;
         readonly IServiceResolver serviceResolver;
         readonly ModuleInitializer moduleInitializer;
-        ModuleRecord currentModule;
+        ModuleRecord? currentModule;
 
         public ModuleSystemPhaseDeclareRelationSystems(in ModuleSystemPhaseInitModuleResult p,
                                                        IServiceResolver serviceResolver)
@@ -52,7 +52,7 @@ namespace RogueEntity.Api.Modules.Initializers
                 }
                 finally
                 {
-                    moduleInitializer.CurrentModuleId = null;
+                    moduleInitializer.CurrentModuleId = default;
                 }
             }
         }
@@ -64,6 +64,8 @@ namespace RogueEntity.Api.Modules.Initializers
                 return;
             }
 
+            if (currentModule == null) return;
+            
             var moduleInitializerParams = new ModuleEntityInitializationParameter<TEntityId>(mi, serviceResolver, moduleContext);
 
             foreach (var relation in mi.Relations)
@@ -103,7 +105,7 @@ namespace RogueEntity.Api.Modules.Initializers
         }
 
         public bool IsValidRelation<TEntityId>(ModuleEntityRelationInitializerInfo<TEntityId> r, IModuleEntityInformation mi, EntityRelation relation)
-            where TEntityId : IEntityKey
+            where TEntityId : struct, IEntityKey
         {
             if (r.Relation != relation)
             {
@@ -133,7 +135,7 @@ namespace RogueEntity.Api.Modules.Initializers
                                                                                                     ModuleRecord module,
                                                                                                     IModuleEntityInformation mi,
                                                                                                     EntityRelation relation)
-            where TEntityId : IEntityKey
+            where TEntityId : struct, IEntityKey
         {
             var subjectType = typeof(TEntityId);
             var retval = new List<ModuleEntityRelationInitializerInfo<TEntityId>>();

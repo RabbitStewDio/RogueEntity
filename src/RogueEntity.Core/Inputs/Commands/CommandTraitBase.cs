@@ -6,7 +6,7 @@ using System.Collections.Generic;
 namespace RogueEntity.Core.Inputs.Commands
 {
     public abstract class CommandTraitBase<TActorId, TCommand> : SimpleReferenceItemComponentTraitBase<TActorId, TCommand>, ICommandTrait<TActorId, TCommand>
-        where TActorId : IEntityKey
+        where TActorId : struct, IEntityKey
     {
         public CommandTypeId CommandId { get; }
         

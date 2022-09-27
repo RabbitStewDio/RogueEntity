@@ -1,4 +1,3 @@
-using JetBrains.Annotations;
 using RogueEntity.Core.GridProcessing.Directionality;
 using RogueEntity.Core.Sensing.Common.Physics;
 using RogueEntity.Core.Utils;
@@ -13,9 +12,9 @@ namespace RogueEntity.Core.Sensing.Common.FloodFill
         public FloodFillWorkingData(in SenseSourceDefinition sense,
                                     float intensity,
                                     in Position2D origin,
-                                    [NotNull] ISensePhysics sensePhysics,
-                                    [NotNull] IReadOnlyDynamicDataView2D<float> resistanceMap,
-                                    [NotNull] IReadOnlyDynamicDataView2D<DirectionalityInformation> directionalityView)
+                                    ISensePhysics sensePhysics,
+                                    IReadOnlyDynamicDataView2D<float> resistanceMap,
+                                    IReadOnlyDynamicDataView2D<DirectionalityInformation> directionalityView)
         {
             ResultMap = FloodFillDijkstraMap.Create(in sense, intensity, in origin, sensePhysics, resistanceMap, directionalityView);
         }
@@ -25,7 +24,7 @@ namespace RogueEntity.Core.Sensing.Common.FloodFill
                               in Position2D origin,
                               ISensePhysics sensePhysics,
                               IReadOnlyDynamicDataView2D<float> resistanceMap,
-                              [NotNull] IReadOnlyDynamicDataView2D<DirectionalityInformation> directionalityView)
+                              IReadOnlyDynamicDataView2D<DirectionalityInformation> directionalityView)
         {
             ResultMap.Configure(in sense, intensity, in origin, sensePhysics, resistanceMap, directionalityView);
         }

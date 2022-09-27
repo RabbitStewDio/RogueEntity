@@ -6,7 +6,7 @@ using RogueEntity.Core.Meta.Items;
 namespace RogueEntity.Core.Meta.ItemBuilder
 {
     public readonly struct ItemDeclarationBuilderWithBulkContext<TItemId>
-        where TItemId : IEntityKey
+        where TItemId : struct, IEntityKey
     {
         readonly IServiceResolver serviceResolver;
 

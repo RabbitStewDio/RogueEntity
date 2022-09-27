@@ -15,7 +15,7 @@ namespace RogueEntity.Core.Positioning.Continuous
         ContinuousMapPosition IPositionChangeMarker<ContinuousMapPosition>.PreviousPosition => PreviousPosition;
 
         public static void Update<TKey>(IEntityViewControl<TKey> v, TKey k, ContinuousMapPosition previous)
-            where TKey : IEntityKey
+            where TKey : struct, IEntityKey
         {
             if (v.GetComponent(k, out ContinuousMapPositionChangedMarker marker))
             {
@@ -29,7 +29,7 @@ namespace RogueEntity.Core.Positioning.Continuous
         }
 
         public static IDisposable InstallChangeHandler<TEntityKey>(EntityRegistry<TEntityKey> registry)
-            where TEntityKey : IEntityKey
+            where TEntityKey : struct, IEntityKey
         {
             var x = new PositionChangeTracker<TEntityKey>(registry);
             x.Install();
@@ -37,7 +37,7 @@ namespace RogueEntity.Core.Positioning.Continuous
         }
 
         class PositionChangeTracker<TEntityKey> : EntityChangeTracker<TEntityKey, ContinuousMapPosition>
-            where TEntityKey : IEntityKey
+            where TEntityKey : struct, IEntityKey
         {
             public PositionChangeTracker(EntityRegistry<TEntityKey> registry) : base(registry)
             {

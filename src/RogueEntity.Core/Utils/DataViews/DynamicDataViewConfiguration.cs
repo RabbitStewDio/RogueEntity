@@ -8,9 +8,9 @@ namespace RogueEntity.Core.Utils.DataViews
     [DataContract]
     public readonly struct DynamicDataViewConfiguration : IEquatable<DynamicDataViewConfiguration>
     {
-        public static readonly DynamicDataViewConfiguration Default_64x64 = new DynamicDataViewConfiguration(0, 0, 64, 64);
-        public static readonly DynamicDataViewConfiguration Default_32x32 = new DynamicDataViewConfiguration(0, 0, 32, 32);
-        public static readonly DynamicDataViewConfiguration Default_16x16 = new DynamicDataViewConfiguration(0, 0, 16, 16);
+        public static readonly DynamicDataViewConfiguration Default64X64 = new DynamicDataViewConfiguration(0, 0, 64, 64);
+        public static readonly DynamicDataViewConfiguration Default32X32 = new DynamicDataViewConfiguration(0, 0, 32, 32);
+        public static readonly DynamicDataViewConfiguration Default16X16 = new DynamicDataViewConfiguration(0, 0, 16, 16);
         
         [DataMember(Order = 0)]
         [Key(0)]

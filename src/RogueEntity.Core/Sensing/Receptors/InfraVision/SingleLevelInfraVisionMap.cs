@@ -1,7 +1,7 @@
 using System;
-using JetBrains.Annotations;
 using RogueEntity.Core.Meta.ItemTraits;
 using RogueEntity.Core.Sensing.Common;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RogueEntity.Core.Sensing.Receptors.InfraVision
 {
@@ -10,14 +10,14 @@ namespace RogueEntity.Core.Sensing.Receptors.InfraVision
         readonly IInfraVisionSenseReceptorPhysicsConfiguration heatPhysics;
         readonly SingleLevelSenseDirectionMapData<VisionSense, TemperatureSense> backend;
 
-        public SingleLevelInfraVisionMap([NotNull] IInfraVisionSenseReceptorPhysicsConfiguration heatPhysics,
+        public SingleLevelInfraVisionMap(IInfraVisionSenseReceptorPhysicsConfiguration heatPhysics,
                                   SingleLevelSenseDirectionMapData<VisionSense, TemperatureSense> backend)
         {
             this.heatPhysics = heatPhysics ?? throw new ArgumentNullException(nameof(heatPhysics));
             this.backend = backend;
         }
 
-        public bool TryGetSenseData(int z, out IDynamicSenseDataView2D intensities)
+        public bool TryGetSenseData(int z, [MaybeNullWhen(false)] out IDynamicSenseDataView2D intensities)
         {
             return backend.TryGetIntensity(z, out intensities);
         }

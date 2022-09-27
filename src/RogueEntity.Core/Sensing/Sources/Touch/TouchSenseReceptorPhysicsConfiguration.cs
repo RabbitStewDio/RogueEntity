@@ -9,7 +9,7 @@ namespace RogueEntity.Core.Sensing.Sources.Touch
         readonly FloodFillWorkingDataSource dataSource;
 
         public TouchSenseReceptorPhysicsConfiguration(ISensePhysics physics, 
-                                                      FloodFillWorkingDataSource dataSource = null)
+                                                      FloodFillWorkingDataSource? dataSource = null)
         {
             this.dataSource = dataSource ?? new FloodFillWorkingDataSource();
             TouchPhysics = new FullStrengthSensePhysics(physics);

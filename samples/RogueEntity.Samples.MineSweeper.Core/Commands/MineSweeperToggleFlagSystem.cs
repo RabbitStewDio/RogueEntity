@@ -10,7 +10,7 @@ using System;
 namespace RogueEntity.Samples.MineSweeper.Core.Commands
 {
     public class MineSweeperToggleFlagSystem<TItemId>
-        where TItemId : IEntityKey
+        where TItemId : struct, IEntityKey
     {
         readonly IGridMapContext<TItemId> gridMap;
         readonly IItemResolver<TItemId> itemResolver;
@@ -27,7 +27,7 @@ namespace RogueEntity.Samples.MineSweeper.Core.Commands
                                                   TActorId k,
                                                   in MineSweeperPlayerData playerData,
                                                   in ToggleFlagCommand revealCommand)
-            where TActorId : IEntityKey
+            where TActorId : struct, IEntityKey
         {
             try
             {

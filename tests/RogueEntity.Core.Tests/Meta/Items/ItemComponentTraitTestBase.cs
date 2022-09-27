@@ -10,7 +10,7 @@ using RogueEntity.Core.Meta.Items;
 namespace RogueEntity.Core.Tests.Meta.Items
 {
     public abstract class ItemComponentTraitTestBase<TItemId, TData, TItemTrait> : ItemComponentSerializationTestBase<TItemId, TData>
-        where TItemId : IBulkDataStorageKey<TItemId>
+        where TItemId : struct, IBulkDataStorageKey<TItemId>
         where TItemTrait : IItemComponentTrait<TItemId, TData>
     {
         protected static readonly ItemDeclarationId BulkItemId = "Bulk-TestSubject";

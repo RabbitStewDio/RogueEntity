@@ -61,7 +61,7 @@ namespace RogueEntity.Core.Sensing.Map.InfraVision
         protected void InitializeSenseCollection<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                           IModuleInitializer initializer,
                                                           EntityRole role)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             if (!IsServiceEnabled(initParameter.ServiceResolver))
             {
@@ -76,13 +76,13 @@ namespace RogueEntity.Core.Sensing.Map.InfraVision
 
         bool IsServiceEnabled(IServiceResolver serviceResolver)
         {
-            return serviceResolver.TryResolve(out IConfiguration config) && config.GetValue("RogueEntity:Core:Sensing:Map:InfraVision:Enabled", false);
+            return serviceResolver.TryResolve<IConfiguration>(out var config) && config.GetValue("RogueEntity:Core:Sensing:Map:InfraVision:Enabled", false);
         }
 
         void RegisterCollectSenseSourcesSystem<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                         IGameLoopSystemRegistration context,
                                                         EntityRegistry<TItemId> registry)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             var resolver = initParameter.ServiceResolver;
             var hs = GetOrCreate(resolver);
@@ -100,7 +100,7 @@ namespace RogueEntity.Core.Sensing.Map.InfraVision
         void RegisterComputeSenseMapSystem<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                     IGameLoopSystemRegistration context,
                                                     EntityRegistry<TItemId> registry)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             var resolver = initParameter.ServiceResolver;
             var hs = GetOrCreate(resolver);
@@ -112,7 +112,7 @@ namespace RogueEntity.Core.Sensing.Map.InfraVision
         void RegisterFinalizeSenseMapSystem<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                      IGameLoopSystemRegistration context,
                                                      EntityRegistry<TItemId> registry)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             var resolver = initParameter.ServiceResolver;
             var hs = GetOrCreate(resolver);
@@ -132,19 +132,19 @@ namespace RogueEntity.Core.Sensing.Map.InfraVision
 
         InfraVisionMapSystem GetOrCreate(IServiceResolver resolver)
         {
-            if (resolver.TryResolve(out InfraVisionMapSystem system))
+            if (resolver.TryResolve<InfraVisionMapSystem>(out var system))
             {
                 return system;
             }
 
-            if (!resolver.TryResolve(out ISenseMapDataBlitter blitter))
+            if (!resolver.TryResolve<ISenseMapDataBlitter>(out var blitter))
             {
                 blitter = new DefaultSenseMapDataBlitter();
             }
 
-            if (!resolver.TryResolve(out IInfraVisionSenseReceptorPhysicsConfiguration physics))
+            if (!resolver.TryResolve<IInfraVisionSenseReceptorPhysicsConfiguration>(out var physics))
             {
-                if (!resolver.TryResolve(out IHeatPhysicsConfiguration sourcePhysics))
+                if (!resolver.TryResolve<IHeatPhysicsConfiguration>(out var sourcePhysics))
                 {
                     throw new InvalidOperationException("There is neither a heat-physics nor a infra-vision physics configuration defined");
                 }

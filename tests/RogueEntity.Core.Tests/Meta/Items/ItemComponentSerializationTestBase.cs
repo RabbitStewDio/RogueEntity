@@ -20,7 +20,7 @@ using RogueEntity.Core.Meta.Items;
 namespace RogueEntity.Core.Tests.Meta.Items
 {
     public abstract class ItemComponentSerializationTestBase<TItemId, TData>
-        where TItemId : IBulkDataStorageKey<TItemId>
+        where TItemId : struct, IBulkDataStorageKey<TItemId>
     {
         protected bool EnableSerializationTest { get; set; } = true;
         protected abstract List<ItemDeclarationId> ActiveItems { get; }

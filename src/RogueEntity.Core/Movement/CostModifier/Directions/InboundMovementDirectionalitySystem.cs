@@ -16,10 +16,10 @@ namespace RogueEntity.Core.Movement.CostModifier.Directions
                                                                              IInboundMovementDirectionView<TMovementMode>,
                                                                              IDisposable
     {
-        readonly IAggregationCacheControl cacheControl;
+        readonly IAggregationCacheControl? cacheControl;
 
         public InboundMovementDirectionalitySystem(IReadOnlyDynamicDataView3D<float> sourceData,
-                                                   IAggregationCacheControl cacheControl = null,
+                                                   IAggregationCacheControl? cacheControl = null,
                                                    AdjacencyRule adjacencyRule = AdjacencyRule.EightWay) : base(sourceData, adjacencyRule)
         {
             this.cacheControl = cacheControl;

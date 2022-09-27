@@ -1,24 +1,25 @@
 using System.Collections.Generic;
 using EnTTSharp.Entities;
-using JetBrains.Annotations;
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Core.Meta.Items;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RogueEntity.Core.Sensing.Receptors.Noise
 {
     public class NoiseDirectionSenseTrait<TActorId> : SenseReceptorTraitBase<TActorId, NoiseSense, NoiseSense>,
                                                       IItemComponentInformationTrait<TActorId, INoiseDirectionMap>
-        where TActorId : IEntityKey
+        where TActorId : struct, IEntityKey
     {
-        public NoiseDirectionSenseTrait([NotNull] INoiseSenseReceptorPhysicsConfiguration physicsConfiguration,
+        public NoiseDirectionSenseTrait(INoiseSenseReceptorPhysicsConfiguration physicsConfiguration,
                                         float intensity,
                                         bool active = true) : base(physicsConfiguration.NoisePhysics, intensity, active)
-        { }
+        {
+        }
 
         public override ItemTraitId Id => "Core.Sense.Receptor.Noise";
         public override int Priority => 100;
 
-        public bool TryQuery(IEntityViewControl<TActorId> v,  TActorId k, out INoiseDirectionMap t)
+        public bool TryQuery(IEntityViewControl<TActorId> v, TActorId k, [MaybeNullWhen(false)] out INoiseDirectionMap t)
         {
             if (v.GetComponent(k, out SingleLevelSenseDirectionMapData<NoiseSense, NoiseSense> m))
             {

@@ -3,6 +3,7 @@ using System.Linq;
 using EnTTSharp.Entities;
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Core.Meta.Items;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RogueEntity.Core.Meta.Base
 {
@@ -13,7 +14,7 @@ namespace RogueEntity.Core.Meta.Base
     public class ContainerEntityMarkerTrait<TItemId, TOwnerId> : IReferenceItemTrait<TItemId>,
                                                                  IItemComponentTrait<TItemId, ContainerEntityMarker<TOwnerId>>,
                                                                  IItemComponentInformationTrait<TItemId, IContainerEntityMarker>
-        where TItemId : IEntityKey
+        where TItemId : struct, IEntityKey
     {
         public ItemTraitId Id { get; } = $"Core.Item.ParentContainerMarker[{typeof(TOwnerId)}]";
 
@@ -30,15 +31,15 @@ namespace RogueEntity.Core.Meta.Base
             return this;
         }
 
-        public bool TryQuery(IEntityViewControl<TItemId> v, TItemId k, out IContainerEntityMarker t)
+        public bool TryQuery(IEntityViewControl<TItemId> v, TItemId k, [MaybeNullWhen(false)] out IContainerEntityMarker t)
         {
-            t = default;
             if (TryQuery(v, k, out ContainerEntityMarker<TOwnerId> tt))
             {
                 t = tt;
                 return true;
             }
 
+            t = default;
             return false;
         }
 

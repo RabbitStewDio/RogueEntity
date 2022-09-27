@@ -10,7 +10,7 @@ namespace RogueEntity.Core.Movement.Cost
 {
     public class MovementVelocityReferenceItemTrait<TActorId, TMovementMode> : SimpleReferenceItemComponentTraitBase<TActorId, MovementVelocity<TMovementMode>>,
                                                                                IMovementCostTrait<TActorId>
-        where TActorId : IEntityKey
+        where TActorId : struct, IEntityKey
         where TMovementMode : IMovementMode
     {
         readonly TMovementMode movementMode;

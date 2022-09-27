@@ -7,7 +7,7 @@ using RogueEntity.Core.Meta.Items;
 namespace RogueEntity.Core.Positioning
 {
     public class ImmobilityMarkerTrait<TItemId> : StatelessItemComponentTraitBase<TItemId, ImmobilityMarker>
-        where TItemId : IEntityKey
+        where TItemId : struct, IEntityKey
     {
         public ImmobilityMarkerTrait(): base("Item.Generic.Positional", 100)
         {

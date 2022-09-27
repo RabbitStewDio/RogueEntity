@@ -9,7 +9,7 @@ namespace RogueEntity.Api.Modules
     [Obsolete]
     public interface IModuleEntityActivatorCallback
     {
-        public void ActivateEntity<TEntity>(DeclaredEntityRoleRecord record) where TEntity : IEntityKey;
+        public void ActivateEntity<TEntity>(DeclaredEntityRoleRecord record) where TEntity : struct, IEntityKey;
     }
 
     [Obsolete]

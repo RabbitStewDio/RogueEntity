@@ -8,14 +8,14 @@ namespace RogueEntity.Api.Utils
 {
     public readonly struct ReadOnlyListWrapper<T> : IReadOnlyList<T>, ICollection<T>
     {
-        static readonly EqualityComparer<T> EqualityComparer = EqualityComparer<T>.Default;
         public static readonly ReadOnlyListWrapper<T> Empty = new List<T>();
-        static readonly List<T> EmptyList = new List<T>();
+        static readonly EqualityComparer<T> equalityComparer = EqualityComparer<T>.Default;
+        static readonly List<T> emptyList = new List<T>();
         readonly IReadOnlyList<T> list;
 
-        public ReadOnlyListWrapper(IReadOnlyList<T> list)
+        public ReadOnlyListWrapper(IReadOnlyList<T>? list)
         {
-            this.list = list ?? EmptyList;
+            this.list = list ?? emptyList;
         }
 
         IEnumerator IEnumerable.GetEnumerator()
@@ -43,7 +43,7 @@ namespace RogueEntity.Api.Utils
             if (list == null) return false;
             for (var i = 0; i < list.Count; i++)
             {
-                if (EqualityComparer.Equals(list[i], item))
+                if (equalityComparer.Equals(list[i], item))
                 {
                     return true;
                 }
@@ -66,7 +66,7 @@ namespace RogueEntity.Api.Utils
             return false;
         }
 
-        public T Find(Predicate<T> match)
+        public T? Find(Predicate<T> match)
         {
             if (list == null) return default;
             for (var i = 0; i < list.Count; i++)
@@ -120,7 +120,7 @@ namespace RogueEntity.Api.Utils
             return FindIndex(0, Count, match);
         }
 
-        public T FindLast(Predicate<T> match)
+        public T? FindLast(Predicate<T> match)
         {
             if (list == null) return default;
             
@@ -161,7 +161,7 @@ namespace RogueEntity.Api.Utils
 
         public Enumerator GetEnumerator()
         {
-            return new Enumerator(this.list ?? EmptyList);
+            return new Enumerator(this.list ?? emptyList);
         }
 
         public struct Enumerator : IEnumerator<T>
@@ -174,7 +174,7 @@ namespace RogueEntity.Api.Utils
             {
                 this.contents = widget;
                 index = -1;
-                current = default;
+                current = default!;
             }
 
             public void Dispose()
@@ -189,17 +189,17 @@ namespace RogueEntity.Api.Utils
                     return true;
                 }
 
-                current = default;
+                current = default!;
                 return false;
             }
 
             public void Reset()
             {
                 index = -1;
-                current = default;
+                current = default!;
             }
 
-            object IEnumerator.Current => Current;
+            object IEnumerator.Current => Current!;
 
             public T Current
             {
@@ -230,7 +230,7 @@ namespace RogueEntity.Api.Utils
             if (list == null) return -1;
             for (var i = index; i < count; i++)
             {
-                if (EqualityComparer.Equals(list[i], item))
+                if (equalityComparer.Equals(list[i], item))
                 {
                     return i;
                 }
@@ -255,7 +255,7 @@ namespace RogueEntity.Api.Utils
             
             for (var i = count - 1; i >= index; i--)
             {
-                if (EqualityComparer.Equals(list[i], item))
+                if (equalityComparer.Equals(list[i], item))
                 {
                     return i;
                 }
@@ -342,14 +342,14 @@ namespace RogueEntity.Api.Utils
                 return false;
             }
 
-            if (list == null || other.list == null)
+            if (list == null)
             {
                 return false;
             }
             
             for (var i = 0; i < list.Count; i++)
             {
-                if (!EqualityComparer.Equals(list[i], other.list[i]))
+                if (!equalityComparer.Equals(list[i], other.list[i]))
                 {
                     return false;
                 }

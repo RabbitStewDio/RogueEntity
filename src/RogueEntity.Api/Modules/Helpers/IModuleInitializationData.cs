@@ -5,7 +5,7 @@ using EnTTSharp.Entities;
 namespace RogueEntity.Api.Modules.Helpers
 {
     public interface IModuleInitializationData<TEntityId>: IModuleContentDeclarations<TEntityId>
-        where TEntityId : IEntityKey
+        where TEntityId : struct, IEntityKey
     {
         IEnumerable<IEntitySystemDeclaration<TEntityId>> EntitySystems { get; }
     }

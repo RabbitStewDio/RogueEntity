@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Concurrent;
 using EnTTSharp.Entities;
-using JetBrains.Annotations;
 using RogueEntity.Api.Utils;
 using RogueEntity.Core.Positioning.Algorithms;
 using RogueEntity.Core.Positioning.Continuous;
@@ -11,7 +10,7 @@ using RogueEntity.Core.Utils;
 namespace RogueEntity.Core.Positioning.SpatialQueries
 {
     public class BruteForceSpatialQueryBackend<TItemId> : ISpatialQuery<TItemId>
-        where TItemId : IEntityKey
+        where TItemId : struct, IEntityKey
     {
         readonly EntityRegistry<TItemId> registry;
         readonly ConcurrentDictionary<CachedEntryKey, IDisposable> entries;
@@ -25,9 +24,9 @@ namespace RogueEntity.Core.Positioning.SpatialQueries
         public BufferList<SpatialQueryResult<TItemId, TComponent>> QuerySphere<TComponent>(in Position pos,
                                                                                            float distance = 1,
                                                                                            DistanceCalculation d = DistanceCalculation.Euclid,
-                                                                                           BufferList<SpatialQueryResult<TItemId, TComponent>> buffer = null)
+                                                                                           BufferList<SpatialQueryResult<TItemId, TComponent>>? buffer = null)
         {
-            BufferList.PrepareBuffer(buffer);
+            buffer = BufferList.PrepareBuffer(buffer);
 
             if (TryGetView<EntityGridPosition, TComponent>(out var gridView))
             {
@@ -42,9 +41,10 @@ namespace RogueEntity.Core.Positioning.SpatialQueries
             return buffer;
         }
 
-        public BufferList<SpatialQueryResult<TItemId, TComponent>> QueryBox<TComponent>(in Rectangle3D queryRegion, BufferList<SpatialQueryResult<TItemId, TComponent>> buffer = null)
+        public BufferList<SpatialQueryResult<TItemId, TComponent>> QueryBox<TComponent>(in Rectangle3D queryRegion, 
+                                                                                        BufferList<SpatialQueryResult<TItemId, TComponent>>? buffer = null)
         {
-            BufferList.PrepareBuffer(buffer);
+            buffer = BufferList.PrepareBuffer(buffer);
 
             if (TryGetView<EntityGridPosition, TComponent>(out var gridView))
             {
@@ -71,7 +71,7 @@ namespace RogueEntity.Core.Positioning.SpatialQueries
             where TPosition : IPosition<TPosition>
         {
             readonly EntityRegistry<TItemId> registry;
-            readonly IEntityView<TItemId, TPosition, TComponent> view;
+            readonly IEntityView<TItemId, TPosition, TComponent>? view;
             readonly ViewDelegates.ApplyWithContext<TItemId, SphereContext, TPosition, TComponent> addSphereResult;
             readonly ViewDelegates.ApplyWithContext<TItemId, BoxContext, TPosition, TComponent> addBoxResult;
 
@@ -183,10 +183,10 @@ namespace RogueEntity.Core.Positioning.SpatialQueries
             internal readonly EntityRegistry<TItemId> Registry;
             public readonly Func<CachedEntryKey, IDisposable> FactoryDelegate;
 
-            public CachedEntryKey([NotNull] Type positionType,
-                                  [NotNull] Type componentType,
-                                  [NotNull] EntityRegistry<TItemId> registry,
-                                  [NotNull] Func<CachedEntryKey, IDisposable> factoryDelegate)
+            public CachedEntryKey(Type positionType,
+                                  Type componentType,
+                                  EntityRegistry<TItemId> registry,
+                                  Func<CachedEntryKey, IDisposable> factoryDelegate)
             {
                 this.positionType = positionType ?? throw new ArgumentNullException(nameof(positionType));
                 this.componentType = componentType ?? throw new ArgumentNullException(nameof(componentType));
@@ -231,11 +231,11 @@ namespace RogueEntity.Core.Positioning.SpatialQueries
         readonly struct CachedEntryKey<TPosition, TComponent>
             where TPosition : IPosition<TPosition>
         {
-            static readonly Func<CachedEntryKey, IDisposable> FactoryDelegate = k => new CachedEntry<TPosition, TComponent>(k.Registry);
+            static readonly Func<CachedEntryKey, IDisposable> factoryDelegate = k => new CachedEntry<TPosition, TComponent>(k.Registry);
 
             public static CachedEntryKey CreateKey(EntityRegistry<TItemId> registry)
             {
-                return new CachedEntryKey(typeof(TPosition), typeof(TComponent), registry, FactoryDelegate);
+                return new CachedEntryKey(typeof(TPosition), typeof(TComponent), registry, factoryDelegate);
             }
         }
     }

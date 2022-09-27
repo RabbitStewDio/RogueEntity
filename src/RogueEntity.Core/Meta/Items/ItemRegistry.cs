@@ -4,11 +4,12 @@ using System.Collections.Generic;
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Api.Utils;
 using Serilog;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RogueEntity.Core.Meta.Items
 {
     public class ItemRegistry<TItemId> : IItemRegistryBackend<TItemId>
-        where TItemId : IEntityKey
+        where TItemId : struct, IEntityKey
     {
         readonly IBulkDataStorageMetaData<TItemId> itemIdMetaData;
         readonly ILogger logger = SLog.ForContext<ItemRegistry<TItemId>>();
@@ -156,7 +157,7 @@ namespace RogueEntity.Core.Meta.Items
             return false;
         }
 
-        public bool TryResolveBulkItem(TItemId bulkIndex, out IBulkItemDeclaration<TItemId> item)
+        public bool TryResolveBulkItem(TItemId bulkIndex, [MaybeNullWhen(false)] out IBulkItemDeclaration<TItemId> item)
         {
             if (itemIdMetaData.TryDeconstructBulkKey(bulkIndex, out var itemId, out _))
             {
@@ -167,12 +168,12 @@ namespace RogueEntity.Core.Meta.Items
             return false;
         }
 
-        public bool TryGetItemById(ItemDeclarationId id, out IItemDeclaration item)
+        public bool TryGetItemById(ItemDeclarationId id, [MaybeNullWhen(false)] out IItemDeclaration item)
         {
             return itemsById.TryGetValue(id, out item);
         }
 
-        public bool TryGetBulkItemById(ItemDeclarationId id, out IBulkItemDeclaration<TItemId> item)
+        public bool TryGetBulkItemById(ItemDeclarationId id, [MaybeNullWhen(false)] out IBulkItemDeclaration<TItemId> item)
         {
             if (bulkItems.TryGetValue(id, out var reg))
             {
@@ -184,7 +185,7 @@ namespace RogueEntity.Core.Meta.Items
             return false;
         }
 
-        public bool TryGetReferenceItemById(ItemDeclarationId id, out IReferenceItemDeclaration<TItemId> item)
+        public bool TryGetReferenceItemById(ItemDeclarationId id, [MaybeNullWhen(false)] out IReferenceItemDeclaration<TItemId> item)
         {
             return referenceItemsById.TryGetValue(id, out item);
         }

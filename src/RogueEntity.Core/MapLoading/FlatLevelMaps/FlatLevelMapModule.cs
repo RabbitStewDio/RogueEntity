@@ -16,6 +16,7 @@ using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.SpatialQueries;
 using Serilog;
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RogueEntity.Core.MapLoading.FlatLevelMaps
 {
@@ -24,20 +25,20 @@ namespace RogueEntity.Core.MapLoading.FlatLevelMaps
     {
         public static readonly string ModuleId = "Core.MapLoading.FlatLevel";
 
-        static readonly EntitySystemId SpawnActorsSystemId = "System.Core.MapLoading.FlatLevel.SpawnNewActors";
-        static readonly EntitySystemId PlaceActorsSystemId = "System.Core.MapLoading.FlatLevel.PlaceActors";
-        static readonly EntitySystemId MapLoadingRequestHandlerSystemId = "System.Core.MapLoading.FlatLevel.RequestHandlers";
-        static readonly EntitySystemId MapLoadingSystemId = "System.Core.MapLoading.FlatLevel.LoaderSystem";
-        static readonly EntitySystemId MapEvictionSystemId = "System.Core.MapLoading.FlatLevel.EvictionSystem";
-        static readonly EntitySystemId MapLoadingInitSystemId = "System.Core.MapLoading.FlatLevel.InitializeOnce";
-        static readonly EntitySystemId MapAutoEvictionSystemId = "System.Core.MapLoading.FlatLevel.AutoEvictionSystem";
-        static readonly EntitySystemId RegisterMapChangeRequestComponentId = "Entities.Core.MapLoading.FlatLevel.ChangeLevelRequest";
-        static readonly EntitySystemId RegisterChangeLevelCommandComponentId = "Entities.Core.MapLoading.FlatLevel.ChangeLevelCommand";
-        static readonly EntitySystemId RegisterCommandSystemId = "Systems.Core.MapLoading.FlatLevel.RegisterCommandSystem";
+        static readonly EntitySystemId spawnActorsSystemId = "System.Core.MapLoading.FlatLevel.SpawnNewActors";
+        static readonly EntitySystemId placeActorsSystemId = "System.Core.MapLoading.FlatLevel.PlaceActors";
+        static readonly EntitySystemId mapLoadingRequestHandlerSystemId = "System.Core.MapLoading.FlatLevel.RequestHandlers";
+        static readonly EntitySystemId mapLoadingSystemId = "System.Core.MapLoading.FlatLevel.LoaderSystem";
+        static readonly EntitySystemId mapEvictionSystemId = "System.Core.MapLoading.FlatLevel.EvictionSystem";
+        static readonly EntitySystemId mapLoadingInitSystemId = "System.Core.MapLoading.FlatLevel.InitializeOnce";
+        static readonly EntitySystemId mapAutoEvictionSystemId = "System.Core.MapLoading.FlatLevel.AutoEvictionSystem";
+        static readonly EntitySystemId registerMapChangeRequestComponentId = "Entities.Core.MapLoading.FlatLevel.ChangeLevelRequest";
+        static readonly EntitySystemId registerChangeLevelCommandComponentId = "Entities.Core.MapLoading.FlatLevel.ChangeLevelCommand";
+        static readonly EntitySystemId registerCommandSystemId = "Systems.Core.MapLoading.FlatLevel.RegisterCommandSystem";
 
-        static readonly EntityRole ChangeLevelCommandRole = CommandRoles.CreateRoleFor(CommandType.Of<ChangeLevelCommand>());
+        static readonly EntityRole changeLevelCommandRole = CommandRoles.CreateRoleFor(CommandType.Of<ChangeLevelCommand>());
 
-        static readonly ILogger Logger = SLog.ForContext<FlatLevelMapModule>();
+        static readonly ILogger logger = SLog.ForContext<FlatLevelMapModule>();
 
         public FlatLevelMapModule()
         {
@@ -47,7 +48,7 @@ namespace RogueEntity.Core.MapLoading.FlatLevelMaps
             Description = "Provides default services for flat maps organized along a depth layer.";
             IsFrameworkModule = true;
 
-            this.RequireRole(ChangeLevelCommandRole)
+            this.RequireRole(changeLevelCommandRole)
                 .WithRequiredRole(PositionModule.PositionedRole)
                 .WithRequiredRole(MapLoadingModule.ControlLevelLoadingRole);
 
@@ -60,12 +61,12 @@ namespace RogueEntity.Core.MapLoading.FlatLevelMaps
         protected void InitializeSpawnPlayerRelation<TActorId, TItemId>(in ModuleEntityInitializationParameter<TActorId> initParameter,
                                                                         IModuleInitializer initializer,
                                                                         EntityRelation r)
-            where TActorId : IEntityKey
-            where TItemId : IEntityKey
+            where TActorId : struct, IEntityKey
+            where TItemId : struct, IEntityKey
         {
             var entityContext = initializer.DeclareEntityContext<TActorId>();
-            entityContext.Register(SpawnActorsSystemId, 45_000, RegisterSpawnNewPlayers);
-            entityContext.Register(PlaceActorsSystemId, 49_500, RegisterPlacePlayersAfterLevelLoading<TActorId, TItemId>);
+            entityContext.Register(spawnActorsSystemId, 45_000, RegisterSpawnNewPlayers);
+            entityContext.Register(placeActorsSystemId, 49_500, RegisterPlacePlayersAfterLevelLoading<TActorId, TItemId>);
         }
 
 
@@ -73,7 +74,7 @@ namespace RogueEntity.Core.MapLoading.FlatLevelMaps
         protected void InitializeGlobalMapLoadingSystem(in ModuleInitializationParameter initParameter,
                                                         IModuleInitializer moduleInitializer)
         {
-            moduleInitializer.Register(MapLoadingInitSystemId, 0, RegisterInitializeMapLoader);
+            moduleInitializer.Register(mapLoadingInitSystemId, 0, RegisterInitializeMapLoader);
         }
 
 
@@ -81,38 +82,38 @@ namespace RogueEntity.Core.MapLoading.FlatLevelMaps
         protected void InitializeMapLoadingSystem<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                                            IModuleInitializer initializer,
                                                            EntityRole r)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             var entityContext = initializer.DeclareEntityContext<TItemId>();
-            entityContext.Register(RegisterMapChangeRequestComponentId, -10_000, RegisterRequestEntities);
-            entityContext.Register(MapLoadingRequestHandlerSystemId, 45_500, RegisterMapLoadingRequestHandlerSystem);
-            entityContext.Register(MapEvictionSystemId, 48_000, RegisterMapEvictionSystem);
-            entityContext.Register(MapLoadingSystemId, 48_500, RegisterMapLoaderSystem);
+            entityContext.Register(registerMapChangeRequestComponentId, -10_000, RegisterRequestEntities);
+            entityContext.Register(mapLoadingRequestHandlerSystemId, 45_500, RegisterMapLoadingRequestHandlerSystem);
+            entityContext.Register(mapEvictionSystemId, 48_000, RegisterMapEvictionSystem);
+            entityContext.Register(mapLoadingSystemId, 48_500, RegisterMapLoaderSystem);
         }
 
         [EntityRoleInitializer("Role.Core.Player")]
         protected void InitializeAutomaticMapEviction<TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter,
                                                                 IModuleInitializer initializer,
                                                                 EntityRole r)
-            where TActorId : IEntityKey
+            where TActorId : struct, IEntityKey
         {
             var entityContext = initializer.DeclareEntityContext<TActorId>();
-            entityContext.Register(MapAutoEvictionSystemId, 47_500, RegisterMapAutoEvictionSystem);
+            entityContext.Register(mapAutoEvictionSystemId, 47_500, RegisterMapAutoEvictionSystem);
         }
 
         [EntityRoleInitializer("Role.Core.Inputs.Commands.Executor[RogueEntity.Core.MapLoading.FlatLevelMaps.ChangeLevelCommand]")]
         protected void InitializeGridPositioned<TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter,
                                                           IModuleInitializer initializer,
                                                           EntityRole role)
-            where TActorId : IEntityKey
+            where TActorId : struct, IEntityKey
         {
             var entityContext = initializer.DeclareEntityContext<TActorId>();
-            entityContext.Register(RegisterChangeLevelCommandComponentId, 0, RegisterEntities);
-            entityContext.Register(RegisterCommandSystemId, 21_000, RegisterCommandSystem);
+            entityContext.Register(registerChangeLevelCommandComponentId, 0, RegisterEntities);
+            entityContext.Register(registerCommandSystemId, 21_000, RegisterCommandSystem);
         }
 
         void RegisterCommandSystem<TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter, IGameLoopSystemRegistration context, EntityRegistry<TActorId> registry)
-            where TActorId : IEntityKey
+            where TActorId : struct, IEntityKey
         {
             var sr = initParameter.ServiceResolver;
             var config = sr.ResolveConfiguration<FlatLevelMapConfiguration>();
@@ -131,7 +132,7 @@ namespace RogueEntity.Core.MapLoading.FlatLevelMaps
         }
 
         void RegisterEntities<TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter, EntityRegistry<TActorId> registry)
-            where TActorId : IEntityKey
+            where TActorId : struct, IEntityKey
         {
             registry.RegisterNonConstructable<ChangeLevelCommand>();
             registry.RegisterNonConstructable<ChangeLevelCommandState>();
@@ -140,7 +141,7 @@ namespace RogueEntity.Core.MapLoading.FlatLevelMaps
         void RegisterMapAutoEvictionSystem<TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter,
                                                      IGameLoopSystemRegistration context,
                                                      EntityRegistry<TActorId> registry)
-            where TActorId : IEntityKey
+            where TActorId : struct, IEntityKey
         {
             var sr = initParameter.ServiceResolver;
             var config = GetOrCreateMapRegionConfig(sr);
@@ -156,7 +157,7 @@ namespace RogueEntity.Core.MapLoading.FlatLevelMaps
         void RegisterSpawnNewPlayers<TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter,
                                                IGameLoopSystemRegistration context,
                                                EntityRegistry<TActorId> registry)
-            where TActorId : IEntityKey
+            where TActorId : struct, IEntityKey
         {
             var system = GetOrCreateSpawnRequestHandlerSystem<TActorId>(initParameter.ServiceResolver);
 
@@ -172,8 +173,8 @@ namespace RogueEntity.Core.MapLoading.FlatLevelMaps
         void RegisterPlacePlayersAfterLevelLoading<TActorId, TItemId>(in ModuleEntityInitializationParameter<TActorId> initParameter,
                                                                       IGameLoopSystemRegistration context,
                                                                       EntityRegistry<TActorId> registry)
-            where TActorId : IEntityKey
-            where TItemId : IEntityKey
+            where TActorId : struct, IEntityKey
+            where TItemId : struct, IEntityKey
         {
             var system = GetOrCreateSpawnSystem<TActorId, TItemId>(initParameter.ServiceResolver);
 
@@ -196,7 +197,7 @@ namespace RogueEntity.Core.MapLoading.FlatLevelMaps
         void RegisterInitializeMapLoader(in ModuleInitializationParameter mip, IGameLoopSystemRegistration context)
         {
             var sr = mip.ServiceResolver;
-            if (sr.TryResolve(out IMapRegionTrackerService service))
+            if (sr.TryResolve<IMapRegionTrackerService>(out var service))
             {
                 context.AddInitializationStepHandler(service.Initialize);
                 context.AddDisposeStepHandler(service.Initialize);
@@ -205,16 +206,16 @@ namespace RogueEntity.Core.MapLoading.FlatLevelMaps
             // Ensure that the map loader is always created.
             if (!TryGetOrResolveMapRegionLoaderSystem(sr, out _))
             {
-                Logger.Error(
+                logger.Error(
                     "Unable to resolve a valid map region system. Either provide a IFlatLevelRegionLoaderSystem implementation, " +
-                    "provide a basic z-level keyed IMapRegionLoadingStrategy<int> implementation or override the map loading system {SystemId}", MapLoadingSystemId);
+                    "provide a basic z-level keyed IMapRegionLoadingStrategy<int> implementation or override the map loading system {SystemId}", mapLoadingSystemId);
             }
         }
 
         void RegisterMapLoadingRequestHandlerSystem<TEntityId>(in ModuleEntityInitializationParameter<TEntityId> initParameter,
                                                                IGameLoopSystemRegistration context,
                                                                EntityRegistry<TEntityId> registry)
-            where TEntityId : IEntityKey
+            where TEntityId : struct, IEntityKey
         {
             var system = GetOrCreateMapRegionRequestHandlerSystem(initParameter.ServiceResolver);
             var handleChangeLevelSystem = registry.BuildSystem()
@@ -238,7 +239,7 @@ namespace RogueEntity.Core.MapLoading.FlatLevelMaps
 
         void RegisterRequestEntities<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
                                               EntityRegistry<TItemId> registry)
-            where TItemId : IEntityKey
+            where TItemId : struct, IEntityKey
         {
             registry.RegisterNonConstructable<EvictLevelRequest>();
             registry.RegisterNonConstructable<ChangeLevelRequest>();
@@ -248,13 +249,13 @@ namespace RogueEntity.Core.MapLoading.FlatLevelMaps
         void RegisterMapLoaderSystem<TEntityId>(in ModuleEntityInitializationParameter<TEntityId> initParameter,
                                                 IGameLoopSystemRegistration context,
                                                 EntityRegistry<TEntityId> registry)
-            where TEntityId : IEntityKey
+            where TEntityId : struct, IEntityKey
         {
             if (!TryGetOrResolveMapRegionLoaderSystem(initParameter.ServiceResolver, out var system))
             {
-                Logger.Error(
+                logger.Error(
                     "Unable to resolve a valid map region system. Either provide a IFlatLevelRegionLoaderSystem implementation, " +
-                    "provide a basic z-level keyed IMapRegionLoadingStrategy<int> implementation or override the map loading system {SystemId}", MapLoadingSystemId);
+                    "provide a basic z-level keyed IMapRegionLoadingStrategy<int> implementation or override the map loading system {SystemId}", mapLoadingSystemId);
                 return;
             }
 
@@ -265,14 +266,14 @@ namespace RogueEntity.Core.MapLoading.FlatLevelMaps
         void RegisterMapEvictionSystem<TEntityId>(in ModuleEntityInitializationParameter<TEntityId> initParameter,
                                                   IGameLoopSystemRegistration context,
                                                   EntityRegistry<TEntityId> registry)
-            where TEntityId : IEntityKey
+            where TEntityId : struct, IEntityKey
         {
             if (!TryGetOrResolveMapRegionEvictionSystem(initParameter.ServiceResolver, out var system))
             {
-                Logger.Information(
+                logger.Information(
                     "Unable to resolve a valid map eviction service. Loaded map chunks will remain active for the lifetime of the game. " +
                     "To dynamically unload map chunks, either provide a custom implementation of an IMapRegionEvictionSystem, " +
-                    "provide a basic z-level keyed IMapRegionEvictionStrategy<int> implementation or override the map loading system with id {SystemId}", MapEvictionSystemId);
+                    "provide a basic z-level keyed IMapRegionEvictionStrategy<int> implementation or override the map loading system with id {SystemId}", mapEvictionSystemId);
                 return;
             }
 
@@ -282,10 +283,10 @@ namespace RogueEntity.Core.MapLoading.FlatLevelMaps
 
 
         FlatLevelPlayerSpawnSystem<TActorId, TItemId> GetOrCreateSpawnSystem<TActorId, TItemId>(IServiceResolver serviceResolver)
-            where TActorId : IEntityKey
-            where TItemId : IEntityKey
+            where TActorId : struct, IEntityKey
+            where TItemId : struct, IEntityKey
         {
-            if (serviceResolver.TryResolve(out FlatLevelPlayerSpawnSystem<TActorId, TItemId> spawnSystem))
+            if (serviceResolver.TryResolve<FlatLevelPlayerSpawnSystem<TActorId, TItemId>>(out var spawnSystem))
             {
                 return spawnSystem;
             }
@@ -304,9 +305,9 @@ namespace RogueEntity.Core.MapLoading.FlatLevelMaps
 
 
         FlatLevelPlayerSpawnRequestHandlerSystem<TActorId> GetOrCreateSpawnRequestHandlerSystem<TActorId>(IServiceResolver serviceResolver)
-            where TActorId : IEntityKey
+            where TActorId : struct, IEntityKey
         {
-            if (serviceResolver.TryResolve(out FlatLevelPlayerSpawnRequestHandlerSystem<TActorId> spawnSystem))
+            if (serviceResolver.TryResolve<FlatLevelPlayerSpawnRequestHandlerSystem<TActorId>>(out var spawnSystem))
             {
                 return spawnSystem;
             }
@@ -316,7 +317,7 @@ namespace RogueEntity.Core.MapLoading.FlatLevelMaps
             return system;
         }
 
-        bool TryGetOrResolveMapRegionLoaderSystem(IServiceResolver sr, out IFlatLevelRegionLoaderSystem rs)
+        bool TryGetOrResolveMapRegionLoaderSystem(IServiceResolver sr, [MaybeNullWhen(false)] out IFlatLevelRegionLoaderSystem rs)
         {
             if (sr.TryResolve(out rs))
             {
@@ -325,7 +326,7 @@ namespace RogueEntity.Core.MapLoading.FlatLevelMaps
 
             // Unable to detect a map region system. That means we try to assemble one
             // from fragment services instead.
-            if (!sr.TryResolve(out IMapRegionLoadingStrategy<int> strategy))
+            if (!sr.TryResolve<IMapRegionLoadingStrategy<int>>(out var strategy))
             {
                 return false;
             }
@@ -339,7 +340,7 @@ namespace RogueEntity.Core.MapLoading.FlatLevelMaps
 
         IFlatLevelRegionRequestHandlerSystem GetOrCreateMapRegionRequestHandlerSystem(IServiceResolver sr)
         {
-            if (sr.TryResolve(out IFlatLevelRegionRequestHandlerSystem rs))
+            if (sr.TryResolve<IFlatLevelRegionRequestHandlerSystem>(out var rs))
             {
                 return rs;
             }
@@ -350,7 +351,7 @@ namespace RogueEntity.Core.MapLoading.FlatLevelMaps
             return rs;
         }
 
-        bool TryGetOrResolveMapRegionEvictionSystem(IServiceResolver sr, out IMapRegionEvictionSystem rs)
+        bool TryGetOrResolveMapRegionEvictionSystem(IServiceResolver sr, [MaybeNullWhen(false)] out IMapRegionEvictionSystem rs)
         {
             if (sr.TryResolve(out rs))
             {
@@ -359,7 +360,7 @@ namespace RogueEntity.Core.MapLoading.FlatLevelMaps
 
             // Unable to detect a map region system. That means we try to assemble one
             // from fragment services instead.
-            if (!sr.TryResolve(out IMapRegionEvictionStrategy<int> strategy))
+            if (!sr.TryResolve<IMapRegionEvictionStrategy<int>>(out var strategy))
             {
                 return false;
             }
@@ -373,7 +374,7 @@ namespace RogueEntity.Core.MapLoading.FlatLevelMaps
 
         static MapRegionModuleConfiguration GetOrCreateMapRegionConfig(IServiceResolver sr)
         {
-            if (sr.TryResolve(out MapRegionModuleConfiguration config))
+            if (sr.TryResolve<MapRegionModuleConfiguration>(out var config))
             {
                 return config;
             }
@@ -386,7 +387,7 @@ namespace RogueEntity.Core.MapLoading.FlatLevelMaps
 
         static IMapRegionTrackerService<int> GetOrCreateMapRegionTrackerService(IServiceResolver sr)
         {
-            if (!sr.TryResolve(out IMapRegionTrackerService<int> loader))
+            if (!sr.TryResolve<IMapRegionTrackerService<int>>(out var loader))
             {
                 loader = new BasicMapRegionTrackerService<int>();
                 sr.Store(loader);
@@ -397,7 +398,7 @@ namespace RogueEntity.Core.MapLoading.FlatLevelMaps
         }
 
         static FlatLevelAutomaticEvictionService<TActorId> GetOrCreateAutoEvictionService<TActorId>(IServiceResolver sr)
-            where TActorId : IEntityKey
+            where TActorId : struct, IEntityKey
         {
             var config = GetOrCreateMapRegionConfig(sr);
             var tracker = GetOrCreateMapRegionTrackerService(sr);

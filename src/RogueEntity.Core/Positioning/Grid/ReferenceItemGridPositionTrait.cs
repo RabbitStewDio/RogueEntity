@@ -14,7 +14,7 @@ namespace RogueEntity.Core.Positioning.Grid
                                                            IItemComponentInformationTrait<TItemId, Position>,
                                                            IItemComponentInformationTrait<TItemId, MapLayerPreference>,
                                                            IItemComponentInformationTrait<TItemId, MapContainerEntityMarker>
-        where TItemId : IEntityKey
+        where TItemId : struct, IEntityKey
     {
         readonly MapLayerPreference layerPreference;
 

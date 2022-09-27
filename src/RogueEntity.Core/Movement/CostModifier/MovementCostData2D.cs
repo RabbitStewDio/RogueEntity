@@ -1,5 +1,4 @@
 using System;
-using JetBrains.Annotations;
 using RogueEntity.Core.GridProcessing.Directionality;
 using RogueEntity.Core.Movement.Cost;
 using RogueEntity.Core.Utils.DataViews;
@@ -14,8 +13,8 @@ namespace RogueEntity.Core.Movement.CostModifier
         public readonly IReadOnlyDynamicDataView2D<DirectionalityInformation> Directions;
 
         public MovementCostData2D(in MovementCost movementCost,
-                                  [NotNull] IReadOnlyDynamicDataView2D<float> costs,
-                                  [NotNull] IReadOnlyDynamicDataView2D<DirectionalityInformation> directions)
+                                  IReadOnlyDynamicDataView2D<float> costs,
+                                  IReadOnlyDynamicDataView2D<DirectionalityInformation> directions)
         {
             BaseCost = movementCost.Cost;
             MovementType = movementCost.MovementMode ?? throw new ArgumentNullException(nameof(movementCost.MovementMode));
@@ -24,8 +23,8 @@ namespace RogueEntity.Core.Movement.CostModifier
         }
 
         public MovementCostData2D(in IMovementMode movementMode,
-                                  [NotNull] IReadOnlyDynamicDataView2D<float> costs,
-                                  [NotNull] IReadOnlyDynamicDataView2D<DirectionalityInformation> directions)
+                                  IReadOnlyDynamicDataView2D<float> costs,
+                                  IReadOnlyDynamicDataView2D<DirectionalityInformation> directions)
         {
             BaseCost = 1;
             MovementType = movementMode ?? throw new ArgumentNullException(nameof(movementMode));

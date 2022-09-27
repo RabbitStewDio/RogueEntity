@@ -32,20 +32,20 @@ namespace RogueEntity.Core.Positioning
         protected void InitializeCommon<TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter,
                                                   IModuleInitializer initializer,
                                                   EntityRole role)
-            where TActorId : IEntityKey
+            where TActorId : struct, IEntityKey
         {
             var entityContext = initializer.DeclareEntityContext<TActorId>();
             entityContext.Register(RegisterCommonPositionsEntitySystemId, 0, RegisterCommonEntities);
             entityContext.Register(RegisterResetMapDataSystemId, 100, RegisterResetMapData);
 
-            if (!initParameter.ServiceResolver.TryResolve(out SpatialQueryRegistry r))
+            if (!initParameter.ServiceResolver.TryResolve<SpatialQueryRegistry>(out var r))
             {
                 r = new SpatialQueryRegistry();
                 initParameter.ServiceResolver.Store(r);
                 initParameter.ServiceResolver.Store<ISpatialQueryLookup>(r);
             }
 
-            if (!initParameter.ServiceResolver.TryResolve(out IMapStateController _))
+            if (!initParameter.ServiceResolver.TryResolve<IMapStateController>(out _))
             {
                 var mc = new AggregateMapStateController();
                 initParameter.ServiceResolver.Store<IMapStateController>(mc);
@@ -56,9 +56,9 @@ namespace RogueEntity.Core.Positioning
         void RegisterResetMapData<TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter, 
                                             IGameLoopSystemRegistration context, 
                                             EntityRegistry<TActorId> registry)
-            where TActorId : IEntityKey
+            where TActorId : struct, IEntityKey
         {
-            if (initParameter.ServiceResolver.TryResolve(out IMapStateController mc))
+            if (initParameter.ServiceResolver.TryResolve<IMapStateController>(out var mc))
             {
                 context.AddInitializationStepHandler(mc.ResetState);
                 context.AddDisposeStepHandler(mc.ResetState);
@@ -69,21 +69,21 @@ namespace RogueEntity.Core.Positioning
         protected void FinalizePositionedRole<TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter,
                                                         IModuleInitializer initializer,
                                                         EntityRole role)
-            where TActorId : IEntityKey
+            where TActorId : struct, IEntityKey
         {
             var ctx = initializer.DeclareEntityContext<TActorId>();
             ctx.Register(RegisterSpatialQuerySystemId, 9_999_999, RegisterSpatialQueryBruteForce);
         }
 
         void RegisterSpatialQueryBruteForce<TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter, EntityRegistry<TActorId> registry)
-            where TActorId : IEntityKey
+            where TActorId : struct, IEntityKey
         {
-            if (!initParameter.ServiceResolver.TryResolve(out ISpatialQuery<TActorId> q))
+            if (!initParameter.ServiceResolver.TryResolve<ISpatialQuery<TActorId>>(out var q))
             {
                 q = new BruteForceSpatialQueryBackend<TActorId>(registry);
                 initParameter.ServiceResolver.Store(q);
 
-                if (initParameter.ServiceResolver.TryResolve(out SpatialQueryRegistry r))
+                if (initParameter.ServiceResolver.TryResolve<SpatialQueryRegistry>(out var r))
                 {
                     r.Register(q);
                 }
@@ -92,7 +92,7 @@ namespace RogueEntity.Core.Positioning
 
         void RegisterCommonEntities<TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter,
                                               EntityRegistry<TActorId> registry)
-            where TActorId : IEntityKey
+            where TActorId : struct, IEntityKey
         {
             registry.RegisterNonConstructable<ImmobilityMarker>();
         }

@@ -1,4 +1,3 @@
-using JetBrains.Annotations;
 using RogueEntity.Api.Utils;
 using RogueEntity.Core.Utils;
 using System;
@@ -15,7 +14,7 @@ namespace RogueEntity.Core.Positioning
             maps = new List<IMapStateController>();
         }
 
-        public void Add([NotNull] IMapStateController c)
+        public void Add(IMapStateController c)
         {
             if (c == null)
             {

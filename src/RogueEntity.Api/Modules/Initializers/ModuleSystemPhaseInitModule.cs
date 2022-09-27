@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using JetBrains.Annotations;
 using RogueEntity.Api.Modules.Attributes;
 using RogueEntity.Api.Modules.Helpers;
 using RogueEntity.Api.Services;
@@ -31,7 +30,7 @@ namespace RogueEntity.Api.Modules.Initializers
         static readonly ILogger Logger = SLog.ForContext<ModuleSystem>();
         readonly IServiceResolver serviceResolver;
 
-        public ModuleSystemPhaseInitModule([NotNull] IServiceResolver serviceResolver)
+        public ModuleSystemPhaseInitModule(IServiceResolver serviceResolver)
         {
             this.serviceResolver = serviceResolver ?? throw new ArgumentNullException(nameof(serviceResolver));
         }
@@ -109,7 +108,7 @@ namespace RogueEntity.Api.Modules.Initializers
                 }
                 finally
                 {
-                    initializer.CurrentModuleId = null;
+                    initializer.CurrentModuleId = default;
                 }
             }
         }

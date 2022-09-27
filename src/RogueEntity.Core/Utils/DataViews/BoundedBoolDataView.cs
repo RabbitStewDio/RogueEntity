@@ -2,7 +2,6 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Serialization;
 using System.Text;
-using JetBrains.Annotations;
 using MessagePack;
 
 namespace RogueEntity.Core.Utils.DataViews
@@ -33,7 +32,7 @@ namespace RogueEntity.Core.Utils.DataViews
         }
 
         [SerializationConstructor]
-        protected internal BoundedBoolDataView(Rectangle bounds, [NotNull] byte[] data, int anyValueSet)
+        protected internal BoundedBoolDataView(Rectangle bounds, byte[] data, int anyValueSet)
         {
             if (data == null)
             {
