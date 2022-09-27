@@ -16,10 +16,4 @@ namespace RogueEntity.Core.Positioning
         TPosition WithPosition(int x, int y);
         TPosition WithPosition(double tx, double ty);
     }
-
-    public interface IPositionChangeMarker<out TPosition>
-        where TPosition : IPosition<TPosition>
-    {
-        TPosition PreviousPosition { get; }
-    }
 }

@@ -1,4 +1,4 @@
-using RogueEntity.Api.Utils;
+using EnTTSharp;
 using RogueEntity.Core.Players;
 using RogueEntity.Core.Positioning.Grid;
 using System;

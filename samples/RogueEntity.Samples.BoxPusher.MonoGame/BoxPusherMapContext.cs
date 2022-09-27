@@ -1,5 +1,5 @@
+using EnTTSharp;
 using Microsoft.Xna.Framework;
-using RogueEntity.Api.Utils;
 using RogueEntity.Core.Players;
 using RogueEntity.Core.Runtime;
 using RogueEntity.SadCons;

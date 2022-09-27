@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>netstandard2.1</TargetFramework>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
@@ -23,6 +23,10 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\EnTTSharp\src\EnTTSharp.Annotations\EnTTSharp.Annotations.csproj" />
     <ProjectReference Include="..\..\..\EnTTSharp\src\EnTTSharp\EnTTSharp.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Properties" />
   </ItemGroup>
 
 

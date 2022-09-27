@@ -1,4 +1,5 @@
-﻿using System;
+﻿using EnTTSharp;
+using System;
 using System.Runtime.Serialization;
 using EnTTSharp.Entities;
 using EnTTSharp.Entities.Attributes;
@@ -14,7 +15,7 @@ namespace RogueEntity.Core.Positioning.Grid
     {
         [DataMember]
         [Key(0)]
-        public readonly EntityGridPosition PreviousPosition;
+        public readonly Optional<EntityGridPosition> PreviousPosition;
 
         [SerializationConstructor]
         EntityGridPositionChangedMarker(EntityGridPosition previousPosition)
@@ -22,7 +23,7 @@ namespace RogueEntity.Core.Positioning.Grid
             this.PreviousPosition = previousPosition;
         }
 
-        EntityGridPosition IPositionChangeMarker<EntityGridPosition>.PreviousPosition => PreviousPosition;
+        Optional<EntityGridPosition> IPositionChangeMarker<EntityGridPosition>.PreviousPosition => PreviousPosition;
 
         public static void Update<TKey>(IEntityViewControl<TKey> v, TKey k, EntityGridPosition previous) 
             where TKey : struct, IEntityKey
@@ -58,9 +59,16 @@ namespace RogueEntity.Core.Positioning.Grid
             {
             }
 
-            protected override void OnPositionDestroyed(object sender, (TEntityKey key, EntityGridPosition old) e)
+            protected override void OnPositionDestroyed(object sender, (TEntityKey key, Optional<EntityGridPosition> old) e)
             {
-                Update(Registry, e.key, e.old);
+                if (e.old.TryGetValue(out var old))
+                {
+                    Update(Registry, e.key, old);
+                }
+                else
+                {
+                    Update(Registry, e.key, EntityGridPosition.Invalid);
+                }
             }
 
             protected override void OnPositionUpdated(object sender, (TEntityKey key, EntityGridPosition old) e)

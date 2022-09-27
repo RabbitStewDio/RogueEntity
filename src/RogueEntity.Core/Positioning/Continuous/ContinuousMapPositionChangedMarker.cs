@@ -1,4 +1,5 @@
-﻿using System;
+﻿using EnTTSharp;
+using System;
 using EnTTSharp.Entities;
 
 namespace RogueEntity.Core.Positioning.Continuous
@@ -12,7 +13,7 @@ namespace RogueEntity.Core.Positioning.Continuous
             this.PreviousPosition = previousPosition;
         }
 
-        ContinuousMapPosition IPositionChangeMarker<ContinuousMapPosition>.PreviousPosition => PreviousPosition;
+        Optional<ContinuousMapPosition> IPositionChangeMarker<ContinuousMapPosition>.PreviousPosition => PreviousPosition;
 
         public static void Update<TKey>(IEntityViewControl<TKey> v, TKey k, ContinuousMapPosition previous)
             where TKey : struct, IEntityKey
@@ -43,9 +44,16 @@ namespace RogueEntity.Core.Positioning.Continuous
             {
             }
 
-            protected override void OnPositionDestroyed(object sender, (TEntityKey key, ContinuousMapPosition old) e)
+            protected override void OnPositionDestroyed(object sender, (TEntityKey key, Optional<ContinuousMapPosition> old) e)
             {
-                Update(Registry, e.key, e.old);
+                if (e.old.TryGetValue(out var old))
+                {
+                    Update(Registry, e.key, old);
+                }
+                else
+                {
+                    Update(Registry, e.key, ContinuousMapPosition.Invalid);
+                }
             }
 
             protected override void OnPositionUpdated(object sender, (TEntityKey key, ContinuousMapPosition old) e)

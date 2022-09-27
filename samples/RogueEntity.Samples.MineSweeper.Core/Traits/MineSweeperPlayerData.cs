@@ -1,4 +1,4 @@
-﻿using RogueEntity.Api.Utils;
+﻿using EnTTSharp;
 using RogueEntity.Core.Positioning.Grid;
 
 namespace RogueEntity.Samples.MineSweeper.Core.Traits

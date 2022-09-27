@@ -1,6 +1,6 @@
+using EnTTSharp;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using RogueEntity.Api.Utils;
 using SadConsole;
 using SadConsole.StringParser;
 using System.Buffers;

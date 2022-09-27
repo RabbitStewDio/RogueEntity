@@ -29,7 +29,7 @@ namespace RogueEntity.Core.Sensing.Discovery
 
         public bool TryQuery(IEntityViewControl<TActorId> v, TActorId k, [MaybeNullWhen(false)] out IDiscoveryMap t)
         {
-            if (v.GetComponent(k, out DiscoveryMapData data))
+            if (v.GetComponent<DiscoveryMapData>(k, out var data))
             {
                 t = data;
                 return true;

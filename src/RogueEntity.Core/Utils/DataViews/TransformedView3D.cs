@@ -7,9 +7,11 @@ namespace RogueEntity.Core.Utils.DataViews
 {
     public class TransformedView3D<TSource, TTarget> : IReadOnlyDynamicDataView3D<TTarget>, IDisposable
     {
+#pragma warning disable CS0067
         public event EventHandler<DynamicDataView3DEventArgs<TTarget>>? ViewCreated;
         public event EventHandler<DynamicDataView3DEventArgs<TTarget>>? ViewReset;
         public event EventHandler<DynamicDataView3DEventArgs<TTarget>>? ViewExpired;
+#pragma warning restore CS0067
 
         readonly IReadOnlyDynamicDataView3D<TSource> source;
         readonly Func<TSource, TTarget> transformation;

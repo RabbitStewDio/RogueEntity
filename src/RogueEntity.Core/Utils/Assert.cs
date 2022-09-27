@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
-using System.System.Runtime.CompilerServices;
 
 namespace RogueEntity.Core.Utils
 {

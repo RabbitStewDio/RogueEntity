@@ -1,7 +1,7 @@
+using EnTTSharp;
 using System.Collections.Generic;
 using EnTTSharp.Entities;
 using RogueEntity.Api.ItemTraits;
-using RogueEntity.Api.Utils;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Algorithms;
@@ -57,7 +57,7 @@ namespace RogueEntity.Core.Sensing.Receptors.Touch
             v.AssignOrReplace(k, in t);
             changedK = k;
 
-            if (!v.GetComponent(k, out SenseSourceState<TouchSense> s))
+            if (!v.GetComponent<SenseSourceState<TouchSense>>(k, out var s))
             {
                 s = new SenseSourceState<TouchSense>(Optional.Empty(), SenseSourceDirtyState.UnconditionallyDirty, Position.Invalid);
                 v.AssignComponent(k, in s);

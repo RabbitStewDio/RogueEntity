@@ -43,7 +43,7 @@ namespace RogueEntity.Core.Tests.Utils
         struct Payload : ISmartFreeListElement<Payload>, IEquatable<Payload>
         {
             public bool Active;
-            public int Data { get; private set; }
+            int Data { get; set; }
             public Payload AsFreePointer(FreeListIndex ptr)
             {
                 return new Payload()

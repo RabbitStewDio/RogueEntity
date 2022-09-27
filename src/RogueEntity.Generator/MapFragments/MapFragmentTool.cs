@@ -1,4 +1,5 @@
-﻿using EnTTSharp.Entities;
+﻿using EnTTSharp;
+using EnTTSharp.Entities;
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Api.Utils;
 using RogueEntity.Core.Infrastructure.Randomness;

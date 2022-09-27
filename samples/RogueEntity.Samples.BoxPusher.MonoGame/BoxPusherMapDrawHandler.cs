@@ -3,7 +3,6 @@ using RogueEntity.Core.MapLoading.MapRegions;
 using RogueEntity.Core.Meta.EntityKeys;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Runtime;
-using RogueEntity.Generator;
 using RogueEntity.SadCons.MapRendering;
 using RogueEntity.Samples.BoxPusher.Core;
 using SadConsole.Components;

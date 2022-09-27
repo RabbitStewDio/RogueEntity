@@ -3,7 +3,7 @@ using EnTTSharp.Serialization.Xml;
 
 namespace RogueEntity.Core.Movement.MovementModes
 {
-    public class MovementModeSurrogateProvider: SerializationSurrogateProviderBase<IMovementMode, SurrogateContainer<string>>
+    public class MovementModeSurrogateProvider: SerializationSurrogateProviderBase<IMovementMode?, SurrogateContainer<string?>>
     {
         readonly Dictionary<string, IMovementMode> modes;
         
@@ -16,7 +16,7 @@ namespace RogueEntity.Core.Movement.MovementModes
             }
         }
 
-        public override IMovementMode? GetDeserializedObject(SurrogateContainer<string> surrogate)
+        public override IMovementMode? GetDeserializedObject(SurrogateContainer<string?> surrogate)
         {
             var surrogateKey = surrogate.Content;
             if (surrogateKey == null)
@@ -32,7 +32,7 @@ namespace RogueEntity.Core.Movement.MovementModes
             throw new SurrogateResolverException();
         }
 
-        public override SurrogateContainer<string?> GetObjectToSerialize(IMovementMode obj)
+        public override SurrogateContainer<string?> GetObjectToSerialize(IMovementMode? obj)
         {
             return obj?.GetType().Name;
         }

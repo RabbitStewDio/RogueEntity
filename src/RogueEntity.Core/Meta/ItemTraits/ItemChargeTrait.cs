@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using EnTTSharp;
+using System.Collections.Generic;
 using EnTTSharp.Entities;
 using RogueEntity.Api.ItemTraits;
-using RogueEntity.Api.Utils;
 using RogueEntity.Core.Meta.Items;
 
 namespace RogueEntity.Core.Meta.ItemTraits

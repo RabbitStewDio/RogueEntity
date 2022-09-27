@@ -1,4 +1,5 @@
-﻿using System;
+﻿using EnTTSharp;
+using System;
 using System.Diagnostics.CodeAnalysis;
 using EnTTSharp.Entities;
 using RogueEntity.Api.ItemTraits;

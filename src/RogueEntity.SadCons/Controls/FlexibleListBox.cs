@@ -1,6 +1,6 @@
-﻿using Microsoft.Xna.Framework;
+﻿using EnTTSharp;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
-using RogueEntity.Api.Utils;
 using SadConsole;
 using SadConsole.Controls;
 using SadConsole.Themes;

@@ -4,7 +4,7 @@ using MessagePack.Formatters;
 
 namespace RogueEntity.Core.Movement.MovementModes
 {
-    public class MovementModeMessagePackFormatter : IMessagePackFormatter<IMovementMode>
+    public class MovementModeMessagePackFormatter : IMessagePackFormatter<IMovementMode?>
     {
         readonly Dictionary<string, IMovementMode> modes;
         
@@ -17,7 +17,7 @@ namespace RogueEntity.Core.Movement.MovementModes
             }
         }
 
-        public void Serialize(ref MessagePackWriter writer, IMovementMode value, MessagePackSerializerOptions options)
+        public void Serialize(ref MessagePackWriter writer, IMovementMode? value, MessagePackSerializerOptions options)
         {
             if (value != null)
             {

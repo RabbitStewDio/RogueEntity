@@ -9,9 +9,9 @@ namespace RogueEntity.Core.Sensing.Sources.Noise
     {
         public static IServiceResolver ConfigureNoisePhysics(this IServiceResolver serviceResolver, DistanceCalculation d = DistanceCalculation.Euclid)
         {
-            if (!serviceResolver.TryResolve(out INoisePhysicsConfiguration physicsConfiguration))
+            if (!serviceResolver.TryResolve<INoisePhysicsConfiguration>(out var physicsConfiguration))
             {
-                if (!serviceResolver.TryResolve(out FloodFillWorkingDataSource ds))
+                if (!serviceResolver.TryResolve<FloodFillWorkingDataSource>(out var ds))
                 {
                     ds = new FloodFillWorkingDataSource();
                     serviceResolver.Store(ds);

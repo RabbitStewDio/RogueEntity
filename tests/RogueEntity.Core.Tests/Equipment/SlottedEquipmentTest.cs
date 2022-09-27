@@ -1,7 +1,7 @@
+using EnTTSharp;
 using FluentAssertions;
 using NUnit.Framework;
 using RogueEntity.Api.ItemTraits;
-using RogueEntity.Api.Utils;
 using RogueEntity.Core.Equipment;
 using RogueEntity.Core.Meta.Base;
 using RogueEntity.Core.Meta.EntityKeys;

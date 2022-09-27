@@ -1,4 +1,5 @@
-﻿using System;
+﻿using EnTTSharp;
+using System;
 using System.Runtime.Serialization;
 using EnTTSharp.Entities.Attributes;
 using MessagePack;

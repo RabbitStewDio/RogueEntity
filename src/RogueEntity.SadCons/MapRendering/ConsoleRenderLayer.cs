@@ -1,6 +1,6 @@
+using EnTTSharp;
 using EnTTSharp.Entities;
 using RogueEntity.Api.ItemTraits;
-using RogueEntity.Api.Utils;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Utils.DataViews;

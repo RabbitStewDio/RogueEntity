@@ -1,4 +1,4 @@
-using RogueEntity.Api.Utils;
+using EnTTSharp;
 using RogueEntity.Core.Utils;
 
 namespace RogueEntity.Samples.MineSweeper.MonoGame

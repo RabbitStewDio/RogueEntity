@@ -1,6 +1,6 @@
-﻿using Microsoft.Xna.Framework;
+﻿using EnTTSharp;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using RogueEntity.Api.Utils;
 using RogueEntity.SadCons.Controls;
 using SadConsole;
 using SadConsole.Controls;

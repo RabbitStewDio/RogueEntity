@@ -1,5 +1,5 @@
-﻿using EnTTSharp.Entities;
-using RogueEntity.Api.Utils;
+﻿using EnTTSharp;
+using EnTTSharp.Entities;
 
 namespace RogueEntity.Core.Inputs.Commands
 {

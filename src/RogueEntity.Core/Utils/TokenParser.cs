@@ -1,6 +1,6 @@
+using EnTTSharp;
 using System;
 using System.Collections.Generic;
-using RogueEntity.Api.Utils;
 using System.Diagnostics.CodeAnalysis;
 
 namespace RogueEntity.Core.Utils

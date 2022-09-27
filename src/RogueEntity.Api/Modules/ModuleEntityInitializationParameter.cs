@@ -1,6 +1,5 @@
 using System;
 using EnTTSharp.Entities;
-using JetBrains.Annotations;
 using RogueEntity.Api.Services;
 
 namespace RogueEntity.Api.Modules

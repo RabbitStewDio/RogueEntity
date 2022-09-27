@@ -1,7 +1,7 @@
+using EnTTSharp;
 using System.Collections.Generic;
 using EnTTSharp.Entities;
 using RogueEntity.Api.ItemTraits;
-using RogueEntity.Api.Utils;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Movement.MovementModes;
 using RogueEntity.Core.Positioning.Algorithms;

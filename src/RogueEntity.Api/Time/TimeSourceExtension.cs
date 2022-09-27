@@ -1,5 +1,4 @@
 ﻿using System;
-using RogueEntity.Api.Utils;
 
 namespace RogueEntity.Api.Time
 {

@@ -1,6 +1,6 @@
-﻿using EnTTSharp.Entities.Attributes;
+﻿using EnTTSharp;
+using EnTTSharp.Entities.Attributes;
 using MessagePack;
-using RogueEntity.Api.Utils;
 using System.Runtime.Serialization;
 
 namespace RogueEntity.Core.Inputs.Commands

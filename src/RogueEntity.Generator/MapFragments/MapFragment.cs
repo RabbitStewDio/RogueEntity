@@ -1,4 +1,4 @@
-﻿using RogueEntity.Api.Utils;
+﻿using EnTTSharp;
 using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.DataViews;
 using System;

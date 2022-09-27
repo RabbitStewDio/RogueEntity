@@ -1,6 +1,6 @@
+using EnTTSharp;
 using EnTTSharp.Entities.Attributes;
 using MessagePack;
-using RogueEntity.Api.Utils;
 using RogueEntity.Core.Positioning.Grid;
 using System;
 using System.Runtime.Serialization;

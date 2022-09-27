@@ -1,5 +1,5 @@
-﻿using System;
-using RogueEntity.Api.Utils;
+﻿using EnTTSharp;
+using System;
 
 namespace RogueEntity.Core.Meta.Naming
 {

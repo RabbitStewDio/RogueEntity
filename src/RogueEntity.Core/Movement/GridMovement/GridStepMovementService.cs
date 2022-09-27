@@ -1,3 +1,4 @@
+using EnTTSharp;
 using EnTTSharp.Entities;
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Api.Utils;

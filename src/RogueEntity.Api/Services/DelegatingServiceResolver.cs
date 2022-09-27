@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using JetBrains.Annotations;
 using RogueEntity.Api.Modules.Helpers;
 
 namespace RogueEntity.Api.Services

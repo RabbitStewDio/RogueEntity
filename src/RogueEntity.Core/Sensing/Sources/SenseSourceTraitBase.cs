@@ -1,11 +1,12 @@
+using EnTTSharp;
 using System.Collections.Generic;
 using System.Linq;
 using EnTTSharp.Entities;
 using RogueEntity.Api.ItemTraits;
-using RogueEntity.Api.Utils;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Sensing.Common;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RogueEntity.Core.Sensing.Sources
 {
@@ -35,19 +36,19 @@ namespace RogueEntity.Core.Sensing.Sources
 
         public void Apply(IEntityViewControl<TItemId> v, TItemId k, IItemDeclaration item)
         {
-            if (!v.GetComponent(k, out TSenseDefinition _))
+            if (!v.GetComponent<TSenseDefinition>(k, out var _))
             {
                 return;
             }
 
-            if (!v.GetComponent(k, out SenseSourceState<TSense> s))
+            if (!v.GetComponent<SenseSourceState<TSense>>(k, out var s))
             {
                 s = new SenseSourceState<TSense>(Optional.Empty(), SenseSourceDirtyState.UnconditionallyDirty, Position.Invalid);
                 v.AssignComponent(k, in s);
             }
         }
 
-        public bool TryQuery(IEntityViewControl<TItemId> v, TItemId k, out TSenseDefinition t)
+        public bool TryQuery(IEntityViewControl<TItemId> v, TItemId k, [MaybeNullWhen(false)] out TSenseDefinition t)
         {
             return v.GetComponent(k, out t);
         }
@@ -56,7 +57,7 @@ namespace RogueEntity.Core.Sensing.Sources
         {
             v.AssignOrReplace(k, t);
 
-            if (!v.GetComponent(k, out SenseSourceState<TSense> s))
+            if (!v.GetComponent<SenseSourceState<TSense>>(k, out var s))
             {
                 s = new SenseSourceState<TSense>(Optional.Empty(), SenseSourceDirtyState.UnconditionallyDirty, Position.Invalid);
                 v.AssignComponent(k, in s);

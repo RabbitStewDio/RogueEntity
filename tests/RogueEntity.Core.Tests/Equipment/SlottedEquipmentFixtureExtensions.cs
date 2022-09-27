@@ -1,5 +1,5 @@
+using EnTTSharp;
 using FluentAssertions;
-using RogueEntity.Api.Utils;
 using RogueEntity.Core.Equipment;
 using RogueEntity.Core.Meta.EntityKeys;
 using RogueEntity.Core.Tests.Fixtures;
