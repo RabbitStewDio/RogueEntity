@@ -1,10 +1,7 @@
 ﻿using JetBrains.Annotations;
-using Microsoft.Extensions.ObjectPool;
-using RogueEntity.Core.GridProcessing.Directionality;
 using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.DataViews;
 using System;
-using System.Collections.Generic;
 
 namespace RogueEntity.Core.MovementPlaning.Pathfinding.Hierarchical
 {

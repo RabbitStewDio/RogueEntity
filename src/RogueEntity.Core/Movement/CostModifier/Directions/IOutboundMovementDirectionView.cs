@@ -1,7 +1,6 @@
 using RogueEntity.Core.GridProcessing.Directionality;
 using RogueEntity.Core.GridProcessing.LayerAggregation;
 using System.Diagnostics.CodeAnalysis;
-using RogueEntity.Core.Utils.DataViews;
 
 namespace RogueEntity.Core.Movement.CostModifier.Directions
 {

@@ -64,7 +64,7 @@ public class DataView3DBinding<TSource, TTarget>: IDisposable
                 {
                     if (source.TryGetData(tile.X, tile.Y, out var raw))
                     {
-                        owner.OnChunkCreated(z, source, raw);
+                        owner.OnChunkCreated(z, raw);
                     }
                 }
             }
@@ -80,13 +80,13 @@ public class DataView3DBinding<TSource, TTarget>: IDisposable
         void OnViewChunkExpired(object sender, DynamicDataView2DEventArgs<TSource> e)
         {
             if (source == null) return;
-            owner.OnChunkExpired(z, source, e.Data);
+            owner.OnChunkExpired(z, e.Data);
         }
 
         void OnViewChunkCreated(object sender, DynamicDataView2DEventArgs<TSource> e)
         {
             if (source == null) return;
-            owner.OnChunkCreated(z, source, e.Data);
+            owner.OnChunkCreated(z, e.Data);
         }
     }
 
@@ -140,7 +140,7 @@ public class DataView3DBinding<TSource, TTarget>: IDisposable
     {
     }
 
-    void OnChunkCreated(int z, IReadOnlyDynamicDataView2D<TSource> source, IReadOnlyBoundedDataView<TSource> tileData)
+    void OnChunkCreated(int z, IReadOnlyBoundedDataView<TSource> tileData)
     {
         if (!targetView.TryGetWritableView(z, out var view2D, DataViewCreateMode.CreateMissing))
         {
@@ -150,7 +150,7 @@ public class DataView3DBinding<TSource, TTarget>: IDisposable
         view2D.TryGetWriteAccess(tileData.Bounds.X, tileData.Bounds.Y, out _, DataViewCreateMode.CreateMissing);
     }
 
-    void OnChunkExpired(int z, IReadOnlyDynamicDataView2D<TSource> source, IReadOnlyBoundedDataView<TSource> tileData)
+    void OnChunkExpired(int z, IReadOnlyBoundedDataView<TSource> tileData)
     {
         if (!targetView.TryGetWritableView(z, out var view2D))
         {

@@ -22,10 +22,10 @@ namespace RogueEntity.Samples.BoxPusher.MonoGame
             this.sharedUIState.QuitInitiated += OnQuitInitiated;
 
             this.game = game;
-            this.game.GameStarted += (s, e) => OnGameStarted();
-            this.game.GameStopped += (s, e) => OnGameStopped();
-            this.game.GameFinished += (s, e) => OnGameOver();
-            this.game.GameUpdate += (s, t) => OnGameUpdate();
+            this.game.GameStarted += (_, _) => OnGameStarted();
+            this.game.GameStopped += (_, _) => OnGameStopped();
+            this.game.GameFinished += (_, _) => OnGameOver();
+            this.game.GameUpdate += (_, _) => OnGameUpdate();
         }
 
         void OnQuitInitiated()

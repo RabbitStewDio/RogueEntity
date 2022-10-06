@@ -21,10 +21,6 @@ using RogueEntity.Api.ItemTraits;
 
 
 
-
-
-
-
 namespace RogueEntity.Core.Meta.EntityKeys
 {
     [EntityKey]

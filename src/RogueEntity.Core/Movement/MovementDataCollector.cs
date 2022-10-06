@@ -2,7 +2,6 @@ using RogueEntity.Core.GridProcessing.Directionality;
 using RogueEntity.Core.Utils.DataViews;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 
 namespace RogueEntity.Core.Movement
 {

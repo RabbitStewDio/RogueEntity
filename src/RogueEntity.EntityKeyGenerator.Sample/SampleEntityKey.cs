@@ -26,6 +26,7 @@ namespace RogueEntity.EntityKeyGenerator.Sample
     [EntityKey]
     [EntityXmlSerialization]
     [EntityBinarySerialization]
+    [EntityKeyMetaData(typeof(SampleEntityKeyMetaData))]
     public readonly struct SampleEntityKey : IEquatable<SampleEntityKey>, IBulkDataStorageKey<SampleEntityKey>
     {
         public static readonly SampleEntityKey Empty = default;
