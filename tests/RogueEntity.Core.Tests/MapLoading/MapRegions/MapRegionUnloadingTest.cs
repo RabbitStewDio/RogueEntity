@@ -9,9 +9,11 @@ using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Tests.Fixtures;
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RogueEntity.Core.Tests.MapLoading.MapRegions
 {
+    [SuppressMessage("ReSharper", "NotNullOrRequiredMemberIsNotInitialized")]
     public class MapRegionUnloadingTest : BasicGameIntegrationTestBase
     {
         public const string SecondLevelCorridor = @"

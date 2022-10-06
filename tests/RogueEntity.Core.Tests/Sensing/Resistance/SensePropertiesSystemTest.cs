@@ -9,9 +9,11 @@ using RogueEntity.Core.Sensing.Resistance.Maps;
 using RogueEntity.Core.Utils;
 using RogueEntity.Core.Meta.EntityKeys;
 using RogueEntity.Core.Tests.Fixtures;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RogueEntity.Core.Tests.Sensing.Resistance
 {
+    [SuppressMessage("ReSharper", "NotNullOrRequiredMemberIsNotInitialized")]
     public class SensePropertiesSystemTest
     {
         SenseMappingTestContext ctx;
@@ -45,7 +47,7 @@ namespace RogueEntity.Core.Tests.Sensing.Resistance
             ctx.TryGetItemGridDataFor(TestMapLayers.Two, out var dataLayer2).Should().BeTrue();
             dataLayer2.TrySet(EntityGridPosition.Of(TestMapLayers.Two, 0, 0), ctx.ItemResolver.Instantiate( ceilingFan)).Should().BeTrue();
 
-            sps.ProcessSenseProperties();
+            sps.ProcessLayerData();
             sps.GetActiveLayers().Should().BeEquivalentTo(0);
            
             sps.TryGetView(0, out var map).Should().BeTrue();

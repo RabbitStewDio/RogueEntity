@@ -199,7 +199,7 @@ namespace RogueEntity.Core.Movement.MovementModes
                     var movementCostMap = serviceResolver.Resolve<IRelativeMovementCostSystem<TMovementMode>>();
                     var inboundDirectionMap = serviceResolver.Resolve<IInboundMovementDirectionView<TMovementMode>>();
                     var outboundDirectionMap = serviceResolver.Resolve<IOutboundMovementDirectionView<TMovementMode>>();
-                    pathFinderSource.RegisterMovementSource(GetMovementModeInstance(), movementCostMap.ResultView, inboundDirectionMap.ResultView, outboundDirectionMap.ResultView);
+                    pathFinderSource.RegisterMovementSource<TMovementMode>(GetMovementModeInstance(), movementCostMap.ResultView, inboundDirectionMap.ResultView, outboundDirectionMap.ResultView);
                 }
             }, "RegisterMovementSourceData");
         }
@@ -225,8 +225,8 @@ namespace RogueEntity.Core.Movement.MovementModes
             var serviceResolver = initParameter.ServiceResolver;
             var system = GetOrCreateMovementPropertiesSystem<TItemId>(serviceResolver);
 
-            context.AddInitializationStepHandler(system.ProcessSenseProperties);
-            context.AddFixedStepHandlers(system.ProcessSenseProperties);
+            context.AddInitializationStepHandler(system.ProcessLayerData);
+            context.AddFixedStepHandlers(system.ProcessLayerData);
         }
 
         protected void RegisterProcessInboundDirectionalitySystem<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,
@@ -278,7 +278,6 @@ namespace RogueEntity.Core.Movement.MovementModes
 
             var gridConfig = serviceResolver.Resolve<IGridMapConfiguration<TEntityId>>();
             system = new RelativeMovementCostSystem<TMovementMode>(gridConfig.OffsetX, gridConfig.OffsetY, gridConfig.TileSizeX, gridConfig.TileSizeY);
-
             serviceResolver.Store(system);
             serviceResolver.Store<IAggregationLayerSystemBackend<RelativeMovementCostModifier<TMovementMode>>>(system);
             serviceResolver.Store<IRelativeMovementCostSystem<TMovementMode>>(system);

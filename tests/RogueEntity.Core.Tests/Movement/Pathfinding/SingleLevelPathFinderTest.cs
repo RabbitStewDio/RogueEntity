@@ -1,6 +1,6 @@
-using System;
 using FluentAssertions;
 using NUnit.Framework;
+using RogueEntity.Api.Utils;
 using RogueEntity.Core.Movement;
 using RogueEntity.Core.Movement.Cost;
 using RogueEntity.Core.Movement.CostModifier.Directions;
@@ -11,6 +11,7 @@ using RogueEntity.Core.Positioning.Algorithms;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Tests.Fixtures;
 using RogueEntity.Core.Utils.DataViews;
+using Serilog;
 using static RogueEntity.Core.Tests.Movement.PathfindingTestUtil;
 
 namespace RogueEntity.Core.Tests.Movement.Pathfinding
@@ -71,6 +72,7 @@ namespace RogueEntity.Core.Tests.Movement.Pathfinding
  ### , ### , ### , ### , ### , ### , ### , ### , ### 
 ";
 
+        readonly ILogger logger = SLog.ForContext<SingleLevelPathFinderTest>();
 
         [Test]
         [TestCase(nameof(EmptyRoom), EmptyRoom, EmptyRoomResult, 1, 1, 7, 7)]
@@ -78,7 +80,7 @@ namespace RogueEntity.Core.Tests.Movement.Pathfinding
         public void ValidatePathFinding(string id, string sourceText, string resultText, int sx, int sy, int tx, int ty)
         {
             var resistanceMap = ParseMap(sourceText, out var bounds);
-            Console.WriteLine("Using room layout \n" + TestHelpers.PrintMap(resistanceMap, bounds));
+            logger.Debug("Using room layout \n{Map}", TestHelpers.PrintMap(resistanceMap, bounds));
 
             var outboundDirectionalityMapSystem = new OutboundMovementDirectionalitySystem<WalkingMovement>(resistanceMap.As3DMap(0));
             outboundDirectionalityMapSystem.MarkGloballyDirty();
@@ -90,8 +92,11 @@ namespace RogueEntity.Core.Tests.Movement.Pathfinding
             inboundDirectionalityMapSystem.Process();
             inboundDirectionalityMapSystem.ResultView.TryGetView(0, out var inboundDirectionalityMap).Should().BeTrue();
 
+            Assert.NotNull(inboundDirectionalityMap);
+            Assert.NotNull(outboundDirectionalityMap);
+            
             var ms = new MovementDataCollector();
-            ms.RegisterMovementSource(WalkingMovement.Instance, resistanceMap.As3DMap(0), inboundDirectionalityMap.As3DMap(0), outboundDirectionalityMap.As3DMap(0));
+            ms.RegisterMovementSource<WalkingMovement>(WalkingMovement.Instance, resistanceMap.As3DMap(0), inboundDirectionalityMap.As3DMap(0), outboundDirectionalityMap.As3DMap(0));
             
             var pfs = new SingleLevelPathFinderSource(new SingleLevelPathFinderPolicy(), ms);
 
@@ -107,8 +112,9 @@ namespace RogueEntity.Core.Tests.Movement.Pathfinding
 
             var expectedResultMap = ParseResultMap(resultText, out _);
             var producedResultMap = CreateResult(resistanceMap, resultPath, startPosition, bounds);
-            Console.WriteLine("Expected Result\n" + PrintResultMap(expectedResultMap, bounds));
-            Console.WriteLine("Computed Result\n" + PrintResultMap(producedResultMap, bounds));
+            logger.Debug("Expected Result:\n{Expected}\nComputed Result:\n{Computed}", 
+                         PrintResultMap(expectedResultMap, bounds), 
+                         PrintResultMap(producedResultMap, bounds));
 
             TestHelpers.AssertEquals(producedResultMap, expectedResultMap, bounds, default, PrintResultMap);
         }

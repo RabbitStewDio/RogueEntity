@@ -2,6 +2,7 @@
 using EnTTSharp.Serialization;
 using EnTTSharp.Serialization.Xml;
 using RogueEntity.Api.ItemTraits;
+using System;
 
 namespace RogueEntity.Core.Meta.Items
 {
@@ -13,11 +14,11 @@ namespace RogueEntity.Core.Meta.Items
         readonly BulkItemSerializationMapperDelegate<TItemId> bulkMapper;
 
         public BulkKeySurrogateProvider(IBulkDataStorageMetaData<TItemId> metaData,
-                                        IEntityKeyMapper mapper,
+                                        IEntityKeyMapper? mapper,
                                         BulkItemSerializationMapperDelegate<TItemId> bulkMapper)
         {
-            this.metaData = metaData;
-            this.bulkMapper = bulkMapper;
+            this.metaData = metaData ?? throw new ArgumentNullException(nameof(metaData));
+            this.bulkMapper = bulkMapper ?? throw new ArgumentNullException(nameof(bulkMapper));
             this.mapper = mapper ?? new DefaultEntityKeyMapper().Register(Map);
         }
 

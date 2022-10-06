@@ -48,6 +48,47 @@ namespace RogueEntity.Core.Tests.Fixtures
             parsedBounds = new Rectangle(0, 0, maxX + 1, row + 1);
             return map;
         }
+        
+        public static DynamicDataView2D<TData> Parse<TToken, TData>(string text, TokenParser tokenParser, out Rectangle parsedBounds, Func<TToken, TData> fx)
+        {
+            var map = new DynamicDataView2D<TData>(0, 0, 64, 64);
+            var row = -1;
+            using var sr = new StringReader(text);
+
+            var maxX = 0;
+            string line;
+            while ((line = sr.ReadLine()) != null)
+            {
+                if (string.IsNullOrWhiteSpace(line))
+                {
+                    continue;
+                }
+
+                line = line.Trim();
+                if (line.StartsWith("//"))
+                {
+                    // allow comments. I am not a monster.
+                    continue;
+                }
+
+                row += 1;
+                var vs = line.Split(",");
+                for (var index = 0; index < vs.Length; index++)
+                {
+                    var v = vs[index].Trim();
+                    if (!tokenParser.TryParse(v, out TToken result))
+                    {
+                        throw new Exception($"Unable to parse token {v} as {typeof(TData)}");
+                    }
+
+                    map[index, row] = fx(result);
+                    maxX = Math.Max(maxX, index);
+                }
+            }
+
+            parsedBounds = new Rectangle(0, 0, maxX + 1, row + 1);
+            return map;
+        }
 
 
         public static void AssertEquals(IReadOnlyView2D<float> source,

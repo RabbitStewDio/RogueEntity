@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Serialization;
 using MessagePack;
+using System.Runtime.CompilerServices;
 
 namespace RogueEntity.Core.Utils.DataViews
 {
@@ -147,6 +148,22 @@ namespace RogueEntity.Core.Utils.DataViews
             return false;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public int GetRawIndexUnsafe(int posX, int posY)
+        {
+            var rawX = posX - bounds.X;
+            var rawY = posY - bounds.Y;
+            return rawX + rawY * bounds.Width;
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public int GetRawIndexUnsafe(in Position2D pos)
+        {
+            var rawX = pos.X - bounds.X;
+            var rawY = pos.Y - bounds.Y;
+            return rawX + rawY * bounds.Width;
+        }
+        
         public bool TryGet(int x, int y, [MaybeNullWhen(false)] out TData result)
         {
             var rawX = x - bounds.X;

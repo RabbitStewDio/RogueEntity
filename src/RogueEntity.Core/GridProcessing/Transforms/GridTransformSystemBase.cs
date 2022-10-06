@@ -46,10 +46,10 @@ namespace RogueEntity.Core.GridProcessing.Transforms
                 // seen before. In that case, our dirty map wont contain any data, so we
                 // assume everything is dirty.
                 bool maybeGloballyDirty = false;
-                if (!TargetData.TryGetWritableView(zPosition, out var directionMap))
+                if (!TargetData.TryGetWritableView(zPosition, out var targetView))
                 {
                     maybeGloballyDirty = true;
-                    if (!TargetData.TryGetWritableView(zPosition, out directionMap, DataViewCreateMode.CreateMissing))
+                    if (!TargetData.TryGetWritableView(zPosition, out targetView, DataViewCreateMode.CreateMissing))
                     {
                         continue;
                     }
@@ -63,12 +63,12 @@ namespace RogueEntity.Core.GridProcessing.Transforms
                     }
 
                     if (!sourceView.TryGetData(tile.X, tile.Y, out var sourceTile) ||
-                        !directionMap.TryGetWriteAccess(tile.X, tile.Y, out var resultTile, DataViewCreateMode.CreateMissing))
+                        !targetView.TryGetWriteAccess(tile.X, tile.Y, out var resultTile, DataViewCreateMode.CreateMissing))
                     {
                         continue;
                     }
 
-                    processingParameterCache.Add(new ProcessingParameters(tile, zPosition, sourceView, sourceTile, resultTile));
+                    processingParameterCache.Add(new ProcessingParameters(tile, zPosition, sourceView, sourceTile, targetView, resultTile));
                 }
             }
 
@@ -89,7 +89,6 @@ namespace RogueEntity.Core.GridProcessing.Transforms
                 return false;
             }
             
-            Console.WriteLine("Processing " + GetType().Name);
             var r = Parallel.ForEach(processingParameterCache, processTileDelegate);
             return r.IsCompleted;
         }
@@ -108,7 +107,7 @@ namespace RogueEntity.Core.GridProcessing.Transforms
                     continue;
                 }
 
-                if (!TargetData.TryGetWritableView(zPosition, out var directionMap, DataViewCreateMode.CreateMissing))
+                if (!TargetData.TryGetWritableView(zPosition, out var targetView, DataViewCreateMode.CreateMissing))
                 {
                     continue;
                 }
@@ -126,13 +125,13 @@ namespace RogueEntity.Core.GridProcessing.Transforms
                     }
 
                     if (!sourceView.TryGetData(tile.X, tile.Y, out var sourceTile) ||
-                        !directionMap.TryGetWriteAccess(tile.X, tile.Y, out var resultTile, DataViewCreateMode.CreateMissing))
+                        !targetView.TryGetWriteAccess(tile.X, tile.Y, out var resultTile, DataViewCreateMode.CreateMissing))
                     {
                         continue;
                     }
 
                     var effectiveArea = tile.GetIntersection(bounds);
-                    processingParameterCache.Add(new ProcessingParameters(effectiveArea, zPosition, sourceView, sourceTile, resultTile));
+                    processingParameterCache.Add(new ProcessingParameters(effectiveArea, zPosition, sourceView, sourceTile, targetView, resultTile));
                 }
             }
 
@@ -142,8 +141,17 @@ namespace RogueEntity.Core.GridProcessing.Transforms
             }
             
             var r = Parallel.ForEach(processingParameterCache, processTileDelegate);
+            for (var i = 0; i < processingParameterCache.Count; i++)
+            {
+                var p = processingParameterCache[i];
+                this.FireViewProcessedEvent(p.ZPosition, p.TargetLayer, p.TargetTile);
+            }
             return r.IsCompleted;
         }
+
+        protected abstract void FireViewProcessedEvent(int zPosition, 
+                                                       IReadOnlyDynamicDataView2D<TTargetData> sourceLayer, 
+                                                       IBoundedDataView<TTargetData> resultTile);
 
         protected abstract void ProcessTile(ProcessingParameters args);
 
@@ -183,18 +191,21 @@ namespace RogueEntity.Core.GridProcessing.Transforms
             public readonly int ZPosition;
             public readonly IReadOnlyDynamicDataView2D<TSourceData> SourceLayer;
             public readonly IReadOnlyBoundedDataView<TSourceData> SourceTile;
-            public readonly IBoundedDataView<TTargetData> ResultTile;
+            public readonly IDynamicDataView2D<TTargetData> TargetLayer;
+            public readonly IBoundedDataView<TTargetData> TargetTile;
 
             public ProcessingParameters(Rectangle bounds,
                                         int zPosition,
                                         IReadOnlyDynamicDataView2D<TSourceData> sourceLayer,
                                         IReadOnlyBoundedDataView<TSourceData> sourceTile,
-                                        IBoundedDataView<TTargetData> resultTile)
+                                        IDynamicDataView2D<TTargetData> targetLayer,
+                                        IBoundedDataView<TTargetData> targetTile)
             {
                 Bounds = bounds;
                 ZPosition = zPosition;
                 SourceTile = sourceTile;
-                ResultTile = resultTile;
+                this.TargetLayer = targetLayer;
+                this.TargetTile = targetTile;
                 SourceLayer = sourceLayer;
             }
 
@@ -208,7 +219,7 @@ namespace RogueEntity.Core.GridProcessing.Transforms
                 bounds = Bounds;
                 zPosition = ZPosition;
                 sourceTile = SourceTile;
-                resultTile = ResultTile;
+                resultTile = TargetTile;
             }
         }
     }

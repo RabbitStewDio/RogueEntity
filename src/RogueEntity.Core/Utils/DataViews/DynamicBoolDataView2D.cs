@@ -10,7 +10,7 @@ namespace RogueEntity.Core.Utils.DataViews
 {
     [DataContract]
     [MessagePackObject]
-    public class DynamicBoolDataView : IDynamicDataView2D<bool>
+    public class DynamicBoolDataView2D : IDynamicDataView2D<bool>
     {
         public event EventHandler<DynamicDataView2DEventArgs<bool>>? ViewChunkCreated;
         public event EventHandler<DynamicDataView2DEventArgs<bool>>? ViewChunkExpired;
@@ -63,11 +63,11 @@ namespace RogueEntity.Core.Utils.DataViews
         [IgnoreMember]
         Rectangle activeBounds;
 
-        public DynamicBoolDataView(int tileSizeX, int tileSizeY) : this(0, 0, tileSizeX, tileSizeY)
+        public DynamicBoolDataView2D(int tileSizeX, int tileSizeY) : this(0, 0, tileSizeX, tileSizeY)
         {
         }
 
-        public DynamicBoolDataView(int offsetX, int offsetY, int tileSizeX, int tileSizeY)
+        public DynamicBoolDataView2D(int offsetX, int offsetY, int tileSizeX, int tileSizeY)
         {
             if (tileSizeX <= 0) throw new ArgumentException(nameof(tileSizeX));
             if (tileSizeY <= 0) throw new ArgumentException(nameof(tileSizeY));
@@ -81,7 +81,7 @@ namespace RogueEntity.Core.Utils.DataViews
         }
 
         [SerializationConstructor]
-        internal DynamicBoolDataView(int tileSizeX,
+        internal DynamicBoolDataView2D(int tileSizeX,
                                      int tileSizeY,
                                      Dictionary<TileIndex, TrackedDataView> index,
                                      long currentTime,
@@ -167,6 +167,25 @@ namespace RogueEntity.Core.Utils.DataViews
                 e.MarkUsedForWriting();
                 e.Fill(in value);
             }
+        }
+
+        public bool RemoveView(int x, int y, out TileIndex removedIndex)
+        {
+            var dx = DataViewPartitions.TileSplit(x, offsetX, tileSizeX);
+            var dy = DataViewPartitions.TileSplit(y, offsetY, tileSizeY);
+
+            var key = new TileIndex(dx, dy);
+            if (index.TryGetValue(key, out var existing))
+            {
+                ViewChunkExpired?.Invoke(this, new DynamicDataView2DEventArgs<bool>(key, existing));
+                index.Remove(key);
+                removedIndex = key;
+                return true;
+            }
+
+            removedIndex = default;
+            return false;
+
         }
 
         public void ExpireFrames(long age)

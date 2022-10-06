@@ -24,9 +24,11 @@ using RogueEntity.Core.Utils.DataViews;
 using RogueEntity.Core.Meta.EntityKeys;
 using RogueEntity.Core.Positioning.Algorithms;
 using RogueEntity.Core.Tests.Fixtures;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RogueEntity.Core.Tests.Sensing.Discovery
 {
+    [SuppressMessage("ReSharper", "NotNullOrRequiredMemberIsNotInitialized")]
     public class DiscoveryMapSystemTest
     {
         const string EmptyRoom = @"

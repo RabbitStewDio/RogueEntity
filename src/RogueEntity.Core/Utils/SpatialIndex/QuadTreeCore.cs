@@ -107,7 +107,7 @@ namespace RogueEntity.Core.Utils.SpatialIndex
             }
         }
 
-        public List<FreeListIndex> Query(in BoundingBox bb, List<FreeListIndex> result, bool[] deduplicator, FreeListIndex skipElement = default)
+        public List<FreeListIndex> Query(in BoundingBox bb, List<FreeListIndex>? result, bool[] deduplicator, FreeListIndex skipElement = default)
         {
             var x = new CollectQueryVisitor(this, result ?? new List<FreeListIndex>(), bb, deduplicator, skipElement);
             ProcessLeaves(rootElement, 0, boundingBox, bb, x);

@@ -12,10 +12,12 @@ using RogueEntity.Core.Utils.DataViews;
 using RogueEntity.Core.Meta.EntityKeys;
 using RogueEntity.Core.Positioning.Algorithms;
 using RogueEntity.Core.Tests.Fixtures;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RogueEntity.Core.Tests.Sensing.Sources.Heat
 {
     [TestFixture]
+    [SuppressMessage("ReSharper", "NotNullOrRequiredMemberIsNotInitialized")]
     public class HeatSystemTest : SenseSystemTestBase<TemperatureSense, HeatSourceDefinition>
     {
         const string EmptyRoom = @"

@@ -14,7 +14,7 @@ namespace RogueEntity.Core.Sensing.Common.ShadowCast
 
         public void Dispose()
         {
-            dataStore?.Dispose();
+            dataStore.Dispose();
         }
 
         public ShadowPropagationResistanceData Create(int radiusInt)

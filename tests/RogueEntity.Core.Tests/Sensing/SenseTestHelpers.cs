@@ -8,12 +8,12 @@ namespace RogueEntity.Core.Tests.Sensing
     public static class SenseTestHelpers
     {
 
-        public static DynamicBoolDataView ParseBool(string text) => ParseBool(text, out _);
+        public static DynamicBoolDataView2D ParseBool(string text) => ParseBool(text, out _);
 
-        public static DynamicBoolDataView ParseBool(string text, out Rectangle parsedBounds)
+        public static DynamicBoolDataView2D ParseBool(string text, out Rectangle parsedBounds)
         {
             var tmp = ParseMap(text, out parsedBounds);
-            var result = new DynamicBoolDataView(tmp.OffsetX, tmp.OffsetY, tmp.TileSizeX, tmp.TileSizeY);
+            var result = new DynamicBoolDataView2D(tmp.OffsetX, tmp.OffsetY, tmp.TileSizeX, tmp.TileSizeY);
             result.ImportData(tmp, f => f > 0);
             return result;
         }

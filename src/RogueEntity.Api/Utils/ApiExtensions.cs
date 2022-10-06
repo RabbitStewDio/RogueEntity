@@ -19,7 +19,7 @@ namespace RogueEntity.Api.Utils
             return true;
         }
 
-        internal static bool EqualsList<TItem>(IReadOnlyList<TItem> a, IReadOnlyList<TItem> b)
+        internal static bool EqualsList<TItem>(IReadOnlyList<TItem>? a, IReadOnlyList<TItem>? b)
         {
             if (ReferenceEquals(a, b)) return true;
             if (a == null || b == null) return false;

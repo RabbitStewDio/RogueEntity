@@ -21,9 +21,11 @@ using RogueEntity.Core.Meta.EntityKeys;
 using RogueEntity.Core.Positioning.Algorithms;
 using RogueEntity.Core.Tests.Fixtures;
 using RogueEntity.Core.Utils;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RogueEntity.Core.Tests.Sensing.Map
 {
+    [SuppressMessage("ReSharper", "NotNullOrRequiredMemberIsNotInitialized")]
     public abstract class SenseMapSystemTestBase<TReceptorSense, TSourceSense, TSenseSourceDefinition>
         where TSourceSense : ISense
         where TReceptorSense : ISense

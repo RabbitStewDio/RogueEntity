@@ -6,7 +6,6 @@ using RogueEntity.Core.Positioning;
 using Serilog;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 
 namespace RogueEntity.Core.Players
 {
@@ -169,7 +168,7 @@ namespace RogueEntity.Core.Players
             return queryBuffer;
         }
         
-        public bool TryQueryPlayer(in PlayerTag playerTag, [MaybeNullWhen(false)] out TEntity playerEntity)
+        public bool TryQueryPlayer(in PlayerTag playerTag, out TEntity playerEntity)
         {
             if (playerDataByGuid.TryGetValue(playerTag, out var p))
             {

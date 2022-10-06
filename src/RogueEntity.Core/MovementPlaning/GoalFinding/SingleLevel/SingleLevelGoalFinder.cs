@@ -100,7 +100,7 @@ namespace RogueEntity.Core.MovementPlaning.GoalFinding.SingleLevel
             var heuristics = DistanceCalculation.Manhattan;
             foreach (var m in movementSourceData)
             {
-                singleLevelPathFinderDijkstra.ConfigureMovementProfile(in m.MovementCost, m.Costs, m.Directions);
+                singleLevelPathFinderDijkstra.ConfigureMovementProfile(in m.MovementCost, m.Costs, m.InboundDirections, m.OutboundDirections);
                 if (heuristics.IsOtherMoreAccurate(m.MovementCost.MovementStyle))
                 {
                     heuristics = m.MovementCost.MovementStyle;
@@ -162,9 +162,10 @@ namespace RogueEntity.Core.MovementPlaning.GoalFinding.SingleLevel
 
         public void ConfigureMovementProfile(in MovementCost costProfile,
                                              IReadOnlyDynamicDataView3D<float> costs,
-                                             IReadOnlyDynamicDataView3D<DirectionalityInformation> directions)
+                                             IReadOnlyDynamicDataView3D<DirectionalityInformation> inboundDirections,
+                                             IReadOnlyDynamicDataView3D<DirectionalityInformation> outboundDirections)
         {
-            this.movementSourceData.Add(new MovementCostData3D(in costProfile, costs, directions));
+            this.movementSourceData.Add(new MovementCostData3D(in costProfile, costs, inboundDirections, outboundDirections));
         }
     }
 }

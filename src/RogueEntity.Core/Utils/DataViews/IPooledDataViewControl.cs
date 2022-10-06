@@ -11,7 +11,7 @@ namespace RogueEntity.Core.Utils.DataViews
 
     public interface IPooledDataViewControl2D: IPooledDataViewControl
     {
-        BufferList<Rectangle> GetDirtyTiles(BufferList<Rectangle> data = null);
+        BufferList<Rectangle> GetDirtyTiles(BufferList<Rectangle>? data = null);
     }
 
     public interface IPooledDataViewControl3D : IPooledDataViewControl

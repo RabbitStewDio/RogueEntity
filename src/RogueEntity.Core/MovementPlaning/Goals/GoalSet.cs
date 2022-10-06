@@ -55,7 +55,7 @@ namespace RogueEntity.Core.MovementPlaning.Goals
             return buffer;
         }
         
-        public static GoalSet PrepareBuffer(GoalSet receiver)
+        public static GoalSet PrepareBuffer(GoalSet? receiver)
         {
             if (receiver == null)
             {

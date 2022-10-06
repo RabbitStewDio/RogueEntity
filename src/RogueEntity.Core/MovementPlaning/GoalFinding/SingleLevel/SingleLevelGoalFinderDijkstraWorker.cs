@@ -64,12 +64,14 @@ namespace RogueEntity.Core.MovementPlaning.GoalFinding.SingleLevel
 
         public void ConfigureMovementProfile(in MovementCost costProfile,
                                              IReadOnlyDynamicDataView3D<float> movementCosts,
-                                             IReadOnlyDynamicDataView3D<DirectionalityInformation> movementDirections)
+                                             IReadOnlyDynamicDataView3D<DirectionalityInformation> inboundMovementDirections,
+                                             IReadOnlyDynamicDataView3D<DirectionalityInformation> outboundMovementDirections)
         {
             if (movementCosts.TryGetView(activeLevel, out var costView) &&
-                movementDirections.TryGetView(activeLevel, out var directionView))
+                inboundMovementDirections.TryGetView(activeLevel, out var inboundDirectionView) &&
+                outboundMovementDirections.TryGetView(activeLevel, out var outboundDirectionView))
             {
-                movementCostsOnLevel.Add(new MovementCostData2D(costProfile, costView, directionView));
+                movementCostsOnLevel.Add(new MovementCostData2D(costProfile, costView, inboundDirectionView, outboundDirectionView));
             }
 
             if (movementCostsOnLevel.Count > directionsTile.Length)
@@ -142,7 +144,7 @@ namespace RogueEntity.Core.MovementPlaning.GoalFinding.SingleLevel
             for (var index = 0; index < movementCostsOnLevel.Count; index++)
             {
                 var s = movementCostsOnLevel[index];
-                var dir = s.Directions.TryGetMapValue(ref directionsTile[index], targetPosX, targetPosY, DirectionalityInformation.None);
+                var dir = s.OutboundDirections.TryGetMapValue(ref directionsTile[index], targetPosX, targetPosY, DirectionalityInformation.None);
                 allowedMovements |= dir;
             }
 
@@ -155,11 +157,15 @@ namespace RogueEntity.Core.MovementPlaning.GoalFinding.SingleLevel
         ///   We have to take into account that movement options may be different in that direction, thus the edge we
         ///   compute is the edge from (source + direction to source). 
         /// </summary>
-        protected override bool EdgeCostInformation(in ShortPosition2D sourceNode, in Direction d, float sourceNodeCost, out float totalPathCost, 
+        protected override bool EdgeCostInformation(in ShortPosition2D sourceNode, 
+                                                    in Direction d, 
+                                                    float sourceNodeCost, 
+                                                    out float totalPathCost, 
                                                     [MaybeNullWhen(false)] out IMovementMode movementMode)
         {
-            var inverseDirection = d.Inverse();
             var dx = d.ToCoordinates();
+            var sourcePosX = sourceNode.X;
+            var sourcePosY = sourceNode.Y;
             var targetPosX = sourceNode.X + dx.X + origin.X;
             var targetPosY = sourceNode.Y + dx.Y + origin.Y;
             var costInformationAvailable = false;
@@ -169,18 +175,20 @@ namespace RogueEntity.Core.MovementPlaning.GoalFinding.SingleLevel
             for (var index = 0; index < movementCostsOnLevel.Count; index++)
             {
                 var m = movementCostsOnLevel[index];
-                var dir = m.Directions.TryGetMapValue(ref directionsTile[index], targetPosX, targetPosY, DirectionalityInformation.None);
+                var dir = m.OutboundDirections.TryGetMapValue(ref directionsTile[index], sourcePosX, sourcePosY, DirectionalityInformation.None);
                 if (dir == DirectionalityInformation.None)
                 {
                     continue;
                 }
 
-                if (!dir.IsMovementAllowed(inverseDirection))
+                if (!dir.IsMovementAllowed(d))
                 {
                     continue;
                 }
 
-                var tileCost = m.Costs.TryGetMapValue(ref costsTile[index], targetPosX, targetPosY, 0);
+                var tileCostSource = m.Costs.TryGetMapValue(ref costsTile[index], sourcePosX, sourcePosY, 0);
+                var tileCostTarget = m.Costs.TryGetMapValue(ref costsTile[index], targetPosX, targetPosY, 0);
+                var tileCost = (tileCostSource + tileCostTarget) / 2;
                 if (tileCost <= 0)
                 {
                     // a cost of zero means its undefined. This should mean the tile is not valid.

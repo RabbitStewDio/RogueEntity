@@ -18,7 +18,7 @@ namespace RogueEntity.Core.Utils.DataViews
 
         [DataMember(Order = 4)]
         [Key(4)]
-        readonly Dictionary<int, DynamicBoolDataView> index;
+        readonly Dictionary<int, DynamicBoolDataView2D> index;
 
         [DataMember(Order = 0)]
         [Key(0)]
@@ -52,11 +52,11 @@ namespace RogueEntity.Core.Utils.DataViews
             this.tileSizeX = tileSizeX;
             this.tileSizeY = tileSizeY;
 
-            index = new Dictionary<int, DynamicBoolDataView>();
+            index = new Dictionary<int, DynamicBoolDataView2D>();
         }
 
         [SerializationConstructor]
-        public DynamicBoolDataView3D(int tileSizeX, int tileSizeY, int offsetX, int offsetY, Dictionary<int, DynamicBoolDataView> index)
+        public DynamicBoolDataView3D(int tileSizeX, int tileSizeY, int offsetX, int offsetY, Dictionary<int, DynamicBoolDataView2D> index)
         {
             this.index = index ?? throw new ArgumentNullException(nameof(index));
             this.tileSizeX = tileSizeX;
@@ -128,7 +128,7 @@ namespace RogueEntity.Core.Utils.DataViews
                 return false;
             }
 
-            rdata = new DynamicBoolDataView(OffsetX, OffsetY, TileSizeX, TileSizeY);
+            rdata = new DynamicBoolDataView2D(OffsetX, OffsetY, TileSizeX, TileSizeY);
             index[z] = rdata;
             ViewCreated?.Invoke(this, new DynamicDataView3DEventArgs<bool>(z, rdata));
             data = rdata;

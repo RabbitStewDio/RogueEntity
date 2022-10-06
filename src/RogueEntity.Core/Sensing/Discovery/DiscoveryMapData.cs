@@ -30,7 +30,7 @@ namespace RogueEntity.Core.Sensing.Discovery
                                 int tileSizeY,
                                 int offsetX,
                                 int offsetY,
-                                Dictionary<int, DynamicBoolDataView> index) : base(tileSizeX, tileSizeY, offsetX, offsetY, index)
+                                Dictionary<int, DynamicBoolDataView2D> index) : base(tileSizeX, tileSizeY, offsetX, offsetY, index)
         { }
     }
 }

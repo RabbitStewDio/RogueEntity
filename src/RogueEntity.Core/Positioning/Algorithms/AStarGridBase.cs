@@ -60,7 +60,7 @@ namespace RogueEntity.Core.Positioning.Algorithms
 
         void ThrowNodeUpdateError(in Position2D pos)
         {
-            throw new Exception($"Unable to update existing node at {pos}.");
+            throw new InvalidOperationException($"Unable to update existing node at {pos}.");
         }
         
         protected PathFinderResult FindPath(Position2D start,

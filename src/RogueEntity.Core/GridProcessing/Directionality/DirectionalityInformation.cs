@@ -1,3 +1,4 @@
+using RogueEntity.Core.Positioning.Algorithms;
 using System;
 
 namespace RogueEntity.Core.GridProcessing.Directionality

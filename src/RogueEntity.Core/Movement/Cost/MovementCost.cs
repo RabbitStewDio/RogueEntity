@@ -26,6 +26,10 @@ namespace RogueEntity.Core.Movement.Cost
         [Key(0)]
         public readonly IMovementMode MovementMode;
 
+        /// <summary>
+        ///    Directly controls the available move set on a grid. When not using grid based movement, this must
+        /// be set to Euclid. 
+        /// </summary>
         [DataMember(Order = 1)]
         [Key(1)]
         public readonly DistanceCalculation MovementStyle;

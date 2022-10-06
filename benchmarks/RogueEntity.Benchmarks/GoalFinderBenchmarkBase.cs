@@ -81,7 +81,7 @@ namespace RogueEntity.Benchmarks
             if (!directionalityMapSystem.ResultView.TryGetView(0, out var directionalityMap))
                 throw new Exception();
 
-            movementDataCollector.RegisterMovementSource(WalkingMovement.Instance, movementCostData.As3DMap(0), directionalityMap.As3DMap(0), directionalityMap.As3DMap(0));
+            movementDataCollector.RegisterMovementSource<WalkingMovement>(WalkingMovement.Instance, movementCostData.As3DMap(0), directionalityMap.As3DMap(0), directionalityMap.As3DMap(0));
 
             var rnd = new Random(10);
             while (positions.Count < 50)

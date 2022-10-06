@@ -32,6 +32,9 @@ namespace RogueEntity.Core.Positioning.Grid
         [Key(0)]
         readonly byte layerId;
         [DataMember]
+        [Key(4)]
+        readonly byte valid;
+        [DataMember]
         [Key(1)]
         readonly short x;
         [DataMember]
@@ -40,9 +43,6 @@ namespace RogueEntity.Core.Positioning.Grid
         [DataMember]
         [Key(3)]
         readonly short z;
-        [DataMember]
-        [Key(4)]
-        readonly byte valid;
 
         [SerializationConstructor]
         public EntityGridPosition(byte layerId, short x, short y, short z, byte valid = 1)

@@ -21,6 +21,7 @@ using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.DataViews;
 using RogueEntity.Core.Meta.EntityKeys;
 using RogueEntity.Core.Tests.Fixtures;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RogueEntity.Core.Tests.Sensing.Sources
 {
@@ -33,6 +34,7 @@ namespace RogueEntity.Core.Tests.Sensing.Sources
         }
     }
 
+    [SuppressMessage("ReSharper", "NotNullOrRequiredMemberIsNotInitialized")]
     public abstract class SenseSystemTestBase<TSense, TSenseSourceDefinition>
         where TSense : ISense
         where TSenseSourceDefinition : ISenseDefinition

@@ -11,6 +11,6 @@ namespace RogueEntity.Core.Sensing.Common
                                   in Position2D position,
                                   IReadOnlyDynamicDataView2D<float> resistanceMap,
                                   IReadOnlyDynamicDataView2D<DirectionalityInformation> directionalityView,
-                                  SenseSourceData data = null);
+                                  SenseSourceData? data = null);
     }
 }

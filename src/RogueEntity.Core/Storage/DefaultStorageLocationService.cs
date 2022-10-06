@@ -1,3 +1,4 @@
+using RogueEntity.Core.Utils;
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -15,8 +16,10 @@ namespace RogueEntity.Core.Storage
         public string ContentLocation { get; }
         public string ConfigurationLocation { get; }
 
-        public static DefaultStorageLocationService CreateDefault(string appId, string contentDirectory = "Content")
+        public static DefaultStorageLocationService CreateDefault(string appId, string? contentDirectory = "Content")
         {
+            Assert.NotNull(appId);
+            
             var contentLocation = Path.Combine(GetApplicationLocation(), contentDirectory ?? "Content");
             var configLocation = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), appId);
             return new DefaultStorageLocationService(contentLocation, configLocation);

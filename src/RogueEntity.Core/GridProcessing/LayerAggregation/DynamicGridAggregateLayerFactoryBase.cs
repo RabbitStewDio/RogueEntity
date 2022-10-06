@@ -48,7 +48,7 @@ namespace RogueEntity.Core.GridProcessing.LayerAggregation
                 {
                     // If the map no longer contains the z-layer we previously seen,
                     // kick it out from the system for good.
-                    if (system.TryGetSenseLayer(z, out var mlx))
+                    if (system.TryGetAggregationLayer(z, out var mlx))
                     {
                         mlx.RemoveLayer(layer);
                     }

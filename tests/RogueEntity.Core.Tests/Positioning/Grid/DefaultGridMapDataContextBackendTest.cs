@@ -3,9 +3,11 @@ using NUnit.Framework;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Tests.Fixtures;
 using RogueEntity.Core.Utils.DataViews;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RogueEntity.Core.Tests.Positioning.Grid
 {
+    [SuppressMessage("ReSharper", "NotNullOrRequiredMemberIsNotInitialized")]
     public class DefaultGridMapDataContextBackendTest
     {
         DefaultGridPositionContextBackend<byte> gdc;

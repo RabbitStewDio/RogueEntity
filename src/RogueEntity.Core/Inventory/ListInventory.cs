@@ -297,7 +297,7 @@ namespace RogueEntity.Core.Inventory
         /// <param name="itemByType"></param>
         /// <param name="removedItem"></param>
         /// <returns></returns>
-        public bool TryRemoveItem( ItemDeclarationId itemByType, [MaybeNullWhen(false)] out TItemId removedItem)
+        public bool TryRemoveItem( ItemDeclarationId itemByType, out TItemId removedItem)
         {
             for (int i = Data.Items.Count - 1; i >= 0; i--)
             {

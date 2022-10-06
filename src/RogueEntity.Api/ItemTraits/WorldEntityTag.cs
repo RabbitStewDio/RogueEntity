@@ -4,9 +4,9 @@ namespace RogueEntity.Api.ItemTraits
 {
     public readonly struct WorldEntityTag : IEquatable<WorldEntityTag>
     {
-        public readonly string Tag;
+        public readonly string? Tag;
 
-        public WorldEntityTag(string tag)
+        public WorldEntityTag(string? tag)
         {
             Tag = tag;
         }

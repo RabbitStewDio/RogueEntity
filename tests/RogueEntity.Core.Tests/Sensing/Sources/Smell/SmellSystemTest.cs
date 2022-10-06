@@ -6,9 +6,11 @@ using RogueEntity.Core.Sensing.Common.Physics;
 using RogueEntity.Core.Sensing.Sources.Smell;
 using RogueEntity.Core.Meta.EntityKeys;
 using RogueEntity.Core.Positioning.Algorithms;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RogueEntity.Core.Tests.Sensing.Sources.Smell
 {
+    [SuppressMessage("ReSharper", "NotNullOrRequiredMemberIsNotInitialized")]
     public class SmellSystemTest : SenseSystemTestBase<SmellSense, SmellSourceDefinition>
     {
         const string EmptyRoom = @"

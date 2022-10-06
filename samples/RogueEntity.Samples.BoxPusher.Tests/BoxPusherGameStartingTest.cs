@@ -26,10 +26,12 @@ namespace RogueEntity.Samples.BoxPusher.Tests
         [Test]
         public void MapSystemInitialized()
         {
-            game.ServiceResolver.TryResolve(out IMapRegionMetaDataService<int> mds).Should().BeTrue();
-            game.ServiceResolver.TryResolve(out IMapRegionEvictionSystem ev).Should().BeTrue();
+            Assert.NotNull(game.ServiceResolver);
+            
+            game.ServiceResolver.TryResolve<IMapRegionMetaDataService<int>>(out var mds).Should().BeTrue();
+            game.ServiceResolver.TryResolve<IMapRegionEvictionSystem>(out _).Should().BeTrue();
             var x = (StaticMapLevelDataSource)mds;
-            x.Initialized.Should().BeTrue();
+            x!.Initialized.Should().BeTrue();
         }
         
         [Test]
@@ -37,6 +39,7 @@ namespace RogueEntity.Samples.BoxPusher.Tests
         {
             
             game.ProfileManager.TryCreatePlayer(new BoxPusherPlayerProfile("UnitTest"), out var profileId, out var profile).Should().BeTrue();
+            Assert.NotNull(profile);
             
             profile.PlayerName.Should().Be("UnitTest");
             profile.IsComplete(0).Should().BeFalse();

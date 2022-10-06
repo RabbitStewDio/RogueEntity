@@ -38,7 +38,7 @@ namespace RogueEntity.Core.MapLoading.MapRegions
         IMapRegionRequestStatus<TRegionKey> EvictRegion(TRegionKey region);
 
         BufferList<IMapRegionProcessingRequestHandle<TRegionKey>> QueryActiveRequests(MapRegionStatus status,
-                                                                                       BufferList<IMapRegionProcessingRequestHandle<TRegionKey>> k = null);
+                                                                                       BufferList<IMapRegionProcessingRequestHandle<TRegionKey>>? k = null);
     }
 
     public static class MapRegionTrackerServiceExtensions

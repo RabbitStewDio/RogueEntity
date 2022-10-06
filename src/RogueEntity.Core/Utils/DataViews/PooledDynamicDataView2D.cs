@@ -146,17 +146,20 @@ namespace RogueEntity.Core.Utils.DataViews
             }
         }
 
-        public void UnloadFrame(int x, int y)
+        public bool RemoveView(int x, int y, out TileIndex removedIndex)
         {
             var idx = tileConfiguration.TileIndex(x, y);
             if (!index.TryGetValue(idx, out var data))
             {
-                return;
+                removedIndex = default;
+                return false;
             }
 
             ViewChunkExpired?.Invoke(this, new DynamicDataView2DEventArgs<T>(idx, data));
             index.Remove(idx);
             pool.Return(data);
+            removedIndex = idx;
+            return true;
         }
 
         public void ExpireFrames(long age)

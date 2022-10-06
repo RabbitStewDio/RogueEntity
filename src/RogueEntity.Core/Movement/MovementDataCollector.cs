@@ -2,6 +2,7 @@ using RogueEntity.Core.GridProcessing.Directionality;
 using RogueEntity.Core.Utils.DataViews;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RogueEntity.Core.Movement
 {
@@ -9,19 +10,46 @@ namespace RogueEntity.Core.Movement
     ///   A shared registry of movement data (directionality of allowed moves and cost of moves). This
     ///   is used by both goal finders and pathfinders.
     /// </summary>
-    public class MovementDataCollector: IMovementDataCollector, IMovementDataProvider
+    public class MovementDataCollector : IMovementDataCollector, IMovementDataProvider
     {
         readonly Dictionary<IMovementMode, MovementSourceData> movementCostMaps;
+        readonly Dictionary<Type, MovementSourceData> movementCostMapsByType;
 
         public MovementDataCollector()
         {
             movementCostMaps = new Dictionary<IMovementMode, MovementSourceData>();
+            movementCostMapsByType = new Dictionary<Type, MovementSourceData>();
         }
 
-        public void RegisterMovementSource(IMovementMode movementMode,
-                                           IReadOnlyDynamicDataView3D<float> cost,
-                                           IReadOnlyDynamicDataView3D<DirectionalityInformation> inboundDirection,
-                                           IReadOnlyDynamicDataView3D<DirectionalityInformation> outboundDirection)
+        public void RegisterMovementSource(MovementSourceData d)
+        {
+            var cost = d.Costs;
+            if (cost == null)
+            {
+                throw new ArgumentNullException(nameof(cost));
+            }
+
+            var inboundDirection = d.InboundDirections;
+            if (inboundDirection == null)
+            {
+                throw new ArgumentNullException(nameof(inboundDirection));
+            }
+
+            var outboundDirection = d.OutboundDirections;
+            if (outboundDirection == null)
+            {
+                throw new ArgumentNullException(nameof(outboundDirection));
+            }
+
+            movementCostMaps[d.MovementMode] = d;
+            movementCostMapsByType[d.MovementMode.GetType()] = d;
+        }
+        
+        public void RegisterMovementSource<TMovementMode>(IMovementMode movementMode,
+                                                          IReadOnlyDynamicDataView3D<float> cost,
+                                                          IReadOnlyDynamicDataView3D<DirectionalityInformation> inboundDirection,
+                                                          IReadOnlyDynamicDataView3D<DirectionalityInformation> outboundDirection) 
+            where TMovementMode : IMovementMode
         {
             if (cost == null)
             {
@@ -38,26 +66,15 @@ namespace RogueEntity.Core.Movement
                 throw new ArgumentNullException(nameof(outboundDirection));
             }
 
-            movementCostMaps[movementMode] = new MovementSourceData(cost, inboundDirection, outboundDirection);
+            movementCostMaps[movementMode] = new MovementSourceData(movementMode, cost, inboundDirection, outboundDirection);
+            movementCostMapsByType[typeof(TMovementMode)] = new MovementSourceData(movementMode, cost, inboundDirection, outboundDirection);
         }
 
+        public bool TryGet<TMovementMode>(out MovementSourceData m)
+        {
+            return movementCostMapsByType.TryGetValue(typeof(TMovementMode), out m);
+        }
+        
         public IReadOnlyDictionary<IMovementMode, MovementSourceData> MovementCosts => movementCostMaps;
     }
-    
-    public readonly struct MovementSourceData
-    {
-        public readonly IReadOnlyDynamicDataView3D<float> Costs;
-        public readonly IReadOnlyDynamicDataView3D<DirectionalityInformation> InboundDirections;
-        public readonly IReadOnlyDynamicDataView3D<DirectionalityInformation> OutboundDirections;
-
-        public MovementSourceData(IReadOnlyDynamicDataView3D<float> costs,
-                                  IReadOnlyDynamicDataView3D<DirectionalityInformation> inboundDirections,
-                                  IReadOnlyDynamicDataView3D<DirectionalityInformation> outboundDirections)
-        {
-            Costs = costs ?? throw new ArgumentNullException(nameof(costs));
-            InboundDirections = inboundDirections ?? throw new ArgumentNullException(nameof(inboundDirections));
-            OutboundDirections = outboundDirections ?? throw new ArgumentNullException(nameof(outboundDirections));
-        }
-    }
-
 }

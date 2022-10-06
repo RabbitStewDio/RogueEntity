@@ -20,7 +20,7 @@ namespace RogueEntity.Core.Sensing.Discovery
 
         public void Dispose()
         {
-            partitionBounds?.Dispose();
+            partitionBounds.Dispose();
         }
 
         [SuppressMessage("ReSharper", "UnusedParameter.Global")]

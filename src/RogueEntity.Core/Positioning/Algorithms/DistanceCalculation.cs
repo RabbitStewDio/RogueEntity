@@ -2,6 +2,13 @@ using System;
 
 namespace RogueEntity.Core.Positioning.Algorithms
 {
+    /// <summary>
+    ///   A marker for defining how movement is performed. This both controls the movement style.
+    ///
+    ///   * Manhattan: grid movement limited to cardinal directions (like a rook in chess)
+    ///   * Chebyshev: grid movement both along cardinal and diagonal directions (like the queen in chess)
+    ///   * Euclid: freeform movement unrestrained by a grid. 
+    /// </summary>
     public enum DistanceCalculation
     {
         Euclid = 0,

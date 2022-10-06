@@ -133,7 +133,7 @@ namespace RogueEntity.Core.Utils
             return true;
         }
 
-        public static bool EqualsList<TItem>(IReadOnlyList<TItem> a, IReadOnlyList<TItem> b)
+        public static bool EqualsList<TItem>(IReadOnlyList<TItem>? a, IReadOnlyList<TItem>? b)
         {
             if (ReferenceEquals(a, b)) return true;
             if (a == null || b == null) return false;
@@ -150,7 +150,7 @@ namespace RogueEntity.Core.Utils
             return true;
         }
 
-        public static bool EqualsDictionary<TKey, TItem>(Dictionary<TKey, TItem> a, Dictionary<TKey, TItem> b)
+        public static bool EqualsDictionary<TKey, TItem>(Dictionary<TKey, TItem>? a, Dictionary<TKey, TItem>? b)
         {
             if (ReferenceEquals(a, b)) return true;
             if (a == null || b == null) return false;

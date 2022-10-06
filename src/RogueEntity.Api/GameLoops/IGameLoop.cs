@@ -5,7 +5,7 @@ namespace RogueEntity.Api.GameLoops
 {
     public interface IGameLoop: IDisposable
     {
-        void Initialize(Func<bool> isWaitingForInputDelegate = null);
+        void Initialize(Func<bool>? isWaitingForInputDelegate = null);
         void Update(TimeSpan absoluteTime);
         void Stop();
         

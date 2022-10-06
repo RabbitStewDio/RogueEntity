@@ -47,7 +47,7 @@ namespace RogueEntity.Core.GridProcessing.LayerAggregation
 
         void AddSenseLayerFactory(IAggregationLayerController< TSourceType> layerHandler);
 
-        bool TryGetSenseLayer(int z, [MaybeNullWhen(false)] out IAggregationPropertiesLayer< TSourceType> data);
+        bool TryGetAggregationLayer(int z, [MaybeNullWhen(false)] out IAggregationPropertiesLayer< TSourceType> data);
         IAggregationPropertiesLayer< TSourceType> GetOrCreate(int z);
         void Remove(int z);
     }

@@ -190,7 +190,6 @@ namespace RogueEntity.Core.Sensing.Sources
                     dataIn.Reset();
                 }
 
-                Console.WriteLine($"Pos {state.LastPosition}/{k} not enabled");
                 return;
             }
 
@@ -201,8 +200,6 @@ namespace RogueEntity.Core.Sensing.Sources
                 var data = RefreshSenseState(definition, state.LastIntensity, pos, resistanceView, directionMap, dataIn);
                 state = state.WithDirtyState(SenseSourceDirtyState.Active)
                              .WithSenseState(data);
-
-                Console.WriteLine($"Pos {state.LastPosition} active");
             }
             else
             {
@@ -211,8 +208,6 @@ namespace RogueEntity.Core.Sensing.Sources
                 {
                     dataIn.Reset();
                 }
-
-                Console.WriteLine($"Pos {state.LastPosition} no resistance view, ignored");
             }
         }
 

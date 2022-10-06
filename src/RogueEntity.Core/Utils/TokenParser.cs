@@ -134,12 +134,12 @@ namespace RogueEntity.Core.Utils
                         return false;
                     }
 
-                    if (p.TryParse(text, out TLeft left))
+                    if (p.TryParse<TLeft>(text, out var left))
                     {
                         return producer(Optional.ValueOf(left), Optional.Empty(), out data);
                     }
 
-                    if (p.TryParse(text, out TRight right))
+                    if (p.TryParse<TRight>(text, out var right))
                     {
                         return producer(Optional.Empty(), Optional.ValueOf(right), out data);
                     }
@@ -148,8 +148,8 @@ namespace RogueEntity.Core.Utils
                 {
                     var leftText = text.Substring(0, idx);
                     var rightText = text.Substring(idx + 1);
-                    if (p.TryParse(leftText, out TLeft leftValue) &&
-                        p.TryParse(rightText, out TRight rightValue))
+                    if (p.TryParse<TLeft>(leftText, out var leftValue) &&
+                        p.TryParse<TRight>(rightText, out var rightValue))
                     {
                         return producer(Optional.ValueOf(leftValue), Optional.ValueOf(rightValue), out data);
                     }

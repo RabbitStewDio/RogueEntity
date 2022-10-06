@@ -32,7 +32,7 @@ namespace RogueEntity.Core.Movement.MovementModes
             get { return modes; }
         }
 
-        public bool TryGetMode<TMode>([MaybeNullWhen(false)] out TMode mode)
+        public bool TryGetMode<TMode>([MaybeNullWhen(false)] out TMode mode) where TMode: IMovementMode
         {
             if (modesByType.TryGetValue(typeof(TMode), out var m))
             {

@@ -17,9 +17,9 @@ namespace RogueEntity.Api.Modules.Helpers
 
         internal ModuleEntityRoleInitializerInfo(EntityRole role,
                                                  ModuleEntityRoleInitializerDelegate<TEntityId> initializer,
-                                                 EntityRole[] requiredRoles,
-                                                 EntityRelation[] requiredRelations,
-                                                 EntityRole[] requiredRolesAnywhereInSystem,
+                                                 EntityRole[]? requiredRoles,
+                                                 EntityRelation[]? requiredRelations,
+                                                 EntityRole[]? requiredRolesAnywhereInSystem,
                                                  string sourceHint)
         {
             Initializer = initializer;

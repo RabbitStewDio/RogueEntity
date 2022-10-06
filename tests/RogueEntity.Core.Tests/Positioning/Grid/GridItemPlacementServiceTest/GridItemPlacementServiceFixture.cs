@@ -7,9 +7,11 @@ using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Positioning.MapLayers;
 using RogueEntity.Core.Tests.Fixtures;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RogueEntity.Core.Tests.Positioning.Grid.GridItemPlacementServiceTest
 {
+    [SuppressMessage("ReSharper", "NotNullOrRequiredMemberIsNotInitialized")]
     public class GridItemPlacementServiceFixture: WhenFixtureSupport, IItemFixture
     {
         protected MapLayer DefaultLayer = new MapLayer(1, "Default Layer");

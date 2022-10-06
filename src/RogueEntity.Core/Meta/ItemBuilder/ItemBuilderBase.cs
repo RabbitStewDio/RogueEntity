@@ -57,19 +57,19 @@ namespace RogueEntity.Core.Meta.ItemBuilder
 
         public TBuilder WithData<TData>(Func<TData, TData> data)
         {
-            if (ItemResolver.TryQueryData(Reference, out TData stack))
+            if (ItemResolver.TryQueryData<TData>(Reference, out var stack))
             {
-                ItemResolver.TryUpdateData(Reference,  data(stack), out Reference);
+                ItemResolver.TryUpdateData(Reference, data(stack), out Reference);
             }
 
             return (TBuilder)this;
         }
 
-        public TBuilder WithData<TData>(Func<TItemId,  TData, TData> data)
+        public TBuilder WithData<TData>(Func<TItemId, TData, TData> data)
         {
-            if (ItemResolver.TryQueryData(Reference,  out TData stack))
+            if (ItemResolver.TryQueryData<TData>(Reference, out var stack))
             {
-                ItemResolver.TryUpdateData(Reference,  data(Reference,  stack), out Reference);
+                ItemResolver.TryUpdateData(Reference, data(Reference, stack), out Reference);
             }
 
             return (TBuilder)this;
@@ -77,29 +77,29 @@ namespace RogueEntity.Core.Meta.ItemBuilder
 
         public TBuilder WithRandomizedProperties(IRandomGenerator randomGenerator)
         {
-            if (ItemResolver.TryQueryData(Reference,  out StackCount stackSize))
+            if (ItemResolver.TryQueryData(Reference, out StackCount stackSize))
             {
                 var stackCount = randomGenerator.Next(1, stackSize.MaximumStackSize + 1);
                 stackSize = stackSize.WithCount((ushort)stackCount);
-                if (ItemResolver.TryUpdateData(Reference,  stackSize, out var changedItemRef))
+                if (ItemResolver.TryUpdateData(Reference, stackSize, out var changedItemRef))
                 {
                     Reference = changedItemRef;
                 }
             }
 
-            if (ItemResolver.TryQueryData(Reference,  out ItemCharge charge))
+            if (ItemResolver.TryQueryData(Reference, out ItemCharge charge))
             {
                 var chargeCount = randomGenerator.Next(1, charge.MaximumCharge + 1);
-                if (ItemResolver.TryUpdateData(Reference,  charge.WithCount((ushort)chargeCount), out var changedItemRef))
+                if (ItemResolver.TryUpdateData(Reference, charge.WithCount((ushort)chargeCount), out var changedItemRef))
                 {
                     Reference = changedItemRef;
                 }
             }
 
-            if (ItemResolver.TryQueryData(Reference,  out Durability durability))
+            if (ItemResolver.TryQueryData(Reference, out Durability durability))
             {
                 var durabilityHp = randomGenerator.Next(1, durability.MaxHitPoints + 1);
-                if (ItemResolver.TryUpdateData(Reference,  durability.WithHitPoints((ushort)durabilityHp), out var changedItemRef))
+                if (ItemResolver.TryUpdateData(Reference, durability.WithHitPoints((ushort)durabilityHp), out var changedItemRef))
                 {
                     Reference = changedItemRef;
                 }
@@ -108,7 +108,7 @@ namespace RogueEntity.Core.Meta.ItemBuilder
             return (TBuilder)this;
         }
 
-        public static implicit operator TItemId(ItemBuilderBase< TItemId, TBuilder> itemBuilder)
+        public static implicit operator TItemId(ItemBuilderBase<TItemId, TBuilder> itemBuilder)
         {
             return itemBuilder.Reference;
         }

@@ -11,9 +11,11 @@ using RogueEntity.Core.Sensing.Resistance.Maps;
 using RogueEntity.Core.Utils;
 using RogueEntity.Core.Meta.EntityKeys;
 using RogueEntity.Core.Tests.Fixtures;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RogueEntity.Core.Tests.Sensing.Resistance
 {
+    [SuppressMessage("ReSharper", "NotNullOrRequiredMemberIsNotInitialized")]
     public class SensePropertiesMapTest
     {
         SenseMappingTestContext ctx;

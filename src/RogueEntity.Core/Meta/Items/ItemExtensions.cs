@@ -8,7 +8,7 @@ namespace RogueEntity.Core.Meta.Items
         public static bool HasItemComponent<TItemId, TData>(this IItemDeclaration item)
             where TItemId : struct, IEntityKey
         {
-            return item.TryQuery(out IItemComponentInformationTrait<TItemId, TData> _);
+            return item.TryQuery<IItemComponentInformationTrait<TItemId, TData>>(out _);
         }
 
         public static TItemId Instantiate<TItemId>(this IItemResolver<TItemId> resolver,

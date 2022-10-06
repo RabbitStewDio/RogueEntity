@@ -81,7 +81,7 @@ namespace RogueEntity.Core.MovementPlaning.GoalFinding.SingleLevel
             {
                 if (MovementCostData.TryGetValue(m.MovementMode, out var mapData))
                 {
-                    g.ConfigureMovementProfile(m, mapData.Costs, mapData.InboundDirections);
+                    g.ConfigureMovementProfile(m, mapData.Costs, mapData.InboundDirections, mapData.OutboundDirections);
                 }
             }
         

@@ -2,7 +2,7 @@ using System;
 
 namespace RogueEntity.Core.Utils.DataViews
 {
-    public class DynamicDataView2DEventArgs<T> : EventArgs
+    public readonly struct DynamicDataView2DEventArgs<T>
     {
         public readonly TileIndex Key;
         public readonly IReadOnlyBoundedDataView<T> Data;

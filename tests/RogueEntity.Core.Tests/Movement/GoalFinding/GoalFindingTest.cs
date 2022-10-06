@@ -18,11 +18,13 @@ using RogueEntity.Core.Positioning.SpatialQueries;
 using RogueEntity.Core.Tests.Fixtures;
 using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.DataViews;
+using System.Diagnostics.CodeAnalysis;
 using static RogueEntity.Core.Tests.Movement.PathfindingTestUtil;
 
 namespace RogueEntity.Core.Tests.Movement.GoalFinding
 {
     [TestFixture]
+    [SuppressMessage("ReSharper", "NotNullOrRequiredMemberIsNotInitialized")]
     public class GoalFindingTest
     {
         ItemContextBackend<ItemReference> context;
@@ -193,7 +195,7 @@ namespace RogueEntity.Core.Tests.Movement.GoalFinding
             Console.WriteLine("Directionality: \n" + TestHelpers.PrintMap(outboundDirectionalityMap.Transform(e => $"[{e.ToFormattedString()}] "), bounds));
 
             var ms = new MovementDataCollector();
-            ms.RegisterMovementSource(WalkingMovement.Instance, resistanceMap.As3DMap(0), inboundDirectionalityMap.As3DMap(0), outboundDirectionalityMap.As3DMap(0));
+            ms.RegisterMovementSource<WalkingMovement>(WalkingMovement.Instance, resistanceMap.As3DMap(0), inboundDirectionalityMap.As3DMap(0), outboundDirectionalityMap.As3DMap(0));
             
             var pfs = new SingleLevelGoalFinderSource(new DefaultPooledObjectPolicy<SingleLevelGoalFinder>(), goalRegistry, spatialQueryRegistry, ms);
             return pfs;

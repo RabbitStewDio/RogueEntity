@@ -226,8 +226,8 @@ namespace RogueEntity.Core.Sensing.Sources
             var serviceResolver = initParameter.ServiceResolver;
             var system = GetOrCreateSensePropertiesSystem<TItemId>(serviceResolver);
 
-            context.AddInitializationStepHandler(system.ProcessSenseProperties);
-            context.AddFixedStepHandlers(system.ProcessSenseProperties);
+            context.AddInitializationStepHandler(system.ProcessLayerData);
+            context.AddFixedStepHandlers(system.ProcessLayerData);
         }
 
         protected void RegisterPrepareSenseSourceSystem<TItemId>(in ModuleEntityInitializationParameter<TItemId> initParameter,

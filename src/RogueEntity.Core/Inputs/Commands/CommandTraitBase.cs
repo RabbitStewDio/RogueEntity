@@ -40,7 +40,7 @@ namespace RogueEntity.Core.Inputs.Commands
 
         public virtual bool TryRemoveCompletedCommandData(IItemResolver<TActorId> r, TActorId k)
         {
-            if (r.TryQueryData(k, out TCommand _))
+            if (r.TryQueryData<TCommand>(k, out var _))
             {
                 return r.TryRemoveData<TCommand>(k, out _);
             }

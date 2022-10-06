@@ -10,7 +10,7 @@ namespace RogueEntity.Core.GridProcessing.Transforms
         readonly int offsetY;
         readonly int tileSizeX;
         readonly int tileSizeY;
-        readonly Dictionary<int, DynamicBoolDataView> tileStateCache;
+        readonly Dictionary<int, DynamicBoolDataView2D> tileStateCache;
         bool globallyDirty;
 
         public GridTileStateView(int offsetX, int offsetY, int tileSizeX, int tileSizeY)
@@ -19,7 +19,7 @@ namespace RogueEntity.Core.GridProcessing.Transforms
             this.offsetY = offsetY;
             this.tileSizeX = tileSizeX;
             this.tileSizeY = tileSizeY;
-            this.tileStateCache = new Dictionary<int, DynamicBoolDataView>();
+            this.tileStateCache = new Dictionary<int, DynamicBoolDataView2D>();
             this.globallyDirty = true;
         }
 
@@ -37,7 +37,7 @@ namespace RogueEntity.Core.GridProcessing.Transforms
         {
             if (!tileStateCache.TryGetValue(p.GridZ, out var view))
             {
-                view = new DynamicBoolDataView(offsetX, offsetY, tileSizeX, tileSizeY);
+                view = new DynamicBoolDataView2D(offsetX, offsetY, tileSizeX, tileSizeY);
                 tileStateCache[p.GridZ] = view;
             }
             

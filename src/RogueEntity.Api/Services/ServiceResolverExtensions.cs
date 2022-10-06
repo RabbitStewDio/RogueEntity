@@ -7,7 +7,7 @@ namespace RogueEntity.Api.Services
         public static T ResolveConfiguration<T>(this IServiceResolver r) 
             where T: new()
         {
-            if (r.TryResolve(out T config))
+            if (r.TryResolve<T>(out var config))
             {
                 return config;
             }
@@ -18,7 +18,7 @@ namespace RogueEntity.Api.Services
         
         public static Optional<T> ResolveOptional<T>(this IServiceResolver r)
         {
-            if (r.TryResolve(out T val))
+            if (r.TryResolve<T>(out var val))
             {
                 return val;
             }

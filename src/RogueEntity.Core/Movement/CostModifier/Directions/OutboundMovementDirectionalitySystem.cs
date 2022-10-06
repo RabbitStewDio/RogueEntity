@@ -17,7 +17,7 @@ namespace RogueEntity.Core.Movement.CostModifier.Directions
                                                                               IDisposable
     {
         readonly IAggregationCacheControl? cacheControl;
-
+     
         public OutboundMovementDirectionalitySystem(IReadOnlyDynamicDataView3D<float> sourceData,
                                                     IAggregationCacheControl? cacheControl = null,
                                                     AdjacencyRule adjacencyRule = AdjacencyRule.EightWay) : base(sourceData, adjacencyRule)

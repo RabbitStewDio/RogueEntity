@@ -8,7 +8,6 @@ using RogueEntity.Core.Positioning.MapLayers;
 using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.DataViews;
 using Serilog;
-using System.Diagnostics.CodeAnalysis;
 
 namespace RogueEntity.Core.Positioning.Grid
 {
@@ -31,7 +30,7 @@ namespace RogueEntity.Core.Positioning.Grid
             this.itemIdMetaData = itemResolver.EntityMetaData;
         }
 
-        public bool TryQueryItem<TPosition>(in TPosition placementPos, [MaybeNullWhen(false)] out TItemId item)
+        public bool TryQueryItem<TPosition>(in TPosition placementPos, out TItemId item)
             where TPosition : IPosition<TPosition>
         {
             if (placementPos.IsInvalid)

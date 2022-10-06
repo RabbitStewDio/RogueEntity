@@ -7,9 +7,11 @@ using NUnit.Framework;
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Core.Meta.EntityKeys;
 using RogueEntity.Core.Meta.Items;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RogueEntity.Core.Tests.Meta.Items
 {
+    [SuppressMessage("ReSharper", "NotNullOrRequiredMemberIsNotInitialized")]
     public class ItemDeclarationTest
     {
         ItemContextBackend<ItemReference> itemContext;

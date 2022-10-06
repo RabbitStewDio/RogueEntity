@@ -8,5 +8,7 @@ namespace RogueEntity.Core.Utils.DataViews
         bool TryGetRawAccess(int x, int y, [MaybeNullWhen(false)] out IBoundedDataViewRawAccess<T> raw);
 
         ref T? TryGetForUpdate(int x, int y, ref T? defaultValue, out bool success, DataViewCreateMode mode = DataViewCreateMode.Nothing);
+
+        bool RemoveView(int x, int y, out TileIndex removedIndex);
     }
 }

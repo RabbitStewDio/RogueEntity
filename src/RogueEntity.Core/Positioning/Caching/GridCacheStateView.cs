@@ -16,7 +16,7 @@ namespace RogueEntity.Core.Positioning.Caching
         readonly int tileSizeX;
         readonly int tileSizeY;
         readonly int resolution;
-        readonly Dictionary<int, DynamicBoolDataView> trackersPerLayer;
+        readonly Dictionary<int, DynamicBoolDataView2D> trackersPerLayer;
         bool globallyDirty;
 
         public GridCacheStateView(int resolution, int tileSizeX, int tileSizeY) : this(resolution, 0, 0, tileSizeX, tileSizeY)
@@ -32,7 +32,7 @@ namespace RogueEntity.Core.Positioning.Caching
             this.resolution = resolution;
             this.offsetX = offsetX;
             this.offsetY = offsetY;
-            this.trackersPerLayer = new Dictionary<int, DynamicBoolDataView>();
+            this.trackersPerLayer = new Dictionary<int, DynamicBoolDataView2D>();
         }
 
         public void MarkGloballyDirty()
@@ -54,7 +54,7 @@ namespace RogueEntity.Core.Positioning.Caching
         {
             if (!trackersPerLayer.TryGetValue(p.GridZ, out var data))
             {
-                data = new DynamicBoolDataView(offsetX, offsetY, tileSizeX, tileSizeY);
+                data = new DynamicBoolDataView2D(offsetX, offsetY, tileSizeX, tileSizeY);
                 trackersPerLayer[p.GridZ] = data;
             }
 

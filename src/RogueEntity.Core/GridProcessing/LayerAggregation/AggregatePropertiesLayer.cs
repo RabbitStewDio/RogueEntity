@@ -92,8 +92,11 @@ namespace RogueEntity.Core.GridProcessing.LayerAggregation
             }
         }
 
+        public void Process() => Process(null, null, 0);
 
-        public void Process()
+        public void Process(List<AggregationViewProcessedEvent<TAggregateData>>? events, 
+                            IAggregateDynamicDataView3D<TAggregateData>? origin, 
+                            int zInfo)
         {
             var processedLayers = 0;
             var processedLayerTiles = 0;
@@ -132,6 +135,10 @@ namespace RogueEntity.Core.GridProcessing.LayerAggregation
                         continue;
                     }
 
+                    if (events != null && origin != null)
+                    {
+                        events.Add(new AggregationViewProcessedEvent<TAggregateData>(origin, zInfo, aggregatedView, writableTile));
+                    }
                     proc = new AggregationProcessingParameter<TAggregateData, TSourceType>(t, dataViewsAsList, writableTile);
                     processingParameterCollector[t] = proc;
                 }

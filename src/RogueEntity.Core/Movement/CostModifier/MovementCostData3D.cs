@@ -9,15 +9,18 @@ namespace RogueEntity.Core.Movement.CostModifier
     {
         public readonly MovementCost MovementCost;
         public readonly IReadOnlyDynamicDataView3D<float> Costs;
-        public readonly IReadOnlyDynamicDataView3D<DirectionalityInformation> Directions;
+        public readonly IReadOnlyDynamicDataView3D<DirectionalityInformation> InboundDirections;
+        public readonly IReadOnlyDynamicDataView3D<DirectionalityInformation> OutboundDirections;
 
         public MovementCostData3D(in MovementCost movementCost,
                                   IReadOnlyDynamicDataView3D<float> costs,
-                                  IReadOnlyDynamicDataView3D<DirectionalityInformation> directions)
+                                  IReadOnlyDynamicDataView3D<DirectionalityInformation> inboundDirections,
+                                  IReadOnlyDynamicDataView3D<DirectionalityInformation> outboundDirections)
         {
             MovementCost = movementCost;
             Costs = costs ?? throw new ArgumentNullException(nameof(costs));
-            Directions = directions ?? throw new ArgumentNullException(nameof(directions));
+            InboundDirections = inboundDirections ?? throw new ArgumentNullException(nameof(inboundDirections));
+            OutboundDirections = outboundDirections ?? throw new ArgumentNullException(nameof(outboundDirections));
         }
     }
 }

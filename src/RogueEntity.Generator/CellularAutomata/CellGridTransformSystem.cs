@@ -10,7 +10,7 @@ namespace RogueEntity.Generator.CellularAutomata
 {
     public class CellGridTransformSystem<TEntity> : GridTransformSystemBase<TEntity, TEntity>
     {
-        static readonly EqualityComparer<TEntity> EqualityComparer = EqualityComparer<TEntity>.Default;
+        static readonly EqualityComparer<TEntity> equalityComparer = EqualityComparer<TEntity>.Default;
 
         readonly CARules rules;
         protected override IReadOnlyDynamicDataView3D<TEntity> SourceData => sourceView;
@@ -41,6 +41,12 @@ namespace RogueEntity.Generator.CellularAutomata
 
         public IDynamicDataView3D<TEntity> DataView => sourceView;
 
+        protected override void FireViewProcessedEvent(int zPosition, 
+                                                       IReadOnlyDynamicDataView2D<TEntity> sourceLayer, 
+                                                       IBoundedDataView<TEntity> resultTile)
+        {
+        }
+
         public bool ProcessAndSwap()
         {
             if (base.Process())
@@ -51,7 +57,7 @@ namespace RogueEntity.Generator.CellularAutomata
 
             return false;
         }
-
+        
         public bool ProcessAndSwap(Rectangle bounds)
         {
             if (base.Process(bounds))
@@ -69,7 +75,7 @@ namespace RogueEntity.Generator.CellularAutomata
             foreach (var (x, y) in args.Bounds.Contents)
             {
                 var source = args.SourceTile[x, y];
-                var alive = EqualityComparer.Equals(cellAliveMarker, source);
+                var alive = equalityComparer.Equals(cellAliveMarker, source);
                 var n = CountNeighbours(args.SourceTile, args.SourceLayer, x, y);
 
                 TEntity result;
@@ -99,7 +105,7 @@ namespace RogueEntity.Generator.CellularAutomata
                         dirty = true;
                     }
                 }
-                args.ResultTile[x, y] = result;
+                args.TargetTile[x, y] = result;
             }
 
             if (dirty)
@@ -124,7 +130,7 @@ namespace RogueEntity.Generator.CellularAutomata
                     content = n[tx, ty];
                 }
 
-                if (EqualityComparer.Equals(content, cellAliveMarker))
+                if (equalityComparer.Equals(content, cellAliveMarker))
                 {
                     result += 1;
                 }

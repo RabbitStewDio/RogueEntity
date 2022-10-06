@@ -6,10 +6,12 @@ using RogueEntity.Core.Sensing.Common.Physics;
 using RogueEntity.Core.Sensing.Sources.Light;
 using RogueEntity.Core.Meta.EntityKeys;
 using RogueEntity.Core.Positioning.Algorithms;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RogueEntity.Core.Tests.Sensing.Sources.Light
 {
     [TestFixture]
+    [SuppressMessage("ReSharper", "NotNullOrRequiredMemberIsNotInitialized")]
     public class LightSystemTest : SenseSystemTestBase<VisionSense, LightSourceDefinition>
     {
         const string EmptyRoom = @"

@@ -6,9 +6,11 @@ using RogueEntity.Core.Sensing.Common.Physics;
 using RogueEntity.Core.Sensing.Sources.Noise;
 using RogueEntity.Core.Meta.EntityKeys;
 using RogueEntity.Core.Positioning.Algorithms;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RogueEntity.Core.Tests.Sensing.Sources.Noise
 {
+    [SuppressMessage("ReSharper", "NotNullOrRequiredMemberIsNotInitialized")]
     public class NoiseSystemTest : SenseSystemTestBase<NoiseSense, NoiseSourceDefinition>
     {
         const string EmptyRoom = @"

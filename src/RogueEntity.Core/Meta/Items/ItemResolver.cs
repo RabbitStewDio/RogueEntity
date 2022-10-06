@@ -251,8 +251,8 @@ namespace RogueEntity.Core.Meta.Items
             {
                 foreach (var e in resolver.entityRegistry.View<TEntityTraitA>())
                 {
-                    if (!resolver.entityRegistry.GetComponent(e, out ItemDeclarationHolder<TEntityId> _) ||
-                        !resolver.entityRegistry.GetComponent(e, out TEntityTraitA ca))
+                    if (!resolver.entityRegistry.GetComponent<ItemDeclarationHolder<TEntityId>>(e, out _) ||
+                        !resolver.entityRegistry.GetComponent<TEntityTraitA>(e, out var ca))
                     {
                         continue;
                     }
@@ -265,9 +265,9 @@ namespace RogueEntity.Core.Meta.Items
             {
                 foreach (var e in resolver.entityRegistry.View<TEntityTraitA>())
                 {
-                    if (!resolver.entityRegistry.GetComponent(e, out ItemDeclarationHolder<TEntityId> _) ||
-                        !resolver.entityRegistry.GetComponent(e, out TEntityTraitA ca) ||
-                        !resolver.entityRegistry.GetComponent(e, out TEntityTraitB cb))
+                    if (!resolver.entityRegistry.GetComponent<ItemDeclarationHolder<TEntityId>>(e, out  _) ||
+                        !resolver.entityRegistry.GetComponent<TEntityTraitA>(e, out var ca) ||
+                        !resolver.entityRegistry.GetComponent<TEntityTraitB>(e, out var cb))
                     {
                         continue;
                     }

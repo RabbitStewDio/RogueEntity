@@ -5,9 +5,10 @@ namespace RogueEntity.Core.Movement
 {
     public interface IMovementDataCollector
     {
-        void RegisterMovementSource(IMovementMode movementMode,
-                                    IReadOnlyDynamicDataView3D<float> cost,
-                                    IReadOnlyDynamicDataView3D<DirectionalityInformation> inboundDirection,
-                                    IReadOnlyDynamicDataView3D<DirectionalityInformation> outboundDirection);
+        void RegisterMovementSource<TMovementMode>(IMovementMode movementMode,
+                                                   IReadOnlyDynamicDataView3D<float> cost,
+                                                   IReadOnlyDynamicDataView3D<DirectionalityInformation> inboundDirection,
+                                                   IReadOnlyDynamicDataView3D<DirectionalityInformation> outboundDirection)
+                where TMovementMode: IMovementMode;
     }
 }

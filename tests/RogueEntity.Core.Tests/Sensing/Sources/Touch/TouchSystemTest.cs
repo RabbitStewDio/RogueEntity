@@ -17,9 +17,11 @@ using RogueEntity.Core.Positioning.Algorithms;
 using RogueEntity.Core.Tests.Fixtures;
 using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.DataViews;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RogueEntity.Core.Tests.Sensing.Sources.Touch
 {
+    [SuppressMessage("ReSharper", "NotNullOrRequiredMemberIsNotInitialized")]
     public class TouchSystemTest : SenseSystemTestBase<TouchSense, TouchSourceDefinition>
     {
         const string EmptyRoom = @"

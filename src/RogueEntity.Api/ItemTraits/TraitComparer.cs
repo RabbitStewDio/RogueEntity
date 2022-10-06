@@ -7,7 +7,7 @@ namespace RogueEntity.Api.ItemTraits
     {
         public static readonly TraitComparer Default = new TraitComparer();
 
-        public int Compare(ITrait x, ITrait y)
+        public int Compare(ITrait? x, ITrait? y)
         {
             if (x == null && y == null)
             {

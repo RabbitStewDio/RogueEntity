@@ -63,11 +63,11 @@ namespace RogueEntity.Core.GridProcessing.LayerAggregation
             }
         }
 
-        public void Process()
+        public void Process(IAggregateDynamicDataView3D<TAggregateType> origin, List<AggregationViewProcessedEvent<TAggregateType>> events)
         {
-            foreach (var d in layers.Values)
+            foreach (var d in layers)
             {
-                d.Process();
+                d.Value.Process(events, origin, d.Key);
             }
         }
     }

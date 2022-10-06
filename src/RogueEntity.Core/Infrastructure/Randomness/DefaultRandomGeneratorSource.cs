@@ -69,7 +69,7 @@ namespace RogueEntity.Core.Infrastructure.Randomness
                 if (!disposed)
                 {
                     disposed = true;
-                    pool?.Invoke(this);
+                    pool.Invoke(this);
                 }
             }
 

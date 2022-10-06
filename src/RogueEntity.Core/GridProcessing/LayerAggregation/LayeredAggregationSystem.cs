@@ -8,20 +8,46 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace RogueEntity.Core.GridProcessing.LayerAggregation
 {
+    public readonly struct AggregationViewProcessedEvent<TAggregationType>
+    {
+        public readonly IAggregateDynamicDataView3D<TAggregationType> Source;
+        public readonly IReadOnlyDynamicDataView2D<TAggregationType> LayerView;
+        public readonly int ZInfo;
+        public readonly IBoundedDataView<TAggregationType> Tile;
+
+        public AggregationViewProcessedEvent(IAggregateDynamicDataView3D<TAggregationType> source, 
+                                             int zInfo,
+                                             IReadOnlyDynamicDataView2D<TAggregationType> layerView, 
+                                             IBoundedDataView<TAggregationType> tile)
+        {
+            Source = source;
+            LayerView = layerView;
+            this.ZInfo = zInfo;
+            Tile = tile;
+        }
+    }
+    
+    public interface IAggregateDynamicDataView3D<TAggregationType>: IReadOnlyDynamicDataView3D<TAggregationType>
+    {
+        public event EventHandler<AggregationViewProcessedEvent<TAggregationType>>? ViewProcessed;
+    }
+    
     public class LayeredAggregationSystem<TAggregationType, TSourceType> : IAggregationLayerSystem<TAggregationType>,
                                                                            IAggregationLayerSystemBackend<TSourceType>,
-                                                                           IReadOnlyDynamicDataView3D<TAggregationType>
+                                                                           IAggregateDynamicDataView3D<TAggregationType>
     {
 #pragma warning disable CS0067 
         public event EventHandler<PositionDirtyEventArgs>? PositionDirty;
         public event EventHandler<DynamicDataView3DEventArgs<TAggregationType>>? ViewCreated;
         public event EventHandler<DynamicDataView3DEventArgs<TAggregationType>>? ViewReset;
         public event EventHandler<DynamicDataView3DEventArgs<TAggregationType>>? ViewExpired;
+        public event EventHandler<AggregationViewProcessedEvent<TAggregationType>>? ViewProcessed;
 #pragma warning restore CS0067 
 
         readonly AggregationLayerStore<TAggregationType, TSourceType> resultDataView;
         readonly List<IAggregationLayerController<TSourceType>> layerFactories2;
         readonly Action<AggregationProcessingParameter<TAggregationType, TSourceType>> aggregatorFunction;
+        readonly List<AggregationViewProcessedEvent<TAggregationType>> processedViews;
 
         public LayeredAggregationSystem(Action<AggregationProcessingParameter<TAggregationType, TSourceType>> aggregator,
                                         int tileWidth,
@@ -43,6 +69,7 @@ namespace RogueEntity.Core.GridProcessing.LayerAggregation
             this.resultDataView.ViewCreated += OnViewCreated;
             this.resultDataView.ViewExpired += OnViewExpired;
             this.layerFactories2 = new List<IAggregationLayerController<TSourceType>>();
+            this.processedViews = new List<AggregationViewProcessedEvent<TAggregationType>>();
         }
 
         void OnViewExpired(object sender, DynamicDataView3DEventArgs<TAggregationType> e)
@@ -101,14 +128,21 @@ namespace RogueEntity.Core.GridProcessing.LayerAggregation
             return buffer;
         }
 
-        public void ProcessSenseProperties()
+        public void ProcessLayerData()
         {
             foreach (var lf in layerFactories2)
             {
                 lf.PrepareLayers(this);
             }
 
-            resultDataView.Process();
+            processedViews.Clear();
+            resultDataView.Process(this, processedViews);
+
+            for (var index = 0; index < processedViews.Count; index++)
+            {
+                var p = processedViews[index];
+                ViewProcessed?.Invoke(this, p);
+            }
         }
 
         public bool TryGetView(int z, [MaybeNullWhen(false)] out IReadOnlyDynamicDataView2D<TAggregationType> data)
@@ -130,7 +164,7 @@ namespace RogueEntity.Core.GridProcessing.LayerAggregation
             resultDataView.RemoveLayer(z);
         }
 
-        public bool TryGetSenseLayer(int z, [MaybeNullWhen(false)] out IAggregationPropertiesLayer<TSourceType> data)
+        public bool TryGetAggregationLayer(int z, [MaybeNullWhen(false)] out IAggregationPropertiesLayer<TSourceType> data)
         {
             if (resultDataView.TryGetLayer(z, out var dataImpl))
             {

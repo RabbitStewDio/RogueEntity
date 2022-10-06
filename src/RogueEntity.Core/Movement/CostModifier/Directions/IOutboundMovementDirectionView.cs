@@ -1,4 +1,5 @@
 using RogueEntity.Core.GridProcessing.Directionality;
+using RogueEntity.Core.GridProcessing.LayerAggregation;
 using System.Diagnostics.CodeAnalysis;
 using RogueEntity.Core.Utils.DataViews;
 
@@ -16,6 +17,6 @@ namespace RogueEntity.Core.Movement.CostModifier.Directions
     [SuppressMessage("ReSharper", "UnusedTypeParameter", MessageId = nameof(TMovementMode), Justification = "Used as instance qualifier")]
     public interface IOutboundMovementDirectionView<TMovementMode>
     {
-        IReadOnlyDynamicDataView3D<DirectionalityInformation> ResultView { get; }
+        IAggregateDynamicDataView3D<DirectionalityInformation> ResultView { get; }
     }
 }

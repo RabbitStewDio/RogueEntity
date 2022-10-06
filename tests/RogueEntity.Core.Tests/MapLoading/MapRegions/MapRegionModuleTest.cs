@@ -2,10 +2,12 @@ using FluentAssertions;
 using NUnit.Framework;
 using RogueEntity.Core.MapLoading.MapRegions;
 using RogueEntity.Core.Tests.Fixtures;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RogueEntity.Core.Tests.MapLoading.MapRegions
 {
     [TestFixture]
+    [SuppressMessage("ReSharper", "NotNullOrRequiredMemberIsNotInitialized")]
     public class MapRegionModuleTest: BasicGameIntegrationTestBase
     {
         IMapRegionTrackerService<int> regionTracker;

@@ -9,7 +9,8 @@ namespace RogueEntity.Core.Movement
     /// </summary>
     public interface IMovementModeRegistry
     {
-        public bool TryGetMode<TMode>([MaybeNullWhen(false)] out TMode mode);
+        public bool TryGetMode<TMode>([MaybeNullWhen(false)] out TMode mode)
+            where TMode: IMovementMode;
         public ReadOnlyListWrapper<IMovementMode> Modes { get; }
         public void ExecuteAsGeneric(IMovementMode mode, IGenericLifter<IMovementMode> lifter);
     }

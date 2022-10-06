@@ -59,7 +59,7 @@ namespace RogueEntity.Core.Inputs.Commands
 
         static void EnsureAnyCommandServiceExists<TActorId>(ModuleEntityInitializationParameter<TActorId> initParameter) where TActorId : struct, IEntityKey
         {
-            if (!initParameter.ServiceResolver.TryResolve(out IBasicCommandService<TActorId> _))
+            if (!initParameter.ServiceResolver.TryResolve<IBasicCommandService<TActorId>>(out _))
             {
                 initParameter.ServiceResolver.Store<IBasicCommandService<TActorId>>
                     (new BasicCommandService<TActorId>(initParameter.ServiceResolver.Resolve<IItemResolver<TActorId>>()));

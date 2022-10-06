@@ -7,9 +7,11 @@ using RogueEntity.Core.Meta.EntityKeys;
 using RogueEntity.Core.Movement.GridMovement;
 using RogueEntity.Core.Players;
 using RogueEntity.Core.Positioning;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RogueEntity.Core.Tests.Fixtures
 {
+    [SuppressMessage("ReSharper", "NotNullOrRequiredMemberIsNotInitialized")]
     public abstract class BasicGameIntegrationTestBase
     {
         

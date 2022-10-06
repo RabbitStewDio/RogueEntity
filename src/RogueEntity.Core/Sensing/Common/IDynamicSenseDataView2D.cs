@@ -22,7 +22,7 @@ namespace RogueEntity.Core.Sensing.Common
         new int TileSizeX { get; }
         new int TileSizeY { get; }
 
-        new BufferList<Rectangle> GetActiveTiles(BufferList<Rectangle> data = null);
+        new BufferList<Rectangle> GetActiveTiles(BufferList<Rectangle>? data = null);
         new Rectangle GetActiveBounds();
     }
 }

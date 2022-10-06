@@ -1,5 +1,6 @@
 using System;
 using System.Buffers;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
@@ -34,6 +35,7 @@ namespace RogueEntity.Core.Utils
         /// <param name="value">The string.</param>
         /// <returns>The GUID.</returns>
         /// <exception cref="FormatException">The argument is not a valid GUID short string.</exception>
+        [SuppressMessage("ReSharper", "NullCoalescingConditionIsAlwaysNotNullAccordingToAPIContract")]
         public static Guid FromLowerNoDashString(string value) =>
             TryFromLowerNoDashString(value) ?? throw new FormatException(string.Format(CultureInfo.InvariantCulture, "The string '{0}' is not a no-dash lowercase GUID.", (value ?? "(null)")));
 
