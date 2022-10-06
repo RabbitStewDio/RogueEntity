@@ -47,7 +47,7 @@ namespace RogueEntity.Core.MovementPlaning.Pathfinding.SingleLevel
             {
                 if (MovementCostData.TryGetValue(m.MovementMode, out var mapData))
                 {
-                    pf.ConfigureMovementProfile(m, mapData.Costs, mapData.OutboundDirections);
+                    pf.ConfigureMovementProfile(m, mapData.Costs, mapData.InboundDirections, mapData.OutboundDirections);
                 }
             }
         

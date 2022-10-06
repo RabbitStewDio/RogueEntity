@@ -14,7 +14,7 @@ namespace RogueEntity.Core.MovementPlaning.Pathfinding
     {
         public PathFinderResult TryFindPath<TPosition>(in TPosition source,
                                                        out BufferList<(TPosition, IMovementMode)> path,
-                                                       BufferList<(TPosition, IMovementMode)> pathBuffer = null,
+                                                       BufferList<(TPosition, IMovementMode)>? pathBuffer = null,
                                                        int searchLimit = int.MaxValue)
             where TPosition: IPosition<TPosition>;
     }

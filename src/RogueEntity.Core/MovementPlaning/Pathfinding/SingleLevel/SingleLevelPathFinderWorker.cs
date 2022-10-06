@@ -18,7 +18,8 @@ namespace RogueEntity.Core.MovementPlaning.Pathfinding.SingleLevel
         readonly List<MovementCostData2D> movementCostsOnLevel;
         readonly PooledDynamicDataView2D<IMovementMode> nodesSources;
         readonly BufferList<Position2D> pathBuffer;
-        IReadOnlyBoundedDataView<DirectionalityInformation>?[] directionsTile;
+        IReadOnlyBoundedDataView<DirectionalityInformation>?[] inboundDirectionsTile;
+        IReadOnlyBoundedDataView<DirectionalityInformation>?[] outboundDirectionsTile;
         IReadOnlyBoundedDataView<float>?[] costsTile;
         IBoundedDataView<IMovementMode>? nodeSourceTile;
         ReadOnlyListWrapper<Direction>[]? directionData;
@@ -32,7 +33,8 @@ namespace RogueEntity.Core.MovementPlaning.Pathfinding.SingleLevel
             pathBuffer = new BufferList<Position2D>();
             nodesSources = new PooledDynamicDataView2D<IMovementMode>(movementModePool);
             movementCostsOnLevel = new List<MovementCostData2D>();
-            directionsTile = new IReadOnlyBoundedDataView<DirectionalityInformation>[4];
+            inboundDirectionsTile = new IReadOnlyBoundedDataView<DirectionalityInformation>[4];
+            outboundDirectionsTile = new IReadOnlyBoundedDataView<DirectionalityInformation>[4];
             costsTile = new IReadOnlyBoundedDataView<float>[4];
         }
 
@@ -41,42 +43,40 @@ namespace RogueEntity.Core.MovementPlaning.Pathfinding.SingleLevel
             movementCostsOnLevel.Clear();
             nodesSources.Clear();
             nodeSourceTile = null;
-            Array.Clear(directionsTile, 0, directionsTile.Length);
+            Array.Clear(inboundDirectionsTile, 0, inboundDirectionsTile.Length);
+            Array.Clear(outboundDirectionsTile, 0, outboundDirectionsTile.Length);
             Array.Clear(costsTile, 0, costsTile.Length);
             activeLevel = z;
         }
 
         public void ConfigureMovementProfile(in MovementCost costProfile,
                                              IReadOnlyDynamicDataView3D<float> movementCosts,
-                                             IReadOnlyDynamicDataView3D<DirectionalityInformation> movementDirections)
+                                             IReadOnlyDynamicDataView3D<DirectionalityInformation> inboundDirections,
+                                             IReadOnlyDynamicDataView3D<DirectionalityInformation> outboundDirections)
         {
             if (movementCosts.TryGetView(activeLevel, out var costView) &&
-                movementDirections.TryGetView(activeLevel, out var directionView))
+                inboundDirections.TryGetView(activeLevel, out var outboundDirectionView) &&
+                outboundDirections.TryGetView(activeLevel, out var inboundDirectionView))
             {
-                movementCostsOnLevel.Add(new MovementCostData2D(costProfile, costView, directionView));
-            }
-
-            if (movementCostsOnLevel.Count > directionsTile.Length)
-            {
-                directionsTile = new IReadOnlyBoundedDataView<DirectionalityInformation>[movementCostsOnLevel.Count];
-            }
-            else
-            {
-                Array.Clear(directionsTile, 0, directionsTile.Length);
-            }
-            
-            if (movementCostsOnLevel.Count > costsTile.Length)
-            {
-                costsTile = new IReadOnlyBoundedDataView<float>[movementCostsOnLevel.Count];
-            }
-            else
-            {
-                Array.Clear(costsTile, 0, costsTile.Length);
+                movementCostsOnLevel.Add(new MovementCostData2D(costProfile, costView, inboundDirectionView, outboundDirectionView));
             }
         }
         
         public void ConfigureFinished(AdjacencyRule r)
         {
+            if (movementCostsOnLevel.Count > outboundDirectionsTile.Length)
+            {
+                outboundDirectionsTile = new IReadOnlyBoundedDataView<DirectionalityInformation>[movementCostsOnLevel.Count];
+                inboundDirectionsTile = new IReadOnlyBoundedDataView<DirectionalityInformation>[movementCostsOnLevel.Count];
+                costsTile = new IReadOnlyBoundedDataView<float>[movementCostsOnLevel.Count];
+            }
+            else
+            {
+                Array.Clear(inboundDirectionsTile, 0, inboundDirectionsTile.Length);
+                Array.Clear(outboundDirectionsTile, 0, outboundDirectionsTile.Length);
+                Array.Clear(costsTile, 0, costsTile.Length);
+            }
+            
             directionData = DirectionalityLookup.Get(r);
         }
 
@@ -87,7 +87,8 @@ namespace RogueEntity.Core.MovementPlaning.Pathfinding.SingleLevel
             directionData = default;
             movementCostsOnLevel.Clear();
             nodesSources.Clear();
-            Array.Clear(directionsTile, 0, directionsTile.Length);
+            Array.Clear(inboundDirectionsTile, 0, inboundDirectionsTile.Length);
+            Array.Clear(outboundDirectionsTile, 0, outboundDirectionsTile.Length);
             Array.Clear(costsTile, 0, costsTile.Length);
         }
 
@@ -117,7 +118,8 @@ namespace RogueEntity.Core.MovementPlaning.Pathfinding.SingleLevel
         protected override ReadOnlyListWrapper<Direction> PopulateTraversableDirections(in Position2D basePos)
         {
             Assert.NotNull(directionData);
-            Assert.NotNull(directionsTile);
+            Assert.NotNull(inboundDirectionsTile);
+            Assert.NotNull(outboundDirectionsTile);
             
             var targetPosX = basePos.X;
             var targetPosY = basePos.Y;
@@ -126,8 +128,8 @@ namespace RogueEntity.Core.MovementPlaning.Pathfinding.SingleLevel
             for (var index = 0; index < movementCostsOnLevel.Count; index++)
             {
                 var s = movementCostsOnLevel[index];
-                ref var dt = ref directionsTile[index];
-                var dir = s.Directions.TryGetMapValue(ref dt, targetPosX, targetPosY, DirectionalityInformation.None);
+                ref var dt = ref outboundDirectionsTile[index];
+                var dir = s.OutboundDirections.TryGetMapValue(ref dt, targetPosX, targetPosY, DirectionalityInformation.None);
                 allowedMovements |= dir;
             }
 
@@ -140,8 +142,9 @@ namespace RogueEntity.Core.MovementPlaning.Pathfinding.SingleLevel
                                                     out float totalPathCost, 
                                                     [MaybeNullWhen(false)] out IMovementMode movementMode)
         {
-            Assert.NotNull(directionsTile);
-            Assert.NotNull(costsTile);
+            Assert.NotNull(directionData);
+            Assert.NotNull(inboundDirectionsTile);
+            Assert.NotNull(outboundDirectionsTile);
             
             var sourcePosX = sourceNode.X;
             var sourcePosY = sourceNode.Y;
@@ -152,7 +155,7 @@ namespace RogueEntity.Core.MovementPlaning.Pathfinding.SingleLevel
             for (var index = 0; index < movementCostsOnLevel.Count; index++)
             {
                 var m = movementCostsOnLevel[index];
-                var dir = m.Directions.TryGetMapValue(ref directionsTile[index], sourcePosX, sourcePosY, DirectionalityInformation.None);
+                var dir = m.OutboundDirections.TryGetMapValue(ref outboundDirectionsTile[index], sourcePosX, sourcePosY, DirectionalityInformation.None);
                 if (dir == DirectionalityInformation.None)
                 {
                     continue;
