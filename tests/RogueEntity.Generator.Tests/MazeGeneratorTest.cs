@@ -32,11 +32,11 @@ namespace RogueEntity.Generator.Tests
             //   .#.
             //   #..
             //
-            view[2, 3] = '.';
-            view[3, 2] = '.';
-            view[4, 2] = '.';
-            view[4, 3] = '.';
-            view[4, 4] = '.';
+            view.TrySet(2, 3, '.');
+            view.TrySet(3, 2, '.');
+            view.TrySet(4, 2, '.');
+            view.TrySet(4, 3, '.');
+            view.TrySet(4, 4, '.');
 
             for (var i = 0; i < 8; i += 1)
             {
@@ -61,9 +61,9 @@ namespace RogueEntity.Generator.Tests
             //   .#.
             //   #..
             //
-            view[2, 2] = '.';
-            view[1, 2] = '.';
-            view[1, 1] = '.';
+            view.TrySet(2, 2, '.');
+            view.TrySet(1, 2, '.');
+            view.TrySet(1, 1, '.');
 
             for (var i = 0; i < 4; i += 1)
             {

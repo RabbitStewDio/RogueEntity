@@ -79,19 +79,6 @@ namespace RogueEntity.Core.Sensing.Common
             return true;
         }
 
-        SenseDirectionStore IReadOnlyView2D<SenseDirectionStore>.this[int x, int y]
-        {
-            get
-            {
-                if (TryGet(x, y, out SenseDirectionStore s))
-                {
-                    return s;
-                }
-
-                return default;
-            }
-        }
-
         public float this[int x, int y]
         {
             get

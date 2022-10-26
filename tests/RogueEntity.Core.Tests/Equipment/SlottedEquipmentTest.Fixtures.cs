@@ -25,8 +25,8 @@ namespace RogueEntity.Core.Tests.Equipment
             registry.Register(slotLeftHand);
         }
 
-        public IItemResolver<ItemReference> ItemResolver => Context.ItemResolver;
-        public IGridMapContext<ItemReference> ItemMapContext => throw new InvalidOperationException();
+        public override IItemResolver<ItemReference> ItemResolver => Context.ItemResolver;
+        public override IGridMapContext<ItemReference> ItemMapContext => throw new InvalidOperationException();
 
         [SetUp]
         public void SetUp()

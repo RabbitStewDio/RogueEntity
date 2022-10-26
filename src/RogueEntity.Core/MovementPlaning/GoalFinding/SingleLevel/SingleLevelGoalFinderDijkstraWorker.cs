@@ -116,7 +116,6 @@ namespace RogueEntity.Core.MovementPlaning.GoalFinding.SingleLevel
             where TPosition : IPosition<TPosition>
         {
             base.RescanMap(searchLimit);
-            
             base.FindPath(new ShortPosition2D(), out _, pathBuffer);
             path.Clear();
             foreach (var p in pathBuffer)
@@ -164,8 +163,8 @@ namespace RogueEntity.Core.MovementPlaning.GoalFinding.SingleLevel
                                                     [MaybeNullWhen(false)] out IMovementMode movementMode)
         {
             var dx = d.ToCoordinates();
-            var sourcePosX = sourceNode.X;
-            var sourcePosY = sourceNode.Y;
+            var sourcePosX = sourceNode.X + origin.X;
+            var sourcePosY = sourceNode.Y + origin.Y;
             var targetPosX = sourceNode.X + dx.X + origin.X;
             var targetPosY = sourceNode.Y + dx.Y + origin.Y;
             var costInformationAvailable = false;

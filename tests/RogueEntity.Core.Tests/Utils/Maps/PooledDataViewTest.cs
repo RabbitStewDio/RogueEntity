@@ -78,7 +78,7 @@ namespace RogueEntity.Core.Tests.Utils.Maps
             p.TryGetWritableView(0, out var view, DataViewCreateMode.CreateMissing).Should().BeTrue();
             
             view.TryGetWriteAccess(0, 0, out _).Should().BeFalse("because we never wrote to that page");
-            view[0, 0] = 1;
+            view.TrySet(0, 0, 1);
             view.TryGetWriteAccess(0, 0, out var rawView).Should().BeTrue("because we just wrote to that page");
             view.TryGetWriteAccess(100, 100, out _).Should().BeFalse("because we never wrote to that page");
             pool.IsLeased(rawView).Should().BeTrue();

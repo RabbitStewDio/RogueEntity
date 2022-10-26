@@ -70,9 +70,10 @@ namespace RogueEntity.Core.Movement.CostModifier.Directions
                                        int x,
                                        int y)
         {
-            if (!parameterData.sourceTile.TryGet(x, y, out var moveData))
+            if (!parameterData.sourceTile.TryGet(x, y, out var moveData) ||
+                !parameterData.sourceData.TryGet(x, y, out moveData))
             {
-                moveData = parameterData.sourceData[x, y];
+                moveData = 0;
             }
 
             return moveData;

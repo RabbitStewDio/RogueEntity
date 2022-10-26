@@ -11,6 +11,9 @@ namespace RogueEntity.Core.Sensing.Resistance
     [DataContract]
     public readonly struct SensoryResistance<TSense> : IEquatable<SensoryResistance<TSense>>
     {
+        public static SensoryResistance<TSense> Blocked = new SensoryResistance<TSense>(Percentage.Full);
+        public static SensoryResistance<TSense> Empty = new SensoryResistance<TSense>(Percentage.Empty);
+        
         [DataMember(Order = 0)]
         public readonly Percentage BlocksSense;
 
@@ -54,6 +57,8 @@ namespace RogueEntity.Core.Sensing.Resistance
         {
             return !left.Equals(right);
         }
+
+        public float ToFloat() => BlocksSense.ToFloat();
         
         public static SensoryResistance<TSense> operator +(SensoryResistance<TSense> left, SensoryResistance<TSense> right)
         {

@@ -42,7 +42,7 @@ namespace RogueEntity.Core.Equipment
             var equippedItemList = new List<TItemId>();
             foreach (var r in equippedItems)
             {
-                if (r.Key == r.Value.PrimarySlot && 
+                if (r.Key == r.Value.PrimarySlot &&
                     !r.Value.Reference.IsEmpty)
                 {
                     equippedItemList.Add(r.Value.Reference);
@@ -249,7 +249,9 @@ namespace RogueEntity.Core.Equipment
         }
 
         /// <summary>
-        ///   Searches the equipment for an slot that can host the given bulk item.
+        ///   Searches the equipment for an slot that can host the given bulk item. Each item defines a set of
+        ///   required and acceptable slots. All required slots are always occupied when the item is equipped.
+        ///   Exactly one of the acceptable slots is occupied when the item is equipped.
         /// </summary>
         /// <remarks>
         /// <para>
@@ -268,7 +270,7 @@ namespace RogueEntity.Core.Equipment
         /// <param name="req"></param>
         /// <param name="bulkItem"></param>
         /// <param name="desiredSlot"></param>
-        /// <param name="acceptedSlot"></param>
+        /// <param name="acceptedSlot">The first slot the item occupies, based on the order of slots listed in the slot requirements</param>
         /// <returns></returns>
         public bool IsBulkEquipmentSpaceAvailable(IBulkDataStorageMetaData<TItemId> meta,
                                                   EquipmentSlotRequirements req,
@@ -279,133 +281,192 @@ namespace RogueEntity.Core.Equipment
             if (req.AcceptableSlots.Count == 0 &&
                 req.RequiredSlots.Count == 0)
             {
-                logger.Verbose("Equipment requirements for item {Item} are empty", bulkItem);
+                logger.Verbose("Error: Equipment requirements for item {Item} are empty", bulkItem);
                 acceptedSlot = default;
                 return false;
             }
 
-            var slotRetrieved = false;
-            EquipmentSlot? acceptedSlotTmp = null;
-            foreach (var r in req.RequiredSlots)
+            // step 1: Validate the required slots. This may select a primary slot for the item if an compatible item already
+            //         occupies the required slots. 
+            if (!IsBulkEquipmentRequiredSpaceAvailable(meta, req, bulkItem, out var acceptedSlotTmp))
             {
-                if (!IsSlotAvailableForBulkItem(meta, r, bulkItem, out var usedSlot))
-                {
-                    logger.Verbose("A required slot {Slot} for item {Item} is already occupied by an incompatible item", r, bulkItem);
-                    acceptedSlot = default;
-                    return false;
-                }
+                // required slots not met.
+                acceptedSlot = default;
+                return false;
+            }
+            // if there are required slots, acceptedSlot will be populated.
+            // if there are no required slots, accepted slot will be empty.
 
-                if (!slotRetrieved)
+            // Step 2: An desired slot is given
+            if (desiredSlot.TryGetValue(out var desiredSlotValue))
+            {
+                return IsBulkEquipmentDesiredSpaceAvailable(meta, req, bulkItem, desiredSlotValue, acceptedSlotTmp, out acceptedSlot);
+            }
+
+            // if the item has no acceptable slots, it must have had at least one required slot that 
+            // we already tested.
+            if (req.AcceptableSlots.Count == 0)
+            {
+                return acceptedSlotTmp.TryGetValue(out acceptedSlot);
+            }
+
+            // the item only has acceptable slots, and not required slots. Find the first slot that
+            // can accept this item.
+            if (req.RequiredSlots.Count == 0)
+            {
+                // no conflict possible. Select the first available acceptable slot.
+                foreach (var equipmentSlot in req.AcceptableSlots)
                 {
-                    slotRetrieved = true;
-                    acceptedSlotTmp = r;
-                }
-                else if (usedSlot.TryGetValue(out var slot) && acceptedSlotTmp != slot)
-                {
-                    logger.Verbose("A required slot {Slot} for item {Item} is already occupied by a different item of the same type", r, bulkItem);
-                    acceptedSlot = default;
-                    return false;
+                    if (!IsSlotAvailableForBulkItem(meta, equipmentSlot, bulkItem, out var primarySlot))
+                    {
+                        // the slot is already occupied. 
+                        continue;
+                    }
+
+                    if (primarySlot.TryGetValue(out var ps))
+                    {
+                        acceptedSlot = ps;
+                        return true;
+                    }
+
+                    acceptedSlot = equipmentSlot;
+                    return true;
                 }
             }
 
-            if (desiredSlot.TryGetValue(out var desiredSlotValue))
+            // the item has required slots and acceptable slots.
+            // we already processed the required slots, so there should be a valid primary slot already.
+            // the fact that the required slot is occupied also means that there exists at least one 
+            // acceptable slot that is occupied too.
+            return acceptedSlotTmp.TryGetValue(out acceptedSlot);
+        }
+
+
+        bool IsBulkEquipmentDesiredSpaceAvailable(IBulkDataStorageMetaData<TItemId> meta,
+                                                             EquipmentSlotRequirements req,
+                                                             TItemId bulkItem,
+                                                             EquipmentSlot desiredSlotValue,
+                                                             Optional<EquipmentSlot> acceptedSlotTmp,
+                                                             [MaybeNullWhen(false)] out EquipmentSlot acceptedSlot)
+        {
+            var desiredSlotIsAcceptable = req.AcceptableSlots.Contains(desiredSlotValue);
+            var desiredSlotIsRequired = req.RequiredSlots.Contains(desiredSlotValue);
+            if (!desiredSlotIsAcceptable && !desiredSlotIsRequired)
             {
-                if (!req.AcceptableSlots.Contains(desiredSlotValue) &&
-                    !req.RequiredSlots.Contains(desiredSlotValue))
+                // filter out garbage inputs.
+                logger.Verbose("Given desired slot does not match the available slots defined for bulk item {BulkItem}", bulkItem);
+                acceptedSlot = default;
+                return false;
+            }
+
+            if (!IsSlotAvailableForBulkItem(meta, desiredSlotValue, bulkItem, out var usedPrimarySlot))
+            {
+                logger.Verbose("A desired slot for item {Item} is already occupied by an incompatible item", bulkItem);
+                acceptedSlot = default;
+                return false;
+            }
+
+            EquipmentSlot primarySlot;
+            if (!acceptedSlotTmp.TryGetValue(out var prevSelectedPrimarySlot))
+            {
+                if (usedPrimarySlot.TryGetValue(out primarySlot))
                 {
-                    // filter out garbage inputs.
-                    logger.Verbose("Given desired slot does not match the available slots defined for bulk item {BulkItem}", bulkItem);
-                    acceptedSlot = default;
-                    return false;
+                    // the desired slot is occupied by a compatible item and the item possibly spans multiple slots.
                 }
-
-                if (!IsSlotAvailableForBulkItem(meta, desiredSlotValue, bulkItem, out var usedPrimarySlot))
+                else
                 {
-                    logger.Verbose("A desired slot for item {Item} is already occupied by an incompatible item", bulkItem);
-                    acceptedSlot = default;
-                    return false;
+                    // the desired slot is not occupied. Reserve it.
+                    primarySlot = desiredSlotValue;
                 }
+            }
+            else if (usedPrimarySlot.TryGetValue(out var usedSlotValue) && prevSelectedPrimarySlot != usedSlotValue)
+            {
+                logger.Verbose("A desired slot for item {Item} is already occupied by a different item of the same type", bulkItem);
+                acceptedSlot = default;
+                return false;
+            }
+            else
+            {
+                primarySlot = prevSelectedPrimarySlot;
+            }
 
-                if (!slotRetrieved)
-                {
-                    acceptedSlotTmp = desiredSlotValue;
-                }
-                else if (usedPrimarySlot.TryGetValue(out var usedSlotValue) && acceptedSlotTmp != usedSlotValue)
-                {
-                    logger.Verbose("A desired slot for item {Item} is already occupied by a different item of the same type", bulkItem);
-                    acceptedSlot = default;
-                    return false;
-                }
-
-                // Guard against cases where an item has been placed on an alternative acceptable position but
-                // occupies the same set of primary slots.
-                foreach (var a in req.AcceptableSlots)
-                {
-                    if (a == desiredSlotValue)
-                    {
-                        // ignored. We know this slot is ok to select.
-                        continue;
-                    }
-
-                    if (!IsSlotAvailableForBulkItem(meta, a, bulkItem, out var usedSlot))
-                    {
-                        // ignored. Not a slot we selected. its incompatible with the item.
-                        continue;
-                    }
-
-                    if (!usedSlot.TryGetValue(out var slotVal))
-                    {
-                        // ignored. The slot is empty, not not selected via the desired slot value.
-                        continue;
-                    }
-
-                    if (slotVal == acceptedSlotTmp)
-                    {
-                        logger.Verbose("A conflicting bulk item has been found and occupies the same primary slot");
-                        acceptedSlot = default;
-                        return false;
-                    }
-                }
-
-                if (acceptedSlotTmp == null)
-                {
-                    acceptedSlot = default;
-                    return false;
-                }
-                
-                acceptedSlot = acceptedSlotTmp;
+            // Guard against cases where an item has been placed on an alternative acceptable position but
+            // occupies the same set of required slots.
+            if (desiredSlotIsAcceptable || req.AcceptableSlots.Count == 0)
+            {
+                acceptedSlot = primarySlot;
                 return true;
             }
 
-            if (req.AcceptableSlots.Count == 0)
+            // check acceptable slots for conflicts.
+            // at least one slot must exist that accepts this item.
+            foreach (var a in req.AcceptableSlots)
             {
-                acceptedSlot = acceptedSlotTmp;
-                return slotRetrieved;
-            }
-
-            foreach (var r in req.AcceptableSlots)
-            {
-                if (!IsSlotAvailableForBulkItem(meta, r, bulkItem, out var usedSlot))
+                if (!IsSlotAvailableForBulkItem(meta, a, bulkItem, out _))
                 {
+                    // ignored. Not a slot we selected. its incompatible with the item.
                     continue;
                 }
 
-                if (!slotRetrieved)
+                acceptedSlot = primarySlot;
+                return true;
+            }
+
+            acceptedSlot = default;
+            return false;
+        }
+
+        /// <summary>
+        ///    Checks the required slots of the given item for compatible content. Returns false if any of the
+        ///    slots are occupied by an incompatible item. Returns true if the item can occupy all required slots
+        ///    or if there are no required slots needed. The primary slot will be filled with the first occupied slot
+        ///    if the item requires at least one primary slot. 
+        /// </summary>
+        /// <param name="meta"></param>
+        /// <param name="req"></param>
+        /// <param name="bulkItem"></param>
+        /// <param name="primarySlot"></param>
+        /// <returns></returns>
+        bool IsBulkEquipmentRequiredSpaceAvailable(IBulkDataStorageMetaData<TItemId> meta,
+                                                   EquipmentSlotRequirements req,
+                                                   TItemId bulkItem,
+                                                   out Optional<EquipmentSlot> primarySlot)
+        {
+            var acceptedSlot = Optional.Empty<EquipmentSlot>();
+            //  Step 1: Check the required slots for the item.
+            //  Each required slot must be empty or occupied by a compatible stack.
+            foreach (var r in req.RequiredSlots)
+            {
+                if (!IsSlotAvailableForBulkItem(meta, r, bulkItem, out var usedPrimarySlot))
                 {
-                    acceptedSlot = r;
-                    return true;
+                    logger.Verbose("A required slot {Slot} for item {Item} is already occupied by an incompatible item", r, bulkItem);
+                    primarySlot = default;
+                    return false;
                 }
 
-                if (!usedSlot.TryGetValue(out var usedSlotValue) || acceptedSlotTmp == usedSlotValue)
+                if (!acceptedSlot.TryGetValue(out var prevSelectedSlot))
                 {
-                    acceptedSlot = usedSlotValue;
-                    return true;
+                    if (usedPrimarySlot.TryGetValue(out var compatiblePrimarySlot))
+                    {
+                        acceptedSlot = compatiblePrimarySlot;
+                    }
+                    else
+                    {
+                        acceptedSlot = r;
+                    }
+                }
+                else if (usedPrimarySlot.TryGetValue(out var slot) && prevSelectedSlot != slot)
+                {
+                    // if there is an item already occupying the slot, check that it also occupies the same primary slot.
+                    // abort if this condition does not hold.
+                    logger.Verbose("A required slot {Slot} for item {Item} is already occupied by a different item of the same type", r, bulkItem);
+                    primarySlot = default;
+                    return false;
                 }
             }
 
-            logger.Verbose("A unoccupied acceptable slot for item {Item} was not found", bulkItem);
-            acceptedSlot = default;
-            return false;
+            primarySlot = acceptedSlot;
+            return true;
         }
 
         bool IsSlotOccupied(EquipmentSlot equipmentSlot)
@@ -413,6 +474,20 @@ namespace RogueEntity.Core.Equipment
             return equippedItems.ContainsKey(equipmentSlot);
         }
 
+        /// <summary>
+        ///    Checks if the given bulk item 'r' can be added to the given equipment slot.
+        ///    If the slot given is already occupied by an incompatible item, this method returns false.
+        ///    If the slot is already occupied by an potentially mergeable item, the method returns true,
+        ///    and the item's primary slot will be returned. This handles cases where the item occupies
+        ///   multiple slots. We always modify the primary slot.
+        ///    
+        ///    If the slot is empty, this returns true without providing a primary equipment slot.  
+        /// </summary>
+        /// <param name="meta"></param>
+        /// <param name="equipmentSlot"></param>
+        /// <param name="r"></param>
+        /// <param name="primarySlot"></param>
+        /// <returns></returns>
         bool IsSlotAvailableForBulkItem(IBulkDataStorageMetaData<TItemId> meta,
                                         EquipmentSlot equipmentSlot,
                                         TItemId r,

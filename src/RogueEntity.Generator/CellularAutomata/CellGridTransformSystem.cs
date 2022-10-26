@@ -74,7 +74,7 @@ namespace RogueEntity.Generator.CellularAutomata
             bool dirty = false;
             foreach (var (x, y) in args.Bounds.Contents)
             {
-                var source = args.SourceTile[x, y];
+                args.SourceTile.TryGet(x, y, out var source);
                 var alive = equalityComparer.Equals(cellAliveMarker, source);
                 var n = CountNeighbours(args.SourceTile, args.SourceLayer, x, y);
 
@@ -105,7 +105,7 @@ namespace RogueEntity.Generator.CellularAutomata
                         dirty = true;
                     }
                 }
-                args.TargetTile[x, y] = result;
+                args.TargetTile.TrySet(x, y, result);
             }
 
             if (dirty)
@@ -125,9 +125,10 @@ namespace RogueEntity.Generator.CellularAutomata
                 var c = d.ToCoordinates();
                 var tx = x + c.X;
                 var ty = y + c.Y;
-                if (!b.TryGet(tx, ty, out var content))
+                if (!b.TryGet(tx, ty, out var content) ||
+                    !n.TryGet(tx, ty, out content))
                 {
-                    content = n[tx, ty];
+                    continue;
                 }
 
                 if (equalityComparer.Equals(content, cellAliveMarker))

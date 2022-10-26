@@ -9,11 +9,11 @@ namespace RogueEntity.Core.Utils.DataViews
     public static class DataViewExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TData? TryGetMapValue<TResistanceMap, TData>(this TResistanceMap resistanceMap,
+        public static TData TryGetMapValue<TResistanceMap, TData>(this TResistanceMap resistanceMap,
                                                                    ref IReadOnlyBoundedDataView<TData>? resistanceTile,
                                                                    int tx,
                                                                    int ty,
-                                                                   in TData? defaultValue)
+                                                                   in TData defaultValue)
             where TResistanceMap : IReadOnlyDynamicDataView2D<TData>
         {
             if (resistanceTile == null! || !resistanceTile.TryGet(tx, ty, out var resistance))
@@ -210,8 +210,11 @@ namespace RogueEntity.Core.Utils.DataViews
                 result.Append(beginRow);
                 for (var x = bounds.MinExtentX; x <= bounds.MaxExtentX; x++)
                 {
-                    var val = map[x, y];
-                    result.Append(elementStringifier(val));
+                    if (map.TryGet(x, y, out var val))
+                    {
+                        result.Append(elementStringifier(val));
+                    }
+
                     if (x != bounds.MaxExtentX)
                     {
                         result.Append(elementSeparator);
@@ -271,13 +274,18 @@ namespace RogueEntity.Core.Utils.DataViews
             if (elementStringifier == null)
                 elementStringifier = obj => obj?.ToString() ?? "";
 
+            var fmtString = $"{{0, {fieldSize}}}";
             var result = new StringBuilder(begin);
             for (var y = bounds.MinExtentY; y <= bounds.MaxExtentY; y++)
             {
                 result.Append(beginRow);
                 for (var x = bounds.MinExtentX; x <= bounds.MaxExtentX; x++)
                 {
-                    result.Append(string.Format($"{{0, {fieldSize}}} ", elementStringifier(map[x, y])));
+                    if (map.TryGet(x, y, out var value))
+                    {
+                        result.Append(string.Format(fmtString, elementStringifier(value)));
+                    }
+                    
                     if (x != bounds.MaxExtentX)
                     {
                         result.Append(elementSeparator);
@@ -302,6 +310,13 @@ namespace RogueEntity.Core.Utils.DataViews
         {
             string Format(float f) => $"{f:0.00}";
             return map.ExtendToString(bounds, fieldSize, "", "", Format);
+        }
+
+        public static string ExtendToString(this IReadOnlyView2D<float> map,
+                                            in Rectangle bounds,
+                                            Func<float,string> format)
+        {
+            return map.ExtendToString(bounds, "", "", format);
         }
 
 

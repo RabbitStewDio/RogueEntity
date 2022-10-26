@@ -90,12 +90,10 @@ namespace RogueEntity.Samples.MineSweeper.MonoGame
             var viewPort = scrollingConsole.ViewPort;
             foreach (var (x,y) in new RectangleContents(viewPort.X, viewPort.Y, viewPort.Width, viewPort.Height))
             {
-                var discovered = discoveryView[x, y];
-                if (discovered)
+                if (discoveryView.TryGet(x, y, out var discovered) && discovered)
                 {
                     // render item
-                    var item = itemView[x, y];
-                    if (item.IsEmpty || itemResolver.IsItemType(item, MineSweeperItemDefinitions.Wall))
+                    if (!itemView.TryGet(x, y, out var item) || item.IsEmpty || itemResolver.IsItemType(item, MineSweeperItemDefinitions.Wall))
                     {
                         console.SetGlyph(x, y, '#', Color.White, Color.Black);
                     }
@@ -123,14 +121,13 @@ namespace RogueEntity.Samples.MineSweeper.MonoGame
                 else
                 {
                     // render flagged
-                    var flagged = !(flagView[x, y].IsEmpty);
-                    if (flagged)
+                    if (!flagView.TryGet(x, y, out var flagState) || flagState.IsEmpty)
                     {
-                        console.SetGlyph(x, y, 'F', Color.White, Color.Black);
+                        console.SetGlyph(x, y, '?', new Color(10, 10, 10), Color.Black);
                     }
                     else
                     {
-                        console.SetGlyph(x, y, '?', new Color(10, 10, 10), Color.Black);
+                        console.SetGlyph(x, y, 'F', Color.White, Color.Black);
                     }
                 }
             }

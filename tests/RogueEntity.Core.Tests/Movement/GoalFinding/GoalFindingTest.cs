@@ -20,6 +20,7 @@ using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.DataViews;
 using System.Diagnostics.CodeAnalysis;
 using static RogueEntity.Core.Tests.Movement.PathfindingTestUtil;
+using Assert = RogueEntity.Core.Utils.Assert;
 
 namespace RogueEntity.Core.Tests.Movement.GoalFinding
 {
@@ -165,6 +166,7 @@ namespace RogueEntity.Core.Tests.Movement.GoalFinding
 
             var expectedResultMap = ParseResultMap(p.ResultText, out _);
             var producedResultMap = CreateResult(resistanceMap, resultPath, startPosition, bounds);
+            Console.WriteLine("Found path " + string.Join(",", resultPath));
             Console.WriteLine("Expected Result\n" + PrintResultMap(expectedResultMap, bounds));
             Console.WriteLine("Computed Result\n" + PrintResultMap(producedResultMap, bounds));
 
@@ -187,12 +189,16 @@ namespace RogueEntity.Core.Tests.Movement.GoalFinding
             outboundDirectionalityMapSystem.Process();
             outboundDirectionalityMapSystem.ResultView.TryGetView(0, out var outboundDirectionalityMap).Should().BeTrue();
 
+            Assert.NotNull(outboundDirectionalityMap);
+            
             var inboundDirectionalityMapSystem = new InboundMovementDirectionalitySystem<WalkingMovement>(resistanceMap.As3DMap(0));
             inboundDirectionalityMapSystem.MarkGloballyDirty();
             inboundDirectionalityMapSystem.Process();
             inboundDirectionalityMapSystem.ResultView.TryGetView(0, out var inboundDirectionalityMap).Should().BeTrue();
 
-            Console.WriteLine("Directionality: \n" + TestHelpers.PrintMap(outboundDirectionalityMap.Transform(e => $"[{e.ToFormattedString()}] "), bounds));
+            Assert.NotNull(inboundDirectionalityMap);
+            
+            Console.WriteLine("Directionality: \n" + outboundDirectionalityMap.PrintEdges(bounds));
 
             var ms = new MovementDataCollector();
             ms.RegisterMovementSource<WalkingMovement>(WalkingMovement.Instance, resistanceMap.As3DMap(0), inboundDirectionalityMap.As3DMap(0), outboundDirectionalityMap.As3DMap(0));

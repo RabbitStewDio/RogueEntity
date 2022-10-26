@@ -12,20 +12,34 @@ using System.Diagnostics.CodeAnalysis;
 namespace RogueEntity.Core.Tests.Positioning.Grid.GridItemPlacementServiceTest
 {
     [SuppressMessage("ReSharper", "NotNullOrRequiredMemberIsNotInitialized")]
-    public class GridItemPlacementServiceFixture: WhenFixtureSupport, IItemFixture
+    public class GridItemPlacementServiceFixture<TSelf> : ItemTestFixtureBase<TSelf, ItemReference>,
+                                                          ITestFixture<TSelf, ItemReference>
+        where TSelf : ItemTestFixtureBase<TSelf, ItemReference>, ITestFixture<TSelf, ItemReference>
     {
         protected MapLayer DefaultLayer = new MapLayer(1, "Default Layer");
         protected GridItemPlacementService<ItemReference> PlacementService;
 
         protected ItemContextBackend<ItemReference> ItemEntityContext;
-        protected DefaultGridPositionContextBackend<ItemReference> ItemMapContext;
+        protected DefaultGridPositionContextBackend<ItemReference> GridMapContext;
         protected ItemPlacementServiceContext<ItemReference> ItemPlacementContext;
 
-        public static readonly ItemDeclarationId ReferenceItemA = "ReferenceItemA"; 
-        public static readonly ItemDeclarationId ReferenceItemB = "ReferenceItemB"; 
-        public static readonly ItemDeclarationId StackingBulkItemA = "StackingBulkItemA"; 
-        public static readonly ItemDeclarationId StackingBulkItemB = "StackingBulkItemB"; 
-        public static readonly ItemDeclarationId BulkItemC = "BulkItemC"; 
+        public static readonly ItemDeclarationId ReferenceItemA = "ReferenceItemA";
+        public static readonly ItemDeclarationId ReferenceItemB = "ReferenceItemB";
+        public static readonly ItemDeclarationId StackingBulkItemA = "StackingBulkItemA";
+        public static readonly ItemDeclarationId StackingBulkItemB = "StackingBulkItemB";
+        public static readonly ItemDeclarationId BulkItemC = "BulkItemC";
+
+        public EntityContext<TSelf, ItemReference> With(ItemReference r)
+        {
+            TSelf me = (TSelf)((object)this);
+            return new EntityContext<TSelf, ItemReference>(me, r);
+        }
+        
+        public EntityContext<TSelf, ItemReference> With(ItemDeclarationId r)
+        {
+            TSelf me = (TSelf)((object)this);
+            return new EntityContext<TSelf, ItemReference>(me, r);
+        }
         
         [SetUp]
         public void SetUp()
@@ -35,13 +49,13 @@ namespace RogueEntity.Core.Tests.Positioning.Grid.GridItemPlacementServiceTest
             ItemEntityContext.EntityRegistry.RegisterNonConstructable<EntityGridPosition>();
             ItemEntityContext.EntityRegistry.RegisterNonConstructable<EntityGridPositionChangedMarker>();
 
-            ItemMapContext = new DefaultGridPositionContextBackend<ItemReference>()
+            GridMapContext = new DefaultGridPositionContextBackend<ItemReference>()
                 .WithDefaultMapLayer(DefaultLayer);
 
             ItemPlacementContext = new ItemPlacementServiceContext<ItemReference>()
                 .WithLayer(DefaultLayer,
-                           new GridItemPlacementService<ItemReference>(ItemEntityContext.ItemResolver, ItemMapContext),
-                           new GridItemPlacementLocationService<ItemReference>(ItemEntityContext.ItemResolver, ItemMapContext));
+                           new GridItemPlacementService<ItemReference>(ItemEntityContext.ItemResolver, GridMapContext),
+                           new GridItemPlacementLocationService<ItemReference>(ItemEntityContext.ItemResolver, GridMapContext));
 
             ItemEntityContext.ItemRegistry.Register(new ReferenceItemDeclaration<ItemReference>(ReferenceItemA).WithTrait(new ReferenceItemGridPositionTrait<ItemReference>(DefaultLayer)));
             ItemEntityContext.ItemRegistry.Register(new ReferenceItemDeclaration<ItemReference>(ReferenceItemB).WithTrait(new ReferenceItemGridPositionTrait<ItemReference>(DefaultLayer)));
@@ -52,14 +66,12 @@ namespace RogueEntity.Core.Tests.Positioning.Grid.GridItemPlacementServiceTest
                                                     .WithTrait(new BulkItemGridPositionTrait<ItemReference>(DefaultLayer))
                                                     .WithTrait(new StackingBulkTrait<ItemReference>(10)));
             ItemEntityContext.ItemRegistry.Register(new BulkItemDeclaration<ItemReference>(BulkItemC)
-                                                    .WithTrait(new BulkItemGridPositionTrait<ItemReference>(DefaultLayer)));
+                                                        .WithTrait(new BulkItemGridPositionTrait<ItemReference>(DefaultLayer)));
 
-            PlacementService = new GridItemPlacementService<ItemReference>(ItemEntityContext.ItemResolver, ItemMapContext);
+            PlacementService = new GridItemPlacementService<ItemReference>(ItemEntityContext.ItemResolver, GridMapContext);
         }
 
-        IGridMapContext<ItemReference> IItemFixture.ItemMapContext => ItemMapContext;
-
-        IItemResolver<ItemReference> IItemFixture.ItemResolver => ItemEntityContext.ItemResolver;
-
+        public override IItemResolver<ItemReference> ItemResolver => ItemEntityContext.ItemResolver;
+        public override IGridMapContext<ItemReference> ItemMapContext => GridMapContext;
     }
 }

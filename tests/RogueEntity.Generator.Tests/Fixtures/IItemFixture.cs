@@ -1,21 +1,14 @@
-using EnTTSharp.Entities;
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Core.Positioning.Grid;
+using RogueEntity.Core.Tests.Fixtures;
 
 namespace RogueEntity.Generator.Tests.Fixtures
 {
-    public interface IItemFixture<TEntityId>
-        where TEntityId : IEntityKey
+    public class ItemFixture<TEntityId> : ItemTestFixtureBase<ItemFixture<TEntityId>, TEntityId>
+        where TEntityId : struct, IBulkDataStorageKey<TEntityId>
     {
-        IItemResolver<TEntityId> ItemResolver{ get; }
-        IGridMapContext<TEntityId> ItemMapContext { get; }
-    }
-
-    public readonly struct ItemFixture<TEntityId> : IItemFixture<TEntityId>
-        where TEntityId : IEntityKey
-    {
-        public IItemResolver<TEntityId> ItemResolver { get; }
-        public IGridMapContext<TEntityId> ItemMapContext { get; }
+        public override IItemResolver<TEntityId> ItemResolver { get; }
+        public override IGridMapContext<TEntityId> ItemMapContext { get; }
 
         public ItemFixture(IItemResolver<TEntityId> itemResolver, IGridMapContext<TEntityId> itemMapContext)
         {

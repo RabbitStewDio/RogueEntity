@@ -36,8 +36,10 @@ namespace RogueEntity.Core.Tests.Positioning.Grid
         {
             gdc.TryGetGridDataFor(TestMapLayers.One, out var dataContext).Should().BeTrue();
             dataContext.TryGetWritableView(0, out var view, DataViewCreateMode.CreateMissing).Should().BeTrue();
-            view[0, 0] = 10;
-            view[40, 40] = 40;
+            Assert.NotNull(view);
+            
+            view.TrySet(0, 0, 10).Should().BeTrue();
+            view.TrySet(40, 40, 40).Should().BeTrue();
 
             view.TryGet(0, 0, out var expected00).Should().BeTrue("because we explicitly wrote here");
             expected00.Should().Be(10);
@@ -54,8 +56,10 @@ namespace RogueEntity.Core.Tests.Positioning.Grid
         {
             gdc.TryGetGridDataFor(TestMapLayers.One, out var dataContext).Should().BeTrue();
             dataContext.TryGetWritableView(0, out var view, DataViewCreateMode.CreateMissing).Should().BeTrue();
-            view[0, 0] = 10;
-            view[40, 40] = 40;
+            Assert.NotNull(view);
+            
+            view.TrySet(0, 0, 10).Should().BeTrue();
+            view.TrySet(40, 40, 40).Should().BeTrue();
 
             gdc.ResetState();
 

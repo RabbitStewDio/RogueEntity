@@ -10,7 +10,6 @@ public class PathfinderRegionPainterTest
     [Test]
     public void TestEdgeMapping()
     {
-        
         PathfinderRegionPainter.DetectEdge(DirectionalityInformation.All)
                                .Should()
                                .Be(DirectionalityInformation.None);
@@ -32,16 +31,26 @@ public class PathfinderRegionPainterTest
     [Test]
     public void TestEdgeMapping2()
     {
-        PathfinderRegionPainter.TestEdge(DirectionalityInformation.UpRight | DirectionalityInformation.UpLeft| DirectionalityInformation.Left, 
+        PathfinderRegionPainter.TestEdge(DirectionalityInformation.UpRight | DirectionalityInformation.Left | DirectionalityInformation.UpLeft,
                                          DirectionalityInformation.Up,
                                          DirectionalityInformation.UpRight | DirectionalityInformation.UpLeft)
                                .Should()
                                .Be(DirectionalityInformation.UpRight | DirectionalityInformation.UpLeft);
- 
-        PathfinderRegionPainter.TestEdge(DirectionalityInformation.UpLeft| DirectionalityInformation.Left, 
+
+        PathfinderRegionPainter.TestEdge(DirectionalityInformation.UpLeft | DirectionalityInformation.Left,
                                          DirectionalityInformation.Up,
                                          DirectionalityInformation.UpRight | DirectionalityInformation.UpLeft)
                                .Should()
                                .Be(DirectionalityInformation.UpLeft);
-   }
+
+        PathfinderRegionPainter.TestEdge(DirectionalityInformation.All & (~DirectionalityInformation.Down),
+                                         DirectionalityInformation.Down,
+                                         DirectionalityInformation.DownRight | DirectionalityInformation.DownLeft)
+                               .Should()
+                               .Be(DirectionalityInformation.DownRight | DirectionalityInformation.DownLeft);
+
+        PathfinderRegionPainter.edgeMappingComplete[(int)(DirectionalityInformation.All & (~DirectionalityInformation.Down))]
+                               .Should()
+                               .Be(DirectionalityInformation.DownLeft | DirectionalityInformation.DownRight);
+    }
 }

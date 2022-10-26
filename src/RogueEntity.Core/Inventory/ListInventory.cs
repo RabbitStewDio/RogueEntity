@@ -324,7 +324,7 @@ namespace RogueEntity.Core.Inventory
                 }
 
                 if (!itemResolver.SplitStack(itemRef, 1, out var takeItemOpt, out var remainingItemOpt, out _) || 
-                    takeItemOpt.TryGetValue(out var takeItem))
+                    !takeItemOpt.TryGetValue(out var takeItem))
                 {
                     continue;
                 }

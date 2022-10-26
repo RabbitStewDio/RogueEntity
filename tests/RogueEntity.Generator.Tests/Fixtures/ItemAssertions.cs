@@ -1,11 +1,13 @@
 using EnTTSharp.Entities;
 using FluentAssertions;
+using RogueEntity.Api.ItemTraits;
+using RogueEntity.Core.Tests.Fixtures;
 
 namespace RogueEntity.Generator.Tests.Fixtures
 {
     public class ItemAssertions<TItemFixture, TEntityId>
-        where TItemFixture : IItemFixture<TEntityId>
-        where TEntityId : IEntityKey
+        where TItemFixture : IEntityFixture<TEntityId>
+        where TEntityId : struct, IBulkDataStorageKey<TEntityId>
     {
         readonly TItemFixture fixture;
         readonly TEntityId item;

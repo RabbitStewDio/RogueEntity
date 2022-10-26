@@ -7,7 +7,7 @@ using RogueEntity.Core.Tests.Fixtures;
 namespace RogueEntity.Core.Tests.Positioning.Grid.GridItemPlacementServiceTest
 {
     [TestFixture]
-    public class Swapping : GridItemPlacementServiceFixture
+    public class Swapping : GridItemPlacementServiceFixture<Swapping>
     {
         [Test]
         public void ValidatePreConditions()
@@ -36,8 +36,8 @@ namespace RogueEntity.Core.Tests.Positioning.Grid.GridItemPlacementServiceTest
             When(_ => PlacementService.TrySwapItem(refA, posA, default, posB));
             
             Then_Operation_Should_Succeed();
-            this.Then_Position(posA).Should().BeEmpty();
-            this.Then_Position(posB).Should().ContainEntity(refA);
+            this.ThenPosition(posA).Should().BeEmpty();
+            this.ThenPosition(posB).Should().ContainEntity(refA);
         }
         
         [Test]
@@ -49,8 +49,8 @@ namespace RogueEntity.Core.Tests.Positioning.Grid.GridItemPlacementServiceTest
             When(_ => PlacementService.TrySwapItem(default, posB, refA, posA));
             
             Then_Operation_Should_Succeed();
-            this.Then_Position(posA).Should().BeEmpty();
-            this.Then_Position(posB).Should().ContainEntity(refA);
+            this.ThenPosition(posA).Should().BeEmpty();
+            this.ThenPosition(posB).Should().ContainEntity(refA);
         }
 
         [Test]
@@ -62,8 +62,8 @@ namespace RogueEntity.Core.Tests.Positioning.Grid.GridItemPlacementServiceTest
             When(_ => PlacementService.TrySwapItem(refA, posA, refB, posB));
             
             Then_Operation_Should_Succeed();
-            this.Then_Position(posA).Should().ContainEntityOfType(StackingBulkItemA).WithStackSize(5);
-            this.Then_Position(posB).Should().ContainEntity(refA);
+            this.ThenPosition(posA).Should().ContainEntityOfType(StackingBulkItemA).WithStackSize(5);
+            this.ThenPosition(posB).Should().ContainEntity(refA);
         }
 
         [Test]
@@ -75,8 +75,8 @@ namespace RogueEntity.Core.Tests.Positioning.Grid.GridItemPlacementServiceTest
             When(_ => PlacementService.TrySwapItem(refA, posA, refB, posB));
             
             Then_Operation_Should_Succeed();
-            this.Then_Position(posA).Should().ContainEntity(refB);
-            this.Then_Position(posB).Should().ContainEntity(refA);
+            this.ThenPosition(posA).Should().ContainEntity(refB);
+            this.ThenPosition(posB).Should().ContainEntity(refA);
         }
         
         [Test]
@@ -89,8 +89,8 @@ namespace RogueEntity.Core.Tests.Positioning.Grid.GridItemPlacementServiceTest
             When(_ => PlacementService.TrySwapItem(refC, posA, refB, posB));
             
             Then_Operation_Should_Fail();
-            this.Then_Position(posA).Should().ContainEntity(refA);
-            this.Then_Position(posB).Should().ContainEntity(refB);
+            this.ThenPosition(posA).Should().ContainEntity(refA);
+            this.ThenPosition(posB).Should().ContainEntity(refB);
         }
         
         [Test]
@@ -103,8 +103,8 @@ namespace RogueEntity.Core.Tests.Positioning.Grid.GridItemPlacementServiceTest
             When(_ => PlacementService.TrySwapItem(refA, posA, refC, posB));
             
             Then_Operation_Should_Fail();
-            this.Then_Position(posA).Should().ContainEntity(refA);
-            this.Then_Position(posB).Should().ContainEntity(refB);
+            this.ThenPosition(posA).Should().ContainEntity(refA);
+            this.ThenPosition(posB).Should().ContainEntity(refB);
         }
 
         [Test]
@@ -116,8 +116,8 @@ namespace RogueEntity.Core.Tests.Positioning.Grid.GridItemPlacementServiceTest
             When(_ => PlacementService.TrySwapItem(refA, posA, refB, posB));
             
             Then_Operation_Should_Succeed();
-            this.Then_Position(posA).Should().ContainEntity(refB);
-            this.Then_Position(posB).Should().ContainEntity(refA);
+            this.ThenPosition(posA).Should().ContainEntity(refB);
+            this.ThenPosition(posB).Should().ContainEntity(refA);
         }
         
         [Test]
@@ -130,8 +130,8 @@ namespace RogueEntity.Core.Tests.Positioning.Grid.GridItemPlacementServiceTest
             When(_ => PlacementService.TrySwapItem(refC, posA, refB, posB));
             
             Then_Operation_Should_Fail();
-            this.Then_Position(posA).Should().ContainEntity(refA);
-            this.Then_Position(posB).Should().ContainEntity(refB);
+            this.ThenPosition(posA).Should().ContainEntity(refA);
+            this.ThenPosition(posB).Should().ContainEntity(refB);
         }
         
         [Test]
@@ -145,8 +145,8 @@ namespace RogueEntity.Core.Tests.Positioning.Grid.GridItemPlacementServiceTest
             When(_ => PlacementService.TrySwapItem(refC, posA, refD, posB));
             
             Then_Operation_Should_Fail();
-            this.Then_Position(posA).Should().ContainEntity(refA);
-            this.Then_Position(posB).Should().ContainEntity(refB);
+            this.ThenPosition(posA).Should().ContainEntity(refA);
+            this.ThenPosition(posB).Should().ContainEntity(refB);
         }
         
         [Test]
@@ -160,8 +160,8 @@ namespace RogueEntity.Core.Tests.Positioning.Grid.GridItemPlacementServiceTest
             When(_ => PlacementService.TrySwapItem(refC, posA, refD, posB));
             
             Then_Operation_Should_Succeed();
-            this.Then_Position(posA).Should().ContainEntityOfType(StackingBulkItemA).WithStackSize(6);
-            this.Then_Position(posB).Should().ContainEntityOfType(StackingBulkItemA).WithStackSize(3);
+            this.ThenPosition(posA).Should().ContainEntityOfType(StackingBulkItemA).WithStackSize(6);
+            this.ThenPosition(posB).Should().ContainEntityOfType(StackingBulkItemA).WithStackSize(3);
         }
         
         [Test]
@@ -175,8 +175,8 @@ namespace RogueEntity.Core.Tests.Positioning.Grid.GridItemPlacementServiceTest
             When(_ => PlacementService.TrySwapItem(refC, posA, refD, posB));
             
             Then_Operation_Should_Succeed();
-            this.Then_Position(posA).Should().ContainEntityOfType(StackingBulkItemA).WithStackSize(2);
-            this.Then_Position(posB).Should().ContainEntityOfType(StackingBulkItemA).WithStackSize(7);
+            this.ThenPosition(posA).Should().ContainEntityOfType(StackingBulkItemA).WithStackSize(2);
+            this.ThenPosition(posB).Should().ContainEntityOfType(StackingBulkItemA).WithStackSize(7);
         }
         
         [Test]
@@ -190,8 +190,8 @@ namespace RogueEntity.Core.Tests.Positioning.Grid.GridItemPlacementServiceTest
             When(_ => PlacementService.TrySwapItem(refC, posA, refD, posB));
             
             Then_Operation_Should_Succeed();
-            this.Then_Position(posA).Should().ContainEntityOfType(StackingBulkItemA).WithStackSize(8);
-            this.Then_Position(posB).Should().ContainEntityOfType(StackingBulkItemA).WithStackSize(1);
+            this.ThenPosition(posA).Should().ContainEntityOfType(StackingBulkItemA).WithStackSize(8);
+            this.ThenPosition(posB).Should().ContainEntityOfType(StackingBulkItemA).WithStackSize(1);
         }
         
         [Test]
@@ -205,8 +205,8 @@ namespace RogueEntity.Core.Tests.Positioning.Grid.GridItemPlacementServiceTest
             When(_ => PlacementService.TrySwapItem(refC, posA, refD, posB));
             
             Then_Operation_Should_Fail();
-            this.Then_Position(posA).Should().ContainEntity(refA);
-            this.Then_Position(posB).Should().ContainEntity(refB);
+            this.ThenPosition(posA).Should().ContainEntity(refA);
+            this.ThenPosition(posB).Should().ContainEntity(refB);
         }
         
         [Test]
@@ -220,8 +220,8 @@ namespace RogueEntity.Core.Tests.Positioning.Grid.GridItemPlacementServiceTest
             When(_ => PlacementService.TrySwapItem(refC, posA, refD, posB));
             
             Then_Operation_Should_Fail();
-            this.Then_Position(posA).Should().ContainEntity(refA);
-            this.Then_Position(posB).Should().ContainEntity(refB);
+            this.ThenPosition(posA).Should().ContainEntity(refA);
+            this.ThenPosition(posB).Should().ContainEntity(refB);
         }
         
         

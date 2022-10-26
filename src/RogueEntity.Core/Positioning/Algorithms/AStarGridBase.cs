@@ -54,7 +54,7 @@ namespace RogueEntity.Core.Positioning.Algorithms
 
         protected void EnqueueStartPosition(Position2D start)
         {
-            nodes[start.X, start.Y] = AStarNode.Start();
+            nodes.TrySet(start.X, start.Y, AStarNode.Start());
             openNodes.Enqueue(start, Heuristic(start));
         }
 

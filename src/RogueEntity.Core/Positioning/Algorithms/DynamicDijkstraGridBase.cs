@@ -106,15 +106,16 @@ namespace RogueEntity.Core.Positioning.Algorithms
         protected void EnqueueStartingNode(in Position2D c, float weight)
         {
             openNodes.UpdatePriority(c, new DijkstraNodeWeight(-weight, 0));
-            nodesWeight[c.X, c.Y] = weight;
-            nodesDirection[c.X, c.Y] = Direction.None;
+            
+            nodesWeight.TrySet(c.X, c.Y, weight);
+            nodesDirection.TrySet(c.X, c.Y, Direction.None);
         }
 
         protected void EnqueueNode(in Position2D pos, float weight, in Position2D prev)
         {
             openNodes.UpdatePriority(pos, new DijkstraNodeWeight(-weight, (float)DistanceCalculation.Euclid.Calculate2D(pos, prev)));
-            nodesWeight[pos.X, pos.Y] = weight;
-            nodesDirection[pos.X, pos.Y] = Directions.GetDirection(prev, pos);
+            nodesWeight.TrySet(pos.X, pos.Y, weight);
+            nodesDirection.TrySet(pos.X, pos.Y, Directions.GetDirection(prev, pos));
         }
 
         protected bool TryDequeueOpenNode(out Position2D c)

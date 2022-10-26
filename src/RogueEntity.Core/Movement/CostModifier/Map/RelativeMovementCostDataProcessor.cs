@@ -30,8 +30,8 @@ namespace RogueEntity.Core.Movement.CostModifier.Map
             var itemResolver = itemContext;
             foreach (var (x, y) in bounds.Contents)
             {
-                var groundItemRef = groundData[x, y];
-                if (itemResolver.TryQueryData(groundItemRef,  out RelativeMovementCostModifier<TMovementMode> groundItem))
+                if (groundData.TryGet(x, y, out var groundItemRef) && 
+                    itemResolver.TryQueryData(groundItemRef,  out RelativeMovementCostModifier<TMovementMode> groundItem))
                 {
                     resultTile.TrySet(x, y, in groundItem);
                 }

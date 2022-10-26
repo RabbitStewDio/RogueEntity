@@ -1,23 +1,36 @@
+using EnTTSharp.Entities;
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Core.Positioning;
+using RogueEntity.Core.Positioning.Grid;
 
 namespace RogueEntity.Core.Tests.Fixtures
 {
-    public static class ItemFixtureExtensions
+    public interface ITestFixture<TSelf, TEntity> : IEntityFixture<TEntity>
+        where TSelf : IEntityFixture<TEntity>, ITestFixture<TSelf, TEntity>
+        where TEntity : struct, IBulkDataStorageKey<TEntity>
     {
-        public static EntityContext<TItemFixture> GivenAnEntity<TItemFixture>(this TItemFixture f, ItemDeclarationId item)
-            where TItemFixture : IItemFixture
-            => new EntityContext<TItemFixture>(f, item);
-        
-        public static EntityContext<TItemFixture> GivenAnEmptySpace<TItemFixture>(this TItemFixture f)
-            where TItemFixture : IItemFixture
-            => new EntityContext<TItemFixture>(f);
-        
-        public static PlacementAssertions<TItemFixture> Then_Position<TItemFixture>(this TItemFixture f, Position position)
-            where TItemFixture : IItemFixture
-        {
-            return new PlacementAssertions<TItemFixture>(f, position);
-        }
+    }
 
+    public abstract class ItemTestFixtureBase<TSelf, TEntity> : WhenFixtureSupport, IEntityFixture<TEntity>
+        where TSelf : ItemTestFixtureBase<TSelf, TEntity>
+        where TEntity : struct, IBulkDataStorageKey<TEntity>
+    {
+        public abstract IItemResolver<TEntity> ItemResolver { get; }
+        public abstract IGridMapContext<TEntity> ItemMapContext { get; }
+
+        public EntityContext<TSelf, TEntity> GivenAnEntity(ItemDeclarationId item)
+            => new EntityContext<TSelf, TEntity>((TSelf)this, item);
+
+        public EntityContext<TSelf, TEntity> GivenAnEmptySpace()
+            => new EntityContext<TSelf, TEntity>((TSelf)this);
+
+        public EntityContext<TSelf, TEntity> GivenAnExistingEntity(TEntity item)
+            => new EntityContext<TSelf, TEntity>((TSelf)this, item);
+
+        public PlacementAssertions<TEntity, TSelf> ThenPosition(Position position)
+            => new PlacementAssertions<TEntity, TSelf>((TSelf)this, position);
+
+        public ItemAssertions<TSelf, TEntity> ThenItem(in TEntity item)
+            => new ItemAssertions<TSelf, TEntity>((TSelf)this, item);
     }
 }

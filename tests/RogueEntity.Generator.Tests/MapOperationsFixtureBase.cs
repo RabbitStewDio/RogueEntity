@@ -8,13 +8,14 @@ using RogueEntity.Core.Meta.ItemTraits;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Positioning.MapLayers;
+using RogueEntity.Core.Tests.Fixtures;
 using RogueEntity.Generator.Tests.Fixtures;
 using System.Diagnostics.CodeAnalysis;
 
 namespace RogueEntity.Generator.Tests
 {
     [SuppressMessage("ReSharper", "NotNullOrRequiredMemberIsNotInitialized")]
-    public abstract class MapOperationsFixtureBase : WhenFixtureSupport
+    public abstract class MapOperationsFixtureBase : WhenFixtureSupport 
     {
         protected static readonly MapLayer FloorLayer = new MapLayer(1, "Floor");
         protected static readonly MapLayer ItemLayer = new MapLayer(2, "Items");

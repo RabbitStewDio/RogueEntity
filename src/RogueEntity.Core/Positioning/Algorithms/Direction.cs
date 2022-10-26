@@ -234,7 +234,7 @@ namespace RogueEntity.Core.Positioning.Algorithms
         /// <returns>
         /// The given direction moved counter-clockwise <paramref name="i"/> times.
         /// </returns>
-        public static Direction MoveCounterClockwise (this Direction d, int i = 1) => (d == Direction.None) ? Direction.None : moveDirections[MathHelpers.WrapAround((int)d - i, 8)];
+        public static Direction MoveCounterClockwise (this Direction d, int i = 1) => (d == Direction.None) ? Direction.None : moveDirections[MathHelpers.WrapAround((int)d - i - 1, 8)];
 
         /// <summary>
         /// Moves the direction clockwise <paramref name="i"/> times.
@@ -244,6 +244,6 @@ namespace RogueEntity.Core.Positioning.Algorithms
         /// <returns>
         /// The given direction moved clockwise <paramref name="i"/> times.
         /// </returns>
-        public static Direction MoveClockwise (this Direction d, int i = 1) => (d == Direction.None) ? Direction.None : moveDirections[MathHelpers.WrapAround((int)d + i, 8)];
+        public static Direction MoveClockwise (this Direction d, int i = 1) => (d == Direction.None) ? Direction.None : moveDirections[MathHelpers.WrapAround((int)d + i - 1, 8)];
     }
 }

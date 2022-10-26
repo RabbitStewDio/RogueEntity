@@ -101,8 +101,8 @@ namespace RogueEntity.Generator.MapFragments
 
             foreach (var c in new RectangleContents(f.Size.Width, f.Size.Height))
             {
-                var entry = f.MapData[c.X, c.Y];
-                if (entry == MapFragmentTagDeclaration.Empty)
+                if (!f.MapData.TryGet(c.X, c.Y, out var entry) || 
+                    entry == MapFragmentTagDeclaration.Empty)
                 {
                     continue;
                 }

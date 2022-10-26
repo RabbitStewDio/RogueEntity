@@ -81,14 +81,16 @@ namespace RogueEntity.Samples.MineSweeper.Core.Services
                     continue;
                 }
 
-                var item = itemView[x, y];
+                ;
                 var mines = CountMines(itemView, x, y);
-                if (!itemResolver.TryUpdateData(item, new MineSweeperMineCount(mines), out var changedItem))
+                
+                if (!itemView.TryGet(x, y, out var item) || 
+                    !itemResolver.TryUpdateData(item, new MineSweeperMineCount(mines), out var changedItem))
                 {
                     throw new InvalidOperationException();
                 }
 
-                itemView[x, y] = changedItem;
+                itemView.TrySet(x, y, changedItem);
             }
         }
 
@@ -138,8 +140,7 @@ namespace RogueEntity.Samples.MineSweeper.Core.Services
                 var coords = dir.ToCoordinates();
                 var x = posX + coords.X;
                 var y = posY + coords.Y;
-                var item = itemView[x, y];
-                if (itemResolver.TryResolve(item, out var itemType) &&
+                if (itemView.TryGet(x, y, out var item) && itemResolver.TryResolve(item, out var itemType) &&
                     itemType.Id == MineSweeperItemDefinitions.Mine)
                 {
                     count += 1;

@@ -70,7 +70,7 @@ namespace RogueEntity.Generator.CellularAutomata
 
             foreach (var (x, y) in bounds.Contents)
             {
-                baseView[x, y] = deadEntity; // rng.NextDouble() >= 0.5 ? wallEntity : spaceEntity;
+                baseView.TrySet(x, y, deadEntity); // rng.NextDouble() >= 0.5 ? wallEntity : spaceEntity;
             }
 
             return this;
@@ -91,11 +91,11 @@ namespace RogueEntity.Generator.CellularAutomata
             
             foreach (var (x, y) in area.Contents)
             {
-                baseView[x, y] = rng.Next() >= 0.5 ? deadEntity : aliveEntity;
+                baseView.TrySet(x, y, rng.Next() >= 0.5 ? deadEntity : aliveEntity);
                 sys.MarkDirty(Position.Of(MapLayer.Indeterminate, x, y));
             }
             
-            baseView[area.Center.X, area.Center.Y] = aliveEntity;
+            baseView.TrySet(area.Center.X, area.Center.Y, aliveEntity);
             return this;
         }
 

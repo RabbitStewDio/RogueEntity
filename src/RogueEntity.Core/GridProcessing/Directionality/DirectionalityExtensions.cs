@@ -1,7 +1,9 @@
 using RogueEntity.Core.Positioning.Algorithms;
 using RogueEntity.Core.Utils;
+using RogueEntity.Core.Utils.DataViews;
 using System;
 using System.Runtime.CompilerServices;
+using System.Text;
 
 namespace RogueEntity.Core.GridProcessing.Directionality
 {
@@ -84,5 +86,119 @@ namespace RogueEntity.Core.GridProcessing.Directionality
 
             return true;
         }
+
+        public static string PrintEdges(this IReadOnlyDynamicDataView2D<DirectionalityInformation> map) => PrintEdges(map, map.GetActiveBounds());
+
+        public static string PrintEdges(this IReadOnlyView2D<DirectionalityInformation> map, Rectangle bounds)
+        {
+            var yMin = bounds.Y;
+            var yMax = bounds.MaxExtentY;
+            var xMin = bounds.X;
+            var xMax = bounds.MaxExtentX;
+            StringBuilder sb = new StringBuilder();
+
+            for (var y = yMin; y <= yMax; y += 1)
+            {
+                for (var x = xMin; x <= xMax; x += 1)
+                {
+                    map.TryGet(x, y, out var data);
+                    if ((data & DirectionalityInformation.UpLeft) != 0)
+                    {
+                        sb.Append("\\");
+                    }
+                    else
+                    {
+                        sb.Append(".");
+                    }
+
+                    if ((data & DirectionalityInformation.Up) != 0)
+                    {
+                        sb.Append("|");
+                    }
+                    else
+                    {
+                        sb.Append(".");
+                    }
+
+                    if ((data & DirectionalityInformation.UpRight) != 0)
+                    {
+                        sb.Append("/");
+                    }
+                    else
+                    {
+                        sb.Append(".");
+                    }
+
+                    sb.Append(" ");
+                }
+
+                sb.AppendLine();
+
+                for (var x = xMin; x <= xMax; x += 1)
+                {
+                    map.TryGet(x, y, out var data);
+                    if ((data & DirectionalityInformation.Left) != 0)
+                    {
+                        sb.Append("-");
+                    }
+                    else
+                    {
+                        sb.Append(".");
+                    }
+
+                    sb.Append("*");
+
+                    if ((data & DirectionalityInformation.Right) != 0)
+                    {
+                        sb.Append("-");
+                    }
+                    else
+                    {
+                        sb.Append(".");
+                    }
+
+                    sb.Append(" ");
+                }
+
+                sb.AppendLine();
+
+                for (var x = xMin; x <= xMax; x += 1)
+                {
+                    map.TryGet(x, y, out var data);
+                    if ((data & DirectionalityInformation.DownLeft) != 0)
+                    {
+                        sb.Append("/");
+                    }
+                    else
+                    {
+                        sb.Append(".");
+                    }
+
+                    if ((data & DirectionalityInformation.Down) != 0)
+                    {
+                        sb.Append("|");
+                    }
+                    else
+                    {
+                        sb.Append(".");
+                    }
+
+                    if ((data & DirectionalityInformation.DownRight) != 0)
+                    {
+                        sb.Append("\\");
+                    }
+                    else
+                    {
+                        sb.Append(".");
+                    }
+
+                    sb.Append(" ");
+                }
+
+                sb.AppendLine();
+            }
+
+            return sb.ToString();
+        }        
     }
 }

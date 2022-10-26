@@ -44,12 +44,12 @@ namespace RogueEntity.Samples.MineSweeper.Core.Commands
                     throw new InvalidOperationException();
                 }
 
-                if (itemView[pos.X, pos.Y].IsEmpty)
+                if (!itemView.TryGet(pos.X, pos.Y, out var item) || item.IsEmpty)
                 {
                     return;
                 }
 
-                var flag = flagView[pos.X, pos.Y];
+                flagView.TryGet(pos.X, pos.Y, out var flag);
                 var position = Position.Of(MineSweeperMapLayers.Flags, pos.X, pos.Y);
                 if (itemResolver.IsItemType(flag, MineSweeperItemDefinitions.Flag))
                 {

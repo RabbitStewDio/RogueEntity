@@ -92,8 +92,8 @@ namespace RogueEntity.Core.Movement.GridMovement
                 return false;
             }
 
-            var data = view[currentPosition.GridX, currentPosition.GridY];
-            if (!data.IsMovementAllowed(direction))
+            if (!view.TryGet(currentPosition.GridX, currentPosition.GridY, out var data) || 
+                !data.IsMovementAllowed(direction))
             {
                 movementCost = default;
                 return false;
@@ -163,8 +163,8 @@ namespace RogueEntity.Core.Movement.GridMovement
                     continue;
                 }
 
-                var data = view[currentPosition.GridX, currentPosition.GridY];
-                if (!data.IsMovementAllowed(direction))
+                if (!view.TryGet(currentPosition.GridX, currentPosition.GridY, out var data) || 
+                    !data.IsMovementAllowed(direction))
                 {
                     continue;
                 }

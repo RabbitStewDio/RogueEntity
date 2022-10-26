@@ -34,11 +34,6 @@ namespace RogueEntity.Core.Sensing.Common
             return raw.Contains(x, y);
         }
 
-        public SenseDirectionStore this[int x, int y]
-        {
-            get { return new SenseDirectionStore(raw[x, y]); }
-        }
-
         public Rectangle Bounds
         {
             get { return raw.Bounds; }
@@ -162,16 +157,6 @@ namespace RogueEntity.Core.Sensing.Common
         public int TileSizeY
         {
             get { return sensitivityData.TileSizeY; }
-        }
-
-        float IReadOnlyView2D<float>.this[int x, int y]
-        {
-            get { return sensitivityData[x, y]; }
-        }
-
-        SenseDirectionStore IReadOnlyView2D<SenseDirectionStore>.this[int x, int y]
-        {
-            get { return new SenseDirectionStore(directionData[x, y]); }
         }
 
         public bool TryGet(int x, int y, out float data)

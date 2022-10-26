@@ -1,6 +1,7 @@
 using FluentAssertions;
 using NUnit.Framework;
 using RogueEntity.Api.ItemTraits;
+using RogueEntity.Api.Utils;
 using RogueEntity.Core.GridProcessing.LayerAggregation;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Positioning.Grid;
@@ -11,13 +12,16 @@ using RogueEntity.Core.Sensing.Resistance.Maps;
 using RogueEntity.Core.Utils;
 using RogueEntity.Core.Meta.EntityKeys;
 using RogueEntity.Core.Tests.Fixtures;
+using Serilog;
 using System.Diagnostics.CodeAnalysis;
 
 namespace RogueEntity.Core.Tests.Sensing.Resistance
 {
     [SuppressMessage("ReSharper", "NotNullOrRequiredMemberIsNotInitialized")]
+    [TestFixture]
     public class SensePropertiesMapTest
     {
+        static readonly ILogger logger = SLog.ForContext<SensePropertiesMapTest>();
         SenseMappingTestContext ctx;
         ItemDeclarationId wall;
         ItemDeclarationId ceilingFan;
@@ -51,7 +55,7 @@ namespace RogueEntity.Core.Tests.Sensing.Resistance
         }
 
         [Test]
-        public void TestMapProcessing()
+        public void TestMapUpdate()
         {
             ctx.TryGetItemGridDataFor(TestMapLayers.One, out var data).Should().BeTrue();
             data.TrySet(EntityGridPosition.Of(TestMapLayers.One, 0, 0), ctx.ItemResolver.Instantiate(wall)).Should().BeTrue();
@@ -64,11 +68,13 @@ namespace RogueEntity.Core.Tests.Sensing.Resistance
 
             data.TrySet(EntityGridPosition.Of(TestMapLayers.One, 0, 0), default).Should().BeTrue();
             // without someone marking the data as dirty, no update will be done.
+            logger.Debug("Updating map; but not fired event yet");            
             s.Process();
             s.AggregatedView[0, 0].Should().Be(Percentage.Full);
 
             // After marking the map dirty, the processor should now see the map contents and update accordingly
             s.MarkDirty(EntityGridPosition.Of(TestMapLayers.One, 0, 0));
+            logger.Debug("Updating map after fired event");            
             s.Process();
             s.AggregatedView[0, 0].Should().Be(0);
         }

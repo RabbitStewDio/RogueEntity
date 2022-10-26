@@ -49,8 +49,12 @@ namespace RogueEntity.Core.Utils.DataViews
         [IgnoreMember]
         public TData[] Data => data;
 
+        [IgnoreDataMember]
+        [IgnoreMember]
         public IReadOnlyList<TData> RawData => Data;
 
+        public TileIndex TileIndex { get; set; }
+        
         public void Resize(in Rectangle newBounds, bool strict = false)
         {
             if (bounds.Width == newBounds.Width &&

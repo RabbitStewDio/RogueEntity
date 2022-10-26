@@ -15,7 +15,7 @@ namespace RogueEntity.Generator.Tests
             When(_ => MapBuilder.Clear(Position.Of(ItemLayer, 0, 0)));
 
             Then_Operation_Should_Succeed();
-            Items.Then_Position(pos).Should().BeEmpty();
+            Items.ThenPosition(pos).Should().BeEmpty();
         }
 
         [Test]
@@ -26,8 +26,8 @@ namespace RogueEntity.Generator.Tests
             When(_ => MapBuilder.Clear(Position.Of(ItemLayer, 0, 0)));
 
             Then_Operation_Should_Succeed();
-            Items.Then_Position(pos).Should().BeEmpty();
-            Items.Then_Item(item).Should().BeDestroyed();
+            Items.ThenPosition(pos).Should().BeEmpty();
+            Items.ThenItem(item).Should().BeDestroyed();
         }
 
         [Test]
@@ -38,7 +38,7 @@ namespace RogueEntity.Generator.Tests
             When(_ => MapBuilder.Clear(Position.Of(ItemLayer, 0, 0)));
 
             Then_Operation_Should_Succeed();
-            Items.Then_Position(pos).Should().BeEmpty();
+            Items.ThenPosition(pos).Should().BeEmpty();
         }
 
         [Test]
@@ -49,7 +49,7 @@ namespace RogueEntity.Generator.Tests
             When(_ => MapBuilder.Instantiate(BulkItem1, Position.Of(ItemLayer, 0, 0)));
 
             Then_Operation_Should_Succeed();
-            Items.Then_Position(pos).Should().ContainEntityOfType(BulkItem1).WithStackSize(5);
+            Items.ThenPosition(pos).Should().ContainEntityOfType(BulkItem1).WithStackSize(5);
         }
 
         [Test]
@@ -60,7 +60,7 @@ namespace RogueEntity.Generator.Tests
             When(_ => MapBuilder.Instantiate(ReferenceItem1, Position.Of(ItemLayer, 0, 0)));
 
             Then_Operation_Should_Succeed();
-            Items.Then_Position(pos).Should().ContainEntityOfType(ReferenceItem1)
+            Items.ThenPosition(pos).Should().ContainEntityOfType(ReferenceItem1)
                  .AndThatItem().BeActive();
         }
     }

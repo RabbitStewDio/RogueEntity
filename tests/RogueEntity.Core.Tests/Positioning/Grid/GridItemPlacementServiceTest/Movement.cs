@@ -1,5 +1,6 @@
 using FluentAssertions;
 using NUnit.Framework;
+using RogueEntity.Core.Meta.EntityKeys;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.MapLayers;
 using RogueEntity.Core.Tests.Fixtures;
@@ -9,14 +10,14 @@ namespace RogueEntity.Core.Tests.Positioning.Grid.GridItemPlacementServiceTest
 {
     [TestFixture]
     [SuppressMessage("ReSharper", "UnusedVariable")]
-    public class Movement : GridItemPlacementServiceFixture
+    public class Movement : GridItemPlacementServiceFixture<Movement>
     {
         [Test]
         public void ValidatePreConditions()
         {
             var dummyLayer = new MapLayer(2, "Dummy Layer");
-
-            var (refA, _) = this.GivenAnEntity(ReferenceItemA).IsPlacedAt(Position.Of(DefaultLayer, 0, 0));
+            
+            var (refA, _) = this.With(ReferenceItemA).IsPlacedAt(Position.Of(DefaultLayer, 0, 0));
 
             PlacementService.TryMoveItem(refA, Position.Invalid, Position.Invalid).Should().BeTrue("because moving from an invalid position to an invalid position is a no-op");
             PlacementService.TryMoveItem(default, Position.Of(DefaultLayer, 1, 0), Position.Of(DefaultLayer, 0, 0)).Should().BeTrue("moving an empty entity is a no-op");
@@ -32,7 +33,7 @@ namespace RogueEntity.Core.Tests.Positioning.Grid.GridItemPlacementServiceTest
             When(() => PlacementService.TryMoveItem(default, Position.Of(DefaultLayer, 1, 0), Position.Of(DefaultLayer, 0, 0)));
 
             Then_Operation_Should_Succeed();
-            this.Then_Position(posA).Should().ContainEntity(refA);
+            this.ThenPosition(posA).Should().ContainEntity(refA);
         }
 
         [Test]
@@ -44,8 +45,8 @@ namespace RogueEntity.Core.Tests.Positioning.Grid.GridItemPlacementServiceTest
             When(() => PlacementService.TryMoveItem(refA, posA, posB));
 
             Then_Operation_Should_Succeed();
-            this.Then_Position(posA).Should().BeEmpty();
-            this.Then_Position(posB).Should().ContainEntity(refA);
+            this.ThenPosition(posA).Should().BeEmpty();
+            this.ThenPosition(posB).Should().ContainEntity(refA);
         }
 
         [Test]
@@ -58,9 +59,9 @@ namespace RogueEntity.Core.Tests.Positioning.Grid.GridItemPlacementServiceTest
             When(() => PlacementService.TryMoveItem(refA, posB, posC));
 
             Then_Operation_Should_Fail();
-            this.Then_Position(posA).Should().ContainEntity(refA);
-            this.Then_Position(posB).Should().ContainEntity(refB);
-            this.Then_Position(posC).Should().BeEmpty();
+            this.ThenPosition(posA).Should().ContainEntity(refA);
+            this.ThenPosition(posB).Should().ContainEntity(refB);
+            this.ThenPosition(posC).Should().BeEmpty();
         }
 
         [Test]
@@ -72,8 +73,8 @@ namespace RogueEntity.Core.Tests.Positioning.Grid.GridItemPlacementServiceTest
             When(() => PlacementService.TryMoveItem(refA, posA, posB));
 
             Then_Operation_Should_Fail();
-            this.Then_Position(posA).Should().ContainEntity(refA);
-            this.Then_Position(posB).Should().ContainEntity(refB);
+            this.ThenPosition(posA).Should().ContainEntity(refA);
+            this.ThenPosition(posB).Should().ContainEntity(refB);
         }
 
         [Test]
@@ -85,8 +86,8 @@ namespace RogueEntity.Core.Tests.Positioning.Grid.GridItemPlacementServiceTest
             When(() => PlacementService.TryMoveItem(refA, posA, posB));
 
             Then_Operation_Should_Succeed();
-            this.Then_Position(posA).Should().BeEmpty();
-            this.Then_Position(posB).Should().ContainEntityOfType(StackingBulkItemA).WithStackSize(2);
+            this.ThenPosition(posA).Should().BeEmpty();
+            this.ThenPosition(posB).Should().ContainEntityOfType(StackingBulkItemA).WithStackSize(2);
         }
 
         [Test]
@@ -99,9 +100,9 @@ namespace RogueEntity.Core.Tests.Positioning.Grid.GridItemPlacementServiceTest
             When(() => PlacementService.TryMoveItem(refA, posB, posC));
 
             Then_Operation_Should_Fail();
-            this.Then_Position(posA).Should().ContainEntity(refA);
-            this.Then_Position(posB).Should().ContainEntity(refB);
-            this.Then_Position(posC).Should().BeEmpty();
+            this.ThenPosition(posA).Should().ContainEntity(refA);
+            this.ThenPosition(posB).Should().ContainEntity(refB);
+            this.ThenPosition(posC).Should().BeEmpty();
         }
 
         [Test]
@@ -113,8 +114,8 @@ namespace RogueEntity.Core.Tests.Positioning.Grid.GridItemPlacementServiceTest
             When(() => PlacementService.TryMoveItem(refA, posA, posB));
 
             Then_Operation_Should_Fail();
-            this.Then_Position(posA).Should().ContainEntity(refA);
-            this.Then_Position(posB).Should().ContainEntity(refB);
+            this.ThenPosition(posA).Should().ContainEntity(refA);
+            this.ThenPosition(posB).Should().ContainEntity(refB);
         }
 
         [Test]
@@ -126,8 +127,8 @@ namespace RogueEntity.Core.Tests.Positioning.Grid.GridItemPlacementServiceTest
             When(() => PlacementService.TryMoveItem(refA, posA, posB));
 
             Then_Operation_Should_Succeed();
-            this.Then_Position(posA).Should().BeEmpty();
-            this.Then_Position(posB).Should().ContainEntityOfType(StackingBulkItemA).WithStackSize(5);
+            this.ThenPosition(posA).Should().BeEmpty();
+            this.ThenPosition(posB).Should().ContainEntityOfType(StackingBulkItemA).WithStackSize(5);
         }
 
         [Test]
@@ -140,8 +141,8 @@ namespace RogueEntity.Core.Tests.Positioning.Grid.GridItemPlacementServiceTest
             When(() => PlacementService.TryMoveItem(refC, posA, posB));
 
             Then_Operation_Should_Succeed();
-            this.Then_Position(posA).Should().ContainEntityOfType(StackingBulkItemA).WithStackSize(3);
-            this.Then_Position(posB).Should().ContainEntityOfType(StackingBulkItemA).WithStackSize(2);
+            this.ThenPosition(posA).Should().ContainEntityOfType(StackingBulkItemA).WithStackSize(3);
+            this.ThenPosition(posB).Should().ContainEntityOfType(StackingBulkItemA).WithStackSize(2);
         }
 
         [Test]
@@ -154,8 +155,8 @@ namespace RogueEntity.Core.Tests.Positioning.Grid.GridItemPlacementServiceTest
             When(() => PlacementService.TryMoveItem(refC, posA, posB));
 
             Then_Operation_Should_Succeed();
-            this.Then_Position(posA).Should().ContainEntityOfType(StackingBulkItemA).WithStackSize(3);
-            this.Then_Position(posB).Should().ContainEntityOfType(StackingBulkItemA).WithStackSize(5);
+            this.ThenPosition(posA).Should().ContainEntityOfType(StackingBulkItemA).WithStackSize(3);
+            this.ThenPosition(posB).Should().ContainEntityOfType(StackingBulkItemA).WithStackSize(5);
         }
 
         [Test]
@@ -168,8 +169,8 @@ namespace RogueEntity.Core.Tests.Positioning.Grid.GridItemPlacementServiceTest
             When(() => PlacementService.TryMoveItem(refC, posA, posB));
 
             Then_Operation_Should_Fail();
-            this.Then_Position(posA).Should().ContainEntityOfType(StackingBulkItemA).WithStackSize(5);
-            this.Then_Position(posB).Should().ContainEntityOfType(StackingBulkItemB).WithStackSize(3);
+            this.ThenPosition(posA).Should().ContainEntityOfType(StackingBulkItemA).WithStackSize(5);
+            this.ThenPosition(posB).Should().ContainEntityOfType(StackingBulkItemB).WithStackSize(3);
         }
 
         [Test]
@@ -183,8 +184,8 @@ namespace RogueEntity.Core.Tests.Positioning.Grid.GridItemPlacementServiceTest
             When(() => PlacementService.TryMoveItem(refC, posA, posB));
 
             Then_Operation_Should_Fail();
-            this.Then_Position(posA).Should().ContainEntityOfType(StackingBulkItemA).WithStackSize(5);
-            this.Then_Position(posB).Should().ContainEntityOfType(StackingBulkItemA).WithStackSize(9);
+            this.ThenPosition(posA).Should().ContainEntityOfType(StackingBulkItemA).WithStackSize(5);
+            this.ThenPosition(posB).Should().ContainEntityOfType(StackingBulkItemA).WithStackSize(9);
         }
 
         [Test]
@@ -197,8 +198,8 @@ namespace RogueEntity.Core.Tests.Positioning.Grid.GridItemPlacementServiceTest
             When(() => PlacementService.TryMoveItem(refC, posA, posB));
 
             Then_Operation_Should_Fail();
-            this.Then_Position(posA).Should().ContainEntity(refA);
-            this.Then_Position(posB).Should().BeEmpty();
+            this.ThenPosition(posA).Should().ContainEntity(refA);
+            this.ThenPosition(posB).Should().BeEmpty();
         }
 
         [Test]
@@ -210,8 +211,8 @@ namespace RogueEntity.Core.Tests.Positioning.Grid.GridItemPlacementServiceTest
             When(() => PlacementService.TryMoveItem(refA, posA, posB));
 
             Then_Operation_Should_Fail();
-            this.Then_Position(posA).Should().ContainEntity(refA);
-            this.Then_Position(posB).Should().ContainEntity(refB);
+            this.ThenPosition(posA).Should().ContainEntity(refA);
+            this.ThenPosition(posB).Should().ContainEntity(refB);
         }
 
         [Test]
@@ -223,8 +224,8 @@ namespace RogueEntity.Core.Tests.Positioning.Grid.GridItemPlacementServiceTest
             When(() => PlacementService.TryMoveItem(refA, posA, posB));
 
             Then_Operation_Should_Fail();
-            this.Then_Position(posA).Should().ContainEntity(refA);
-            this.Then_Position(posB).Should().ContainEntity(refB);
+            this.ThenPosition(posA).Should().ContainEntity(refA);
+            this.ThenPosition(posB).Should().ContainEntity(refB);
         }
     }
 }

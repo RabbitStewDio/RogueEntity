@@ -8,6 +8,16 @@ namespace RogueEntity.Core.Tests.Fixtures
 {
     public static class TestHelpers
     {
+        public static T At<T>(this IReadOnlyView2D<T> view, int x, int y)
+        {
+            if (view.TryGet(x, y, out var r))
+            {
+                return r;
+            }
+
+            return default;
+        }
+
         public static DynamicDataView2D<TData> Parse<TData>(string text, TokenParser tokenParser, out Rectangle parsedBounds)
         {
             var map = new DynamicDataView2D<TData>(0, 0, 64, 64);
@@ -100,8 +110,15 @@ namespace RogueEntity.Core.Tests.Fixtures
             {
                 var (x, y) = pos;
 
-                var result = source[x - offset.X, y - offset.Y];
-                var expected = other[x, y];
+                if (!source.TryGet(x - offset.X, y - offset.Y, out var result))
+                {
+                    // throw new IndexOutOfRangeException($"Unable to compare map data: Source index at ({x - offset.X},{y - offset.Y}) out of range");
+                } 
+                if (!other.TryGet(x, y, out var expected))
+                {
+                    // throw new IndexOutOfRangeException($"Unable to compare map data: Target index at ({x},{y}) out of range");
+                }
+                
                 if (Math.Abs(result - expected) > 0.005f)
                 {
                     throw new ArgumentException($"Error in comparison at [{x}, {y}]: Expected {expected:0.000} but found {result:0.000}.\n" +
@@ -122,8 +139,12 @@ namespace RogueEntity.Core.Tests.Fixtures
             {
                 var (x, y) = pos;
 
-                var result = source[x - offset.X, y - offset.Y];
-                var expected = other[x, y];
+                if (!source.TryGet(x - offset.X, y - offset.Y, out var result) ||
+                    !other.TryGet(x, y, out var expected))
+                {
+                    throw new IndexOutOfRangeException();
+                }
+                
                 if (result != expected)
                 {
                     throw new ArgumentException($"Error in comparison at [{x}, {y}]: Expected {expected} but found {result}.\n" +
@@ -144,8 +165,12 @@ namespace RogueEntity.Core.Tests.Fixtures
             {
                 var (x, y) = pos;
 
-                var result = source[x - offset.X, y - offset.Y];
-                var expected = other[x, y];
+                if (!source.TryGet(x - offset.X, y - offset.Y, out var result) ||
+                    !other.TryGet(x, y, out var expected))
+                {
+                    throw new IndexOutOfRangeException();
+                }
+                
                 if (!string.Equals(result, expected, StringComparison.Ordinal))
                 {
                     throw new ArgumentException($"Error in comparison at [{x}, {y}]: Expected {expected} but found {result}.\n" +
@@ -170,8 +195,12 @@ namespace RogueEntity.Core.Tests.Fixtures
             {
                 var (x, y) = pos;
 
-                var result = source[x - offset.X, y - offset.Y];
-                var expected = other[x, y];
+                if (!source.TryGet(x - offset.X, y - offset.Y, out var result) ||
+                    !other.TryGet(x, y, out var expected))
+                {
+                    throw new IndexOutOfRangeException();
+                }
+                
                 if (!cmp.Equals(result, expected))
                 {
                     throw new ArgumentException($"Error in comparison at [{x}, {y}]: Expected {expected} but found {result}.\n" +

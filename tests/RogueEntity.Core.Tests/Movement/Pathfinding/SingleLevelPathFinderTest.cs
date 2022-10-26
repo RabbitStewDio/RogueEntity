@@ -10,9 +10,12 @@ using RogueEntity.Core.MovementPlaning.Pathfinding.SingleLevel;
 using RogueEntity.Core.Positioning.Algorithms;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Tests.Fixtures;
+using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.DataViews;
 using Serilog;
+using System.Collections.Generic;
 using static RogueEntity.Core.Tests.Movement.PathfindingTestUtil;
+using Assert = NUnit.Framework.Assert;
 
 namespace RogueEntity.Core.Tests.Movement.Pathfinding
 {
@@ -62,23 +65,33 @@ namespace RogueEntity.Core.Tests.Movement.Pathfinding
         const string DiagonalRoomResult = @"
  ### , ### , ### , ### , ### , ### , ### , ### , ### 
  ### ,  @  ,  .  ,  .  ,  .  ,  .  ,  .  ,  .  , ### 
- ### ,  .  ,  8  ,  7  ,  6  ,  .  ,  .  ,  .  , ### 
- ### ,  .  ,  .  ,   . , ### ,  5  ,  .  ,  .  , ### 
- ### ,  .  ,  .  , ### ,  .  ,  .  ,  4  ,  .  , ### 
- ### ,  .  ,  .  ,  .  ,  .  ,  .  ,  .  ,  3  , ### 
- ### ,  .  ,  .  ,  .  ,  .  ,  .  ,  .  ,  2  , ### 
- ### ,  .  ,  .  ,  .  ,  .  ,  .  ,  .  ,   1 , ### 
+ ### ,  .  ,  8  ,  .  ,  .  ,  .  ,  .  ,  .  , ### 
+ ### ,  .  ,  7  ,  .  , ### ,  .  ,  .  ,  .  , ### 
+ ### ,  .  ,  6  , ### ,  .  ,  .  ,  .  ,  .  , ### 
+ ### ,  .  ,  .  ,  5  ,  .  ,  .  ,  .  ,  .  , ### 
+ ### ,  .  ,  .  ,  .  ,  4  ,  .  ,  .  ,  .  , ### 
+ ### ,  .  ,  .  ,  .  ,  .  ,  3  ,  2  ,  1  , ### 
  ### ,  .  ,  .  ,  .  ,  .  ,  .  ,  .  ,  .  , ### 
  ### , ### , ### , ### , ### , ### , ### , ### , ### 
 ";
 
         readonly ILogger logger = SLog.ForContext<SingleLevelPathFinderTest>();
 
-        [Test]
-        [TestCase(nameof(EmptyRoom), EmptyRoom, EmptyRoomResult, 1, 1, 7, 7)]
-        [TestCase(nameof(DiagonalBlockRoom), DiagonalBlockRoom, DiagonalRoomResult, 1, 1, 7, 7)]
-        public void ValidatePathFinding(string id, string sourceText, string resultText, int sx, int sy, int tx, int ty)
+        readonly Dictionary<string, (string sourceText, string resultText, Position2D source, Position2D target)> testCases = 
+            new Dictionary<string, (string sourceText, string resultText, Position2D source, Position2D target)>()
         {
+            { nameof(EmptyRoom), (EmptyRoom, EmptyRoomResult, new Position2D(1,1), new Position2D(7,7)) },
+            { nameof(DiagonalBlockRoom), (DiagonalBlockRoom, DiagonalRoomResult, new Position2D(1,1), new Position2D(7,7)) },
+        };
+
+        [Test]
+        [TestCase(nameof(EmptyRoom))]
+        [TestCase(nameof(DiagonalBlockRoom))]
+        public void ValidatePathFinding(string id)
+        {
+            var (sourceText, resultText, sourcePos, targetPos) = testCases[id];
+            var (sx, sy) = sourcePos;
+            var (tx, ty) = targetPos;
             var resistanceMap = ParseMap(sourceText, out var bounds);
             logger.Debug("Using room layout \n{Map}", TestHelpers.PrintMap(resistanceMap, bounds));
 

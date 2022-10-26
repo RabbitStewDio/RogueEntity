@@ -40,13 +40,20 @@ namespace RogueEntity.Core.Sensing.Resistance.Maps
 
                 foreach (var (x, y) in bounds.Contents)
                 {
-                    if (!dv.TryGet(x, y, out var d))
+                    if (!dv.TryGet(x, y, out var senseResistancePercent))
                     {
                         continue;
                     }
 
-                    var sp = resistanceData[x, y] + d.BlocksSense.RawData;
-                    resistanceData.TrySet(x, y, Percentage.Of(sp));
+                    if (resistanceData.TryGet(x, y, out var resistance))
+                    {
+                        var sp = resistance + senseResistancePercent.ToFloat();
+                        resistanceData.TrySet(x, y, Percentage.Of(sp));
+                    }
+                    else
+                    {
+                        resistanceData.TrySet(x, y, Percentage.Full);
+                    }
                 }
             }
         }

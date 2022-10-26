@@ -91,9 +91,11 @@ namespace RogueEntity.Core.Positioning.Algorithms
 
                 if (!resultMapDistanceCost.TryGet(openNodePosition, out var openNodeWeight))
                 {
+                    logger.Verbose("Skipping processing of open node at {Pos}",openNodePosition);
                     continue;
                 }
 
+                logger.Verbose("Processing node {Pos}", openNodePosition);
                 nodeCount += 1;
 
                 var directions = PopulateTraversableDirections(openNodePosition);
@@ -103,11 +105,13 @@ namespace RogueEntity.Core.Positioning.Algorithms
 
                     if (!resultMapCoords.Contains(nextNodePos.X, nextNodePos.Y))
                     {
+                        logger.Verbose("   {Direction}: Out of bounds", d);
                         continue;
                     }
 
                     if (!EdgeCostInformation(in openNodePosition, in d, openNodeWeight, out var totalPathCost, out var ni))
                     {
+                        logger.Verbose("   {Direction}: No Edge", d);
                         continue;
                     }
 
@@ -115,9 +119,11 @@ namespace RogueEntity.Core.Positioning.Algorithms
                     if (IsExistingResultBetter(in nextNodePos, in totalPathCost))
                     {
                         // already visited.
+                        logger.Verbose("   {Direction}: Skipped; better result found", d);
                         continue;
                     }
 
+                    logger.Verbose("   {Direction}: Enqueued", d);
                     EnqueueNode(in nextNodePos, totalPathCost, openNodePosition);
                     UpdateNode(nextNodePos, ni);
                 }
@@ -125,6 +131,7 @@ namespace RogueEntity.Core.Positioning.Algorithms
 
             logger.Verbose("Evaluated {Count} nodes during rescan", nodeCount);
             NodesEvaluated = nodeCount;
+            logger.Verbose("ResultMap: \n{ResultMap}", resultMapDistanceCost.ExtendToString(bounds, f => $"{f,2} "));
             return nodeCount > 0;
         }
 
@@ -144,9 +151,14 @@ namespace RogueEntity.Core.Positioning.Algorithms
         {
             if (resultMapCoords.TryGetRawIndex(in c, out _))
             {
+                logger.Verbose("Enqueue start for {Position} with weight {Weight}", c, weight);
                 openNodes.UpdatePriority(c, new DijkstraNodeWeight(-weight, 0));
                 resultMapCoords[c] = 0;
                 resultMapDistanceCost[c] = weight;
+            }
+            else
+            {
+                logger.Verbose("Skipping enqueue for {Position}", c);
             }
         }
 
@@ -157,6 +169,10 @@ namespace RogueEntity.Core.Positioning.Algorithms
                 openNodes.UpdatePriority(pos, new DijkstraNodeWeight(-weight, (float)DistanceCalculation.Euclid.Calculate2D(pos, prev)));
                 resultMapDistanceCost[pos.X, pos.Y] = weight;
                 resultMapCoords[pos] = Directions.GetDirection(prev, pos);
+            }
+            else
+            {
+                logger.Verbose("Skipping enqueue for {Position}", pos);
             }
         }
 

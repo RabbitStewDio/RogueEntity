@@ -7,7 +7,7 @@ using RogueEntity.Core.Tests.Fixtures;
 namespace RogueEntity.Core.Tests.Positioning.Grid.GridItemPlacementServiceTest
 {
     [TestFixture]
-    public class Placement: GridItemPlacementServiceFixture
+    public class Placement: GridItemPlacementServiceFixture<Placement>
     {
         [Test]
         public void ValidatePreConditions()
@@ -28,7 +28,7 @@ namespace RogueEntity.Core.Tests.Positioning.Grid.GridItemPlacementServiceTest
             When(_ => PlacementService.TryPlaceItem(refC, posB));
             
             Then_Operation_Should_Succeed();
-            this.Then_Position(posB).Should().ContainEntity(refC);
+            this.ThenPosition(posB).Should().ContainEntity(refC);
         }
 
         [Test]
@@ -40,7 +40,7 @@ namespace RogueEntity.Core.Tests.Positioning.Grid.GridItemPlacementServiceTest
             When(_ => PlacementService.TryPlaceItem(refC, posB));
             
             Then_Operation_Should_Succeed();
-            this.Then_Position(posB).Should().ContainEntityOfType(StackingBulkItemA).WithStackSize(7);
+            this.ThenPosition(posB).Should().ContainEntityOfType(StackingBulkItemA).WithStackSize(7);
         }
 
         [Test]
@@ -52,7 +52,7 @@ namespace RogueEntity.Core.Tests.Positioning.Grid.GridItemPlacementServiceTest
             When(_ => PlacementService.TryPlaceItem(refC, posB));
             
             Then_Operation_Should_Fail();
-            this.Then_Position(posB).Should().ContainEntity(refB);
+            this.ThenPosition(posB).Should().ContainEntity(refB);
         }
 
         [Test]
@@ -64,7 +64,7 @@ namespace RogueEntity.Core.Tests.Positioning.Grid.GridItemPlacementServiceTest
             When(_ => PlacementService.TryPlaceItem(refC, posB));
             
             Then_Operation_Should_Fail();
-            this.Then_Position(posB).Should().ContainEntity(refB);
+            this.ThenPosition(posB).Should().ContainEntity(refB);
         }
 
         [Test]
@@ -76,7 +76,7 @@ namespace RogueEntity.Core.Tests.Positioning.Grid.GridItemPlacementServiceTest
             When(_ => PlacementService.TryPlaceItem(refC, posB));
             
             Then_Operation_Should_Fail();
-            this.Then_Position(posB).Should().ContainEntity(refB);
+            this.ThenPosition(posB).Should().ContainEntity(refB);
         }
 
         [Test]
@@ -88,7 +88,7 @@ namespace RogueEntity.Core.Tests.Positioning.Grid.GridItemPlacementServiceTest
             When(_ => PlacementService.TryPlaceItem(refC, posB));
             
             Then_Operation_Should_Fail();
-            this.Then_Position(posB).Should().ContainEntity(refB);
+            this.ThenPosition(posB).Should().ContainEntity(refB);
         }
 
         [Test]
@@ -100,7 +100,7 @@ namespace RogueEntity.Core.Tests.Positioning.Grid.GridItemPlacementServiceTest
             When(_ => PlacementService.TryPlaceItem(refC, posB));
             
             Then_Operation_Should_Succeed();
-            this.Then_Position(posB).Should().ContainEntity(refC);
+            this.ThenPosition(posB).Should().ContainEntity(refC);
         }
 
         [Test]
@@ -112,7 +112,7 @@ namespace RogueEntity.Core.Tests.Positioning.Grid.GridItemPlacementServiceTest
             When(_ => PlacementService.TryPlaceItem(refC, posB));
             
             Then_Operation_Should_Fail();
-            this.Then_Position(posB).Should().ContainEntity(refB);
+            this.ThenPosition(posB).Should().ContainEntity(refB);
         }
     }
 }

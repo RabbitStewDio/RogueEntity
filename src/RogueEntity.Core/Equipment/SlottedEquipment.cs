@@ -198,7 +198,7 @@ namespace RogueEntity.Core.Equipment
                 return false;
             }
 
-            if (!itemResolver.TryQueryData(item, out EquipmentSlotRequirements req))
+            if (!itemResolver.TryQueryData<EquipmentSlotRequirements>(item, out var req))
             {
                 logger.Verbose("Unable to equip item {Item} as it cannot be equipped", item);
                 actualSlot = default;

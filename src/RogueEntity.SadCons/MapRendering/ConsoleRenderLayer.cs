@@ -43,8 +43,7 @@ namespace RogueEntity.SadCons.MapRendering
                 return default;
             }
 
-            var item = mapView[p.GridX, p.GridY];
-            if (item.IsEmpty)
+            if (!mapView.TryGet(p.GridX, p.GridY, out var item) || item.IsEmpty)
             {
                 return default;
             }

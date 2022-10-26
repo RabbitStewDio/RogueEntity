@@ -12,7 +12,7 @@ using RogueEntity.Core.Tests.Fixtures;
 namespace RogueEntity.Core.Tests.Equipment
 {
     [TestFixture]
-    public partial class SlottedEquipmentTest: WhenFixtureSupport, IItemFixture
+    public partial class SlottedEquipmentTest: ItemTestFixtureBase<SlottedEquipmentTest, ItemReference>, IEntityFixture<ItemReference>
     {
         static readonly ItemDeclarationId ActorDeclaration = "actor";
         static readonly ItemDeclarationId ContainerDeclaration = "container";

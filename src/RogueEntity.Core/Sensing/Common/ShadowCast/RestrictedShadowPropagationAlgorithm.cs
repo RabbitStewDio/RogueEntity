@@ -111,8 +111,7 @@ namespace RogueEntity.Core.Sensing.Common.ShadowCast
                         break;
                     }
 
-                    var resistance = resistanceMap[gCurrentX, gCurrentY];
-                    var fullyBlocked = IsFullyBlocked(resistance); 
+                    var fullyBlocked = !resistanceMap.TryGet(gCurrentX, gCurrentY, out var resistance) || IsFullyBlocked(resistance);
                     if (blocked) // Previous cell was blocked
                     {
                         if (fullyBlocked) // Hit a wall...

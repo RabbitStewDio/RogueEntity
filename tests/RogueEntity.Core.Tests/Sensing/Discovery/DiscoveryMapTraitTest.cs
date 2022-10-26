@@ -1,5 +1,6 @@
 using System;
 using EnTTSharp.Annotations;
+using FluentAssertions;
 using NUnit.Framework;
 using RogueEntity.Core.Sensing.Discovery;
 using RogueEntity.Core.Tests.Meta.Items;
@@ -48,8 +49,8 @@ namespace RogueEntity.Core.Tests.Sensing.Discovery
         {
             if (data.TryGetWritableView(0, out var mapData))
             {
-                mapData[10, 10] = true;
-                mapData[11, 10] = true;
+                mapData.TrySet(10, 10, true).Should().BeTrue();
+                mapData.TrySet(11, 10, true).Should().BeTrue();
             }
 
             return data;

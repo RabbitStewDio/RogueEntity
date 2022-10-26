@@ -1,5 +1,6 @@
 using FluentAssertions;
 using NUnit.Framework;
+using RogueEntity.Core.Tests.Fixtures;
 using RogueEntity.Core.Utils;
 using RogueEntity.Generator.MapFragments;
 using System;
@@ -58,9 +59,9 @@ Symbols:
             result.Size.Should().Be(new Dimension(3, 1));
 
             result.Info.Tags.Should().BeEquivalentTo("Template", "Fragment");
-            result.MapData[0, 0].Should().Be(new MapFragmentTagDeclaration("ground", "poison"));
-            result.MapData[1, 0].Should().Be(new MapFragmentTagDeclaration("empty"));
-            result.MapData[2, 0].Should().Be(new MapFragmentTagDeclaration("ground", "item.corpse.rat"));
+            result.MapData.At(0, 0).Should().Be(new MapFragmentTagDeclaration("ground", "poison"));
+            result.MapData.At(1, 0).Should().Be(new MapFragmentTagDeclaration("empty"));
+            result.MapData.At(2, 0).Should().Be(new MapFragmentTagDeclaration("ground", "item.corpse.rat"));
         }
 
         class TestParser : MapFragmentParser

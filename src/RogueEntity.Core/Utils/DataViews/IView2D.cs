@@ -5,6 +5,5 @@ namespace RogueEntity.Core.Utils.DataViews
         void Clear();
         void Fill(in T value);
         bool TrySet(int x, int y, in T data);
-        new T this[int x, int y] { get; set; }
     }
 }

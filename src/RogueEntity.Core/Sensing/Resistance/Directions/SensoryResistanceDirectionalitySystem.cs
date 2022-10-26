@@ -43,9 +43,10 @@ namespace RogueEntity.Core.Sensing.Resistance.Directions
                            int x,
                            int y)
         {
-            if (!parameterData.sourceTile.TryGet(x, y, out var moveData))
+            if (!parameterData.sourceTile.TryGet(x, y, out var moveData) &&
+                !parameterData.sourceData.TryGet(x, y, out moveData))
             {
-                moveData = parameterData.sourceData[x, y];
+                return -1;
             }
 
             return moveData;

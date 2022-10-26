@@ -61,7 +61,7 @@ namespace RogueEntity.Core.Sensing.Discovery
                 if (senseMap.TryQuery(x, y, out var intensity, out _) &&
                     intensity > 0)
                 {
-                    target[x, y] = true;
+                    target.TrySet(x, y, true);
                 }
             }
         }

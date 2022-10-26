@@ -23,12 +23,14 @@ namespace RogueEntity.Core.Tests.Positioning.Grid
             gr.TryGetGridDataFor(TestMapLayers.Ground, out var data).Should().BeTrue();
 
             data.TryGetWritableView(0, out var view, DataViewCreateMode.CreateMissing);
-            view[0,0] = ItemReference.FromBulkItem(1, 1);
+            Assert.NotNull(view);
+            
+            view.TrySet(0, 0, ItemReference.FromBulkItem(1, 1)).Should().BeTrue();
             
             var x = (IGridMapContextInitializer<ItemReference>)data;
             x.ResetState();
 
-            view[0,0].Should().Be(ItemReference.Empty);
+            view.At(0,0).Should().Be(ItemReference.Empty);
         }
 
         [Test]
@@ -40,11 +42,13 @@ namespace RogueEntity.Core.Tests.Positioning.Grid
             this.GameFixture.StartGame();
             
             data.TryGetWritableView(0, out var view, DataViewCreateMode.CreateMissing);
-            view[0,0] = ItemReference.FromBulkItem(1, 1);
+            Assert.NotNull(view);
+            
+            view.TrySet(0, 0, ItemReference.FromBulkItem(1, 1)).Should().BeTrue();
 
             this.GameFixture.Stop();
             
-            view[0,0].Should().Be(ItemReference.Empty);
+            view.At(0,0).Should().Be(ItemReference.Empty);
         }
 
         [Test]
@@ -54,7 +58,9 @@ namespace RogueEntity.Core.Tests.Positioning.Grid
             gr.TryGetGridDataFor(TestMapLayers.Ground, out var data).Should().BeTrue();
 
             data.TryGetWritableView(0, out var view, DataViewCreateMode.CreateMissing);
-            view[0,0] = ItemReference.FromBulkItem(1, 1);
+            Assert.NotNull(view);
+            
+            view.TrySet(0, 0, ItemReference.FromBulkItem(1, 1)).Should().BeTrue();
             
             var x = (IGridMapContextInitializer<ItemReference>)data;
             

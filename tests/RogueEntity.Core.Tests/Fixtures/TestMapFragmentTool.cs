@@ -63,8 +63,7 @@ namespace RogueEntity.Core.Tests.Fixtures
 
             foreach (var c in new RectangleContents(bounds.Width, bounds.Height))
             {
-                var entry = f[c.X, c.Y];
-                if (entry == null)
+                if (!f.TryGet(c.X, c.Y, out var entry))
                 {
                     continue;
                 }

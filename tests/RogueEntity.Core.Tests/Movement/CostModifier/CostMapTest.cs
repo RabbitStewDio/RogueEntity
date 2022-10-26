@@ -38,12 +38,14 @@ namespace RogueEntity.Core.Tests.Movement.CostModifier
             directionalityMapSystem.Process();
             directionalityMapSystem.ResultView.TryGetView(0, out var directionalityMap).Should().BeTrue();
 
-            directionalityMap[0, 0].Should().Be(DirectionalityInformation.None);
-            directionalityMap[0, 1].Should().Be(DirectionalityInformation.None);
-            directionalityMap[1, 0].Should().Be(DirectionalityInformation.None);
-            directionalityMap[1, 1].Should().Be(DirectionalityInformation.All);
+            Assert.NotNull(directionalityMap);
             
-            directionalityMap[2, 5].Should().Be(DirectionalityInformation.All & ~DirectionalityInformation.DownRight);
+            directionalityMap.At(0, 0).Should().Be(DirectionalityInformation.None);
+            directionalityMap.At(0, 1).Should().Be(DirectionalityInformation.None);
+            directionalityMap.At(1, 0).Should().Be(DirectionalityInformation.None);
+            directionalityMap.At(1, 1).Should().Be(DirectionalityInformation.All);
+            
+            directionalityMap.At(2, 5).Should().Be(DirectionalityInformation.All & ~DirectionalityInformation.DownRight);
         }
         
         [Test]
@@ -57,13 +59,15 @@ namespace RogueEntity.Core.Tests.Movement.CostModifier
             directionalityMapSystem.Process();
             directionalityMapSystem.ResultView.TryGetView(0, out var directionalityMap).Should().BeTrue();
 
-            directionalityMap[0, 0].Should().Be(DirectionalityInformation.None);
-            directionalityMap[0, 1].Should().Be(DirectionalityInformation.Right | DirectionalityInformation.DownRight);
-            directionalityMap[1, 0].Should().Be(DirectionalityInformation.Down | DirectionalityInformation.DownRight);
-            directionalityMap[1, 1].Should().Be(DirectionalityInformation.Right | DirectionalityInformation.Down | DirectionalityInformation.DownRight);
+            Assert.NotNull(directionalityMap);
+
+            directionalityMap.At(0, 0).Should().Be(DirectionalityInformation.None);
+            directionalityMap.At(0, 1).Should().Be(DirectionalityInformation.Right | DirectionalityInformation.DownRight);
+            directionalityMap.At(1, 0).Should().Be(DirectionalityInformation.Down | DirectionalityInformation.DownRight);
+            directionalityMap.At(1, 1).Should().Be(DirectionalityInformation.Right | DirectionalityInformation.Down | DirectionalityInformation.DownRight);
             
-            directionalityMap[2, 5].Should().Be(DirectionalityInformation.Up | DirectionalityInformation.UpLeft | DirectionalityInformation.UpRight |
-                                                DirectionalityInformation.Left | DirectionalityInformation.DownLeft);
+            directionalityMap.At(2, 5).Should().Be(DirectionalityInformation.Up | DirectionalityInformation.UpLeft | DirectionalityInformation.UpRight |
+                                                   DirectionalityInformation.Left | DirectionalityInformation.DownLeft);
         }
     }
 }

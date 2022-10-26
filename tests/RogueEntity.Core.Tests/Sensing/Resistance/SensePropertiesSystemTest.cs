@@ -51,7 +51,7 @@ namespace RogueEntity.Core.Tests.Sensing.Resistance
             sps.GetActiveLayers().Should().BeEquivalentTo(0);
            
             sps.TryGetView(0, out var map).Should().BeTrue();
-            map[0, 0].Should().Be(Percentage.Full);
+            map.At(0, 0).Should().Be(Percentage.Full);
 
 
             sps.Stop();

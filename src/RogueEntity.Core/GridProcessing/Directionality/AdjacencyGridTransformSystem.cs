@@ -32,7 +32,7 @@ namespace RogueEntity.Core.GridProcessing.Directionality
                     }
                 }
 
-                resultTile[pos.X, pos.Y] = x;
+                resultTile.TrySet(pos.X, pos.Y, x);
             }
         }
 

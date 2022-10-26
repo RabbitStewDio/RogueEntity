@@ -23,7 +23,10 @@ namespace RogueEntity.Generator.MapFragments
             {
                 for (var x = 0; x < mf.Size.Width; x += 1)
                 {
-                    nextMapData[x, y] = mapData[mf.Size.Width - x - 1, y];
+                    if (mapData.TryGet(mf.Size.Width - x - 1, y, out var data))
+                    {
+                        nextMapData.TrySet(x, y, data);
+                    }
                 }
             }
 
@@ -54,7 +57,10 @@ namespace RogueEntity.Generator.MapFragments
             {
                 for (var x = 0; x < mf.Size.Width; x += 1)
                 {
-                    nextMapData[x, y] = mapData[x, mf.Size.Height - y - 1];
+                    if (mapData.TryGet(x, mf.Size.Height - y - 1, out var data))
+                    {
+                        nextMapData.TrySet(x, y, data);
+                    }
                 }
             }
 

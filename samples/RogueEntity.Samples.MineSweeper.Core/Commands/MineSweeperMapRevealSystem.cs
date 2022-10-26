@@ -56,16 +56,16 @@ namespace RogueEntity.Samples.MineSweeper.Core.Commands
                 }
 
                 var pos = revealCommand.Position;
-                var flag = flagView[pos.X, pos.Y];
-                if (itemResolver.IsItemType(flag, MineSweeperItemDefinitions.Flag))
+                if (flagView.TryGet(pos.X, pos.Y, out var flag) && 
+                    itemResolver.IsItemType(flag, MineSweeperItemDefinitions.Flag))
                 {
                     // we dont act if we suspect a mine here.
                     Logger.Debug("Flag set at {Position}", pos);
                     return;
                 }
 
-                var item = itemView[pos.X, pos.Y];
-                if (itemResolver.IsDestroyed(item) ||
+                if (!itemView.TryGet(pos.X, pos.Y, out var item) ||
+                    itemResolver.IsDestroyed(item) ||
                     itemResolver.IsItemType(item, MineSweeperItemDefinitions.Wall))
                 {
                     // do nothing
@@ -79,7 +79,7 @@ namespace RogueEntity.Samples.MineSweeper.Core.Commands
                     playerData = playerData.WithExplodedPosition(EntityGridPosition.Of(MineSweeperMapLayers.Items, pos.X, pos.Y));
                     if (discoveryMap.TryGetWritableView(0, out var view))
                     {
-                        view[pos.X, pos.Y] = true;
+                        view.TrySet(pos.X, pos.Y, true);
                     }
                     Logger.Debug("Mine at {Position}", pos);
                     return;
@@ -112,12 +112,12 @@ namespace RogueEntity.Samples.MineSweeper.Core.Commands
         {
             foreach (var (x,y) in gameParameters.WorldParameter.ValidInputBounds.Contents)
             {
-                if (discoveryView[x, y])
+                if (discoveryView.TryGet(x, y, out var discovered) && discovered)
                 {
                     continue;
                 }
                 
-                if (!itemResolver.IsItemType(playField[x, y], MineSweeperItemDefinitions.Mine))
+                if (playField.TryGet(x, y, out var maybeMine) && !itemResolver.IsItemType(maybeMine, MineSweeperItemDefinitions.Mine))
                 {
                     return false;
                 }
@@ -137,14 +137,13 @@ namespace RogueEntity.Samples.MineSweeper.Core.Commands
             while (processingQueue.Count > 0)
             {
                 var p = processingQueue.Pop();
-                if (discoveryView[p.X, p.Y])
+                if (!discoveryView.TryGet(p.X, p.Y, out var discovered) || discovered)
                 {
                     // already discovered
                     continue;
                 }
 
-                var playFieldEntity = playField[p.X, p.Y];
-                if (playFieldEntity.IsEmpty)
+                if (!playField.TryGet(p.X, p.Y, out var playFieldEntity) || playFieldEntity.IsEmpty)
                 {
                     continue;
                 }
@@ -154,7 +153,7 @@ namespace RogueEntity.Samples.MineSweeper.Core.Commands
                     continue;
                 }
 
-                discoveryView[p.X, p.Y] = true;
+                discoveryView.TrySet(p.X, p.Y, true);
                 if (itemResolver.IsItemType(playFieldEntity, MineSweeperItemDefinitions.Wall))
                 {
                     continue;

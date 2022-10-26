@@ -12,7 +12,7 @@ namespace RogueEntity.Core.Movement.CostModifier.Directions
     ///   Calculates the acceptable inbound movements into a given cell.
     /// </summary>
     /// <typeparam name="TMovementMode"></typeparam>
-    public sealed class InboundMovementDirectionalitySystem<TMovementMode> : AdjacencyGridTransformSystem<float>, 
+    public sealed class InboundMovementDirectionalitySystem<TMovementMode> : AdjacencyGridTransformSystem<float>,
                                                                              IInboundMovementDirectionView<TMovementMode>,
                                                                              IDisposable
     {
@@ -36,7 +36,7 @@ namespace RogueEntity.Core.Movement.CostModifier.Directions
                 this.cacheControl.PositionDirty -= OnPositionDirty;
             }
         }
-        
+
         void OnPositionDirty(object sender, PositionDirtyEventArgs e)
         {
             MarkDirty(e);
@@ -44,18 +44,17 @@ namespace RogueEntity.Core.Movement.CostModifier.Directions
 
         public void ProcessSystem() => Process();
 
-        
+
         protected override void ProcessTile(ProcessingParameters args)
         {
             var (bounds, z, sourceLayer, sourceTile, resultTile) = args;
             var parameterData = (sourceLayer, sourceTile, z);
             foreach (var pos in bounds.Contents)
             {
-                
                 var selfCost = QueryMovementCost(in parameterData, pos.X, pos.Y);
                 if (selfCost <= 0)
                 {
-                    resultTile[pos.X, pos.Y] = DirectionalityInformation.None;
+                    resultTile.TrySet(pos.X, pos.Y, DirectionalityInformation.None);
                     continue;
                 }
 
@@ -69,7 +68,7 @@ namespace RogueEntity.Core.Movement.CostModifier.Directions
                     }
                 }
 
-                resultTile[pos.X, pos.Y] = x;
+                resultTile.TrySet(pos.X, pos.Y, x);
             }
         }
 
@@ -91,7 +90,7 @@ namespace RogueEntity.Core.Movement.CostModifier.Directions
             {
                 return true;
             }
-            
+
             var moveDataHorizontal = QueryMovementCost(in parameterData, pos.X + c.X, pos.Y);
             var canMoveHorizontal = moveDataHorizontal > 0;
 
@@ -112,9 +111,10 @@ namespace RogueEntity.Core.Movement.CostModifier.Directions
                                        int x,
                                        int y)
         {
-            if (!parameterData.sourceTile.TryGet(x, y, out var moveData))
+            if (!parameterData.sourceTile.TryGet(x, y, out var moveData) && 
+                !parameterData.sourceData.TryGet(x, y, out moveData))
             {
-                moveData = parameterData.sourceData[x, y];
+                return 0;
             }
 
             return moveData;
