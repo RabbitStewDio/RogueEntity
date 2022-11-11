@@ -314,7 +314,7 @@ namespace RogueEntity.Core.Sensing.Receptors
                 return system;
             }
 
-            var gridConfig = serviceResolver.Resolve<IGridMapConfiguration<TEntityId>>();
+            var gridConfig = PositionModuleServices.LookupDefaultConfiguration<TEntityId>(serviceResolver);
             system = new SensePropertiesSystem<TReceptorSense>(gridConfig.OffsetX, gridConfig.OffsetY, gridConfig.TileSizeX, gridConfig.TileSizeY);
 
             serviceResolver.Store(system);

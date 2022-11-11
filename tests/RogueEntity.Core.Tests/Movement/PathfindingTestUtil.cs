@@ -2,7 +2,7 @@ using EnTTSharp;
 using System.Collections.Generic;
 using RogueEntity.Core.Movement;
 using RogueEntity.Core.MovementPlaning.Goals;
-using RogueEntity.Core.Positioning.Grid;
+using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Tests.Fixtures;
 using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.DataViews;
@@ -27,6 +27,7 @@ namespace RogueEntity.Core.Tests.Movement
         }
 
         public static DynamicDataView2D<(float, Optional<GoalMarker<TGoal>>)> ParseGoalMap<TGoal>(string text, out Rectangle parsedBounds)
+            where TGoal : IGoal
         {
             static bool ParseFloat(float f, out (float, Optional<GoalMarker<TGoal>>) r)
             {
@@ -36,7 +37,7 @@ namespace RogueEntity.Core.Tests.Movement
             }
 
             var none = Optional.Empty<GoalMarker<TGoal>>();
-            
+
             var tokenParser = new TokenParser();
             tokenParser.AddToken("", (1f, none));
             tokenParser.AddToken(".", (1f, none));
@@ -78,17 +79,16 @@ namespace RogueEntity.Core.Tests.Movement
 
         static string PathFinderResultToString((bool, int) arg)
         {
-
             if (arg.Item2 < 0)
             {
                 if (arg.Item1)
                 {
                     return " ### ";
                 }
-                
+
                 return "  .  ";
             }
-            
+
             if (arg.Item2 == 0)
             {
                 return "  @  ";
@@ -96,20 +96,26 @@ namespace RogueEntity.Core.Tests.Movement
 
             return $" {arg.Item2,3} ";
         }
-        
-        public static DynamicDataView2D<(bool, int)> CreateResult(DynamicDataView2D<float> resistanceMap,
-                                                                  IReadOnlyList<(EntityGridPosition, IMovementMode)> resultPath,
-                                                                  EntityGridPosition startPos,
-                                                                  Rectangle bounds)
+
+        public static DynamicDataView2D<(bool, int)> CreateResult<TPosition>(IReadOnlyDynamicDataView2D<float> resistanceMap,
+                                                                             IReadOnlyList<(TPosition, IMovementMode)> resultPath,
+                                                                             TPosition startPos,
+                                                                             Rectangle bounds)
+            where TPosition: struct, IPosition<TPosition>
         {
+            var eq = EqualityComparer<TPosition>.Default;
             var resultMap = new DynamicDataView2D<(bool, int)>(resistanceMap.ToConfiguration());
 
             foreach (var (x, y) in bounds.Contents)
             {
-                var wall = resistanceMap[x, y] <= 0;
+                var wall = false;
+                if (resistanceMap.TryGet(x, y, out var r))
+                {
+                    wall = r <= 0;
+                }
                 var pos = startPos.WithPosition(x, y);
                 int pathIndex;
-                if (pos == startPos)
+                if (eq.Equals(pos, startPos))
                 {
                     pathIndex = 0;
                 }
@@ -127,6 +133,5 @@ namespace RogueEntity.Core.Tests.Movement
 
             return resultMap;
         }
-
     }
 }

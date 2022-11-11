@@ -21,7 +21,7 @@ namespace RogueEntity.Core.Utils
 
         public void Dispose()
         {
-            this.pool.Return(Data);
+            this.pool?.Return(Data);
         }
 
         public static implicit operator T(PooledObjectHandle<T> h) => h.Data;

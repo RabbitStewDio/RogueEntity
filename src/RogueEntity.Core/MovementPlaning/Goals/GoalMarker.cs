@@ -10,6 +10,7 @@ namespace RogueEntity.Core.MovementPlaning.Goals
     [DataContract]
     [SuppressMessage("ReSharper", "UnusedTypeParameter")]
     public readonly struct GoalMarker<TDiscriminator>
+        where TDiscriminator: IGoal
     {
         [Key(0)]
         [DataMember(Order = 0)]

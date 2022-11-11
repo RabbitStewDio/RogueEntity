@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace RogueEntity.Core.MovementPlaning.Pathfinding.Hierarchical
+namespace RogueEntity.Core.MovementPlaning.Pathfinding.Hierarchical.Data
 {
     /// <summary>
     ///    A strongly typed identifier of a walkable zone inside a pathfinder region.
@@ -39,5 +39,12 @@ namespace RogueEntity.Core.MovementPlaning.Pathfinding.Hierarchical
         {
             return !left.Equals(right);
         }
+
+        public override string ToString()
+        {
+            return $"TraversableZoneId({nameof(Id)}: {Id})";
+        }
     }
+    
+    
 }

@@ -1,22 +1,16 @@
+using EnTTSharp;
+
 namespace RogueEntity.Api.Utils
 {
     public interface IGenericLifter<in TBaseType>
     {
-        void Invoke<TContext>(TContext contextObject)
-            where TContext : TBaseType;
+        void Invoke<TContext>()
+            where TContext : notnull, TBaseType;
     }
 
-    public interface IGenericLifter<in TBaseTypeA, in TBaseTypeB>
+    public interface IGenericLifterFunction<in TBaseTypeA>
     {
-        void Invoke<TContextA, TContextB>()
-            where TContextA : TBaseTypeA
-            where TContextB : TBaseTypeB;
-    }
-
-    public interface IGenericLifterFunction<in TBaseTypeA, in TBaseTypeB>
-    {
-        object? Invoke<TContextA, TContextB>()
-            where TContextA : TBaseTypeA
-            where TContextB : TBaseTypeB;
+        Optional<TResult> Invoke<TContextA, TResult>()
+            where TContextA : TBaseTypeA;
     }
 }

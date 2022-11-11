@@ -90,6 +90,11 @@ namespace RogueEntity.Core.Utils.DataViews
             return (new TileIndex(dx, dy), new Rectangle(dx * TileSizeX + OffsetX, dy * TileSizeY + OffsetY, TileSizeX, TileSizeY));
         }
 
+        public Rectangle GetDefaultBounds()
+        {
+            return new Rectangle(OffsetX, OffsetY, TileSizeX, TileSizeY);
+        }
+        
         public override string ToString()
         {
             return $"{nameof(DynamicDataViewConfiguration)}({nameof(OffsetX)}: {OffsetX}, {nameof(OffsetY)}: {OffsetY}, {nameof(TileSizeX)}: {TileSizeX}, {nameof(TileSizeY)}: {TileSizeY})";

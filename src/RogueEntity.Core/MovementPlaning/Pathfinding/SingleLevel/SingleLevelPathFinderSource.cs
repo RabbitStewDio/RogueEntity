@@ -1,25 +1,22 @@
 using Microsoft.Extensions.ObjectPool;
 using RogueEntity.Core.Movement;
+using RogueEntity.Core.Utils;
 
 namespace RogueEntity.Core.MovementPlaning.Pathfinding.SingleLevel
 {
-    public class SingleLevelPathFinderSource : IPathFinderSource
+    public class SingleLevelPathFinderSource : IPathFinderSource, IPooledObjectProvider<IPathFinderBuilder>
     {
-        readonly IMovementDataProvider dataProvider;
-        readonly ObjectPool<SingleLevelPathFinderBuilder> pathfinderPool;
+        readonly ObjectPool<SingleLevelPathFinderBuilder> pathfinderPool;        
 
         public SingleLevelPathFinderSource(SingleLevelPathFinderPolicy sourcePolicy, IMovementDataProvider dataProvider)
         {
-            this.dataProvider = dataProvider;
-            pathfinderPool = new DefaultObjectPool<SingleLevelPathFinderBuilder>(new SingleLevelPathFinderBuilderPolicy(sourcePolicy));
+            pathfinderPool = new DefaultObjectPool<SingleLevelPathFinderBuilder>(new SingleLevelPathFinderBuilderPolicy(dataProvider, sourcePolicy));
         }
 
-        public IPathFinderBuilder GetPathFinder()
+        public PooledObjectHandle<IPathFinderBuilder> GetPathFinder()
         {
             var pf = pathfinderPool.Get();
-            pf.MovementCostData = dataProvider.MovementCosts;
-
-            return pf;
+            return new PooledObjectHandle<IPathFinderBuilder>(this, pf);
         }
 
         public void Return(IPathFinderBuilder pf)

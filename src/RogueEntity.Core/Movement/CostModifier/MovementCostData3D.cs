@@ -22,5 +22,20 @@ namespace RogueEntity.Core.Movement.CostModifier
             InboundDirections = inboundDirections ?? throw new ArgumentNullException(nameof(inboundDirections));
             OutboundDirections = outboundDirections ?? throw new ArgumentNullException(nameof(outboundDirections));
         }
+
+        public bool TryGetMovementData2D(int z, out MovementCostData2D costData)
+        {
+            if (Costs.TryGetView(z, out var costs) &&
+                InboundDirections.TryGetView(z, out var inbound) &&
+                OutboundDirections.TryGetView(z, out var outbound))
+            {
+                costData = new MovementCostData2D(MovementCost, costs, inbound, outbound);
+                return true;
+            }
+
+            costData = default;
+            return false;
+
+        }
     }
 }

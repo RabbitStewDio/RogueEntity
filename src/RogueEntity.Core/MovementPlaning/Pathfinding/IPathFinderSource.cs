@@ -1,3 +1,5 @@
+using RogueEntity.Core.Utils;
+
 namespace RogueEntity.Core.MovementPlaning.Pathfinding
 {
     /// <summary>
@@ -6,6 +8,6 @@ namespace RogueEntity.Core.MovementPlaning.Pathfinding
     /// </summary>
     public interface IPathFinderSource
     {
-        IPathFinderBuilder GetPathFinder();
+        PooledObjectHandle<IPathFinderBuilder> GetPathFinder();
     }
 }

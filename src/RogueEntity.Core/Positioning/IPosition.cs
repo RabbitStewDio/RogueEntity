@@ -1,6 +1,9 @@
+using System;
+
 namespace RogueEntity.Core.Positioning
 {
-    public interface IPosition<out TPosition> where TPosition: IPosition<TPosition> 
+    public interface IPosition<TPosition>: IEquatable<TPosition>
+        where TPosition: IPosition<TPosition> 
     {
         double X { get; }
         double Y { get; }

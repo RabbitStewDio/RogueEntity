@@ -25,7 +25,8 @@ namespace RogueEntity.Core.MovementPlaning.GoalFinding.SingleLevel
         }
 
         public bool TryGet<TEntityId, TGoal>([MaybeNullWhen(false)] out EntityGoalTargetSource2D<TEntityId, TGoal> result)
-            where TEntityId : struct, IEntityKey
+            where TEntityId : struct, IEntityKey 
+            where TGoal : IGoal
         {
             lock (data)
             {

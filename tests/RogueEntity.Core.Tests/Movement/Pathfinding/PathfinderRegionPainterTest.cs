@@ -2,6 +2,7 @@
 using NUnit.Framework;
 using RogueEntity.Core.GridProcessing.Directionality;
 using RogueEntity.Core.MovementPlaning.Pathfinding.Hierarchical;
+using RogueEntity.Core.MovementPlaning.Pathfinding.Hierarchical.Systems;
 
 namespace RogueEntity.Core.Tests.Movement.Pathfinding;
 
@@ -10,16 +11,16 @@ public class PathfinderRegionPainterTest
     [Test]
     public void TestEdgeMapping()
     {
-        PathfinderRegionPainter.DetectEdge(DirectionalityInformation.All)
+        PathfinderRegionPainterJob.DetectEdge(DirectionalityInformation.All)
                                .Should()
                                .Be(DirectionalityInformation.None);
 
-        PathfinderRegionPainter.DetectEdge(DirectionalityInformation.UpRight |
+        PathfinderRegionPainterJob.DetectEdge(DirectionalityInformation.UpRight |
                                            DirectionalityInformation.DownLeft)
                                .Should()
                                .Be(DirectionalityInformation.DownLeft | DirectionalityInformation.UpRight);
 
-        PathfinderRegionPainter.DetectEdge(DirectionalityInformation.Up |
+        PathfinderRegionPainterJob.DetectEdge(DirectionalityInformation.Up |
                                            DirectionalityInformation.UpRight |
                                            DirectionalityInformation.UpLeft |
                                            DirectionalityInformation.Left |
@@ -31,25 +32,25 @@ public class PathfinderRegionPainterTest
     [Test]
     public void TestEdgeMapping2()
     {
-        PathfinderRegionPainter.TestEdge(DirectionalityInformation.UpRight | DirectionalityInformation.Left | DirectionalityInformation.UpLeft,
+        PathfinderRegionPainterJob.TestEdge(DirectionalityInformation.UpRight | DirectionalityInformation.Left | DirectionalityInformation.UpLeft,
                                          DirectionalityInformation.Up,
                                          DirectionalityInformation.UpRight | DirectionalityInformation.UpLeft)
                                .Should()
                                .Be(DirectionalityInformation.UpRight | DirectionalityInformation.UpLeft);
 
-        PathfinderRegionPainter.TestEdge(DirectionalityInformation.UpLeft | DirectionalityInformation.Left,
+        PathfinderRegionPainterJob.TestEdge(DirectionalityInformation.UpLeft | DirectionalityInformation.Left,
                                          DirectionalityInformation.Up,
                                          DirectionalityInformation.UpRight | DirectionalityInformation.UpLeft)
                                .Should()
                                .Be(DirectionalityInformation.UpLeft);
 
-        PathfinderRegionPainter.TestEdge(DirectionalityInformation.All & (~DirectionalityInformation.Down),
+        PathfinderRegionPainterJob.TestEdge(DirectionalityInformation.All & (~DirectionalityInformation.Down),
                                          DirectionalityInformation.Down,
                                          DirectionalityInformation.DownRight | DirectionalityInformation.DownLeft)
                                .Should()
                                .Be(DirectionalityInformation.DownRight | DirectionalityInformation.DownLeft);
 
-        PathfinderRegionPainter.edgeMappingComplete[(int)(DirectionalityInformation.All & (~DirectionalityInformation.Down))]
+        PathfinderRegionPainterJob.EdgeMappingComplete[(int)(DirectionalityInformation.All & (~DirectionalityInformation.Down))]
                                .Should()
                                .Be(DirectionalityInformation.DownLeft | DirectionalityInformation.DownRight);
     }

@@ -1,4 +1,4 @@
-using RogueEntity.Api.Utils;
+using EnTTSharp;
 using RogueEntity.Core.GridProcessing.Directionality;
 using RogueEntity.Core.Movement;
 using RogueEntity.Core.Movement.Cost;
@@ -19,8 +19,9 @@ namespace RogueEntity.Core.MovementPlaning.Pathfinding.SingleLevel
     /// </summary>
     public class SingleLevelPathFinder : IPathFinder, IPathFinderPerformanceView
     {
+        readonly SingleLevelPathPool singleLevelPathPool;
         readonly List<MovementCostData3D> movementSourceData;
-        readonly SingleLevelPathFinderWorker singleLevelPathFinder;
+        readonly SingleLevelPathFinderWorker singleLevelPathFinderWorker;
         readonly Stopwatch sw;
 
         SingleLevelPathFinderBuilder? currentOwner;
@@ -28,10 +29,12 @@ namespace RogueEntity.Core.MovementPlaning.Pathfinding.SingleLevel
         bool disposed;
 
         public SingleLevelPathFinder(IBoundedDataViewPool<AStarNode> astarNodePool,
-                                     IBoundedDataViewPool<IMovementMode> movementModePool)
+                                     IBoundedDataViewPool<IMovementMode> movementModePool,
+                                     SingleLevelPathPool singleLevelPathPool)
         {
+            this.singleLevelPathPool = singleLevelPathPool;
             this.movementSourceData = new List<MovementCostData3D>();
-            this.singleLevelPathFinder = new SingleLevelPathFinderWorker(astarNodePool, movementModePool);
+            this.singleLevelPathFinderWorker = new SingleLevelPathFinderWorker(astarNodePool, movementModePool);
             this.sw = new Stopwatch();
         }
 
@@ -48,67 +51,74 @@ namespace RogueEntity.Core.MovementPlaning.Pathfinding.SingleLevel
             targetEvaluator = null;
         }
 
-        public IPathFinderTargetEvaluator? TargetEvaluator
-        {
-            get { return targetEvaluator; }
-        }
+        public IPathFinderTargetEvaluator? TargetEvaluator => targetEvaluator;
 
-        public void Configure(SingleLevelPathFinderBuilder owner,
-                              IPathFinderTargetEvaluator evaluator)
+        public void Configure(SingleLevelPathFinderBuilder owner)
         {
             this.disposed = false;
             this.movementSourceData.Clear();
-            this.singleLevelPathFinder.Reset();
+            this.singleLevelPathFinderWorker.Reset();
             this.currentOwner = owner ?? throw new ArgumentNullException(nameof(owner));
+        }
+
+        public IPathFinder WithTarget(IPathFinderTargetEvaluator evaluator)
+        {
             this.targetEvaluator = evaluator ?? throw new ArgumentNullException(nameof(evaluator));
+            return this;
         }
 
         public void Reset()
         {
             this.disposed = false;
-            this.singleLevelPathFinder.Reset();
+            this.singleLevelPathFinderWorker.Reset();
             this.movementSourceData.Clear();
         }
 
-        public IReadOnlyDynamicDataView2D<AStarNode> ProcessedNodes => singleLevelPathFinder.Nodes;
+        public IReadOnlyDynamicDataView2D<AStarNode> ProcessedNodes => singleLevelPathFinderWorker.Nodes;
 
-        public PathFinderResult TryFindPath<TPosition>(in TPosition source,
-                                                       out BufferList<(TPosition, IMovementMode)> path,
-                                                       BufferList<(TPosition, IMovementMode)>? pathBuffer = null,
-                                                       int searchLimit = Int32.MaxValue)
-            where TPosition : IPosition<TPosition>
+        public bool TryFindPath<TPosition>(in TPosition source,
+                                           out (PathFinderResult resultHint, IPath path, float pathCost) path,
+                                           int searchLimit = Int32.MaxValue) where TPosition : IPosition<TPosition>
         {
-            pathBuffer = BufferList.PrepareBuffer(pathBuffer);
             if (source.IsInvalid)
             {
-                path = pathBuffer;
-                return PathFinderResult.NotFound;
+                path = default;
+                return false;
             }
 
-            singleLevelPathFinder.ConfigureActiveLevel(source.GridZ);
+            singleLevelPathFinderWorker.ConfigureActiveLevel(source.GridZ);
             var heuristics = DistanceCalculation.Manhattan;
             foreach (var m in movementSourceData)
             {
-                singleLevelPathFinder.ConfigureMovementProfile(in m.MovementCost, m.Costs, m.InboundDirections, m.OutboundDirections);
+                singleLevelPathFinderWorker.ConfigureMovementProfile(in m);
                 if (heuristics.IsOtherMoreAccurate(m.MovementCost.MovementStyle))
                 {
                     heuristics = m.MovementCost.MovementStyle;
                 }
             }
 
-            singleLevelPathFinder.ConfigureFinished(heuristics.AsAdjacencyRule());
+            singleLevelPathFinderWorker.ConfigureFinished(heuristics.AsAdjacencyRule());
 
             if (targetEvaluator == null || !targetEvaluator.Initialize(source, heuristics))
             {
-                path = pathBuffer;
-                return PathFinderResult.NotFound;
+                path = default;
+                return false;
             }
 
-            path = pathBuffer;
             sw.Restart();
             try
             {
-                return singleLevelPathFinder.FindPath(source, targetEvaluator, pathBuffer, searchLimit);
+                var pathBuffer = singleLevelPathPool.Lease();
+                var (result, cost) = singleLevelPathFinderWorker.FindPath(source, targetEvaluator, pathBuffer, searchLimit);
+                if (result == PathFinderResult.NotFound)
+                {
+                    pathBuffer.Dispose();
+                    path = default;
+                    return false;
+                }
+
+                path = (result, pathBuffer, cost);
+                return true;
             }
             finally
             {
@@ -116,7 +126,7 @@ namespace RogueEntity.Core.MovementPlaning.Pathfinding.SingleLevel
             }
         }
 
-        public int NodesEvaluated => singleLevelPathFinder.NodesEvaluated;
+        public int NodesEvaluated => singleLevelPathFinderWorker.NodesEvaluated;
         public TimeSpan TimeElapsed { get; private set; }
 
         public void ConfigureMovementProfile(in MovementCost costProfile,

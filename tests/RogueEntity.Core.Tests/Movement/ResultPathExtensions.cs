@@ -2,18 +2,21 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using RogueEntity.Core.Movement;
+using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Grid;
 
 namespace RogueEntity.Core.Tests.Movement
 {
     public static class ResultPathExtensions
     {
-        public static int PathIndexOf(this IReadOnlyList<(EntityGridPosition, IMovementMode)> pathItems, EntityGridPosition pos)
+        public static int PathIndexOf<TPosition>(this IReadOnlyList<(TPosition, IMovementMode)> pathItems, TPosition pos)
+            where TPosition: struct, IPosition<TPosition>
         {
+            var eq = EqualityComparer<TPosition>.Default;
             for (var index = 0; index < pathItems.Count; index++)
             {
                 var p = pathItems[index];
-                if (p.Item1 == pos)
+                if (eq.Equals(p.Item1, pos))
                 {
                     return index;
                 }

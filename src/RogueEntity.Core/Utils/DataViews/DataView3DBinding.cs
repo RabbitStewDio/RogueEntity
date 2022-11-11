@@ -10,7 +10,7 @@ static class DataView3DBinding
 {
     static readonly ObjectPool<BufferList<Rectangle>> bufferPool;
     static readonly ObjectProvider provider;
-    
+
     class ObjectProvider : IPooledObjectProvider<BufferList<Rectangle>>
     {
         public void Return(BufferList<Rectangle> t)
@@ -36,7 +36,7 @@ static class DataView3DBinding
     }
 }
 
-public class DataView3DBinding<TSource, TTarget>: IDisposable
+public class DataView3DBinding<TSource, TTarget> : IDisposable
 {
     class LayerBinding
     {
@@ -57,7 +57,7 @@ public class DataView3DBinding<TSource, TTarget>: IDisposable
                 this.source = source;
                 this.source.ViewChunkCreated += OnViewChunkCreated;
                 this.source.ViewChunkExpired += OnViewChunkExpired;
-                
+
                 using var b = DataView3DBinding.GetBuffer();
                 var tiles = source.GetActiveTiles(b);
                 foreach (var tile in tiles)
@@ -76,7 +76,7 @@ public class DataView3DBinding<TSource, TTarget>: IDisposable
             source.ViewChunkCreated -= OnViewChunkCreated;
             source.ViewChunkExpired -= OnViewChunkExpired;
         }
-        
+
         void OnViewChunkExpired(object sender, DynamicDataView2DEventArgs<TSource> e)
         {
             if (source == null) return;
@@ -95,11 +95,12 @@ public class DataView3DBinding<TSource, TTarget>: IDisposable
     readonly Dictionary<int, LayerBinding> layerBindings;
     readonly IAggregateDynamicDataView3D<TSource>? aggregateSource;
 
-    public DataView3DBinding(IReadOnlyDynamicDataView3D<TSource> sourceView, 
-                             IDynamicDataView3D<TTarget> targetView)
+    public DataView3DBinding(IReadOnlyDynamicDataView3D<TSource> sourceView,
+                             IDynamicDataView3D<TTarget> targetView,
+                             bool delayInit = false)
     {
-        this.sourceView = sourceView;
-        this.targetView = targetView;
+        this.sourceView = sourceView ?? throw new ArgumentNullException(nameof(sourceView));
+        this.targetView = targetView ?? throw new ArgumentNullException(nameof(targetView));
         this.layerBindings = new Dictionary<int, LayerBinding>();
         this.sourceView.ViewCreated += OnViewCreated;
         this.sourceView.ViewExpired += OnViewExpired;
@@ -114,6 +115,20 @@ public class DataView3DBinding<TSource, TTarget>: IDisposable
             aggregateSource = null;
         }
 
+        if (!delayInit)
+        {
+            foreach (var l in sourceView.GetActiveLayers())
+            {
+                if (sourceView.TryGetView(l, out var view))
+                {
+                    ActivateLayerBinding(l, view);
+                }
+            }
+        }
+    }
+
+    protected void Init()
+    {
         foreach (var l in sourceView.GetActiveLayers())
         {
             if (sourceView.TryGetView(l, out var view))
@@ -122,7 +137,7 @@ public class DataView3DBinding<TSource, TTarget>: IDisposable
             }
         }
     }
-
+    
     void OnViewProcessed(object sender, AggregationViewProcessedEvent<TSource> e)
     {
         if (!targetView.TryGetWritableView(e.ZInfo, out var view2D, DataViewCreateMode.CreateMissing))
@@ -140,7 +155,7 @@ public class DataView3DBinding<TSource, TTarget>: IDisposable
     {
     }
 
-    void OnChunkCreated(int z, IReadOnlyBoundedDataView<TSource> tileData)
+    protected virtual void OnChunkCreated(int z, IReadOnlyBoundedDataView<TSource> tileData)
     {
         if (!targetView.TryGetWritableView(z, out var view2D, DataViewCreateMode.CreateMissing))
         {
@@ -150,7 +165,7 @@ public class DataView3DBinding<TSource, TTarget>: IDisposable
         view2D.TryGetWriteAccess(tileData.Bounds.X, tileData.Bounds.Y, out _, DataViewCreateMode.CreateMissing);
     }
 
-    void OnChunkExpired(int z, IReadOnlyBoundedDataView<TSource> tileData)
+    protected virtual void OnChunkExpired(int z, IReadOnlyBoundedDataView<TSource> tileData)
     {
         if (!targetView.TryGetWritableView(z, out var view2D))
         {
@@ -171,7 +186,7 @@ public class DataView3DBinding<TSource, TTarget>: IDisposable
         {
             aggregateSource.ViewProcessed -= OnViewProcessed;
         }
-        
+
         this.sourceView.ViewCreated -= OnViewCreated;
         this.sourceView.ViewExpired -= OnViewExpired;
         this.layerBindings.Clear();
@@ -183,7 +198,7 @@ public class DataView3DBinding<TSource, TTarget>: IDisposable
         {
             binding = new LayerBinding(this);
         }
-        
+
         binding.Activate(z, view);
         layerBindings[z] = binding;
     }
@@ -196,7 +211,6 @@ public class DataView3DBinding<TSource, TTarget>: IDisposable
         }
 
         binding.Deactivate();
-        
     }
 
     void OnViewCreated(object sender, DynamicDataView3DEventArgs<TSource> e)

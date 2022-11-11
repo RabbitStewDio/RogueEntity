@@ -3,6 +3,7 @@ using NUnit.Framework;
 using RogueEntity.Core.GridProcessing.Directionality;
 using RogueEntity.Core.Movement.CostModifier.Directions;
 using RogueEntity.Core.Movement.MovementModes.Walking;
+using RogueEntity.Core.Positioning.Algorithms;
 using RogueEntity.Core.Tests.Fixtures;
 using RogueEntity.Core.Utils.DataViews;
 using System;
@@ -43,9 +44,9 @@ namespace RogueEntity.Core.Tests.Movement.CostModifier
             directionalityMap.At(0, 0).Should().Be(DirectionalityInformation.None);
             directionalityMap.At(0, 1).Should().Be(DirectionalityInformation.None);
             directionalityMap.At(1, 0).Should().Be(DirectionalityInformation.None);
-            directionalityMap.At(1, 1).Should().Be(DirectionalityInformation.All);
+            directionalityMap.At(1, 1).Should().Be(DirectionalityInformation.All.WithOut(Direction.UpLeft));
             
-            directionalityMap.At(2, 5).Should().Be(DirectionalityInformation.All & ~DirectionalityInformation.DownRight);
+            directionalityMap.At(2, 5).Should().Be(DirectionalityInformation.All.WithOut(Direction.DownRight));
         }
         
         [Test]

@@ -35,8 +35,8 @@ gold coins and other commodity items.
 
 Module Initialization phases:
 
-     before    -10_000 : Entity Registrations
-    -10_000 to       0 : One Time Initialization
+     before   -100_000 : Entity Registrations
+    -99_000 to       0 : One Time Initialization (see bellow)
           0 to  10_000 : Preparation Events
      10_000 to  19_999 : Player/Creature action planing
      20_000 to  29_999 : Player/Creature action execution
@@ -49,6 +49,11 @@ Module Initialization phases:
      80_000 to  84_999 : GUI and service updates
      85_000 to  99_999 : Reserved as extension point.
     100_000 and beyond : System Cleanup Events
+
+OneTime-Inits:
+
+    -30_000 to -25_000 : Movement systems
+    -20_000 to -19_000 : Pathfinding 
 
 Commands:
 

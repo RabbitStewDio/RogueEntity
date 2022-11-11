@@ -26,6 +26,16 @@ namespace RogueEntity.Core.Positioning
             return new DynamicDataViewConfiguration(0, 0, 32, 32);
         }
 
+        public static DynamicDataViewConfiguration LookupDefaultConfiguration(IServiceResolver serviceResolver)
+        {
+            if (serviceResolver.TryResolve(out DynamicDataViewConfiguration viewConfig))
+            {
+                return viewConfig;
+            }
+
+            return new DynamicDataViewConfiguration(0, 0, 32, 32);
+        }
+
 
         public static HashSet<MapLayer> CollectMapLayers<TItemId, TAdditionalComponent>(ModuleEntityInitializationParameter<TItemId> initParameter)
             where TItemId : struct, IEntityKey

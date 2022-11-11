@@ -33,24 +33,23 @@ Both bulk and reference actors can define a movement cost modifier by declaring 
 ``RelativeMovementCostModifier``. Generally this modifier will be applied to environment 
 entities, like floor times, not moveable actors like monsters.
 
+The movement system assumes that all tiles that are 'walkable' can be entered from
+any tile. This allows movement to transition between movement modes. Imagine a walkable
+tile next to a water tile. A character, that can both walk and swim, can transition from
+the walking cell to the swiming cell and vice versa. In terms of pathfinding, the
+algorithms only check inbound connections and ignore outbound movement connection.
+
 Movement cost modifiers describe how the fixed movement cost (time if velocity, points
 if movement points) is altered based on the physical properies of the tile. The movement
-costs you define for an entity declare the cost modifier when moving across tiles of the
-same type. When crossing tiles with a cost difference, the average of both cost values is
-used. 
+costs you define for an entity declare the cost modifier when entering a given tile. 
 
 Thus: Moving from a paved road with a cost factor of ``1`` into a swamp (cost factor ``2``)
-will spend 1.5 times the time or points (1 * 0.5 + 2 * 0.5). Moving from the swamp tile to 
-another swamp tile will cost 2 times the time or points, while leavign the swamp via an 
-magical fast tile (of cost factor 0.5, so each movement is twice as fast) will make the 
-character move at a cost factor of 1.25 (that is: 2 (swamp) * 0.5 + 0.5 (magic) * 0.5).
+will spend 2 times the time or points (cost of swamp tile). Moving from the swamp tile to 
+another swamp tile will also cost 2 times the time or points, while leavign the swamp via a 
+road tile (of cost factor 1) will make the character move at a cost 1.
 
-Side note: Movement cost of 0 marks an impassable tile. Movement into an impassable tile
-is prohibited (you cannot walk into a wall), movement from an impassable tile to an
-traversable adjacent tile costs the base movement cost of that tile.
-
-The system uses the aggregate movement cost modifiers of a map to build an data view that
-encodes both traversability and movement cost for each tile. 
+Traps that increase movement cost (ie. spider webs) affect the character when entering
+the trap, but leave the character unimpeded when leaving the trap.
 
 Movement costs and traversability are recorded separately for each movement mode.
 

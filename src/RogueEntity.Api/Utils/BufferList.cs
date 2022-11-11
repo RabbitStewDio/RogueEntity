@@ -34,7 +34,7 @@ namespace RogueEntity.Api.Utils
 
         public void StoreAt(int index, in T input)
         {
-            EnsureCapacity(index + 1);
+            EnsureCapacityAutoGrowth(index + 1);
             this.data[index] = input;
             this.Count = Math.Max(index + 1, Count);
             this.version += 1;
@@ -74,6 +74,16 @@ namespace RogueEntity.Api.Utils
             return ref data[index];
         }
 
+        public ref T GetRef(int index)
+        {
+            if (index < 0 || index >= Count)
+            {
+                throw new IndexOutOfRangeException();
+            }
+            
+            return ref data[index];
+        }
+
         public int Count
         {
             get;
@@ -109,7 +119,7 @@ namespace RogueEntity.Api.Utils
 
         public ref T ReferenceOf(int index)
         {
-            EnsureCapacity(index + 1);
+            EnsureCapacityAutoGrowth(index + 1);
             return ref data[index];
         }
 
@@ -125,22 +135,32 @@ namespace RogueEntity.Api.Utils
             return false;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void EnsureCapacity(int minIndexNeeded)
+        public void EnsureCapacity(int sizeNeeded)
         {
-            if (minIndexNeeded < Capacity)
+            if (sizeNeeded <= Capacity)
             {
                 return;
             }
 
-            var capacityDynamic = Math.Min(minIndexNeeded + 10000, Capacity * 150 / 100);
+            Capacity = sizeNeeded;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        void EnsureCapacityAutoGrowth(int sizeNeeded)
+        {
+            if (sizeNeeded <= Capacity)
+            {
+                return;
+            }
+
+            var capacityDynamic = Math.Min(sizeNeeded + 10000, Capacity * 150 / 100);
             var capacityStatic = Count + 500;
             Capacity = Math.Max(capacityStatic, capacityDynamic);
         }
 
         public void Add(in T e)
         {
-            EnsureCapacity(Count + 1);
+            EnsureCapacityAutoGrowth(Count + 1);
 
             this.data[Count] = e;
             Count += 1;
@@ -157,6 +177,24 @@ namespace RogueEntity.Api.Utils
         public void Reverse()
         {
             Array.Reverse(data, 0, Count);
+        }
+
+        public void CopyTo(List<T> target)
+        {
+            target.Capacity = Math.Max(target.Capacity, this.Count);
+            for (var index = 0; index < this.Count; index++)
+            {
+                target.Add(this[index]);
+            }
+        }
+        
+        public void CopyToBuffer(BufferList<T> target)
+        {
+            target.Capacity = Math.Max(target.Capacity, this.Count);
+            for (var index = 0; index < this.Count; index++)
+            {
+                target.Add(this[index]);
+            }
         }
         
         public struct Enumerator : IEnumerator<T>
@@ -231,5 +269,23 @@ namespace RogueEntity.Api.Utils
             return buffer;
         }
 
+        public static void EnsureSizeNullable<T>(this BufferList<T?> buffer, int size)
+        {
+            buffer.EnsureCapacity(size);
+            while (buffer.Count < size)
+            {
+                buffer.Add(default);
+            }
+        }
+
+        public static void EnsureSizeStruct<T>(this BufferList<T> buffer, int size)
+            where T: struct
+        {
+            buffer.EnsureCapacity(size);
+            while (buffer.Count < size)
+            {
+                buffer.Add(default);
+            }
+        }
     }
 }

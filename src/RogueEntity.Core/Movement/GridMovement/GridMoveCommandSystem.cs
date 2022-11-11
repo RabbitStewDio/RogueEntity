@@ -17,7 +17,6 @@ namespace RogueEntity.Core.Movement.GridMovement
         protected readonly IItemPlacementService<TActorId> PlacementService;
         protected readonly GridStepMovementService<TActorId> MovementService;
 
-
         public GridMoveCommandSystem(Lazy<ITimeSource> timer,
                                      IItemResolver<TActorId> actorResolver,
                                      IMovementDataProvider movementDataProvider,
@@ -52,9 +51,10 @@ namespace RogueEntity.Core.Movement.GridMovement
                 return;
             }
 
-            var movementDistance = DistanceCalculation.Manhattan.Calculate(moveTarget, position);
+            var movementDistance = DistanceCalculation.Chebyshev.Calculate(moveTarget, position);
             if (movementDistance == 0 || movementDistance > 1)
             {
+                // We only handle single step movements
                 progressIndicator = progressIndicator.MarkHandled();
                 return;
             }

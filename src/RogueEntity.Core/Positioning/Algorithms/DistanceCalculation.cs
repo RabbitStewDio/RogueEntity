@@ -9,7 +9,7 @@ namespace RogueEntity.Core.Positioning.Algorithms
     ///   * Chebyshev: grid movement both along cardinal and diagonal directions (like the queen in chess)
     ///   * Euclid: freeform movement unrestrained by a grid. 
     /// </summary>
-    public enum DistanceCalculation
+    public enum DistanceCalculation: byte
     {
         Euclid = 0,
         Manhattan = 1,

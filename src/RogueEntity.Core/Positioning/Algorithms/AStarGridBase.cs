@@ -37,8 +37,12 @@ namespace RogueEntity.Core.Positioning.Algorithms
         /// <param name="basePosition"></param>
         /// <returns></returns>
         protected abstract ReadOnlyListWrapper<Direction> PopulateTraversableDirections(in Position2D basePosition);
-        protected abstract bool EdgeCostInformation(in Position2D sourceNode, in Direction d, float sourceNodeCost, 
-                                                    out float totalPathCost, [MaybeNullWhen(false)] out TExtraNodeInfo nodeInfo);
+
+        protected abstract bool EdgeCostInformation(in Position2D sourceNode,
+                                                    in Direction d,
+                                                    float sourceNodeCost,
+                                                    out float totalPathCost,
+                                                    [MaybeNullWhen(false)] out TExtraNodeInfo nodeInfo);
 
         protected abstract bool IsTargetNode(in Position2D pos);
 
@@ -62,16 +66,16 @@ namespace RogueEntity.Core.Positioning.Algorithms
         {
             throw new InvalidOperationException($"Unable to update existing node at {pos}.");
         }
-        
-        protected PathFinderResult FindPath(Position2D start,
-                                            BufferList<Position2D> pathBuffer,
-                                            int searchLimit = int.MaxValue)
+
+        protected (PathFinderResult result, float cost) FindPath(Position2D start,
+                                                                 BufferList<Position2D> pathBuffer,
+                                                                 int searchLimit = int.MaxValue)
         {
             pathBuffer.Clear();
 
             if (IsTargetNode(start))
             {
-                return PathFinderResult.Found;
+                return (PathFinderResult.Found, 0);
             }
 
             Clear();
@@ -79,8 +83,8 @@ namespace RogueEntity.Core.Positioning.Algorithms
             return ContinueFindPath(pathBuffer, searchLimit);
         }
 
-        protected PathFinderResult ContinueFindPath(BufferList<Position2D> pathBuffer,
-                                                    int searchLimit = int.MaxValue)
+        protected (PathFinderResult, float cost) ContinueFindPath(BufferList<Position2D> pathBuffer,
+                                                                  int searchLimit = int.MaxValue)
         {
             var defaultNode = AStarNode.Empty;
             int searchedNodes = NodesEvaluated;
@@ -94,7 +98,7 @@ namespace RogueEntity.Core.Positioning.Algorithms
                 // {
                 //     ThrowNodeUpdateError(in currentPosition);
                 // }
-                
+
                 ref var currentNode = ref nodes.TryGetRefForUpdate(ref nodeTile, currentPosition.X, currentPosition.Y, ref defaultNode, out var success);
                 if (!success)
                 {
@@ -105,12 +109,12 @@ namespace RogueEntity.Core.Positioning.Algorithms
                 {
                     continue;
                 }
-                
+
                 searchedNodes += 1;
                 var currentHeuristic = Heuristic(in currentPosition);
                 if (currentHeuristic < bestSoFarH)
                 {
-                    bestSoFarH = currentHeuristic; 
+                    bestSoFarH = currentHeuristic;
                     bestSoFarPos = currentPosition;
                     bestSoFar = currentNode;
                 }
@@ -121,14 +125,16 @@ namespace RogueEntity.Core.Positioning.Algorithms
                 {
                     ProduceResult(currentPosition, currentNode, pathBuffer);
                     NodesEvaluated = searchedNodes;
-                    return PathFinderResult.Found;
+                    openNodes.Clear();
+                    return (PathFinderResult.Found, currentNode.AccumulatedCost);
                 }
 
                 if (searchedNodes >= searchLimit)
                 {
                     ProduceResult(currentPosition, currentNode, pathBuffer);
                     NodesEvaluated = searchedNodes;
-                    return PathFinderResult.SearchLimitReached;
+                    openNodes.Clear();
+                    return (PathFinderResult.SearchLimitReached, currentNode.AccumulatedCost);
                 }
 
                 if (currentNode.DistanceFromStart == ushort.MaxValue)
@@ -147,7 +153,7 @@ namespace RogueEntity.Core.Positioning.Algorithms
                     {
                         ThrowNodeUpdateError(in neighborPos);
                     }
-                    
+
                     if (neighborRef.IsClosed())
                     {
                         // This neighbor has already been evaluated at shortest possible path, don't re-add
@@ -186,18 +192,21 @@ namespace RogueEntity.Core.Positioning.Algorithms
             }
 
             NodesEvaluated = searchedNodes;
+            var cost = 0f;
             if (bestSoFarH < float.MaxValue)
             {
                 ProduceResult(bestSoFarPos, bestSoFar, pathBuffer);
+                cost = bestSoFar.AccumulatedCost;
             }
             else
             {
                 pathBuffer.Clear();
             }
+
             openNodes.Clear();
-            return PathFinderResult.NotFound;
+            return (PathFinderResult.NotFound, cost);
         }
-        
+
         public int NodesEvaluated { get; private set; }
 
         protected virtual void UpdateNode(in Position2D pos, TExtraNodeInfo nodeInfo)

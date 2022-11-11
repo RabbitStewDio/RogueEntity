@@ -1,7 +1,10 @@
+using RogueEntity.Api.Utils;
 using RogueEntity.Core.Movement.CostModifier.Directions;
 using RogueEntity.Core.Movement.CostModifier.Map;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Algorithms;
+using RogueEntity.Core.Positioning.Grid;
+using RogueEntity.Core.Positioning.MapLayers;
 using RogueEntity.Core.Sensing.Common;
 using RogueEntity.Core.Sensing.Common.Physics;
 using RogueEntity.Core.Sensing.Common.ShadowCast;
@@ -86,6 +89,13 @@ namespace RogueEntity.Core.MovementPlaning.Pathfinding.SingleLevel
             
             if (z == zLevel && pos == targetPosition) return true;
             return result[pos.X - sourcePosition.X, pos.Y - sourcePosition.Y] > 0;
+        }
+
+        public BufferList<EntityGridPosition> CollectTargets(BufferList<EntityGridPosition>? buffer = null)
+        {
+            buffer = BufferList.PrepareBuffer(buffer);
+            buffer.Add(EntityGridPosition.Of(MapLayer.Indeterminate, targetPosition.X, targetPosition.Y, zLevel));
+            return buffer;
         }
 
         public float TargetHeuristic(int z, in Position2D pos)

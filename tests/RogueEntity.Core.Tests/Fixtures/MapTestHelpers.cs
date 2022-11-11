@@ -182,8 +182,8 @@ namespace RogueEntity.Core.Tests.Fixtures
             }
         }
 
-        public static void AssertEquals<TData>(IReadOnlyView2D<TData> source,
-                                               IReadOnlyView2D<TData> other,
+        public static void AssertEquals<TData>(IReadOnlyView2D<TData> testResult,
+                                               IReadOnlyView2D<TData> expectedResult,
                                                in Rectangle bounds,
                                                in Position2D offset,
                                                Func<IReadOnlyView2D<TData>, Rectangle, string> printFunction)
@@ -195,8 +195,8 @@ namespace RogueEntity.Core.Tests.Fixtures
             {
                 var (x, y) = pos;
 
-                if (!source.TryGet(x - offset.X, y - offset.Y, out var result) ||
-                    !other.TryGet(x, y, out var expected))
+                if (!testResult.TryGet(x - offset.X, y - offset.Y, out var result) ||
+                    !expectedResult.TryGet(x, y, out var expected))
                 {
                     throw new IndexOutOfRangeException();
                 }
@@ -205,9 +205,9 @@ namespace RogueEntity.Core.Tests.Fixtures
                 {
                     throw new ArgumentException($"Error in comparison at [{x}, {y}]: Expected {expected} but found {result}.\n" +
                                                 $"{bounds} \n" +
-                                                $"SourceMap:\n" + printFunction(source, new Rectangle(bounds.MinExtentX - offset.X, bounds.MinExtentY - offset.Y, bounds.Width, bounds.Height)) +
+                                                $"SourceMap:\n" + printFunction(testResult, new Rectangle(bounds.MinExtentX - offset.X, bounds.MinExtentY - offset.Y, bounds.Width, bounds.Height)) +
                                                 "\n" +
-                                                $"Expected:\n" + printFunction(other, bounds));
+                                                $"Expected:\n" + printFunction(expectedResult, bounds));
                 }
             }
         }

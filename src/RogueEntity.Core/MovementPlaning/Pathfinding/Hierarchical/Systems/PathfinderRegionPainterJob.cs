@@ -1,6 +1,7 @@
 ﻿using RogueEntity.Api.Utils;
 using RogueEntity.Core.GridProcessing.Directionality;
 using RogueEntity.Core.Movement.CostModifier;
+using RogueEntity.Core.MovementPlaning.Pathfinding.Hierarchical.Data;
 using RogueEntity.Core.Positioning.Algorithms;
 using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.DataViews;
@@ -8,41 +9,39 @@ using System;
 using System.Buffers;
 using System.Collections.Generic;
 
-namespace RogueEntity.Core.MovementPlaning.Pathfinding.Hierarchical
+namespace RogueEntity.Core.MovementPlaning.Pathfinding.Hierarchical.Systems
 {
-    public readonly struct PathfinderRegionPainter
+    public readonly struct PathfinderRegionPainterJob
     {
         public readonly PathfinderRegionDataView Region;
         public readonly int Z;
-        readonly MovementCostData2D movement;
         readonly PathfinderRegionPainterSharedDataFactory sharedData;
+        readonly DistanceCalculation movementType;
         readonly ReadOnlyListWrapper<Direction>[] directionData;
         readonly DirectionalityInformation[] edgeMapping;
-        public readonly List<MovementCostData2D> MovementCostsOnLevel;
+        readonly List<(long flag, MovementCostData2D data)> movementCostsOnLevel;
 
-        public PathfinderRegionPainter(PathfinderRegionPainterSharedDataFactory sharedData,
-                                       DistanceCalculation movementType,
-                                       PathfinderRegionDataView region,
-                                       int z,
-                                       MovementCostData2D movement,
-                                       List<MovementCostData2D> movementCostsOnLevel)
+        public PathfinderRegionPainterJob(PathfinderRegionPainterSharedDataFactory sharedData,
+                                          DistanceCalculation movementType,
+                                          PathfinderRegionDataView region,
+                                          int z,
+                                          List<(long flag, MovementCostData2D data)> movementCostsOnLevel)
         {
             this.sharedData = sharedData;
+            this.movementType = movementType;
             this.Region = region;
             this.Z = z;
-            this.movement = movement;
-            this.MovementCostsOnLevel = movementCostsOnLevel;
+            this.movementCostsOnLevel = movementCostsOnLevel;
             this.directionData = DirectionalityLookup.Get(movementType.AsAdjacencyRule());
-            this.edgeMapping = movementType == DistanceCalculation.Manhattan ? edgeMappingCardinal : edgeMappingComplete;
+            this.edgeMapping = movementType == DistanceCalculation.Manhattan ? edgeMappingCardinal : EdgeMappingComplete;
         }
 
         public void Process()
         {
-            var directionsTileIn = ArrayPool<IReadOnlyBoundedDataView<DirectionalityInformation>>.Shared.Rent(MovementCostsOnLevel.Count);
-            var directionsTileOut = ArrayPool<IReadOnlyBoundedDataView<DirectionalityInformation>>.Shared.Rent(MovementCostsOnLevel.Count);
+            var costTile = ArrayPool<IReadOnlyBoundedDataView<float>>.Shared.Rent(movementCostsOnLevel.Count);
             try
             {
-                var tileRefs = new CachedTileReferences(directionsTileIn, directionsTileOut);
+                var tileRefs = new CachedTileReferences(costTile);
 
                 var rawData = Region.Data;
                 Region.ClearData();
@@ -61,68 +60,115 @@ namespace RogueEntity.Core.MovementPlaning.Pathfinding.Hierarchical
 
                     FloodFill(pos, ref tileRefs);
                 }
+
+                if (movementType != DistanceCalculation.Manhattan)
+                {
+                    foreach (var pos in Region.Bounds.Contents)
+                    {
+                        RemoveInnerEdge(pos);
+                    }
+                }
             }
             finally
             {
-                Array.Clear(directionsTileIn, 0, directionsTileIn.Length);
-                Array.Clear(directionsTileOut, 0, directionsTileOut.Length);
-                ArrayPool<IReadOnlyBoundedDataView<DirectionalityInformation>>.Shared.Return(directionsTileIn);
-                ArrayPool<IReadOnlyBoundedDataView<DirectionalityInformation>>.Shared.Return(directionsTileOut);
+                Array.Clear(costTile, 0, costTile.Length);
+                ArrayPool<IReadOnlyBoundedDataView<float>>.Shared.Return(costTile);
             }
+        }
+
+        /// <summary>
+        ///   It is impossible to decide whether a node is part of the edge for some nodes. Nodes that have a diagonal
+        ///   edge passing by are within one (diagonal) step of the zone boundary, but should not be part of the
+        ///   boundary itself. 
+        /// </summary>
+        /// <param name="pos"></param>
+        void RemoveInnerEdge(Position2D pos)
+        {
+            var idx = Region.GetRawIndexUnsafe(pos);
+            var rawData = Region.Data;
+            var (zone, connections) = rawData[idx];
+
+            for (var d = 0; d < 8; d += 2)
+            {
+                var dir = Direction.Up.MoveClockwise(d);
+                var testPos = pos + dir;
+                var testIdx = Region.GetRawIndexUnsafe(testPos);
+                if (testIdx < 0 || testIdx >= rawData.Length)
+                {
+                    continue;
+                }
+
+                var testDir = dir.Inverse();
+                if (!rawData[testIdx].zoneEdges.IsMovementAllowed(testDir))
+                {
+                    connections = connections.WithOut(dir);
+                }
+            }
+
+            rawData[idx] = (zone, connections);
         }
 
         long ComputeAvailableMovementModes(int targetPosX, int targetPosY, ref CachedTileReferences tileRefs)
         {
             long availableMovementModes = 0;
-            for (var index = 0; index < MovementCostsOnLevel.Count; index++)
+            for (var index = 0; index < movementCostsOnLevel.Count; index++)
             {
-                var s = MovementCostsOnLevel[index];
-                ref var dt = ref tileRefs.OutboundDirectionsTile[index];
-                var dir = s.OutboundDirections.TryGetMapValue(ref dt, targetPosX, targetPosY, DirectionalityInformation.None);
-                if (dir != DirectionalityInformation.None)
+                var (f, s) = movementCostsOnLevel[index];
+                ref var dt = ref tileRefs.CostDirectionsTile[index];
+                var dir = s.Costs.TryGetMapValue(ref dt, targetPosX, targetPosY, 0);
+                if (dir > 0)
                 {
-                    availableMovementModes |= (1L << index);
+                    availableMovementModes |= f;
                 }
             }
 
             return availableMovementModes;
         }
 
-        long ComputeAvailableMovementModesInbound(int targetPosX, int targetPosY, ref CachedTileReferences tileRefs)
+        void ComputeIsolatedZone(Position2D start, ref CachedTileReferences tileRefs)
         {
-            long availableMovementModes = 0;
-            for (var index = 0; index < MovementCostsOnLevel.Count; index++)
+            var outboundMovements = 0L;
+            foreach (var (f, m) in movementCostsOnLevel)
             {
-                var s = MovementCostsOnLevel[index];
-                ref var dt = ref tileRefs.InboundDirectionsTile[index];
-                var dir = s.InboundDirections.TryGetMapValue(ref dt, targetPosX, targetPosY, DirectionalityInformation.None);
-                if (dir != DirectionalityInformation.None)
+                var outboundMovementDirections = m.OutboundDirections.TryGetMapValue(ref tileRefs.EdgeOutboundTile,
+                                                                                     start.X, start.Y,
+                                                                                     DirectionalityInformation.None);
+                if (outboundMovementDirections != DirectionalityInformation.None)
                 {
-                    availableMovementModes |= (1L << index);
+                    outboundMovements |= f;
                 }
             }
 
-            return availableMovementModes;
+            if (outboundMovements != 0)
+            {
+                var defaultNode = default((TraversableZoneId, DirectionalityInformation));
+                ref var currentNode = ref Region.TryGetForUpdate(start.X, start.Y, ref defaultNode, out var success);
+                if (!success)
+                {
+                    ThrowNodeUpdateError(in start);
+                }
+
+                currentNode = (Region.GenerateZoneId(), edgeMapping[(int)DirectionalityInformation.None]);
+            }
         }
 
         void FloodFill(in Position2D start, ref CachedTileReferences tileRefs)
         {
-            // ReSharper disable once ReplaceWithSingleAssignment.False
-            var debug = false;
-            if (start == new Position2D(3, 3))
+            if (start == new Position2D(1, 1))
             {
-                debug = true;
+                Console.WriteLine("HERE!");
             }
-
+            
             var zoneMovementModes = ComputeAvailableMovementModes(start.X, start.Y, ref tileRefs);
             if (zoneMovementModes == 0)
             {
+                ComputeIsolatedZone(start, ref tileRefs);
                 return;
             }
 
-            var zoneId = Region.GenerateZoneId(start);
+            var zoneId = Region.GenerateZoneId();
             using var d = sharedData.Get();
-            var (openNodes, _) = d.Data;
+            var openNodes = d.Data;
 
             openNodes.Clear();
             openNodes.Enqueue(start, 0);
@@ -152,7 +198,8 @@ namespace RogueEntity.Core.MovementPlaning.Pathfinding.Hierarchical
                     ref var neighborRef = ref Region.TryGetForUpdate(neighborPos.X, neighborPos.Y, ref defaultNode, out success);
                     if (!success)
                     {
-                        ThrowNodeUpdateError(in neighborPos);
+                        // the node is outside of the region and thus never evaluated.
+                        continue;
                     }
 
                     if (neighborRef.zone == zoneId)
@@ -167,11 +214,6 @@ namespace RogueEntity.Core.MovementPlaning.Pathfinding.Hierarchical
                         continue;
                     }
 
-                    if (!Region.TryGetRawIndex(neighborPos, out _))
-                    {
-                        // this tile would be out of bounds. This is automatically treated as boundary edge of the traversal zone.
-                    }
-
                     if (!EdgeCostInformation(in currentPosition, in dir, ref tileRefs, out var movementModesOnEdge))
                     {
                         continue;
@@ -184,48 +226,47 @@ namespace RogueEntity.Core.MovementPlaning.Pathfinding.Hierarchical
                     }
 
                     directionInfo = directionInfo.With(dir);
-                    var isNeighborOpen = neighborRef.zone == TraversableZoneId.Empty;
-                    if (isNeighborOpen)
-                    {
-                        // Not a better path
-                        // continue;
-                    }
-
                     openNodes.Enqueue(neighborPos, 0);
                 }
 
-                Region.Data[Region.GetRawIndexUnsafe(currentPosition)] = (zoneId, edgeMapping[(int)directionInfo]);
+                currentNode = (zoneId, edgeMapping[(int)directionInfo]);
             }
         }
 
-        static readonly DirectionalityInformation[] edgeMappingComplete = new DirectionalityInformation[256];
+        internal static readonly DirectionalityInformation[] EdgeMappingComplete = new DirectionalityInformation[256];
         static readonly DirectionalityInformation[] edgeMappingCardinal = new DirectionalityInformation[256];
 
-        static PathfinderRegionPainter()
+        static PathfinderRegionPainterJob()
         {
             for (int idx = 0; idx < 256; idx += 1)
             {
                 var org = (DirectionalityInformation)idx;
-                edgeMappingComplete[idx] = DetectEdge(org);
+                EdgeMappingComplete[idx] = DetectEdge(org);
                 edgeMappingCardinal[idx] = DetectEdgeCardinal(org);
             }
         }
 
+        /// <summary>
+        ///    Tests whether
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="test"></param>
+        /// <param name="potentialEdges"></param>
+        /// <returns></returns>
         internal static DirectionalityInformation TestEdge(DirectionalityInformation input, DirectionalityInformation test, DirectionalityInformation potentialEdges)
         {
             if ((input & test) != 0)
             {
                 return DirectionalityInformation.None;
             }
-            
+
             var maybeEdge = input & potentialEdges;
             if (maybeEdge == potentialEdges)
             {
-                return DirectionalityInformation.None;
+                //      return DirectionalityInformation.None;
             }
 
             return maybeEdge;
-
         }
 
         internal static DirectionalityInformation DetectEdge(DirectionalityInformation input)
@@ -267,37 +308,33 @@ namespace RogueEntity.Core.MovementPlaning.Pathfinding.Hierarchical
         /// <param name="basePos"></param>
         /// <param name="tileRefs"></param>
         /// <returns></returns>
-        ReadOnlyListWrapper<Direction> PopulateTraversableDirections(in Position2D basePos, ref CachedTileReferences tileRefs)
+        ReadOnlyListWrapper<Direction> PopulateTraversableDirections(in Position2D basePos,
+                                                                     ref CachedTileReferences tileRefs)
         {
             var targetPosX = basePos.X;
             var targetPosY = basePos.Y;
-            var allowedMovements = DirectionalityInformation.None;
-
-            for (var index = 0; index < MovementCostsOnLevel.Count; index++)
+            var result = DirectionalityInformation.None;
+            foreach (var (f, m) in movementCostsOnLevel)
             {
-                var s = MovementCostsOnLevel[index];
-                ref var dtOut = ref tileRefs.OutboundDirectionsTile[index];
-                ref var dtIn = ref tileRefs.InboundDirectionsTile[index];
-                var dirOut = s.OutboundDirections.TryGetMapValue(ref dtOut, targetPosX, targetPosY, DirectionalityInformation.None);
-                var dirIn = s.InboundDirections.TryGetMapValue(ref dtIn, targetPosX, targetPosY, DirectionalityInformation.None);
-                allowedMovements |= (dirIn & dirOut);
+                var dirIn = m.InboundDirections.TryGetMapValue(ref tileRefs.EdgeInboundTile, targetPosX, targetPosY, DirectionalityInformation.None);
+                var dirOut = m.OutboundDirections.TryGetMapValue(ref tileRefs.EdgeOutboundTile, targetPosX, targetPosY, DirectionalityInformation.None);
+                var allowedMovements = (dirIn & dirOut);
+                result |= allowedMovements;
             }
 
-            return directionData[(int)allowedMovements];
+            return directionData[(int)result];
         }
 
         struct CachedTileReferences
         {
-            public CachedTileReferences(IReadOnlyBoundedDataView<DirectionalityInformation>?[] outboundDirectionsTile,
-                                        IReadOnlyBoundedDataView<DirectionalityInformation>?[] inboundDirectionsTile) : this()
+            public CachedTileReferences(IReadOnlyBoundedDataView<float>?[] costTile) : this()
             {
-                this.OutboundDirectionsTile = outboundDirectionsTile;
-                this.InboundDirectionsTile = inboundDirectionsTile;
+                this.CostDirectionsTile = costTile;
             }
 
-            public readonly IReadOnlyBoundedDataView<DirectionalityInformation>?[] OutboundDirectionsTile;
-            public readonly IReadOnlyBoundedDataView<DirectionalityInformation>?[] InboundDirectionsTile;
+            public readonly IReadOnlyBoundedDataView<float>?[] CostDirectionsTile;
             public IReadOnlyBoundedDataView<DirectionalityInformation>? EdgeOutboundTile;
+            public IReadOnlyBoundedDataView<DirectionalityInformation>? EdgeInboundTile;
             public IReadOnlyBoundedDataView<float>? EdgeCostsTile;
         }
 
@@ -306,34 +343,8 @@ namespace RogueEntity.Core.MovementPlaning.Pathfinding.Hierarchical
                                  ref CachedTileReferences tileRefs,
                                  out long movementModes)
         {
-            var sourcePosX = sourceNode.X;
-            var sourcePosY = sourceNode.Y;
-            var dir = movement.OutboundDirections.TryGetMapValue(ref tileRefs.EdgeOutboundTile, sourcePosX, sourcePosY, DirectionalityInformation.None);
-            if (dir == DirectionalityInformation.None)
-            {
-                movementModes = 0;
-                return false;
-            }
-
-            if (!dir.IsMovementAllowed(d))
-            {
-                movementModes = 0;
-                return false;
-            }
-
             var targetPos = sourceNode + d;
-            var sourceTileCost = movement.Costs.TryGetMapValue(ref tileRefs.EdgeCostsTile, sourcePosX, sourcePosY, 0);
-            var targetTileCost = movement.Costs.TryGetMapValue(ref tileRefs.EdgeCostsTile, targetPos.X, targetPos.Y, 0);
-            var tileCost = (sourceTileCost + targetTileCost) / 2.0f;
-            if (tileCost <= 0)
-            {
-                // a cost of zero means its undefined. This should mean the tile is not valid.
-                movementModes = 0;
-                return false;
-            }
-
-
-            movementModes = ComputeAvailableMovementModesInbound(targetPos.X, targetPos.Y, ref tileRefs);
+            movementModes = ComputeAvailableMovementModes(targetPos.X, targetPos.Y, ref tileRefs);
             return true;
         }
     }

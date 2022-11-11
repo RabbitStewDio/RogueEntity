@@ -36,6 +36,14 @@ namespace RogueEntity.Core.Movement.CostModifier.Directions
 
         public void ProcessSystem() => Process();
 
+        /// <summary>
+        ///    Tests whether the neighbouring cell is a valid movement target. The cell is valid if it has
+        ///    a non-zero movement cost modifier.
+        /// </summary>
+        /// <param name="parameterData"></param>
+        /// <param name="pos"></param>
+        /// <param name="d"></param>
+        /// <returns></returns>
         protected override bool IsMoveAllowed(in (IReadOnlyDynamicDataView2D<float> sourceData,
                                                   IReadOnlyBoundedDataView<float> sourceTile, int z) parameterData,
                                               in Position2D pos,
@@ -57,6 +65,7 @@ namespace RogueEntity.Core.Movement.CostModifier.Directions
             var canMoveVertical = moveDataVertical > 0;
 
             // if both cardinal directions are blocked, we cannot walk diagonally.
+            // but if only one is blocked, we can squeeze through
             if (!canMoveHorizontal && !canMoveVertical)
             {
                 return false;

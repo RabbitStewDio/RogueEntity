@@ -8,26 +8,35 @@ using RogueEntity.Core.Positioning.Algorithms;
 
 namespace RogueEntity.Core.Movement.Cost
 {
-    public class MovementPointCostReferenceItemTrait< TActorId, TMovementMode> : SimpleReferenceItemComponentTraitBase< TActorId, MovementPointCost<TMovementMode>>,
-                                                                                 IMovementCostTrait<TActorId>
+    public class MovementPointCostReferenceItemInformationTrait< TActorId, TMovementMode> : SimpleReferenceItemComponentTraitBase< TActorId, MovementPointCost<TMovementMode>>,
+                                                                                 IMovementCostTrait<TActorId>,
+                                                                                 IMovementStyleInformationTrait
         where TActorId : struct, IEntityKey
         where TMovementMode : IMovementMode
     {
         readonly TMovementMode movementMode;
+        readonly IMovementMode movementModeBoxed;
         readonly DistanceCalculation movementStyle;
         readonly float standardMovementCost;
         readonly int movementModePreference;
 
-        public MovementPointCostReferenceItemTrait(TMovementMode movementMode,
+        public MovementPointCostReferenceItemInformationTrait(TMovementMode movementMode,
                                                    DistanceCalculation movementStyle,
                                                    float standardMovementCost,
                                                    int movementModePreference) :
             base("Core.Traits.Movement.MovementPointCosts+" + typeof(TMovementMode).Name, 100)
         {
             this.movementMode = movementMode;
+            this.movementModeBoxed = movementMode;
             this.movementStyle = movementStyle;
             this.standardMovementCost = standardMovementCost;
             this.movementModePreference = movementModePreference;
+        }
+
+        public bool TryQuery(out (IMovementMode, DistanceCalculation) t)
+        {
+            t = (movementModeBoxed, movementStyle);
+            return true;
         }
 
         protected override Optional<MovementPointCost<TMovementMode>> CreateInitialValue( TActorId reference)
@@ -40,7 +49,7 @@ namespace RogueEntity.Core.Movement.Cost
             if (TryQuery(v,  k, out MovementPointCost<TMovementMode> pointCost) &&
                 pointCost.Cost > 0)
             {
-                t = new MovementCost(movementMode, movementStyle, pointCost.Cost, movementModePreference);
+                t = new MovementCost(movementModeBoxed, movementStyle, pointCost.Cost, movementModePreference);
                 return true;
             }
 

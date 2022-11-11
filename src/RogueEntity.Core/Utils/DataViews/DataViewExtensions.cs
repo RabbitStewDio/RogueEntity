@@ -8,6 +8,20 @@ namespace RogueEntity.Core.Utils.DataViews
 {
     public static class DataViewExtensions
     {
+        public static ShortPosition2D ToInternalPosition<TData>(this IReadOnlyBoundedDataView<TData> view, Position2D pos)
+        {
+            var size = view.Bounds.Size;
+            var b = view.Bounds.Position;
+            var s = pos - b;
+            if (s.X < 0 || s.X >= size.X ||
+                s.Y < 0 || s.Y >= size.Y)
+            {
+                throw new ArgumentException("Invalid region position");
+            }
+
+            return new ShortPosition2D(s.X, s.Y);
+        } 
+        
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TData TryGetMapValue<TResistanceMap, TData>(this TResistanceMap resistanceMap,
                                                                    ref IReadOnlyBoundedDataView<TData>? resistanceTile,

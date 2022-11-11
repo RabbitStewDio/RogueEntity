@@ -48,7 +48,7 @@ namespace RogueEntity.Core.Tests.Movement.Cost
         protected override IReferenceItemDeclaration<ItemReference> CreateReferenceItemDeclaration(IReferenceItemTrait<ItemReference> refTrait)
         {
             return base.CreateReferenceItemDeclaration(refTrait)
-                       .WithTrait(new MovementPointCostReferenceItemTrait<ItemReference, WalkingMovement>(WalkingMovement.Instance, DistanceCalculation.Chebyshev, 10, 0));
+                       .WithTrait(new MovementPointCostReferenceItemInformationTrait<ItemReference, WalkingMovement>(WalkingMovement.Instance, DistanceCalculation.Chebyshev, 10, 0));
         }
 
         [Test]

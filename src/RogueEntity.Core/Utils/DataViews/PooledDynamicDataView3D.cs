@@ -149,13 +149,17 @@ namespace RogueEntity.Core.Utils.DataViews
                 return false;
             }
 
-            var eventHandler = new EventForwarder(this, z, new PooledDynamicDataView2D<T>(pool));
+            var eventHandler = new EventForwarder(this, z, CreateView(pool));
             index[z] = eventHandler;
             ViewCreated?.Invoke(this, new DynamicDataView3DEventArgs<T>(z, eventHandler.View));
             data = eventHandler.View;
             return true;
         }
 
+        protected virtual PooledDynamicDataView2D<T> CreateView(IBoundedDataViewPool<T> pool)
+        {
+            return new PooledDynamicDataView2D<T>(pool);
+        }
 
         public BufferList<int> GetActiveLayers(BufferList<int>? buffer = null)
         {

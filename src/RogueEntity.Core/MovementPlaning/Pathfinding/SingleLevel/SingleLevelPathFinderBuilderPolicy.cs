@@ -1,26 +1,30 @@
 using Microsoft.Extensions.ObjectPool;
+using RogueEntity.Core.Movement;
 
 namespace RogueEntity.Core.MovementPlaning.Pathfinding.SingleLevel
 {
     class SingleLevelPathFinderBuilderPolicy : IPooledObjectPolicy<SingleLevelPathFinderBuilder>
     {
+        readonly IMovementDataProvider movementDataProvider;
         readonly ObjectPool<SingleLevelPathFinder> pathFinderPool;
-        readonly ObjectPool<DefaultPathFinderTargetEvaluator> targetEvaluatorPool;
+        readonly SingleLevelPathPool pathPool;
 
-        public SingleLevelPathFinderBuilderPolicy(IPooledObjectPolicy<SingleLevelPathFinder> policy)
+        public SingleLevelPathFinderBuilderPolicy(IMovementDataProvider movementDataProvider): 
+            this(movementDataProvider, new SingleLevelPathFinderPolicy())
         {
-            this.pathFinderPool = new DefaultObjectPool<SingleLevelPathFinder>(policy);
-            this.targetEvaluatorPool = new DefaultObjectPool<DefaultPathFinderTargetEvaluator>(new DefaultPathFinderTargetEvaluatorPolicy(ReturnTargetEvaluator));
         }
 
-        void ReturnTargetEvaluator(DefaultPathFinderTargetEvaluator obj)
+        public SingleLevelPathFinderBuilderPolicy(IMovementDataProvider movementDataProvider, 
+                                                  IPooledObjectPolicy<SingleLevelPathFinder> policy)
         {
-            this.targetEvaluatorPool.Return(obj);
+            this.pathPool = new SingleLevelPathPool();
+            this.movementDataProvider = movementDataProvider;
+            this.pathFinderPool = new DefaultObjectPool<SingleLevelPathFinder>(policy);
         }
 
         public SingleLevelPathFinderBuilder Create()
         {
-            return new SingleLevelPathFinderBuilder(pathFinderPool, targetEvaluatorPool);
+            return new SingleLevelPathFinderBuilder(movementDataProvider, pathFinderPool);
         }
 
         public bool Return(SingleLevelPathFinderBuilder obj)

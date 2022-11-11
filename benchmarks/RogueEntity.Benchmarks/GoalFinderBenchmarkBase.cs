@@ -13,6 +13,7 @@ using RogueEntity.Core.Movement.MovementModes.Walking;
 using RogueEntity.Core.MovementPlaning.GoalFinding.SingleLevel;
 using RogueEntity.Core.MovementPlaning.Goals;
 using RogueEntity.Core.MovementPlaning.Pathfinding;
+using RogueEntity.Core.MovementPlaning.Pathfinding.SingleLevel;
 using RogueEntity.Core.Positioning.Algorithms;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Positioning.MapLayers;
@@ -52,20 +53,21 @@ namespace RogueEntity.Benchmarks
             entities.EntityRegistry.RegisterNonConstructable<EntityGridPositionChangedMarker>();
             entities.EntityRegistry.RegisterNonConstructable<ItemDeclarationHolder<ItemReference>>();
             entities.EntityRegistry.RegisterNonConstructable<GoalMarker<PerformanceGoal>>();
-            entities.ItemRegistry.Register(new ReferenceItemDeclaration< ItemReference>(goalEntitiyId)
-                                           .WithTrait(new ReferenceItemGridPositionTrait< ItemReference>(layer))
-                                           .WithTrait(new GoalMarkerTrait< ItemReference, PerformanceGoal>(32)));
+            entities.ItemRegistry.Register(new ReferenceItemDeclaration<ItemReference>(goalEntitiyId)
+                                           .WithTrait(new ReferenceItemGridPositionTrait<ItemReference>(layer))
+                                           .WithTrait(new GoalMarkerTrait<ItemReference, PerformanceGoal>(32)));
 
             queryRegistry = new SpatialQueryRegistry();
             queryRegistry.Register(new BruteForceSpatialQueryBackend<ItemReference>(entities.EntityRegistry));
 
             goalRegistry = new GoalRegistry();
             goalRegistry.RegisterGoalEntity<ItemReference, PerformanceGoal>();
-            
+
             positions = new List<EntityGridPosition>();
             pathBuffer = new BufferList<(EntityGridPosition, IMovementMode)>(256);
             movementDataCollector = new MovementDataCollector();
-            pathfinderSource = new SingleLevelGoalFinderSource(new DefaultPooledObjectPolicy<SingleLevelGoalFinder>(), goalRegistry, queryRegistry, movementDataCollector);
+            var policy = new SingleLevelGoalFinderPolicy(new SingleLevelPathPool());
+            pathfinderSource = new SingleLevelGoalFinderSource(policy, goalRegistry, queryRegistry, movementDataCollector);
         }
 
         public virtual void SetUpGlobal()
@@ -105,7 +107,7 @@ namespace RogueEntity.Benchmarks
             var goalPositions = new HashSet<EntityGridPosition>();
             while (goalPositions.Count < 100)
             {
-                var targetPosition = EntityGridPosition.OfRaw(layer.LayerId, 
+                var targetPosition = EntityGridPosition.OfRaw(layer.LayerId,
                                                               rnd.Next(bounds.Width / 4, (bounds.Width * 3) / 4),
                                                               rnd.Next(bounds.Height / 4, (bounds.Height * 3) / 4));
                 if (goalPositions.Contains(targetPosition))
@@ -115,10 +117,10 @@ namespace RogueEntity.Benchmarks
 
                 if (movementCostData[targetPosition.GridX, targetPosition.GridY] > 0.5)
                 {
-                    var ek = entities.ItemResolver.Instantiate( goalEntitiyId);
-                    if (!entities.ItemResolver.TryUpdateData(ek,  targetPosition, out _))
+                    var ek = entities.ItemResolver.Instantiate(goalEntitiyId);
+                    if (!entities.ItemResolver.TryUpdateData(ek, targetPosition, out _))
                     {
-                        entities.ItemResolver.TryUpdateData(ek,  targetPosition, out _);
+                        entities.ItemResolver.TryUpdateData(ek, targetPosition, out _);
                         throw new Exception($"Unable to position goal entity {positions.Count} at {targetPosition}");
                     }
 
@@ -141,29 +143,29 @@ namespace RogueEntity.Benchmarks
         void ValidateWorkingCondition()
         {
             var targetPosition = EntityGridPosition.OfRaw(layer.LayerId, 0, 11);
-            var ek = entities.ItemResolver.Instantiate( goalEntitiyId);
-            if (!entities.ItemResolver.TryUpdateData(ek,  targetPosition, out _))
+            var ek = entities.ItemResolver.Instantiate(goalEntitiyId);
+            if (!entities.ItemResolver.TryUpdateData(ek, targetPosition, out _))
             {
-                entities.ItemResolver.TryUpdateData(ek,  targetPosition, out _);
+                entities.ItemResolver.TryUpdateData(ek, targetPosition, out _);
                 throw new Exception($"Unable to position goal entity {positions.Count} at {targetPosition}");
             }
-            
+
             using (var pf = pathfinderSource.GetGoalFinder()
                                             .WithGoal<PerformanceGoal>()
                                             .Build(new AggregateMovementCostFactors(new MovementCost(WalkingMovement.Instance, DistanceCalculation.Euclid, 1))))
             {
                 var sourcePosition = EntityGridPosition.OfRaw(layer.LayerId, 0, 9);
-                var result = pf.TryFindPath(sourcePosition, out var resultPath);
-                if (result != PathFinderResult.Found)
+                if (!pf.TryFindPath(sourcePosition, out var result) || 
+                    result.resultHint != PathFinderResult.Found)
                 {
                     throw new ArgumentException("Unable to find sanity validation path");
                 }
 
                 //Console.WriteLine($" = {result2} + {string.Join(", ", resultPath2.Select(e => e.Item1))}");
-                Console.WriteLine($"Found path => {string.Join(", ", resultPath.Select(e => e.Item1))}");
+                Console.WriteLine($"Found path => {string.Join(", ", result.path.Select(e => e.Item1))}");
             }
         }
-        
+
         [SuppressMessage("ReSharper", "NotAccessedVariable")]
         public void ValidatePathFinding()
         {
@@ -182,16 +184,15 @@ namespace RogueEntity.Benchmarks
                                                 .WithSearchRadius(32)
                                                 .Build(new AggregateMovementCostFactors(new MovementCost(WalkingMovement.Instance, DistanceCalculation.Euclid, 1))))
                 {
-                    var result = pf.TryFindPath(startPosition, out _, pathBuffer);
-                    if (result == PathFinderResult.Found)
-                    {
-                        found += 1;
-                    }
-                    if (result == PathFinderResult.NotFound)
+                    if (!pf.TryFindPath(startPosition, out var result))
                     {
                         notFound += 1;
                     }
-
+                    else 
+                    {
+                        found += 1;
+                    }
+                    
                     if (pf is IPathFinderPerformanceView pv)
                     {
                         totalTime += pv.TimeElapsed;

@@ -36,5 +36,10 @@ namespace RogueEntity.Core.Movement.CostModifier
             InboundDirections = inboundDirections ?? throw new ArgumentNullException(nameof(inboundDirections));
             OutboundDirections = outboundDirections ?? throw new ArgumentNullException(nameof(outboundDirections));
         }
+
+        public override string ToString()
+        {
+            return $"{nameof(MovementCostData2D)}({nameof(MovementType)}: {MovementType}, {nameof(BaseCost)}: {BaseCost})";
+        }
     }
 }

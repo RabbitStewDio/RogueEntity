@@ -5,6 +5,8 @@ using RogueEntity.Core.Positioning.Algorithms;
 using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.DataViews;
 using System;
+using System.Collections.Generic;
+using Direction = RogueEntity.Core.Positioning.Algorithms.Direction;
 
 namespace RogueEntity.Core.Movement.CostModifier.Directions
 {
@@ -17,6 +19,7 @@ namespace RogueEntity.Core.Movement.CostModifier.Directions
                                                                              IDisposable
     {
         readonly IAggregationCacheControl? cacheControl;
+        readonly List<Direction> optimizedDirections;
 
         public InboundMovementDirectionalitySystem(IReadOnlyDynamicDataView3D<float> sourceData,
                                                    IAggregationCacheControl? cacheControl = null,
@@ -26,6 +29,17 @@ namespace RogueEntity.Core.Movement.CostModifier.Directions
             if (this.cacheControl != null)
             {
                 this.cacheControl.PositionDirty += OnPositionDirty;
+            }
+
+            this.optimizedDirections = new List<Direction>();
+            foreach (var n in Neighbors)
+            {
+                if (n.IsCardinal())
+                {
+                    continue;
+                }
+
+                optimizedDirections.Add(n);
             }
         }
 
@@ -58,10 +72,10 @@ namespace RogueEntity.Core.Movement.CostModifier.Directions
                     continue;
                 }
 
-                var x = DirectionalityInformation.None;
-                for (var index = 0; index < Neighbors.Count; index++)
+                var x = DirectionalityInformation.Left | DirectionalityInformation.Right | DirectionalityInformation.Up | DirectionalityInformation.Down;
+                for (var index = 0; index < optimizedDirections.Count; index++)
                 {
-                    var d = Neighbors[index];
+                    var d = optimizedDirections[index];
                     if (IsMoveAllowed(in parameterData, in pos, d))
                     {
                         x = x.With(d);
@@ -77,20 +91,8 @@ namespace RogueEntity.Core.Movement.CostModifier.Directions
                                               in Position2D pos,
                                               Direction d)
         {
-            if (d.IsCardinal())
-            {
-                return true;
-            }
-
             var c = d.ToCoordinates();
-            var movementCost = QueryMovementCost(in parameterData, pos.X + c.X, pos.Y + c.Y);
-            var traversableCell = movementCost > 0;
-
-            if (!traversableCell)
-            {
-                return true;
-            }
-
+            
             var moveDataHorizontal = QueryMovementCost(in parameterData, pos.X + c.X, pos.Y);
             var canMoveHorizontal = moveDataHorizontal > 0;
 

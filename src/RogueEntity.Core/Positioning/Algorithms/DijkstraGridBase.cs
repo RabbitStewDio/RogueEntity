@@ -91,11 +91,11 @@ namespace RogueEntity.Core.Positioning.Algorithms
 
                 if (!resultMapDistanceCost.TryGet(openNodePosition, out var openNodeWeight))
                 {
-                    logger.Verbose("Skipping processing of open node at {Pos}",openNodePosition);
+                    logger.Verbose("Skipping processing of open node at {Pos}", openNodePosition);
                     continue;
                 }
 
-                logger.Verbose("Processing node {Pos}", openNodePosition);
+                logger.Verbose("Processing node {Pos} with weight {Weight}", openNodePosition, openNodeWeight);
                 nodeCount += 1;
 
                 var directions = PopulateTraversableDirections(openNodePosition);
@@ -119,7 +119,7 @@ namespace RogueEntity.Core.Positioning.Algorithms
                     if (IsExistingResultBetter(in nextNodePos, in totalPathCost))
                     {
                         // already visited.
-                        logger.Verbose("   {Direction}: Skipped; better result found", d);
+                        logger.Verbose("   {Direction}: Skipped; better result found (Weight: {Weight}", d, totalPathCost);
                         continue;
                     }
 
@@ -139,7 +139,10 @@ namespace RogueEntity.Core.Positioning.Algorithms
 
         protected abstract void UpdateNode(in ShortPosition2D nextNodePos, TExtraNodeInfo nodeInfo);
 
-        protected abstract bool EdgeCostInformation(in ShortPosition2D sourceNode, in Direction d, float sourceNodeCost, out float totalPathCost, 
+        protected abstract bool EdgeCostInformation(in ShortPosition2D sourceNode,
+                                                    in Direction d,
+                                                    float sourceNodeCost,
+                                                    out float totalPathCost,
                                                     [MaybeNullWhen(false)] out TExtraNodeInfo nodeInfo);
 
         /// <summary>
@@ -232,30 +235,30 @@ namespace RogueEntity.Core.Positioning.Algorithms
         /// <summary>
         ///   Returns a path from the current position to the nearest goal. 
         /// </summary>
-        /// <param name="p"></param>
+        /// <param name="origin"></param>
         /// <param name="goalStrength"></param>
         /// <param name="pathAccumulator"></param>
         /// <param name="maxLength"></param>
         /// <returns></returns>
-        protected BufferList<ShortPosition2D> FindPath(ShortPosition2D p,
-                                                       out float goalStrength,
-                                                       BufferList<ShortPosition2D>? pathAccumulator = null,
-                                                       int maxLength = int.MaxValue)
+        public BufferList<ShortPosition2D> FindPath(ShortPosition2D origin,
+                                                    out float goalStrength,
+                                                    BufferList<ShortPosition2D>? pathAccumulator = null,
+                                                    int maxLength = int.MaxValue)
         {
             pathAccumulator = BufferList.PrepareBuffer(pathAccumulator);
 
-            if (!resultMapDistanceCost.TryGet(p, out goalStrength))
+            if (!resultMapDistanceCost.TryGet(origin, out goalStrength))
             {
                 return pathAccumulator;
             }
 
-            pathAccumulator.Add(p);
+            pathAccumulator.Add(origin);
 
             while (pathAccumulator.Count < maxLength &&
-                   TryGetPreviousStep(in p, out p) &&
-                   resultMapDistanceCost.TryGet(p, out goalStrength))
+                   TryGetPreviousStep(in origin, out origin) &&
+                   resultMapDistanceCost.TryGet(origin, out goalStrength))
             {
-                pathAccumulator.Add(p);
+                pathAccumulator.Add(origin);
             }
 
             return pathAccumulator;

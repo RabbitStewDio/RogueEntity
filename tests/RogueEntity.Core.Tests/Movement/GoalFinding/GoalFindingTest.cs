@@ -11,6 +11,7 @@ using RogueEntity.Core.Movement.CostModifier.Directions;
 using RogueEntity.Core.Movement.MovementModes.Walking;
 using RogueEntity.Core.MovementPlaning.GoalFinding.SingleLevel;
 using RogueEntity.Core.MovementPlaning.Goals;
+using RogueEntity.Core.MovementPlaning.Pathfinding.SingleLevel;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Algorithms;
 using RogueEntity.Core.Positioning.Grid;
@@ -50,12 +51,12 @@ namespace RogueEntity.Core.Tests.Movement.GoalFinding
         const string EmptyRoomResult = @"
  ### , ### , ### , ### , ### , ### , ### , ### , ### 
  ### ,  @  ,  .  ,  .  ,  .  ,  .  ,  .  ,  .  , ### 
- ### ,  .  ,   6 ,  .  ,  .  ,  .  ,  .  ,  .  , ### 
- ### ,  .  ,  .  ,   5 ,  .  ,  .  ,  .  ,  .  , ### 
- ### ,  .  ,  .  ,  .  ,   4 ,  .  ,  .  ,  .  , ### 
- ### ,  .  ,  .  ,  .  ,  .  ,   3 ,  .  ,  .  , ### 
- ### ,  .  ,  .  ,  .  ,  .  ,  .  ,   2 ,  .  , ### 
- ### ,  .  ,  .  ,  .  ,  .  ,  .  ,  .  ,   1 , ### 
+ ### ,  .  ,   1 ,  .  ,  .  ,  .  ,  .  ,  .  , ### 
+ ### ,  .  ,  .  ,   2 ,  .  ,  .  ,  .  ,  .  , ### 
+ ### ,  .  ,  .  ,  .  ,   3 ,  .  ,  .  ,  .  , ### 
+ ### ,  .  ,  .  ,  .  ,  .  ,   4 ,  .  ,  .  , ### 
+ ### ,  .  ,  .  ,  .  ,  .  ,  .  ,   5 ,  .  , ### 
+ ### ,  .  ,  .  ,  .  ,  .  ,  .  ,  .  ,   6 , ### 
  ### ,  .  ,  .  ,  .  ,  .  ,  .  ,  .  ,  .  , ### 
  ### , ### , ### , ### , ### , ### , ### , ### , ### 
 ";
@@ -77,12 +78,12 @@ namespace RogueEntity.Core.Tests.Movement.GoalFinding
         const string DiagonalRoomResult = @"
  ### , ### , ### , ### , ### , ### , ### , ### , ### 
  ### ,  @  ,  .  ,  .  ,  .  ,  .  ,  .  ,  .  , ### 
- ### ,  .  ,  8  ,  .  ,  .  ,  .  ,  .  ,  .  , ### 
- ### ,  .  ,  7  ,   . , ### ,  .  ,  .  ,  .  , ### 
- ### ,  .  ,  6  , ### ,  .  ,  .  ,  .  ,  .  , ### 
- ### ,  .  ,  .  ,  5  ,  4  ,   3 ,  .  ,  .  , ### 
- ### ,  .  ,  .  ,  .  ,  .  ,  .  ,   2 ,  .  , ### 
- ### ,  .  ,  .  ,  .  ,  .  ,  .  ,  .  ,   1 , ### 
+ ### ,  .  ,  1  ,  .  ,  .  ,  .  ,  .  ,  .  , ### 
+ ### ,  .  ,  2  ,   . , ### ,  .  ,  .  ,  .  , ### 
+ ### ,  .  ,  3  , ### ,  .  ,  .  ,  .  ,  .  , ### 
+ ### ,  .  ,  .  ,  4  ,  5  ,   6 ,  .  ,  .  , ### 
+ ### ,  .  ,  .  ,  .  ,  .  ,  .  ,   7 ,  .  , ### 
+ ### ,  .  ,  .  ,  .  ,  .  ,  .  ,  .  ,   8 , ### 
  ### ,  .  ,  .  ,  .  ,  .  ,  .  ,  .  ,  .  , ### 
  ### , ### , ### , ### , ### , ### , ### , ### , ### 
 ";
@@ -160,13 +161,13 @@ namespace RogueEntity.Core.Tests.Movement.GoalFinding
                         .WithGoal<TestGoal>()
                         .Build(new AggregateMovementCostFactors(new MovementCost(WalkingMovement.Instance, DistanceCalculation.Euclid, 1)));
 
-            var result = pf.TryFindPath(startPosition, out var resultPath);
-            result.Should().Be(PathFinderResult.Found);
-            resultPath.Should().NotBeEmpty();
+            pf.TryFindPath(startPosition, out var result).Should().BeTrue();
+            result.resultHint.Should().Be(PathFinderResult.Found);
+            result.path.Should().NotBeEmpty();
 
             var expectedResultMap = ParseResultMap(p.ResultText, out _);
-            var producedResultMap = CreateResult(resistanceMap, resultPath, startPosition, bounds);
-            Console.WriteLine("Found path " + string.Join(",", resultPath));
+            var producedResultMap = CreateResult(resistanceMap, result.path, result.path.Origin, bounds);
+            Console.WriteLine("Found path " + string.Join(",", result.path));
             Console.WriteLine("Expected Result\n" + PrintResultMap(expectedResultMap, bounds));
             Console.WriteLine("Computed Result\n" + PrintResultMap(producedResultMap, bounds));
 
@@ -202,8 +203,9 @@ namespace RogueEntity.Core.Tests.Movement.GoalFinding
 
             var ms = new MovementDataCollector();
             ms.RegisterMovementSource<WalkingMovement>(WalkingMovement.Instance, resistanceMap.As3DMap(0), inboundDirectionalityMap.As3DMap(0), outboundDirectionalityMap.As3DMap(0));
-            
-            var pfs = new SingleLevelGoalFinderSource(new DefaultPooledObjectPolicy<SingleLevelGoalFinder>(), goalRegistry, spatialQueryRegistry, ms);
+
+            var policy = new SingleLevelGoalFinderPolicy(new SingleLevelPathPool());
+            var pfs = new SingleLevelGoalFinderSource(policy, goalRegistry, spatialQueryRegistry, ms);
             return pfs;
         }
     }

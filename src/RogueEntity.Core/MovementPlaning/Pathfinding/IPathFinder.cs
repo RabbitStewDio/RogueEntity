@@ -1,5 +1,5 @@
-using RogueEntity.Api.Utils;
-using RogueEntity.Core.Movement;
+using EnTTSharp;
+using RogueEntity.Core.MovementPlaning.Pathfinding.SingleLevel;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Algorithms;
 using System;
@@ -12,11 +12,12 @@ namespace RogueEntity.Core.MovementPlaning.Pathfinding
     /// </summary>
     public interface IPathFinder : IDisposable
     {
-        public PathFinderResult TryFindPath<TPosition>(in TPosition source,
-                                                       out BufferList<(TPosition, IMovementMode)> path,
-                                                       BufferList<(TPosition, IMovementMode)>? pathBuffer = null,
-                                                       int searchLimit = int.MaxValue)
-            where TPosition: IPosition<TPosition>;
+        public IPathFinder WithTarget(IPathFinderTargetEvaluator evaluator);
+
+        public bool TryFindPath<TPosition>(in TPosition source,
+                                           out (PathFinderResult resultHint, IPath path, float pathCost) path,
+                                           int searchLimit = int.MaxValue)
+            where TPosition : IPosition<TPosition>;
     }
 
     public interface IPathFinderPerformanceView

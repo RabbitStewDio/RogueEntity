@@ -7,6 +7,7 @@ using RogueEntity.Core.Movement.CostModifier.Directions;
 using RogueEntity.Core.Movement.MovementModes.Walking;
 using RogueEntity.Core.MovementPlaning.Pathfinding;
 using RogueEntity.Core.MovementPlaning.Pathfinding.SingleLevel;
+using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Algorithms;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Tests.Fixtures;
@@ -39,15 +40,16 @@ namespace RogueEntity.Core.Tests.Movement.Pathfinding
         const string EmptyRoomResult = @"
  ### , ### , ### , ### , ### , ### , ### , ### , ### 
  ### ,  @  ,  .  ,  .  ,  .  ,  .  ,  .  ,  .  , ### 
- ### ,  .  ,   6 ,  .  ,  .  ,  .  ,  .  ,  .  , ### 
- ### ,  .  ,  .  ,   5 ,  .  ,  .  ,  .  ,  .  , ### 
- ### ,  .  ,  .  ,  .  ,   4 ,  .  ,  .  ,  .  , ### 
- ### ,  .  ,  .  ,  .  ,  .  ,   3 ,  .  ,  .  , ### 
- ### ,  .  ,  .  ,  .  ,  .  ,  .  ,   2 ,  .  , ### 
- ### ,  .  ,  .  ,  .  ,  .  ,  .  ,  .  ,   1 , ### 
+ ### ,  .  ,   1 ,  .  ,  .  ,  .  ,  .  ,  .  , ### 
+ ### ,  .  ,  .  ,   2 ,  .  ,  .  ,  .  ,  .  , ### 
+ ### ,  .  ,  .  ,  .  ,   3 ,  .  ,  .  ,  .  , ### 
+ ### ,  .  ,  .  ,  .  ,  .  ,   4 ,  .  ,  .  , ### 
+ ### ,  .  ,  .  ,  .  ,  .  ,  .  ,   5 ,  .  , ### 
+ ### ,  .  ,  .  ,  .  ,  .  ,  .  ,  .  ,   6 , ### 
  ### ,  .  ,  .  ,  .  ,  .  ,  .  ,  .  ,  .  , ### 
  ### , ### , ### , ### , ### , ### , ### , ### , ### 
 ";
+
         const string DiagonalBlockRoom = @"
  // 9x9; an empty room
  ### , ### , ### , ### , ### , ### , ### , ### , ###  
@@ -65,24 +67,24 @@ namespace RogueEntity.Core.Tests.Movement.Pathfinding
         const string DiagonalRoomResult = @"
  ### , ### , ### , ### , ### , ### , ### , ### , ### 
  ### ,  @  ,  .  ,  .  ,  .  ,  .  ,  .  ,  .  , ### 
- ### ,  .  ,  8  ,  .  ,  .  ,  .  ,  .  ,  .  , ### 
- ### ,  .  ,  7  ,  .  , ### ,  .  ,  .  ,  .  , ### 
- ### ,  .  ,  6  , ### ,  .  ,  .  ,  .  ,  .  , ### 
- ### ,  .  ,  .  ,  5  ,  .  ,  .  ,  .  ,  .  , ### 
- ### ,  .  ,  .  ,  .  ,  4  ,  .  ,  .  ,  .  , ### 
- ### ,  .  ,  .  ,  .  ,  .  ,  3  ,  2  ,  1  , ### 
+ ### ,  .  ,  1  ,  2  ,  3  ,  .  ,  .  ,  .  , ### 
+ ### ,  .  ,  .  ,  .  , ### ,  4  ,  .  ,  .  , ### 
+ ### ,  .  ,  .  , ### ,  .  ,  .  ,  5  ,  .  , ### 
+ ### ,  .  ,  .  ,  .  ,  .  ,  .  ,  .  ,  6  , ### 
+ ### ,  .  ,  .  ,  .  ,  .  ,  .  ,  .  ,  7  , ### 
+ ### ,  .  ,  .  ,  .  ,  .  ,  .  ,  .  ,  8  , ### 
  ### ,  .  ,  .  ,  .  ,  .  ,  .  ,  .  ,  .  , ### 
  ### , ### , ### , ### , ### , ### , ### , ### , ### 
 ";
 
         readonly ILogger logger = SLog.ForContext<SingleLevelPathFinderTest>();
 
-        readonly Dictionary<string, (string sourceText, string resultText, Position2D source, Position2D target)> testCases = 
+        readonly Dictionary<string, (string sourceText, string resultText, Position2D source, Position2D target)> testCases =
             new Dictionary<string, (string sourceText, string resultText, Position2D source, Position2D target)>()
-        {
-            { nameof(EmptyRoom), (EmptyRoom, EmptyRoomResult, new Position2D(1,1), new Position2D(7,7)) },
-            { nameof(DiagonalBlockRoom), (DiagonalBlockRoom, DiagonalRoomResult, new Position2D(1,1), new Position2D(7,7)) },
-        };
+            {
+                { nameof(EmptyRoom), (EmptyRoom, EmptyRoomResult, new Position2D(1, 1), new Position2D(7, 7)) },
+                { nameof(DiagonalBlockRoom), (DiagonalBlockRoom, DiagonalRoomResult, new Position2D(1, 1), new Position2D(7, 7)) },
+            };
 
         [Test]
         [TestCase(nameof(EmptyRoom))]
@@ -107,30 +109,29 @@ namespace RogueEntity.Core.Tests.Movement.Pathfinding
 
             Assert.NotNull(inboundDirectionalityMap);
             Assert.NotNull(outboundDirectionalityMap);
-            
+
             var ms = new MovementDataCollector();
             ms.RegisterMovementSource<WalkingMovement>(WalkingMovement.Instance, resistanceMap.As3DMap(0), inboundDirectionalityMap.As3DMap(0), outboundDirectionalityMap.As3DMap(0));
-            
+
             var pfs = new SingleLevelPathFinderSource(new SingleLevelPathFinderPolicy(), ms);
 
             var startPosition = EntityGridPosition.OfRaw(0, sx, sy);
             var targetPosition = EntityGridPosition.OfRaw(0, tx, ty);
-            var pf = pfs.GetPathFinder()
-                        .WithTarget(new DefaultPathFinderTargetEvaluator().WithTargetPosition(targetPosition))
-                        .Build(new AggregateMovementCostFactors(new MovementCost(WalkingMovement.Instance, DistanceCalculation.Euclid, 1)));
+            using var pfbuilder = pfs.GetPathFinder();
+            using var pf = pfbuilder.Data.WithTarget(new DefaultPathFinderTargetEvaluator().WithTargetPosition(targetPosition))
+                                    .Build(new AggregateMovementCostFactors(new MovementCost(WalkingMovement.Instance, DistanceCalculation.Euclid, 1)));
 
-            var result = pf.TryFindPath(startPosition, out var resultPath);
-            result.Should().Be(PathFinderResult.Found);
-            resultPath.Should().NotBeEmpty();
-
+            pf.TryFindPath(startPosition, out var result).Should().BeTrue();
+            var (resultHint, resultPath, resultCost) = result;
+            resultHint.Should().Be(PathFinderResult.Found);
+            
             var expectedResultMap = ParseResultMap(resultText, out _);
-            var producedResultMap = CreateResult(resistanceMap, resultPath, startPosition, bounds);
-            logger.Debug("Expected Result:\n{Expected}\nComputed Result:\n{Computed}", 
-                         PrintResultMap(expectedResultMap, bounds), 
+            var producedResultMap = CreateResult(resistanceMap, resultPath, Position.From(startPosition), bounds);
+            logger.Debug("Expected Result:\n{Expected}\nComputed Result:\n{Computed}",
+                         PrintResultMap(expectedResultMap, bounds),
                          PrintResultMap(producedResultMap, bounds));
 
             TestHelpers.AssertEquals(producedResultMap, expectedResultMap, bounds, default, PrintResultMap);
         }
-
     }
 }

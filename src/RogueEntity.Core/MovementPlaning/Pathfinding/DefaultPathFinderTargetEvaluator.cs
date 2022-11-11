@@ -1,5 +1,9 @@
+using Microsoft.Extensions.ObjectPool;
+using RogueEntity.Api.Utils;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Algorithms;
+using RogueEntity.Core.Positioning.Grid;
+using RogueEntity.Core.Positioning.MapLayers;
 using RogueEntity.Core.Utils;
 using System;
 
@@ -7,6 +11,16 @@ namespace RogueEntity.Core.MovementPlaning.Pathfinding
 {
     public class DefaultPathFinderTargetEvaluator: IPathFinderTargetEvaluator
     {
+        static void ReturnToPool(DefaultPathFinderTargetEvaluator e)
+        {
+            pool?.Return(e);
+        }
+        
+        static readonly ObjectPool<DefaultPathFinderTargetEvaluator> pool = 
+            new DefaultObjectPool<DefaultPathFinderTargetEvaluator>(new DefaultPathFinderTargetEvaluatorPolicy(ReturnToPool));
+
+        public static DefaultPathFinderTargetEvaluator GetSharedInstance() => pool.Get(); 
+        
         readonly Action<DefaultPathFinderTargetEvaluator>? returnToPoolFunction;
         DistanceCalculation distanceCalculation;
         Position2D targetPosition;
@@ -25,6 +39,13 @@ namespace RogueEntity.Core.MovementPlaning.Pathfinding
             targetZLevel = value.GridZ;
             targetPosition = value.ToGridXY();
             return this;
+        }
+
+        public BufferList<EntityGridPosition> CollectTargets(BufferList<EntityGridPosition>? buffer = null)
+        {
+            buffer = BufferList.PrepareBuffer(buffer);
+            buffer.Add(EntityGridPosition.Of(MapLayer.Indeterminate, targetPosition.X, targetPosition.Y, targetZLevel));
+            return buffer;
         }
 
         public void Dispose()

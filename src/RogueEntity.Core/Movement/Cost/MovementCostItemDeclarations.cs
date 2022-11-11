@@ -33,7 +33,7 @@ namespace RogueEntity.Core.Movement.Cost
             public ReferenceItemDeclarationBuilder<TItemId> AsPointCost<TMovementMode>(TMovementMode m, DistanceCalculation c, float unitCost, int preference = 0)
                 where TMovementMode : IMovementMode
             {
-                this.builder.WithTrait(new MovementPointCostReferenceItemTrait<TItemId, TMovementMode>(m, c, unitCost, preference));
+                this.builder.WithTrait(new MovementPointCostReferenceItemInformationTrait<TItemId, TMovementMode>(m, c, unitCost, preference));
                 this.builder.WithTrait(new AggregateMovementCostFactorsTrait<TItemId>());
                 return builder;
             }

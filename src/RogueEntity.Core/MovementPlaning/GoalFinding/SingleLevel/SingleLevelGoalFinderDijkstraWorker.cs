@@ -4,6 +4,7 @@ using RogueEntity.Core.Movement;
 using RogueEntity.Core.Movement.Cost;
 using RogueEntity.Core.Movement.CostModifier;
 using RogueEntity.Core.MovementPlaning.Goals;
+using RogueEntity.Core.MovementPlaning.Pathfinding.SingleLevel;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Algorithms;
 using RogueEntity.Core.Utils;
@@ -20,6 +21,7 @@ namespace RogueEntity.Core.MovementPlaning.GoalFinding.SingleLevel
     /// </summary>
     public class SingleLevelGoalFinderDijkstraWorker : DijkstraGridBase<IMovementMode>
     {
+        readonly SingleLevelPathPool pathPool;
         readonly List<MovementCostData2D> movementCostsOnLevel;
         readonly BufferList<ShortPosition2D> pathBuffer;
 
@@ -30,8 +32,9 @@ namespace RogueEntity.Core.MovementPlaning.GoalFinding.SingleLevel
         readonly BoundedDataView<IMovementMode> nodesSources;
         Position2D origin;
 
-        public SingleLevelGoalFinderDijkstraWorker() : base(default)
+        public SingleLevelGoalFinderDijkstraWorker(SingleLevelPathPool pathPool) : base(default)
         {
+            this.pathPool = pathPool ?? throw new ArgumentNullException(nameof(pathPool));
             pathBuffer = new BufferList<ShortPosition2D>();
             nodesSources = new BoundedDataView<IMovementMode>(default);
             movementCostsOnLevel = new List<MovementCostData2D>();
@@ -77,18 +80,11 @@ namespace RogueEntity.Core.MovementPlaning.GoalFinding.SingleLevel
             if (movementCostsOnLevel.Count > directionsTile.Length)
             {
                 directionsTile = new IReadOnlyBoundedDataView<DirectionalityInformation>[movementCostsOnLevel.Count];
-            }
-            else
-            {
-                Array.Clear(directionsTile, 0, directionsTile.Length);
-            }
-
-            if (movementCostsOnLevel.Count > costsTile.Length)
-            {
                 costsTile = new IReadOnlyBoundedDataView<float>[movementCostsOnLevel.Count];
             }
             else
             {
+                Array.Clear(directionsTile, 0, directionsTile.Length);
                 Array.Clear(costsTile, 0, costsTile.Length);
             }
         }
@@ -110,26 +106,35 @@ namespace RogueEntity.Core.MovementPlaning.GoalFinding.SingleLevel
             }
         }
 
-        public PathFinderResult PerformSearch<TPosition>(in TPosition from,
-                                                         BufferList<(TPosition, IMovementMode)> path,
+        public bool PerformSearch<TPosition>(in TPosition from,
+                                                         out (PathFinderResult resultHint, IPath path, float cost) result,
                                                          int searchLimit = int.MaxValue)
             where TPosition : IPosition<TPosition>
         {
             base.RescanMap(searchLimit);
             base.FindPath(new ShortPosition2D(), out _, pathBuffer);
-            path.Clear();
-            foreach (var p in pathBuffer)
-            {
-                path.Add((from.WithPosition(p.X + origin.X, p.Y + origin.Y), nodesSources[p.X, p.Y]));
-            }
-            path.Reverse();
 
-            if (path.Count == 0)
+            if (pathBuffer.Count <= 0)
             {
-                return PathFinderResult.NotFound;
+                result = default;
+                return false;
             }
-            
-            return PathFinderResult.Found;
+
+            var path = pathPool.Lease();
+            var prev = pathBuffer[0];
+            path.BeginRecordPath(from.ToGridXY(), from.GridZ);
+            float cost = 0;
+            for (var index = 1; index < pathBuffer.Count; index++)
+            {
+                var p = pathBuffer[index];
+                var d = Directions.GetDirection(prev, p);
+                EdgeCostInformation(prev, d, cost, out cost, out _);
+                path.RecordStep(d, nodesSources[prev.X, prev.Y]);
+                prev = p;
+            }
+
+            result = (PathFinderResult.Found, path, cost);
+            return true;
         }
 
         protected override ReadOnlyListWrapper<Direction> PopulateTraversableDirections(ShortPosition2D basePos)
@@ -185,16 +190,14 @@ namespace RogueEntity.Core.MovementPlaning.GoalFinding.SingleLevel
                     continue;
                 }
 
-                var tileCostSource = m.Costs.TryGetMapValue(ref costsTile[index], sourcePosX, sourcePosY, 0);
                 var tileCostTarget = m.Costs.TryGetMapValue(ref costsTile[index], targetPosX, targetPosY, 0);
-                var tileCost = (tileCostSource + tileCostTarget) / 2;
-                if (tileCost <= 0)
+                if (tileCostTarget <= 0)
                 {
                     // a cost of zero means its undefined. This should mean the tile is not valid.
                     continue;
                 }
 
-                var accumulatedCost = m.BaseCost * tileCost;
+                var accumulatedCost = m.BaseCost * tileCostTarget;
                 if (costInformationAvailable)
                 {
                     if (accumulatedCost < pathCost)
@@ -217,6 +220,7 @@ namespace RogueEntity.Core.MovementPlaning.GoalFinding.SingleLevel
 
         protected override void UpdateNode(in ShortPosition2D pos, IMovementMode nodeInfo)
         {
+            Assert.NotNull(nodeInfo);
             nodesSources.TrySet(pos.X, pos.Y, nodeInfo);
         }
     }

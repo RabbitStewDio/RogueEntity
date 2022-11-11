@@ -371,7 +371,7 @@ namespace RogueEntity.Core.Sensing.Sources
                 return system;
             }
 
-            var gridConfig = serviceResolver.Resolve<IGridMapConfiguration<TEntityId>>();
+            var gridConfig = PositionModuleServices.LookupDefaultConfiguration<TEntityId>(serviceResolver);
             system = new SensePropertiesSystem<TSense>(gridConfig.OffsetX, gridConfig.OffsetY, gridConfig.TileSizeX, gridConfig.TileSizeY);
 
             serviceResolver.Store(system);

@@ -51,11 +51,11 @@ namespace RogueEntity.Core.MovementPlaning.Goals
             }
         }
 
-        public Optional<T> LiftInstance<T>(Type entity, Type goal, IGoalLiftFunc g)
+        public Optional<TResult> LiftInstance<TResult>(Type entity, Type goal, IGoalLiftFunc g)
         {
             if (registeredLifters.TryGetValue(goal, out var entryRaw))
             {
-                return entryRaw.LiftInstance<T>(entity, g);
+                return entryRaw.LiftInstance<TResult>(entity, g);
             }
 
             return default;

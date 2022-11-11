@@ -52,7 +52,7 @@ namespace RogueEntity.Benchmarks
                 {
                     continue;
                 }
-                
+
                 if (movementCostData[startPosition.GridX, startPosition.GridY] > 0.5)
                 {
                     positions.Add(startPosition);
@@ -66,14 +66,14 @@ namespace RogueEntity.Benchmarks
                 {
                     continue;
                 }
-                
+
                 if (movementCostData[targetPosition.GridX, targetPosition.GridY] > 0.5)
                 {
                     positions.Add(targetPosition);
                 }
             }
-            
-            
+
+
             if (movementCostData[0, 9] < 1 ||
                 movementCostData[0, 10] < 1 ||
                 movementCostData[0, 11] < 1)
@@ -86,59 +86,61 @@ namespace RogueEntity.Benchmarks
 
         void EnsurePathFindingValid()
         {
-            using (var pf = pathfinderSource.GetPathFinder()
-                                            .WithTarget(new DefaultPathFinderTargetEvaluator().WithTargetPosition(EntityGridPosition.OfRaw(0, 0, 11)))
-                                            .Build(new AggregateMovementCostFactors(new MovementCost(WalkingMovement.Instance, DistanceCalculation.Euclid, 1))))
+            using var pfs = pathfinderSource.GetPathFinder();
+            using var pf = pfs.Data
+                              .WithTarget(new DefaultPathFinderTargetEvaluator().WithTargetPosition(EntityGridPosition.OfRaw(0, 0, 11)))
+                              .Build(new AggregateMovementCostFactors(new MovementCost(WalkingMovement.Instance, DistanceCalculation.Euclid, 1)));
+            if (!pf.TryFindPath(EntityGridPosition.OfRaw(0, 0, 9), out var x) ||
+                x.resultHint != PathFinderResult.Found)
             {
-                var result = pf.TryFindPath(EntityGridPosition.OfRaw(0, 0, 9), out _);
-                if (result != PathFinderResult.Found)
-                {
-                    throw new ArgumentException();
-                }
-                //Console.WriteLine($" = {result2} + {string.Join(", ", resultPath2.Select(e => e.Item1))}");
+                throw new ArgumentException();
             }
+            //Console.WriteLine($" = {result2} + {string.Join(", ", resultPath2.Select(e => e.Item1))}");
         }
-        
+
         [SuppressMessage("ReSharper", "NotAccessedVariable")]
         public void ValidatePathFinding()
         {
-
             TimeSpan totalTime = TimeSpan.Zero;
             int nodesEvaluated = 0;
 
             var rnd = new Random(11);
-            
+
             for (int i = 0; i < 100; i += 1)
             {
                 var startPosition = positions[rnd.Next(0, 50)];
                 var targetPosition = positions[rnd.Next(50, 100)];
 
-                using (var pf = pathfinderSource.GetPathFinder()
-                                   .WithTarget(new DefaultPathFinderTargetEvaluator().WithTargetPosition(targetPosition))
-                                   .Build(new AggregateMovementCostFactors(new MovementCost(WalkingMovement.Instance, DistanceCalculation.Euclid, 1))))
+                using var pfs = pathfinderSource.GetPathFinder();
+                using var pf = pfs.Data
+                                  .WithTarget(new DefaultPathFinderTargetEvaluator().WithTargetPosition(targetPosition))
+                                  .Build(new AggregateMovementCostFactors(new MovementCost(WalkingMovement.Instance, DistanceCalculation.Euclid, 1)));
+
+                if (!pf.TryFindPath(EntityGridPosition.OfRaw(0, 0, 9), out var x) ||
+                    x.resultHint != PathFinderResult.Found)
                 {
-                    pf.TryFindPath(startPosition, out _);
-                    // Console.WriteLine($"{i} = From {startPosition} to {targetPosition} = {result} + {string.Join(", ", resultPath.Select(e => e.Item1))}");
-                    if (i == -1)
+                    continue;
+                }
+                // Console.WriteLine($"{i} = From {startPosition} to {targetPosition} = {result} + {string.Join(", ", resultPath.Select(e => e.Item1))}");
+                if (i == -1)
+                {
+                    if (pf is SingleLevelPathFinder spf)
                     {
-                        if (pf is SingleLevelPathFinder spf)
+                        var translatedDataView = spf.ProcessedNodes.TranslateBy(startPosition.GridX, startPosition.GridY);
+                        if (translatedDataView[startPosition.GridX, startPosition.GridY].State != AStarNode.NodeState.Closed)
                         {
-                            var translatedDataView = spf.ProcessedNodes.TranslateBy(startPosition.GridX, startPosition.GridY);
-                            if (translatedDataView[startPosition.GridX, startPosition.GridY].State != AStarNode.NodeState.Closed)
-                            {
-                                throw new Exception();
-                            }
+                            throw new Exception();
                         }
-
-                        // Console.WriteLine(translatedDataView.ExtendToString(bounds, elementSeparator: "", elementStringifier: e => e.State == AStarNode.NodeState.Closed ? "@" : " "));
                     }
 
-                    if (pf is IPathFinderPerformanceView pv)
-                    {
-                        totalTime += pv.TimeElapsed;
-                        nodesEvaluated += pv.NodesEvaluated; 
-                        // Console.WriteLine($"Performance View: {pv.NodesEvaluated:n0} in {pv.TimeElapsed}");
-                    }
+                    // Console.WriteLine(translatedDataView.ExtendToString(bounds, elementSeparator: "", elementStringifier: e => e.State == AStarNode.NodeState.Closed ? "@" : " "));
+                }
+
+                if (pf is IPathFinderPerformanceView pv)
+                {
+                    totalTime += pv.TimeElapsed;
+                    nodesEvaluated += pv.NodesEvaluated;
+                    // Console.WriteLine($"Performance View: {pv.NodesEvaluated:n0} in {pv.TimeElapsed}");
                 }
             }
 

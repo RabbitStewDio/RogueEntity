@@ -8,6 +8,7 @@ namespace RogueEntity.Core.MovementPlaning.Goals
 {
     public class EntityGoalTargetSource3D<TItemId, TGoal> : IGoalFinderTargetSource
         where TItemId : struct, IEntityKey
+        where TGoal: IGoal
     {
         readonly BufferList<SpatialQueryResult<TItemId, GoalMarker<TGoal>>> buffer;
         readonly ISpatialQuery<TItemId> query;
