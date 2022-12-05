@@ -314,7 +314,7 @@ namespace RogueEntity.Core.MovementPlaning.Pathfinding.Hierarchical.Systems
             var targetPosX = basePos.X;
             var targetPosY = basePos.Y;
             var result = DirectionalityInformation.None;
-            foreach (var (f, m) in movementCostsOnLevel)
+            foreach (var (_, m) in movementCostsOnLevel)
             {
                 var dirIn = m.InboundDirections.TryGetMapValue(ref tileRefs.EdgeInboundTile, targetPosX, targetPosY, DirectionalityInformation.None);
                 var dirOut = m.OutboundDirections.TryGetMapValue(ref tileRefs.EdgeOutboundTile, targetPosX, targetPosY, DirectionalityInformation.None);
@@ -335,7 +335,6 @@ namespace RogueEntity.Core.MovementPlaning.Pathfinding.Hierarchical.Systems
             public readonly IReadOnlyBoundedDataView<float>?[] CostDirectionsTile;
             public IReadOnlyBoundedDataView<DirectionalityInformation>? EdgeOutboundTile;
             public IReadOnlyBoundedDataView<DirectionalityInformation>? EdgeInboundTile;
-            public IReadOnlyBoundedDataView<float>? EdgeCostsTile;
         }
 
         bool EdgeCostInformation(in Position2D sourceNode,

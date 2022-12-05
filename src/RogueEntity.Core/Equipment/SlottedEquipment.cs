@@ -206,7 +206,7 @@ namespace RogueEntity.Core.Equipment
                 return false;
             }
 
-            if (!Data.IsBulkEquipmentSpaceAvailable(itemIdMetaData, req, item, desiredSlot, out actualSlot))
+            if (!Data.IsBulkEquipmentSpaceAvailable(itemResolver, req, item, desiredSlot, out actualSlot))
             {
                 logger.Verbose("Unable to equip item {Item} - Not enough space available", item);
                 actualSlot = default;
@@ -228,7 +228,7 @@ namespace RogueEntity.Core.Equipment
                 return false;
             }
 
-            if (!itemIdMetaData.IsSameBulkType(equippedItem.Reference, item))
+            if (!itemResolver.IsSameStackType(equippedItem.Reference, item))
             {
                 // not stackable, the requested slot is occupied by something else.
                 actualSlot = default;

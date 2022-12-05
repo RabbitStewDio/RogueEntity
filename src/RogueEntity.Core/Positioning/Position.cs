@@ -9,7 +9,7 @@ namespace RogueEntity.Core.Positioning
     ///
     ///   This object is not meant for storage.
     /// </summary>
-    public readonly struct Position : IEquatable<Position>, IPosition<Position>
+    public readonly struct Position : IPosition<Position>
     {
         public static Position Invalid = default;
         readonly byte layerId;
@@ -134,6 +134,21 @@ namespace RogueEntity.Core.Positioning
         public static Position Of(byte layer, double x, double y, double z = 0)
         {
             return new Position(x, y, z, layer);
+        }
+        
+
+        static Position()
+        {
+            PositionTypeRegistry.Instance.Register(new PositionRegistration());
+        }
+
+        class PositionRegistration: IPositionTypeRegistration<Position>
+        {
+            public Position Convert<TPositionIn>(TPositionIn p)
+                where TPositionIn: struct, IPosition<TPositionIn>
+            {
+                return From(p);
+            }
         }
     }
 }

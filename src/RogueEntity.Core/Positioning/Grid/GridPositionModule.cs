@@ -71,28 +71,31 @@ namespace RogueEntity.Core.Positioning.Grid
                 return;
             }
 
+            var gridPositionedRole = GridPositionedRole.Instantiate<TActorId>();
             var mapLayers = itemResolver.ItemRegistry.QueryDesignTimeTrait<MapLayerPreference>()
+                                        .Where(e => e.Item1.HasRole(gridPositionedRole))
                                         .SelectMany(e => e.Item2.AcceptableLayers)
                                         .Distinct()
                                         .ToList();
+            
             if (mapLayers.Count == 0)
             {
                 return;
             }
 
-            if (!GridPositionModuleServices.TryGetOrCreateDefaultMapServices<TActorId>(initParameter.ServiceResolver, out var map, out var placementService))
+            if (!PositionModuleServices.TryGetOrCreateDefaultMapServices<TActorId>(initParameter.ServiceResolver, out var map, out var placementService))
             {
                 return;
             }
 
-            var itemPlacementService = initParameter.ServiceResolver.GetOrCreateGridItemPlacementService<TActorId>();
-            var locationService = initParameter.ServiceResolver.GetOrCreateGridItemPlacementLocationService<TActorId>();
+            var itemPlacementService = initParameter.ServiceResolver.GetOrCreateItemPlacementService<TActorId>();
+            var locationService = initParameter.ServiceResolver.GetOrCreateItemPlacementLocationService<TActorId>();
 
             foreach (var layer in mapLayers)
             {
-                if (!map.TryGetGridDataFor(layer, out _))
+                if (!map.TryGetMapDataFor(layer, out _))
                 {
-                    map.WithDefaultMapLayer(layer);
+                    map.WithBasicGridMapLayer(layer);
                 }
 
                 if (placementService.TryGetItemPlacementService(layer, out var existingPlacementService))
@@ -122,11 +125,11 @@ namespace RogueEntity.Core.Positioning.Grid
         {
             var sr = initParameter.ServiceResolver;
             if (sr.TryResolve<AggregateMapStateController>(out var amc) && 
-                sr.TryResolve<IGridMapContext<TActorId>>(out var mapContext))
+                sr.TryResolve<IMapContext<TActorId>>(out var mapContext))
             {
-                foreach (var ml in mapContext.GridLayers())
+                foreach (var ml in mapContext.Layers())
                 {
-                    if (mapContext.TryGetGridDataFor(ml, out var dataContext))
+                    if (mapContext.TryGetMapDataFor(ml, out var dataContext))
                     {
                         amc.Add(dataContext);
                     }
@@ -139,13 +142,7 @@ namespace RogueEntity.Core.Positioning.Grid
                                                                EntityRegistry<TActorId> registry)
             where TActorId : struct, IEntityKey
         {
-            void ClearGridPositionAction()
-            {
-                registry.ResetComponent<EntityGridPositionChangedMarker>();
-            }
-
-            context.AddFixedStepHandlers(ClearGridPositionAction);
-            EntityGridPositionChangedMarker.InstallChangeHandler(registry);
+            MapPositionChangeTracker<EntityGridPosition>.InstallChangeHandler(registry);
         }
 
         void RegisterClearDestroyedEntities<TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter,
@@ -178,7 +175,6 @@ namespace RogueEntity.Core.Positioning.Grid
             where TActorId : struct, IEntityKey
         {
             registry.RegisterNonConstructable<EntityGridPosition>();
-            registry.RegisterNonConstructable<EntityGridPositionChangedMarker>();
         }
     }
 }

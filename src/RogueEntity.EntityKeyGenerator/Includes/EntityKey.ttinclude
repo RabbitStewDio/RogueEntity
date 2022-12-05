@@ -1,5 +1,3 @@
-<#@ assembly name="mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" #>
-
 <#@ include file="EntityKeyHeader.ttinclude" #>
 <#@ include file="EntityKeyBulkGenerator.ttinclude" #>
 <#@ include file="EntityKeyBulkMetaData.ttinclude" #>
@@ -8,7 +6,7 @@
     // features to be included to other t4 files
     public void Generate(string entityName, string entityNamespace, bool allowBulkEntities = true)
     {
-        if (!string.IsNullOrWhiteSpace(entityNamespace))
+        if (!string.IsNullOrEmpty(entityNamespace.Trim()))
         {
 #>
 namespace <#=entityNamespace #>
@@ -21,12 +19,8 @@ namespace <#=entityNamespace #>
             GenerateBulkEntityKey(entityName);
             GenerateBulkEntityKeyMetaData(entityName);
         }
-        else
-        {
-            
-        }
         
-        if (!string.IsNullOrWhiteSpace(entityNamespace))
+        if (!string.IsNullOrEmpty(entityNamespace.Trim()))
         {
 #>
 }

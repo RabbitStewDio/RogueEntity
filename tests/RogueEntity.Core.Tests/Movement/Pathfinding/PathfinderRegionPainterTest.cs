@@ -1,7 +1,6 @@
 ﻿using FluentAssertions;
 using NUnit.Framework;
 using RogueEntity.Core.GridProcessing.Directionality;
-using RogueEntity.Core.MovementPlaning.Pathfinding.Hierarchical;
 using RogueEntity.Core.MovementPlaning.Pathfinding.Hierarchical.Systems;
 
 namespace RogueEntity.Core.Tests.Movement.Pathfinding;

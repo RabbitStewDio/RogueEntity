@@ -41,7 +41,7 @@ namespace RogueEntity.Samples.BoxPusher.Core
                     .AsAvatar()
                     .WithInventory()
                     .Of<TItemId>()
-                    .WithGridPosition(BoxPusherMapLayers.Actors)
+                    .WithGridPosition(BodySize.OneByOne, BoxPusherMapLayers.Actors)
                     .WithLightSource(10)
                     .WithVisionSense(10)
                     .WithMovement()
@@ -56,7 +56,7 @@ namespace RogueEntity.Samples.BoxPusher.Core
             where TItemId : struct, IEntityKey
         {
             return b.Define(Box)
-                    .WithGridPosition(BoxPusherMapLayers.Items)
+                    .WithGridPosition(BodySize.OneByOne, BoxPusherMapLayers.Items)
                     .WithMovementCostModifier(Blocked<WalkingMovement>())
                     .WithLightResistance(0.Percent())
                     .WithTrait(new BoxPusherBoxMarkerTrait<TItemId>())
@@ -68,7 +68,7 @@ namespace RogueEntity.Samples.BoxPusher.Core
             where TItemId : struct, IEntityKey
         {
             return b.Define(Wall)
-                    .WithGridPosition(BoxPusherMapLayers.Items)
+                    .WithGridPosition(BodySize.OneByOne, BoxPusherMapLayers.Items)
                     .AsImmobile()
                     .WithMovementCostModifier(Blocked<WalkingMovement>())
                     .WithLightResistance(100.Percent())
@@ -79,7 +79,7 @@ namespace RogueEntity.Samples.BoxPusher.Core
             where TItemId : struct, IEntityKey
         {
             return b.Define(Wall)
-                    .WithGridPosition(BoxPusherMapLayers.Items)
+                    .WithGridPosition(BodySize.OneByOne, BoxPusherMapLayers.Items)
                     .AsImmobile()
                     .WithMovementCostModifier(Blocked<WalkingMovement>())
                     .WithLightResistance(100.Percent())
@@ -90,7 +90,7 @@ namespace RogueEntity.Samples.BoxPusher.Core
             where TItemId : struct, IEntityKey
         {
             return b.Define(EmptyFloor)
-                    .WithGridPosition(BoxPusherMapLayers.Floor)
+                    .WithGridPosition(BodySize.OneByOne, BoxPusherMapLayers.Floor)
                     .AsImmobile()
                     .WithMovementCostModifier(For<WalkingMovement>(1))
                     .WithLightResistance(0.Percent())
@@ -101,7 +101,7 @@ namespace RogueEntity.Samples.BoxPusher.Core
             where TItemId : struct, IEntityKey
         {
             return b.Define(TargetZoneFloor)
-                    .WithGridPosition(BoxPusherMapLayers.Floor)
+                    .WithGridPosition(BodySize.OneByOne, BoxPusherMapLayers.Floor)
                     .AsImmobile()
                     .WithMovementCostModifier(For<WalkingMovement>(1))
                     .WithTrait(new BoxPusherTargetFieldMarkerTrait<TItemId>())
@@ -113,7 +113,7 @@ namespace RogueEntity.Samples.BoxPusher.Core
             where TItemId : struct, IEntityKey
         {
             return b.Define(SpawnPointFloor)
-                    .WithGridPosition(BoxPusherMapLayers.Floor)
+                    .WithGridPosition(BodySize.OneByOne, BoxPusherMapLayers.Floor)
                     .AsImmobile()
                     .AsSpawnLocation()
                     .WithMovementCostModifier(For<WalkingMovement>(1))

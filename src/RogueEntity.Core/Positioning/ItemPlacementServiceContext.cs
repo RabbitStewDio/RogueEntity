@@ -1,4 +1,6 @@
+using RogueEntity.Api.Utils;
 using RogueEntity.Core.Positioning.MapLayers;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -7,6 +9,7 @@ namespace RogueEntity.Core.Positioning
 {
     public class ItemPlacementServiceContext<TItemId> : IItemPlacementServiceContext<TItemId>
     {
+        readonly ILogger logger = SLog.ForContext<ItemPlacementServiceContext<TItemId>>();
         readonly Dictionary<byte, (IItemPlacementService<TItemId> placementService, IItemPlacementLocationService<TItemId> locatorService)> services;
 
         public ItemPlacementServiceContext()
@@ -18,15 +21,15 @@ namespace RogueEntity.Core.Positioning
                                                               IItemPlacementService<TItemId> service,
                                                               IItemPlacementLocationService<TItemId> locator)
         {
+            if (this.services.TryGetValue(layer.LayerId, out _))
+            {
+                logger.Error("Conflicting item layer declaration for layer {MapLayer}", layer);
+                return this;
+            }
+            
             this.services[layer.LayerId] = (service ?? throw new ArgumentNullException(nameof(service)), 
                                             locator ?? throw new ArgumentNullException(nameof(locator)));
-            service.ItemPositionChanged += OnItemPositionChanged;
             return this;
-        }
-
-        void OnItemPositionChanged(object sender, ItemPositionChangedEvent<TItemId> e)
-        {
-            
         }
 
         public bool TryGetItemPlacementService(byte layer, [MaybeNullWhen(false)] out IItemPlacementService<TItemId> service)

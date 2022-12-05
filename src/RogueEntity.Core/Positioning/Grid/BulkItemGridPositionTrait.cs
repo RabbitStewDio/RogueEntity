@@ -8,16 +8,21 @@ using RogueEntity.Core.Positioning.MapLayers;
 namespace RogueEntity.Core.Positioning.Grid
 {
     public class BulkItemGridPositionTrait<TItemId> : IBulkItemTrait<TItemId>,
-                                                      IItemComponentTrait<TItemId, EntityGridPositionUpdateMessage>,
+                                                      IItemComponentTrait<TItemId, Position>,
+                                                      IItemComponentTrait<TItemId, EntityGridPosition>,
                                                       IItemComponentDesignTimeInformationTrait<MapLayerPreference>,
-                                                      IItemComponentInformationTrait<TItemId, MapLayerPreference>
+                                                      IItemComponentInformationTrait<TItemId, MapLayerPreference>,
+                                                      IItemComponentInformationTrait<TItemId, BodySize>
         where TItemId : struct, IEntityKey
     {
+        readonly BodySize bodySize;
         readonly MapLayerPreference layerPreference;
 
-        public BulkItemGridPositionTrait(MapLayer layer,
+        public BulkItemGridPositionTrait(BodySize bodySize,
+                                         MapLayer layer,
                                          params MapLayer[] layers)
         {
+            this.bodySize = bodySize;
             Id = "ReferenceItem.Generic.Positional";
             Priority = 100;
 
@@ -32,6 +37,12 @@ namespace RogueEntity.Core.Positioning.Grid
             return this;
         }
 
+        public bool TryQuery(IEntityViewControl<TItemId> v, TItemId k, out BodySize t)
+        {
+            t = bodySize;
+            return true;
+        }
+
         public bool TryQuery(IEntityViewControl<TItemId> v, TItemId k, out MapLayerPreference t)
         {
             t = layerPreference;
@@ -41,6 +52,30 @@ namespace RogueEntity.Core.Positioning.Grid
         public bool TryQuery(out MapLayerPreference t)
         {
             t = layerPreference;
+            return true;
+        }
+
+        public bool TryQuery(IEntityViewControl<TItemId> v, TItemId k, out Position t)
+        {
+            t = default;
+            return false;
+        }
+
+        public bool TryUpdate(IEntityViewControl<TItemId> v, TItemId k, in Position t, out TItemId changedK)
+        {
+            changedK = k;
+            return true;
+        }
+
+        public bool TryQuery(IEntityViewControl<TItemId> v, TItemId k, out EntityGridPosition t)
+        {
+            t = default;
+            return false;
+        }
+
+        public bool TryUpdate(IEntityViewControl<TItemId> v, TItemId k, in EntityGridPosition t, out TItemId changedK)
+        {
+            changedK = k;
             return true;
         }
 
@@ -57,19 +92,6 @@ namespace RogueEntity.Core.Positioning.Grid
         public IEnumerable<EntityRelationInstance> GetEntityRelations()
         {
             return Enumerable.Empty<EntityRelationInstance>();
-        }
-
-        public bool TryQuery(IEntityViewControl<TItemId> v, TItemId k, out EntityGridPositionUpdateMessage t)
-        {
-            t = default;
-            return false;
-        }
-
-        public bool TryUpdate(IEntityViewControl<TItemId> v, TItemId k, in EntityGridPositionUpdateMessage t, out TItemId changedK)
-        {
-            // just signals that everything is ok. 
-            changedK = k;
-            return true;
         }
 
         public bool TryRemove(IEntityViewControl<TItemId> v, TItemId k, out TItemId changedK)

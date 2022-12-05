@@ -1,4 +1,5 @@
 using RogueEntity.Api.Utils;
+using Serilog;
 using System.Collections.Generic;
 
 namespace RogueEntity.Core.MapLoading.MapRegions
@@ -11,6 +12,7 @@ namespace RogueEntity.Core.MapLoading.MapRegions
     public class BasicMapRegionTrackerService<TRegionKey> : IMapRegionTrackerService<TRegionKey>
     {
         readonly Dictionary<TRegionKey, MapRegionProcessingRequestStatus<TRegionKey>> chunks;
+        readonly ILogger logger = SLog.ForContext<BasicMapRegionTrackerService<TRegionKey>>();
 
         public BasicMapRegionTrackerService()
         {
@@ -66,6 +68,7 @@ namespace RogueEntity.Core.MapLoading.MapRegions
 
         public IMapRegionRequestStatus<TRegionKey> RequestLazyLoading(TRegionKey region)
         {
+            logger.Verbose("Requested lazy map loading of region {Region}", region);
             if (!chunks.TryGetValue(region, out var chunk))
             {
                 chunk = new MapRegionProcessingRequestStatus<TRegionKey>(region);
@@ -78,6 +81,7 @@ namespace RogueEntity.Core.MapLoading.MapRegions
 
         public IMapRegionRequestStatus<TRegionKey> RequestImmediateLoading(TRegionKey region)
         {
+            logger.Verbose("Requested immediate map loading of region {Region}", region);
             if (!chunks.TryGetValue(region, out var chunk))
             {
                 chunk = new MapRegionProcessingRequestStatus<TRegionKey>(region);
@@ -108,10 +112,12 @@ namespace RogueEntity.Core.MapLoading.MapRegions
         {
             if (chunks.TryGetValue(region, out var chunk))
             {
+                logger.Verbose("Eviction of loaded region {Region}", region);
                 chunk.RequestUnloading();
             }
             else
             {
+                logger.Verbose("Evicting unloaded region {Region}", region);
                 chunk = new MapRegionProcessingRequestStatus<TRegionKey>(region);
                 chunks[region] = chunk;
             }

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using EnTTSharp.Entities;
 using RogueEntity.Api.Utils;
-using RogueEntity.Core.Positioning.Grid;
+using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.MapLayers;
 using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.DataViews;
@@ -17,7 +17,7 @@ namespace RogueEntity.Core.GridProcessing.LayerAggregation
         static readonly ILogger logger = SLog.ForContext<GridAggregationPropertiesDataProcessor<TItemId, TAggregateType>>();
 
         readonly Action<TileProcessingParameters> processFastDelegate;
-        readonly IGridMapContext<TItemId> mapContext;
+        readonly IMapContext<TItemId> mapContext;
         readonly int zPosition;
         readonly DynamicBoolDataView2D dirtyMap;
         readonly BufferList<Rectangle> activeTilesCache;
@@ -26,7 +26,7 @@ namespace RogueEntity.Core.GridProcessing.LayerAggregation
         bool dirtyAfterCreation;
 
         protected GridAggregationPropertiesDataProcessor(MapLayer layer,
-                                                         IGridMapContext<TItemId> mapContext,
+                                                         IMapContext<TItemId> mapContext,
                                                          int zPosition,
                                                          int offsetX,
                                                          int offsetY,
@@ -64,8 +64,7 @@ namespace RogueEntity.Core.GridProcessing.LayerAggregation
         {
             activeTilesCache.Clear();
 
-            if (!mapContext.TryGetGridDataFor(Layer, out var mapDataRaw) ||
-                !mapDataRaw.TryGetView(zPosition, out var mapData))
+            if (!mapContext.TryGetMapDataFor(Layer, out var mapData))
             {
                 return false;
             }
@@ -74,9 +73,9 @@ namespace RogueEntity.Core.GridProcessing.LayerAggregation
             return true;
         }
 
-        void ProcessRawData(IReadOnlyDynamicDataView2D<TItemId> mapData)
+        void ProcessRawData(IMapDataContext<TItemId> mapData)
         {
-            var tc = mapData.GetActiveTiles(activeTilesCache);
+            var tc = mapData.GetActiveTiles(ZPosition, activeTilesCache);
             processingFastParameterCache.Clear();
             //
             // Remove all tiles that have not changed.
@@ -89,10 +88,9 @@ namespace RogueEntity.Core.GridProcessing.LayerAggregation
                     continue;
                 }
 
-                if (mapData.TryGetData(bounds.X, bounds.Y, out var tile) &&
-                    writableDataView.TryGetWriteAccess(bounds.X, bounds.Y, out var resultTile, DataViewCreateMode.CreateMissing))
+                if (writableDataView.TryGetWriteAccess(bounds.X, bounds.Y, out var resultTile, DataViewCreateMode.CreateMissing))
                 {
-                    processingFastParameterCache.Add(new TileProcessingParameters(bounds, mapData, tile, resultTile));
+                    processingFastParameterCache.Add(new TileProcessingParameters(bounds, mapData, resultTile));
                 }
             }
 
@@ -110,29 +108,24 @@ namespace RogueEntity.Core.GridProcessing.LayerAggregation
         protected readonly struct TileProcessingParameters
         {
             public readonly Rectangle Bounds;
-            public readonly IReadOnlyDynamicDataView2D<TItemId> DataView;
-            public readonly IReadOnlyBoundedDataView<TItemId> TileDataView;
+            public readonly IMapDataContext<TItemId> DataView;
             public readonly IBoundedDataView<TAggregateType> ResultTile;
 
             public TileProcessingParameters(Rectangle bounds,
-                                            IReadOnlyDynamicDataView2D<TItemId> dataView,
-                                            IReadOnlyBoundedDataView<TItemId> tileDataView,
+                                            IMapDataContext<TItemId> dataView,
                                             IBoundedDataView<TAggregateType> resultTile)
             {
                 Bounds = bounds;
                 DataView = dataView;
-                TileDataView = tileDataView;
                 ResultTile = resultTile;
             }
 
             public void Deconstruct(out Rectangle bounds,
-                                    out IReadOnlyDynamicDataView2D<TItemId> dataView,
-                                    out IReadOnlyBoundedDataView<TItemId> tileDataView,
+                                    out IMapDataContext<TItemId> dataView,
                                     out IBoundedDataView<TAggregateType> resultTile)
             {
                 bounds = Bounds;
                 dataView = DataView;
-                tileDataView = TileDataView;
                 resultTile = ResultTile;
             }
         }

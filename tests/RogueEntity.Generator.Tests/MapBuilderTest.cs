@@ -6,6 +6,7 @@ using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Positioning.MapLayers;
+using RogueEntity.Core.Utils.DataViews;
 
 namespace RogueEntity.Generator.Tests
 {
@@ -20,24 +21,24 @@ namespace RogueEntity.Generator.Tests
         public void Construct()
         {
             var itemEntityContext = new ItemContextBackend<ItemReference>(new ItemReferenceMetaData());
-            var itemMapContext = new DefaultGridPositionContextBackend<ItemReference>()
-                                 .WithDefaultMapLayer(FloorLayer)
-                                 .WithDefaultMapLayer(ItemLayer);
+            var itemMapContext = new DefaultMapContext<ItemReference>(DynamicDataViewConfiguration.Default16X16)
+                                 .WithBasicGridMapLayer(FloorLayer)
+                                 .WithBasicGridMapLayer(ItemLayer);
             var actorEntityContext = new ItemContextBackend<ActorReference>(new ActorReferenceMetaData());
-            var actorMapContext = new DefaultGridPositionContextBackend<ActorReference>()
-                .WithDefaultMapLayer(ActorLayer);
+            var actorMapContext = new DefaultMapContext<ActorReference>(DynamicDataViewConfiguration.Default16X16)
+                .WithBasicGridMapLayer(ActorLayer);
 
             var itemPlacementContext = new ItemPlacementServiceContext<ItemReference>()
                                    .WithLayer(FloorLayer, 
-                                              new GridItemPlacementService<ItemReference>(itemEntityContext.ItemResolver, itemMapContext),
-                                              new GridItemPlacementLocationService<ItemReference>(itemEntityContext.ItemResolver, itemMapContext))
+                                              new ItemPlacementService<ItemReference>(itemEntityContext.ItemResolver, itemMapContext),
+                                              new ItemPlacementLocationService<ItemReference>(itemEntityContext.ItemResolver, itemMapContext))
                                    .WithLayer(ItemLayer, 
-                                              new GridItemPlacementService<ItemReference>(itemEntityContext.ItemResolver, itemMapContext),
-                                              new GridItemPlacementLocationService<ItemReference>(itemEntityContext.ItemResolver, itemMapContext));
+                                              new ItemPlacementService<ItemReference>(itemEntityContext.ItemResolver, itemMapContext),
+                                              new ItemPlacementLocationService<ItemReference>(itemEntityContext.ItemResolver, itemMapContext));
             var actorPlacementContext = new ItemPlacementServiceContext<ActorReference>()
                 .WithLayer(ActorLayer, 
-                           new GridItemPlacementService<ActorReference>(actorEntityContext.ItemResolver, actorMapContext),
-                           new GridItemPlacementLocationService<ActorReference>(actorEntityContext.ItemResolver, actorMapContext));
+                           new ItemPlacementService<ActorReference>(actorEntityContext.ItemResolver, actorMapContext),
+                           new ItemPlacementLocationService<ActorReference>(actorEntityContext.ItemResolver, actorMapContext));
 
             var mb = new MapBuilder();
             mb.WithLayer(FloorLayer, itemEntityContext.ItemResolver, itemMapContext, itemPlacementContext);

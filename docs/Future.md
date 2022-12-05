@@ -6,6 +6,9 @@ Two strategies exist:
 * SingleItemPlacementStrategy - Only one item exists in a cell at any given time
 * StackedPlacementStrategy    - Items are stored via a single-linked list element TElement:= TPayload -> TElement
 
+Need to change the map context interface to be able to handle multiple items per cell without
+sacrificing performance.
+
 # Senses
 
 Implement sensory limits and sensory overload. People with bad senses (failing sight etc) cannot see in low 

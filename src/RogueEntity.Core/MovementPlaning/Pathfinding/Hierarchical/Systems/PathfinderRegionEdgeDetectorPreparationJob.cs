@@ -1,7 +1,6 @@
 ﻿using RogueEntity.Core.MovementPlaning.Pathfinding.Hierarchical.Data;
 using RogueEntity.Core.Utils;
 using System;
-using System.Diagnostics.CodeAnalysis;
 
 namespace RogueEntity.Core.MovementPlaning.Pathfinding.Hierarchical.Systems;
 

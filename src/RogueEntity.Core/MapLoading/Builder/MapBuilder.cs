@@ -2,7 +2,6 @@ using EnTTSharp.Entities;
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Api.Utils;
 using RogueEntity.Core.Positioning;
-using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Positioning.MapLayers;
 using System;
 using System.Collections.Generic;
@@ -35,7 +34,7 @@ namespace RogueEntity.Core.MapLoading.Builder
 
         public MapBuilder WithLayer<T>(in MapLayer mapLayer,
                                        IItemResolver<T> itemResolver,
-                                       IGridMapContext<T> gridContext,
+                                       IMapContext<T> gridContext,
                                        IItemPlacementServiceContext<T> placementService)
             where T : struct, IEntityKey
         {
@@ -45,7 +44,7 @@ namespace RogueEntity.Core.MapLoading.Builder
             }
 
             if (!layerProcessors.TryGetValue(mapLayer.LayerId, out _) &&
-                gridContext.TryGetGridDataFor(mapLayer, out var gridData) &&
+                gridContext.TryGetMapDataFor(mapLayer, out var gridData) &&
                 placementService.TryGetItemPlacementService(mapLayer, out var ps))
             {
                 layerProcessors.Add(mapLayer.LayerId, new MapBuilderLayer<T>(mapLayer, itemResolver, gridData, ps));
@@ -80,8 +79,7 @@ namespace RogueEntity.Core.MapLoading.Builder
                 return false;
             }
 
-            // Indeterminate layer
-            if (pos.LayerId == 0)
+            if (pos.LayerId == MapLayer.IndeterminateLayerId)
             {
                 var result = true;
                 foreach (var l in layerProcessors)

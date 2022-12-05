@@ -16,7 +16,7 @@ namespace RogueEntity.Core.Positioning.Continuous
     [DataContract]
     [Serializable]
     [MessagePackObject]
-    public readonly struct ContinuousMapPosition : IPosition<ContinuousMapPosition>, IEquatable<ContinuousMapPosition>
+    public readonly struct ContinuousMapPosition : IPosition<ContinuousMapPosition>
     {
         const double UnitScale = 1024;
         const int MaxZUnit = 0x7F_FFFF;
@@ -65,6 +65,12 @@ namespace RogueEntity.Core.Positioning.Continuous
         }
 
         public static ContinuousMapPosition From(in Position p)
+        {
+            if (p.IsInvalid) return Invalid;
+            return new ContinuousMapPosition(FloatToMillimeter(p.X, MaxXY), FloatToMillimeter(p.Y, MaxXY), FloatToMillimeter(p.Z, MaxZ), p.LayerId);
+        }
+
+        public static ContinuousMapPosition From<TPosition>(in TPosition p) where TPosition: IPosition<TPosition>
         {
             if (p.IsInvalid) return Invalid;
             return new ContinuousMapPosition(FloatToMillimeter(p.X, MaxXY), FloatToMillimeter(p.Y, MaxXY), FloatToMillimeter(p.Z, MaxZ), p.LayerId);
@@ -126,6 +132,20 @@ namespace RogueEntity.Core.Positioning.Continuous
         public static bool operator !=(ContinuousMapPosition left, ContinuousMapPosition right)
         {
             return !left.Equals(right);
+        }
+        
+        static ContinuousMapPosition()
+        {
+            PositionTypeRegistry.Instance.Register(new ContinuousMapPositionRegistration());
+        }
+
+        class ContinuousMapPositionRegistration: IPositionTypeRegistration<ContinuousMapPosition>
+        {
+            public ContinuousMapPosition Convert<TPositionIn>(TPositionIn p)
+                where TPositionIn: struct, IPosition<TPositionIn>
+            {
+                return From(p);
+            }
         }
     }
 }

@@ -1,4 +1,3 @@
-using EnTTSharp;
 using RogueEntity.Core.GridProcessing.Directionality;
 using RogueEntity.Core.Movement;
 using RogueEntity.Core.Movement.Cost;

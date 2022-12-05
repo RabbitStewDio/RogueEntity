@@ -20,7 +20,6 @@ using RogueEntity.Core.Sensing.Sources;
 using RogueEntity.Core.Sensing.Sources.Heat;
 using RogueEntity.Core.Sensing.Sources.Noise;
 using RogueEntity.Core.Utils;
-using RogueEntity.Core.Utils.DataViews;
 using RogueEntity.Core.Meta.EntityKeys;
 using RogueEntity.Core.Positioning.Algorithms;
 using RogueEntity.Core.Tests.Fixtures;
@@ -145,7 +144,6 @@ namespace RogueEntity.Core.Tests.Sensing.Discovery
             context = new SenseMappingTestContext();
             context.ItemEntityRegistry.RegisterNonConstructable<ItemDeclarationHolder<ItemReference>>();
             context.ItemEntityRegistry.RegisterNonConstructable<EntityGridPosition>();
-            context.ItemEntityRegistry.RegisterNonConstructable<EntityGridPositionChangedMarker>();
             context.ItemEntityRegistry.RegisterFlag<ImmobilityMarker>();
             context.ItemEntityRegistry.RegisterNonConstructable<DiscoveryMapData>();
 
@@ -175,13 +173,13 @@ namespace RogueEntity.Core.Tests.Sensing.Discovery
                 new NoiseSenseReceptorPhysicsConfiguration(new NoisePhysicsConfiguration(new LinearDecaySensePhysics(DistanceCalculation.Chebyshev)), new FloodFillWorkingDataSource());
 
             senseReceptorActive10 = context.ItemRegistry.Register(new ReferenceItemDeclaration<ItemReference>("SenseReceptor-Active-10")
-                                                                  .WithTrait(new ReferenceItemGridPositionTrait<ItemReference>(TestMapLayers.One))
+                                                                  .WithTrait(new ReferenceItemGridPositionTrait<ItemReference>(BodySize.OneByOne, TestMapLayers.One))
                                                                   .WithTrait(new DiscoveryMapTrait<ItemReference>())
                                                                   .WithTrait(new InfraVisionSenseTrait<ItemReference>(visionSensePhysics, 10))
             );
             senseReceptorActive5 = context.ItemRegistry.Register(new ReferenceItemDeclaration<ItemReference>("SenseReceptor-Active-5")
                                                                  .WithTrait(
-                                                                     new ReferenceItemGridPositionTrait<ItemReference>(TestMapLayers.One))
+                                                                     new ReferenceItemGridPositionTrait<ItemReference>(BodySize.OneByOne, TestMapLayers.One))
                                                                  .WithTrait(new DiscoveryMapTrait<ItemReference>())
                                                                  .WithTrait(new NoiseDirectionSenseTrait<ItemReference>(noiseSensePhysics, 10))
             );
@@ -191,7 +189,6 @@ namespace RogueEntity.Core.Tests.Sensing.Discovery
             senseSystemActions = CreateSystemActions();
 
             context.TryGetItemGridDataFor(TestMapLayers.One, out var mapData).Should().BeTrue();
-            mapData.TryGetWritableView(0, out _, DataViewCreateMode.CreateMissing).Should().BeTrue();
         }
 
         protected virtual List<Action> CreateSystemActions()

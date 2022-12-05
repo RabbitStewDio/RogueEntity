@@ -32,5 +32,18 @@ namespace RogueEntity.Api.ItemTraits
             return default;
         }
 
+        public static bool IsSameStackType<TEntity>(this IItemResolver<TEntity> r, TEntity a, TEntity b)
+            where TEntity : struct, IEntityKey
+        {
+            if (a.IsEmpty || b.IsEmpty) return false;
+            if (r.TryResolve(a, out var itemDeclarationA) &&
+                r.TryResolve(b, out var itemDeclarationB))
+            {
+                return itemDeclarationA.Id == itemDeclarationB.Id;
+            }                    
+
+            return false;
+        } 
+        
     }
 }

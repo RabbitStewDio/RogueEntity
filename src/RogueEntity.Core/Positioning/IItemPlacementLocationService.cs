@@ -17,20 +17,24 @@ namespace RogueEntity.Core.Positioning
         /// <param name="placementPos"></param>
         /// <param name="searchRadius"></param>
         /// <returns></returns>
-        bool TryFindAvailableSpace(in TItemId itemToBePlaced,
-                                   in Position origin,
-                                   out Position placementPos,
-                                   int searchRadius = 10);
+        bool TryFindAvailableSpace<TPosition>(in TItemId itemToBePlaced,
+                                              in TPosition origin,
+                                              out TPosition placementPos,
+                                              int searchRadius = 10)
+            where TPosition: struct, IPosition<TPosition>;
 
         /// <summary>
         ///   Tries to find a completely unoccupied location around the origin point.
         /// </summary>
         /// <param name="origin"></param>
+        /// <param name="bodySize"></param>
         /// <param name="placementPos"></param>
         /// <param name="searchRadius"></param>
         /// <returns></returns>
-        bool TryFindEmptySpace(in Position origin,
-                               out Position placementPos,
-                               int searchRadius = 10);
+        bool TryFindEmptySpace<TPosition>(in TPosition origin,
+                                          in BodySize bodySize,
+                                          out TPosition placementPos,
+                                          int searchRadius = 10)
+            where TPosition: struct, IPosition<TPosition>;
     }
 }

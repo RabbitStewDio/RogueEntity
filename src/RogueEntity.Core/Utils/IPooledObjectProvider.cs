@@ -1,18 +1,15 @@
-﻿using System;
+﻿using Microsoft.Extensions.ObjectPool;
+using System;
 
 namespace RogueEntity.Core.Utils
 {
-    public interface IPooledObjectProvider<T>
+    public readonly struct PooledObjectHandle<T> : IDisposable
+        where T : class
     {
-        void Return(T t);
-    }
-
-    public readonly struct PooledObjectHandle<T>: IDisposable
-    {
-        readonly IPooledObjectProvider<T> pool;
+        readonly ObjectPool<T> pool;
         public readonly T Data;
 
-        public PooledObjectHandle(IPooledObjectProvider<T> pool,
+        public PooledObjectHandle(ObjectPool<T> pool,
                                   T data)
         {
             this.pool = pool ?? throw new ArgumentNullException(nameof(pool));

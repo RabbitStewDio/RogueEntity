@@ -1,9 +1,7 @@
 using FluentAssertions;
 using NUnit.Framework;
-using RogueEntity.Core.Meta.EntityKeys;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.MapLayers;
-using RogueEntity.Core.Tests.Fixtures;
 using System.Diagnostics.CodeAnalysis;
 
 namespace RogueEntity.Core.Tests.Positioning.Grid.GridItemPlacementServiceTest
@@ -96,6 +94,9 @@ namespace RogueEntity.Core.Tests.Positioning.Grid.GridItemPlacementServiceTest
             var (refA, posA) = this.GivenAnEntity(StackingBulkItemA).WithStackSize(2).IsPlacedAt(Position.Of(DefaultLayer, 0, 0));
             var (refB, posB) = this.GivenAnEntity(ReferenceItemA).IsPlacedAt(Position.Of(DefaultLayer, 1, 0));
             var (_, posC) = this.GivenAnEmptySpace().IsPlacedAt(Position.Of(DefaultLayer, 3, 0));
+            this.ThenPosition(posA).Should().ContainEntity(refA);
+            this.ThenPosition(posB).Should().ContainEntity(refB);
+            this.ThenPosition(posC).Should().BeEmpty();
 
             When(() => PlacementService.TryMoveItem(refA, posB, posC));
 

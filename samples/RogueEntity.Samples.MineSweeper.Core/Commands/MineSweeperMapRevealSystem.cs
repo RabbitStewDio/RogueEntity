@@ -2,6 +2,7 @@
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Api.Utils;
 using RogueEntity.Core.Inputs.Commands;
+using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Algorithms;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Sensing.Discovery;
@@ -20,12 +21,12 @@ namespace RogueEntity.Samples.MineSweeper.Core.Commands
     {
         static readonly ILogger Logger = SLog.ForContext<MineSweeperMapRevealSystem<TItemId>>();
         
-        readonly IGridMapContext<TItemId> gridMap;
+        readonly IItemPlacementServiceContext<TItemId> gridMap;
         readonly IItemResolver<TItemId> itemResolver;
         readonly IMineSweeperGameParameterService gameParameters;
         readonly Stack<Position2D> processingQueue;
 
-        public MineSweeperMapRevealSystem(IGridMapContext<TItemId> gridMap, 
+        public MineSweeperMapRevealSystem(IItemPlacementServiceContext<TItemId> gridMap, 
                                           IItemResolver<TItemId> itemResolver,
                                           IMineSweeperGameParameterService gameParameters)
         {
@@ -43,20 +44,18 @@ namespace RogueEntity.Samples.MineSweeper.Core.Commands
         {
             try
             {
-                if (!gridMap.TryGetGridDataFor(MineSweeperMapLayers.Flags, out var flagData) ||
-                    !flagData.TryGetView(0, out var flagView))
+                if (!gridMap.TryGetItemPlacementService(MineSweeperMapLayers.Flags, out var flagData))
                 {
                     throw new InvalidOperationException();
                 }
 
-                if (!gridMap.TryGetGridDataFor(MineSweeperMapLayers.Items, out var itemData) ||
-                    !itemData.TryGetView(0, out var itemView))
+                if (!gridMap.TryGetItemPlacementService(MineSweeperMapLayers.Items, out var itemData))
                 {
                     throw new InvalidOperationException();
                 }
 
                 var pos = revealCommand.Position;
-                if (flagView.TryGet(pos.X, pos.Y, out var flag) && 
+                if (flagData.TryQueryItem(EntityGridPosition.Of(MineSweeperMapLayers.Flags, pos.X, pos.Y), out var flag) && 
                     itemResolver.IsItemType(flag, MineSweeperItemDefinitions.Flag))
                 {
                     // we dont act if we suspect a mine here.
@@ -64,9 +63,9 @@ namespace RogueEntity.Samples.MineSweeper.Core.Commands
                     return;
                 }
 
-                if (!itemView.TryGet(pos.X, pos.Y, out var item) ||
-                    itemResolver.IsDestroyed(item) ||
-                    itemResolver.IsItemType(item, MineSweeperItemDefinitions.Wall))
+                if (!flagData.TryQueryItem(EntityGridPosition.Of(MineSweeperMapLayers.Items, pos.X, pos.Y), out var item) ||
+                                           itemResolver.IsDestroyed(item) ||
+                                           itemResolver.IsItemType(item, MineSweeperItemDefinitions.Wall))
                 {
                     // do nothing
                     Logger.Debug("Wall at {Position}", pos);
@@ -88,14 +87,14 @@ namespace RogueEntity.Samples.MineSweeper.Core.Commands
                 if (discoveryMap.TryGetWritableView(0, out var discoveryMapView, DataViewCreateMode.CreateMissing))
                 {
                     Logger.Debug("Expanding view from position {Position}", pos);
-                    ExpandVisibleArea(pos, itemView, discoveryMapView);
+                    ExpandVisibleArea(pos, itemData, discoveryMapView);
                 }
                 else
                 {
                     Logger.Debug("Unable to handle input for position {Position}", pos);
                 }
 
-                if (IsAreaCleared(itemView, discoveryMapView))
+                if (IsAreaCleared(itemData, discoveryMapView))
                 {
                     playerData = playerData.WithAreaCleared();
                 }
@@ -107,7 +106,7 @@ namespace RogueEntity.Samples.MineSweeper.Core.Commands
             }
         }
 
-        bool IsAreaCleared(IReadOnlyView2D<TItemId> playField,
+        bool IsAreaCleared(IItemPlacementService<TItemId> playField,
                            IDynamicDataView2D<bool> discoveryView)
         {
             foreach (var (x,y) in gameParameters.WorldParameter.ValidInputBounds.Contents)
@@ -117,7 +116,8 @@ namespace RogueEntity.Samples.MineSweeper.Core.Commands
                     continue;
                 }
                 
-                if (playField.TryGet(x, y, out var maybeMine) && !itemResolver.IsItemType(maybeMine, MineSweeperItemDefinitions.Mine))
+                if (playField.TryQueryItem(EntityGridPosition.Of(MineSweeperMapLayers.Items, x, y), out var maybeMine) && 
+                    !itemResolver.IsItemType(maybeMine, MineSweeperItemDefinitions.Mine))
                 {
                     return false;
                 }
@@ -128,7 +128,7 @@ namespace RogueEntity.Samples.MineSweeper.Core.Commands
 
 
         void ExpandVisibleArea(Position2D pos,
-                               IReadOnlyView2D<TItemId> playField,
+                               IItemPlacementService<TItemId> playField,
                                IDynamicDataView2D<bool> discoveryView)
         {
             
@@ -143,7 +143,7 @@ namespace RogueEntity.Samples.MineSweeper.Core.Commands
                     continue;
                 }
 
-                if (!playField.TryGet(p.X, p.Y, out var playFieldEntity) || playFieldEntity.IsEmpty)
+                if (!playField.TryQueryItem(EntityGridPosition.Of(MineSweeperMapLayers.Items, p.X, p.Y), out var playFieldEntity) || playFieldEntity.IsEmpty)
                 {
                     continue;
                 }

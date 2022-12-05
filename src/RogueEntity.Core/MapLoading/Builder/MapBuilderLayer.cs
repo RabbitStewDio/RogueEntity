@@ -5,21 +5,23 @@ using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Positioning.MapLayers;
+using RogueEntity.Core.Utils;
 
 namespace RogueEntity.Core.MapLoading.Builder
 {
-    public class MapBuilderLayer<TEntity>: IMapBuilderLayer
+    public class MapBuilderLayer<TEntity> : IMapBuilderLayer
         where TEntity : struct, IEntityKey
     {
         [UsedImplicitly]
         readonly MapLayer layer;
+
         readonly IItemResolver<TEntity> resolver;
-        readonly IGridMapDataContext<TEntity> gridMapContext;
+        readonly IMapDataContext<TEntity> gridMapContext;
         readonly IItemPlacementService<TEntity> placementService;
 
-        public MapBuilderLayer(MapLayer layer, 
-                               IItemResolver<TEntity> resolver, 
-                               IGridMapDataContext<TEntity> gridMapContext,
+        public MapBuilderLayer(MapLayer layer,
+                               IItemResolver<TEntity> resolver,
+                               IMapDataContext<TEntity> gridMapContext,
                                IItemPlacementService<TEntity> placementService)
         {
             this.layer = layer;
@@ -58,35 +60,34 @@ namespace RogueEntity.Core.MapLoading.Builder
 
         public bool Clear(Position pos, IMapBuilderInstantiationLifter? postProc = null)
         {
-            if (!gridMapContext.TryGetView(pos.GridZ, out var view))
-            {
-                return false;
-            }
-
-            if (!view.TryGet(pos.GridX, pos.GridY, out var entity) || 
-                entity.IsEmpty)
+            using var buffer = BufferListPool<(TEntity, EntityGridPosition)>.GetPooled();
+            var result = gridMapContext.QueryItemTile<EntityGridPosition>(EntityGridPosition.From(pos), buffer);
+            if (result.Count == 0)
             {
                 return true;
             }
-                
-            if (postProc != null && resolver.TryResolve(entity, out var decl))
+
+            foreach (var (entity, _) in result.Data)
             {
-                if (!postProc.ClearPreProcess(decl.Id, pos, resolver, entity).TryGetValue(out entity))
+                if (postProc != null && resolver.TryResolve(entity, out var decl))
+                {
+                    if (!postProc.ClearPreProcess(decl.Id, pos, resolver, entity).TryGetValue(out _))
+                    {
+                        return false;
+                    }
+                }
+
+                if (placementService.TryRemoveItem(entity, pos))
+                {
+                    resolver.Destroy(entity);
+                }
+                else
                 {
                     return false;
                 }
             }
 
-            if (placementService.TryRemoveItem(entity, pos))
-            {
-                resolver.Destroy(entity);
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-
+            return true;
         }
     }
 }

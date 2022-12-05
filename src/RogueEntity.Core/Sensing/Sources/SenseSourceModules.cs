@@ -5,7 +5,7 @@ using RogueEntity.Api.Modules;
 using RogueEntity.Api.Modules.Helpers;
 using RogueEntity.Api.Utils;
 using RogueEntity.Core.GridProcessing.LayerAggregation;
-using RogueEntity.Core.Positioning.Grid;
+using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.MapLayers;
 using RogueEntity.Core.Sensing.Cache;
 using RogueEntity.Core.Sensing.Resistance;
@@ -42,7 +42,7 @@ namespace RogueEntity.Core.Sensing.Sources
             {
                 var serviceResolver = initParameter.ServiceResolver;
                 var itemContext = serviceResolver.Resolve<IItemResolver< TItemId>>();
-                var mapContext = serviceResolver.Resolve<IGridMapContext<TItemId>>();
+                var mapContext = serviceResolver.Resolve<IMapContext<TItemId>>();
                 
                 var factory = serviceResolver.Resolve<IAggregationLayerSystemBackend< SensoryResistance<TSense>>>();
                 var cache = serviceResolver.Resolve<ISenseCacheSetupSystem>();

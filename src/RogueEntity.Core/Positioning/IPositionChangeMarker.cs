@@ -1,10 +1,7 @@
-﻿using EnTTSharp;
-
-namespace RogueEntity.Core.Positioning
+﻿namespace RogueEntity.Core.Positioning
 {
-    public interface IPositionChangeMarker<TPosition>
-        where TPosition : IPosition<TPosition>
+    public interface IPositionChangeMarker
     {
-        Optional<TPosition> PreviousPosition { get; }
+        Position PreviousPosition { get; }
     }
 }

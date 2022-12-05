@@ -19,7 +19,7 @@ namespace RogueEntity.Samples.MineSweeper.Core.Traits
 
         public override IEnumerable<EntityRoleInstance> GetEntityRoles()
         {
-            yield return MineSweeperModule.MineFieldRole.Instantiate<TItemId>();
+            yield return MineSweeperModule.MineFloorRole.Instantiate<TItemId>();
         }
 
         protected override bool TryQueryBulkData(IEntityViewControl<TItemId> v, TItemId k, out MineSweeperMineCount t)

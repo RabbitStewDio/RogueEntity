@@ -1,6 +1,7 @@
 using Microsoft.Xna.Framework;
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Core.Meta.EntityKeys;
+using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Runtime;
 using RogueEntity.Core.Sensing.Discovery;
@@ -16,15 +17,15 @@ using Console = SadConsole.Console;
 
 namespace RogueEntity.Samples.MineSweeper.MonoGame
 {
-    public class MineSweeperMapDrawHandler: DrawConsoleComponent
+    public class MineSweeperMapDrawHandler : DrawConsoleComponent
     {
         readonly MineSweeperInputState inputState;
         readonly MineSweeperGame game;
-        IGridMapContext<ItemReference> itemMap;
+        IItemPlacementServiceContext<ItemReference> itemMap;
         IItemResolver<ActorReference> actorResolver;
         IItemResolver<ItemReference> itemResolver;
 
-        public MineSweeperMapDrawHandler(MineSweeperInputState inputState, 
+        public MineSweeperMapDrawHandler(MineSweeperInputState inputState,
                                          MineSweeperGame game)
         {
             this.inputState = inputState;
@@ -41,10 +42,11 @@ namespace RogueEntity.Samples.MineSweeper.MonoGame
 
         void OnGameInitialized(object sender, EventArgs e)
         {
-            itemMap = game.ServiceResolver.Resolve<IGridMapContext<ItemReference>>();
-            actorResolver = game.ServiceResolver.Resolve<IItemResolver<ActorReference>>();
-            itemResolver = game.ServiceResolver.Resolve<IItemResolver<ItemReference>>();
-            
+            var serviceResolver = game.ServiceResolver ?? throw new ArgumentNullException();
+            itemMap = serviceResolver.Resolve<IItemPlacementServiceContext<ItemReference>>();
+            actorResolver = serviceResolver.Resolve<IItemResolver<ActorReference>>();
+            itemResolver = serviceResolver.Resolve<IItemResolver<ItemReference>>();
+
             this.game.GameInitialized -= OnGameInitialized;
         }
 
@@ -62,20 +64,18 @@ namespace RogueEntity.Samples.MineSweeper.MonoGame
                 return;
             }
 
-            if (!itemMap.TryGetGridDataFor(MineSweeperMapLayers.Items, out var itemLayer) ||
-                !itemLayer.TryGetView(0, out var itemView))
+            if (!itemMap.TryGetItemPlacementService(MineSweeperMapLayers.Items, out var itemLayer))
             {
                 System.Console.WriteLine("Have no item view");
                 return;
             }
 
-            if (!itemMap.TryGetGridDataFor(MineSweeperMapLayers.Flags, out var flagLayer) ||
-                !flagLayer.TryGetView(0, out var flagView))
+            if (!itemMap.TryGetItemPlacementService(MineSweeperMapLayers.Flags, out var flagLayer))
             {
                 System.Console.WriteLine("Have no flag view");
                 return;
             }
-            
+
             if (!game.PlayerData.TryGetValue(out var playerData))
             {
                 System.Console.WriteLine("Have no player data");
@@ -83,17 +83,19 @@ namespace RogueEntity.Samples.MineSweeper.MonoGame
             }
 
             console.Clear();
-            
+
             var playerEntity = playerData.EntityId;
             var discoveryView = QueryDiscoveryMap(playerEntity);
-            
+
             var viewPort = scrollingConsole.ViewPort;
-            foreach (var (x,y) in new RectangleContents(viewPort.X, viewPort.Y, viewPort.Width, viewPort.Height))
+            foreach (var (x, y) in new RectangleContents(viewPort.X, viewPort.Y, viewPort.Width, viewPort.Height))
             {
                 if (discoveryView.TryGet(x, y, out var discovered) && discovered)
                 {
                     // render item
-                    if (!itemView.TryGet(x, y, out var item) || item.IsEmpty || itemResolver.IsItemType(item, MineSweeperItemDefinitions.Wall))
+                    if (!itemLayer.TryQueryItem(EntityGridPosition.Of(MineSweeperMapLayers.Items, x, y), out var item) ||
+                        item.IsEmpty ||
+                        itemResolver.IsItemType(item, MineSweeperItemDefinitions.Wall))
                     {
                         console.SetGlyph(x, y, '#', Color.White, Color.Black);
                     }
@@ -116,12 +118,12 @@ namespace RogueEntity.Samples.MineSweeper.MonoGame
                     {
                         console.SetGlyph(x, y, '#', Color.Gray, Color.Black);
                     }
-                        
                 }
                 else
                 {
                     // render flagged
-                    if (!flagView.TryGet(x, y, out var flagState) || flagState.IsEmpty)
+                    if (!flagLayer.TryQueryItem(EntityGridPosition.Of(MineSweeperMapLayers.Flags, x, y), out var flagState) || 
+                        flagState.IsEmpty)
                     {
                         console.SetGlyph(x, y, '?', new Color(10, 10, 10), Color.Black);
                     }

@@ -1,3 +1,4 @@
+using RogueEntity.Api.Utils;
 using System;
 using System.Diagnostics.CodeAnalysis;
 
@@ -48,14 +49,24 @@ namespace RogueEntity.Core.Positioning
         event EventHandler<ItemPositionChangedEvent<TItemId>> ItemPositionChanged;
 
         /// <summary>
-        ///   Tries to query the item at the given position. 
+        ///   Tries to query the first item at the given position. 
         /// </summary>
-        /// <param name="pos"></param>
+        /// <param name="placementPos"></param>
         /// <param name="item"></param>
         /// <typeparam name="TPosition"></typeparam>
         /// <returns></returns>
-        bool TryQueryItem<TPosition>(in TPosition pos, [MaybeNullWhen(false)] out TItemId item)
-            where TPosition : IPosition<TPosition>;
+        bool TryQueryItem<TPosition>(in TPosition placementPos, [MaybeNullWhen(false)] out TItemId item)
+            where TPosition : struct, IPosition<TPosition>;
+
+        /// <summary>
+        ///   Tries to query all items at the given position. 
+        /// </summary>
+        /// <param name="pos"></param>
+        /// <param name="buffer"></param>
+        /// <typeparam name="TPosition"></typeparam>
+        /// <returns></returns>
+        BufferList<TItemId> QueryItems<TPosition>(in TPosition pos, BufferList<TItemId>? buffer = null)
+            where TPosition : struct, IPosition<TPosition>;
 
         /// <summary>
         ///   Tries to remove the target item from the map. The item will not be destroyed
@@ -67,7 +78,7 @@ namespace RogueEntity.Core.Positioning
         /// <returns></returns>
         bool TryRemoveItem<TPosition>(in TItemId targetItem,
                                       in TPosition placementPos)
-            where TPosition : IPosition<TPosition>;
+            where TPosition : struct, IPosition<TPosition>;
 
         /// <summary>
         ///    Places an item at the given placement position. It is assumed and strongly
@@ -79,7 +90,7 @@ namespace RogueEntity.Core.Positioning
         /// <returns></returns>
         bool TryPlaceItem<TPosition>(in TItemId targetItem,
                                      in TPosition placementPos)
-            where TPosition : IPosition<TPosition>;
+            where TPosition : struct, IPosition<TPosition>;
 
         /// <summary>
         ///    Moves an item at the given current position to the placement position. This
@@ -93,7 +104,7 @@ namespace RogueEntity.Core.Positioning
         bool TryMoveItem<TPosition>(in TItemId item,
                                     in TPosition currentPos,
                                     in TPosition placementPos)
-            where TPosition : IPosition<TPosition>;
+            where TPosition : struct, IPosition<TPosition>;
 
         /// <summary>
         ///    Swaps the source entity with the target entity (which is expected to be located at the given position).
@@ -102,6 +113,6 @@ namespace RogueEntity.Core.Positioning
                                     in TPosition sourcePosition,
                                     in TItemId targetItem,
                                     in TPosition targetPosition)
-            where TPosition : IPosition<TPosition>;
+            where TPosition : struct, IPosition<TPosition>;
     }
 }

@@ -167,7 +167,7 @@ public class PathfinderRegionEdgeData
 
     public void AddOutboundEdge(DistanceCalculation calc, in PathfinderRegionEdge edge)
     {
-        if (edge.TargetZone.RegionId != regionId)
+        if (edge.OwnerId.RegionId != regionId)
         {
             throw new ArgumentException("Given edge is not part of this region");
         }

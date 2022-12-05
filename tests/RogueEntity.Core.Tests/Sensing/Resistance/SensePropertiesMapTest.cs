@@ -58,7 +58,8 @@ namespace RogueEntity.Core.Tests.Sensing.Resistance
         public void TestMapUpdate()
         {
             ctx.TryGetItemGridDataFor(TestMapLayers.One, out var data).Should().BeTrue();
-            data.TrySet(EntityGridPosition.Of(TestMapLayers.One, 0, 0), ctx.ItemResolver.Instantiate(wall)).Should().BeTrue();
+            var itemReference = ctx.ItemResolver.Instantiate(wall);
+            data.TryInsertItem(itemReference, EntityGridPosition.Of(TestMapLayers.One, 0, 0)).Should().BeTrue();
 
             s.AddProcess(TestMapLayers.One, new SensePropertiesDataProcessor<ItemReference, VisionSense>(TestMapLayers.One, ctx,ctx.ItemResolver, 0, 0, 0, 64, 64));
 
@@ -66,7 +67,7 @@ namespace RogueEntity.Core.Tests.Sensing.Resistance
             s.ResetDirtyFlags();
             s.AggregatedView[0, 0].Should().Be(Percentage.Full);
 
-            data.TrySet(EntityGridPosition.Of(TestMapLayers.One, 0, 0), default).Should().BeTrue();
+            data.TryRemoveItem(itemReference, EntityGridPosition.Of(TestMapLayers.One, 0, 0)).Should().BeTrue();
             // without someone marking the data as dirty, no update will be done.
             logger.Debug("Updating map; but not fired event yet");            
             s.Process();
@@ -83,10 +84,10 @@ namespace RogueEntity.Core.Tests.Sensing.Resistance
         public void TestCombinedMapProcessing()
         {
             ctx.TryGetItemGridDataFor(TestMapLayers.One, out var dataLayer1).Should().BeTrue();
-            dataLayer1.TrySet(EntityGridPosition.Of(TestMapLayers.One, 0, 0), ctx.ItemResolver.Instantiate( wall)).Should().BeTrue();
+            dataLayer1.TryInsertItem(ctx.ItemResolver.Instantiate( wall), EntityGridPosition.Of(TestMapLayers.One, 0, 0)).Should().BeTrue();
 
             ctx.TryGetItemGridDataFor(TestMapLayers.Two, out var dataLayer2).Should().BeTrue();
-            dataLayer2.TrySet(EntityGridPosition.Of(TestMapLayers.Two, 0, 0), ctx.ItemResolver.Instantiate( ceilingFan)).Should().BeTrue();
+            dataLayer2.TryInsertItem(ctx.ItemResolver.Instantiate( ceilingFan), EntityGridPosition.Of(TestMapLayers.Two, 0, 0)).Should().BeTrue();
 
             s.AddProcess(TestMapLayers.One, new SensePropertiesDataProcessor<ItemReference, VisionSense>(TestMapLayers.One, ctx, ctx.ItemResolver,0, 0, 0, 64, 64));
             s.AddProcess(TestMapLayers.Two, new SensePropertiesDataProcessor<ItemReference, VisionSense>(TestMapLayers.Two, ctx, ctx.ItemResolver, 0, 0, 0, 64, 64));

@@ -52,7 +52,6 @@ namespace RogueEntity.Core.Tests.Sensing.Map
             context.ItemEntityRegistry.RegisterFlag<ObservedSenseSource<TSourceSense>>();
             context.ItemEntityRegistry.RegisterFlag<SenseDirtyFlag<TSourceSense>>();
             context.ItemEntityRegistry.RegisterNonConstructable<EntityGridPosition>();
-            context.ItemEntityRegistry.RegisterNonConstructable<EntityGridPositionChangedMarker>();
             context.ItemEntityRegistry.RegisterFlag<ImmobilityMarker>();
             context.ItemEntityRegistry.RegisterNonConstructable<SensoryReceptorData<TReceptorSense, TSourceSense>>();
             context.ItemEntityRegistry.RegisterNonConstructable<SensoryReceptorState<TReceptorSense, TSourceSense>>();
@@ -60,13 +59,13 @@ namespace RogueEntity.Core.Tests.Sensing.Map
             context.ItemEntityRegistry.RegisterFlag<SenseReceptorDirtyFlag<TReceptorSense, TSourceSense>>();
 
             senseSourceActive10 = context.ItemRegistry.Register(new ReferenceItemDeclaration<ItemReference>("SenseSource-Active-10")
-                                                                .WithTrait(new ReferenceItemGridPositionTrait<ItemReference>(TestMapLayers.One))
+                                                                .WithTrait(new ReferenceItemGridPositionTrait<ItemReference>(BodySize.OneByOne, TestMapLayers.One))
                                                                 .DoWith(x => AttachTrait(x)));
             senseSourceActive5 = context.ItemRegistry.Register(new ReferenceItemDeclaration<ItemReference>("SenseSource-Active-5")
-                                                               .WithTrait(new ReferenceItemGridPositionTrait<ItemReference>(TestMapLayers.One))
+                                                               .WithTrait(new ReferenceItemGridPositionTrait<ItemReference>(BodySize.OneByOne, TestMapLayers.One))
                                                                .DoWith(x => AttachTrait(x)));
             senseSourceInactive5 = context.ItemRegistry.Register(new ReferenceItemDeclaration<ItemReference>("SenseSource-Inactive-5")
-                                                                 .WithTrait(new ReferenceItemGridPositionTrait<ItemReference>(TestMapLayers.One))
+                                                                 .WithTrait(new ReferenceItemGridPositionTrait<ItemReference>(BodySize.OneByOne, TestMapLayers.One))
                                                                  .DoWith(x => AttachTrait(x)));
 
             timeSource = new TestTimeSource(new RealTimeSourceDefinition(30));
@@ -78,7 +77,6 @@ namespace RogueEntity.Core.Tests.Sensing.Map
             senseSystemActions = CreateSystemActions();
 
             context.TryGetItemGridDataFor(TestMapLayers.One, out var mapData).Should().BeTrue();
-            mapData.TryGetWritableView(0, out _, DataViewCreateMode.CreateMissing).Should().BeTrue();
         }
 
         protected abstract SensoryResistance<TSourceSense> Convert(float f);

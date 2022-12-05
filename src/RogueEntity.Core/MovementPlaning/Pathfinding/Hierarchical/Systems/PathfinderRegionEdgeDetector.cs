@@ -22,7 +22,6 @@ namespace RogueEntity.Core.MovementPlaning.Pathfinding.Hierarchical.Systems
         DistanceCalculation movementKind;
         readonly PathfinderRegionView2D zoneData2D;
         readonly PathfinderRegionDataView zoneData;
-        readonly PathfinderRegionEdgeData2D edgeData2D;
         readonly PathfinderRegionEdgeData edgeData;
         readonly IPooledBoundedDataView<DirectionalityInformation> visitedNodes;
         int directionStep;
@@ -34,13 +33,11 @@ namespace RogueEntity.Core.MovementPlaning.Pathfinding.Hierarchical.Systems
                                             List<(long flag, MovementCostData2D data)> movementData,
                                             PathfinderRegionView2D zoneData2D,
                                             PathfinderRegionDataView zoneData,
-                                            PathfinderRegionEdgeData2D edgeData2D,
                                             PathfinderRegionEdgeData edgeData)
         {
             this.visitedNodes = visitedNodes;
             this.movementData = movementData;
             this.zoneData = zoneData;
-            this.edgeData2D = edgeData2D;
             this.edgeData = edgeData;
             this.zoneData2D = zoneData2D;
             this.zoneTile = null;
@@ -102,7 +99,6 @@ namespace RogueEntity.Core.MovementPlaning.Pathfinding.Hierarchical.Systems
                 return;
             }
 
-            var globalId = new GlobalTraversableZoneId(zoneData.Bounds.Position, start.zone);
             if (!visitedNodes.TryGet(origin.X, origin.Y, out var visitedState))
             {
                 logger.Debug("Failed to get visited info");
@@ -128,7 +124,6 @@ namespace RogueEntity.Core.MovementPlaning.Pathfinding.Hierarchical.Systems
                 return;
             }
 
-            var zone = new GlobalTraversableZoneId(zoneData.Bounds.Position, start.zone);
             logger.Debug("Processing edges at {Origin} with direction {Direction}", origin, startDir);
             logger.Verbose("  (Previous {Origin} with direction {Direction})", origin, visitedState);
             var firstStep = new TraversalStep(origin, startDir);
@@ -155,11 +150,11 @@ namespace RogueEntity.Core.MovementPlaning.Pathfinding.Hierarchical.Systems
             }
         }
 
-        bool IsValidMovementTarget(Position2D origin, Direction d, out long movementFlags)
+        bool IsValidMovementTarget(Position2D origin, Direction d)
         {
             var targetCell = origin + d;
             var targetDirection = d.Inverse();
-            movementFlags = 0;
+            var movementFlags = 0L;
             foreach (var (f, m) in movementData)
             {
                 var inboundMovement = m.InboundDirections.TryGetMapValue(ref inboundDirectionTile, targetCell.X, targetCell.Y, DirectionalityInformation.None);
@@ -196,7 +191,7 @@ namespace RogueEntity.Core.MovementPlaning.Pathfinding.Hierarchical.Systems
                 var visited = IsVisited(cellPos, testDirection);
                 MarkVisited(cellPos, testDirection);
 
-                if (!IsValidMovementTarget(cellPos, testDirection, out var movementFlags))
+                if (!IsValidMovementTarget(cellPos, testDirection))
                 {
                     // A tested direction is blocked. This means if there is a currently
                     // open edge, we have to close out that edge.
@@ -329,7 +324,7 @@ namespace RogueEntity.Core.MovementPlaning.Pathfinding.Hierarchical.Systems
         void RecordIsolatedCell(TraversableZoneId self, Position2D origin)
         {
             var availableDirections = DirectionalityInformation.None;
-            foreach (var (f, m) in movementData)
+            foreach (var (_, m) in movementData)
             {
                 var directions = m.OutboundDirections.TryGetMapValue(ref outboundDirectionTile, origin.X, origin.Y, DirectionalityInformation.None);
                 if (directions != DirectionalityInformation.None)

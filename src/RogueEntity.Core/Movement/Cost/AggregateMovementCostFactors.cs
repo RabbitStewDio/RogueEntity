@@ -5,6 +5,7 @@ using EnTTSharp.Entities.Attributes;
 using MessagePack;
 using RogueEntity.Api.Utils;
 using RogueEntity.Core.Utils;
+using System.Collections.Generic;
 
 namespace RogueEntity.Core.Movement.Cost
 {
@@ -13,6 +14,7 @@ namespace RogueEntity.Core.Movement.Cost
     [DataContract]
     public readonly struct AggregateMovementCostFactors : IEquatable<AggregateMovementCostFactors>
     {
+        static readonly EqualityComparer<IMovementMode> movementComparer = EqualityComparer<IMovementMode>.Default;
         [DataMember(Order = 0)]
         [Key(0)]
         public readonly ReadOnlyListWrapper<MovementCost> MovementCosts;
@@ -33,7 +35,7 @@ namespace RogueEntity.Core.Movement.Cost
             for (var i = 0; i < MovementCosts.Count; i++)
             {
                 var m = MovementCosts[i];
-                if (m.MovementMode == mode)
+                if (movementComparer.Equals(m.MovementMode, mode))
                 {
                     cost = m;
                     return true;

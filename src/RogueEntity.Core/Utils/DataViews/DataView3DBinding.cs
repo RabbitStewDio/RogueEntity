@@ -9,25 +9,15 @@ namespace RogueEntity.Core.Utils.DataViews;
 static class DataView3DBinding
 {
     static readonly ObjectPool<BufferList<Rectangle>> bufferPool;
-    static readonly ObjectProvider provider;
-
-    class ObjectProvider : IPooledObjectProvider<BufferList<Rectangle>>
-    {
-        public void Return(BufferList<Rectangle> t)
-        {
-            bufferPool.Return(t);
-        }
-    }
 
     static DataView3DBinding()
     {
-        provider = new ObjectProvider();
         bufferPool = new DefaultObjectPool<BufferList<Rectangle>>(new BufferListObjectPoolPolicy<Rectangle>());
     }
 
     public static PooledObjectHandle<BufferList<Rectangle>> GetBuffer()
     {
-        return new PooledObjectHandle<BufferList<Rectangle>>(provider, bufferPool.Get());
+        return new PooledObjectHandle<BufferList<Rectangle>>(bufferPool, bufferPool.Get());
     }
 
     public static void ReturnBuffer(BufferList<Rectangle> obj)

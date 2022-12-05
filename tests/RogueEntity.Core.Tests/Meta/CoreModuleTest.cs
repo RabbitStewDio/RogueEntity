@@ -16,7 +16,7 @@ namespace RogueEntity.Core.Tests.Meta
         {
             GameFixture.StartGame();
             GameFixture.Update(TimeSpan.FromSeconds(0.5));
-            var ir = GameFixture.ServiceResolver.Resolve<IItemResolver<ActorReference>>();
+            var ir = GameFixture.ServiceResolver!.Resolve<IItemResolver<ActorReference>>();
             var ek = ir.Instantiate(StandardEntityDefinitions.Player.Id);
             
             GameFixture.Stop();

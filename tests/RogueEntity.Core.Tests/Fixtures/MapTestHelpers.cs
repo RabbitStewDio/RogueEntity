@@ -1,3 +1,5 @@
+using RogueEntity.Core.Positioning;
+using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.DataViews;
 using System;
@@ -10,9 +12,18 @@ namespace RogueEntity.Core.Tests.Fixtures
     {
         public static T At<T>(this IReadOnlyView2D<T> view, int x, int y)
         {
-            if (view.TryGet(x, y, out var r))
+            if (view.TryGet(x, y, out var d))
             {
-                return r;
+                return d;
+            }
+            return default;
+        }
+
+        public static T At<T>(this IMapDataContext<T> view, int x, int y)
+        {
+            foreach (var c in view.QueryItem(EntityGridPosition.Of(view.Layer, x, y)))
+            {
+                return c;
             }
 
             return default;
@@ -195,12 +206,16 @@ namespace RogueEntity.Core.Tests.Fixtures
             {
                 var (x, y) = pos;
 
-                if (!testResult.TryGet(x - offset.X, y - offset.Y, out var result) ||
-                    !expectedResult.TryGet(x, y, out var expected))
+                if (!testResult.TryGet(x - offset.X, y - offset.Y, out var result))
                 {
-                    throw new IndexOutOfRangeException();
+                    throw new IndexOutOfRangeException($"Unable to query test result position ({x - offset.X}, {y - offset.Y})");
                 }
-                
+
+                if (!expectedResult.TryGet(x, y, out var expected))
+                {
+                    throw new IndexOutOfRangeException($"Unable to query given result position ({x - offset.X}, {y - offset.Y})");
+                }
+
                 if (!cmp.Equals(result, expected))
                 {
                     throw new ArgumentException($"Error in comparison at [{x}, {y}]: Expected {expected} but found {result}.\n" +

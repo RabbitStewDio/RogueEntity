@@ -7,17 +7,10 @@ namespace RogueEntity.Core.MovementPlaning.Pathfinding.SingleLevel
     {
         readonly IMovementDataProvider movementDataProvider;
         readonly ObjectPool<SingleLevelPathFinder> pathFinderPool;
-        readonly SingleLevelPathPool pathPool;
-
-        public SingleLevelPathFinderBuilderPolicy(IMovementDataProvider movementDataProvider): 
-            this(movementDataProvider, new SingleLevelPathFinderPolicy())
-        {
-        }
 
         public SingleLevelPathFinderBuilderPolicy(IMovementDataProvider movementDataProvider, 
                                                   IPooledObjectPolicy<SingleLevelPathFinder> policy)
         {
-            this.pathPool = new SingleLevelPathPool();
             this.movementDataProvider = movementDataProvider;
             this.pathFinderPool = new DefaultObjectPool<SingleLevelPathFinder>(policy);
         }

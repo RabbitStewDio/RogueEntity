@@ -176,7 +176,7 @@ namespace RogueEntity.Core.Movement.MovementModes
             var sr = initParameter.ServiceResolver;
             var sys = GetOrCreateMovementPropertiesSystem<TItemId>(sr);
             var itemContext = sr.Resolve<IItemResolver<TItemId>>();
-            var mapContext = sr.Resolve<IGridMapContext<TItemId>>();
+            var mapContext = sr.Resolve<IMapContext<TItemId>>();
 
             context.AddInitializationStepHandler(() =>
             {

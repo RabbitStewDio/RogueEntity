@@ -1,5 +1,4 @@
 ﻿using RogueEntity.Api.Utils;
-using RogueEntity.Core.Utils;
 using System.Collections.Generic;
 
 namespace RogueEntity.Core.MovementPlaning.Pathfinding.Hierarchical.Data;

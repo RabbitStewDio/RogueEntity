@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+using RogueEntity.Api.Utils;
 using System.Diagnostics.CodeAnalysis;
 
 namespace RogueEntity.Core.Utils.SpatialIndex
@@ -9,15 +9,13 @@ namespace RogueEntity.Core.Utils.SpatialIndex
         bool TryGet(FreeListIndex index, [MaybeNullWhen(false)] out T data, out BoundingBox boundingBox);
         void Remove(FreeListIndex elementIndex);
 
-        List<FreeListIndex> Query(in BoundingBox bb, List<FreeListIndex> result, FreeListIndex skipElement = default);
-    }
+        BufferList<FreeListIndex> QueryIndex(in BoundingBox bb, 
+                                        BufferList<FreeListIndex>? result = null, 
+                                        FreeListIndex skipElement = default);
 
-    public static class SpatialIndexExtensions
-    {
-        public static List<FreeListIndex> Query<T>(this  ISpatialIndex2D<T> self, in BoundingBox bb, FreeListIndex skipElement = default)
-        {
-            return self.Query(bb, new List<FreeListIndex>(), skipElement);
-        }
+        BufferList<T> Query(in BoundingBox bb,
+                            BufferList<T>? result = default,
+                            FreeListIndex skipElement = default);
 
     }
 }

@@ -1,14 +1,13 @@
 ﻿using Microsoft.Extensions.ObjectPool;
 using RogueEntity.Core.Utils;
-using RogueEntity.Core.Utils.DataViews;
 
 namespace RogueEntity.Core.MovementPlaning.Pathfinding.Hierarchical.Systems
 {
-    public class PathfinderRegionPainterSharedDataFactory : IPooledObjectProvider<PriorityQueue<float, Position2D>>
+    public class PathfinderRegionPainterSharedDataFactory 
     {
         readonly ObjectPool<PriorityQueue<float, Position2D>> openNodesPool;
 
-        public PathfinderRegionPainterSharedDataFactory(DynamicDataViewConfiguration config)
+        public PathfinderRegionPainterSharedDataFactory()
         {
             openNodesPool = new DefaultObjectPool<PriorityQueue<float, Position2D>>(new PriorityQueuePolicy());
         }
@@ -20,8 +19,7 @@ namespace RogueEntity.Core.MovementPlaning.Pathfinding.Hierarchical.Systems
 
         public PooledObjectHandle<PriorityQueue<float, Position2D>> Get()
         {
-            return new PooledObjectHandle<PriorityQueue<float, Position2D>>
-                (this, openNodesPool.Get());
+            return new PooledObjectHandle<PriorityQueue<float, Position2D>>(openNodesPool, openNodesPool.Get());
         }
 
         class PriorityQueuePolicy : IPooledObjectPolicy<PriorityQueue<float, Position2D>>

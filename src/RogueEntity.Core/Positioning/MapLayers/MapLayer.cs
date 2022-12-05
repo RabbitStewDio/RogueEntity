@@ -11,7 +11,8 @@ namespace RogueEntity.Core.Positioning.MapLayers
     [MessagePackFormatter(typeof(MapLayerMessagePackFormatter))]
     public readonly struct MapLayer : IEquatable<MapLayer>
     {
-        public static MapLayer Indeterminate => new MapLayer(0, "Indeterminate");
+        public const int IndeterminateLayerId = 0;
+        public static MapLayer Indeterminate => new MapLayer(IndeterminateLayerId, "Indeterminate");
 
         [SerializationConstructor]
         public MapLayer(byte layerId, string name)

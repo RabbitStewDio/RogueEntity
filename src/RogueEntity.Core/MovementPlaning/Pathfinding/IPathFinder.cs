@@ -1,4 +1,3 @@
-using EnTTSharp;
 using RogueEntity.Core.MovementPlaning.Pathfinding.SingleLevel;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Algorithms;

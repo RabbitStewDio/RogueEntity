@@ -41,7 +41,6 @@ namespace RogueEntity.Core.Positioning.Continuous
             where TActorId : struct, IEntityKey
         {
             registry.RegisterNonConstructable<ContinuousMapPosition>();
-            registry.RegisterNonConstructable<ContinuousMapPositionChangedMarker>();
         }
 
         void RegisterClearContinuousPositionChangeTrackers<TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter,
@@ -49,13 +48,7 @@ namespace RogueEntity.Core.Positioning.Continuous
                                                                      EntityRegistry<TActorId> registry)
             where TActorId : struct, IEntityKey
         {
-            void ClearContinuousPositionAction()
-            {
-                registry.ResetComponent<ContinuousMapPositionChangedMarker>();
-            }
-
-            context.AddFixedStepHandlers(ClearContinuousPositionAction);
-            ContinuousMapPositionChangedMarker.InstallChangeHandler(registry);
+            MapPositionChangeTracker<ContinuousMapPosition>.InstallChangeHandler(registry);
         }
 
     }

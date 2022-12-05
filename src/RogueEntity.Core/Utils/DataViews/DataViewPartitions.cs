@@ -93,7 +93,7 @@ namespace RogueEntity.Core.Utils.DataViews
             {
                 var left = dx * tileWidth + offsetX;
                 var top = dy * tileHeight + offsetY;
-                var partition = new BoundingBox(left, top, left + tileWidth, top + tileHeight);
+                var partition = BoundingBox.From(left, top, left + tileWidth, top + tileHeight);
                 data.Add(partition);
             }
 

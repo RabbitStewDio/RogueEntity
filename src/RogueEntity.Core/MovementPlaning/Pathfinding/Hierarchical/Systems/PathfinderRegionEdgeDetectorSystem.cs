@@ -18,7 +18,6 @@ public class PathfinderRegionEdgeDetectorSystem
     static readonly ILogger logger = SLog.ForContext<PathfinderRegionEdgeDetectorSystem>();
     readonly PathfinderRegionView3D dataView;
     readonly PathfinderRegionEdgeData3D edgeDataView;
-    readonly DynamicDataViewConfiguration config;
     readonly IMovementDataProvider dataProvider;
     readonly BufferList<EdgeJob> edgeDetectorCoreJobs;
     readonly BufferList<EdgeJob> edgeDetectorNeighbourJobs;
@@ -28,7 +27,6 @@ public class PathfinderRegionEdgeDetectorSystem
     readonly MovementModeEncoding movementModeEncoding;
     readonly DefaultBoundedDataViewPool<DirectionalityInformation> edgeDetectorPagePool;
     readonly bool allowParallelExecution;
-    int generation;
 
     public PathfinderRegionEdgeDetectorSystem(DynamicDataViewConfiguration config,
                                               IMovementDataProvider dataProvider,
@@ -36,7 +34,6 @@ public class PathfinderRegionEdgeDetectorSystem
                                               PathfinderRegionEdgeData3D edgeDataView,
                                               MovementModeEncoding movementModeEncoding)
     {
-        this.config = config;
         this.dataProvider = dataProvider;
         this.dataView = dataView;
         this.edgeDataView = edgeDataView;
@@ -71,7 +68,6 @@ public class PathfinderRegionEdgeDetectorSystem
     public void RecomputeEdges()
     {
         CollectEdgeComputationJobs();
-        generation += 1;
 
         if (allowParallelExecution)
         {
@@ -173,7 +169,7 @@ public class PathfinderRegionEdgeDetectorSystem
                 if (pathfinderRegion.State == RegionEdgeState.MarkedForRemove ||
                     pathfinderRegion.State == RegionEdgeState.Dirty)
                 {
-                    edgeDetectorCoreJobs.Add(new EdgeJob(layerView, pathfinderRegion, edgeView, edgeRegion, layer, movementCosts));
+                    edgeDetectorCoreJobs.Add(new EdgeJob(layerView, pathfinderRegion, edgeView, edgeRegion, movementCosts));
                     MarkNeighboursAsDirty(layerView, pathfinderRegion.Bounds);
                 }
             }
@@ -220,7 +216,7 @@ public class PathfinderRegionEdgeDetectorSystem
 
                 if (zoneRegion.State == RegionEdgeState.Dirty)
                 {
-                    edgeDetectorCoreJobs.Add(new EdgeJob(zoneView, zoneRegion, edgeView, edgeRegion, layer, movementCosts));
+                    edgeDetectorCoreJobs.Add(new EdgeJob(zoneView, zoneRegion, edgeView, edgeRegion, movementCosts));
                 }
             }
 
@@ -239,7 +235,7 @@ public class PathfinderRegionEdgeDetectorSystem
                 if (zoneRegion.State != RegionEdgeState.Dirty &&
                     zoneRegion.State != RegionEdgeState.Clean)
                 {
-                    edgeDetectorNeighbourJobs.Add(new EdgeJob(zoneView, zoneRegion, edgeView, edgeRegion, layer, movementCosts));
+                    edgeDetectorNeighbourJobs.Add(new EdgeJob(zoneView, zoneRegion, edgeView, edgeRegion, movementCosts));
                 }
             }
         }
@@ -262,7 +258,6 @@ public class PathfinderRegionEdgeDetectorSystem
                                                    jobParam.movementData, 
                                                    jobParam.regionData2D, 
                                                    jobParam.regionData, 
-                                                   jobParam.edgeData2D, 
                                                    jobParam.edgeData);
 
         using var movementStyles = BufferListPool<DistanceCalculation>.GetPooled();
@@ -274,8 +269,7 @@ public class PathfinderRegionEdgeDetectorSystem
     
     void PostProcess(EdgeJob jobParams)
     {
-        var job = new PathfinderRegionEdgeDetectorPostProcessor(jobParams.regionData2D, 
-                                                                jobParams.regionData, 
+        var job = new PathfinderRegionEdgeDetectorPostProcessor(jobParams.regionData, 
                                                                 jobParams.edgeData2D, 
                                                                 jobParams.edgeData);
         job.ReconnectZoneEdges();
@@ -314,18 +308,15 @@ public class PathfinderRegionEdgeDetectorSystem
         public readonly PathfinderRegionDataView regionData;
         public readonly PathfinderRegionEdgeData2D edgeData2D;
         public readonly PathfinderRegionEdgeData edgeData;
-        public readonly int layer;
         public readonly List<(long flag, MovementCostData2D data)> movementData;
 
         public EdgeJob(PathfinderRegionView2D regionData2D, PathfinderRegionDataView regionData,
-                       PathfinderRegionEdgeData2D edgeData2D, PathfinderRegionEdgeData edgeData,
-                       int layer, List<(long flag, MovementCostData2D data)> movementData)
+                       PathfinderRegionEdgeData2D edgeData2D, PathfinderRegionEdgeData edgeData, List<(long flag, MovementCostData2D data)> movementData)
         {
             this.regionData2D = regionData2D;
             this.regionData = regionData;
             this.edgeData2D = edgeData2D;
             this.edgeData = edgeData;
-            this.layer = layer;
             this.movementData = movementData;
         }
     }

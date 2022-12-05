@@ -32,7 +32,9 @@ namespace RogueEntity.Core.Tests.MapLoading.MapRegions
         public override void SetUp()
         {
             base.SetUp();
+            Assert.NotNull(GameFixture.ServiceResolver);
             GameFixture.ServiceResolver.TryResolve(out IMapRegionTrackerService<int> regionLoader).Should().BeTrue();
+            Assert.NotNull(regionLoader);
             this.regionTracker = regionLoader;
         }
 
@@ -124,7 +126,8 @@ namespace RogueEntity.Core.Tests.MapLoading.MapRegions
         [Test]
         public void ValidateReloadingLevel()
         {
-            var placementService = GameFixture.ServiceResolver.Resolve<IItemPlacementService<ItemReference>>();
+            var serviceResolver = GameFixture.ServiceResolver ?? throw new ArgumentException();
+            var placementService = serviceResolver.Resolve<IItemPlacementService<ItemReference>>();
 
             GameFixture.StartGame();
             GameFixture.AdvanceFrame();
@@ -134,7 +137,7 @@ namespace RogueEntity.Core.Tests.MapLoading.MapRegions
             placementService.TryQueryItem(EntityGridPosition.Of(TestMapLayers.Ground, 1, 1), out var spawnPoint).Should().BeTrue();
             spawnPoint.IsReference.Should().BeTrue();
 
-            this.GameFixture.CommandService.TrySubmit(playerEntity, new ChangeLevelCommand(0)).Should().BeTrue();
+            this.GameFixture.CommandService!.TrySubmit(playerEntity, new ChangeLevelCommand(0)).Should().BeTrue();
 
             // Step 1: Unloads the current level.
             GameFixture.AdvanceFrame();

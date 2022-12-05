@@ -1,5 +1,4 @@
 ﻿using EnTTSharp;
-using JetBrains.Annotations;
 using RogueEntity.Core.GridProcessing.Directionality;
 using RogueEntity.Core.Movement.Cost;
 using RogueEntity.Core.Movement.CostModifier;
@@ -8,80 +7,32 @@ using RogueEntity.Core.MovementPlaning.Pathfinding.Hierarchical.Systems;
 using RogueEntity.Core.MovementPlaning.Pathfinding.SingleLevel;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Algorithms;
-using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Utils;
 using RogueEntity.Core.Utils.DataViews;
 using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 
 namespace RogueEntity.Core.MovementPlaning.Pathfinding.Hierarchical;
 
 public class HierarchicalPathFinder : IPathFinder
 {
-    readonly struct PathfinderNode
-    {
-        public enum NodeState : byte
-        {
-            [UsedImplicitly] None = 0,
-            Open = 1,
-            Closed = 2
-        }
-
-        // Whether or not the node has been closed
-        public readonly NodeState State;
-
-        public readonly Position2D PreviousNode;
-
-        public readonly ushort DistanceFromStart;
-
-        // (Known) distance from start to this node, by shortest known path
-        public readonly float AccumulatedCost;
-
-        public PathfinderNode(NodeState state, float accumulatedCost, Position2D previousNode, ushort distanceFromStart)
-        {
-            State = state;
-            AccumulatedCost = accumulatedCost;
-            PreviousNode = previousNode;
-            DistanceFromStart = distanceFromStart;
-        }
-
-        public static PathfinderNode Start(Position2D origin, float cost)
-        {
-            return new PathfinderNode(NodeState.Open, cost, origin, 0);
-        }
-
-        public PathfinderNode Close()
-        {
-            return new PathfinderNode(NodeState.Closed, AccumulatedCost, PreviousNode, DistanceFromStart);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool IsClosed()
-        {
-            return State == NodeState.Closed;
-        }
-    }
-
     readonly List<MovementCostData3D> movementSourceData;
     readonly PriorityQueue<float, Position2D> openNodes;
-    readonly Dictionary<Position2D, AStarNode> closedNodes;
     readonly HierarchicalPathfindingSystemCollection highLevelPathfindingData;
-    readonly HierarchicalPathfinderWorker highlevelPathfinderWorker;
+    readonly HierarchicalPathfinderWorker highLevelPathfinderWorker;
 
-    Optional<int> movementDataSource;
     HierarchicalPathfinderBuilder? currentOwner;
     IPathFinderTargetEvaluator? targetEvaluator;
     IPathFinder? fragmentPathfinder;
     bool disposed;
 
-    public HierarchicalPathFinder(HierarchicalPathfindingSystemCollection highLevelPathfindingData)
+    public HierarchicalPathFinder(HierarchicalPathfindingSystemCollection highLevelPathfindingData,
+                                  SingleLevelPathPool pathPool)
     {
         this.highLevelPathfindingData = highLevelPathfindingData ?? throw new ArgumentNullException(nameof(highLevelPathfindingData));
         movementSourceData = new List<MovementCostData3D>();
         openNodes = new PriorityQueue<float, Position2D>(4096);
-        closedNodes = new Dictionary<Position2D, AStarNode>();
-        movementDataSource = Optional.Empty();
+        highLevelPathfinderWorker = new HierarchicalPathfinderWorker(highLevelPathfindingData.Config, pathPool, highLevelPathfindingData);
     }
 
     public void Dispose()
@@ -91,13 +42,11 @@ public class HierarchicalPathFinder : IPathFinder
             return;
         }
 
-        movementDataSource = Optional.Empty();
         disposed = true;
         currentOwner?.Return(this);
         currentOwner = null;
         targetEvaluator = null;
         openNodes.Clear();
-        closedNodes.Clear();
     }
 
     public IPathFinderTargetEvaluator? TargetEvaluator => targetEvaluator;
@@ -139,8 +88,8 @@ public class HierarchicalPathFinder : IPathFinder
         }
 
         var startZone = new GlobalTraversableZoneId(regionTile.Bounds.Position, startZoneRaw.Item1);
-        highlevelPathfinderWorker.Initialize(movementSourceData, startZone, startPos, startZ);
-        var sameZone = highlevelPathfinderWorker.AddTargets(targetEvaluator);
+        highLevelPathfinderWorker.Initialize(movementSourceData, startZone, startPos, startZ);
+        var sameZone = highLevelPathfinderWorker.AddTargets(targetEvaluator);
 
         Optional<(IPath path, float cost)> maybeDirectPath = Optional.Empty();
         if (sameZone)
@@ -158,7 +107,7 @@ public class HierarchicalPathFinder : IPathFinder
             }
         }
 
-        if (!highlevelPathfinderWorker.FindPath(maybeDirectPath, fragmentPathfinder, out var hpath, out var cost))
+        if (!highLevelPathfinderWorker.FindPath(maybeDirectPath, fragmentPathfinder, out var hpath, out var cost))
         {
             if (maybeDirectPath.TryGetValue(out var value))
             {
@@ -193,7 +142,6 @@ public class HierarchicalPathFinder : IPathFinder
                           IPathFinder pathFinder)
     {
         this.disposed = false;
-        this.movementDataSource = Optional.Empty();
         this.movementSourceData.Clear();
         this.fragmentPathfinder = pathFinder ?? throw new ArgumentNullException(nameof(pathFinder));
         this.currentOwner = owner ?? throw new ArgumentNullException(nameof(owner));
@@ -203,7 +151,6 @@ public class HierarchicalPathFinder : IPathFinder
     public void Reset()
     {
         this.disposed = false;
-        this.movementDataSource = Optional.Empty();
         this.movementSourceData.Clear();
     }
 

@@ -1,6 +1,5 @@
 using System;
 using FluentAssertions;
-using Microsoft.Extensions.ObjectPool;
 using NUnit.Framework;
 using RogueEntity.Core.GridProcessing.Directionality;
 using RogueEntity.Core.Meta.EntityKeys;
@@ -32,7 +31,7 @@ namespace RogueEntity.Core.Tests.Movement.GoalFinding
         ItemContextBackend<ItemReference> context;
         GoalRegistry goalRegistry;
         SpatialQueryRegistry spatialQueryRegistry;
-        GridItemPlacementService<ItemReference> itemPlacementService;
+        ItemPlacementService<ItemReference> itemPlacementService;
 
         const string EmptyRoom = @"
  // 9x9; an empty room
@@ -91,18 +90,17 @@ namespace RogueEntity.Core.Tests.Movement.GoalFinding
         [SetUp]
         public void SetUp()
         {
-            var gridMapContext = new DefaultGridPositionContextBackend<ItemReference>();
-            gridMapContext.WithDefaultMapLayer(TestMapLayers.One, DynamicDataViewConfiguration.Default16X16);
+            var gridMapContext = new DefaultMapContext<ItemReference>(DynamicDataViewConfiguration.Default16X16);
+            gridMapContext.WithBasicGridMapLayer(TestMapLayers.One);
 
 
             context = new ItemContextBackend<ItemReference>(new ItemReferenceMetaData());
             context.EntityRegistry.RegisterNonConstructable<ItemDeclarationHolder<ItemReference>>();
             context.EntityRegistry.RegisterNonConstructable<EntityGridPosition>();
-            context.EntityRegistry.RegisterNonConstructable<EntityGridPositionChangedMarker>();
             context.EntityRegistry.RegisterNonConstructable<GoalMarker<TestGoal>>();
             context.ItemRegistry.Register(new ReferenceItemDeclaration<ItemReference>("Goal")
                                           .WithTrait(new GoalMarkerTrait<ItemReference, TestGoal>(10))
-                                          .WithTrait(new ReferenceItemGridPositionTrait<ItemReference>(TestMapLayers.One))
+                                          .WithTrait(new ReferenceItemGridPositionTrait<ItemReference>(BodySize.OneByOne, TestMapLayers.One))
             );
 
             goalRegistry = new GoalRegistry();
@@ -111,7 +109,7 @@ namespace RogueEntity.Core.Tests.Movement.GoalFinding
             spatialQueryRegistry = new SpatialQueryRegistry();
             spatialQueryRegistry.Register(new BruteForceSpatialQueryBackend<ItemReference>(context.EntityRegistry));
 
-            itemPlacementService = new GridItemPlacementService<ItemReference>(context.ItemResolver, gridMapContext);
+            itemPlacementService = new ItemPlacementService<ItemReference>(context.ItemResolver, gridMapContext);
         }
 
 

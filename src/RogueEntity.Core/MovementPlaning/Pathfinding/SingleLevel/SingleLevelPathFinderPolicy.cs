@@ -11,15 +11,24 @@ namespace RogueEntity.Core.MovementPlaning.Pathfinding.SingleLevel
         readonly IBoundedDataViewPool<IMovementMode> movementModePool;
         readonly SingleLevelPathPool pathPool;
 
-        public SingleLevelPathFinderPolicy(DynamicDataViewConfiguration config) : this(new DefaultBoundedDataViewPool<AStarNode>(config),
+        public SingleLevelPathFinderPolicy(DynamicDataViewConfiguration config) : this(new SingleLevelPathPool(),
+                                                                                       new DefaultBoundedDataViewPool<AStarNode>(config),
                                                                                        new DefaultBoundedDataViewPool<IMovementMode>(config))
         {
         }
 
-        public SingleLevelPathFinderPolicy(IBoundedDataViewPool<AStarNode>? nodePool = null,
+        public SingleLevelPathFinderPolicy(DynamicDataViewConfiguration config,
+                                           SingleLevelPathPool pool) : this(pool,
+                                                                            new DefaultBoundedDataViewPool<AStarNode>(config),
+                                                                            new DefaultBoundedDataViewPool<IMovementMode>(config))
+        {
+        }
+
+        public SingleLevelPathFinderPolicy(SingleLevelPathPool pathPool,
+                                           IBoundedDataViewPool<AStarNode>? nodePool = null,
                                            IBoundedDataViewPool<IMovementMode>? movementModePool = null)
         {
-            this.pathPool = new SingleLevelPathPool();
+            this.pathPool = pathPool;
             this.nodePool = nodePool ?? new DefaultBoundedDataViewPool<AStarNode>(new DynamicDataViewConfiguration(0, 0, 16, 16));
             this.movementModePool = movementModePool ?? new DefaultBoundedDataViewPool<IMovementMode>(new DynamicDataViewConfiguration(0, 0, 16, 16));
         }

@@ -91,9 +91,15 @@ public class HierarchicalPathfinderModule : ModuleBase
 
         highLevelData.Initialize();
 
+        if (!serviceResolver.TryResolve<SingleLevelPathPool>(out var pathPool))
+        {
+            pathPool = new SingleLevelPathPool();
+            serviceResolver.Store(pathPool);
+        }
+        
         if (!serviceResolver.TryResolve<HierarchicalPathFinderPolicy>(out var policy))
         {
-            policy = new HierarchicalPathFinderPolicy(gridConfig, highLevelData);
+            policy = new HierarchicalPathFinderPolicy(highLevelData, pathPool);
         }
 
         source = new HierarchicalPathfinderSource(fragmentSource, policy, movementDataProvider);

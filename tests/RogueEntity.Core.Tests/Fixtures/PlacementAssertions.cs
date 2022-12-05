@@ -1,10 +1,9 @@
 using FluentAssertions;
 using RogueEntity.Api.ItemTraits;
-using RogueEntity.Core.Meta.EntityKeys;
 using RogueEntity.Core.Meta.ItemTraits;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Grid;
-using RogueEntity.Core.Utils;
+using System.Collections.Generic;
 
 namespace RogueEntity.Core.Tests.Fixtures
 {
@@ -23,15 +22,18 @@ namespace RogueEntity.Core.Tests.Fixtures
 
         public PlacementAssertions<TEntity, TItemFixture> ContainEntity(TEntity r)
         {
-            fixture.ItemMapContext.TryGetGridDataFor(position.LayerId, out var data).Should().BeTrue();
-            data.TryGetView(position.GridZ, out var view).Should().BeTrue();
-            Assert.NotNull(view);
-            view.TryGet(position.GridX, position.GridY, out var content).Should().Be(true);
-            content.Should().Be(r);
+            var cmp = EqualityComparer<TEntity>.Default;
+            fixture.ItemMapContext.TryGetMapDataFor(position.LayerId, out var data).Should().BeTrue();
+            var found = false;
+            foreach (var content in data.QueryItem(position))
+            {
+                found |= cmp.Equals(content, r);
+            }
+            found.Should().BeTrue();
 
             if (r.IsReference)
             {
-                fixture.ItemResolver.TryQueryData(r, out EntityGridPosition entityPositionFromComponent).Should().BeTrue();
+                fixture.ItemResolver.TryQueryData<EntityGridPosition>(r, out var entityPositionFromComponent).Should().BeTrue();
                 entityPositionFromComponent.Should().BeEquivalentTo(EntityGridPosition.From(position));
             }
 
@@ -40,28 +42,40 @@ namespace RogueEntity.Core.Tests.Fixtures
 
         public PlacementAssertions<TEntity, TItemFixture> BeEmpty()
         {
-            return ContainEntity(default);
+            fixture.ItemMapContext.TryGetMapDataFor(position.LayerId, out var data).Should().BeTrue();
+            data.QueryItem(position).Count.Should().Be(0);
+            return this;
         }
 
         public PlacementAssertions<TEntity, TItemFixture> ContainEntityOfType(ItemDeclarationId id)
         {
-            fixture.ItemMapContext.TryGetGridDataFor(position.LayerId, out var data).Should().BeTrue();
-            data.TryGetView(position.GridZ, out var view).Should().BeTrue();
-            Assert.NotNull(view);
-            view.TryGet(position.GridX, position.GridY, out var entity).Should().Be(true);
-            fixture.ItemResolver.TryResolve(entity, out var itemDeclaration).Should().BeTrue();
-            itemDeclaration.Id.Should().Be(id);
+            fixture.ItemMapContext.TryGetMapDataFor(position.LayerId, out var data).Should().BeTrue();
+            foreach (var content in data.QueryItem(position))
+            {
+                if (fixture.ItemResolver.TryResolve(content, out var itemDeclaration) &&
+                    itemDeclaration.Id == id)
+                {
+                    return this;
+                }
+            }
+            
+            NUnit.Framework.Assert.Fail();
             return this;
         }
 
         public PlacementAssertions<TEntity, TItemFixture> WithStackSize(int expectedStackCount)
         {
-            fixture.ItemMapContext.TryGetGridDataFor(position.LayerId, out var data).Should().BeTrue();
-            data.TryGetView(position.GridZ, out var view).Should().BeTrue();
-            Assert.NotNull(view);
-            view.TryGet(position.GridX, position.GridY, out var entity).Should().Be(true);
-            var stack = fixture.ItemResolver.QueryStackSize(entity);
-            stack.Count.Should().Be(expectedStackCount);
+            fixture.ItemMapContext.TryGetMapDataFor(position.LayerId, out var data).Should().BeTrue();
+            foreach (var content in data.QueryItem(position))
+            {
+                var stack = fixture.ItemResolver.QueryStackSize(content);
+                if (stack.Count == expectedStackCount)
+                {
+                    return this;
+                }
+            }
+            
+            NUnit.Framework.Assert.Fail();
             return this;
         }
 
@@ -73,11 +87,13 @@ namespace RogueEntity.Core.Tests.Fixtures
 
         public TEntity Fetch()
         {
-            fixture.ItemMapContext.TryGetGridDataFor(position.LayerId, out var data).Should().BeTrue();
-            data.TryGetView(position.GridZ, out var view).Should().BeTrue();
-            Assert.NotNull(view);
-            view.TryGet(position.GridX, position.GridY, out var result).Should().BeTrue();
-            return result;
+            fixture.ItemMapContext.TryGetMapDataFor(position.LayerId, out var data).Should().BeTrue();
+            foreach (var content in data.QueryItem(position))
+            {
+                return content;
+            }
+            
+            return default;
         }
 
         public ItemAssertions<TItemFixture, TEntity> AndThatItem()

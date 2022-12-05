@@ -25,13 +25,13 @@ namespace RogueEntity.Core.Utils.SpatialIndex
             var extendY = Math.Abs(b.Bottom - b.Top) / 2;
             return new AABB(centerX, centerY, extendX, extendY);
         }
-        
+
         public static implicit operator BoundingBox(AABB b)
         {
-            return new BoundingBox(b.CenterX - b.ExtendX, b.CenterY - b.ExtendY,
-                                   b.CenterX + b.ExtendX, b.CenterY + b.ExtendY);
+            return BoundingBox.From(b.CenterX - b.ExtendX, b.CenterY - b.ExtendY,
+                                    b.CenterX + b.ExtendX, b.CenterY + b.ExtendY);
         }
-        
+
         public void Deconstruct(out int centerX, out int centerY, out int extendX, out int extendY)
         {
             centerX = CenterX;
@@ -45,6 +45,4 @@ namespace RogueEntity.Core.Utils.SpatialIndex
             return $"AABB({nameof(CenterX)}: {CenterX}, {nameof(CenterY)}: {CenterY}, {nameof(ExtendX)}: {ExtendX}, {nameof(ExtendY)}: {ExtendY})";
         }
     }
-    
-
 }

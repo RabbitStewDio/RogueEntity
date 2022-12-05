@@ -6,7 +6,7 @@ namespace RogueEntity.Core.Positioning.Grid
 {
     public class GridPositionCleanUpSystem<TEntityId, TPosition>
         where TEntityId : struct, IEntityKey
-        where TPosition: IPosition<TPosition>
+        where TPosition: struct, IPosition<TPosition>
     {
         readonly List<(TEntityId k, TPosition pos)> removedEntities;
         readonly IItemPlacementServiceContext<TEntityId> placementService;

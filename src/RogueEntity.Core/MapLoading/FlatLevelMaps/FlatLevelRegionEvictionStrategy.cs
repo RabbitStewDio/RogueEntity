@@ -30,11 +30,11 @@ namespace RogueEntity.Core.MapLoading.FlatLevelMaps
         {
             if (!mapMetaData.TryGetRegionBounds(region, out var bounds))
             {
+                logger.Debug("Skipping unloading map region {Region} as region is not tracked", region);
                 return MapRegionProcessingResult.Error;
             }
 
             logger.Debug("Unloading map region {Region}", region);
-            
             var mb = mapBuilder.Value;
             mb.Clear(MapLayer.Indeterminate, region, bounds.ToLayerSlice(), selectForPreservationHandler);
             return MapRegionProcessingResult.Success;

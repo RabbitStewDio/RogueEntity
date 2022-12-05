@@ -1,7 +1,5 @@
-using EnTTSharp.Entities;
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Core.Positioning;
-using RogueEntity.Core.Positioning.Grid;
 
 namespace RogueEntity.Core.Tests.Fixtures
 {
@@ -16,7 +14,8 @@ namespace RogueEntity.Core.Tests.Fixtures
         where TEntity : struct, IBulkDataStorageKey<TEntity>
     {
         public abstract IItemResolver<TEntity> ItemResolver { get; }
-        public abstract IGridMapContext<TEntity> ItemMapContext { get; }
+        public abstract IMapContext<TEntity> ItemMapContext { get; }
+        public abstract IItemPlacementServiceContext<TEntity> ItemPlacementContext { get; }
 
         public EntityContext<TSelf, TEntity> GivenAnEntity(ItemDeclarationId item)
             => new EntityContext<TSelf, TEntity>((TSelf)this, item);

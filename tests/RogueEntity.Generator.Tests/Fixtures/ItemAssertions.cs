@@ -1,4 +1,3 @@
-using EnTTSharp.Entities;
 using FluentAssertions;
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Core.Tests.Fixtures;

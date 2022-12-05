@@ -6,12 +6,6 @@ using System.Linq;
 
 namespace RogueEntity.Core.Meta.ItemTraits
 {
-    public enum EvictionBehaviour
-    {
-        Destroy,
-        RemoveAndPreserve
-    }
-    
     public class EvictionBehaviourTrait<TActorId>: StatelessItemComponentTraitBase<TActorId, EvictionBehaviour>
         where TActorId : struct, IEntityKey
     {

@@ -1,7 +1,7 @@
 using EnTTSharp.Entities;
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Api.Services;
-using RogueEntity.Core.Positioning.Grid;
+using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.MapLayers;
 using System;
 
@@ -11,18 +11,18 @@ namespace RogueEntity.SadCons.MapRendering
     {
         public readonly struct GridMapLayerBuilder<TMapData>
         {
-            readonly IGridMapContext<TMapData> map;
+            readonly IMapContext<TMapData> map;
             readonly MapLayer layer;
             readonly Func<TMapData, WorldEntityTag> tagConverter;
 
-            public GridMapLayerBuilder(IGridMapContext<TMapData> map) : this()
+            public GridMapLayerBuilder(IMapContext<TMapData> map) : this()
             {
                 this.map = map;
                 layer = default;
                 tagConverter = default;
             }
 
-            GridMapLayerBuilder(IGridMapContext<TMapData> map, MapLayer layer, Func<TMapData, WorldEntityTag> tagConverter)
+            GridMapLayerBuilder(IMapContext<TMapData> map, MapLayer layer, Func<TMapData, WorldEntityTag> tagConverter)
             {
                 this.map = map;
                 this.layer = layer;
@@ -41,7 +41,7 @@ namespace RogueEntity.SadCons.MapRendering
 
             public IEntityToTagConverter Build()
             {
-                if (!map.TryGetGridDataFor(layer, out var data))
+                if (!map.TryGetMapDataFor(layer, out var data))
                 {
                     throw new ArgumentException();
                 }
@@ -70,7 +70,7 @@ namespace RogueEntity.SadCons.MapRendering
             };
         }
 
-        public static GridMapLayerBuilder<TMapData> FromGrid<TMapData>(IGridMapContext<TMapData> map)
+        public static GridMapLayerBuilder<TMapData> FromGrid<TMapData>(IMapContext<TMapData> map)
         {
             return new GridMapLayerBuilder<TMapData>(map);
         }

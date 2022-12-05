@@ -8,19 +8,22 @@ using RogueEntity.Core.Positioning.MapLayers;
 namespace RogueEntity.Core.Positioning.Grid
 {
     public class ReferenceItemGridPositionTrait<TItemId> : IReferenceItemTrait<TItemId>,
-                                                           IItemComponentTrait<TItemId, EntityGridPositionUpdateMessage>,
+                                                           IItemComponentTrait<TItemId, Position>,
+                                                           IItemComponentTrait<TItemId, EntityGridPosition>,
                                                            IItemComponentDesignTimeInformationTrait<MapLayerPreference>,
-                                                           IItemComponentInformationTrait<TItemId, EntityGridPosition>,
-                                                           IItemComponentInformationTrait<TItemId, Position>,
                                                            IItemComponentInformationTrait<TItemId, MapLayerPreference>,
-                                                           IItemComponentInformationTrait<TItemId, MapContainerEntityMarker>
+                                                           IItemComponentInformationTrait<TItemId, MapContainerEntityMarker>,
+                                                           IItemComponentInformationTrait<TItemId, BodySize>
         where TItemId : struct, IEntityKey
     {
+        readonly BodySize bodySize;
         readonly MapLayerPreference layerPreference;
 
-        public ReferenceItemGridPositionTrait(MapLayer layer,
+        public ReferenceItemGridPositionTrait(BodySize bodySize, 
+                                              MapLayer layer,
                                               params MapLayer[] layers)
         {
+            this.bodySize = bodySize;
             Id = "ReferenceItem.Generic.Position.Grid";
             Priority = 100;
 
@@ -87,34 +90,49 @@ namespace RogueEntity.Core.Positioning.Grid
             return false;
         }
 
-        public bool TryQuery(IEntityViewControl<TItemId> v, TItemId k, out EntityGridPositionUpdateMessage t)
+        public bool TryQuery(IEntityViewControl<TItemId> v, TItemId k, out MapLayerPreference t)
         {
-            t = default;
-            return false;
+            t = layerPreference;
+            return true;
+        }
+        
+        public bool TryQuery(IEntityViewControl<TItemId> v, TItemId k, out BodySize t)
+        {
+            t = bodySize;
+            return true;
         }
 
-        public bool TryUpdate(IEntityViewControl<TItemId> v, TItemId k, in EntityGridPositionUpdateMessage t, out TItemId changedK)
+        public bool TryUpdate(IEntityViewControl<TItemId> v, TItemId k, in Position t, out TItemId changedK)
         {
-            v.AssignOrReplace(k, t.Data);
+            return TryUpdate(v, k, EntityGridPosition.From(t), out changedK);
+        }
+
+        public bool TryUpdate(IEntityViewControl<TItemId> v, TItemId k, in EntityGridPosition t, out TItemId changedK)
+        {
+            if (v.IsValid(k))
+            {
+                v.AssignOrReplace(k, t);
+            }
+
             changedK = k;
             return true;
         }
 
         public bool TryRemove(IEntityViewControl<TItemId> v, TItemId k, out TItemId changedK)
         {
-            changedK = k;
-            return false;
-        }
+            if (v.IsValid(k))
+            {
+                v.RemoveComponent<EntityGridPosition>(k);
+            }
 
-        public bool TryQuery(IEntityViewControl<TItemId> v, TItemId k, out MapLayerPreference t)
-        {
-            t = layerPreference;
+            changedK = k;
             return true;
         }
 
         public IEnumerable<EntityRoleInstance> GetEntityRoles()
         {
             yield return GridPositionModule.GridPositionedRole.Instantiate<TItemId>();
+            yield return PositionModule.PositionQueryRole.Instantiate<TItemId>();
         }
 
         public IEnumerable<EntityRelationInstance> GetEntityRelations()

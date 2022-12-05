@@ -25,7 +25,7 @@ public class PathfinderRegionEdgeData2D
     public BufferList<PathfinderRegionEdgeData> GetActiveTiles(BufferList<PathfinderRegionEdgeData>? buffer = null)
     {
         buffer = BufferList.PrepareBuffer(buffer);
-        foreach (var (k, v) in tiles)
+        foreach (var (_, v) in tiles)
         {
             buffer.Add(v);
         }

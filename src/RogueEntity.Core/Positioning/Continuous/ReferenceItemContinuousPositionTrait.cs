@@ -1,36 +1,29 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using EnTTSharp.Entities;
 using RogueEntity.Api.ItemTraits;
-using RogueEntity.Api.Utils;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Positioning.MapLayers;
-using Serilog;
 
 namespace RogueEntity.Core.Positioning.Continuous
 {
     public class ReferenceItemContinuousPositionTrait<TItemId> : IReferenceItemTrait<TItemId>,
-                                                                 IItemComponentTrait<TItemId, Position>,
-                                                                 IItemComponentTrait<TItemId, ContinuousMapPosition>,
-                                                                 IItemComponentInformationTrait<TItemId, ContinuousMapPositionChangedMarker>,
-                                                                 IItemComponentInformationTrait<TItemId, MapLayerPreference>,
                                                                  IItemComponentDesignTimeInformationTrait<MapLayerPreference>,
-                                                                 IItemComponentInformationTrait<TItemId, MapContainerEntityMarker>
+                                                                 IItemComponentInformationTrait<TItemId, ContinuousMapPosition>,
+                                                                 IItemComponentInformationTrait<TItemId, Position>,
+                                                                 IItemComponentInformationTrait<TItemId, MapLayerPreference>,
+                                                                 IItemComponentInformationTrait<TItemId, MapContainerEntityMarker>,
+                                                                 IItemComponentInformationTrait<TItemId, BodySize>
         where TItemId : struct, IEntityKey
     {
-        readonly IContinuousMapContext<TItemId> context;
-        readonly IItemResolver<TItemId> itemResolver;
+        readonly BodySize bodySize;
         readonly MapLayerPreference layerPreference;
-        readonly ILogger logger = SLog.ForContext<ReferenceItemContinuousPositionTrait<TItemId>>();
 
-        public ReferenceItemContinuousPositionTrait(IItemResolver<TItemId> itemResolver,
-                                                    IContinuousMapContext<TItemId> context,
+        public ReferenceItemContinuousPositionTrait(BodySize bodySize,
                                                     MapLayer layer,
                                                     params MapLayer[] layers)
         {
-            this.itemResolver = itemResolver;
-            this.context = context;
+            this.bodySize = bodySize;
             Id = "ReferenceItem.Generic.Position.Continuous";
             Priority = 100;
 
@@ -82,7 +75,7 @@ namespace RogueEntity.Core.Positioning.Continuous
             return false;
         }
 
-        public bool TryQuery(IEntityViewControl<TItemId> v, TItemId k, out ContinuousMapPositionChangedMarker t)
+        public bool TryQuery(IEntityViewControl<TItemId> v, TItemId k, out MapPositionChangedMarker t)
         {
             if (v.IsValid(k) && v.GetComponent(k, out t))
             {
@@ -111,115 +104,16 @@ namespace RogueEntity.Core.Positioning.Continuous
             return false;
         }
 
-        bool IItemComponentTrait<TItemId, ContinuousMapPosition>.TryRemove(IEntityViewControl<TItemId> entityRegistry, TItemId k, out TItemId changedItem)
+        public bool TryQuery(IEntityViewControl<TItemId> v, TItemId k, out BodySize t)
         {
-            return TryUpdate(entityRegistry, k, ContinuousMapPosition.Invalid, out changedItem);
-        }
-
-        bool IItemComponentTrait<TItemId, Position>.TryRemove(IEntityViewControl<TItemId> entityRegistry, TItemId k, out TItemId changedItem)
-        {
-            return TryUpdate(entityRegistry, k, ContinuousMapPosition.Invalid, out changedItem);
-        }
-
-        public bool TryUpdate(IEntityViewControl<TItemId> v, TItemId k, in Position t, out TItemId changedK)
-        {
-            return TryUpdate(v, k, ContinuousMapPosition.From(t), out changedK);
-        }
-
-        public bool TryUpdate(IEntityViewControl<TItemId> v,
-                              TItemId k,
-                              in ContinuousMapPosition desiredPosition,
-                              out TItemId changedK)
-        {
-            changedK = k;
-
-            if (!v.IsValid(k))
-            {
-                throw new ArgumentException();
-            }
-
-            if (!v.GetComponent(k, out ContinuousMapPosition previousPosition))
-            {
-                previousPosition = ContinuousMapPosition.Invalid;
-            }
-
-            if (previousPosition == desiredPosition)
-            {
-                logger.Verbose("No need to update item {ItemId}", k);
-                return true;
-            }
-
-            if (desiredPosition == ContinuousMapPosition.Invalid)
-            {
-                // was on map before, now no longer on map.
-                if (!layerPreference.IsAcceptable(previousPosition, out var previousLayerId) ||
-                    !context.TryGetContinuousDataFor(previousLayerId, out var previousMapContext))
-                {
-                    throw new ArgumentException("A previously set position was not accepted as layer target.");
-                }
-
-                if (!previousMapContext.TryUpdateItemPosition(k, default))
-                {
-                    throw new ArgumentException($"Failed to update position of item {k}.");
-                }
-
-                v.RemoveComponent<ContinuousMapPosition>(k);
-                previousMapContext.MarkDirty(previousPosition);
-                logger.Verbose("Desired position is invalid, removed item {Item} from map", k);
-                return true;
-            }
-
-            if (!layerPreference.IsAcceptable(desiredPosition, out var layerId))
-            {
-                WarnNotAcceptableLayer(k, desiredPosition);
-                return false;
-            }
-
-            if (!context.TryGetContinuousDataFor(layerId, out var mapDataContext))
-            {
-                logger.Warning("Invalid layer {Layer} for unresolvabled map data for item {ItemId}", layerId, k);
-                changedK = k;
-                return false;
-            }
-
-            if (previousPosition != ContinuousMapPosition.Invalid)
-            {
-                if (!layerPreference.IsAcceptable(previousPosition, out var previousLayerId) ||
-                    !context.TryGetContinuousDataFor(previousLayerId, out var previousItemMap))
-                {
-                    throw new ArgumentException("A previously set position was not accepted as layer target.");
-                }
-
-                previousItemMap.MarkDirty(previousPosition);
-            }
-
-            if (!mapDataContext.TryUpdateItemPosition(k, desiredPosition))
-            {
-                logger.Verbose("Unable to update position for item {Item} at {Pos}", k, desiredPosition);
-                return false;
-            }
-
-            v.AssignOrReplace(k, in desiredPosition);
-            mapDataContext.MarkDirty(desiredPosition);
-            logger.Verbose("Placed item {Item} at {Pos}", k, desiredPosition);
+            t = bodySize;
             return true;
-        }
-
-        void WarnNotAcceptableLayer(TItemId targetItem, ContinuousMapPosition p)
-        {
-            if (itemResolver.TryResolve(targetItem, out var itemDef))
-            {
-                logger.Warning("Invalid layer {Layer} for item {ItemId}", p.LayerId, itemDef.Id);
-            }
-            else
-            {
-                logger.Warning("Invalid layer {Layer} for unresolvable item {ItemId}", p.LayerId, targetItem);
-            }
         }
 
         public IEnumerable<EntityRoleInstance> GetEntityRoles()
         {
             yield return ContinuousPositionModule.ContinuousPositionedRole.Instantiate<TItemId>();
+            yield return PositionModule.PositionQueryRole.Instantiate<TItemId>();
         }
 
         public IEnumerable<EntityRelationInstance> GetEntityRelations()

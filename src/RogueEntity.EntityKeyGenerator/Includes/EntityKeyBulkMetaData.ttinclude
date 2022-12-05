@@ -1,4 +1,3 @@
-<#@ assembly name="mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" #>
 
 <#+
     void GenerateBulkEntityKeyMetaData(string className)
@@ -13,7 +12,6 @@
         public static readonly <#= className #>MetaData Instance = new <#= className #>MetaData();
 
         public int MaxAge => <#= className #>.MaxAge;
-        public bool IsSameBulkType(<#= className #> a, <#= className #> b) => !a.IsEmpty && !a.IsReference && !b.IsReference && a.BulkItemId == b.BulkItemId;
         public bool IsReferenceEntity(in <#= className #> targetItem) => targetItem.IsReference;
         
         public <#= className #> CreateReferenceKey(byte age, int entityId) => <#= className #>.FromReferencedItem(age, entityId);

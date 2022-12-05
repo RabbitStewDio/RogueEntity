@@ -269,7 +269,7 @@ namespace RogueEntity.Core.Inventory
             }
 
             var itemRef = Data.Items[itemPosition];
-            if (!itemMetaData.IsSameBulkType(itemByType, itemRef))
+            if (!itemResolver.IsSameStackType(itemByType, itemRef))
             {
                 return false;
             }

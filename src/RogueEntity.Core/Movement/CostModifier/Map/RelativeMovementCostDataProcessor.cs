@@ -1,8 +1,10 @@
 using EnTTSharp.Entities;
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Core.GridProcessing.LayerAggregation;
+using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Positioning.MapLayers;
+using RogueEntity.Core.Utils;
 
 namespace RogueEntity.Core.Movement.CostModifier.Map
 {
@@ -12,7 +14,7 @@ namespace RogueEntity.Core.Movement.CostModifier.Map
         readonly IItemResolver< TItemId> itemContext;
 
         public RelativeMovementCostDataProcessor(MapLayer layer,
-                                               IGridMapContext<TItemId> mapContext,
+                                               IMapContext<TItemId> mapContext,
                                                IItemResolver< TItemId> itemContext,
                                                int zPosition,
                                                int offsetX,
@@ -25,20 +27,24 @@ namespace RogueEntity.Core.Movement.CostModifier.Map
 
         protected override void ProcessTile(TileProcessingParameters p)
         {
-            var (bounds, _, groundData, resultTile) = p;
-
+            var (bounds, groundData, resultTile) = p;
+            using var buffer = BufferListPool<(TItemId, EntityGridPosition)>.GetPooled();
             var itemResolver = itemContext;
             foreach (var (x, y) in bounds.Contents)
             {
-                if (groundData.TryGet(x, y, out var groundItemRef) && 
-                    itemResolver.TryQueryData(groundItemRef,  out RelativeMovementCostModifier<TMovementMode> groundItem))
+                var itemCostOnTile = RelativeMovementCostModifier<TMovementMode>.Unchanged.CostModifier;
+                foreach (var (item, _) in groundData.QueryItemTile<EntityGridPosition>(EntityGridPosition.OfRaw(Layer.LayerId, x, y, ZPosition), buffer))
                 {
-                    resultTile.TrySet(x, y, in groundItem);
+                    if (itemResolver.TryQueryData(item,  out RelativeMovementCostModifier<TMovementMode> itemCost))
+                    {
+                        if (itemCost.CostModifier > itemCostOnTile)
+                        {
+                            itemCostOnTile = itemCost.CostModifier;
+                        }
+                    }
                 }
-                else
-                {
-                    resultTile.TrySet(x, y, RelativeMovementCostModifier<TMovementMode>.Unchanged);
-                }
+
+                resultTile.TrySet(x, y, new RelativeMovementCostModifier<TMovementMode>(itemCostOnTile));
             }
         }
     }

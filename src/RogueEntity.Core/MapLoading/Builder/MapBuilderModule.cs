@@ -7,7 +7,6 @@ using RogueEntity.Api.Services;
 using RogueEntity.Api.Utils;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Positioning;
-using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Positioning.MapLayers;
 using Serilog;
 using System.Linq;
@@ -63,7 +62,7 @@ namespace RogueEntity.Core.MapLoading.Builder
             }
 
             var r = ip.ServiceResolver;
-            var gridMapContext = r.Resolve<IGridMapContext<TActorId>>();
+            var gridMapContext = r.Resolve<IMapContext<TActorId>>();
             var placementService = r.Resolve<IItemPlacementServiceContext<TActorId>>();
             
             foreach (var ml in mapLayers)

@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.Contracts;
 
 namespace RogueEntity.Core.Positioning
 {
@@ -16,7 +17,10 @@ namespace RogueEntity.Core.Positioning
         byte LayerId { get; }
         bool IsInvalid { get; }
 
+        [Pure]
         TPosition WithPosition(int x, int y);
+        
+        [Pure]
         TPosition WithPosition(double tx, double ty);
     }
 }

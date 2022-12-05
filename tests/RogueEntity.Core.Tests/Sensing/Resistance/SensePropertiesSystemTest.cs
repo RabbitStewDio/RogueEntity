@@ -42,10 +42,10 @@ namespace RogueEntity.Core.Tests.Sensing.Resistance
             sps.TryGetView(0, out _).Should().BeFalse();
 
             ctx.TryGetItemGridDataFor(TestMapLayers.One, out var dataLayer1).Should().BeTrue();
-            dataLayer1.TrySet(EntityGridPosition.Of(TestMapLayers.One, 0, 0), ctx.ItemResolver.Instantiate( wall)).Should().BeTrue();
+            dataLayer1.TryInsertItem(ctx.ItemResolver.Instantiate( wall), EntityGridPosition.Of(TestMapLayers.One, 0, 0)).Should().BeTrue();
 
             ctx.TryGetItemGridDataFor(TestMapLayers.Two, out var dataLayer2).Should().BeTrue();
-            dataLayer2.TrySet(EntityGridPosition.Of(TestMapLayers.Two, 0, 0), ctx.ItemResolver.Instantiate( ceilingFan)).Should().BeTrue();
+            dataLayer2.TryInsertItem(ctx.ItemResolver.Instantiate( ceilingFan), EntityGridPosition.Of(TestMapLayers.Two, 0, 0)).Should().BeTrue();
 
             sps.ProcessLayerData();
             sps.GetActiveLayers().Should().BeEquivalentTo(0);

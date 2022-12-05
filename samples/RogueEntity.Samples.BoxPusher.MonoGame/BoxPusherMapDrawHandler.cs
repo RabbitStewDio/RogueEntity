@@ -1,7 +1,7 @@
 using Microsoft.Xna.Framework;
 using RogueEntity.Core.MapLoading.MapRegions;
 using RogueEntity.Core.Meta.EntityKeys;
-using RogueEntity.Core.Positioning.Grid;
+using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Runtime;
 using RogueEntity.SadCons.MapRendering;
 using RogueEntity.Samples.BoxPusher.Core;
@@ -37,17 +37,19 @@ namespace RogueEntity.Samples.BoxPusher.MonoGame
 
         void OnGameInitialized(object sender, EventArgs e)
         {
-            br.DefineRenderLayer(RenderLayers.FromGrid(this.game.ServiceResolver.Resolve<IGridMapContext<ItemReference>>())
+            var serviceResolver = this.game.ServiceResolver ?? throw new ArgumentNullException();
+            
+            br.DefineRenderLayer(RenderLayers.FromGrid(serviceResolver.Resolve<IMapContext<ItemReference>>())
                                              .ForMapLayer(BoxPusherMapLayers.Floor)
-                                             .WithConverter(RenderLayers.StandardTagConverter<ItemReference>(this.game.ServiceResolver))
+                                             .WithConverter(RenderLayers.StandardTagConverter<ItemReference>(serviceResolver))
                                              .Build());
-            br.DefineRenderLayer(RenderLayers.FromGrid(this.game.ServiceResolver.Resolve<IGridMapContext<ItemReference>>())
+            br.DefineRenderLayer(RenderLayers.FromGrid(serviceResolver.Resolve<IMapContext<ItemReference>>())
                                              .ForMapLayer(BoxPusherMapLayers.Items)
-                                             .WithConverter(RenderLayers.StandardTagConverter<ItemReference>(this.game.ServiceResolver))
+                                             .WithConverter(RenderLayers.StandardTagConverter<ItemReference>(serviceResolver))
                                              .Build());
-            br.DefineRenderLayer(RenderLayers.FromGrid(this.game.ServiceResolver.Resolve<IGridMapContext<ActorReference>>())
+            br.DefineRenderLayer(RenderLayers.FromGrid(serviceResolver.Resolve<IMapContext<ActorReference>>())
                                              .ForMapLayer(BoxPusherMapLayers.Actors)
-                                             .WithConverter(RenderLayers.StandardTagConverter<ActorReference>(this.game.ServiceResolver))
+                                             .WithConverter(RenderLayers.StandardTagConverter<ActorReference>(serviceResolver))
                                              .Build());
 
             br.Add(RenderMatchers.Match(BoxPusherMapLayers.Floor, BoxPusherItemDefinitions.EmptyFloor.Tag)
@@ -74,7 +76,7 @@ namespace RogueEntity.Samples.BoxPusher.MonoGame
                                                       .WithForeground(Color.Yellow)
                                                       .WithBackground(Color.Black)));
 
-            metaDataService = this.game.ServiceResolver.Resolve<IMapRegionMetaDataService<int>>();
+            metaDataService = serviceResolver.Resolve<IMapRegionMetaDataService<int>>();
             this.game.GameInitialized -= OnGameInitialized;
         }
 

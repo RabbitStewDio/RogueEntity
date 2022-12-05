@@ -1,65 +1,103 @@
+using EnTTSharp;
+using Microsoft.Extensions.ObjectPool;
+using RogueEntity.Api.Utils;
 using RogueEntity.Core.Utils.DataViews;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Text;
 
 namespace RogueEntity.Core.Utils.SpatialIndex
 {
-    public class GridIndex2D<T> : ISpatialIndex2D<T>
+    public class GridIndex2D<T> : ISpatialIndex2D<T>, ISpatialIndexAdapter
     {
-        readonly DynamicDataViewConfiguration cellConfig;
+        readonly ObjectPool<GridIndex2DCore> pool;
         readonly FreeList<GridElement> elements;
-        readonly FreeList<GridElementNode> elementNodes;
-        readonly Dictionary<TileIndex, FreeListIndex> elementGrid;
+        readonly DynamicDataViewConfiguration config;
+        readonly Dictionary<TileIndex, GridIndex2DCore> regions;
 
-        public GridIndex2D(DynamicDataViewConfiguration config)
+        public GridIndex2D(ObjectPool<GridIndex2DCore> pool, DynamicDataViewConfiguration config)
         {
-            this.cellConfig = config;
+            this.pool = pool;
+            this.config = config;
+            this.regions = new Dictionary<TileIndex, GridIndex2DCore>();
+            this.elements = new FreeList<GridElement>();
+        }
 
-            elements = new FreeList<GridElement>();
-            elementNodes = new FreeList<GridElementNode>();
-            elementGrid = new Dictionary<TileIndex, FreeListIndex>();
+        public GridIndex2D(DynamicDataViewConfiguration config) : 
+            this(new DefaultObjectPool<GridIndex2DCore>(new GridIndex2DCorePolicy(config)), config)
+        {
+        }
+
+        public void Clear()
+        {
+            foreach (var c in regions)
+            {
+                c.Value.Clear();
+            }            
+        }
+        
+        public int ElementIndexRange => elements.Range;
+
+        public bool TryGetBounds(FreeListIndex index, out BoundingBox boundingBox)
+        {
+            if (elements.TryGetValue(index, out var ge))
+            {
+                boundingBox = ge.Bounds;
+                return true;
+            }
+
+            boundingBox = default;
+            return false;
+        }
+
+        public bool TryGetDebugData(FreeListIndex index, [MaybeNullWhen(false)] out string data)
+        {
+            if (elements.TryGetValue(index, out var ge))
+            {
+                data = $"{ge.Data}";
+                return true;
+            }
+
+            data = "";
+            return false;
         }
 
         public FreeListIndex Insert(T data, in BoundingBox bounds)
         {
-            var e = elements.Add(new GridElement(data, bounds));
+            var elementIndex = elements.Add(new GridElement(data, bounds));
 
-            var ul = cellConfig.TileIndex(bounds.Left, bounds.Top);
-            var lr = cellConfig.TileIndex(bounds.Right, bounds.Bottom);
-            for (int ty = ul.Y; ty <= lr.Y; ty += 1)
+            var (left, top) = config.TileIndex(bounds.Left, bounds.Top);
+            var (right, bottom) = config.TileIndex(bounds.Right, bounds.Bottom);
+            for (int y = top; y <= bottom; y += 1)
             {
-                for (int tx = ul.X; tx <= lr.X; tx += 1)
+                for (int x = left; x <= right; x += 1)
                 {
-                    InsertCellElement(tx, ty, e);
+                    var tx = new TileIndex(x, y);
+                    if (!regions.TryGetValue(tx, out var region))
+                    {
+                        var regionBounds = config.Bounds(tx);
+                        region = pool.Get();
+                        region.Reuse(this, regionBounds);
+                        regions[tx] = region;
+                    }
+
+                    region.Insert(elementIndex, bounds);
                 }
             }
 
-            return e;
+            return elementIndex;
         }
 
-        void InsertCellElement(int tx, int ty, FreeListIndex elementIndex)
-        {
-            var tileIndex = new TileIndex(tx, ty);
-            if (!elementGrid.TryGetValue(tileIndex, out var node))
-            {
-                node = default;
-            }
-            
-            var newNode = new GridElementNode(node, elementIndex);
-            var newNodeIdx = elementNodes.Add(newNode);
-            elementGrid[tileIndex] = newNodeIdx;
-        }
+        internal GridElement this[FreeListIndex index] => elements[index];
 
         public bool TryGet(FreeListIndex index, [MaybeNullWhen(false)] out T data, out BoundingBox boundingBox)
         {
-            if (elements.TryGetValue(index, out var ge))
+            if (elements.TryGetValue(index, out var ge) &&
+                ge.Data.TryGetValue(out data))
             {
-                data = ge.Data;
                 boundingBox = ge.Bounds;
-                return data != null;
+                return true;
             }
 
             data = default;
@@ -67,7 +105,17 @@ namespace RogueEntity.Core.Utils.SpatialIndex
             return false;
         }
 
-        internal GridElement this[FreeListIndex index] => elements[index]; 
+        public bool TryUpdateIndex(FreeListIndex index, T data)
+        {
+            if (elements.TryGetValue(index, out var ge))
+            {
+                ge = new GridElement(data, ge.Bounds);
+                elements.Replace(index, ge);
+                return true;
+            }
+
+            return false;
+        }
         
         public void Remove(FreeListIndex elementIndex)
         {
@@ -77,77 +125,73 @@ namespace RogueEntity.Core.Utils.SpatialIndex
             }
 
             var bounds = ge.Bounds;
-            var ul = cellConfig.TileIndex(bounds.Left, bounds.Top);
-            var lr = cellConfig.TileIndex(bounds.Right, bounds.Bottom);
-            for (int ty = ul.Y; ty <= lr.Y; ty += 1)
+
+            var (left, top) = config.TileIndex(bounds.Left, bounds.Top);
+            var (right, bottom) = config.TileIndex(bounds.Right, bounds.Bottom);
+            for (int y = top; y <= bottom; y += 1)
             {
-                for (int tx = ul.X; tx <= lr.X; tx += 1)
+                for (int x = left; x <= right; x += 1)
                 {
-                    RemoveCellElement(tx, ty, elementIndex);
+                    var tx = new TileIndex(x, y);
+                    if (regions.TryGetValue(tx, out var region))
+                    {
+                        region.Remove(elementIndex, bounds);
+                    }
                 }
             }
-            
+
             elements.Remove(elementIndex);
         }
 
-        void RemoveCellElement(int tx, int ty, FreeListIndex elementToRemove)
+        public BufferList<FreeListIndex> QueryIndex(in Position2D pos,
+                                                    BufferList<FreeListIndex>? result = null,
+                                                    FreeListIndex skipElement = default)
         {
-            if (!elementGrid.TryGetValue(new TileIndex(tx, ty), out var elementNodeIndex))
-            {
-                return;
-            }
-            
-            var prevElementNodeIndex = FreeListIndex.Empty;
-            while (!elementNodeIndex.IsEmpty &&
-                   elementNodes[elementNodeIndex].ElementIndex != elementToRemove)
-            {
-                prevElementNodeIndex = elementNodeIndex;
-                elementNodeIndex = elementNodes[elementNodeIndex].NextElementNodeIndex;
-            }
-
-            if (!elementNodeIndex.IsEmpty)
-            {
-                var nextIndex = elementNodes[elementNodeIndex].NextElementNodeIndex;
-                if (prevElementNodeIndex.IsEmpty)
-                {
-                    // first element in the linked list
-                    elementGrid[new TileIndex(tx, ty)] = nextIndex;
-                    elementNodes.Remove(nextIndex);
-                }
-                else
-                {
-                    // middle or end, so we restitch the linked list around the removed element
-                    var prevNode = elementNodes[prevElementNodeIndex];
-                    elementNodes.Replace(prevElementNodeIndex, new GridElementNode(nextIndex, prevNode.ElementIndex));
-                    elementNodes.Remove(nextIndex);
-                }
-            }
-
-        }
-
-        public List<FreeListIndex> Query(in BoundingBox bb, List<FreeListIndex>? result, FreeListIndex skipElement = default)
-        {
-            if (result == null)
-            {
-                result = new List<FreeListIndex>();
-            }
-            else
-            {
-                result.Clear();
-            }
+            result = BufferList.PrepareBuffer(result);
 
             var resultDeduplicator = ArrayPool<bool>.Shared.Rent(elements.Range);
             try
             {
-                var ul = cellConfig.TileIndex(bb.Left, bb.Top);
-                var lr = cellConfig.TileIndex(bb.Right, bb.Bottom);
+                Array.Clear(resultDeduplicator, 0, elements.Range);
+                var bb = BoundingBox.From(pos);
+                var (x, y) = config.TileIndex(pos.X, pos.Y);
+                var tx = new TileIndex(x, y);
+                if (regions.TryGetValue(tx, out var region))
+                {
+                    region.QueryIndex(bb, resultDeduplicator, result, skipElement);
+                }
+
+                return result;
+            }
+            finally
+            {
+                ArrayPool<bool>.Shared.Return(resultDeduplicator);
+            }
+            
+        }
+        
+        public BufferList<FreeListIndex> QueryIndex(in BoundingBox bb, 
+                                                    BufferList<FreeListIndex>? result = null, 
+                                                    FreeListIndex skipElement = default)
+        {
+            result = BufferList.PrepareBuffer(result);
+
+            var resultDeduplicator = ArrayPool<bool>.Shared.Rent(elements.Range);
+            try
+            {
                 Array.Clear(resultDeduplicator, 0, elements.Range);
 
-                for (int ty = ul.Y; ty <= lr.Y; ty += 1)
+                var (left, top) = config.TileIndex(bb.Left, bb.Top);
+                var (right, bottom) = config.TileIndex(bb.Right, bb.Bottom);
+                for (int y = top; y <= bottom; y += 1)
                 {
-                    for (int tx = ul.X; tx <= lr.X; tx += 1)
+                    for (int x = left; x <= right; x += 1)
                     {
-                        QueryCellElement(new TileIndex(tx, ty), bb, result, resultDeduplicator, skipElement);
+                        var tx = new TileIndex(x, y);
+                        if (regions.TryGetValue(tx, out var region))
+                        {
+                            region.QueryIndex(bb, resultDeduplicator, result, skipElement);
+                        }
                     }
                 }
 
@@ -159,101 +203,79 @@ namespace RogueEntity.Core.Utils.SpatialIndex
             }
         }
 
-        public string Print()
+        public BufferList<T> Query(in Position2D pos,
+                                   BufferList<T>? result = default,
+                                   FreeListIndex skipElement = default)
         {
-            StringBuilder b = new StringBuilder();
-            foreach (var t in elementGrid)
+            result = BufferList.PrepareBuffer(result);
+            using var buffer = BufferListPool<FreeListIndex>.GetPooled();
+            foreach (var idx in QueryIndex(pos, buffer, skipElement))
             {
-                b.AppendLine($"Grid Cell: {t.Key}");
-                var firstElementIdx = t.Value;
-                while (!firstElementIdx.IsEmpty)
+                if (this.elements.TryGetValue(idx, out var qe) &&
+                    qe.Data.TryGetValue(out var data))
                 {
-                    var elementNode = elementNodes[firstElementIdx];
-                    var elementIndex = elementNode.ElementIndex;
-                    var element = elements[elementIndex];
-
-                    b.AppendLine($"  ${elementIndex}: {element.Bounds} -> {element.Data}");
-                    
-                    firstElementIdx = elementNode.NextElementNodeIndex;
+                    result.Add(data);
                 }
             }
 
-            return b.ToString();
+            return result;
         }
 
-        void QueryCellElement(in TileIndex tx, in BoundingBox bb, List<FreeListIndex> result, bool[] resultDeduplicator, FreeListIndex skipElement)
+        public BufferList<T> Query(in BoundingBox bb,
+                                   BufferList<T>? result = default,
+                                   FreeListIndex skipElement = default)
         {
-            if (!elementGrid.TryGetValue(tx, out var firstElementIdx))
+            result = BufferList.PrepareBuffer(result);
+            using var buffer = BufferListPool<FreeListIndex>.GetPooled();
+            foreach (var idx in QueryIndex(bb, buffer, skipElement))
             {
-                return;
-            }
-
-            while (!firstElementIdx.IsEmpty)
-            {
-                var elementNode = elementNodes[firstElementIdx];
-                var elementIndex = elementNode.ElementIndex;
-                var element = elements[elementIndex];
-                if (!resultDeduplicator[elementIndex.Value] &&
-                    elementIndex != skipElement)
+                if (this.elements.TryGetValue(idx, out var qe) &&
+                    qe.Data.TryGetValue(out var data))
                 {
-                    if (element.Bounds.Intersects(bb))
-                    {
-                        result.Add(elementIndex);
-                        resultDeduplicator[elementIndex.Value] = true;
-                    }
+                    result.Add(data);
                 }
-
-                firstElementIdx = elementNode.NextElementNodeIndex;
             }
+
+            return result;
         }
 
         // Represents an element in the quadtree.
         public readonly struct GridElement : ISmartFreeListElement<GridElement>
         {
-            public FreeListIndex FreePointer => FreeListIndex.Of(Bounds.Top);
+            public FreeListIndex FreePointer => FreeListIndex.Of(Bounds.Left);
 
             public GridElement AsFreePointer(FreeListIndex ptr)
             {
-                return new GridElement(default, new BoundingBox(ptr.Value, -1, -1, -1));
+                return new GridElement(default, BoundingBox.From(ptr.Value, -1, -1, -1));
             }
 
             // Stores the ID for the element (can be used to
             // refer to external data).
-            public readonly T? Data;
+            public readonly Optional<T> Data;
 
             // Stores the rectangle for the element.
             public readonly BoundingBox Bounds;
 
-            public GridElement(T? data, in BoundingBox bounds)
+            public GridElement(Optional<T> data, in BoundingBox bounds)
             {
                 Data = data;
                 Bounds = bounds;
             }
         }
 
-        // Represents an element node in the quadtree.
-        readonly struct GridElementNode : ISmartFreeListElement<GridElementNode>
+        public BufferList<Rectangle> GetActiveTiles(BufferList<Rectangle>? buffer = null)
         {
-            // Points to the next element in the leaf node. A value of -1 
-            // indicates the end of the list. This points to elements in QuadTree::elementNodes.
-            public readonly FreeListIndex NextElementNodeIndex;
+            buffer = BufferList.PrepareBuffer(buffer);
 
-            // Stores the index to the actual data element (held in QuadTree::elements).
-            public readonly FreeListIndex ElementIndex;
-
-            public GridElementNode(FreeListIndex nextElementNodeIndex, FreeListIndex elementIndex)
+            foreach (var x in this.regions)
             {
-                NextElementNodeIndex = nextElementNodeIndex;
-                ElementIndex = elementIndex;
+                if (x.Value.ContainsAnyContent)
+                {
+                    buffer.Add(x.Value.RegionBounds);
+                }
             }
-
-            public FreeListIndex FreePointer => ElementIndex.IsEmpty ? NextElementNodeIndex : FreeListIndex.Empty;
-
-            public GridElementNode AsFreePointer(FreeListIndex ptr)
-            {
-                return new GridElementNode(ptr, default);
-            }
-
+            
+            return buffer;
         }
     }
 }

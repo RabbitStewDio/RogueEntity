@@ -37,7 +37,7 @@ namespace RogueEntity.Samples.MineSweeper.Core
             where TItemId : struct, IEntityKey
         {
             return b.Define(Wall)
-                    .WithGridPosition(MineSweeperMapLayers.Items)
+                    .WithGridPosition(BodySize.OneByOne, MineSweeperMapLayers.Items)
                     .AsImmobile()
                     .WithName("wall");
         }
@@ -46,7 +46,7 @@ namespace RogueEntity.Samples.MineSweeper.Core
             where TItemId : struct, IBulkDataStorageKey<TItemId>
         {
             return b.Define(Floor)
-                    .WithGridPosition(MineSweeperMapLayers.Items)
+                    .WithGridPosition(BodySize.OneByOne, MineSweeperMapLayers.Items)
                     .AsImmobile()
                     .WithTrait(new MineSweeperMineCountItemTrait<TItemId>())
                     .WithName("floor");
@@ -56,9 +56,9 @@ namespace RogueEntity.Samples.MineSweeper.Core
             where TItemId : struct, IEntityKey
         {
             return b.Define(Flag)
-                    .WithGridPosition(MineSweeperMapLayers.Flags)
+                    .WithGridPosition(BodySize.OneByOne, MineSweeperMapLayers.Flags)
                     .AsImmobile()
-                    .WithRole(MineSweeperModule.MineFieldRole)
+                    .WithRole(MineSweeperModule.MineFlagRole)
                     .WithName("flag");
         }
 
@@ -66,9 +66,9 @@ namespace RogueEntity.Samples.MineSweeper.Core
             where TItemId : struct, IEntityKey
         {
             return b.Define(Mine)
-                    .WithGridPosition(MineSweeperMapLayers.Items)
+                    .WithGridPosition(BodySize.OneByOne, MineSweeperMapLayers.Items)
                     .AsImmobile()
-                    .WithRole(MineSweeperModule.MineFieldRole)
+                    .WithTrait(new MinesweeperMineTrait<TItemId>())
                     .WithName("mine");
         }
     }

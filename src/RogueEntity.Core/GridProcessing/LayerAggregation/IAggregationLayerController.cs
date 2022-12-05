@@ -41,6 +41,8 @@ namespace RogueEntity.Core.GridProcessing.LayerAggregation
 
     public interface IAggregationLayerSystemBackend< TSourceType>
     {
+        BufferList<int> GetActiveLayers(BufferList<int>? buffer = null); 
+
         void OnPositionDirty(object source, PositionDirtyEventArgs args);
 
         public DynamicDataViewConfiguration ViewConfiguration { get; }

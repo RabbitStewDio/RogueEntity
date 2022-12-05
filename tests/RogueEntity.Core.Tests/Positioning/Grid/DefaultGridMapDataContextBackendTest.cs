@@ -1,5 +1,7 @@
 using FluentAssertions;
 using NUnit.Framework;
+using RogueEntity.Core.Meta.EntityKeys;
+using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Tests.Fixtures;
 using RogueEntity.Core.Utils.DataViews;
@@ -10,61 +12,55 @@ namespace RogueEntity.Core.Tests.Positioning.Grid
     [SuppressMessage("ReSharper", "NotNullOrRequiredMemberIsNotInitialized")]
     public class DefaultGridMapDataContextBackendTest
     {
-        DefaultGridPositionContextBackend<byte> gdc;
+        IConfigurableMapContext<ItemReference> gdc;
 
         [SetUp]
         public void SetUp()
         {
-            gdc = new DefaultGridPositionContextBackend<byte>()
-                .WithDefaultMapLayer(TestMapLayers.One);
+            gdc = new DefaultMapContext<ItemReference>(DynamicDataViewConfiguration.Default32X32)
+                .WithBasicGridMapLayer(TestMapLayers.One);
         }
 
         [Test]
         public void ValidateMapProperties()
         {
-            gdc.GridLayers().Should().ContainInOrder(TestMapLayers.One);
-            gdc.OffsetX.Should().Be(DynamicDataViewConfiguration.Default32X32.OffsetX);
-            gdc.OffsetY.Should().Be(DynamicDataViewConfiguration.Default32X32.OffsetY);
-            gdc.TileSizeX.Should().Be(DynamicDataViewConfiguration.Default32X32.TileSizeX);
-            gdc.TileSizeY.Should().Be(DynamicDataViewConfiguration.Default32X32.TileSizeY);
-            gdc.TryGetGridDataFor(TestMapLayers.One, out _).Should().BeTrue();
-            gdc.TryGetGridDataFor(TestMapLayers.Two, out _).Should().BeFalse();
+            gdc.Layers().Should().ContainInOrder(TestMapLayers.One);
+            gdc.Config.OffsetX.Should().Be(DynamicDataViewConfiguration.Default32X32.OffsetX);
+            gdc.Config.OffsetY.Should().Be(DynamicDataViewConfiguration.Default32X32.OffsetY);
+            gdc.Config.TileSizeX.Should().Be(DynamicDataViewConfiguration.Default32X32.TileSizeX);
+            gdc.Config.TileSizeY.Should().Be(DynamicDataViewConfiguration.Default32X32.TileSizeY);
+            gdc.TryGetMapDataFor(TestMapLayers.One, out _).Should().BeTrue();
+            gdc.TryGetMapDataFor(TestMapLayers.Two, out _).Should().BeFalse();
         }
 
         [Test]
         public void ValidateMapAccess()
         {
-            gdc.TryGetGridDataFor(TestMapLayers.One, out var dataContext).Should().BeTrue();
-            dataContext.TryGetWritableView(0, out var view, DataViewCreateMode.CreateMissing).Should().BeTrue();
-            Assert.NotNull(view);
+            gdc.TryGetMapDataFor(TestMapLayers.One, out var view).Should().BeTrue();
             
-            view.TrySet(0, 0, 10).Should().BeTrue();
-            view.TrySet(40, 40, 40).Should().BeTrue();
+            view.TryInsertItem(ItemReference.FromBulkItem(1, 10), EntityGridPosition.Of(TestMapLayers.One, 0, 0)).Should().BeTrue();
+            view.TryInsertItem(ItemReference.FromBulkItem(1, 40), EntityGridPosition.Of(TestMapLayers.One, 40, 40)).Should().BeTrue();
 
-            view.TryGet(0, 0, out var expected00).Should().BeTrue("because we explicitly wrote here");
-            expected00.Should().Be(10);
+            view.At(0, 0).Should().Be(ItemReference.FromBulkItem(1, 10), "because we explicitly wrote here");
+            view.At(40, 40).Should().Be(ItemReference.FromBulkItem(1, 40),"because we explicitly wrote here");
 
-            view.TryGet(40, 40, out var expected40).Should().BeTrue("because we explicitly wrote here");
-            expected40.Should().Be(40);
-
-            view.TryGet(0, 40, out _).Should().BeFalse("because View chunk has not been created");
-            view.TryGet(40, 0, out _).Should().BeFalse("because View chunk has not been created");
+            view.At(0, 40).Should().Be(default(ItemReference), "because View chunk has not been created");
+            view.At(40, 0).Should().Be(default(ItemReference), "because View chunk has not been created");
         }
 
         [Test]
         public void ValidateResetState()
         {
-            gdc.TryGetGridDataFor(TestMapLayers.One, out var dataContext).Should().BeTrue();
-            dataContext.TryGetWritableView(0, out var view, DataViewCreateMode.CreateMissing).Should().BeTrue();
-            Assert.NotNull(view);
+            gdc.TryGetMapDataFor(TestMapLayers.One, out var view).Should().BeTrue();
             
-            view.TrySet(0, 0, 10).Should().BeTrue();
-            view.TrySet(40, 40, 40).Should().BeTrue();
+            view.TryInsertItem(ItemReference.FromBulkItem(1, 10), EntityGridPosition.Of(TestMapLayers.One, 0, 0)).Should().BeTrue();
+            view.TryInsertItem(ItemReference.FromBulkItem(1, 40), EntityGridPosition.Of(TestMapLayers.One, 40, 40)).Should().BeTrue();
 
-            gdc.ResetState();
+            var d = (IMapContextInitializer<ItemReference>)gdc;
+            d.ResetState();
 
-            view.TryGet(0, 0, out _).Should().BeFalse("because View chunk has not been reset");
-            view.TryGet(40, 40, out _).Should().BeFalse("because View chunk has not been reset");
+            view.At(0, 0).Should().Be(default(ItemReference), "because View chunk has not been created");
+            view.At(40, 40).Should().Be(default(ItemReference), "because View chunk has not been created");
         }
     }
 }

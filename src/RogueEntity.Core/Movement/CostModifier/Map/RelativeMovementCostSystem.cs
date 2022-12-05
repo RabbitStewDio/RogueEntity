@@ -1,7 +1,7 @@
 using EnTTSharp.Entities;
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Core.GridProcessing.LayerAggregation;
-using RogueEntity.Core.Positioning.Grid;
+using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.MapLayers;
 
 namespace RogueEntity.Core.Movement.CostModifier.Map
@@ -46,7 +46,7 @@ namespace RogueEntity.Core.Movement.CostModifier.Map
         }
 
         public static void AddLayer<TItemId, TMovementMode>(this IAggregationLayerSystemBackend<RelativeMovementCostModifier<TMovementMode>> system,
-                                                            IGridMapContext<TItemId> mapContext,
+                                                            IMapContext<TItemId> mapContext,
                                                             IItemResolver<TItemId> itemContext,
                                                             MapLayer mapLayer)
             where TItemId : struct, IEntityKey

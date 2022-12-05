@@ -6,7 +6,7 @@ using RogueEntity.Core.Meta.Base;
 using RogueEntity.Core.Meta.EntityKeys;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Meta.ItemTraits;
-using RogueEntity.Core.Positioning.Grid;
+using RogueEntity.Core.Positioning;
 using System;
 
 namespace RogueEntity.Core.Tests.Equipment
@@ -26,7 +26,8 @@ namespace RogueEntity.Core.Tests.Equipment
         }
 
         public override IItemResolver<ItemReference> ItemResolver => Context.ItemResolver;
-        public override IGridMapContext<ItemReference> ItemMapContext => throw new InvalidOperationException();
+        public override IMapContext<ItemReference> ItemMapContext => throw new InvalidOperationException();
+        public override IItemPlacementServiceContext<ItemReference> ItemPlacementContext => throw new InvalidOperationException();
 
         [SetUp]
         public void SetUp()
@@ -99,7 +100,7 @@ namespace RogueEntity.Core.Tests.Equipment
 
             Owner = Context.ActorResolver.Instantiate(ActorDeclaration);
             Context.ActorResolver.TryQueryData(Owner, out ISlottedEquipment<ItemReference> equipment).Should().BeTrue();
-            Equipment = equipment;
+            Equipment = equipment!;
         }
     }
 }

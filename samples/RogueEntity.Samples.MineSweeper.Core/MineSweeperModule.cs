@@ -8,7 +8,7 @@ using RogueEntity.Core.Infrastructure.Randomness;
 using RogueEntity.Core.MapLoading.Builder;
 using RogueEntity.Core.Meta.EntityKeys;
 using RogueEntity.Core.Players;
-using RogueEntity.Core.Positioning.Grid;
+using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Sensing.Discovery;
 using RogueEntity.Samples.MineSweeper.Core.Commands;
 using RogueEntity.Samples.MineSweeper.Core.Services;
@@ -23,9 +23,12 @@ namespace RogueEntity.Samples.MineSweeper.Core
         static readonly EntitySystemId ProcessCommandsSystemId = new EntitySystemId("System.MineSweeper.ProcessCommands");
         static readonly EntitySystemId GenerateMapSystemId = new EntitySystemId("System.MineSweeper.GenerateMap");
 
-        public static readonly EntityRole MineFieldRole = new EntityRole("Role.MineSweeper.MineField");
+        public static readonly EntityRole MineFloorRole = new EntityRole("Role.MineSweeper.MineFloor");
+        public static readonly EntityRole MineFlagRole = new EntityRole("Role.MineSweeper.MineFlag");
+        public static readonly EntityRole MineRole = new EntityRole("Role.MineSweeper.Mine");
 
-        static readonly EntityRelation PlayerRevealsFieldRelation = new EntityRelation("Relation.MineSweeper.PlayerRevealsField", PlayerModule.PlayerRole, MineFieldRole);
+        static readonly EntityRelation PlayerRevealsFieldRelation = 
+            new EntityRelation("Relation.MineSweeper.PlayerRevealsField", PlayerModule.PlayerRole, MineFloorRole);
 
         public MineSweeperModule()
         {
@@ -53,7 +56,8 @@ namespace RogueEntity.Samples.MineSweeper.Core
         {
             var sr = initParameter.ServiceResolver;
             var generator = new MineSweeperMapGenerator<ItemReference>(sr.Resolve<IEntityRandomGeneratorSource>(),
-                                                                       sr.Resolve<IGridMapContext<ItemReference>>(),
+                                                                       sr.Resolve<IItemPlacementServiceContext<ItemReference>>(),
+                                                                       sr.Resolve<IMapStateController>(),
                                                                        sr.Resolve<IItemResolver<ItemReference>>(),
                                                                        sr.Resolve<MapBuilder>(),
                                                                        sr.Resolve<IMineSweeperGameParameterService>());
@@ -73,7 +77,7 @@ namespace RogueEntity.Samples.MineSweeper.Core
                                        .WithInputParameter<RevealMapPositionCommand>()
                                        .WithOutputParameter<MineSweeperPlayerData>()
                                        .CreateSystem(new MineSweeperMapRevealSystem<ItemReference>(
-                                                         sr.Resolve<IGridMapContext<ItemReference>>(),
+                                                         sr.Resolve<IItemPlacementServiceContext<ItemReference>>(),
                                                          sr.Resolve<IItemResolver<ItemReference>>(),
                                                          sr.Resolve<IMineSweeperGameParameterService>()).ProcessInputCommand);
 
@@ -82,7 +86,7 @@ namespace RogueEntity.Samples.MineSweeper.Core
                                         .WithInputParameter<MineSweeperPlayerData>()
                                         .WithInputParameter<ToggleFlagCommand>()
                                         .CreateSystem(new MineSweeperToggleFlagSystem<ItemReference>(
-                                                          sr.Resolve<IGridMapContext<ItemReference>>(),
+                                                          sr.Resolve<IItemPlacementServiceContext<ItemReference>>(),
                                                           sr.Resolve<IItemResolver<ItemReference>>(),
                                                           sr.Resolve<MapBuilder>()
                                                       ).ProcessInputCommand);

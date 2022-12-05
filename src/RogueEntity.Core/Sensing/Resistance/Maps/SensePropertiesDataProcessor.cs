@@ -2,8 +2,10 @@
 using EnTTSharp.Entities;
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Core.GridProcessing.LayerAggregation;
+using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Positioning.MapLayers;
+using RogueEntity.Core.Utils;
 
 namespace RogueEntity.Core.Sensing.Resistance.Maps
 {
@@ -13,7 +15,7 @@ namespace RogueEntity.Core.Sensing.Resistance.Maps
         readonly IItemResolver<TItemId> itemContext;
 
         public SensePropertiesDataProcessor(MapLayer layer,
-                                            IGridMapContext<TItemId> mapContext,
+                                            IMapContext<TItemId> mapContext,
                                             IItemResolver<TItemId> itemContext,
                                             int zPosition,
                                             int offsetX,
@@ -26,27 +28,29 @@ namespace RogueEntity.Core.Sensing.Resistance.Maps
 
         protected override void ProcessTile(TileProcessingParameters p)
         {
-            var (bounds, _, groundData, resultTile) = p;
+            var (bounds, groundData, resultTile) = p;
 
+            using var buffer = BufferListPool<(TItemId, EntityGridPosition)>.GetPooled();
             var itemResolver = itemContext;
             foreach (var (x, y) in bounds.Contents)
             {
-                if (!groundData.TryGet(x, y, out var groundItemRef))
+
+                var senseData = SensoryResistance<TSense>.Empty.BlocksSense.RawData;
+                foreach (var (item, _) in groundData.QueryItemTile<EntityGridPosition>(EntityGridPosition.OfRaw(Layer.LayerId, x, y, ZPosition), buffer))
                 {
-                    // no data at this tile?    
-                    // undefined tiles acts as blocking. This ensures that there is a hard border around the defined map
-                    resultTile.TrySet(x, y, SensoryResistance<TSense>.Blocked);
+                    if (!itemResolver.TryQueryData(item, out SensoryResistance<TSense> groundItem))
+                    {
+                        continue;
+                    }
+
+                    var raw = groundItem.BlocksSense.RawData;
+                    if (raw > senseData)
+                    {
+                        senseData = raw;
+                    }
                 }
-                
-                if (itemResolver.TryQueryData(groundItemRef, out SensoryResistance<TSense> groundItem))
-                {
-                    resultTile.TrySet(x, y, in groundItem);
-                }
-                else
-                {
-                    // undefined acts as blocking. This ensures that there is a hard border around the defined map
-                    resultTile.TrySet(x, y, SensoryResistance<TSense>.Empty);
-                }
+
+                resultTile.TrySet(x, y, new SensoryResistance<TSense>(Percentage.FromRaw(senseData)));
             }
         }
     }

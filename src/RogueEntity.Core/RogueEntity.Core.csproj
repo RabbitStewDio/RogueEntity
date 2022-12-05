@@ -37,6 +37,10 @@
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>ItemReference.cs</LastGenOutput>
     </None>
+    <None Update="Meta\EntityKeys\ProjectileReference.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>ProjectileReference.cs</LastGenOutput>
+    </None>
   </ItemGroup>
 
   <ItemGroup>
@@ -49,6 +53,11 @@
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>ActorReference.tt</DependentUpon>
+    </Compile>
+    <Compile Update="Meta\EntityKeys\ProjectileReference.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ProjectileReference.tt</DependentUpon>
     </Compile>
   </ItemGroup>
 

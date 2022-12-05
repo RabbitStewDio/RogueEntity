@@ -17,10 +17,10 @@ namespace RogueEntity.Core.Tests.Utils
             var keyC = qt.Insert("elementC", new Rectangle(120, 1, 1, 1));
             var keyD = qt.Insert("elementD", new Rectangle(110, 1, 10, 10));
 
-            qt[keyA].Data.Should().Be("elementA");
-            qt[keyB].Data.Should().Be("elementB");
-            qt[keyC].Data.Should().Be("elementC");
-            qt[keyD].Data.Should().Be("elementD");
+            qt[keyA].Data.Value.Should().Be("elementA");
+            qt[keyB].Data.Value.Should().Be("elementB");
+            qt[keyC].Data.Value.Should().Be("elementC");
+            qt[keyD].Data.Value.Should().Be("elementD");
         }
 
         [Test]
@@ -32,10 +32,10 @@ namespace RogueEntity.Core.Tests.Utils
             var keyC = qt.Insert("elementC", new Rectangle(120, 1, 1, 1));
             var keyD = qt.Insert("elementD", new Rectangle(110, 1, 10, 10));
 
-            qt[keyA].Data.Should().Be("elementA");
-            qt[keyB].Data.Should().Be("elementB");
-            qt[keyC].Data.Should().Be("elementC");
-            qt[keyD].Data.Should().Be("elementD");
+            qt[keyA].Data.Value.Should().Be("elementA");
+            qt[keyB].Data.Value.Should().Be("elementB");
+            qt[keyC].Data.Value.Should().Be("elementC");
+            qt[keyD].Data.Value.Should().Be("elementD");
             
             //Console.WriteLine(qt.Print());
         }
@@ -51,10 +51,10 @@ namespace RogueEntity.Core.Tests.Utils
 
             //Console.WriteLine(qt.Print());
 
-            var result = qt.Query(new Rectangle(0, 0, 128, 128));
+            var result = qt.QueryIndex(new Rectangle(0, 0, 128, 128));
             result.Should().BeEquivalentTo(new[] {keyA, keyB, keyC, keyD});
 
-            result = qt.Query(new Rectangle(0, 0, 8, 8));
+            result = qt.QueryIndex(new Rectangle(0, 0, 8, 8));
             result.Should().BeEquivalentTo(new[] {keyA});
         }
 
@@ -68,7 +68,7 @@ namespace RogueEntity.Core.Tests.Utils
                 arr[x] = qt.Insert("element-" + x, new Rectangle(0, 0, 1, 1));
             }
             
-            var result = qt.Query(new Rectangle(0, 0, 8, 8));
+            var result = qt.QueryIndex(new Rectangle(0, 0, 8, 8));
             result.Should().BeEquivalentTo(arr);
 
             //Console.WriteLine(qt.Print());

@@ -44,12 +44,12 @@ namespace RogueEntity.Core.MapLoading.FlatLevelMaps
         readonly BufferList<SpatialQueryResult<TItemId, PlayerSpawnLocation>> buffer;
 
         public FlatLevelPlayerSpawnSystem(IItemPlacementService<TActorId> placementService,
-                                 IItemPlacementLocationService<TActorId> spatialQuery,
-                                 IItemResolver<TActorId> actorResolver,
-                                 IMapRegionTrackerService<int> mapLoaderService,
-                                 IMapRegionMetaDataService<int> mapMetadataService,
-                                 ISpatialQueryLookup spatialQuerySource,
-                                 Optional<IEntityRandomGeneratorSource> randomSource = default)
+                                          IItemPlacementLocationService<TActorId> spatialQuery,
+                                          IItemResolver<TActorId> actorResolver,
+                                          IMapRegionTrackerService<int> mapLoaderService,
+                                          IMapRegionMetaDataService<int> mapMetadataService,
+                                          ISpatialQueryLookup spatialQuerySource,
+                                          Optional<IEntityRandomGeneratorSource> randomSource = default)
         {
             this.mapLoaderService = mapLoaderService ?? throw new ArgumentNullException(nameof(mapLoaderService));
             this.spatialQuerySource = spatialQuerySource ?? throw new ArgumentNullException(nameof(spatialQuerySource));
@@ -92,6 +92,12 @@ namespace RogueEntity.Core.MapLoading.FlatLevelMaps
                 return;
             }
 
+            if (!actorResolver.TryQueryData<BodySize>(k, out var bs))
+            {
+                bs = BodySize.OneByOne;
+            }
+            
+            logger.Debug("Attempting to spawn players for z-level {Level}", level);
             query.QueryBox(levelBounds, buffer);
             if (buffer.Count == 0)
             {
@@ -105,35 +111,51 @@ namespace RogueEntity.Core.MapLoading.FlatLevelMaps
                 return;
             }
 
-            var l = FilterByAvailableSpace(buffer, mapLayerPref);
+            var l = FilterByAvailableSpace(buffer, bs, mapLayerPref);
+            if (l.Count == 0)
+            {
+                logger.Warning("Unable to find any unoccupied spawn point for player {PlayerEntity}", k);
+                return;
+            }
+            
             if (randomSource.TryGetValue(out var value))
             {
                 if (PlaceRandomly(l, value, k, mapLayerPref.PreferredLayer))
                 {
+                    logger.Debug("Successfully spawned player {PlayerEntity} at random position", k);
                     v.RemoveComponent<ChangeLevelRequest>(k);
                     return;
                 }
             }
             else if (PlaceLinearly(l, k, mapLayerPref.PreferredLayer))
             {
+                logger.Debug("Successfully spawned player {PlayerEntity} at linear position", k);
                 v.RemoveComponent<ChangeLevelRequest>(k);
                 return;
             }
 
-            v.RemoveComponent<ChangeLevelRequest>(k);
             logger.Warning("Unable to find any placement for player actor");
+            v.RemoveComponent<ChangeLevelRequest>(k);
         }
 
         List<(Position pos, TItemId entity)> FilterByAvailableSpace(BufferList<SpatialQueryResult<TItemId, PlayerSpawnLocation>> raw,
+                                                                    BodySize bodySize,
                                                                     in MapLayerPreference mapLayerPref)
         {
             filterBuffer.Clear();
             foreach (var valueTuple in raw)
             {
                 var pos = valueTuple.Position;
-                if (freePlacementQuery.TryFindEmptySpace(pos.WithLayer(mapLayerPref.PreferredLayer), out _, 1))
+                if (freePlacementQuery.TryFindEmptySpace(pos.WithLayer(mapLayerPref.PreferredLayer), 
+                                                         bodySize,  
+                                                         out var placementPosition, 1))
                 {
-                    filterBuffer.Add((valueTuple.Position, valueTuple.EntityId));
+                    logger.Debug("Selected {Position} as possible spawn location for Player", placementPosition);
+                    filterBuffer.Add((placementPosition, valueTuple.EntityId));
+                }
+                else
+                {
+                    logger.Debug("Skipped {Position} as possible spawn location for Player; this position is occupied", valueTuple.Position);
                 }
             }
 

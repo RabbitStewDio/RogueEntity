@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using RogueEntity.Api.Utils;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 
 namespace RogueEntity.Api.ItemTraits
 {
@@ -17,4 +18,12 @@ namespace RogueEntity.Api.ItemTraits
         public IEnumerable<(ItemTraitId traitId, EntityRoleInstance role)> GetEntityRoles();
         public IEnumerable<(ItemTraitId traitId, EntityRelationInstance relation)> GetEntityRelations();
     }
+
+    public static class ItemDeclarationExtensions
+    {
+        public static bool HasRole(this IItemDeclaration d, EntityRoleInstance role)
+        {
+            return d.GetEntityRoles().Any(e => e.role == role);
+        }
+    } 
 }

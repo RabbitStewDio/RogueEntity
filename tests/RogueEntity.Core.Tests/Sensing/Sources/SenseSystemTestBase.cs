@@ -104,17 +104,16 @@ namespace RogueEntity.Core.Tests.Sensing.Sources
             context.ItemEntityRegistry.RegisterFlag<ObservedSenseSource<TSense>>();
             context.ItemEntityRegistry.RegisterFlag<SenseDirtyFlag<TSense>>();
             context.ItemEntityRegistry.RegisterNonConstructable<EntityGridPosition>();
-            context.ItemEntityRegistry.RegisterNonConstructable<EntityGridPositionChangedMarker>();
             context.ItemEntityRegistry.RegisterFlag<ImmobilityMarker>();
 
             senseActive10 = context.ItemRegistry.Register(new ReferenceItemDeclaration<ItemReference>("SenseSource-Active-10")
-                                                          .WithTrait(new ReferenceItemGridPositionTrait<ItemReference>(TestMapLayers.One))
+                                                          .WithTrait(new ReferenceItemGridPositionTrait<ItemReference>(BodySize.OneByOne, TestMapLayers.One))
                                                           .DoWith(x => AttachTrait(x)));
             senseActive5 = context.ItemRegistry.Register(new ReferenceItemDeclaration<ItemReference>("SenseSource-Active-5")
-                                                         .WithTrait(new ReferenceItemGridPositionTrait<ItemReference>(TestMapLayers.One))
+                                                         .WithTrait(new ReferenceItemGridPositionTrait<ItemReference>(BodySize.OneByOne, TestMapLayers.One))
                                                          .DoWith(x => AttachTrait(x)));
             senseInactive5 = context.ItemRegistry.Register(new ReferenceItemDeclaration<ItemReference>("SenseSource-Inactive-5")
-                                                           .WithTrait(new ReferenceItemGridPositionTrait<ItemReference>(TestMapLayers.One))
+                                                           .WithTrait(new ReferenceItemGridPositionTrait<ItemReference>(BodySize.OneByOne, TestMapLayers.One))
                                                            .DoWith(x => AttachTrait(x)));
 
             timeSource = new TestTimeSource(new RealTimeSourceDefinition(30));
@@ -129,7 +128,6 @@ namespace RogueEntity.Core.Tests.Sensing.Sources
             senseSystemActions = CreateSystemActions();
 
             context.TryGetItemGridDataFor(TestMapLayers.One, out var mapData).Should().BeTrue();
-            mapData.TryGetWritableView(0, out _, DataViewCreateMode.CreateMissing).Should().BeTrue();
         }
 
         [TearDown]

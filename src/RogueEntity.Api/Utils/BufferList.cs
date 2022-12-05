@@ -106,6 +106,21 @@ namespace RogueEntity.Api.Utils
             this.version += 1;
         }
 
+        public bool Contains(T t)
+        {
+            var equalityComparer = EqualityComparer<T>.Default;
+            for (var i = 0; i < Count; i++)
+            {
+                var e = data[i];
+                if (equalityComparer.Equals(e, t))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+        
         public void Clear()
         {
             if (Count > 0)
@@ -181,7 +196,7 @@ namespace RogueEntity.Api.Utils
 
         public void CopyTo(List<T> target)
         {
-            target.Capacity = Math.Max(target.Capacity, this.Count);
+            target.Capacity = Math.Max(target.Capacity, target.Count + this.Count);
             for (var index = 0; index < this.Count; index++)
             {
                 target.Add(this[index]);
@@ -190,7 +205,7 @@ namespace RogueEntity.Api.Utils
         
         public void CopyToBuffer(BufferList<T> target)
         {
-            target.Capacity = Math.Max(target.Capacity, this.Count);
+            target.Capacity = Math.Max(target.Capacity, target.Count + this.Count);
             for (var index = 0; index < this.Count; index++)
             {
                 target.Add(this[index]);

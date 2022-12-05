@@ -12,11 +12,11 @@ namespace RogueEntity.Samples.MineSweeper.Core.Commands
     public class MineSweeperToggleFlagSystem<TItemId>
         where TItemId : struct, IEntityKey
     {
-        readonly IGridMapContext<TItemId> gridMap;
+        readonly IItemPlacementServiceContext<TItemId> gridMap;
         readonly IItemResolver<TItemId> itemResolver;
         readonly MapBuilder mapBuilder;
 
-        public MineSweeperToggleFlagSystem(IGridMapContext<TItemId> gridMap, IItemResolver<TItemId> itemResolver, MapBuilder mapBuilder)
+        public MineSweeperToggleFlagSystem(IItemPlacementServiceContext<TItemId> gridMap, IItemResolver<TItemId> itemResolver, MapBuilder mapBuilder)
         {
             this.gridMap = gridMap;
             this.itemResolver = itemResolver;
@@ -32,24 +32,22 @@ namespace RogueEntity.Samples.MineSweeper.Core.Commands
             try
             {
                 var pos = revealCommand.Position;
-                if (!gridMap.TryGetGridDataFor(MineSweeperMapLayers.Items, out var itemData) ||
-                    !itemData.TryGetView(0, out var itemView))
+                if (!gridMap.TryGetItemPlacementService(MineSweeperMapLayers.Items, out var itemData))
                 {
                     throw new InvalidOperationException();
                 }
 
-                if (!gridMap.TryGetGridDataFor(MineSweeperMapLayers.Flags, out var flagData) ||
-                    !flagData.TryGetWritableView(0, out var flagView))
+                if (!gridMap.TryGetItemPlacementService(MineSweeperMapLayers.Flags, out var flagData))
                 {
                     throw new InvalidOperationException();
                 }
 
-                if (!itemView.TryGet(pos.X, pos.Y, out var item) || item.IsEmpty)
+                if (!itemData.TryQueryItem(EntityGridPosition.Of(MineSweeperMapLayers.Items, pos.X, pos.Y), out var item) || item.IsEmpty)
                 {
                     return;
                 }
 
-                flagView.TryGet(pos.X, pos.Y, out var flag);
+                flagData.TryQueryItem(EntityGridPosition.Of(MineSweeperMapLayers.Flags, pos.X, pos.Y), out var flag);
                 var position = Position.Of(MineSweeperMapLayers.Flags, pos.X, pos.Y);
                 if (itemResolver.IsItemType(flag, MineSweeperItemDefinitions.Flag))
                 {

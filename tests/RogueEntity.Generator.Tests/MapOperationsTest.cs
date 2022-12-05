@@ -1,6 +1,5 @@
 using NUnit.Framework;
 using RogueEntity.Core.Positioning;
-using RogueEntity.Generator.Tests.Fixtures;
 
 namespace RogueEntity.Generator.Tests
 {

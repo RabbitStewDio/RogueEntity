@@ -13,7 +13,7 @@ namespace RogueEntity.Core.MovementPlaning.Pathfinding
     {
         static void ReturnToPool(DefaultPathFinderTargetEvaluator e)
         {
-            pool?.Return(e);
+            pool.Return(e);
         }
         
         static readonly ObjectPool<DefaultPathFinderTargetEvaluator> pool = 

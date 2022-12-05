@@ -15,6 +15,7 @@ namespace RogueEntity.Core.Positioning
         public static readonly EntitySystemId RegisterCommonPositionsEntitySystemId = "Entities.Core.Position";
         public static readonly EntitySystemId RegisterSpatialQuerySystemId = "Systems.Core.Position.RegisterSpatialQuery";
         public static readonly EntitySystemId RegisterResetMapDataSystemId = "Systems.Core.Position.RegisterResetMapData";
+        public static readonly EntitySystemId ClearMapPositionChangeTrackerSystemId = "Systems.Core.Position.ClearChangeTracker";
 
         public static readonly EntityRole PositionQueryRole = new EntityRole("Role.Core.Position.PositionQueryable");
         public static readonly EntityRole PositionedRole = new EntityRole("Role.Core.Position.Positionable");
@@ -36,6 +37,7 @@ namespace RogueEntity.Core.Positioning
         {
             var entityContext = initializer.DeclareEntityContext<TActorId>();
             entityContext.Register(RegisterCommonPositionsEntitySystemId, 0, RegisterCommonEntities);
+            entityContext.Register(ClearMapPositionChangeTrackerSystemId, 10, RegisterClearMapPositionChangeTrackers);
             entityContext.Register(RegisterResetMapDataSystemId, 100, RegisterResetMapData);
 
             if (!initParameter.ServiceResolver.TryResolve<SpatialQueryRegistry>(out var r))
@@ -90,11 +92,25 @@ namespace RogueEntity.Core.Positioning
             }
         }
 
+        void RegisterClearMapPositionChangeTrackers<TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter,
+                                                               IGameLoopSystemRegistration context,
+                                                               EntityRegistry<TActorId> registry)
+            where TActorId : struct, IEntityKey
+        {
+            void ClearGridPositionAction()
+            {
+                registry.ResetComponent<MapPositionChangedMarker>();
+            }
+
+            context.AddFixedStepHandlers(ClearGridPositionAction);
+        }
+
         void RegisterCommonEntities<TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter,
                                               EntityRegistry<TActorId> registry)
             where TActorId : struct, IEntityKey
         {
             registry.RegisterNonConstructable<ImmobilityMarker>();
+            registry.RegisterNonConstructable<MapPositionChangedMarker>();
         }
 
     }

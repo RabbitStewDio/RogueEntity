@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.ObjectPool;
 using RogueEntity.Api.Utils;
-using RogueEntity.Core.GridProcessing.Directionality;
 using RogueEntity.Core.Movement;
 using RogueEntity.Core.Movement.CostModifier;
 using RogueEntity.Core.MovementPlaning.Pathfinding.Hierarchical.Data;
@@ -21,24 +20,21 @@ public class PathfinderRegionPainterSystem
     readonly ObjectPool<List<(long flag, MovementCostData2D data)>> movementCostDataPool;
     readonly PathfinderRegionPainterSharedDataFactory painterSharedDataFactory;
     readonly PathfinderRegionView3D dataView;
-    readonly DynamicDataViewConfiguration config;
     readonly IMovementDataProvider dataProvider;
     readonly MovementModeEncoding movementModeEncoding;
     readonly bool allowParallelExecution;
     DistanceCalculation movementStyle;
 
-    public PathfinderRegionPainterSystem(DynamicDataViewConfiguration config,
-                                         IMovementDataProvider dataProvider,
+    public PathfinderRegionPainterSystem(IMovementDataProvider dataProvider,
                                          PathfinderRegionView3D dataView,
                                          MovementModeEncoding movementModeEncoding)
     {
-        this.config = config;
         this.dataProvider = dataProvider;
         this.dataView = dataView;
         this.movementModeEncoding = movementModeEncoding;
         this.regionPainterJobs = new BufferList<PathfinderRegionPainterJob>();
         this.movementCostDataPool = new DefaultObjectPool<List<(long flag, MovementCostData2D data)>>(new ListObjectPoolPolicy<(long flag, MovementCostData2D data)>());
-        this.painterSharedDataFactory = new PathfinderRegionPainterSharedDataFactory(config);
+        this.painterSharedDataFactory = new PathfinderRegionPainterSharedDataFactory();
         this.jobMovementCosts = new BufferList<List<(long flag, MovementCostData2D data)>>();
         this.allowParallelExecution = true;
     }

@@ -6,17 +6,21 @@ namespace RogueEntity.Core.Positioning.Grid
 {
     public static class GridPositionItemDeclarations
     {
-        public static BulkItemDeclarationBuilder<TItemId> WithGridPosition<TItemId>(this BulkItemDeclarationBuilder<TItemId> builder, MapLayer layer, params MapLayer[] layers)
+        public static BulkItemDeclarationBuilder<TItemId> WithGridPosition<TItemId>(this BulkItemDeclarationBuilder<TItemId> builder, 
+                                                                                    BodySize bodySize,
+                                                                                    MapLayer layer, params MapLayer[] layers)
             where TItemId : struct, IEntityKey
         {
-            builder.Declaration.WithTrait(new BulkItemGridPositionTrait<TItemId>(layer, layers));
+            builder.Declaration.WithTrait(new BulkItemGridPositionTrait<TItemId>(bodySize, layer, layers));
             return builder;
         }
 
-        public static ReferenceItemDeclarationBuilder<TItemId> WithGridPosition<TItemId>(this ReferenceItemDeclarationBuilder<TItemId> builder, MapLayer layer, params MapLayer[] layers)
+        public static ReferenceItemDeclarationBuilder<TItemId> WithGridPosition<TItemId>(this ReferenceItemDeclarationBuilder<TItemId> builder, 
+                                                                                         BodySize bodySize,
+                                                                                         MapLayer layer, params MapLayer[] layers)
             where TItemId : struct, IEntityKey
         {
-            builder.Declaration.WithTrait(new ReferenceItemGridPositionTrait<TItemId>(layer, layers));
+            builder.Declaration.WithTrait(new ReferenceItemGridPositionTrait<TItemId>(bodySize, layer, layers));
             return builder;
         }
     }

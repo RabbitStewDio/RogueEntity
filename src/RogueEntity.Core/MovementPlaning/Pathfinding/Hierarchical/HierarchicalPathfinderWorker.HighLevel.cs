@@ -134,8 +134,7 @@ partial class HierarchicalPathfinderWorker
                             continue;
                         }
 
-                        var h = Heuristic(edge.EdgeTarget);
-                        openNodesHighLevel.Enqueue(new HighLevelNode(edge, k, totalCost, h), totalCost);
+                        openNodesHighLevel.Enqueue(new HighLevelNode(edge, k, totalCost), totalCost);
                         haveStartingNode = true;
                     }
                 }
@@ -231,8 +230,7 @@ partial class HierarchicalPathfinderWorker
 
                     if (outRecord.record.outboundConnections.TryGetValue(edge, out var lastStep))
                     {
-                        var h = Heuristic(edge.EdgeTarget);
-                        result.Add(new HighLevelNode(inboundEdge.EdgeTarget, edge, key, costSoFar + connection.Cost + lastStep, h));
+                        result.Add(new HighLevelNode(inboundEdge.EdgeTarget, edge, key, costSoFar + connection.Cost + lastStep));
                     }
                 }
             }
@@ -240,13 +238,6 @@ partial class HierarchicalPathfinderWorker
 
         return result;
     }
-
-    float Heuristic(Position2D pos)
-    {
-        if (targetEvaluator == null) return 0;
-        return targetEvaluator.TargetHeuristic(z, pos);
-    }
-
 
     bool RecordPathSegment([MaybeNullWhen(false)] out IPath result, out float segmentCost)
     {
@@ -327,7 +318,6 @@ partial class HierarchicalPathfinderWorker
         Optional<(MovementModeEncoding encoder, PathfinderZonePathSegment segment)> cheapestSegment = default;
         foreach (var r in edgeData2D.GetZoneData(target.Edge.OwnerId))
         {
-            var k = r.Key;
             if (!r.TryGetConnection(parentPos, targetPos, out var segment))
             {
                 continue;
@@ -356,7 +346,7 @@ partial class HierarchicalPathfinderWorker
 
         var pathRaw = pathPool.Lease();
         cheap.segment.PopulatePath(pathRaw, z, cheap.encoder);
-        pathRaw.RecordStep(target.Edge.EdgeTargetDirection, null);
+        // todo pathRaw.RecordStep(target.Edge.EdgeTargetDirection, null);
         path = pathRaw;
         parent = parentNode;
         return true;
@@ -368,23 +358,20 @@ partial class HierarchicalPathfinderWorker
         public readonly PathfinderRegionEdge Edge;
         public readonly ZoneEdgeDataKey Key;
         public readonly float Cost;
-        public readonly float Heuristic;
 
-        public HighLevelNode(Position2D parent, PathfinderRegionEdge edge, ZoneEdgeDataKey key, float cost, float heuristic)
+        public HighLevelNode(Position2D parent, PathfinderRegionEdge edge, ZoneEdgeDataKey key, float cost)
         {
             this.Edge = edge;
             this.Key = key;
             this.Cost = cost;
-            this.Heuristic = heuristic;
             this.ParentPosition = parent;
         }
 
-        public HighLevelNode(PathfinderRegionEdge edge, ZoneEdgeDataKey key, float cost, float heuristic)
+        public HighLevelNode(PathfinderRegionEdge edge, ZoneEdgeDataKey key, float cost)
         {
             this.Edge = edge;
             this.Key = key;
             this.Cost = cost;
-            this.Heuristic = heuristic;
             this.ParentPosition = default;
         }
 

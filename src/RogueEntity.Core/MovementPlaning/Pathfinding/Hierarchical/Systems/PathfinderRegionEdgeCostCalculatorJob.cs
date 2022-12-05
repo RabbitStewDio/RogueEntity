@@ -76,7 +76,7 @@ public readonly struct PathfinderRegionEdgeCostCalculatorJob
                     if (pathFinder.TryFindPath(EntityGridPosition.Of(MapLayer.Indeterminate, sourcePos.X, sourcePos.Y, z),
                                                                   out var path))
                     {
-                        var (resultHint, resultPath, resultCost) = path;
+                        var (_, resultPath, resultCost) = path;
                         pathData.RecordConnection(sourcePos, targetPos, resultCost, resultPath);
                     }
                 }

@@ -5,9 +5,9 @@ using RogueEntity.Core.Utils;
 
 namespace RogueEntity.Core.MovementPlaning.Pathfinding.Hierarchical;
 
-public class HierarchicalPathfinderSource : IPathFinderSource, IPooledObjectProvider<IPathFinderBuilder>
+public class HierarchicalPathfinderSource : IPathFinderSource
 {
-    readonly ObjectPool<HierarchicalPathfinderBuilder> pathfinderBuilderPool;
+    readonly ObjectPool<IPathFinderBuilder> pathfinderBuilderPool;
     readonly ObjectPool<HierarchicalPathFinder> pathfinderPool;
     
     public HierarchicalPathfinderSource(SingleLevelPathFinderSource fragmentPathfinder, HierarchicalPathFinderPolicy policy, IMovementDataProvider movementDataProvider)
@@ -17,7 +17,8 @@ public class HierarchicalPathfinderSource : IPathFinderSource, IPooledObjectProv
         Assert.NotNull(movementDataProvider, nameof(movementDataProvider));
 
         this.pathfinderPool = new DefaultObjectPool<HierarchicalPathFinder>(policy);
-        this.pathfinderBuilderPool = new DefaultObjectPool<HierarchicalPathfinderBuilder>(new HierarchicalPathfinderBuilderPolicy(movementDataProvider, pathfinderPool, fragmentPathfinder));
+        var builderPolicy = new HierarchicalPathfinderBuilderPolicy(movementDataProvider, pathfinderPool, fragmentPathfinder);
+        this.pathfinderBuilderPool = new DefaultObjectPool<IPathFinderBuilder>(builderPolicy.DownGrade<IPathFinderBuilder, HierarchicalPathfinderBuilder>());
     }
 
     public void Return(IPathFinderBuilder t)
@@ -31,7 +32,7 @@ public class HierarchicalPathfinderSource : IPathFinderSource, IPooledObjectProv
     public PooledObjectHandle<IPathFinderBuilder> GetPathFinder()
     {
         var pathFinderBuilder = pathfinderBuilderPool.Get();
-        return new PooledObjectHandle<IPathFinderBuilder>(this, pathFinderBuilder);
+        return new PooledObjectHandle<IPathFinderBuilder>(pathfinderBuilderPool, pathFinderBuilder);
     }
 
     class HierarchicalPathfinderBuilderPolicy : IPooledObjectPolicy<HierarchicalPathfinderBuilder>
@@ -56,7 +57,7 @@ public class HierarchicalPathfinderSource : IPathFinderSource, IPooledObjectProv
 
         public bool Return(HierarchicalPathfinderBuilder obj)
         {
-            obj?.Reset();
+            obj.Reset();
             return true;
         }
     }

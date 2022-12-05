@@ -272,7 +272,7 @@ namespace RogueEntity.Core.Equipment
         /// <param name="desiredSlot"></param>
         /// <param name="acceptedSlot">The first slot the item occupies, based on the order of slots listed in the slot requirements</param>
         /// <returns></returns>
-        public bool IsBulkEquipmentSpaceAvailable(IBulkDataStorageMetaData<TItemId> meta,
+        public bool IsBulkEquipmentSpaceAvailable(IItemResolver<TItemId> meta,
                                                   EquipmentSlotRequirements req,
                                                   TItemId bulkItem,
                                                   Optional<EquipmentSlot> desiredSlot,
@@ -342,12 +342,12 @@ namespace RogueEntity.Core.Equipment
         }
 
 
-        bool IsBulkEquipmentDesiredSpaceAvailable(IBulkDataStorageMetaData<TItemId> meta,
-                                                             EquipmentSlotRequirements req,
-                                                             TItemId bulkItem,
-                                                             EquipmentSlot desiredSlotValue,
-                                                             Optional<EquipmentSlot> acceptedSlotTmp,
-                                                             [MaybeNullWhen(false)] out EquipmentSlot acceptedSlot)
+        bool IsBulkEquipmentDesiredSpaceAvailable(IItemResolver<TItemId> meta,
+                                                  EquipmentSlotRequirements req,
+                                                  TItemId bulkItem,
+                                                  EquipmentSlot desiredSlotValue,
+                                                  Optional<EquipmentSlot> acceptedSlotTmp,
+                                                  [MaybeNullWhen(false)] out EquipmentSlot acceptedSlot)
         {
             var desiredSlotIsAcceptable = req.AcceptableSlots.Contains(desiredSlotValue);
             var desiredSlotIsRequired = req.RequiredSlots.Contains(desiredSlotValue);
@@ -427,7 +427,7 @@ namespace RogueEntity.Core.Equipment
         /// <param name="bulkItem"></param>
         /// <param name="primarySlot"></param>
         /// <returns></returns>
-        bool IsBulkEquipmentRequiredSpaceAvailable(IBulkDataStorageMetaData<TItemId> meta,
+        bool IsBulkEquipmentRequiredSpaceAvailable(IItemResolver<TItemId> meta,
                                                    EquipmentSlotRequirements req,
                                                    TItemId bulkItem,
                                                    out Optional<EquipmentSlot> primarySlot)
@@ -488,7 +488,7 @@ namespace RogueEntity.Core.Equipment
         /// <param name="r"></param>
         /// <param name="primarySlot"></param>
         /// <returns></returns>
-        bool IsSlotAvailableForBulkItem(IBulkDataStorageMetaData<TItemId> meta,
+        bool IsSlotAvailableForBulkItem(IItemResolver<TItemId> meta,
                                         EquipmentSlot equipmentSlot,
                                         TItemId r,
                                         out Optional<EquipmentSlot> primarySlot)
@@ -499,7 +499,7 @@ namespace RogueEntity.Core.Equipment
                 return true;
             }
 
-            if (meta.IsSameBulkType(item.Reference, r) && item.PrimarySlot != null)
+            if (meta.IsSameStackType(item.Reference, r) && item.PrimarySlot != null)
             {
                 primarySlot = item.PrimarySlot;
                 return true;

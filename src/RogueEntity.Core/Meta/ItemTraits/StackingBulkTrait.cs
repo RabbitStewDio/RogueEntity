@@ -8,8 +8,8 @@ using RogueEntity.Core.Meta.Items;
 
 namespace RogueEntity.Core.Meta.ItemTraits
 {
-    public class StackingBulkTrait< TItemId> : IItemComponentTrait< TItemId, StackCount>,
-                                                        IBulkDataTrait< TItemId>
+    public class StackingBulkTrait<TItemId> : IItemComponentTrait<TItemId, StackCount>,
+                                              IBulkDataTrait<TItemId>
         where TItemId : struct, IBulkDataStorageKey<TItemId>
     {
         readonly ushort stackSize;
@@ -30,17 +30,17 @@ namespace RogueEntity.Core.Meta.ItemTraits
             {
                 throw new ArgumentOutOfRangeException(nameof(initialCount));
             }
-            
+
             Id = "ItemTrait.Bulk.Generic.Stacking";
             Priority = 100;
-            this.stackSize = (ushort) (stackSize - 1);
+            this.stackSize = (ushort)(stackSize - 1);
             this.initialCount = (ushort)(initialCount - 1);
         }
 
         public ItemTraitId Id { get; }
         public int Priority { get; }
 
-        public IBulkItemTrait< TItemId> CreateInstance()
+        public IBulkItemTrait<TItemId> CreateInstance()
         {
             return this;
         }
@@ -50,7 +50,7 @@ namespace RogueEntity.Core.Meta.ItemTraits
             return reference.WithData(initialCount);
         }
 
-        public bool TryQuery(IEntityViewControl<TItemId> v,  TItemId k, out StackCount t)
+        public bool TryQuery(IEntityViewControl<TItemId> v, TItemId k, out StackCount t)
         {
             if (k.IsReference)
             {
@@ -68,6 +68,7 @@ namespace RogueEntity.Core.Meta.ItemTraits
             {
                 throw new ArgumentOutOfRangeException(nameof(t), $"StackCount {t} does not match expected maximum stack size {stackSize + 1}");
             }
+
             if (t.Count > t.MaximumStackSize ||
                 t.Count < 0)
             {
@@ -92,7 +93,7 @@ namespace RogueEntity.Core.Meta.ItemTraits
             return true;
         }
 
-        public bool TryRemove(IEntityViewControl<TItemId> entityRegistry,  TItemId k, out TItemId changedItem)
+        public bool TryRemove(IEntityViewControl<TItemId> entityRegistry, TItemId k, out TItemId changedItem)
         {
             changedItem = k;
             return false;

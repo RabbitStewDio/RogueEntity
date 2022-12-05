@@ -48,10 +48,16 @@ public class SingleLevelPathfinderModule: ModuleBase
         var serviceResolver = initParameter.ServiceResolver;
         if (!serviceResolver.TryResolve<SingleLevelPathFinderSource>(out var source))
         {
+            if (!serviceResolver.TryResolve<SingleLevelPathPool>(out var pathPool))
+            {
+                pathPool = new SingleLevelPathPool();
+                serviceResolver.Store(pathPool);
+            }
+            
             if (!serviceResolver.TryResolve<SingleLevelPathFinderPolicy>(out var policy))
             {
                 var gridConfig = PositionModuleServices.LookupDefaultConfiguration<TEntityId>(serviceResolver);
-                policy = new SingleLevelPathFinderPolicy(gridConfig);
+                policy = new SingleLevelPathFinderPolicy(gridConfig, pathPool);
             }
 
 

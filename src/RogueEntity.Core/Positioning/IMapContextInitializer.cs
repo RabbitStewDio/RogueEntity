@@ -1,6 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 
-namespace RogueEntity.Core.Positioning.Grid
+namespace RogueEntity.Core.Positioning
 {
     /// <summary>
     ///    A semi-hidden helper interface intended to be implemented by a GridMapContext implementation
@@ -9,7 +9,7 @@ namespace RogueEntity.Core.Positioning.Grid
     /// </summary>
     /// <typeparam name="TItemId">Only used as selector.</typeparam>
     [SuppressMessage("ReSharper", "UnusedTypeParameter")]
-    public interface IGridMapContextInitializer<TItemId>
+    public interface IMapContextInitializer<TItemId>
     {
         void ResetState();
     }

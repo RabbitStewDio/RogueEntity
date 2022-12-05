@@ -113,7 +113,7 @@ namespace RogueEntity.Core.Tests.Movement.Pathfinding
             var ms = new MovementDataCollector();
             ms.RegisterMovementSource<WalkingMovement>(WalkingMovement.Instance, resistanceMap.As3DMap(0), inboundDirectionalityMap.As3DMap(0), outboundDirectionalityMap.As3DMap(0));
 
-            var pfs = new SingleLevelPathFinderSource(new SingleLevelPathFinderPolicy(), ms);
+            var pfs = new SingleLevelPathFinderSource(new SingleLevelPathFinderPolicy(DynamicDataViewConfiguration.Default16X16), ms);
 
             var startPosition = EntityGridPosition.OfRaw(0, sx, sy);
             var targetPosition = EntityGridPosition.OfRaw(0, tx, ty);

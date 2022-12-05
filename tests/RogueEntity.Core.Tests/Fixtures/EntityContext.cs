@@ -4,9 +4,7 @@ using RogueEntity.Api.ItemTraits;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Meta.ItemTraits;
 using RogueEntity.Core.Positioning;
-using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Utils;
-using RogueEntity.Core.Utils.DataViews;
 using System;
 
 namespace RogueEntity.Core.Tests.Fixtures
@@ -54,16 +52,9 @@ namespace RogueEntity.Core.Tests.Fixtures
             
         public (TEntity, Position) IsPlacedAt(Position p)
         {
-            Context.ItemMapContext.TryGetGridDataFor(p.LayerId, out var data).Should().BeTrue();
-            if (Item.IsReference)
-            {
-                // bypass the GridPlacementContext here
-                Context.ItemResolver.TryUpdateData(Item, new EntityGridPositionUpdateMessage(EntityGridPosition.From(p)), out _).Should().BeTrue();
-            }
-
-            data.TryGetWritableView(p.GridZ, out var view, DataViewCreateMode.CreateMissing).Should().BeTrue();
-            Assert.NotNull(view);
-            view.TrySet(p.GridX, p.GridY, Item);
+            Context.ItemPlacementContext.TryGetItemPlacementService(p.LayerId, out var data).Should().BeTrue();
+            Assert.NotNull(data);
+            data.TryPlaceItem(Item, p).Should().BeTrue();
             return (Item, p);
         }
     }

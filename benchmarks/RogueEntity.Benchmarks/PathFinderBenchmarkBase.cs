@@ -27,7 +27,7 @@ namespace RogueEntity.Benchmarks
             this.id = id;
             positions = new List<EntityGridPosition>();
             movementDataCollector = new MovementDataCollector();
-            pathfinderSource = new SingleLevelPathFinderSource(new SingleLevelPathFinderPolicy(), movementDataCollector);
+            pathfinderSource = new SingleLevelPathFinderSource(new SingleLevelPathFinderPolicy(DynamicDataViewConfiguration.Default16X16), movementDataCollector);
         }
 
         public virtual void SetUpGlobal()

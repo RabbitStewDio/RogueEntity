@@ -14,7 +14,6 @@ namespace RogueEntity.Core.Movement.Cost
         where TActorId : struct, IEntityKey
         where TMovementMode : IMovementMode
     {
-        readonly TMovementMode movementMode;
         readonly IMovementMode movementModeBoxed;
         readonly DistanceCalculation movementStyle;
         readonly float standardMovementCost;
@@ -26,7 +25,6 @@ namespace RogueEntity.Core.Movement.Cost
                                                    int movementModePreference) :
             base("Core.Traits.Movement.MovementPointCosts+" + typeof(TMovementMode).Name, 100)
         {
-            this.movementMode = movementMode;
             this.movementModeBoxed = movementMode;
             this.movementStyle = movementStyle;
             this.standardMovementCost = standardMovementCost;

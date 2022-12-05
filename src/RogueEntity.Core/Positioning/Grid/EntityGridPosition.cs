@@ -18,7 +18,7 @@ namespace RogueEntity.Core.Positioning.Grid
     [DataContract]
     [Serializable]
     [MessagePackObject]
-    public readonly struct EntityGridPosition : IEquatable<EntityGridPosition>, IPosition<EntityGridPosition>
+    public readonly struct EntityGridPosition : IPosition<EntityGridPosition>
     {
         public const int MinXYValue = short.MinValue;
         public const int MaxXYValue = short.MaxValue;
@@ -255,6 +255,20 @@ namespace RogueEntity.Core.Positioning.Grid
         public EntityGridPosition WithPosition(double tx, double ty)
         {
             return OfRaw(this.LayerId, (int) Math.Round(tx, MidpointRounding.AwayFromZero), (int) Math.Round(ty, MidpointRounding.AwayFromZero), GridZ);
+        }
+
+        static EntityGridPosition()
+        {
+            PositionTypeRegistry.Instance.Register(new EntityGridPositionRegistration());
+        }
+
+        class EntityGridPositionRegistration: IPositionTypeRegistration<EntityGridPosition>
+        {
+            public EntityGridPosition Convert<TPositionIn>(TPositionIn p)
+                where TPositionIn: struct, IPosition<TPositionIn>
+            {
+                return From(p);
+            }
         }
     }
 }

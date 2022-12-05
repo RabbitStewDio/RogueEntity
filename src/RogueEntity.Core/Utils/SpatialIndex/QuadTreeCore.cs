@@ -1,3 +1,5 @@
+using Microsoft.Extensions.ObjectPool;
+using RogueEntity.Api.Utils;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
@@ -7,10 +9,11 @@ using System.Threading;
 namespace RogueEntity.Core.Utils.SpatialIndex
 {
     public class QuadTreeCore<TSpatialIndexAdapter>
-        where TSpatialIndexAdapter : IQuadTreeAdapter
+        where TSpatialIndexAdapter : ISpatialIndexAdapter
     {
         static readonly FreeListIndex rootElement = FreeListIndex.Of(0);
         static readonly ThreadLocal<Stack<QuadNodeData>> processingStackHolder = new ThreadLocal<Stack<QuadNodeData>>(() => new Stack<QuadNodeData>());
+        readonly ObjectPool<List<FreeListIndex>> pool;
         readonly TSpatialIndexAdapter adapter;
         readonly FreeList<QuadElementNode> elementNodes;
         readonly FreeList<QuadNode> nodes;
@@ -18,12 +21,14 @@ namespace RogueEntity.Core.Utils.SpatialIndex
         readonly int maxElements;
         readonly AABB boundingBox;
 
-        public QuadTreeCore(TSpatialIndexAdapter adapter, AABB boundingBox, int maxElements, int maxDepth)
+        public QuadTreeCore(TSpatialIndexAdapter adapter, AABB boundingBox, int maxElements, int maxDepth, 
+                            ObjectPool<List<FreeListIndex>> pool)
         {
             this.maxDepth = Math.Max(1, maxDepth);
             this.maxElements = Math.Max(1, maxElements);
             this.adapter = adapter ?? throw new ArgumentNullException(nameof(adapter));
             this.boundingBox = boundingBox;
+            this.pool = pool;
 
             elementNodes = new FreeList<QuadElementNode>();
             nodes = new FreeList<QuadNode>();
@@ -41,6 +46,20 @@ namespace RogueEntity.Core.Utils.SpatialIndex
             ProcessLeaves(rootElement, 0, boundingBox, elementBounds, removeHandler);
         }
 
+        public void RemoveIf(Func<FreeListIndex, bool> selector, in BoundingBox elementBounds)
+        {
+            var removeHandler = new RemoveBulkVisitor(this, selector);
+            ProcessLeaves(rootElement, 0, boundingBox, elementBounds, removeHandler);
+        }
+
+        public void Clear()
+        {
+            var removeHandler = new RemoveAllVisitor(this);
+            ProcessLeaves(rootElement, 0, boundingBox, boundingBox, removeHandler);
+        }
+
+        public AABB BoundingBox => boundingBox;
+        
         public void CleanUp()
         {
             if (nodes[rootElement].IsLeaf)
@@ -107,9 +126,13 @@ namespace RogueEntity.Core.Utils.SpatialIndex
             }
         }
 
-        public List<FreeListIndex> Query(in BoundingBox bb, List<FreeListIndex>? result, bool[] deduplicator, FreeListIndex skipElement = default)
+        public BufferList<FreeListIndex> Query(in BoundingBox bb, 
+                                               bool[] deduplicator, 
+                                               BufferList<FreeListIndex>? result = default, 
+                                               FreeListIndex skipElement = default)
         {
-            var x = new CollectQueryVisitor(this, result ?? new List<FreeListIndex>(), bb, deduplicator, skipElement);
+            result = BufferList.PrepareBuffer(result);
+            var x = new CollectQueryVisitor(this, result, bb, deduplicator, skipElement);
             ProcessLeaves(rootElement, 0, boundingBox, bb, x);
             return x.ResultCollector;
         }
@@ -230,24 +253,32 @@ namespace RogueEntity.Core.Utils.SpatialIndex
 
             if (node.ChildCount == maxElements && dt.Depth < maxDepth)
             {
-                var elementsInLeaves = CollectElementFromLeafNode(elementNodeIndex);
-
-                var fc = nodes.Add(QuadNode.Leaf());
-                nodes.Add(QuadNode.Leaf());
-                nodes.Add(QuadNode.Leaf());
-                nodes.Add(QuadNode.Leaf());
-
-                nodes.Replace(dt.Index, QuadNode.Branch(fc));
-
-                foreach (var elementIndex in elementsInLeaves)
+                var elementsInLeaves = pool.Get();
+                try
                 {
-                    if (!adapter.TryGetBounds(elementIndex, out var bb))
-                    {
-                        continue;
-                    }
+                    CollectElementFromLeafNode(elementsInLeaves, elementNodeIndex);
 
-                    var v = new CollectLeafNodesVisitor(this, elementIndex);
-                    ProcessLeavesShallow(dt.Index, dt.Depth, dt.NodeBounds, bb, v);
+                    var fc = nodes.Add(QuadNode.Leaf());
+                    nodes.Add(QuadNode.Leaf());
+                    nodes.Add(QuadNode.Leaf());
+                    nodes.Add(QuadNode.Leaf());
+
+                    nodes.Replace(dt.Index, QuadNode.Branch(fc));
+
+                    foreach (var elementIndex in elementsInLeaves)
+                    {
+                        if (!adapter.TryGetBounds(elementIndex, out var bb))
+                        {
+                            continue;
+                        }
+
+                        var v = new CollectLeafNodesVisitor(this, elementIndex);
+                        ProcessLeavesShallow(dt.Index, dt.Depth, dt.NodeBounds, bb, v);
+                    }
+                }
+                finally
+                {
+                    pool.Return(elementsInLeaves);
                 }
             }
         }
@@ -255,9 +286,8 @@ namespace RogueEntity.Core.Utils.SpatialIndex
         // Note: This method may be called recursively, so we have to return a new
         // list each time this method is called. The list's life should hopefully be
         // short lived and thus not bother the garbage collector too much. 
-        List<FreeListIndex> CollectElementFromLeafNode(FreeListIndex nfc)
+        void CollectElementFromLeafNode(List<FreeListIndex> elementIndices, FreeListIndex nfc)
         {
-            var elementIndices = new List<FreeListIndex>();
             while (!nfc.IsEmpty)
             {
                 var elementNode = elementNodes[nfc];
@@ -266,8 +296,6 @@ namespace RogueEntity.Core.Utils.SpatialIndex
 
                 nfc = elementNode.NextElementNodeIndex;
             }
-
-            return elementIndices;
         }
 
         public string Print()
@@ -341,6 +369,80 @@ namespace RogueEntity.Core.Utils.SpatialIndex
             public void ProcessBranchNode(in QuadNodeData data)
             { }
         }
+        
+        readonly struct RemoveBulkVisitor : ILeafNodeVisitor
+        {
+            readonly QuadTreeCore<TSpatialIndexAdapter> self;
+            readonly Func<FreeListIndex, bool> elementToRemove;
+
+            public RemoveBulkVisitor(QuadTreeCore<TSpatialIndexAdapter> self, Func<FreeListIndex, bool> elementToRemove)
+            {
+                this.self = self;
+                this.elementToRemove = elementToRemove;
+            }
+
+            public void ProcessLeafNode(in QuadNodeData leaf)
+            {
+                var nodeIndex = leaf.Index;
+                var node = self.nodes[nodeIndex];
+                var elementNodeIndex = node.FirstChildIdx;
+                while (!elementNodeIndex.IsEmpty)
+                {
+                    var prevElementNodeIndex = elementNodeIndex;
+                    if (!elementNodeIndex.IsEmpty &&
+                        elementToRemove.Invoke(elementNodeIndex))
+                    {
+                        var nextIndex = self.elementNodes[elementNodeIndex].NextElementNodeIndex;
+                        if (prevElementNodeIndex.IsEmpty)
+                        {
+                            // first element in the linked list
+                            self.nodes.Replace(nodeIndex, node.RemoveChildFromLeaf(nextIndex));
+                            self.elementNodes.Remove(nextIndex);
+                        }
+                        else
+                        {
+                            // middle or end, so we restitch the linked list around the removed element
+                            var prevNode = self.elementNodes[prevElementNodeIndex];
+                            self.elementNodes.Replace(prevElementNodeIndex, new QuadElementNode(nextIndex, prevNode.ElementIndex));
+                            self.elementNodes.Remove(nextIndex);
+                            self.nodes.Replace(nodeIndex, node.DecrementChildCount());
+                        }
+                    }
+                    elementNodeIndex = self.elementNodes[elementNodeIndex].NextElementNodeIndex;
+                }
+
+            }
+
+            public void ProcessBranchNode(in QuadNodeData data)
+            { }
+        }
+
+        readonly struct RemoveAllVisitor : ILeafNodeVisitor
+        {
+            readonly QuadTreeCore<TSpatialIndexAdapter> self;
+
+            public RemoveAllVisitor(QuadTreeCore<TSpatialIndexAdapter> self)
+            {
+                this.self = self;
+            }
+
+            public void ProcessLeafNode(in QuadNodeData leaf)
+            {
+                var nodeIndex = leaf.Index;
+                var node = self.nodes[nodeIndex];
+                var elementNodeIndex = node.FirstChildIdx;
+                while (!elementNodeIndex.IsEmpty)
+                {
+                    var nextIndex = self.elementNodes[elementNodeIndex].NextElementNodeIndex;
+                    self.elementNodes.Remove(elementNodeIndex);
+                    self.nodes.Replace(nodeIndex, node.RemoveChildFromLeaf(nextIndex));
+                    elementNodeIndex = nextIndex;
+                }
+            }
+
+            public void ProcessBranchNode(in QuadNodeData data)
+            { }
+        }
 
         readonly struct CollectQueryVisitor : ILeafNodeVisitor
         {
@@ -348,10 +450,10 @@ namespace RogueEntity.Core.Utils.SpatialIndex
             readonly bool[] resultDeduplicator;
             readonly BoundingBox bb;
             readonly FreeListIndex skipElement;
-            public readonly List<FreeListIndex> ResultCollector;
+            public readonly BufferList<FreeListIndex> ResultCollector;
 
             public CollectQueryVisitor(QuadTreeCore<TSpatialIndexAdapter> tree,
-                                       List<FreeListIndex> resultCollector,
+                                       BufferList<FreeListIndex> resultCollector,
                                        in BoundingBox bb,
                                        bool[] resultDeduplicator,
                                        FreeListIndex skipElement = default)

@@ -7,7 +7,7 @@ namespace RogueEntity.Core.Utils.SpatialIndex
     ///   This allows us to have one global index of elements and their bounds with multiple
     ///   QuadTrees storing index-references.
     /// </summary>
-    public interface IQuadTreeAdapter
+    public interface ISpatialIndexAdapter
     {
         int ElementIndexRange { get; }
 

@@ -8,17 +8,14 @@ namespace RogueEntity.Core.MovementPlaning.Pathfinding.Hierarchical.Systems;
 /// </summary>
 public readonly struct PathfinderRegionEdgeDetectorPostProcessor
 {
-    readonly PathfinderRegionView2D zoneData2D;
     readonly PathfinderRegionDataView zoneData;
     readonly PathfinderRegionEdgeData2D edgeData2D;
     readonly PathfinderRegionEdgeData edgeData;
 
-    public PathfinderRegionEdgeDetectorPostProcessor(PathfinderRegionView2D zoneData2D,
-                                                     PathfinderRegionDataView zoneData,
+    public PathfinderRegionEdgeDetectorPostProcessor(PathfinderRegionDataView zoneData,
                                                      PathfinderRegionEdgeData2D edgeData2D,
                                                      PathfinderRegionEdgeData edgeData)
     {
-        this.zoneData2D = zoneData2D;
         this.zoneData = zoneData;
         this.edgeData2D = edgeData2D;
         this.edgeData = edgeData;

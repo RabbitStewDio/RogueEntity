@@ -1,3 +1,7 @@
+<#@ assembly name="System.Core.dll" #>
+<#@ assembly name="System.Xml.dll" #>
+<#@ assembly name="System.Xml.Linq.dll" #>
+
 using System;
 using EnTTSharp.Entities;
 using EnTTSharp.Entities.Attributes;

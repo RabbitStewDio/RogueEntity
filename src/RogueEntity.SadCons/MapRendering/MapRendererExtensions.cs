@@ -1,7 +1,7 @@
 using EnTTSharp.Entities;
 using RogueEntity.Api.ItemTraits;
 using RogueEntity.Api.Services;
-using RogueEntity.Core.Positioning.Grid;
+using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.MapLayers;
 using System;
 
@@ -20,8 +20,8 @@ namespace RogueEntity.SadCons.MapRendering
         public static ConsoleRenderLayer<TMapData> CreateRendererFor<TMapData>(MapLayer layer, IServiceResolver serviceResolver)
             where TMapData : struct, IEntityKey
         {
-            var map = serviceResolver.Resolve<IGridMapContext<TMapData>>();
-            if (map.TryGetGridDataFor(layer, out var layerData))
+            var map = serviceResolver.Resolve<IMapContext<TMapData>>();
+            if (map.TryGetMapDataFor(layer, out var layerData))
             {
                 return new ConsoleRenderLayer<TMapData>(layerData, serviceResolver.Resolve<IItemResolver<TMapData>>());
             }

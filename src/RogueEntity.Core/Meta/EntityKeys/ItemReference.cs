@@ -156,6 +156,11 @@ namespace RogueEntity.Core.Meta.EntityKeys
 
         public override string ToString()
         {
+            if (IsEmpty)
+            {
+                return $"ItemReference[Empty]";
+            }
+
             if (IsReference)
             {
                 return $"ItemReference[Ref]{Age:X2}[{Key:X8}]";
@@ -181,7 +186,6 @@ namespace RogueEntity.Core.Meta.EntityKeys
         public static readonly ItemReferenceMetaData Instance = new ItemReferenceMetaData();
 
         public int MaxAge => ItemReference.MaxAge;
-        public bool IsSameBulkType(ItemReference a, ItemReference b) => !a.IsEmpty && !a.IsReference && !b.IsReference && a.BulkItemId == b.BulkItemId;
         public bool IsReferenceEntity(in ItemReference targetItem) => targetItem.IsReference;
         
         public ItemReference CreateReferenceKey(byte age, int entityId) => ItemReference.FromReferencedItem(age, entityId);

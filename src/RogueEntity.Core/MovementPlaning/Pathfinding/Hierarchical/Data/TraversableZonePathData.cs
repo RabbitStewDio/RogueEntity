@@ -7,7 +7,6 @@ using RogueEntity.Core.Positioning.Algorithms;
 using RogueEntity.Core.Utils;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 
 namespace RogueEntity.Core.MovementPlaning.Pathfinding.Hierarchical.Data;
 

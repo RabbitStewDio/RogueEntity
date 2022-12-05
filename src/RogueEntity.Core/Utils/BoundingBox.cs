@@ -14,7 +14,7 @@ namespace RogueEntity.Core.Utils
         public int MinExtentY => Top;
         public int MaxExtentY => Bottom;
         
-        public BoundingBox(int top, int left, int bottom, int right)
+        BoundingBox(int left, int top, int right, int bottom)
         {
             Top = top;
             Left = left;
@@ -29,7 +29,7 @@ namespace RogueEntity.Core.Utils
 
         public static implicit operator BoundingBox(Rectangle b)
         {
-            return new BoundingBox(b.MinExtentX, b.MinExtentY, b.MaxExtentX, b.MaxExtentY);
+            return new BoundingBox(b.MinExtentY, b.MinExtentX, b.MaxExtentY, b.MaxExtentX);
         }
 
         public bool Equals(BoundingBox other)
@@ -77,6 +77,32 @@ namespace RogueEntity.Core.Utils
         public override string ToString()
         {
             return $"BoundingBox({nameof(Top)}: {Top}, {nameof(Left)}: {Left}, {nameof(Bottom)}: {Bottom}, {nameof(Right)}: {Right})";
+        }
+
+        public static BoundingBox From(Rectangle b)
+        {
+            return new BoundingBox(b.MinExtentX, b.MinExtentY, b.MaxExtentX, b.MaxExtentY);
+        }
+
+        public static BoundingBox From(Position2D pos)
+        {
+            return new BoundingBox(pos.X, pos.Y, pos.X, pos.Y);
+        }
+
+        public static BoundingBox From(int x, int y)
+        {
+            return new BoundingBox(x, y, x, y);
+        }
+
+        public static BoundingBox From(int x, int y, int width, int height)
+        {
+            
+            return new BoundingBox(x, y, x + Math.Max(1, width) - 1, y + Math.Max(1, height) - 1);
+        }
+
+        public static BoundingBox From(Position2D topLeft, Position2D bottomRight)
+        {
+            return new BoundingBox(topLeft.X, topLeft.Y, bottomRight.X, bottomRight.Y);
         }
     }
 }

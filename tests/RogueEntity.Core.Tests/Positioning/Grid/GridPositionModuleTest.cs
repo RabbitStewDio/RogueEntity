@@ -1,9 +1,9 @@
 using FluentAssertions;
 using NUnit.Framework;
 using RogueEntity.Core.Meta.EntityKeys;
+using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Tests.Fixtures;
-using RogueEntity.Core.Utils.DataViews;
 
 namespace RogueEntity.Core.Tests.Positioning.Grid
 {
@@ -19,53 +19,44 @@ namespace RogueEntity.Core.Tests.Positioning.Grid
         [Test]
         public void ValidateMapIsClearedOnResetState()
         {
-            this.GameFixture.ServiceResolver.TryResolve(out IGridMapContext<ItemReference> gr).Should().BeTrue();
-            gr.TryGetGridDataFor(TestMapLayers.Ground, out var data).Should().BeTrue();
-
-            data.TryGetWritableView(0, out var view, DataViewCreateMode.CreateMissing);
-            Assert.NotNull(view);
+            this.GameFixture.ServiceResolver.TryResolve(out IMapContext<ItemReference> gr).Should().BeTrue();
+            gr.TryGetMapDataFor(TestMapLayers.Ground, out var data).Should().BeTrue();
             
-            view.TrySet(0, 0, ItemReference.FromBulkItem(1, 1)).Should().BeTrue();
+            data.TryInsertItem(ItemReference.FromBulkItem(1, 1), EntityGridPosition.Of(TestMapLayers.Ground, 0, 0, 0)).Should().BeTrue();
             
-            var x = (IGridMapContextInitializer<ItemReference>)data;
+            var x = (IMapContextInitializer<ItemReference>)gr;
             x.ResetState();
 
-            view.At(0,0).Should().Be(ItemReference.Empty);
+            data.At(0,0).Should().Be(ItemReference.Empty);
         }
 
         [Test]
         public void ValidateMapIsClearedOnGameStop()
         {
-            this.GameFixture.ServiceResolver.TryResolve(out IGridMapContext<ItemReference> gr).Should().BeTrue();
-            gr.TryGetGridDataFor(TestMapLayers.Ground, out var data).Should().BeTrue();
+            this.GameFixture.ServiceResolver.TryResolve(out IMapContext<ItemReference> gr).Should().BeTrue();
+            gr.TryGetMapDataFor(TestMapLayers.Ground, out var data).Should().BeTrue();
 
             this.GameFixture.StartGame();
             
-            data.TryGetWritableView(0, out var view, DataViewCreateMode.CreateMissing);
-            Assert.NotNull(view);
-            
-            view.TrySet(0, 0, ItemReference.FromBulkItem(1, 1)).Should().BeTrue();
+            data.TryInsertItem(ItemReference.FromBulkItem(1, 1), EntityGridPosition.Of(TestMapLayers.Ground, 0, 0)).Should().BeTrue();
 
             this.GameFixture.Stop();
             
-            view.At(0,0).Should().Be(ItemReference.Empty);
+            data.At(0,0).Should().Be(ItemReference.Empty);
         }
 
         [Test]
         public void ValidateMapSendsDirtySignalsOnReset()
         {
-            this.GameFixture.ServiceResolver.TryResolve(out IGridMapContext<ItemReference> gr).Should().BeTrue();
-            gr.TryGetGridDataFor(TestMapLayers.Ground, out var data).Should().BeTrue();
+            this.GameFixture.ServiceResolver.TryResolve(out IMapContext<ItemReference> gr).Should().BeTrue();
+            gr.TryGetMapDataFor(TestMapLayers.Ground, out var data).Should().BeTrue();
 
-            data.TryGetWritableView(0, out var view, DataViewCreateMode.CreateMissing);
-            Assert.NotNull(view);
+            data.TryInsertItem(ItemReference.FromBulkItem(1, 1), EntityGridPosition.Of(TestMapLayers.Ground, 0, 0)).Should().BeTrue();
             
-            view.TrySet(0, 0, ItemReference.FromBulkItem(1, 1)).Should().BeTrue();
-            
-            var x = (IGridMapContextInitializer<ItemReference>)data;
+            var x = (IMapContextInitializer<ItemReference>)gr;
             
             bool eventFired = false;
-            data.ViewReset += (_, _) => eventFired = true;
+            data.RegionDirty += (_, _) => eventFired = true;
             x.ResetState();
 
             eventFired.Should().BeTrue();

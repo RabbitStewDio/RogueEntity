@@ -34,7 +34,7 @@ public class HierarchicalPathfindingSystemCollection: IDisposable
         dataView = new PathfinderRegionView3D(new PathfinderRegionDataViewPool(config));
         edgeDataView = new PathfinderRegionEdgeData3D(movementModeEncoding);
         zonePainterMovementStyle = DistanceCalculation.Euclid;
-        regionPainter = new PathfinderRegionPainterSystem(config, dataProvider, dataView, movementModeEncoding);
+        regionPainter = new PathfinderRegionPainterSystem(dataProvider, dataView, movementModeEncoding);
         edgeDetector = new PathfinderRegionEdgeDetectorSystem(config, dataProvider, dataView, edgeDataView, movementModeEncoding);
         dataBindings = new List<CostSourceBinding>();
         costCalculator = new PathfinderRegionEdgeCostCalculatorSystem(edgeDataView, dataProvider, pathfinderSource);

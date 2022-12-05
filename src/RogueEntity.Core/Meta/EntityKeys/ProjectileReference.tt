@@ -1,0 +1,11 @@
+<#@ template language="C#" hostspecific="True" #>
+<#@ output extension=".cs" #>
+<#@ assembly name="System.Core.dll" #>
+<#@ assembly name="System.Xml.dll" #>
+<#@ assembly name="System.Xml.Linq.dll" #>
+
+<#@ include file="../../../RogueEntity.EntityKeyGenerator/Includes/EntityKey.ttinclude" #>
+
+<#
+    Generate("ProjectileReference", "RogueEntity.Core.Meta.EntityKeys");
+#>

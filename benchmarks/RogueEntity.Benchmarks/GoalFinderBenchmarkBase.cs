@@ -1,9 +1,7 @@
-using Microsoft.Extensions.ObjectPool;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using RogueEntity.Api.ItemTraits;
-using RogueEntity.Api.Utils;
 using RogueEntity.Core.Meta.EntityKeys;
 using RogueEntity.Core.Meta.Items;
 using RogueEntity.Core.Movement;
@@ -14,6 +12,7 @@ using RogueEntity.Core.MovementPlaning.GoalFinding.SingleLevel;
 using RogueEntity.Core.MovementPlaning.Goals;
 using RogueEntity.Core.MovementPlaning.Pathfinding;
 using RogueEntity.Core.MovementPlaning.Pathfinding.SingleLevel;
+using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Algorithms;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Positioning.MapLayers;
@@ -28,7 +27,7 @@ namespace RogueEntity.Benchmarks
     {
         readonly MapLayer layer = new MapLayer(1, "Default");
 
-        readonly ItemDeclarationId goalEntitiyId = "goal-entity";
+        readonly ItemDeclarationId goalEntityId = "goal-entity";
 
         readonly ItemContextBackend<ItemReference> entities;
         readonly string id;
@@ -36,7 +35,6 @@ namespace RogueEntity.Benchmarks
         readonly SingleLevelGoalFinderSource pathfinderSource;
         readonly GoalRegistry goalRegistry;
         readonly SpatialQueryRegistry queryRegistry;
-        readonly BufferList<(EntityGridPosition, IMovementMode)> pathBuffer;
         readonly MovementDataCollector movementDataCollector;
 
         Rectangle bounds;
@@ -45,16 +43,15 @@ namespace RogueEntity.Benchmarks
         {
             this.id = id;
 
-            var mapContext = new DefaultGridPositionContextBackend<ItemReference>();
-            mapContext.WithDefaultMapLayer(layer);
+            var mapContext = new DefaultMapContext<ItemReference>(DynamicDataViewConfiguration.Default32X32);
+            mapContext.WithBasicGridMapLayer(layer);
 
             entities = new ItemContextBackend<ItemReference>(new ItemReferenceMetaData());
             entities.EntityRegistry.RegisterNonConstructable<EntityGridPosition>();
-            entities.EntityRegistry.RegisterNonConstructable<EntityGridPositionChangedMarker>();
             entities.EntityRegistry.RegisterNonConstructable<ItemDeclarationHolder<ItemReference>>();
             entities.EntityRegistry.RegisterNonConstructable<GoalMarker<PerformanceGoal>>();
-            entities.ItemRegistry.Register(new ReferenceItemDeclaration<ItemReference>(goalEntitiyId)
-                                           .WithTrait(new ReferenceItemGridPositionTrait<ItemReference>(layer))
+            entities.ItemRegistry.Register(new ReferenceItemDeclaration<ItemReference>(goalEntityId)
+                                           .WithTrait(new ReferenceItemGridPositionTrait<ItemReference>(BodySize.OneByOne, layer))
                                            .WithTrait(new GoalMarkerTrait<ItemReference, PerformanceGoal>(32)));
 
             queryRegistry = new SpatialQueryRegistry();
@@ -64,7 +61,6 @@ namespace RogueEntity.Benchmarks
             goalRegistry.RegisterGoalEntity<ItemReference, PerformanceGoal>();
 
             positions = new List<EntityGridPosition>();
-            pathBuffer = new BufferList<(EntityGridPosition, IMovementMode)>(256);
             movementDataCollector = new MovementDataCollector();
             var policy = new SingleLevelGoalFinderPolicy(new SingleLevelPathPool());
             pathfinderSource = new SingleLevelGoalFinderSource(policy, goalRegistry, queryRegistry, movementDataCollector);
@@ -117,7 +113,7 @@ namespace RogueEntity.Benchmarks
 
                 if (movementCostData[targetPosition.GridX, targetPosition.GridY] > 0.5)
                 {
-                    var ek = entities.ItemResolver.Instantiate(goalEntitiyId);
+                    var ek = entities.ItemResolver.Instantiate(goalEntityId);
                     if (!entities.ItemResolver.TryUpdateData(ek, targetPosition, out _))
                     {
                         entities.ItemResolver.TryUpdateData(ek, targetPosition, out _);
@@ -143,7 +139,7 @@ namespace RogueEntity.Benchmarks
         void ValidateWorkingCondition()
         {
             var targetPosition = EntityGridPosition.OfRaw(layer.LayerId, 0, 11);
-            var ek = entities.ItemResolver.Instantiate(goalEntitiyId);
+            var ek = entities.ItemResolver.Instantiate(goalEntityId);
             if (!entities.ItemResolver.TryUpdateData(ek, targetPosition, out _))
             {
                 entities.ItemResolver.TryUpdateData(ek, targetPosition, out _);
@@ -184,7 +180,7 @@ namespace RogueEntity.Benchmarks
                                                 .WithSearchRadius(32)
                                                 .Build(new AggregateMovementCostFactors(new MovementCost(WalkingMovement.Instance, DistanceCalculation.Euclid, 1))))
                 {
-                    if (!pf.TryFindPath(startPosition, out var result))
+                    if (!pf.TryFindPath(startPosition, out _))
                     {
                         notFound += 1;
                     }

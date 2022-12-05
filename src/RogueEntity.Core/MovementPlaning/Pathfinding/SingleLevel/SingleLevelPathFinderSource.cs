@@ -4,19 +4,20 @@ using RogueEntity.Core.Utils;
 
 namespace RogueEntity.Core.MovementPlaning.Pathfinding.SingleLevel
 {
-    public class SingleLevelPathFinderSource : IPathFinderSource, IPooledObjectProvider<IPathFinderBuilder>
+    public class SingleLevelPathFinderSource : IPathFinderSource
     {
-        readonly ObjectPool<SingleLevelPathFinderBuilder> pathfinderPool;        
+        readonly ObjectPool<IPathFinderBuilder> pathfinderPool;        
 
         public SingleLevelPathFinderSource(SingleLevelPathFinderPolicy sourcePolicy, IMovementDataProvider dataProvider)
         {
-            pathfinderPool = new DefaultObjectPool<SingleLevelPathFinderBuilder>(new SingleLevelPathFinderBuilderPolicy(dataProvider, sourcePolicy));
+            var policy = new SingleLevelPathFinderBuilderPolicy(dataProvider, sourcePolicy);
+            pathfinderPool = new DefaultObjectPool<IPathFinderBuilder>(policy.DownGrade<IPathFinderBuilder, SingleLevelPathFinderBuilder>());
         }
 
         public PooledObjectHandle<IPathFinderBuilder> GetPathFinder()
         {
             var pf = pathfinderPool.Get();
-            return new PooledObjectHandle<IPathFinderBuilder>(this, pf);
+            return new PooledObjectHandle<IPathFinderBuilder>(pathfinderPool, pf);
         }
 
         public void Return(IPathFinderBuilder pf)

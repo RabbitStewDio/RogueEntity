@@ -1,60 +1,41 @@
-using EnTTSharp;
 using JetBrains.Annotations;
 using RogueEntity.Api.ItemTraits;
+using RogueEntity.Api.Utils;
 using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Positioning.MapLayers;
-using RogueEntity.Core.Utils.DataViews;
 using System;
 
 namespace RogueEntity.SadCons.MapRendering
 {
     public class GridEntityToTagConverter<TMapData> : IEntityToTagConverter
     {
-        readonly IGridMapDataContext<TMapData> mapData;
+        readonly IMapDataContext<TMapData> mapData;
         readonly Func<TMapData, WorldEntityTag> tagConverter;
-        Optional<int> cachedLayer;
-        IReadOnlyDynamicDataView2D<TMapData> cachedMapData;
+        BufferList<(TMapData, EntityGridPosition)> buffer;
 
         public GridEntityToTagConverter(MapLayer layer,
-                                        [NotNull] IGridMapDataContext<TMapData> mapData,
+                                        [NotNull] IMapDataContext<TMapData> mapData,
                                         [NotNull] Func<TMapData, WorldEntityTag> tagConverter)
         {
             this.mapData = mapData ?? throw new ArgumentNullException(nameof(mapData));
-            this.mapData.RegionDirty += OnRegionDirty;
             this.tagConverter = tagConverter ?? throw new ArgumentNullException(nameof(tagConverter));
             this.Layer = layer;
-        }
-
-        void OnRegionDirty(object sender, MapRegionDirtyEventArgs e)
-        {
-            cachedLayer = default;
-            cachedMapData = default;
+            this.buffer = new BufferList<(TMapData, EntityGridPosition)>();
         }
 
         public MapLayer Layer { get; }
 
         public bool TryFetchTag(Position p, out WorldEntityTag t)
         {
-            if (!cachedLayer.TryGetValue(out var cachedZLayer) || p.GridZ != cachedZLayer)
+            foreach (var (data, _) in mapData.QueryItemTile(EntityGridPosition.From(p), buffer))
             {
-                if (!mapData.TryGetView(p.GridZ, out cachedMapData))
-                {
-                    t = default;
-                    return false;
-                }
-
-                cachedLayer = p.GridZ;
+                t = tagConverter(data);
+                return true;
             }
 
-            if (!cachedMapData.TryGet(p.GridX, p.GridY, out var data))
-            {
-                t = default;
-                return false;
-            }
-
-            t = tagConverter(data);
-            return true;
+            t = default;
+            return false;
         }
     }
 }

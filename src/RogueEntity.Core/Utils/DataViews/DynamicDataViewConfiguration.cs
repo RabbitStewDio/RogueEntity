@@ -76,6 +76,11 @@ namespace RogueEntity.Core.Utils.DataViews
             return new Position2D(t.X * TileSizeX + OffsetX, t.Y * TileSizeY + OffsetY);
         }
 
+        public Rectangle Bounds(TileIndex t)
+        {
+            return new Rectangle(t.X * TileSizeX + OffsetX, t.Y * TileSizeY + OffsetY, TileSizeX, TileSizeY);
+        }
+
         public TileIndex TileIndex(int x, int y)
         {
             var dx = DataViewPartitions.TileSplit(x, OffsetX, TileSizeX);
@@ -98,64 +103,6 @@ namespace RogueEntity.Core.Utils.DataViews
         public override string ToString()
         {
             return $"{nameof(DynamicDataViewConfiguration)}({nameof(OffsetX)}: {OffsetX}, {nameof(OffsetY)}: {OffsetY}, {nameof(TileSizeX)}: {TileSizeX}, {nameof(TileSizeY)}: {TileSizeY})";
-        }
-    }
-
-    public readonly struct TileIndex : IEquatable<TileIndex>
-    {
-        public readonly int X;
-        public readonly int Y;
-
-        public TileIndex(int x, int y)
-        {
-            X = x;
-            Y = y;
-        }
-
-        public bool Equals(TileIndex other)
-        {
-            return X == other.X && Y == other.Y;
-        }
-
-        public override bool Equals(object obj)
-        {
-            return obj is TileIndex other && Equals(other);
-        }
-
-        public override int GetHashCode()
-        {
-            unchecked
-            {
-                return (X * 397) ^ Y;
-            }
-        }
-
-        public static bool operator ==(TileIndex left, TileIndex right)
-        {
-            return left.Equals(right);
-        }
-
-        public static bool operator !=(TileIndex left, TileIndex right)
-        {
-            return !left.Equals(right);
-        }
-
-        public override string ToString()
-        {
-            return $"{nameof(TileIndex)}({nameof(X)}: {X}, {nameof(Y)}: {Y})";
-        }
-    }
-
-    public static class DynamicDataViewConfigurationExtensions
-    {
-        public static DynamicDataViewConfiguration ToConfiguration<T>(this IReadOnlyDynamicDataView3D<T> view)
-        {
-            return new DynamicDataViewConfiguration(view.OffsetX, view.OffsetY, view.TileSizeX, view.TileSizeY);
-        }
-        
-        public static DynamicDataViewConfiguration ToConfiguration<T>(this IReadOnlyDynamicDataView2D<T> view)
-        {
-            return new DynamicDataViewConfiguration(view.OffsetX, view.OffsetY, view.TileSizeX, view.TileSizeY);
         }
     }
 }

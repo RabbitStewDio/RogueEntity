@@ -1,59 +1,41 @@
 ﻿using RogueEntity.Api.Utils;
 using RogueEntity.Core.Meta.EntityKeys;
-using RogueEntity.Core.Positioning.Grid;
+using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.MapLayers;
+using RogueEntity.Core.Utils.DataViews;
 
 namespace RogueEntity.Core.Tests.Positioning.Grid
 {
-    public class TestGridPositionContext : IGridMapContext<ItemReference>
-                                           //, IItemContext<TestGridPositionContext, ItemReference>
+    public class TestGridPositionContext : IMapContext<ItemReference>
     {
-        readonly DefaultGridPositionContextBackend<ItemReference> mapBackend;
+        readonly DefaultMapContext<ItemReference> map;
 
         public TestGridPositionContext()
         {
-            mapBackend = new DefaultGridPositionContextBackend<ItemReference>();
+            map = new DefaultMapContext<ItemReference>(DynamicDataViewConfiguration.Default16X16);
         }
 
-        public TestGridPositionContext WithMapLayer(MapLayer layer, IGridMapDataContext<ItemReference> data)
+        public TestGridPositionContext WithMapLayer(MapLayer layer, IMapDataContext<ItemReference> data)
         {
-            mapBackend.WithMapLayer(layer, data);
+            map.WithMapLayer(layer, data);
             return this;
         }
 
-        public int OffsetX
+        public DynamicDataViewConfiguration Config => map.Config;
+
+        public ReadOnlyListWrapper<MapLayer> Layers()
         {
-            get { return mapBackend.OffsetX; }
+            return map.Layers();
         }
 
-        public int OffsetY
+        public bool TryGetMapDataFor(MapLayer layer, out IMapDataContext<ItemReference> data)
         {
-            get { return mapBackend.OffsetY; }
+            return map.TryGetMapDataFor(layer, out data);
         }
 
-        public int TileSizeX
+        public bool TryGetMapDataFor(byte layerId, out IMapDataContext<ItemReference> data)
         {
-            get { return mapBackend.TileSizeX; }
-        }
-
-        public int TileSizeY
-        {
-            get { return mapBackend.TileSizeY; }
-        }
-
-        public ReadOnlyListWrapper<MapLayer> GridLayers()
-        {
-            return mapBackend.GridLayers();
-        }
-
-        public bool TryGetGridDataFor(byte layerId, out IGridMapDataContext<ItemReference> data)
-        {
-            return mapBackend.TryGetGridDataFor(layerId, out data);
-        }
-
-        public bool TryGetGridDataFor(MapLayer layer, out IGridMapDataContext<ItemReference> data)
-        {
-            return mapBackend.TryGetGridDataFor(layer, out data);
+            return map.TryGetMapDataFor(layerId, out data);
         }
     }
 }

@@ -9,6 +9,7 @@ using RogueEntity.Core.Positioning;
 using RogueEntity.Core.Positioning.Grid;
 using RogueEntity.Core.Positioning.MapLayers;
 using RogueEntity.Core.Tests.Fixtures;
+using RogueEntity.Core.Utils.DataViews;
 using RogueEntity.Generator.Tests.Fixtures;
 using System.Diagnostics.CodeAnalysis;
 
@@ -31,10 +32,10 @@ namespace RogueEntity.Generator.Tests
         protected static readonly ItemDeclarationId Actor = "Actor";
 
         protected ItemContextBackend<ItemReference> ItemEntityContext;
-        protected DefaultGridPositionContextBackend<ItemReference> ItemMapContext;
+        protected IMapContext<ItemReference> ItemMapContext;
         protected ItemPlacementServiceContext<ItemReference> ItemPlacementContext;
         protected ItemContextBackend<ActorReference> ActorEntityContext;
-        protected DefaultGridPositionContextBackend<ActorReference> ActorMapContext;
+        protected IMapContext<ActorReference> ActorMapContext;
         protected ItemPlacementServiceContext<ActorReference> ActorPlacementContext;
         protected MapBuilder MapBuilder;
         protected ItemFixture<ItemReference> Items;
@@ -43,65 +44,71 @@ namespace RogueEntity.Generator.Tests
         [SetUp]
         public void SetUp()
         {
-            ItemMapContext = new DefaultGridPositionContextBackend<ItemReference>()
-                             .WithDefaultMapLayer(FloorLayer)
-                             .WithDefaultMapLayer(ItemLayer);
+            ItemMapContext = new DefaultMapContext<ItemReference>(DynamicDataViewConfiguration.Default16X16)
+                             .WithBasicGridMapLayer(FloorLayer)
+                             .WithBasicGridMapLayer(ItemLayer);
             ItemEntityContext = new ItemContextBackend<ItemReference>(new ItemReferenceMetaData());
             ItemEntityContext.EntityRegistry.RegisterNonConstructable<ItemDeclarationHolder<ItemReference>>();
             ItemEntityContext.EntityRegistry.Register<DestroyedMarker>();
             ItemEntityContext.EntityRegistry.Register<CascadingDestroyedMarker>();
             ItemEntityContext.EntityRegistry.RegisterNonConstructable<EntityGridPosition>();
-            ItemEntityContext.EntityRegistry.RegisterNonConstructable<EntityGridPositionChangedMarker>();
             
             ItemEntityContext.ItemRegistry.Register(new BulkItemDeclaration<ItemReference>(BulkFloor1)
-                                                    .WithTrait(new BulkItemGridPositionTrait<ItemReference>(FloorLayer))
+                                                    .WithTrait(new BulkItemGridPositionTrait<ItemReference>(BodySize.OneByOne, FloorLayer))
                                                     .WithTrait(new StackingBulkTrait<ItemReference>(5, 5))
             );
             ItemEntityContext.ItemRegistry.Register(new BulkItemDeclaration<ItemReference>(BulkFloor2)
-                                                        .WithTrait(new BulkItemGridPositionTrait<ItemReference>(FloorLayer))
+                                                        .WithTrait(new BulkItemGridPositionTrait<ItemReference>(BodySize.OneByOne, FloorLayer))
             );
             ItemEntityContext.ItemRegistry.Register(new BulkItemDeclaration<ItemReference>(BulkFloor3)
-                                                        .WithTrait(new BulkItemGridPositionTrait<ItemReference>(FloorLayer))
+                                                        .WithTrait(new BulkItemGridPositionTrait<ItemReference>(BodySize.OneByOne, FloorLayer))
             );
             ItemEntityContext.ItemRegistry.Register(new BulkItemDeclaration<ItemReference>(BulkItem1)
-                                                    .WithTrait(new BulkItemGridPositionTrait<ItemReference>(ItemLayer))
+                                                    .WithTrait(new BulkItemGridPositionTrait<ItemReference>(BodySize.OneByOne, ItemLayer))
                                                     .WithTrait(new StackingBulkTrait<ItemReference>(5, 5))
             );
             ItemEntityContext.ItemRegistry.Register(new BulkItemDeclaration<ItemReference>(BulkItem2)
-                                                        .WithTrait(new BulkItemGridPositionTrait<ItemReference>(ItemLayer))
+                                                        .WithTrait(new BulkItemGridPositionTrait<ItemReference>(BodySize.OneByOne, ItemLayer))
             );
             ItemEntityContext.ItemRegistry.Register(new BulkItemDeclaration<ItemReference>(BulkItem3)
-                                                        .WithTrait(new BulkItemGridPositionTrait<ItemReference>(ItemLayer))
+                                                        .WithTrait(new BulkItemGridPositionTrait<ItemReference>(BodySize.OneByOne, ItemLayer))
             );
             ItemEntityContext.ItemRegistry.Register(new ReferenceItemDeclaration<ItemReference>(ReferenceItem1)
-                                                        .WithTrait(new ReferenceItemGridPositionTrait<ItemReference>(ItemLayer))
+                                                        .WithTrait(new ReferenceItemGridPositionTrait<ItemReference>(BodySize.OneByOne, ItemLayer))
             );
 
             ItemPlacementContext = new ItemPlacementServiceContext<ItemReference>()
                                    .WithLayer(FloorLayer,
-                                              new GridItemPlacementService<ItemReference>(ItemEntityContext.ItemResolver, ItemMapContext),
-                                              new GridItemPlacementLocationService<ItemReference>(ItemEntityContext.ItemResolver, ItemMapContext))
+                                              new ItemPlacementService<ItemReference>(ItemEntityContext.ItemResolver, ItemMapContext),
+                                              new ItemPlacementLocationService<ItemReference>(ItemEntityContext.ItemResolver, ItemMapContext))
                                    .WithLayer(ItemLayer,
-                                              new GridItemPlacementService<ItemReference>(ItemEntityContext.ItemResolver, ItemMapContext),
-                                              new GridItemPlacementLocationService<ItemReference>(ItemEntityContext.ItemResolver, ItemMapContext));
-            Items = new ItemFixture<ItemReference>(ItemEntityContext.ItemResolver, ItemMapContext);
+                                              new ItemPlacementService<ItemReference>(ItemEntityContext.ItemResolver, ItemMapContext),
+                                              new ItemPlacementLocationService<ItemReference>(ItemEntityContext.ItemResolver, ItemMapContext));
+            Items = new ItemFixture<ItemReference>(ItemEntityContext.ItemResolver, ItemMapContext, ItemPlacementContext);
 
-            ActorMapContext = new DefaultGridPositionContextBackend<ActorReference>().WithDefaultMapLayer(ActorLayer);
+            ActorMapContext = new DefaultMapContext<ActorReference>(DynamicDataViewConfiguration.Default16X16).WithBasicGridMapLayer(ActorLayer);
             ActorEntityContext = new ItemContextBackend<ActorReference>(new ActorReferenceMetaData());
             ActorEntityContext.EntityRegistry.RegisterNonConstructable<ItemDeclarationHolder<ActorReference>>();
             ActorEntityContext.EntityRegistry.Register<DestroyedMarker>();
             ActorEntityContext.EntityRegistry.Register<CascadingDestroyedMarker>();
             ActorEntityContext.EntityRegistry.RegisterNonConstructable<EntityGridPosition>();
-            ActorEntityContext.EntityRegistry.RegisterNonConstructable<EntityGridPositionChangedMarker>();
             ActorEntityContext.ItemRegistry.Register(new ReferenceItemDeclaration<ActorReference>(Actor)
-                                                         .WithTrait(new ReferenceItemGridPositionTrait<ActorReference>(ActorLayer))
+                                                         .WithTrait(new ReferenceItemGridPositionTrait<ActorReference>(BodySize.OneByOne, ActorLayer))
             );
-            Actors = new ItemFixture<ActorReference>(ActorEntityContext.ItemResolver, ActorMapContext);
+            
+            var actorPlacementContext = new ItemPlacementServiceContext<ActorReference>()
+                                   .WithLayer(FloorLayer,
+                                              new ItemPlacementService<ActorReference>(ActorEntityContext.ItemResolver, ActorMapContext),
+                                              new ItemPlacementLocationService<ActorReference>(ActorEntityContext.ItemResolver, ActorMapContext))
+                                   .WithLayer(ItemLayer,
+                                              new ItemPlacementService<ActorReference>(ActorEntityContext.ItemResolver, ActorMapContext),
+                                              new ItemPlacementLocationService<ActorReference>(ActorEntityContext.ItemResolver, ActorMapContext));
+            Actors = new ItemFixture<ActorReference>(ActorEntityContext.ItemResolver, ActorMapContext, actorPlacementContext);
 
             ActorPlacementContext = new ItemPlacementServiceContext<ActorReference>()
                 .WithLayer(ActorLayer,
-                           new GridItemPlacementService<ActorReference>(ActorEntityContext.ItemResolver, ActorMapContext),
-                           new GridItemPlacementLocationService<ActorReference>(ActorEntityContext.ItemResolver, ActorMapContext));
+                           new ItemPlacementService<ActorReference>(ActorEntityContext.ItemResolver, ActorMapContext),
+                           new ItemPlacementLocationService<ActorReference>(ActorEntityContext.ItemResolver, ActorMapContext));
 
             MapBuilder = new MapBuilder();
             MapBuilder.WithLayer(FloorLayer, ItemEntityContext.ItemResolver, ItemMapContext, ItemPlacementContext);
