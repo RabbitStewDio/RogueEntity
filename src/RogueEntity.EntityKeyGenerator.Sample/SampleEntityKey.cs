@@ -1,4 +1,4 @@
-
+﻿
 
 using System;
 using EnTTSharp.Entities;
@@ -15,6 +15,10 @@ using RogueEntity.Api.ItemTraits;
 //     the code is regenerated.
 // </auto-generated>
 //------------------------------------------------------------------------------
+
+
+
+
 
 
 
@@ -156,6 +160,11 @@ namespace RogueEntity.EntityKeyGenerator.Sample
 
         public override string ToString()
         {
+            if (IsEmpty)
+            {
+                return $"SampleEntityKey[Empty]";
+            }
+
             if (IsReference)
             {
                 return $"SampleEntityKey[Ref]{Age:X2}[{Key:X8}]";
@@ -181,7 +190,7 @@ namespace RogueEntity.EntityKeyGenerator.Sample
         public static readonly SampleEntityKeyMetaData Instance = new SampleEntityKeyMetaData();
 
         public int MaxAge => SampleEntityKey.MaxAge;
-        public bool IsSameBulkType(SampleEntityKey a, SampleEntityKey b) => !a.IsEmpty && !a.IsReference && !b.IsReference && a.BulkItemId == b.BulkItemId;
+        public int MaxBulkKeyTypes => 0x7FFE;
         public bool IsReferenceEntity(in SampleEntityKey targetItem) => targetItem.IsReference;
         
         public SampleEntityKey CreateReferenceKey(byte age, int entityId) => SampleEntityKey.FromReferencedItem(age, entityId);

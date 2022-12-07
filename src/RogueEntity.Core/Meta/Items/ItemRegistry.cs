@@ -122,6 +122,12 @@ namespace RogueEntity.Core.Meta.Items
             }
             else
             {
+                if (bulkItemIdSequence >= itemIdMetaData.MaxBulkKeyTypes)
+                {
+                    throw new InvalidOperationException
+                        ($"Unable to declare additional bulk item; limit of {itemIdMetaData.MaxBulkKeyTypes} reached");
+                }
+
                 referenceItemsById.Remove(item.Id);
 
                 var internalId = (ushort)bulkItemIdSequence;

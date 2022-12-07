@@ -5,6 +5,7 @@ namespace RogueEntity.Api.ItemTraits
     public interface IBulkDataStorageMetaData<TItemId>
     {
         public int MaxAge { get; }
+        public int MaxBulkKeyTypes { get; }
         TItemId CreateReferenceKey(byte age, int entityId);
         bool TryCreateBulkKey(int id, int data, out TItemId key);
         bool IsReferenceEntity(in TItemId targetItem);

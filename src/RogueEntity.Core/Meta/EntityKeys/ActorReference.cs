@@ -1,4 +1,4 @@
-
+﻿
 
 using System;
 using EnTTSharp.Entities;
@@ -15,6 +15,10 @@ using RogueEntity.Api.ItemTraits;
 //     the code is regenerated.
 // </auto-generated>
 //------------------------------------------------------------------------------
+
+
+
+
 
 
 
@@ -186,6 +190,7 @@ namespace RogueEntity.Core.Meta.EntityKeys
         public static readonly ActorReferenceMetaData Instance = new ActorReferenceMetaData();
 
         public int MaxAge => ActorReference.MaxAge;
+        public int MaxBulkKeyTypes => 0x7FFE;
         public bool IsReferenceEntity(in ActorReference targetItem) => targetItem.IsReference;
         
         public ActorReference CreateReferenceKey(byte age, int entityId) => ActorReference.FromReferencedItem(age, entityId);

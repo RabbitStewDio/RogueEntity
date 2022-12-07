@@ -1,8 +1,6 @@
-<#@ template language="C#" hostspecific="True" #>
+<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
 <#@ output extension=".cs" #>
-<#@ assembly name="System.Core.dll" #>
-<#@ assembly name="System.Xml.dll" #>
-<#@ assembly name="System.Xml.Linq.dll" #>
 
 <#@ include file="../../../RogueEntity.EntityKeyGenerator/Includes/EntityKey.ttinclude" #>
 

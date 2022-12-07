@@ -12,6 +12,7 @@
         public static readonly <#= className #>MetaData Instance = new <#= className #>MetaData();
 
         public int MaxAge => <#= className #>.MaxAge;
+        public int MaxBulkKeyTypes => 0x7FFE;
         public bool IsReferenceEntity(in <#= className #> targetItem) => targetItem.IsReference;
         
         public <#= className #> CreateReferenceKey(byte age, int entityId) => <#= className #>.FromReferencedItem(age, entityId);

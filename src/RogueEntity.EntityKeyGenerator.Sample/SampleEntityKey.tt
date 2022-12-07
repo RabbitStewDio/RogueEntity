@@ -1,6 +1,6 @@
-<#@ template language="C#" hostspecific="True" #>
+<#@ template language="C#" #>
+<#@ assembly name="System.Core" #>
 <#@ output extension=".cs" #>
-<#@ assembly name="mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" #>
 
 <#@ include file="../RogueEntity.EntityKeyGenerator/Includes/EntityKey.ttinclude" #>
 
