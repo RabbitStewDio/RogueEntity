@@ -107,7 +107,7 @@ namespace RogueEntity.Core.Tests.Movement.GoalFinding
             goalRegistry.RegisterGoalEntity<ItemReference, TestGoal>();
 
             spatialQueryRegistry = new SpatialQueryRegistry();
-            spatialQueryRegistry.Register(new BruteForceSpatialQueryBackend<ItemReference>(context.EntityRegistry));
+            spatialQueryRegistry.Register(new BruteForceSpatialQueryBackend<ItemReference, GoalMarker<TestGoal>>(context.EntityRegistry));
 
             itemPlacementService = new ItemPlacementService<ItemReference>(context.ItemResolver, gridMapContext);
         }
@@ -117,10 +117,10 @@ namespace RogueEntity.Core.Tests.Movement.GoalFinding
         {
             public readonly string SourceText;
             public readonly string ResultText;
-            public readonly Position2D Origin;
-            public readonly (Position2D pos, float strength)[] Targets;
+            public readonly GridPosition2D Origin;
+            public readonly (GridPosition2D pos, float strength)[] Targets;
 
-            public PathFinderTestParameters(string sourceText, string resultText, Position2D origin, params (Position2D, float)[] targets)
+            public PathFinderTestParameters(string sourceText, string resultText, GridPosition2D origin, params (GridPosition2D, float)[] targets)
             {
                 this.SourceText = sourceText;
                 this.ResultText = resultText;
@@ -131,11 +131,11 @@ namespace RogueEntity.Core.Tests.Movement.GoalFinding
 
         static readonly TestCaseData[] TestData =
         {
-            new TestCaseData(new PathFinderTestParameters(EmptyRoom, EmptyRoomResult, new Position2D(1, 1), (new Position2D(7, 7), 10)))
+            new TestCaseData(new PathFinderTestParameters(EmptyRoom, EmptyRoomResult, new GridPosition2D(1, 1), (new GridPosition2D(7, 7), 10)))
                 .SetName(nameof(EmptyRoom)),
-            new TestCaseData(new PathFinderTestParameters(DiagonalBlockRoom, DiagonalRoomResult, new Position2D(1, 1), (new Position2D(7, 7), 10)))
+            new TestCaseData(new PathFinderTestParameters(DiagonalBlockRoom, DiagonalRoomResult, new GridPosition2D(1, 1), (new GridPosition2D(7, 7), 10)))
                 .SetName(nameof(DiagonalBlockRoom)),
-            new TestCaseData(new PathFinderTestParameters(EmptyRoom, EmptyRoomResult, new Position2D(1, 1), (new Position2D(7, 7), 20), (new Position2D(7, 1), 10)))
+            new TestCaseData(new PathFinderTestParameters(EmptyRoom, EmptyRoomResult, new GridPosition2D(1, 1), (new GridPosition2D(7, 7), 20), (new GridPosition2D(7, 1), 10)))
                 .SetName(nameof(EmptyRoom) + " with 2 goals"),
         };
 

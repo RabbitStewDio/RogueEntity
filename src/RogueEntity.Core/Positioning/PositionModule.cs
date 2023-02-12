@@ -67,34 +67,9 @@ namespace RogueEntity.Core.Positioning
             }
         }
 
-        [EntityRoleFinalizer("Role.Core.Position.Positionable")]
-        protected void FinalizePositionedRole<TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter,
-                                                        IModuleInitializer initializer,
-                                                        EntityRole role)
-            where TActorId : struct, IEntityKey
-        {
-            var ctx = initializer.DeclareEntityContext<TActorId>();
-            ctx.Register(RegisterSpatialQuerySystemId, 9_999_999, RegisterSpatialQueryBruteForce);
-        }
-
-        void RegisterSpatialQueryBruteForce<TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter, EntityRegistry<TActorId> registry)
-            where TActorId : struct, IEntityKey
-        {
-            if (!initParameter.ServiceResolver.TryResolve<ISpatialQuery<TActorId>>(out var q))
-            {
-                q = new BruteForceSpatialQueryBackend<TActorId>(registry);
-                initParameter.ServiceResolver.Store(q);
-
-                if (initParameter.ServiceResolver.TryResolve<SpatialQueryRegistry>(out var r))
-                {
-                    r.Register(q);
-                }
-            }
-        }
-
         void RegisterClearMapPositionChangeTrackers<TActorId>(in ModuleEntityInitializationParameter<TActorId> initParameter,
-                                                               IGameLoopSystemRegistration context,
-                                                               EntityRegistry<TActorId> registry)
+                                                              IGameLoopSystemRegistration context,
+                                                              EntityRegistry<TActorId> registry)
             where TActorId : struct, IEntityKey
         {
             void ClearGridPositionAction()

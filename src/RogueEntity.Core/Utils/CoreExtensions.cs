@@ -133,7 +133,7 @@ namespace RogueEntity.Core.Utils
             return true;
         }
 
-        public static bool EqualsList<TItem>(IReadOnlyList<TItem>? a, IReadOnlyList<TItem>? b)
+        public static bool EqualsList<TItem>(this IReadOnlyList<TItem>? a, IReadOnlyList<TItem>? b)
         {
             if (ReferenceEquals(a, b)) return true;
             if (a == null || b == null) return false;

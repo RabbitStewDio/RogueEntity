@@ -36,7 +36,7 @@ namespace RogueEntity.Core.MovementPlaning.GoalFinding.SingleLevel
                     return true;
                 }
 
-                if (queryLookup.TryGetQuery<TEntityId>(out var q))
+                if (queryLookup.TryGetQuery<TEntityId, GoalMarker<TGoal>>(out var q))
                 {
                     result = new EntityGoalTargetSource2D<TEntityId, TGoal>(q);
                     data[(typeof(TEntityId), typeof(TGoal))] = result;

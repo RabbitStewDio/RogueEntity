@@ -134,7 +134,7 @@ public class GridIndex2DCore
         var intersection = this.regionBounds.GetIntersection(bb);
         foreach (var (tx, ty) in intersection.Contents)
         {
-            QueryCellElement(new Position2D(tx, ty), result, resultDeduplicator, skipElement);
+            QueryCellElement(new GridPosition2D(tx, ty), result, resultDeduplicator, skipElement);
         }
 
         return result;
@@ -175,7 +175,7 @@ public class GridIndex2DCore
         return b.ToString();
     }
 
-    void QueryCellElement(in Position2D tx, 
+    void QueryCellElement(in GridPosition2D tx, 
                           BufferList<FreeListIndex> result, 
                           bool[] resultDeduplicator, FreeListIndex skipElement)
     {

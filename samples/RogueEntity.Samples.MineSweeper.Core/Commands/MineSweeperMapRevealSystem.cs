@@ -24,7 +24,7 @@ namespace RogueEntity.Samples.MineSweeper.Core.Commands
         readonly IItemPlacementServiceContext<TItemId> gridMap;
         readonly IItemResolver<TItemId> itemResolver;
         readonly IMineSweeperGameParameterService gameParameters;
-        readonly Stack<Position2D> processingQueue;
+        readonly Stack<GridPosition2D> processingQueue;
 
         public MineSweeperMapRevealSystem(IItemPlacementServiceContext<TItemId> gridMap, 
                                           IItemResolver<TItemId> itemResolver,
@@ -33,7 +33,7 @@ namespace RogueEntity.Samples.MineSweeper.Core.Commands
             this.gridMap = gridMap;
             this.itemResolver = itemResolver;
             this.gameParameters = gameParameters;
-            this.processingQueue = new Stack<Position2D>();
+            this.processingQueue = new Stack<GridPosition2D>();
         }
 
         public void ProcessInputCommand<TActorId>(IEntityViewControl<TActorId> v, TActorId k, 
@@ -127,7 +127,7 @@ namespace RogueEntity.Samples.MineSweeper.Core.Commands
         }
 
 
-        void ExpandVisibleArea(Position2D pos,
+        void ExpandVisibleArea(GridPosition2D pos,
                                IItemPlacementService<TItemId> playField,
                                IDynamicDataView2D<bool> discoveryView)
         {

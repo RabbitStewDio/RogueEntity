@@ -70,7 +70,7 @@ public readonly struct BodySize : IEquatable<BodySize>
         return BoundingBox.From(p.GridX - dx, p.GridY - dy, Width, Height);
     }
 
-    public Rectangle ToRectangle(Position2D p)
+    public Rectangle ToRectangle(GridPosition2D p)
     {
         var dx = Width / 2;
         var dy = Height / 2;

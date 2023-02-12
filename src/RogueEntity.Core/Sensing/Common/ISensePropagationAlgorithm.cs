@@ -8,7 +8,7 @@ namespace RogueEntity.Core.Sensing.Common
     {
         SenseSourceData Calculate(in SenseSourceDefinition sense,
                                   float intensity,
-                                  in Position2D position,
+                                  in GridPosition2D position,
                                   IReadOnlyDynamicDataView2D<float> resistanceMap,
                                   IReadOnlyDynamicDataView2D<DirectionalityInformation> directionalityView,
                                   SenseSourceData? data = null);

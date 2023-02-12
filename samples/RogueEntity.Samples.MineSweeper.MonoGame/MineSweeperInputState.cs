@@ -5,6 +5,6 @@ namespace RogueEntity.Samples.MineSweeper.MonoGame
 {
     public class MineSweeperInputState
     {
-        public Optional<Position2D> MouseHoverPosition;
+        public Optional<GridPosition2D> MouseHoverPosition;
     }
 }

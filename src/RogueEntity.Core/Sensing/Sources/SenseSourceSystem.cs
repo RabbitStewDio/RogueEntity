@@ -219,7 +219,7 @@ namespace RogueEntity.Core.Sensing.Sources
                                                                        SenseSourceData data)
             where TPosition : IPosition<TPosition>
         {
-            var position = new Position2D(pos.GridX, pos.GridY);
+            var position = new GridPosition2D(pos.GridX, pos.GridY);
             var sourceDefinition = definition.SenseDefinition;
             data = sensePropagationAlgorithm.Calculate(sourceDefinition, intensity, position, resistanceView, directionView, data);
             data.MarkWritten();

@@ -24,9 +24,37 @@ namespace RogueEntity.Core.Utils.SpatialIndex
             this.elements = new FreeList<GridElement>();
         }
 
-        public GridIndex2D(DynamicDataViewConfiguration config) : 
+        public GridIndex2D(DynamicDataViewConfiguration config) :
             this(new DefaultObjectPool<GridIndex2DCore>(new GridIndex2DCorePolicy(config)), config)
         {
+        }
+
+        public BoundingBox Bounds
+        {
+            get
+            {
+                if (regions.Count == 0)
+                {
+                    return default;
+                }
+
+                Rectangle result = default;
+                bool first = true;
+                foreach (var c in regions)
+                {
+                    if (first)
+                    {
+                        result = c.Value.RegionBounds;
+                        first = false;
+                    }
+                    else
+                    {
+                        result = result.GetUnion(c.Value.RegionBounds);
+                    }
+                }
+                
+                return BoundingBox.From(result);
+            }
         }
 
         public void Clear()
@@ -34,9 +62,12 @@ namespace RogueEntity.Core.Utils.SpatialIndex
             foreach (var c in regions)
             {
                 c.Value.Clear();
-            }            
+                pool.Return(c.Value);
+            }
+
+            regions.Clear();
         }
-        
+
         public int ElementIndexRange => elements.Range;
 
         public bool TryGetBounds(FreeListIndex index, out BoundingBox boundingBox)
@@ -116,7 +147,7 @@ namespace RogueEntity.Core.Utils.SpatialIndex
 
             return false;
         }
-        
+
         public void Remove(FreeListIndex elementIndex)
         {
             if (!elements.TryGetValue(elementIndex, out var ge))
@@ -143,7 +174,7 @@ namespace RogueEntity.Core.Utils.SpatialIndex
             elements.Remove(elementIndex);
         }
 
-        public BufferList<FreeListIndex> QueryIndex(in Position2D pos,
+        public BufferList<FreeListIndex> QueryIndex(in GridPosition2D pos,
                                                     BufferList<FreeListIndex>? result = null,
                                                     FreeListIndex skipElement = default)
         {
@@ -167,11 +198,10 @@ namespace RogueEntity.Core.Utils.SpatialIndex
             {
                 ArrayPool<bool>.Shared.Return(resultDeduplicator);
             }
-            
         }
-        
-        public BufferList<FreeListIndex> QueryIndex(in BoundingBox bb, 
-                                                    BufferList<FreeListIndex>? result = null, 
+
+        public BufferList<FreeListIndex> QueryIndex(in BoundingBox bb,
+                                                    BufferList<FreeListIndex>? result = null,
                                                     FreeListIndex skipElement = default)
         {
             result = BufferList.PrepareBuffer(result);
@@ -203,7 +233,7 @@ namespace RogueEntity.Core.Utils.SpatialIndex
             }
         }
 
-        public BufferList<T> Query(in Position2D pos,
+        public BufferList<T> Query(in GridPosition2D pos,
                                    BufferList<T>? result = default,
                                    FreeListIndex skipElement = default)
         {
@@ -274,7 +304,7 @@ namespace RogueEntity.Core.Utils.SpatialIndex
                     buffer.Add(x.Value.RegionBounds);
                 }
             }
-            
+
             return buffer;
         }
     }

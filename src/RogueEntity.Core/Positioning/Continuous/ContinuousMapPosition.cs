@@ -2,6 +2,7 @@
 using System.Runtime.Serialization;
 using EnTTSharp.Entities.Attributes;
 using MessagePack;
+using RogueEntity.Core.Positioning.MapLayers;
 using RogueEntity.Core.Utils;
 
 namespace RogueEntity.Core.Positioning.Continuous
@@ -59,9 +60,14 @@ namespace RogueEntity.Core.Positioning.Continuous
             zUnitAndLayerId = (uint) ((l << 24) & zz);
         }
 
-        public ContinuousMapPosition(double x, double y, double z, byte l) :
-            this(FloatToMillimeter(x, MaxXY), FloatToMillimeter(y, MaxXY), FloatToMillimeter(z, MaxZ), l)
+        public static ContinuousMapPosition Of(MapLayer layer, double x, double y, double z)
         {
+            return new ContinuousMapPosition(FloatToMillimeter(x, MaxXY), FloatToMillimeter(y, MaxXY), FloatToMillimeter(z, MaxZ), layer.LayerId);
+        }
+        
+        public static ContinuousMapPosition Of(byte layerId, double x, double y, double z)
+        {
+            return new ContinuousMapPosition(FloatToMillimeter(x, MaxXY), FloatToMillimeter(y, MaxXY), FloatToMillimeter(z, MaxZ), layerId);
         }
 
         public static ContinuousMapPosition From(in Position p)
@@ -105,12 +111,12 @@ namespace RogueEntity.Core.Positioning.Continuous
 
         public ContinuousMapPosition WithPosition(int x, int y)
         {
-            return new ContinuousMapPosition(x, y, this.Z, this.LayerId);
+            return Of(this.LayerId, x, y, this.Z);
         }
 
         public ContinuousMapPosition WithPosition(double tx, double ty)
         {
-            return new ContinuousMapPosition(tx, ty, this.Z, this.LayerId);
+            return Of(this.LayerId, tx, ty, this.Z);
         }
 
         public override int GetHashCode()

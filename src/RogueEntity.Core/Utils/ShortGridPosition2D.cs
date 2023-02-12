@@ -7,7 +7,7 @@ namespace RogueEntity.Core.Utils
 {
     [DataContract]
     [MessagePackObject]
-    public readonly struct ShortPosition2D : IEquatable<ShortPosition2D>, IComparable<ShortPosition2D>, IComparable, IPosition2D<ShortPosition2D>
+    public readonly struct ShortGridPosition2D : IEquatable<ShortGridPosition2D>, IComparable<ShortGridPosition2D>, IComparable, IGridPosition2D<ShortGridPosition2D>
     {
         [DataMember(Order = 0)]
         [Key(0)]
@@ -16,7 +16,7 @@ namespace RogueEntity.Core.Utils
         [Key(1)]
         public readonly short Y;
 
-        public ShortPosition2D(int x, int y)
+        public ShortGridPosition2D(int x, int y)
         {
             if (x < short.MinValue || x > short.MaxValue) throw new ArgumentOutOfRangeException(nameof(x), $"must be between {short.MinValue} and {short.MaxValue}");
             if (y < short.MinValue || y > short.MaxValue) throw new ArgumentOutOfRangeException(nameof(y), $"must be between {short.MinValue} and {short.MaxValue}");
@@ -25,7 +25,7 @@ namespace RogueEntity.Core.Utils
         }
 
         [SerializationConstructor]
-        public ShortPosition2D(short x, short y)
+        public ShortGridPosition2D(short x, short y)
         {
             X = x;
             Y = y;
@@ -33,31 +33,31 @@ namespace RogueEntity.Core.Utils
 
         [IgnoreMember]
         [IgnoreDataMember]
-        int IPosition2D<ShortPosition2D>.X => X;
+        int IGridPosition2D<ShortGridPosition2D>.X => X;
         
         [IgnoreMember]
         [IgnoreDataMember]
-        int IPosition2D<ShortPosition2D>.Y => Y;
+        int IGridPosition2D<ShortGridPosition2D>.Y => Y;
 
-        public ShortPosition2D With(int x, int y)
+        public ShortGridPosition2D With(int x, int y)
         {
             return From(x, y);
         }
 
-        public ShortPosition2D Add(Position2D d)
+        public ShortGridPosition2D Add(GridPosition2D d)
         {
             return this + this.With(d.X, d.Y);
         }
 
 
-        public bool Equals(ShortPosition2D other)
+        public bool Equals(ShortGridPosition2D other)
         {
             return X == other.X && Y == other.Y;
         }
 
         public override bool Equals(object obj)
         {
-            return obj is ShortPosition2D other && Equals(other);
+            return obj is ShortGridPosition2D other && Equals(other);
         }
 
         public override int GetHashCode()
@@ -68,7 +68,7 @@ namespace RogueEntity.Core.Utils
             }
         }
 
-        public static bool operator ==(ShortPosition2D left, ShortPosition2D right)
+        public static bool operator ==(ShortGridPosition2D left, ShortGridPosition2D right)
         {
             return left.Equals(right);
         }
@@ -79,7 +79,7 @@ namespace RogueEntity.Core.Utils
 		/// <param name="c1"></param>
 		/// <param name="c2"></param>
 		/// <returns>The coordinate(<paramref name="c1"/> - <paramref name="c2"/>).</returns>
-		public static ShortPosition2D operator -(ShortPosition2D c1, ShortPosition2D c2) => new ShortPosition2D(c1.X - c2.X, c1.Y - c2.Y);
+		public static ShortGridPosition2D operator -(ShortGridPosition2D c1, ShortGridPosition2D c2) => new ShortGridPosition2D(c1.X - c2.X, c1.Y - c2.Y);
 
 		/// <summary>
 		/// Subtracts scalar <paramref name="i"/> from the x and y values of <paramref name="c"/>.
@@ -87,7 +87,7 @@ namespace RogueEntity.Core.Utils
 		/// <param name="c"></param>
 		/// <param name="i"></param>
 		/// <returns>The coordinate (c.X - <paramref name="i"/>, c.Y - <paramref name="i"/>)</returns>
-		public static ShortPosition2D operator -(ShortPosition2D c, int i) => new ShortPosition2D(c.X - i, c.Y - i);
+		public static ShortGridPosition2D operator -(ShortGridPosition2D c, int i) => new ShortGridPosition2D(c.X - i, c.Y - i);
 
 		/// <summary>
 		/// True if either the x-values or y-values are not equal.
@@ -97,7 +97,7 @@ namespace RogueEntity.Core.Utils
 		/// <returns>
 		/// True if either the x-values or y-values are not equal, false if they are both equal.
 		/// </returns>
-		public static bool operator !=(ShortPosition2D c1, ShortPosition2D c2) => !(c1 == c2);
+		public static bool operator !=(ShortGridPosition2D c1, ShortGridPosition2D c2) => !(c1 == c2);
 
 		/// <summary>
 		/// Multiplies the x and y of <paramref name="c"/> by <paramref name="i"/>.
@@ -105,7 +105,7 @@ namespace RogueEntity.Core.Utils
 		/// <param name="c"></param>
 		/// <param name="i"></param>
 		/// <returns>Coordinate (c.X * <paramref name="i"/>, c.Y * <paramref name="i"/>)</returns>
-		public static ShortPosition2D operator *(ShortPosition2D c, int i) => new ShortPosition2D(c.X * i, c.Y * i);
+		public static ShortGridPosition2D operator *(ShortGridPosition2D c, int i) => new ShortGridPosition2D(c.X * i, c.Y * i);
 
 		/// <summary>
 		/// Multiplies the x and y value of <paramref name="c"/> by <paramref name="i"/>, rounding
@@ -117,8 +117,8 @@ namespace RogueEntity.Core.Utils
 		/// Coordinate (c.X * <paramref name="i"/>, c.Y * <paramref name="i"/>), with the resulting values
 		/// rounded to nearest integer.
 		/// </returns>
-		public static ShortPosition2D operator *(ShortPosition2D c, double i) =>
-			new ShortPosition2D((int)Math.Round(c.X * i, MidpointRounding.AwayFromZero), (int)Math.Round(c.Y * i, MidpointRounding.AwayFromZero));
+		public static ShortGridPosition2D operator *(ShortGridPosition2D c, double i) =>
+			new ShortGridPosition2D((int)Math.Round(c.X * i, MidpointRounding.AwayFromZero), (int)Math.Round(c.Y * i, MidpointRounding.AwayFromZero));
 
 		/// <summary>
 		/// Divides the x and y of <paramref name="c"/> by <paramref name="i"/>, rounding resulting values
@@ -127,8 +127,8 @@ namespace RogueEntity.Core.Utils
 		/// <param name="c"></param>
 		/// <param name="i"></param>
 		/// <returns>(c.X / <paramref name="i"/>, c.Y / <paramref name="i"/>), with the resulting values rounded to the nearest integer.</returns>
-		public static ShortPosition2D operator /(ShortPosition2D c, int i) =>
-			new ShortPosition2D((int)Math.Round(c.X / (double)i, MidpointRounding.AwayFromZero), (int)Math.Round(c.Y / (double)i, MidpointRounding.AwayFromZero));
+		public static ShortGridPosition2D operator /(ShortGridPosition2D c, int i) =>
+			new ShortGridPosition2D((int)Math.Round(c.X / (double)i, MidpointRounding.AwayFromZero), (int)Math.Round(c.Y / (double)i, MidpointRounding.AwayFromZero));
 
 		/// <summary>
 		/// Divides the x and y of <paramref name="c"/> by <paramref name="i"/>, rounding resulting values
@@ -137,8 +137,8 @@ namespace RogueEntity.Core.Utils
 		/// <param name="c"></param>
 		/// <param name="i"></param>
 		/// <returns>(c.X / <paramref name="i"/>, c.Y / <paramref name="i"/>), with the resulting values rounded to the nearest integer.</returns>
-		public static ShortPosition2D operator /(ShortPosition2D c, double i) =>
-			new ShortPosition2D((int)Math.Round(c.X / i, MidpointRounding.AwayFromZero), (int)Math.Round(c.Y / i, MidpointRounding.AwayFromZero));
+		public static ShortGridPosition2D operator /(ShortGridPosition2D c, double i) =>
+			new ShortGridPosition2D((int)Math.Round(c.X / i, MidpointRounding.AwayFromZero), (int)Math.Round(c.Y / i, MidpointRounding.AwayFromZero));
 
 		/// <summary>
 		/// Returns the coordinate (c1.X + c2.X, c1.Y + c2.Y).
@@ -146,7 +146,7 @@ namespace RogueEntity.Core.Utils
 		/// <param name="c1"></param>
 		/// <param name="c2"></param>
 		/// <returns>The coordinate (c1.X + c2.X, c1.Y + c2.Y)</returns>
-		public static ShortPosition2D operator +(ShortPosition2D c1, ShortPosition2D c2) => new ShortPosition2D(c1.X + c2.X, c1.Y + c2.Y);
+		public static ShortGridPosition2D operator +(ShortGridPosition2D c1, ShortGridPosition2D c2) => new ShortGridPosition2D(c1.X + c2.X, c1.Y + c2.Y);
 
 		/// <summary>
 		/// Adds scalar i to the x and y values of <paramref name="c"/>.
@@ -154,7 +154,7 @@ namespace RogueEntity.Core.Utils
 		/// <param name="c"></param>
 		/// <param name="i"></param>
 		/// <returns>Coordinate (c.X + <paramref name="i"/>, c.Y + <paramref name="i"/>.</returns>
-		public static ShortPosition2D operator +(ShortPosition2D c, int i) => new ShortPosition2D(c.X + i, c.Y + i);
+		public static ShortGridPosition2D operator +(ShortGridPosition2D c, int i) => new ShortGridPosition2D(c.X + i, c.Y + i);
 
 		/// <summary>
 		/// Translates the given coordinate by one unit in the given direction.
@@ -164,10 +164,10 @@ namespace RogueEntity.Core.Utils
 		/// <returns>
 		/// Coordinate (c.X + d.DeltaX, c.Y + d.DeltaY)
 		/// </returns>
-		public static ShortPosition2D operator +(ShortPosition2D c, Direction d)
+		public static ShortGridPosition2D operator +(ShortGridPosition2D c, Direction d)
         {
             var dc = d.ToCoordinates();
-            return new ShortPosition2D(c.X + dc.X, c.Y + dc.Y);
+            return new ShortGridPosition2D(c.X + dc.X, c.Y + dc.Y);
         }
 
         public override string ToString()
@@ -181,20 +181,20 @@ namespace RogueEntity.Core.Utils
             y = Y;
         }
 
-        public static implicit operator ShortPosition2D((int x, int y) p)
+        public static implicit operator ShortGridPosition2D((int x, int y) p)
         {
-            return new ShortPosition2D(p.x, p.y);
+            return new ShortGridPosition2D(p.x, p.y);
         }
 
         public int ToLinearIndex(int lineWidth) => Y * lineWidth + X;
         
-        public static ShortPosition2D From(int linearIndex, int lineWidth)
+        public static ShortGridPosition2D From(int linearIndex, int lineWidth)
         {
             var y = Math.DivRem(linearIndex, lineWidth, out var x);
-            return new ShortPosition2D(x, y);
+            return new ShortGridPosition2D(x, y);
         }
 
-        public int CompareTo(ShortPosition2D other)
+        public int CompareTo(ShortGridPosition2D other)
         {
             var xComparison = X.CompareTo(other.X);
             if (xComparison != 0)
@@ -212,25 +212,25 @@ namespace RogueEntity.Core.Utils
                 return 1;
             }
 
-            return obj is ShortPosition2D other ? CompareTo(other) : throw new ArgumentException($"Object must be of type {nameof(ShortPosition2D)}");
+            return obj is ShortGridPosition2D other ? CompareTo(other) : throw new ArgumentException($"Object must be of type {nameof(ShortGridPosition2D)}");
         }
 
-        public static bool operator <(ShortPosition2D left, ShortPosition2D right)
+        public static bool operator <(ShortGridPosition2D left, ShortGridPosition2D right)
         {
             return left.CompareTo(right) < 0;
         }
 
-        public static bool operator >(ShortPosition2D left, ShortPosition2D right)
+        public static bool operator >(ShortGridPosition2D left, ShortGridPosition2D right)
         {
             return left.CompareTo(right) > 0;
         }
 
-        public static bool operator <=(ShortPosition2D left, ShortPosition2D right)
+        public static bool operator <=(ShortGridPosition2D left, ShortGridPosition2D right)
         {
             return left.CompareTo(right) <= 0;
         }
 
-        public static bool operator >=(ShortPosition2D left, ShortPosition2D right)
+        public static bool operator >=(ShortGridPosition2D left, ShortGridPosition2D right)
         {
             return left.CompareTo(right) >= 0;
         }

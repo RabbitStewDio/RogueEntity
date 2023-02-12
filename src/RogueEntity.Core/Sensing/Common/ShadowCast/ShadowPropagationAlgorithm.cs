@@ -15,13 +15,13 @@ namespace RogueEntity.Core.Sensing.Common.ShadowCast
             public readonly IReadOnlyDynamicDataView2D<float> ResistanceMap;
             public readonly SenseSourceDefinition Sense;
             public readonly float Intensity;
-            public readonly Position2D Origin;
+            public readonly GridPosition2D Origin;
             public readonly IReadOnlyDynamicDataView2D<DirectionalityInformation> DirectionalityView;
 
             public ShadowParameters(in IReadOnlyDynamicDataView2D<float> resistanceMap,
                                     in SenseSourceDefinition sense,
                                     float intensity,
-                                    in Position2D origin,
+                                    in GridPosition2D origin,
                                     IReadOnlyDynamicDataView2D<DirectionalityInformation> directionalityView)
             {
                 this.ResistanceMap = resistanceMap;
@@ -46,7 +46,7 @@ namespace RogueEntity.Core.Sensing.Common.ShadowCast
 
         public SenseSourceData Calculate(in SenseSourceDefinition sense,
                                          float intensity,
-                                         in Position2D position,
+                                         in GridPosition2D position,
                                          IReadOnlyDynamicDataView2D<float> resistanceMap,
                                          IReadOnlyDynamicDataView2D<DirectionalityInformation> directionalityView,
                                          SenseSourceData? data = null)
@@ -65,7 +65,7 @@ namespace RogueEntity.Core.Sensing.Common.ShadowCast
             {
                 var resistanceData = dataSource.Create(radius);
 
-                data.Write(new Position2D(0, 0), intensity, SenseDirection.None, SenseDataFlags.SelfIlluminating);
+                data.Write(new GridPosition2D(0, 0), intensity, SenseDirection.None, SenseDataFlags.SelfIlluminating);
                 resistanceData[0, 0] = 1;
                 var shadowParam = new ShadowParameters(resistanceMap, sense, intensity, position, directionalityView);
                 foreach (var d in DiagonalDirectionsOfNeighbors)
@@ -176,7 +176,7 @@ namespace RogueEntity.Core.Sensing.Common.ShadowCast
                             if (bright > 0.0005f)
                             {
                                 var senseDirection = SenseDirectionStore.From(currentX, currentY).Direction;
-                                data.Write(new Position2D(currentX, currentY), bright, senseDirection,
+                                data.Write(new GridPosition2D(currentX, currentY), bright, senseDirection,
                                            fullyBlocked ? SenseDataFlags.Obstructed : SenseDataFlags.None);
                             }
                             else

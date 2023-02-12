@@ -11,9 +11,9 @@ namespace RogueEntity.Core.MovementPlaning.Goals
         where TGoal: IGoal
     {
         readonly BufferList<SpatialQueryResult<TItemId, GoalMarker<TGoal>>> buffer;
-        readonly ISpatialQuery<TItemId> query;
+        readonly ISpatialQuery<TItemId, GoalMarker<TGoal>> query;
 
-        public EntityGoalTargetSource3D(ISpatialQuery<TItemId> query)
+        public EntityGoalTargetSource3D(ISpatialQuery<TItemId, GoalMarker<TGoal>> query)
         {
             this.query = query;
             this.buffer = new BufferList<SpatialQueryResult<TItemId, GoalMarker<TGoal>>>();

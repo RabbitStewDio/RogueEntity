@@ -17,22 +17,31 @@ namespace RogueEntity.Core.Utils.SpatialIndex
         readonly TSpatialIndexAdapter adapter;
         readonly FreeList<QuadElementNode> elementNodes;
         readonly FreeList<QuadNode> nodes;
-        readonly int maxDepth;
-        readonly int maxElements;
-        readonly AABB boundingBox;
+        int maxDepth;
+        int maxElements;
+        AABB boundingBox;
 
-        public QuadTreeCore(TSpatialIndexAdapter adapter, AABB boundingBox, int maxElements, int maxDepth, 
+        
+        
+        public QuadTreeCore(TSpatialIndexAdapter adapter, 
                             ObjectPool<List<FreeListIndex>> pool)
         {
-            this.maxDepth = Math.Max(1, maxDepth);
-            this.maxElements = Math.Max(1, maxElements);
             this.adapter = adapter ?? throw new ArgumentNullException(nameof(adapter));
-            this.boundingBox = boundingBox;
             this.pool = pool;
 
             elementNodes = new FreeList<QuadElementNode>();
             nodes = new FreeList<QuadNode>();
             nodes.Add(QuadNode.Leaf());
+        }
+
+        public void Init(AABB boundingBox, int maxElements, int maxDepth)
+        {
+            this.maxDepth = Math.Max(1, maxDepth);
+            this.maxElements = Math.Max(1, maxElements);
+            this.boundingBox = boundingBox;
+            this.elementNodes.Clear();
+            this.nodes.Clear();
+            this.nodes.Add(QuadNode.Leaf());
         }
 
         public void InsertElement(FreeListIndex data, in BoundingBox bounds)

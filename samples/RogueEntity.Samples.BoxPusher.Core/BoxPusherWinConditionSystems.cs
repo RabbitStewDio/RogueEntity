@@ -10,15 +10,15 @@ namespace RogueEntity.Samples.BoxPusher.Core
 {
     public class BoxPusherWinConditionSystems
     {
-        readonly HashSet<Position2D> targetSpots;
-        readonly HashSet<Position2D> boxPositions;
+        readonly HashSet<GridPosition2D> targetSpots;
+        readonly HashSet<GridPosition2D> boxPositions;
 
         EntityGridPosition playerPosition;
 
         public BoxPusherWinConditionSystems()
         {
-            targetSpots = new HashSet<Position2D>();
-            boxPositions = new HashSet<Position2D>();
+            targetSpots = new HashSet<GridPosition2D>();
+            boxPositions = new HashSet<GridPosition2D>();
         }
 
         public void StartCheckWinCondition()

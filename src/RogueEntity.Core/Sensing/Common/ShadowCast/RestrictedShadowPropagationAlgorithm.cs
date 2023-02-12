@@ -20,7 +20,7 @@ namespace RogueEntity.Core.Sensing.Common.ShadowCast
 
         public SenseSourceData Calculate(in SenseSourceDefinition sense,
                                          float intensity,
-                                         in Position2D position,
+                                         in GridPosition2D position,
                                          IReadOnlyDynamicDataView2D<float> resistanceMap,
                                          IReadOnlyDynamicDataView2D<DirectionalityInformation> directionalityView,
                                          SenseSourceData? data = null)
@@ -70,7 +70,7 @@ namespace RogueEntity.Core.Sensing.Common.ShadowCast
                                IReadOnlyDynamicDataView2D<float> resistanceMap,
                                in SenseSourceDefinition sense,
                                float intensity,
-                               in Position2D pos,
+                               in GridPosition2D pos,
                                in SenseSourceData light)
         {
             if (start < end)
@@ -132,7 +132,7 @@ namespace RogueEntity.Core.Sensing.Common.ShadowCast
                         {
                             var strengthAtDistance = sensePhysics.SignalStrengthAtDistance(distanceFromOrigin, maxRadius);
                             var bright = intensity * strengthAtDistance * (1 - resistance);
-                            light.Write(new Position2D(currentX, currentY), bright,
+                            light.Write(new GridPosition2D(currentX, currentY), bright,
                                         SenseDirectionStore.From(currentX, currentY).Direction,
                                         fullyBlocked ? SenseDataFlags.Obstructed : SenseDataFlags.None);
                         }

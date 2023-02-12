@@ -24,7 +24,7 @@ namespace RogueEntity.Core.Sensing.Common
 
         public int Radius { get; }
 
-        public Rectangle Bounds => new Rectangle(new Position2D(0, 0), Radius, Radius);
+        public Rectangle Bounds => new Rectangle(new GridPosition2D(0, 0), Radius, Radius);
 
         public bool TryQuery(int x,
                              int y,
@@ -100,7 +100,7 @@ namespace RogueEntity.Core.Sensing.Common
             }
         }
 
-        public void Write(Position2D point,
+        public void Write(GridPosition2D point,
                           float intensity,
                           SenseDirection direction = SenseDirection.None,
                           SenseDataFlags flags = SenseDataFlags.None)
@@ -122,8 +122,8 @@ namespace RogueEntity.Core.Sensing.Common
             Directions[linIndex] = SenseDirectionStore.From(direction, flags).RawData;
         }
 
-        public void Write(Position2D point,
-                          Position2D origin,
+        public void Write(GridPosition2D point,
+                          GridPosition2D origin,
                           float intensity,
                           SenseDataFlags flags = SenseDataFlags.None)
         {

@@ -23,7 +23,7 @@ namespace RogueEntity.Core.MovementPlaning.Pathfinding
         
         readonly Action<DefaultPathFinderTargetEvaluator>? returnToPoolFunction;
         DistanceCalculation distanceCalculation;
-        Position2D targetPosition;
+        GridPosition2D targetPosition;
         int targetZLevel;
         bool disposed;
 
@@ -75,12 +75,12 @@ namespace RogueEntity.Core.MovementPlaning.Pathfinding
             return true;
         }
 
-        public bool IsTargetNode(int z, in Position2D pos)
+        public bool IsTargetNode(int z, in GridPosition2D pos)
         {
             return z == targetZLevel && pos == targetPosition;
         }
 
-        public float TargetHeuristic(int z, in Position2D pos)
+        public float TargetHeuristic(int z, in GridPosition2D pos)
         {
             return (float) distanceCalculation.Calculate2D(pos, targetPosition);
         }

@@ -51,7 +51,7 @@ namespace RogueEntity.Core.Utils
         /// </summary>
         /// <param name="minExtent">Minimum x and y values that are considered inside the rectangle.</param>
         /// <param name="maxExtent">Maximum x and y values that are considered inside the rectangle.</param>
-        public Rectangle(Position2D minExtent, Position2D maxExtent)
+        public Rectangle(GridPosition2D minExtent, GridPosition2D maxExtent)
         {
             X = minExtent.X;
             Y = minExtent.Y;
@@ -69,7 +69,7 @@ namespace RogueEntity.Core.Utils
         /// <param name="verticalRadius">
         /// Number of units to the top and bottom of the center point that are included within the rectangle.
         /// </param>
-        public Rectangle(Position2D center, int horizontalRadius, int verticalRadius)
+        public Rectangle(GridPosition2D center, int horizontalRadius, int verticalRadius)
         {
             X = center.X - horizontalRadius;
             Y = center.Y - verticalRadius;
@@ -89,9 +89,9 @@ namespace RogueEntity.Core.Utils
         /// The center coordinate of the rectangle, rounded up if the exact center is between two
         /// positions. The center of a rectangle with width/height 1 is its <see cref="Position"/>.
         /// </summary>
-        public Position2D Center
+        public GridPosition2D Center
         {
-            get => new Position2D(X + (Width / 2), Y + (Height / 2));
+            get => new GridPosition2D(X + (Width / 2), Y + (Height / 2));
         }
 
         /// <summary>
@@ -111,9 +111,9 @@ namespace RogueEntity.Core.Utils
         /// <summary>
         /// The maximum X and Y coordinates that are included in the rectangle.
         /// </summary>
-        public Position2D MaxExtent
+        public GridPosition2D MaxExtent
         {
-            get => new Position2D(MaxExtentX, MaxExtentY);
+            get => new GridPosition2D(MaxExtentX, MaxExtentY);
         }
 
         /// <summary>
@@ -137,9 +137,9 @@ namespace RogueEntity.Core.Utils
         /// Identical to <see cref="Position"/> because we define the rectangle's position by its
         /// minimum extent.
         /// </summary>
-        public Position2D MinExtent
+        public GridPosition2D MinExtent
         {
-            get => new Position2D(X, Y);
+            get => new GridPosition2D(X, Y);
         }
 
         /// <summary>
@@ -174,17 +174,17 @@ namespace RogueEntity.Core.Utils
         /// <summary>
         /// Coord representing the position (min x- and y-values) of the rectangle.
         /// </summary>
-        public Position2D Position
+        public GridPosition2D Position
         {
-            get => new Position2D(X, Y);
+            get => new GridPosition2D(X, Y);
         }
 
         /// <summary>
         /// Returns a coordinate (Width, Height), which represents the size of the rectangle.
         /// </summary>
-        public Position2D Size
+        public GridPosition2D Size
         {
-            get => new Position2D(Width, Height);
+            get => new GridPosition2D(Width, Height);
         }
 
         /// <summary>
@@ -224,7 +224,7 @@ namespace RogueEntity.Core.Utils
         /// <param name="minExtent">Minimum (x, y) coordinates that are inside the rectangle.</param>
         /// <param name="maxExtent">Maximum (x, y) coordinates that are inside the rectangle.</param>
         /// <returns>A new Rectangle with the given minimum and maximum extents.</returns>
-        public static Rectangle WithExtents(Position2D minExtent, Position2D maxExtent) => new Rectangle(minExtent, maxExtent);
+        public static Rectangle WithExtents(GridPosition2D minExtent, GridPosition2D maxExtent) => new Rectangle(minExtent, maxExtent);
 
         /// <summary>
         /// Creates a rectangle centered on the given position, with the given horizontal and
@@ -257,7 +257,7 @@ namespace RogueEntity.Core.Utils
         /// Number of units to the top and bottom of the center point that are included within the rectangle.
         /// </param>
         /// <returns>A new rectangle with the given center point and radius values.</returns>
-        public static Rectangle WithRadius(Position2D center, int horizontalRadius, int verticalRadius) =>
+        public static Rectangle WithRadius(GridPosition2D center, int horizontalRadius, int verticalRadius) =>
             new Rectangle(center, horizontalRadius, verticalRadius);
 
         /// <summary>
@@ -279,10 +279,10 @@ namespace RogueEntity.Core.Utils
         /// <param name="position">Minimum (x, y) values that are inside the resulting rectangle.</param>
         /// <param name="size">The size of the rectangle, in form (width, height).</param>
         /// <returns>A new rectangle at the given position with the given size.</returns>
-        public static Rectangle WithPositionAndSize(Position2D position, Dimension size) =>
+        public static Rectangle WithPositionAndSize(GridPosition2D position, Dimension size) =>
             new Rectangle(position.X, position.Y, size.Width, size.Height);
 
-        public static Rectangle WithCenterAndSize(Position2D position, Dimension size) =>
+        public static Rectangle WithCenterAndSize(GridPosition2D position, Dimension size) =>
             new Rectangle(position.X - size.Width / 2,
                           position.Y - size.Height / 2,
                           size.Width,
@@ -323,7 +323,7 @@ namespace RogueEntity.Core.Utils
         /// A new rectangle that is the same size as the current one, but with the center moved to
         /// the given location.
         /// </returns>
-        public Rectangle WithCenter(Position2D center)
+        public Rectangle WithCenter(GridPosition2D center)
             => new Rectangle(center.X - (Width / 2), center.Y - (Height / 2), Width, Height);
 
         /// <summary>
@@ -370,7 +370,7 @@ namespace RogueEntity.Core.Utils
         /// <returns>
         /// A new rectangle whose width/height are modified by the given delta-change values.
         /// </returns>
-        public Rectangle ChangeSize(in Position2D deltaChange)
+        public Rectangle ChangeSize(in GridPosition2D deltaChange)
             => new Rectangle(X, Y, Width + deltaChange.X, Height + deltaChange.Y);
 
         /// <summary>
@@ -388,7 +388,7 @@ namespace RogueEntity.Core.Utils
         /// <param name="position">The position to check.</param>
         /// <returns>Whether or not the specified point is considered within the rectangle.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool Contains(in Position2D position)
+        public bool Contains(in GridPosition2D position)
         {
             return (position.X >= X && position.X < (X + Width) && position.Y >= Y && position.Y < (Y + Height));
         }
@@ -493,7 +493,7 @@ namespace RogueEntity.Core.Utils
         /// </summary>
         /// <param name="position">The position for the new rectangle.</param>
         /// <returns>A new rectangle that has its position changed to the given value.</returns>
-        public Rectangle WithPosition(Position2D position)
+        public Rectangle WithPosition(GridPosition2D position)
             => new Rectangle(position.X, position.Y, Width, Height);
 
         /// <summary>
@@ -502,7 +502,7 @@ namespace RogueEntity.Core.Utils
         /// <param name="x">X-value for the position of the new rectangle.</param>
         /// <param name="y">Y-value for the position of the new rectangle.</param>
         /// <returns>A new rectangle with the position changed to the given value.</returns>
-        public Rectangle WithPosition(int x, int y) => WithPosition(new Position2D(x, y));
+        public Rectangle WithPosition(int x, int y) => WithPosition(new GridPosition2D(x, y));
 
         /// <summary>
         /// Creates and returns a new rectangle that has its position moved in the given direction.
@@ -544,7 +544,7 @@ namespace RogueEntity.Core.Utils
         /// </summary>
         /// <param name="maxExtent">The maximum extent of the new rectangle.</param>
         /// <returns>A new rectangle that has its maximum extent adjusted to the specified value.</returns>
-        public Rectangle WithMaxExtent(Position2D maxExtent)
+        public Rectangle WithMaxExtent(GridPosition2D maxExtent)
             => new Rectangle(MinExtent, maxExtent);
 
         /// <summary>
@@ -555,7 +555,7 @@ namespace RogueEntity.Core.Utils
         /// <param name="y">The y-value for the minimum extent of the new rectangle.</param>
         /// <returns>A new rectangle that has its maximum extent adjusted to the specified value.</returns>
         public Rectangle WithMaxExtent(int x, int y)
-            => new Rectangle(MinExtent, new Position2D(x, y));
+            => new Rectangle(MinExtent, new GridPosition2D(x, y));
 
         /// <summary>
         /// Creates and returns a new rectangle that has been shrunk/expanded as necessary, such that
@@ -564,7 +564,7 @@ namespace RogueEntity.Core.Utils
         /// <param name="x">The x-coordinate for the maximum extent of the new rectangle.</param>
         /// <returns>A new rectangle, with its <see cref="MaxExtentX"/> adjusted to the specified value.</returns>
         public Rectangle WithMaxExtentX(int x)
-            => new Rectangle(MinExtent, new Position2D(x, MaxExtentY));
+            => new Rectangle(MinExtent, new GridPosition2D(x, MaxExtentY));
 
         /// <summary>
         /// Creates and returns a new rectangle that has been shrunk/expanded as necessary, such that
@@ -573,7 +573,7 @@ namespace RogueEntity.Core.Utils
         /// <param name="y">The y-coordinate for the maximum extent of the new rectangle.</param>
         /// <returns>A new rectangle, with its <see cref="MaxExtentY"/> adjusted to the specified value.</returns>
         public Rectangle WithMaxExtentY(int y)
-            => new Rectangle(MinExtent, new Position2D(MaxExtentX, y));
+            => new Rectangle(MinExtent, new GridPosition2D(MaxExtentX, y));
 
         /// <summary>
         /// Creates and returns a new rectangle that has been shrunk/expanded as necessary, such that
@@ -581,7 +581,7 @@ namespace RogueEntity.Core.Utils
         /// </summary>
         /// <param name="minExtent">The minimum extent of the new rectangle.</param>
         /// <returns>A new rectangle that has its minimum extent adjusted to the specified value.</returns>
-        public Rectangle WithMinExtent(Position2D minExtent)
+        public Rectangle WithMinExtent(GridPosition2D minExtent)
             => new Rectangle(minExtent, MaxExtent);
 
         /// <summary>
@@ -592,7 +592,7 @@ namespace RogueEntity.Core.Utils
         /// <param name="y">The y-value for the minimum extent of the new rectangle.</param>
         /// <returns>A new rectangle that has its minimum extent adjusted to the specified value.</returns>
         public Rectangle WithMinExtent(int x, int y)
-            => new Rectangle(new Position2D(x, y), MaxExtent);
+            => new Rectangle(new GridPosition2D(x, y), MaxExtent);
 
         /// <summary>
         /// Creates and returns a new rectangle that has been shrunk/expanded as necessary, such that
@@ -601,7 +601,7 @@ namespace RogueEntity.Core.Utils
         /// <param name="x">The x-coordinate for the minimum extent of the new rectangle.</param>
         /// <returns>A new rectangle, with its <see cref="MinExtentX"/> adjusted to the specified value.</returns>
         public Rectangle WithMinExtentX(int x)
-            => new Rectangle(new Position2D(x, MinExtentY), MaxExtent);
+            => new Rectangle(new GridPosition2D(x, MinExtentY), MaxExtent);
 
         /// <summary>
         /// Creates and returns a new rectangle that has been shrunk/expanded as necessary, such that
@@ -611,7 +611,7 @@ namespace RogueEntity.Core.Utils
         /// <returns>A new rectangle, with its <see cref="MinExtentY"/> adjusted to the specified value.</returns>
         /// &gt;
         public Rectangle WithMinExtentY(int y)
-            => new Rectangle(new Position2D(MinExtentX, y), MaxExtent);
+            => new Rectangle(new GridPosition2D(MinExtentX, y), MaxExtent);
 
         /// <summary>
         /// Creates and returns a new rectangle whose position is the same as the current one, but
@@ -629,7 +629,7 @@ namespace RogueEntity.Core.Utils
         /// </summary>
         /// <param name="size">Vector (width, height) specifying the width/height of the new rectangle.</param>
         /// <returns>A new rectangle with the given width and height.</returns>
-        public Rectangle WithSize(Position2D size)
+        public Rectangle WithSize(GridPosition2D size)
             => new Rectangle(X, Y, size.X, size.Y);
 
         /// <summary>
@@ -653,7 +653,7 @@ namespace RogueEntity.Core.Utils
         /// <returns>
         /// A new rectangle, whose position has been moved by the given delta-change values.
         /// </returns>
-        public Rectangle Translate(Position2D deltaChange)
+        public Rectangle Translate(GridPosition2D deltaChange)
             => new Rectangle(X + deltaChange.X, Y + deltaChange.Y, Width, Height);
 
         /// <summary>
@@ -846,7 +846,7 @@ namespace RogueEntity.Core.Utils
         /// <param name="rect2"/>
         /// <returns>A sequence of positions representing every location in <paramref name="rect1"/> that
         /// is NOT in <paramref name="rect2"/>.</returns>
-        public static IEnumerable<Position2D> GetDifference(this Rectangle rect1, Rectangle rect2)
+        public static IEnumerable<GridPosition2D> GetDifference(this Rectangle rect1, Rectangle rect2)
         {
             foreach (var pos in rect1.Contents)
             {
@@ -864,17 +864,17 @@ namespace RogueEntity.Core.Utils
         /// <param name="r1"/>
         /// <param name="r2"/>
         /// <returns>A sequence of positions containing every position in either rectangle.</returns>
-        public static IEnumerable<Position2D> GetExactUnion(this Rectangle r1, Rectangle r2)
+        public static IEnumerable<GridPosition2D> GetExactUnion(this Rectangle r1, Rectangle r2)
         {
             for (int x = r1.X; x <= r1.MaxExtentX; x++)
             for (int y = r1.Y; y <= r1.MaxExtentY; y++)
-                yield return new Position2D(x, y);
+                yield return new GridPosition2D(x, y);
 
             for (int x = r2.X; x <= r2.MaxExtentX; x++)
             for (int y = r2.Y; y <= r2.MaxExtentY; y++)
             {
                 if (r1.Contains(x, y)) continue;
-                yield return new Position2D(x, y);
+                yield return new GridPosition2D(x, y);
             }
         }
 

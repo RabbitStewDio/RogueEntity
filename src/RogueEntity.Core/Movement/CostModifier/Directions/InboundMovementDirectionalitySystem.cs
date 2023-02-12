@@ -88,7 +88,7 @@ namespace RogueEntity.Core.Movement.CostModifier.Directions
 
         protected override bool IsMoveAllowed(in (IReadOnlyDynamicDataView2D<float> sourceData,
                                                   IReadOnlyBoundedDataView<float> sourceTile, int z) parameterData,
-                                              in Position2D pos,
+                                              in GridPosition2D pos,
                                               Direction d)
         {
             var c = d.ToCoordinates();

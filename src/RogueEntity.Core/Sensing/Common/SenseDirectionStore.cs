@@ -84,7 +84,7 @@ namespace RogueEntity.Core.Sensing.Common
             return new SenseDirectionStore((byte)raw);
         }
 
-        public static SenseDirectionStore From(Position2D pos) => From(pos.X, pos.Y);
+        public static SenseDirectionStore From(GridPosition2D pos) => From(pos.X, pos.Y);
 
         public static SenseDirectionStore From(int x, int y)
         {

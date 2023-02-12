@@ -32,7 +32,7 @@ namespace RogueEntity.Core.Sensing.Receptors
                 return;
             }
 
-            var senseBoundaries = perceptionFoV.Bounds.WithCenter(new Position2D(receptorState.LastPosition.GridX, receptorState.LastPosition.GridY));
+            var senseBoundaries = perceptionFoV.Bounds.WithCenter(new GridPosition2D(receptorState.LastPosition.GridX, receptorState.LastPosition.GridY));
             var senseMap = receptorSenseMap.SenseMap;
             level.ProcessDirectional(receptorBlitter, receptorState.LastPosition, senseMap, senseBoundaries, v.GetComponent(k, out SenseReceptorDirtyFlag<TTargetSense, TSourceSense> _));
             receptorSenseMap = receptorSenseMap.WithLevel(receptorState.LastPosition.GridZ);

@@ -24,7 +24,7 @@ namespace RogueEntity.Core.Utils
 
         public static implicit operator Rectangle(BoundingBox b)
         {
-            return new Rectangle(new Position2D(b.Top, b.Left), new Position2D(b.Bottom, b.Right));
+            return new Rectangle(new GridPosition2D(b.Top, b.Left), new GridPosition2D(b.Bottom, b.Right));
         }
 
         public static implicit operator BoundingBox(Rectangle b)
@@ -84,7 +84,7 @@ namespace RogueEntity.Core.Utils
             return new BoundingBox(b.MinExtentX, b.MinExtentY, b.MaxExtentX, b.MaxExtentY);
         }
 
-        public static BoundingBox From(Position2D pos)
+        public static BoundingBox From(GridPosition2D pos)
         {
             return new BoundingBox(pos.X, pos.Y, pos.X, pos.Y);
         }
@@ -100,7 +100,7 @@ namespace RogueEntity.Core.Utils
             return new BoundingBox(x, y, x + Math.Max(1, width) - 1, y + Math.Max(1, height) - 1);
         }
 
-        public static BoundingBox From(Position2D topLeft, Position2D bottomRight)
+        public static BoundingBox From(GridPosition2D topLeft, GridPosition2D bottomRight)
         {
             return new BoundingBox(topLeft.X, topLeft.Y, bottomRight.X, bottomRight.Y);
         }

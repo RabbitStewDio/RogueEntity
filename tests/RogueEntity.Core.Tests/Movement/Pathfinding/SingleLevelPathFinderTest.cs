@@ -79,11 +79,11 @@ namespace RogueEntity.Core.Tests.Movement.Pathfinding
 
         readonly ILogger logger = SLog.ForContext<SingleLevelPathFinderTest>();
 
-        readonly Dictionary<string, (string sourceText, string resultText, Position2D source, Position2D target)> testCases =
-            new Dictionary<string, (string sourceText, string resultText, Position2D source, Position2D target)>()
+        readonly Dictionary<string, (string sourceText, string resultText, GridPosition2D source, GridPosition2D target)> testCases =
+            new Dictionary<string, (string sourceText, string resultText, GridPosition2D source, GridPosition2D target)>()
             {
-                { nameof(EmptyRoom), (EmptyRoom, EmptyRoomResult, new Position2D(1, 1), new Position2D(7, 7)) },
-                { nameof(DiagonalBlockRoom), (DiagonalBlockRoom, DiagonalRoomResult, new Position2D(1, 1), new Position2D(7, 7)) },
+                { nameof(EmptyRoom), (EmptyRoom, EmptyRoomResult, new GridPosition2D(1, 1), new GridPosition2D(7, 7)) },
+                { nameof(DiagonalBlockRoom), (DiagonalBlockRoom, DiagonalRoomResult, new GridPosition2D(1, 1), new GridPosition2D(7, 7)) },
             };
 
         [Test]

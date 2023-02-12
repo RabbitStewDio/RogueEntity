@@ -56,7 +56,7 @@ public class HierarchicalPath: IPath
         Count = 0;
     }
 
-    public void BeginRecordPath(Position2D pos, int z)
+    public void BeginRecordPath(GridPosition2D pos, int z)
     {
         pathSegments.Clear();
         Count = 0;

@@ -81,7 +81,7 @@ namespace RogueEntity.Core.MapLoading.FlatLevelMaps
                 return;
             }
 
-            if (!spatialQuerySource.TryGetQuery<TItemId>(out var query))
+            if (!spatialQuerySource.TryGetQuery<TItemId, PlayerSpawnLocation>(out var query))
             {
                 throw new ArgumentException("No query source for entity type " + typeof(TItemId).Name);
             }

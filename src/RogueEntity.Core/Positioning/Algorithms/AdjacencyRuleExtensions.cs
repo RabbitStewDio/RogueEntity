@@ -178,7 +178,7 @@ namespace RogueEntity.Core.Positioning.Algorithms
         /// <param name="r"></param>
         /// <param name="startingLocation">Location to return neighbors for.</param>
         /// <returns>All neighbors of the given location.</returns>
-        public static IEnumerable<Position2D> Neighbors(this AdjacencyRule r, Position2D startingLocation)
+        public static IEnumerable<GridPosition2D> Neighbors(this AdjacencyRule r, GridPosition2D startingLocation)
         {
             foreach (var dir in r.DirectionsOfNeighbors())
                 yield return startingLocation + dir;
@@ -192,7 +192,7 @@ namespace RogueEntity.Core.Positioning.Algorithms
         /// <param name="startingX">X-Position2D of location to return neighbors for.</param>
         /// <param name="startingY">Y-Position2D of location to return neighbors for.</param>
         /// <returns>All neighbors of the given location.</returns>
-        public static IEnumerable<Position2D> Neighbors(this AdjacencyRule r, int startingX, int startingY) => r.Neighbors(new Position2D(startingX, startingY));
+        public static IEnumerable<GridPosition2D> Neighbors(this AdjacencyRule r, int startingX, int startingY) => r.Neighbors(new GridPosition2D(startingX, startingY));
 
         /// <summary>
         /// Gets all neighbors of the specified location, based on the current adjacency method.
@@ -207,7 +207,7 @@ namespace RogueEntity.Core.Positioning.Algorithms
         /// is used, which is UP for CARDINALS/EIGHT_WAY, and UP_RIGHT for DIAGONALS.
         /// </param>
         /// <returns>All neighbors of the given location.</returns>
-        public static IEnumerable<Position2D> NeighborsClockwise(this AdjacencyRule r, Position2D startingLocation, Direction startingDirection = default)
+        public static IEnumerable<GridPosition2D> NeighborsClockwise(this AdjacencyRule r, GridPosition2D startingLocation, Direction startingDirection = default)
         {
             foreach (var dir in r.DirectionsOfNeighborsClockwise(startingDirection))
                 yield return startingLocation + dir;
@@ -227,8 +227,8 @@ namespace RogueEntity.Core.Positioning.Algorithms
         /// is used, which is UP for CARDINALS/EIGHT_WAY, and UP_RIGHT for DIAGONALS.
         /// </param>
         /// <returns>All neighbors of the given location.</returns>
-        public static IEnumerable<Position2D> NeighborsClockwise(this AdjacencyRule r, int startingX, int startingY, Direction startingDirection = default)
-            => r.NeighborsClockwise(new Position2D(startingX, startingY), startingDirection);
+        public static IEnumerable<GridPosition2D> NeighborsClockwise(this AdjacencyRule r, int startingX, int startingY, Direction startingDirection = default)
+            => r.NeighborsClockwise(new GridPosition2D(startingX, startingY), startingDirection);
 
         /// <summary>
         /// Gets all neighbors of the specified location, based on the current adjacency method.
@@ -243,7 +243,7 @@ namespace RogueEntity.Core.Positioning.Algorithms
         /// is used, which is UP for CARDINALS/EIGHT_WAY, and UP_LEFT for DIAGONALS.
         /// </param>
         /// <returns>All neighbors of the given location.</returns>
-        public static IEnumerable<Position2D> NeighborsCounterClockwise(this AdjacencyRule r, Position2D startingLocation, Direction startingDirection = default)
+        public static IEnumerable<GridPosition2D> NeighborsCounterClockwise(this AdjacencyRule r, GridPosition2D startingLocation, Direction startingDirection = default)
         {
             foreach (var dir in r.DirectionsOfNeighborsCounterClockwise(startingDirection))
                 yield return startingLocation + dir;
@@ -263,8 +263,8 @@ namespace RogueEntity.Core.Positioning.Algorithms
         /// is used, which is UP for CARDINALS/EIGHT_WAY, and UP_LEFT for DIAGONALS.
         /// </param>
         /// <returns>All neighbors of the given location.</returns>
-        public static IEnumerable<Position2D> NeighborsCounterClockwise(this AdjacencyRule r, int startingX, int startingY, Direction startingDirection = default)
-            => r.NeighborsCounterClockwise(new Position2D(startingX, startingY), startingDirection);
+        public static IEnumerable<GridPosition2D> NeighborsCounterClockwise(this AdjacencyRule r, int startingX, int startingY, Direction startingDirection = default)
+            => r.NeighborsCounterClockwise(new GridPosition2D(startingX, startingY), startingDirection);
 
         /// <summary>
         /// Gets directions leading to neighboring locations, according to the current adjacency

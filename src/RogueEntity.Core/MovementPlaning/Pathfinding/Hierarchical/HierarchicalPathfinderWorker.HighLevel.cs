@@ -115,7 +115,7 @@ partial class HierarchicalPathfinderWorker
         }
 
         using var zoneBuffer = BufferListPool<TraversableZonePathData>.GetPooled();
-        using var recordBuffer = BufferListPool<(Position2D, OutboundConnectionRecord)>.GetPooled();
+        using var recordBuffer = BufferListPool<(GridPosition2D, OutboundConnectionRecord)>.GetPooled();
         using var edgeBuffer = BufferListPool<PathfinderRegionEdge>.GetPooled();
         bool haveStartingNode = false;
         foreach (var zone in edgeRegion.GetZoneData(originZone, zoneBuffer))
@@ -207,7 +207,7 @@ partial class HierarchicalPathfinderWorker
         result = BufferList.PrepareBuffer(result);
 
         using var zoneBuffer = BufferListPool<TraversableZonePathData>.GetPooled();
-        using var outboundRecordBuffer = BufferListPool<(Position2D, OutboundConnectionRecord)>.GetPooled();
+        using var outboundRecordBuffer = BufferListPool<(GridPosition2D, OutboundConnectionRecord)>.GetPooled();
         using var edgeBuffer = BufferListPool<PathfinderRegionEdge>.GetPooled();
         foreach (var zone in edgeData2D.GetZoneData(inboundEdge.TargetZone, zoneBuffer))
         {
@@ -243,7 +243,7 @@ partial class HierarchicalPathfinderWorker
     {
         Assert.NotNull(zoneRegion);
         
-        using var pathBufferHandle = BufferListPool<ShortPosition2D>.GetPooled();
+        using var pathBufferHandle = BufferListPool<ShortGridPosition2D>.GetPooled();
         var pathBuffer = base.FindPath(zoneRegion.ToInternalPosition(originPos), out _, pathBufferHandle);
 
         if (pathBuffer.Count <= 0)
@@ -354,12 +354,12 @@ partial class HierarchicalPathfinderWorker
     
     readonly struct HighLevelNode : IEquatable<HighLevelNode>
     {
-        public readonly Optional<Position2D> ParentPosition;
+        public readonly Optional<GridPosition2D> ParentPosition;
         public readonly PathfinderRegionEdge Edge;
         public readonly ZoneEdgeDataKey Key;
         public readonly float Cost;
 
-        public HighLevelNode(Position2D parent, PathfinderRegionEdge edge, ZoneEdgeDataKey key, float cost)
+        public HighLevelNode(GridPosition2D parent, PathfinderRegionEdge edge, ZoneEdgeDataKey key, float cost)
         {
             this.Edge = edge;
             this.Key = key;

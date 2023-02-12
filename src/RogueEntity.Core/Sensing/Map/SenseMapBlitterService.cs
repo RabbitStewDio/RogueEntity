@@ -21,13 +21,13 @@ namespace RogueEntity.Core.Sensing.Map
 
         readonly struct ProcessData
         {
-            public readonly List<(Position2D pos, SenseSourceData sense)> Senses;
+            public readonly List<(GridPosition2D pos, SenseSourceData sense)> Senses;
             public readonly ISenseMapDataBlitter Blitter;
             public readonly Rectangle Bounds;
             public readonly BoundedDataView<float> Tile;
             public readonly BoundedDataView<byte> Dir;
 
-            public ProcessData(List<(Position2D, SenseSourceData)> senses,
+            public ProcessData(List<(GridPosition2D, SenseSourceData)> senses,
                                ISenseMapDataBlitter blitter,
                                Rectangle bounds,
                                BoundedDataView<float> tile,
@@ -44,7 +44,7 @@ namespace RogueEntity.Core.Sensing.Map
         void QuerySenseDataTiles(SenseDataMap m,
                                  Rectangle targetBounds, 
                                  ISenseMapDataBlitter blitter,
-                                 List<(Position2D, SenseSourceData)> senses)
+                                 List<(GridPosition2D, SenseSourceData)> senses)
         {
             var affectedBounds = GetSenseBounds(senses).GetIntersection(targetBounds);
             if (affectedBounds.IsEmpty)
@@ -87,7 +87,7 @@ namespace RogueEntity.Core.Sensing.Map
         public void ProcessSenseSources(SenseDataMap m,
                                         in Rectangle targetBounds, 
                                         ISenseMapDataBlitter blitter,
-                                        List<(Position2D pos, SenseSourceData sense)> senses)
+                                        List<(GridPosition2D pos, SenseSourceData sense)> senses)
         {
             if (senses.Count == 0)
             {
@@ -100,7 +100,7 @@ namespace RogueEntity.Core.Sensing.Map
             parameterBuffer.Clear();
         }
 
-        public static Rectangle GetSenseBounds(List<(Position2D pos, SenseSourceData sd)> senses)
+        public static Rectangle GetSenseBounds(List<(GridPosition2D pos, SenseSourceData sd)> senses)
         {
             var firstEntry = senses[0];
             var bounds = LightToRectangle(firstEntry.pos, firstEntry.sd);
@@ -115,6 +115,6 @@ namespace RogueEntity.Core.Sensing.Map
             return bounds;
         }
 
-        static Rectangle LightToRectangle(Position2D pos, SenseSourceData sd) => new Rectangle(new Position2D(pos.X, pos.Y), sd.Radius, sd.Radius);
+        static Rectangle LightToRectangle(GridPosition2D pos, SenseSourceData sd) => new Rectangle(new GridPosition2D(pos.X, pos.Y), sd.Radius, sd.Radius);
     }
 }

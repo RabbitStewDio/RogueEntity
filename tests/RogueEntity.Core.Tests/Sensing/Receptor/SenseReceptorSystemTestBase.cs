@@ -314,13 +314,13 @@ namespace RogueEntity.Core.Tests.Sensing.Receptor
             // the resulting sense information is stored relative to the sense origin, with the origin point at the centre of the bounds
             // thus the result map must be mapped to the same area.
             var expectedPerceptionData = SenseTestHelpers.ParseMap(expectedPerceptionResult, out _);
-            TestHelpers.AssertEquals(vaData, expectedPerceptionData, activeTestArea, new Position2D(26, 4));
+            TestHelpers.AssertEquals(vaData, expectedPerceptionData, activeTestArea, new GridPosition2D(26, 4));
 
             var expectedSenseMapData = SenseTestHelpers.ParseMap(expectedSenseMap, out _);
-            TestHelpers.AssertEquals(senseData, expectedSenseMapData, activeTestArea, new Position2D());
+            TestHelpers.AssertEquals(senseData, expectedSenseMapData, activeTestArea, new GridPosition2D());
 
             var expectedSenseMapDirectionData = SenseTestHelpers.ParseDirections(expectedSenseMapDirections, out _);
-            TestHelpers.AssertEquals(senseData, expectedSenseMapDirectionData, activeTestArea, new Position2D(), SenseTestHelpers.PrintSenseDirectionStore);
+            TestHelpers.AssertEquals(senseData, expectedSenseMapDirectionData, activeTestArea, new GridPosition2D(), SenseTestHelpers.PrintSenseDirectionStore);
         }
 
         [TearDown]

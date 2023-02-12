@@ -45,6 +45,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RogueEntity.Samples.MineSwe
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "docs", "docs\docs.csproj", "{79974B16-A3E6-4A0F-8701-ABCDE95BF751}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RogueEntity.Physics2D", "src\RogueEntity.Physics2D\RogueEntity.Physics2D.csproj", "{539A1159-D9F4-4DD3-9ECF-E4BE9274F122}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -299,6 +301,18 @@ Global
 		{79974B16-A3E6-4A0F-8701-ABCDE95BF751}.Release|x64.Build.0 = Release|Any CPU
 		{79974B16-A3E6-4A0F-8701-ABCDE95BF751}.Release|x86.ActiveCfg = Release|Any CPU
 		{79974B16-A3E6-4A0F-8701-ABCDE95BF751}.Release|x86.Build.0 = Release|Any CPU
+		{539A1159-D9F4-4DD3-9ECF-E4BE9274F122}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{539A1159-D9F4-4DD3-9ECF-E4BE9274F122}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{539A1159-D9F4-4DD3-9ECF-E4BE9274F122}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{539A1159-D9F4-4DD3-9ECF-E4BE9274F122}.Debug|x64.Build.0 = Debug|Any CPU
+		{539A1159-D9F4-4DD3-9ECF-E4BE9274F122}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{539A1159-D9F4-4DD3-9ECF-E4BE9274F122}.Debug|x86.Build.0 = Debug|Any CPU
+		{539A1159-D9F4-4DD3-9ECF-E4BE9274F122}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{539A1159-D9F4-4DD3-9ECF-E4BE9274F122}.Release|Any CPU.Build.0 = Release|Any CPU
+		{539A1159-D9F4-4DD3-9ECF-E4BE9274F122}.Release|x64.ActiveCfg = Release|Any CPU
+		{539A1159-D9F4-4DD3-9ECF-E4BE9274F122}.Release|x64.Build.0 = Release|Any CPU
+		{539A1159-D9F4-4DD3-9ECF-E4BE9274F122}.Release|x86.ActiveCfg = Release|Any CPU
+		{539A1159-D9F4-4DD3-9ECF-E4BE9274F122}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

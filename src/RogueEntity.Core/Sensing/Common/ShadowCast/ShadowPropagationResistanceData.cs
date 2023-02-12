@@ -17,7 +17,7 @@ namespace RogueEntity.Core.Sensing.Common.ShadowCast
 
         public int Radius { get; private set; }
 
-        public Rectangle Bounds => new Rectangle(new Position2D(0, 0), Radius, Radius);
+        public Rectangle Bounds => new Rectangle(new GridPosition2D(0, 0), Radius, Radius);
 
         public bool TryGet(int x, int y, out float intensity)
         {

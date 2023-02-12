@@ -20,7 +20,7 @@ public class PathfinderRegionEdgeData
     readonly Dictionary<TraversableZoneId, bool> zoneState;
     
     PathfinderRegionEdgeDataState state;
-    Position2D regionId;
+    GridPosition2D regionId;
 
     public PathfinderRegionEdgeData(ObjectPool<TraversableZonePathData> dataPool,
                                     ObjectPool<Dictionary<DistanceCalculation, Dictionary<IMovementMode, TraversableZonePathData>>> zoneDataByMovementStylePool,
@@ -36,7 +36,7 @@ public class PathfinderRegionEdgeData
         this.zoneState = new Dictionary<TraversableZoneId, bool>();
     }
 
-    public void Init(Position2D regionId)
+    public void Init(GridPosition2D regionId)
     {
         this.regionId = regionId;
     }

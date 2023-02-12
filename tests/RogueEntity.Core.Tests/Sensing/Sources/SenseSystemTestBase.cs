@@ -198,7 +198,7 @@ namespace RogueEntity.Core.Tests.Sensing.Sources
 
             // the resulting sense information is stored relative to the sense origin, with the origin point at the centre of the bounds
             // thus the result map must be mapped to the same area.
-            TestHelpers.AssertEquals(vaData, expectedResult, expectedResult.GetActiveBounds(), new Position2D(vaData.Radius, vaData.Radius));
+            TestHelpers.AssertEquals(vaData, expectedResult, expectedResult.GetActiveBounds(), new GridPosition2D(vaData.Radius, vaData.Radius));
         }
     }
 }

@@ -14,9 +14,9 @@ public class TraversableZonePathData
 {
     readonly MovementModeEncoding modeEncoding;
     readonly ObjectPool<List<(Direction, byte)>> connectionPool;
-    readonly Dictionary<Position2D, InboundConnectionRecord> inboundPositions;
-    readonly Dictionary<Position2D, OutboundConnectionRecord> outboundPositions;
-    readonly Dictionary<Position2D, PathfinderZonePathSegment> connections;
+    readonly Dictionary<GridPosition2D, InboundConnectionRecord> inboundPositions;
+    readonly Dictionary<GridPosition2D, OutboundConnectionRecord> outboundPositions;
+    readonly Dictionary<GridPosition2D, PathfinderZonePathSegment> connections;
     public ZoneEdgeDataKey Key { get; private set; }
 
     public TraversableZonePathData(MovementModeEncoding modeEncoding,
@@ -24,9 +24,9 @@ public class TraversableZonePathData
     {
         this.modeEncoding = modeEncoding ?? throw new ArgumentNullException(nameof(modeEncoding));
         this.connectionPool = connectionPool;
-        connections = new Dictionary<Position2D, PathfinderZonePathSegment>();
-        inboundPositions = new Dictionary<Position2D, InboundConnectionRecord>();
-        outboundPositions = new Dictionary<Position2D, OutboundConnectionRecord>();
+        connections = new Dictionary<GridPosition2D, PathfinderZonePathSegment>();
+        inboundPositions = new Dictionary<GridPosition2D, InboundConnectionRecord>();
+        outboundPositions = new Dictionary<GridPosition2D, OutboundConnectionRecord>();
         Key = default;
     }
 
@@ -35,7 +35,7 @@ public class TraversableZonePathData
         this.Key = key;
     }
 
-    public bool TryGetConnection(Position2D inboundPosition, Position2D outboundPosition, out (MovementModeEncoding encoding, PathfinderZonePathSegment segment) connection)
+    public bool TryGetConnection(GridPosition2D inboundPosition, GridPosition2D outboundPosition, out (MovementModeEncoding encoding, PathfinderZonePathSegment segment) connection)
     {
         if (connections.TryGetValue(inboundPosition, out var c))
         {
@@ -47,14 +47,14 @@ public class TraversableZonePathData
         return false;
     }
     
-    public void RecordConnection(Position2D inboundPosition, Position2D outboundPosition, float cost, IPath path)
+    public void RecordConnection(GridPosition2D inboundPosition, GridPosition2D outboundPosition, float cost, IPath path)
     {
         var compressedPath = Compress(inboundPosition, path);
         var segment = new PathfinderZonePathSegment(inboundPosition, outboundPosition, cost, compressedPath);
         connections[inboundPosition] = segment;
     }
 
-    List<(Direction, byte)> Compress(Position2D inboundPosition,
+    List<(Direction, byte)> Compress(GridPosition2D inboundPosition,
                                                 IPath path)
     {
         var data = new List<(Direction, byte)>();
@@ -103,7 +103,7 @@ public class TraversableZonePathData
         connections.Clear();
     }
 
-    public BufferList<(Position2D pos, OutboundConnectionRecord record)> GetOutboundConnections(BufferList<(Position2D pos, OutboundConnectionRecord record)>? buffer = null)
+    public BufferList<(GridPosition2D pos, OutboundConnectionRecord record)> GetOutboundConnections(BufferList<(GridPosition2D pos, OutboundConnectionRecord record)>? buffer = null)
     {
         buffer = BufferList.PrepareBuffer(buffer);
         foreach (var b in outboundPositions)
@@ -114,7 +114,7 @@ public class TraversableZonePathData
         return buffer;
     }
 
-    public BufferList<(Position2D pos, InboundConnectionRecord record)> GetInboundConnections(BufferList<(Position2D pos, InboundConnectionRecord record)>? buffer = null)
+    public BufferList<(GridPosition2D pos, InboundConnectionRecord record)> GetInboundConnections(BufferList<(GridPosition2D pos, InboundConnectionRecord record)>? buffer = null)
     {
         buffer = BufferList.PrepareBuffer(buffer);
         foreach (var b in inboundPositions)

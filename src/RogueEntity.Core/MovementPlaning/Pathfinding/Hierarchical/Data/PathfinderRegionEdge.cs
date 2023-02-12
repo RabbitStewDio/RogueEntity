@@ -19,12 +19,12 @@ public readonly struct PathfinderRegionEdge : IEquatable<PathfinderRegionEdge>
     ///    The entry point into the target zone.
     /// </summary>
     public readonly Direction EdgeTargetDirection;
-    public readonly Position2D EdgeSource;
-    public readonly Position2D EdgeTarget => EdgeSource + EdgeTargetDirection;
+    public readonly GridPosition2D EdgeSource;
+    public readonly GridPosition2D EdgeTarget => EdgeSource + EdgeTargetDirection;
 
     public PathfinderRegionEdge(GlobalTraversableZoneId ownerId, 
                                 EdgeId localEdgeId, 
-                                Position2D edgeSource, 
+                                GridPosition2D edgeSource, 
                                 Direction edgeTarget, 
                                 GlobalTraversableZoneId targetZone)
     {
@@ -69,7 +69,7 @@ public readonly struct PathfinderRegionEdge : IEquatable<PathfinderRegionEdge>
         return !left.Equals(right);
     }
 
-    public PathfinderRegionEdge WithSourcePosition(Position2D pos, Direction d)
+    public PathfinderRegionEdge WithSourcePosition(GridPosition2D pos, Direction d)
     {
         return new PathfinderRegionEdge(OwnerId, LocalEdgeId, pos, d, TargetZone);
     }

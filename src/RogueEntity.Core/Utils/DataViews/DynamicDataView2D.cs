@@ -316,7 +316,7 @@ namespace RogueEntity.Core.Utils.DataViews
 
         [IgnoreDataMember]
         [IgnoreMember]
-        public T this[Position2D pos]
+        public T this[GridPosition2D pos]
         {
             get
             {

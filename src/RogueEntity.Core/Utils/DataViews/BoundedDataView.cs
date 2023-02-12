@@ -135,7 +135,7 @@ namespace RogueEntity.Core.Utils.DataViews
         }
 
         public bool TryGetRawIndex<TPosition2D>(in TPosition2D pos, out int result)
-            where TPosition2D : IPosition2D<TPosition2D>
+            where TPosition2D : IGridPosition2D<TPosition2D>
             => TryGetRawIndex(pos.X, pos.Y, out result);
 
         public bool TryGetRawIndex(int posX, int posY, out int result)
@@ -161,7 +161,7 @@ namespace RogueEntity.Core.Utils.DataViews
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public int GetRawIndexUnsafe(in Position2D pos)
+        public int GetRawIndexUnsafe(in GridPosition2D pos)
         {
             var rawX = pos.X - bounds.X;
             var rawY = pos.Y - bounds.Y;
@@ -191,7 +191,7 @@ namespace RogueEntity.Core.Utils.DataViews
         }
 
         public bool TryGet<TPosition2D>(in TPosition2D pos, [MaybeNullWhen(false)] out TData result)
-            where TPosition2D : IPosition2D<TPosition2D>
+            where TPosition2D : IGridPosition2D<TPosition2D>
         {
             return TryGet(pos.X, pos.Y, out result);
         }
@@ -230,7 +230,7 @@ namespace RogueEntity.Core.Utils.DataViews
         }
 
         public bool TrySet<TPosition2D>(in TPosition2D pos, in TData result)
-            where TPosition2D : IPosition2D<TPosition2D>
+            where TPosition2D : IGridPosition2D<TPosition2D>
         {
             if (bounds.Contains(pos.X, pos.Y))
             {
@@ -268,7 +268,7 @@ namespace RogueEntity.Core.Utils.DataViews
 
         [IgnoreDataMember]
         [IgnoreMember]
-        public TData this[in Position2D pos]
+        public TData this[in GridPosition2D pos]
         {
             get
             {
@@ -288,7 +288,7 @@ namespace RogueEntity.Core.Utils.DataViews
             }
         }
 
-        public bool TryGetFromRawIndex(int idx, out Position2D pos)
+        public bool TryGetFromRawIndex(int idx, out GridPosition2D pos)
         {
             if (idx < 0 || idx >= data.Length)
             {
@@ -297,7 +297,7 @@ namespace RogueEntity.Core.Utils.DataViews
             }
 
             var y = Math.DivRem(idx, bounds.Width, out var x);
-            pos = new Position2D(x + bounds.X, y + bounds.Y);
+            pos = new GridPosition2D(x + bounds.X, y + bounds.Y);
             return true;
         }
 

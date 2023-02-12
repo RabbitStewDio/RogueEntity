@@ -36,7 +36,7 @@ public class PathfinderRegionDataView : DefaultPooledBoundedDataView<(Traversabl
         edgeIdTracker = 0;
     }
 
-    public bool TryGetZoneId(Position2D pos, out TraversableZoneId zone)
+    public bool TryGetZoneId(GridPosition2D pos, out TraversableZoneId zone)
     {
         if (TryGet(pos, out var raw))
         {

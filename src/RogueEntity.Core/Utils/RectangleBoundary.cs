@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace RogueEntity.Core.Utils
 {
-    public readonly struct RectangleBoundary : IEnumerable<Position2D>
+    public readonly struct RectangleBoundary : IEnumerable<GridPosition2D>
     {
         readonly Rectangle r;
 
@@ -26,7 +26,7 @@ namespace RogueEntity.Core.Utils
             return new RectangleBoundaryEnumerator(r);
         }
 
-        IEnumerator<Position2D> IEnumerable<Position2D>.GetEnumerator()
+        IEnumerator<GridPosition2D> IEnumerable<GridPosition2D>.GetEnumerator()
         {
             return GetEnumerator();
         }

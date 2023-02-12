@@ -130,11 +130,11 @@ namespace RogueEntity.Core.Tests.Sensing.Map
                 var str = radius - (float)DistanceCalculation.Euclid.Calculate2D(p);
                 if (str > 0)
                 {
-                    sd.Write(p, new Position2D(0, 0), str);
+                    sd.Write(p, new GridPosition2D(0, 0), str);
                 }
             }
 
-            sd.Write(new Position2D(0, 0), new Position2D(0, 0), radius);
+            sd.Write(new GridPosition2D(0, 0), new GridPosition2D(0, 0), radius);
             sd.MarkWritten();
             return sd;
         }
@@ -161,7 +161,7 @@ namespace RogueEntity.Core.Tests.Sensing.Map
             Console.WriteLine("--");
 
             var expectedSenseMapData = SenseTestHelpers.ParseMap(expectedGlobalSenseMap, out _);
-            TestHelpers.AssertEquals(globalSenseMap, expectedSenseMapData, activeTestArea, new Position2D());
+            TestHelpers.AssertEquals(globalSenseMap, expectedSenseMapData, activeTestArea, new GridPosition2D());
         }
 
         [TearDown]

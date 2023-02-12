@@ -14,8 +14,8 @@ namespace RogueEntity.Core.MovementPlaning.Pathfinding
     {
         public void Activate();
         public bool Initialize<TPosition>(in TPosition sourcePosition, DistanceCalculation c) where TPosition: IPosition<TPosition>;
-        public bool IsTargetNode(int z, in Position2D pos);
-        public float TargetHeuristic(int z, in Position2D pos);
+        public bool IsTargetNode(int z, in GridPosition2D pos);
+        public float TargetHeuristic(int z, in GridPosition2D pos);
         public BufferList<EntityGridPosition> CollectTargets(BufferList<EntityGridPosition>? buffer = null);
 
     }

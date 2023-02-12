@@ -16,7 +16,7 @@ public class ItemPlacementLocationService<TItemId> : IItemPlacementLocationServi
     where TItemId : struct, IEntityKey
 {
     static readonly ILogger logger = SLog.ForContext<ItemPlacementLocationService<TItemId>>();
-    readonly ObjectPool<Tuple<SortedSet<Position2D>, DistanceFromCenterComparer>> positionsPool;
+    readonly ObjectPool<Tuple<SortedSet<GridPosition2D>, DistanceFromCenterComparer>> positionsPool;
     readonly IItemResolver<TItemId> itemResolver;
     readonly IBulkDataStorageMetaData<TItemId> metadata;
     readonly IMapContext<TItemId> index;
@@ -27,7 +27,7 @@ public class ItemPlacementLocationService<TItemId> : IItemPlacementLocationServi
         this.itemResolver = resolver ?? throw new ArgumentNullException(nameof(resolver));
         this.metadata = this.itemResolver.EntityMetaData;
         this.index = index ?? throw new ArgumentNullException(nameof(index));
-        this.positionsPool = new DefaultObjectPool<Tuple<SortedSet<Position2D>, DistanceFromCenterComparer>>(new SortedSetPolicy());
+        this.positionsPool = new DefaultObjectPool<Tuple<SortedSet<GridPosition2D>, DistanceFromCenterComparer>>(new SortedSetPolicy());
     }
 
     public bool TryFindAvailableSpace<TPosition>(in TItemId itemToBePlaced,
@@ -183,7 +183,7 @@ public class ItemPlacementLocationService<TItemId> : IItemPlacementLocationServi
         return false;
     }
 
-    bool TryFindEmptySpaceForArea(SortedSet<Position2D> freeSpaces, BodySize bs, out Position2D result)
+    bool TryFindEmptySpaceForArea(SortedSet<GridPosition2D> freeSpaces, BodySize bs, out GridPosition2D result)
     {
         
         if (bs == BodySize.Empty || bs == BodySize.OneByOne)
@@ -207,7 +207,7 @@ public class ItemPlacementLocationService<TItemId> : IItemPlacementLocationServi
         return false;
     }
 
-    bool IsBodyAreaOccupied(SortedSet<Position2D> freeSpaces, BodySize bs, Position2D position)
+    bool IsBodyAreaOccupied(SortedSet<GridPosition2D> freeSpaces, BodySize bs, GridPosition2D position)
     {
         foreach (var p in bs.ToRectangle(position).Contents)
         {
@@ -220,27 +220,27 @@ public class ItemPlacementLocationService<TItemId> : IItemPlacementLocationServi
         return true;
     }
 
-    class SortedSetPolicy : IPooledObjectPolicy<Tuple<SortedSet<Position2D>, DistanceFromCenterComparer>>
+    class SortedSetPolicy : IPooledObjectPolicy<Tuple<SortedSet<GridPosition2D>, DistanceFromCenterComparer>>
     {
-        public Tuple<SortedSet<Position2D>, DistanceFromCenterComparer> Create()
+        public Tuple<SortedSet<GridPosition2D>, DistanceFromCenterComparer> Create()
         {
             var cmp = new DistanceFromCenterComparer();
-            var set = new SortedSet<Position2D>();
+            var set = new SortedSet<GridPosition2D>();
             return Tuple.Create(set, cmp);
         }
 
-        public bool Return(Tuple<SortedSet<Position2D>, DistanceFromCenterComparer> obj)
+        public bool Return(Tuple<SortedSet<GridPosition2D>, DistanceFromCenterComparer> obj)
         {
             obj.Item1.Clear();
             return true;
         }
     }
 
-    class DistanceFromCenterComparer : IComparer<Position2D>
+    class DistanceFromCenterComparer : IComparer<GridPosition2D>
     {
-        public Position2D Center { get; set; }
+        public GridPosition2D Center { get; set; }
 
-        public int Compare(Position2D x, Position2D y)
+        public int Compare(GridPosition2D x, GridPosition2D y)
         {
             var distX = DistanceSquared(x);
             var distY = DistanceSquared(y);
@@ -253,7 +253,7 @@ public class ItemPlacementLocationService<TItemId> : IItemPlacementLocationServi
             return x.CompareTo(y);
         }
 
-        float DistanceSquared(Position2D p)
+        float DistanceSquared(GridPosition2D p)
         {
             var dx = p.X - Center.X;
             var dy = p.Y - Center.Y;

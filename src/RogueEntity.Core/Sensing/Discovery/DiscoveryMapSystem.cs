@@ -41,7 +41,7 @@ namespace RogueEntity.Core.Sensing.Discovery
                 return;
             }
 
-            var senseBounds = new Rectangle(new Position2D(pos.GridX, pos.GridY), sense.Radius, sense.Radius);
+            var senseBounds = new Rectangle(new GridPosition2D(pos.GridX, pos.GridY), sense.Radius, sense.Radius);
 
             if (!vision.TryGetIntensity(pos.GridZ, out var senseMap))
             {

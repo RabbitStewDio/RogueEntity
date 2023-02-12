@@ -416,17 +416,17 @@ public class HierarchicalPathfinderTest
     readonly record struct TestParams(string sourceText, 
                                       string resultText, 
                                       string pathFindingText, 
-                                      Position2D sourcePos, 
-                                      Position2D targetPos);
+                                      GridPosition2D sourcePos, 
+                                      GridPosition2D targetPos);
     
     readonly ILogger logger = SLog.ForContext<SingleLevelPathFinderTest>();
 
     readonly Dictionary<string, TestParams> testCases = new Dictionary<string, TestParams>()
     {
-        { nameof(EmptyRoom), new TestParams(EmptyRoom, EmptyRoomResult ,EmptyRoomPathFindingResult,  new Position2D(1, 1), new Position2D(7, 7)) },
-        { nameof(DiagonalRoom), new TestParams(DiagonalRoom, DiagonalRoomResult , DiagonalRoomPathFindingResult, new Position2D(1, 1), new Position2D(7, 7)) },
-        { nameof(DonutRoom), new TestParams(DonutRoom, DonutRoomResult , DonutRoomPathFindingResult, new Position2D(1, 1), new Position2D(5, 5)) },
-        { nameof(MultiZonedRoom), new TestParams(MultiZonedRoom, MultiZonedRoomResult , MultiZonedRoomPathFindingResult, new Position2D(1, 1), new Position2D(25, 50)) },
+        { nameof(EmptyRoom), new TestParams(EmptyRoom, EmptyRoomResult ,EmptyRoomPathFindingResult,  new GridPosition2D(1, 1), new GridPosition2D(7, 7)) },
+        { nameof(DiagonalRoom), new TestParams(DiagonalRoom, DiagonalRoomResult , DiagonalRoomPathFindingResult, new GridPosition2D(1, 1), new GridPosition2D(7, 7)) },
+        { nameof(DonutRoom), new TestParams(DonutRoom, DonutRoomResult , DonutRoomPathFindingResult, new GridPosition2D(1, 1), new GridPosition2D(5, 5)) },
+        { nameof(MultiZonedRoom), new TestParams(MultiZonedRoom, MultiZonedRoomResult , MultiZonedRoomPathFindingResult, new GridPosition2D(1, 1), new GridPosition2D(25, 50)) },
     };
 
     static DynamicDataView2D<float> ParseMap(string text, out Rectangle parsedBounds, Func<(float walkingCost, float swimmingCost, float etheralCost), float> trx)
@@ -558,7 +558,7 @@ public class HierarchicalPathfinderTest
         Console.WriteLine("Collected Edges:");
         var edges3D = sys.EdgeDataView;
         edges3D.TryGetView(0, out var edges2D).Should().BeTrue();
-        edges2D!.TryGetView(new Position2D(0, 0), out var edgesZone).Should().BeTrue();
+        edges2D!.TryGetView(new GridPosition2D(0, 0), out var edgesZone).Should().BeTrue();
         Assert.NotNull(edgesZone);
 
         foreach (var c in edgesZone.GetZones())

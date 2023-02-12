@@ -39,7 +39,7 @@ namespace RogueEntity.Core.GridProcessing.Directionality
         protected abstract bool IsMoveAllowed(in (IReadOnlyDynamicDataView2D<TSourceData> sourceData,
                                                   IReadOnlyBoundedDataView<TSourceData> sourceTile,
                                                   int z) parameterData,
-                                              in Position2D pos,
+                                              in GridPosition2D pos,
                                               Direction d);
     }
 }

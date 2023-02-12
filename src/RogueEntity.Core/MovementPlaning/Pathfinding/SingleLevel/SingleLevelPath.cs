@@ -14,7 +14,7 @@ public class SingleLevelPath : IPath
     readonly List<(Direction direction, IMovementMode mode)> steps;
     readonly SingleLevelPathPool pool;
     int zLevel;
-    Position2D origin;
+    GridPosition2D origin;
     bool disposed;
 
     public SingleLevelPath(SingleLevelPathPool pool)
@@ -34,7 +34,7 @@ public class SingleLevelPath : IPath
                 throw new IndexOutOfRangeException();
             }
             
-            Position2D p = origin;
+            GridPosition2D p = origin;
             IMovementMode? mode = null;
             for (int step = 0; step <= index; step += 1)
             {
@@ -53,7 +53,7 @@ public class SingleLevelPath : IPath
         disposed = false;
     }
 
-    public void BeginRecordPath(Position2D pos, int z)
+    public void BeginRecordPath(GridPosition2D pos, int z)
     {
         steps.Clear();
         origin = pos;

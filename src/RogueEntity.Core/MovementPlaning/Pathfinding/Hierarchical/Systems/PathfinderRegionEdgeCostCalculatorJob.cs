@@ -36,10 +36,10 @@ public readonly struct PathfinderRegionEdgeCostCalculatorJob
     public void Process()
     {
         using var zoneIdBuffer = BufferListPool<GlobalTraversableZoneId>.GetPooled();
-        using var inboundConnectionBuffer = BufferListPool<(Position2D, InboundConnectionRecord)>.GetPooled();
-        using var outboundConnectionBuffer = BufferListPool<(Position2D, OutboundConnectionRecord)>.GetPooled();
+        using var inboundConnectionBuffer = BufferListPool<(GridPosition2D, InboundConnectionRecord)>.GetPooled();
+        using var outboundConnectionBuffer = BufferListPool<(GridPosition2D, OutboundConnectionRecord)>.GetPooled();
         
-        using var pathBuffer = BufferListPool<Position2D>.GetPooled();
+        using var pathBuffer = BufferListPool<GridPosition2D>.GetPooled();
         using var targetEvaluator = DefaultPathFinderTargetEvaluator.GetSharedInstance();
         using var movementCosts = BufferListPool<MovementCost>.GetPooled();
         using var pathDataBuffer = BufferListPool<(EntityGridPosition, IMovementMode)>.GetPooled();

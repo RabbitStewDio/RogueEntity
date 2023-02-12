@@ -14,8 +14,8 @@ namespace RogueEntity.Core.Sensing.Receptors
     public class DefaultDirectionalSenseReceptorBlitter : IDirectionalSenseReceptorBlitter
     {
         public void Blit(Rectangle bounds, 
-                         Position2D sensePosition, 
-                         Position2D receptorPosition, 
+                         GridPosition2D sensePosition, 
+                         GridPosition2D receptorPosition, 
                          SenseSourceData senseSource, 
                          BoundedDataView<float> receptorSenseIntensities, 
                          BoundedDataView<byte> receptorSenseDirections)

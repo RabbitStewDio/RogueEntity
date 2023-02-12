@@ -71,9 +71,9 @@ namespace RogueEntity.Core.Utils.DataViews
             return !left.Equals(right);
         }
 
-        public Position2D Position(TileIndex t)
+        public GridPosition2D Position(TileIndex t)
         {
-            return new Position2D(t.X * TileSizeX + OffsetX, t.Y * TileSizeY + OffsetY);
+            return new GridPosition2D(t.X * TileSizeX + OffsetX, t.Y * TileSizeY + OffsetY);
         }
 
         public Rectangle Bounds(TileIndex t)

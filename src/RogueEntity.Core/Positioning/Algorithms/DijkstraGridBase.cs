@@ -33,11 +33,11 @@ namespace RogueEntity.Core.Positioning.Algorithms
         Rectangle bounds;
         readonly BoundedDataView<Direction> resultMapCoords;
         readonly BoundedDataView<float> resultMapDistanceCost;
-        readonly PriorityQueue<DijkstraNodeWeight, ShortPosition2D> openNodes;
+        readonly PriorityQueue<DijkstraNodeWeight, ShortGridPosition2D> openNodes;
 
         protected DijkstraGridBase(in Rectangle bounds)
         {
-            this.openNodes = new PriorityQueue<DijkstraNodeWeight, ShortPosition2D>(Math.Max(16, bounds.Width * bounds.Height));
+            this.openNodes = new PriorityQueue<DijkstraNodeWeight, ShortGridPosition2D>(Math.Max(16, bounds.Width * bounds.Height));
             this.resultMapCoords = new BoundedDataView<Direction>(in bounds);
             this.resultMapDistanceCost = new BoundedDataView<float>(in bounds);
             this.bounds = bounds;
@@ -72,12 +72,12 @@ namespace RogueEntity.Core.Positioning.Algorithms
             resultMapDistanceCost.Clear();
         }
 
-        public bool TryGetCumulativeCost(in ShortPosition2D pos, out float result)
+        public bool TryGetCumulativeCost(in ShortGridPosition2D pos, out float result)
         {
             return resultMapDistanceCost.TryGet(in pos, out result);
         }
 
-        protected abstract ReadOnlyListWrapper<Direction> PopulateTraversableDirections(ShortPosition2D basePosition);
+        protected abstract ReadOnlyListWrapper<Direction> PopulateTraversableDirections(ShortGridPosition2D basePosition);
 
         protected bool RescanMap(int maxSteps = int.MaxValue)
         {
@@ -137,9 +137,9 @@ namespace RogueEntity.Core.Positioning.Algorithms
 
         public int NodesEvaluated { get; private set; }
 
-        protected abstract void UpdateNode(in ShortPosition2D nextNodePos, TExtraNodeInfo nodeInfo);
+        protected abstract void UpdateNode(in ShortGridPosition2D nextNodePos, TExtraNodeInfo nodeInfo);
 
-        protected abstract bool EdgeCostInformation(in ShortPosition2D sourceNode,
+        protected abstract bool EdgeCostInformation(in ShortGridPosition2D sourceNode,
                                                     in Direction d,
                                                     float sourceNodeCost,
                                                     out float totalPathCost,
@@ -150,7 +150,7 @@ namespace RogueEntity.Core.Positioning.Algorithms
         /// </summary>
         /// <param name="c"></param>
         /// <param name="weight">should be a positive value</param>
-        protected void EnqueueStartingNode(in ShortPosition2D c, float weight)
+        protected void EnqueueStartingNode(in ShortGridPosition2D c, float weight)
         {
             if (resultMapCoords.TryGetRawIndex(in c, out _))
             {
@@ -165,7 +165,7 @@ namespace RogueEntity.Core.Positioning.Algorithms
             }
         }
 
-        protected void EnqueueNode(in ShortPosition2D pos, float weight, in ShortPosition2D prev)
+        protected void EnqueueNode(in ShortGridPosition2D pos, float weight, in ShortGridPosition2D prev)
         {
             if (resultMapCoords.TryGetRawIndex(pos.X, pos.Y, out _))
             {
@@ -179,7 +179,7 @@ namespace RogueEntity.Core.Positioning.Algorithms
             }
         }
 
-        protected bool TryDequeueOpenNode(out ShortPosition2D c)
+        protected bool TryDequeueOpenNode(out ShortGridPosition2D c)
         {
             if (openNodes.Count == 0)
             {
@@ -191,7 +191,7 @@ namespace RogueEntity.Core.Positioning.Algorithms
             return true;
         }
 
-        bool IsExistingResultBetter(in ShortPosition2D coord, in float newWeight)
+        bool IsExistingResultBetter(in ShortGridPosition2D coord, in float newWeight)
         {
             // All non-starting nodes are initialized with a weight of zero at the start.
             // This allows us to use Array.Clear which uses MemSet to efficiently
@@ -220,7 +220,7 @@ namespace RogueEntity.Core.Positioning.Algorithms
             return existingWeight >= newWeight;
         }
 
-        protected bool TryGetPreviousStep(in ShortPosition2D pos, out ShortPosition2D nextStep)
+        protected bool TryGetPreviousStep(in ShortGridPosition2D pos, out ShortGridPosition2D nextStep)
         {
             if (!resultMapCoords.TryGet(pos, out var prevIdx) || prevIdx == Direction.None)
             {
@@ -240,9 +240,9 @@ namespace RogueEntity.Core.Positioning.Algorithms
         /// <param name="pathAccumulator"></param>
         /// <param name="maxLength"></param>
         /// <returns></returns>
-        public BufferList<ShortPosition2D> FindPath(ShortPosition2D origin,
+        public BufferList<ShortGridPosition2D> FindPath(ShortGridPosition2D origin,
                                                     out float goalStrength,
-                                                    BufferList<ShortPosition2D>? pathAccumulator = null,
+                                                    BufferList<ShortGridPosition2D>? pathAccumulator = null,
                                                     int maxLength = int.MaxValue)
         {
             pathAccumulator = BufferList.PrepareBuffer(pathAccumulator);

@@ -43,7 +43,7 @@ namespace RogueEntity.Samples.MineSweeper.MonoGame
                 return;
             }
             
-            var pos = new Position2D(rawPos.X, rawPos.Y);
+            var pos = new GridPosition2D(rawPos.X, rawPos.Y);
             inputState.MouseHoverPosition = pos;
             
             if (state.Mouse.LeftClicked)

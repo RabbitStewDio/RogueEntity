@@ -15,7 +15,7 @@ namespace RogueEntity.Core.Sensing.Resistance.Directions
 
         protected override bool IsMoveAllowed(in (IReadOnlyDynamicDataView2D<float> sourceData,
                                                   IReadOnlyBoundedDataView<float> sourceTile, int z) parameterData,
-                                              in Position2D pos,
+                                              in GridPosition2D pos,
                                               Direction d)
         {
             var (cx, cy) = d.ToCoordinates();

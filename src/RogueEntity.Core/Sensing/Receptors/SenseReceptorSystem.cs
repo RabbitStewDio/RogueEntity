@@ -316,7 +316,7 @@ namespace RogueEntity.Core.Sensing.Receptors
                                                                           SenseSourceData data)
             where TPosition : IPosition<TPosition>
         {
-            var position = new Position2D(pos.GridX, pos.GridY);
+            var position = new GridPosition2D(pos.GridX, pos.GridY);
             data = sensePropagationAlgorithm.Calculate(definition.SenseDefinition, intensity, position, resistanceView, directionalityView, data);
             return data;
         }
@@ -443,7 +443,7 @@ namespace RogueEntity.Core.Sensing.Receptors
                                            in Rectangle senseBoundaries,
                                            bool flaggedAsDirty)
             {
-                var blittableSenses = new List<(Position2D, SenseSourceData)>();
+                var blittableSenses = new List<(GridPosition2D, SenseSourceData)>();
                 try
                 {
                     bool dirty = flaggedAsDirty;
@@ -453,7 +453,7 @@ namespace RogueEntity.Core.Sensing.Receptors
                         if (collectedSense.SenseSource.TryGetValue(out var sd))
                         {
                             var pos = collectedSense.LastPosition;
-                            blittableSenses.Add((new Position2D(pos.GridX, pos.GridY), sd));
+                            blittableSenses.Add((new GridPosition2D(pos.GridX, pos.GridY), sd));
                         }
                     }
 
@@ -462,7 +462,7 @@ namespace RogueEntity.Core.Sensing.Receptors
                         return;
                     }
 
-                    directionalSenseMapServices.ProcessSenseSources(receptorSenseMap, senseBoundaries, new Position2D(p.GridX, p.GridY), receptorBlitter, blittableSenses);
+                    directionalSenseMapServices.ProcessSenseSources(receptorSenseMap, senseBoundaries, new GridPosition2D(p.GridX, p.GridY), receptorBlitter, blittableSenses);
                 }
                 finally
                 {
@@ -479,14 +479,14 @@ namespace RogueEntity.Core.Sensing.Receptors
             public void AddReceptor(float intensity, in Position pos)
             {
                 var radius = (int)Math.Ceiling(physics.SignalRadiusForIntensity(intensity));
-                var bounds = new Rectangle(new Position2D(pos.GridX, pos.GridY), radius, radius);
+                var bounds = new Rectangle(new GridPosition2D(pos.GridX, pos.GridY), radius, radius);
                 receptorBounds.Add(bounds);
             }
 
             public bool IsOverlapping(float intensity, in Position pos)
             {
                 var radius = (int)Math.Ceiling(physics.SignalRadiusForIntensity(intensity));
-                var bounds = new Rectangle(new Position2D(pos.GridX, pos.GridY), radius, radius);
+                var bounds = new Rectangle(new GridPosition2D(pos.GridX, pos.GridY), radius, radius);
                 foreach (var b in receptorBounds)
                 {
                     if (bounds.Intersects(b))

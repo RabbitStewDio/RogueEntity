@@ -64,7 +64,7 @@ namespace RogueEntity.Core.Positioning.Caching
             view[px, py] = true;
         }
 
-        public bool IsTileDirty(int z, Position2D pos)
+        public bool IsTileDirty(int z, GridPosition2D pos)
         {
             if (globallyDirty)
             {
@@ -162,7 +162,7 @@ namespace RogueEntity.Core.Positioning.Caching
             }
 
             var radiusInt = (int)Math.Ceiling(radius);
-            var rect = new Rectangle(new Position2D(center.GridX, center.GridY), radiusInt, radiusInt);
+            var rect = new Rectangle(new GridPosition2D(center.GridX, center.GridY), radiusInt, radiusInt);
             return IsDirty(center.GridZ, in rect);
         }
     }

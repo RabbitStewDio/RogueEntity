@@ -17,7 +17,7 @@ namespace RogueEntity.Core.MovementPlaning.Pathfinding.Hierarchical;
 public class HierarchicalPathFinder : IPathFinder
 {
     readonly List<MovementCostData3D> movementSourceData;
-    readonly PriorityQueue<float, Position2D> openNodes;
+    readonly PriorityQueue<float, GridPosition2D> openNodes;
     readonly HierarchicalPathfindingSystemCollection highLevelPathfindingData;
     readonly HierarchicalPathfinderWorker highLevelPathfinderWorker;
 
@@ -31,7 +31,7 @@ public class HierarchicalPathFinder : IPathFinder
     {
         this.highLevelPathfindingData = highLevelPathfindingData ?? throw new ArgumentNullException(nameof(highLevelPathfindingData));
         movementSourceData = new List<MovementCostData3D>();
-        openNodes = new PriorityQueue<float, Position2D>(4096);
+        openNodes = new PriorityQueue<float, GridPosition2D>(4096);
         highLevelPathfinderWorker = new HierarchicalPathfinderWorker(highLevelPathfindingData.Config, pathPool, highLevelPathfindingData);
     }
 

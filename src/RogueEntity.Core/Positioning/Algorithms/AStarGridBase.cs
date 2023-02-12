@@ -17,12 +17,12 @@ namespace RogueEntity.Core.Positioning.Algorithms
     public abstract class AStarGridBase<TExtraNodeInfo>
     {
         readonly IDynamicDataView2D<AStarNode> nodes;
-        readonly PriorityQueue<float, Position2D> openNodes;
+        readonly PriorityQueue<float, GridPosition2D> openNodes;
         IBoundedDataView<AStarNode>? nodeTile;
 
         protected AStarGridBase(IBoundedDataViewPool<AStarNode> pool)
         {
-            this.openNodes = new PriorityQueue<float, Position2D>(4096);
+            this.openNodes = new PriorityQueue<float, GridPosition2D>(4096);
             this.nodes = new PooledDynamicDataView2D<AStarNode>(pool);
         }
 
@@ -36,17 +36,17 @@ namespace RogueEntity.Core.Positioning.Algorithms
         /// </summary>
         /// <param name="basePosition"></param>
         /// <returns></returns>
-        protected abstract ReadOnlyListWrapper<Direction> PopulateTraversableDirections(in Position2D basePosition);
+        protected abstract ReadOnlyListWrapper<Direction> PopulateTraversableDirections(in GridPosition2D basePosition);
 
-        protected abstract bool EdgeCostInformation(in Position2D sourceNode,
+        protected abstract bool EdgeCostInformation(in GridPosition2D sourceNode,
                                                     in Direction d,
                                                     float sourceNodeCost,
                                                     out float totalPathCost,
                                                     [MaybeNullWhen(false)] out TExtraNodeInfo nodeInfo);
 
-        protected abstract bool IsTargetNode(in Position2D pos);
+        protected abstract bool IsTargetNode(in GridPosition2D pos);
 
-        protected abstract float Heuristic(in Position2D pos);
+        protected abstract float Heuristic(in GridPosition2D pos);
 
         protected void Clear()
         {
@@ -56,19 +56,19 @@ namespace RogueEntity.Core.Positioning.Algorithms
             NodesEvaluated = 0;
         }
 
-        protected void EnqueueStartPosition(Position2D start)
+        protected void EnqueueStartPosition(GridPosition2D start)
         {
             nodes.TrySet(start.X, start.Y, AStarNode.Start());
             openNodes.Enqueue(start, Heuristic(start));
         }
 
-        void ThrowNodeUpdateError(in Position2D pos)
+        void ThrowNodeUpdateError(in GridPosition2D pos)
         {
             throw new InvalidOperationException($"Unable to update existing node at {pos}.");
         }
 
-        protected (PathFinderResult result, float cost) FindPath(Position2D start,
-                                                                 BufferList<Position2D> pathBuffer,
+        protected (PathFinderResult result, float cost) FindPath(GridPosition2D start,
+                                                                 BufferList<GridPosition2D> pathBuffer,
                                                                  int searchLimit = int.MaxValue)
         {
             pathBuffer.Clear();
@@ -83,13 +83,13 @@ namespace RogueEntity.Core.Positioning.Algorithms
             return ContinueFindPath(pathBuffer, searchLimit);
         }
 
-        protected (PathFinderResult, float cost) ContinueFindPath(BufferList<Position2D> pathBuffer,
+        protected (PathFinderResult, float cost) ContinueFindPath(BufferList<GridPosition2D> pathBuffer,
                                                                   int searchLimit = int.MaxValue)
         {
             var defaultNode = AStarNode.Empty;
             int searchedNodes = NodesEvaluated;
             AStarNode bestSoFar = default;
-            Position2D bestSoFarPos = default;
+            GridPosition2D bestSoFarPos = default;
             float bestSoFarH = float.MaxValue;
             while (openNodes.Count != 0)
             {
@@ -209,12 +209,12 @@ namespace RogueEntity.Core.Positioning.Algorithms
 
         public int NodesEvaluated { get; private set; }
 
-        protected virtual void UpdateNode(in Position2D pos, TExtraNodeInfo nodeInfo)
+        protected virtual void UpdateNode(in GridPosition2D pos, TExtraNodeInfo nodeInfo)
         {
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected bool IsExistingResultBetter(in Position2D coord, in float newWeight)
+        protected bool IsExistingResultBetter(in GridPosition2D coord, in float newWeight)
         {
             // All non-starting nodes are initialized with a weight of zero at the start.
             // This allows us to use Array.Clear which uses MemSet to efficiently
@@ -243,7 +243,7 @@ namespace RogueEntity.Core.Positioning.Algorithms
             return existingWeight.AccumulatedCost < newWeight;
         }
 
-        void ProduceResult(Position2D currentPosition, AStarNode currentNode, BufferList<Position2D> pathBuffer)
+        void ProduceResult(GridPosition2D currentPosition, AStarNode currentNode, BufferList<GridPosition2D> pathBuffer)
         {
             pathBuffer.Capacity = Math.Max(pathBuffer.Capacity, currentNode.DistanceFromStart);
             while (currentNode.DirectionToParent != Direction.None)

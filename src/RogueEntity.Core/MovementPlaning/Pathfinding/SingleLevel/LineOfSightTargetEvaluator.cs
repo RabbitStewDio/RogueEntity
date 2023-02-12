@@ -20,8 +20,8 @@ namespace RogueEntity.Core.MovementPlaning.Pathfinding.SingleLevel
 
         int targetDistance;
         int zLevel;
-        Position2D targetPosition;
-        Position2D sourcePosition;
+        GridPosition2D targetPosition;
+        GridPosition2D sourcePosition;
         SenseSourceData? result;
         
         readonly IRelativeMovementCostSystem<TMovementMode> resistanceMap;
@@ -83,7 +83,7 @@ namespace RogueEntity.Core.MovementPlaning.Pathfinding.SingleLevel
             return false;
         }
 
-        public bool IsTargetNode(int z, in Position2D pos)
+        public bool IsTargetNode(int z, in GridPosition2D pos)
         {
             Assert.NotNull(result);
             
@@ -98,7 +98,7 @@ namespace RogueEntity.Core.MovementPlaning.Pathfinding.SingleLevel
             return buffer;
         }
 
-        public float TargetHeuristic(int z, in Position2D pos)
+        public float TargetHeuristic(int z, in GridPosition2D pos)
         {
             return (float) physics.DistanceMeasurement.Calculate2D(targetPosition, pos);
         }

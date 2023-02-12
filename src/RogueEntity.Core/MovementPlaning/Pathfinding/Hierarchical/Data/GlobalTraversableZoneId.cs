@@ -5,10 +5,10 @@ namespace RogueEntity.Core.MovementPlaning.Pathfinding.Hierarchical.Data;
 
 public readonly struct GlobalTraversableZoneId : IEquatable<GlobalTraversableZoneId>
 {
-    public readonly Position2D RegionId;
+    public readonly GridPosition2D RegionId;
     public readonly TraversableZoneId ZoneId;
 
-    public GlobalTraversableZoneId(Position2D regionId, TraversableZoneId zoneId)
+    public GlobalTraversableZoneId(GridPosition2D regionId, TraversableZoneId zoneId)
     {
         RegionId = regionId;
         ZoneId = zoneId;

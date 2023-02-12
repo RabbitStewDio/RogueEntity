@@ -219,16 +219,16 @@ namespace RogueEntity.Core.Tests.Sensing.Discovery
                 var str = radius - (float)DistanceCalculation.Euclid.Calculate2D(p);
                 if (str > 0)
                 {
-                    sd.Write(p, new Position2D(0, 0), str);
+                    sd.Write(p, new GridPosition2D(0, 0), str);
                 }
             }
 
-            sd.Write(new Position2D(0, 0), new Position2D(0, 0), radius);
+            sd.Write(new GridPosition2D(0, 0), new GridPosition2D(0, 0), radius);
             sd.MarkWritten();
             return sd;
         }
 
-        protected SenseDataMap ComputeDummySenseMap(int radius, Position2D origin)
+        protected SenseDataMap ComputeDummySenseMap(int radius, GridPosition2D origin)
         {
             var sd = new SenseDataMap();
             var bounds = new Rectangle(origin, radius, radius);
@@ -266,9 +266,9 @@ namespace RogueEntity.Core.Tests.Sensing.Discovery
                                                        new SensoryReceptorState<NoiseSense, NoiseSense>(ComputeDummySourceData(5),
                                                                                                         SenseSourceDirtyState.Active, Position.Of(TestMapLayers.One, 7, 9), 5));
             context.ItemEntityRegistry.AssignOrReplace(active10,
-                                                       new SingleLevelSenseDirectionMapData<VisionSense, TemperatureSense>(0, ComputeDummySenseMap(10, new Position2D(26, 4))));
+                                                       new SingleLevelSenseDirectionMapData<VisionSense, TemperatureSense>(0, ComputeDummySenseMap(10, new GridPosition2D(26, 4))));
             context.ItemEntityRegistry.AssignOrReplace(active5,
-                                                       new SingleLevelSenseDirectionMapData<NoiseSense, NoiseSense>(0, ComputeDummySenseMap(5, new Position2D(7, 9))));
+                                                       new SingleLevelSenseDirectionMapData<NoiseSense, NoiseSense>(0, ComputeDummySenseMap(5, new GridPosition2D(7, 9))));
         }
 
         [Test]
@@ -312,7 +312,7 @@ namespace RogueEntity.Core.Tests.Sensing.Discovery
             // .. update the sense map (that would be computed by the sense-receptor system ...
             context.ItemEntityRegistry.AssignOrReplace(active10, new SensoryReceptorState<VisionSense, TemperatureSense>(ComputeDummySourceData(5),
                                                                                                                          SenseSourceDirtyState.Active, Position.Of(TestMapLayers.One, 14, 8), 10));
-            context.ItemEntityRegistry.AssignOrReplace(active10, new SingleLevelSenseDirectionMapData<VisionSense, TemperatureSense>(0, ComputeDummySenseMap(5, new Position2D(14, 8))));
+            context.ItemEntityRegistry.AssignOrReplace(active10, new SingleLevelSenseDirectionMapData<VisionSense, TemperatureSense>(0, ComputeDummySenseMap(5, new GridPosition2D(14, 8))));
             // .. and remap the discovered area.
             foreach (var s in this.senseSystemActions)
             {

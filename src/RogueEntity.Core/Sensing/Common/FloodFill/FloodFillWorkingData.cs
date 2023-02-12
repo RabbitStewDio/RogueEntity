@@ -11,7 +11,7 @@ namespace RogueEntity.Core.Sensing.Common.FloodFill
 
         public FloodFillWorkingData(in SenseSourceDefinition sense,
                                     float intensity,
-                                    in Position2D origin,
+                                    in GridPosition2D origin,
                                     ISensePhysics sensePhysics,
                                     IReadOnlyDynamicDataView2D<float> resistanceMap,
                                     IReadOnlyDynamicDataView2D<DirectionalityInformation> directionalityView)
@@ -21,7 +21,7 @@ namespace RogueEntity.Core.Sensing.Common.FloodFill
 
         public void Configure(in SenseSourceDefinition sense,
                               float intensity,
-                              in Position2D origin,
+                              in GridPosition2D origin,
                               ISensePhysics sensePhysics,
                               IReadOnlyDynamicDataView2D<float> resistanceMap,
                               IReadOnlyDynamicDataView2D<DirectionalityInformation> directionalityView)

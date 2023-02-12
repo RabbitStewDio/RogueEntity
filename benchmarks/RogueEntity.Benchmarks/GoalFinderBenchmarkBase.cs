@@ -55,7 +55,7 @@ namespace RogueEntity.Benchmarks
                                            .WithTrait(new GoalMarkerTrait<ItemReference, PerformanceGoal>(32)));
 
             queryRegistry = new SpatialQueryRegistry();
-            queryRegistry.Register(new BruteForceSpatialQueryBackend<ItemReference>(entities.EntityRegistry));
+            queryRegistry.Register(new BruteForceSpatialQueryBackend<ItemReference, GoalMarker<PerformanceGoal>>(entities.EntityRegistry));
 
             goalRegistry = new GoalRegistry();
             goalRegistry.RegisterGoalEntity<ItemReference, PerformanceGoal>();
@@ -98,8 +98,8 @@ namespace RogueEntity.Benchmarks
 
             Console.WriteLine("Finished populating start positions");
 
-            Console.WriteLine("Starting populating goal positions: " + new Rectangle(new Position2D(bounds.Width / 4, bounds.Height / 4),
-                                                                                     new Position2D((bounds.Width * 3) / 4, (bounds.Height * 3) / 4)));
+            Console.WriteLine("Starting populating goal positions: " + new Rectangle(new GridPosition2D(bounds.Width / 4, bounds.Height / 4),
+                                                                                     new GridPosition2D((bounds.Width * 3) / 4, (bounds.Height * 3) / 4)));
             var goalPositions = new HashSet<EntityGridPosition>();
             while (goalPositions.Count < 100)
             {

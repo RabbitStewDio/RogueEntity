@@ -115,7 +115,7 @@ namespace RogueEntity.Core.Tests.Fixtures
         public static void AssertEquals(IReadOnlyView2D<float> source,
                                         IReadOnlyView2D<float> other,
                                         in Rectangle bounds,
-                                        in Position2D offset)
+                                        in GridPosition2D offset)
         {
             foreach (var pos in bounds.Contents)
             {
@@ -144,7 +144,7 @@ namespace RogueEntity.Core.Tests.Fixtures
         public static void AssertEquals(IReadOnlyView2D<bool> source,
                                         IReadOnlyView2D<bool> other,
                                         in Rectangle bounds,
-                                        in Position2D offset = default)
+                                        in GridPosition2D offset = default)
         {
             foreach (var pos in bounds.Contents)
             {
@@ -170,7 +170,7 @@ namespace RogueEntity.Core.Tests.Fixtures
         public static void AssertEquals(IReadOnlyView2D<string> source,
                                         IReadOnlyView2D<string> other,
                                         in Rectangle bounds,
-                                        in Position2D offset = default)
+                                        in GridPosition2D offset = default)
         {
             foreach (var pos in bounds.Contents)
             {
@@ -196,7 +196,7 @@ namespace RogueEntity.Core.Tests.Fixtures
         public static void AssertEquals<TData>(IReadOnlyView2D<TData> testResult,
                                                IReadOnlyView2D<TData> expectedResult,
                                                in Rectangle bounds,
-                                               in Position2D offset,
+                                               in GridPosition2D offset,
                                                Func<IReadOnlyView2D<TData>, Rectangle, string> printFunction)
             where TData: IEquatable<TData>
         {

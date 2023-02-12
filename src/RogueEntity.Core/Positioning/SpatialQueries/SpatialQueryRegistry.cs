@@ -17,7 +17,7 @@ namespace RogueEntity.Core.Positioning.SpatialQueries
             backend = new Dictionary<Type, object>();
         }
 
-        public void Register<TEntityKey>(ISpatialQuery<TEntityKey> q)
+        public void Register<TEntityKey, TComponent>(ISpatialQuery<TEntityKey, TComponent> q)
             where TEntityKey : struct, IEntityKey
         {
             if (q == null)
@@ -31,23 +31,23 @@ namespace RogueEntity.Core.Positioning.SpatialQueries
                 return;
             }
 
-            if (existing is AggregateSpatialQuery<TEntityKey> agg)
+            if (existing is AggregateSpatialQuery<TEntityKey, TComponent> agg)
             {
                 agg.Add(q);
                 return;
             }
 
-            agg = new AggregateSpatialQuery<TEntityKey>();
-            agg.Add((ISpatialQuery<TEntityKey>)existing);
+            agg = new AggregateSpatialQuery<TEntityKey, TComponent>();
+            agg.Add((ISpatialQuery<TEntityKey, TComponent>)existing);
             agg.Add(q);
             backend[typeof(TEntityKey)] = agg;
         }
 
-        public bool TryGetQuery<TEntityKey>([MaybeNullWhen(false)] out ISpatialQuery<TEntityKey> q)
+        public bool TryGetQuery<TEntityKey, TComponent>([MaybeNullWhen(false)] out ISpatialQuery<TEntityKey, TComponent> q)
             where TEntityKey : struct, IEntityKey
         {
             if (backend.TryGetValue(typeof(TEntityKey), out var raw) &&
-                raw is ISpatialQuery<TEntityKey> qq)
+                raw is ISpatialQuery<TEntityKey, TComponent> qq)
             {
                 q = qq;
                 return true;
@@ -57,47 +57,47 @@ namespace RogueEntity.Core.Positioning.SpatialQueries
             return false;
         }
 
-        class AggregateSpatialQuery<TEntityKey> : ISpatialQuery<TEntityKey> 
+        class AggregateSpatialQuery<TEntityKey, TComponent> : ISpatialQuery<TEntityKey, TComponent>
             where TEntityKey : struct, IEntityKey
         {
-            readonly List<ISpatialQuery<TEntityKey>> queryBackends;
+            readonly List<ISpatialQuery<TEntityKey, TComponent>> queryBackends;
 
             public AggregateSpatialQuery()
             {
-                this.queryBackends = new List<ISpatialQuery<TEntityKey>>();
+                this.queryBackends = new List<ISpatialQuery<TEntityKey, TComponent>>();
             }
 
-            public void Add(ISpatialQuery<TEntityKey> q)
+            public void Add(ISpatialQuery<TEntityKey, TComponent> q)
             {
                 this.queryBackends.Add(q);
             }
 
-            public BufferList<SpatialQueryResult<TEntityKey, TComponent>> QueryBox<TComponent>(in Rectangle3D queryRegion, 
-                                                                                               BufferList<SpatialQueryResult<TEntityKey, TComponent>>? buffer = null)
+            public BufferList<SpatialQueryResult<TEntityKey, TComponent>> QueryBox(in Rectangle3D queryRegion,
+                                                                                   BufferList<SpatialQueryResult<TEntityKey, TComponent>>? buffer = null)
             {
                 buffer = BufferList.PrepareBuffer(buffer);
                 using var b = BufferListPool<SpatialQueryResult<TEntityKey, TComponent>>.GetPooled();
                 foreach (var q in queryBackends)
                 {
                     b.Data.Clear();
-                    q.QueryBox<TComponent>(queryRegion, b);
+                    q.QueryBox(queryRegion, b);
                     b.Data.CopyToBuffer(buffer);
                 }
 
                 return buffer;
             }
 
-            public BufferList<SpatialQueryResult<TEntityKey, TComponent>> QuerySphere<TComponent>(in Position pos, 
-                                                                                                  float distance = 1, 
-                                                                                                  DistanceCalculation d = DistanceCalculation.Euclid, 
-                                                                                                  BufferList<SpatialQueryResult<TEntityKey, TComponent>>? buffer = null)
+            public BufferList<SpatialQueryResult<TEntityKey, TComponent>> QuerySphere(in Position pos,
+                                                                                      float distance = 1,
+                                                                                      DistanceCalculation d = DistanceCalculation.Euclid,
+                                                                                      BufferList<SpatialQueryResult<TEntityKey, TComponent>>? buffer = null)
             {
                 buffer = BufferList.PrepareBuffer(buffer);
                 using var b = BufferListPool<SpatialQueryResult<TEntityKey, TComponent>>.GetPooled();
                 foreach (var q in queryBackends)
                 {
                     b.Data.Clear();
-                    q.QuerySphere<TComponent>(pos, distance, d, b);
+                    q.QuerySphere(pos, distance, d, b);
                     b.Data.CopyToBuffer(buffer);
                 }
 

@@ -19,9 +19,9 @@ namespace RogueEntity.Core.MovementPlaning.Pathfinding.Hierarchical;
 partial class HierarchicalPathfinderWorker : DijkstraGridBase<IMovementMode>
 {
     readonly SingleLevelPathPool pathPool;
-    readonly ObjectPool<List<Position2D>> positionPool;
+    readonly ObjectPool<List<GridPosition2D>> positionPool;
     readonly HierarchicalPathfindingSystemCollection data;
-    readonly Dictionary<GlobalTraversableZoneId, List<Position2D>> targetsByZones;
+    readonly Dictionary<GlobalTraversableZoneId, List<GridPosition2D>> targetsByZones;
     readonly List<MovementCostData2D> movementCostsOnLevel;
     readonly PriorityQueue<float, HighLevelNode> openNodesHighLevel;
     readonly ReadOnlyListWrapper<Direction>[] directionData;
@@ -32,12 +32,12 @@ partial class HierarchicalPathfinderWorker : DijkstraGridBase<IMovementMode>
     readonly BufferList<IReadOnlyBoundedDataView<float>?> costsTile;
 
     readonly BoundedDataView<IMovementMode> nodesSources;
-    readonly Dictionary<Position2D, HighLevelNode> closedNodesHighLevel;
+    readonly Dictionary<GridPosition2D, HighLevelNode> closedNodesHighLevel;
     PathfinderRegionEdgeData2D? edgeData2D;
 
     int z;
     GlobalTraversableZoneId originZone;
-    Position2D originPos;
+    GridPosition2D originPos;
     PathfinderRegionDataView? zoneRegion;
     PathfinderRegionEdgeData? edgeRegion;
     IPathFinderTargetEvaluator? targetEvaluator;
@@ -48,11 +48,11 @@ partial class HierarchicalPathfinderWorker : DijkstraGridBase<IMovementMode>
     {
         this.pathPool = pathPool;
         this.data = data;
-        this.positionPool = new DefaultObjectPool<List<Position2D>>(new ListObjectPoolPolicy<Position2D>());
-        this.targetsByZones = new Dictionary<GlobalTraversableZoneId, List<Position2D>>();
+        this.positionPool = new DefaultObjectPool<List<GridPosition2D>>(new ListObjectPoolPolicy<GridPosition2D>());
+        this.targetsByZones = new Dictionary<GlobalTraversableZoneId, List<GridPosition2D>>();
         this.movementCostsOnLevel = new List<MovementCostData2D>();
         this.openNodesHighLevel = new PriorityQueue<float, HighLevelNode>(4096);
-        this.closedNodesHighLevel = new Dictionary<Position2D, HighLevelNode>();
+        this.closedNodesHighLevel = new Dictionary<GridPosition2D, HighLevelNode>();
         this.directionData = DirectionalityLookup.Get(AdjacencyRule.EightWay);
         this.movementCosts = new Dictionary<IMovementMode, MovementCost>();
 
@@ -62,7 +62,7 @@ partial class HierarchicalPathfinderWorker : DijkstraGridBase<IMovementMode>
         this.nodesSources = new BoundedDataView<IMovementMode>(config.GetDefaultBounds());
     }
 
-    void AddTarget(GlobalTraversableZoneId target, Position2D pos)
+    void AddTarget(GlobalTraversableZoneId target, GridPosition2D pos)
     {
         if (!targetsByZones.TryGetValue(target, out var positionsInZone))
         {
@@ -90,7 +90,7 @@ partial class HierarchicalPathfinderWorker : DijkstraGridBase<IMovementMode>
 
     public bool Initialize(List<MovementCostData3D> mc,
                            GlobalTraversableZoneId origin,
-                           Position2D originPos,
+                           GridPosition2D originPos,
                            int z)
     {
         this.originZone = origin;

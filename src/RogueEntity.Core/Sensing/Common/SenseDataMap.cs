@@ -125,8 +125,8 @@ namespace RogueEntity.Core.Sensing.Common
             return r1 && r2;
         }
 
-        public void Write(Position2D point,
-                          Position2D origin,
+        public void Write(GridPosition2D point,
+                          GridPosition2D origin,
                           float intensity,
                           SenseDataFlags flags = SenseDataFlags.None)
         {

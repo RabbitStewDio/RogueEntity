@@ -23,7 +23,7 @@ public readonly struct PathfinderRegionEdgeDetectorPostProcessor
 
     public void ReconnectZoneEdges()
     {
-        using var connectionBuffer = BufferListPool<(Position2D, OutboundConnectionRecord)>.GetPooled();
+        using var connectionBuffer = BufferListPool<(GridPosition2D, OutboundConnectionRecord)>.GetPooled();
         using var pathDataBuffer = BufferListPool<TraversableZonePathData>.GetPooled();
         using var zoneIdBuffer = BufferListPool<GlobalTraversableZoneId>.GetPooled();
         var regionId = zoneData.Bounds.Position;

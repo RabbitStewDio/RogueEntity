@@ -236,7 +236,7 @@ namespace RogueEntity.Core.Tests.Sensing.Common
         {
             var radius = width / 2;
             var source = new SenseSourceDefinition(dc, ar, radius + 1);
-            var pos = new Position2D(width / 2, height / 2);
+            var pos = new GridPosition2D(width / 2, height / 2);
 
             var resistanceMap = ParseMap(sourceText);
             Console.WriteLine("Using room layout \n" + TestHelpers.PrintMap(resistanceMap, new Rectangle(0, 0, width, height)));
@@ -248,8 +248,8 @@ namespace RogueEntity.Core.Tests.Sensing.Common
 
             var algo = new FloodFillPropagationAlgorithm(LinearDecaySensePhysics.For(dc), new FloodFillWorkingDataSource());
             var calculatedResult = algo.Calculate(source, source.Intensity, pos, resistanceMap, directionalityMap);
-            Console.WriteLine(TestHelpers.PrintMap(calculatedResult, new Rectangle(new Position2D(0, 0), radius, radius)));
-            Console.WriteLine(TestHelpers.PrintMap(new SenseMapDirectionTestView(calculatedResult), new Rectangle(new Position2D(0, 0), radius, radius)));
+            Console.WriteLine(TestHelpers.PrintMap(calculatedResult, new Rectangle(new GridPosition2D(0, 0), radius, radius)));
+            Console.WriteLine(TestHelpers.PrintMap(new SenseMapDirectionTestView(calculatedResult), new Rectangle(new GridPosition2D(0, 0), radius, radius)));
             Console.WriteLine(TestHelpers.PrintMap(directionalityMap.Transform(x => $" [{x.ToFormattedString()}]"), new Rectangle(0, 0, width, height)));
 
             var expectedResult = ParseMap(intensityResultText);

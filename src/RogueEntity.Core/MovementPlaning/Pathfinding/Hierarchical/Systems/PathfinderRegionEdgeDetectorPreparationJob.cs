@@ -89,8 +89,8 @@ public readonly struct PathfinderRegionEdgeDetectorPreparationJob
     public void MarkZonesAsDirty(Rectangle bounds)
     {
         using var buffer = BufferListPool<TraversableZonePathData>.GetPooled(); 
-        using var inboundBuffer = BufferListPool<(Position2D, InboundConnectionRecord)>.GetPooled(); 
-        using var outboundBuffer = BufferListPool<(Position2D, OutboundConnectionRecord)>.GetPooled(); 
+        using var inboundBuffer = BufferListPool<(GridPosition2D, InboundConnectionRecord)>.GetPooled(); 
+        using var outboundBuffer = BufferListPool<(GridPosition2D, OutboundConnectionRecord)>.GetPooled(); 
         // we are about to recompute the zone's outbound connections.
         // first remove all old outbound connections and their inbound counterparts at the target zone
         foreach (var pos in bounds.Contents)

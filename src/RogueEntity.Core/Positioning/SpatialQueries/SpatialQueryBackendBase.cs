@@ -10,16 +10,13 @@ using System.Runtime.CompilerServices;
 
 namespace RogueEntity.Core.Positioning.SpatialQueries;
 
-public abstract class SpatialQueryBackendBase<TItemId>
+public abstract class SpatialQueryBackendBase<TItemId, TComponent>: ISpatialQuery<TItemId, TComponent>
     where TItemId : struct, IEntityKey
 {
     protected interface ICachedEntry : IDisposable
     {
         public void RefreshIndex();
-    }
-    
-    protected interface ICachedEntry<TComponent> : ICachedEntry
-    {
+
         public void InvokeSphere(BufferList<SpatialQueryResult<TItemId, TComponent>> receiver,
                                  in Position pos,
                                  float distance = 1,
@@ -30,27 +27,27 @@ public abstract class SpatialQueryBackendBase<TItemId>
     }
 
     protected readonly EntityRegistry<TItemId> Registry;
-    readonly ConcurrentDictionary<CachedEntryKey, ICachedEntry> entries;
+    readonly ConcurrentDictionary<Type, ICachedEntry> entries;
 
     public SpatialQueryBackendBase(EntityRegistry<TItemId> registry)
     {
         this.Registry = registry;
-        this.entries = new ConcurrentDictionary<CachedEntryKey, ICachedEntry>();
+        this.entries = new ConcurrentDictionary<Type, ICachedEntry>();
     }
 
-    public BufferList<SpatialQueryResult<TItemId, TComponent>> QuerySphere<TComponent>(in Position pos,
-                                                                                       float distance = 1,
-                                                                                       DistanceCalculation d = DistanceCalculation.Euclid,
-                                                                                       BufferList<SpatialQueryResult<TItemId, TComponent>>? buffer = null)
+    public BufferList<SpatialQueryResult<TItemId, TComponent>> QuerySphere(in Position pos,
+                                                                           float distance = 1,
+                                                                           DistanceCalculation d = DistanceCalculation.Euclid,
+                                                                           BufferList<SpatialQueryResult<TItemId, TComponent>>? buffer = null)
     {
         buffer = BufferList.PrepareBuffer(buffer);
 
-        if (TryGetView<EntityGridPosition, TComponent>(out var gridView))
+        if (TryGetView<EntityGridPosition>(out var gridView))
         {
             gridView.InvokeSphere(buffer, pos, distance, d);
         }
 
-        if (TryGetView<ContinuousMapPosition, TComponent>(out var conView))
+        if (TryGetView<ContinuousMapPosition>(out var conView))
         {
             conView.InvokeSphere(buffer, pos, distance, d);
         }
@@ -58,17 +55,17 @@ public abstract class SpatialQueryBackendBase<TItemId>
         return buffer;
     }
 
-    public BufferList<SpatialQueryResult<TItemId, TComponent>> QueryBox<TComponent>(in Rectangle3D queryRegion,
-                                                                                    BufferList<SpatialQueryResult<TItemId, TComponent>>? buffer = null)
+    public BufferList<SpatialQueryResult<TItemId, TComponent>> QueryBox(in Rectangle3D queryRegion,
+                                                                        BufferList<SpatialQueryResult<TItemId, TComponent>>? buffer = null)
     {
         buffer = BufferList.PrepareBuffer(buffer);
 
-        if (TryGetView<EntityGridPosition, TComponent>(out var gridView))
+        if (TryGetView<EntityGridPosition>(out var gridView))
         {
             gridView.InvokeBox(buffer, queryRegion);
         }
 
-        if (TryGetView<ContinuousMapPosition, TComponent>(out var conView))
+        if (TryGetView<ContinuousMapPosition>(out var conView))
         {
             conView.InvokeBox(buffer, queryRegion);
         }
@@ -76,15 +73,15 @@ public abstract class SpatialQueryBackendBase<TItemId>
         return buffer;
     }
 
-    bool TryGetView<TPosition, TComponent>(out ICachedEntry<TComponent> entry)
+    bool TryGetView<TPosition>(out ICachedEntry entry)
         where TPosition : struct, IPosition<TPosition>
     {
-        var key = new CachedEntryKey(typeof(TPosition), typeof(TComponent));
-        entry = (ICachedEntry<TComponent>)entries.GetOrAdd(key, GetEntryFactory<TPosition, TComponent>);
+        var key = typeof(TPosition);
+        entry = entries.GetOrAdd(key, GetEntryFactory<TPosition>);
         return true;
     }
 
-    protected abstract ICachedEntry GetEntryFactory<TPosition, TComponent>(CachedEntryKey arg)
+    protected abstract ICachedEntry GetEntryFactory<TPosition>(Type arg)
         where TPosition : struct, IPosition<TPosition>;
 
 
@@ -129,7 +126,7 @@ public abstract class SpatialQueryBackendBase<TItemId>
         }
     }
 
-    protected abstract class CachedEntryBase<TPosition, TComponent> : ICachedEntry<TComponent>
+    protected abstract class CachedEntryBase<TPosition> : ICachedEntry
         where TPosition : struct, IPosition<TPosition>
     {
         protected readonly EntityRegistry<TItemId> registry;

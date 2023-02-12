@@ -11,7 +11,7 @@ using System.Collections.Generic;
 
 namespace RogueEntity.Core.Positioning.SpatialQueries;
 
-public class QuadTreeSpatialQueryBackend<TEntityKey> : SpatialQueryBackendBase<TEntityKey>, ISpatialQuery<TEntityKey>
+public class QuadTreeSpatialQueryBackend<TEntityKey, TComponent> : SpatialQueryBackendBase<TEntityKey, TComponent>
     where TEntityKey : struct, IEntityKey
 {
     readonly IItemResolver<TEntityKey> itemRegistry;
@@ -27,12 +27,12 @@ public class QuadTreeSpatialQueryBackend<TEntityKey> : SpatialQueryBackendBase<T
         this.sharedPool = new DefaultObjectPool<List<FreeListIndex>>(new ListObjectPoolPolicy<FreeListIndex>());
     }
 
-    protected override ICachedEntry GetEntryFactory<TPosition, TComponent>(CachedEntryKey arg)
+    protected override ICachedEntry GetEntryFactory<TPosition>(Type arg)
     {
-        return new CachedEntry<TPosition, TComponent>(itemRegistry, Registry, sharedPool, config);
+        return new CachedEntry<TPosition>(itemRegistry, Registry, sharedPool, config);
     }
 
-    class CachedEntry<TPosition, TComponent> : CachedEntryBase<TPosition, TComponent>
+    class CachedEntry<TPosition> : CachedEntryBase<TPosition>
         where TPosition : struct, IPosition<TPosition>
     {
         readonly IItemResolver<TEntityKey> itemRegistry;
@@ -61,12 +61,11 @@ public class QuadTreeSpatialQueryBackend<TEntityKey> : SpatialQueryBackendBase<T
         {
             positionUpdateView.Apply(Remove);
             positionUpdateView.Apply(AddOrUpdate);
-            
+
             foreach (var p in spatialIndex)
             {
                 var idx = p.Value;
                 idx.RemoveObsoleteEntries();
-
             }
         }
 
@@ -85,7 +84,7 @@ public class QuadTreeSpatialQueryBackend<TEntityKey> : SpatialQueryBackendBase<T
             }
 
             if (!itemRegistry.TryQueryData<BodySize>(k, out var bs))
-            { 
+            {
                 bs = BodySize.Empty;
             }
 
@@ -103,7 +102,7 @@ public class QuadTreeSpatialQueryBackend<TEntityKey> : SpatialQueryBackendBase<T
             }
 
             if (!itemRegistry.TryQueryData<BodySize>(k, out var bs))
-            { 
+            {
                 bs = BodySize.Empty;
             }
 
@@ -173,7 +172,7 @@ public class QuadTreeSpatialQueryBackend<TEntityKey> : SpatialQueryBackendBase<T
                 return index.TryGet(idx, out entity, out bb);
             }
         }
-        
+
         public override void Dispose()
         {
             base.Dispose();
@@ -208,7 +207,7 @@ public class QuadTreeSpatialQueryBackend<TEntityKey> : SpatialQueryBackendBase<T
 
             var sphereContext = new SphereContext(receiver, pos, distance, d);
             var distanceInt = (int)Math.Ceiling(Math.Max(0, distance));
-            var boundingBox = BoundingBox.From(pos.GridX - distanceInt, 
+            var boundingBox = BoundingBox.From(pos.GridX - distanceInt,
                                                pos.GridY - distanceInt);
             using var buffer = BufferListPool<FreeListIndex>.GetPooled();
             foreach (var idx in qt.Query(boundingBox, buffer))

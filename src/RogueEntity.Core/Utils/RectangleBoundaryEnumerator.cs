@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace RogueEntity.Core.Utils
 {
-    public struct RectangleBoundaryEnumerator : IEnumerator<Position2D>
+    public struct RectangleBoundaryEnumerator : IEnumerator<GridPosition2D>
     {
         readonly int minX;
         readonly int maxX;
@@ -30,7 +30,7 @@ namespace RogueEntity.Core.Utils
                 if (pos == -1)
                 {
                     pos = 0;
-                    Current = new Position2D(minX, minY);
+                    Current = new GridPosition2D(minX, minY);
                     return true;
                 }
 
@@ -66,28 +66,28 @@ namespace RogueEntity.Core.Utils
             
         }
 
-        bool ProduceIterator(out Position2D increment, out Position2D start, out int maxPos)
+        bool ProduceIterator(out GridPosition2D increment, out GridPosition2D start, out int maxPos)
         {
             switch (side)
             {
                 case 0:
-                    increment = new Position2D(1, 0);
-                    start = new Position2D(minX, minY);
+                    increment = new GridPosition2D(1, 0);
+                    start = new GridPosition2D(minX, minY);
                     maxPos = maxX - minX;
                     return true;
                 case 1:
-                    increment = new Position2D(0, 1);
-                    start = new Position2D(maxX, minY);
+                    increment = new GridPosition2D(0, 1);
+                    start = new GridPosition2D(maxX, minY);
                     maxPos = maxY - minY;
                     return true;
                 case 2:
-                    increment = new Position2D(-1, 0);
-                    start = new Position2D(maxX, maxY);
+                    increment = new GridPosition2D(-1, 0);
+                    start = new GridPosition2D(maxX, maxY);
                     maxPos = maxX - minX;
                     return true;
                 case 3:
-                    increment = new Position2D(0, -1);
-                    start = new Position2D(minX, maxY);
+                    increment = new GridPosition2D(0, -1);
+                    start = new GridPosition2D(minX, maxY);
                     maxPos = maxY - minY;
                     return true;
                 default:
@@ -113,6 +113,6 @@ namespace RogueEntity.Core.Utils
             get { return Current; }
         }
 
-        public Position2D Current { get; private set; }
+        public GridPosition2D Current { get; private set; }
     }
 }

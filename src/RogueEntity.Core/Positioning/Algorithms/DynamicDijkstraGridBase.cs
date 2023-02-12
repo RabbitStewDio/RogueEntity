@@ -15,14 +15,14 @@ namespace RogueEntity.Core.Positioning.Algorithms
 
         readonly IDynamicDataView2D<float> nodesWeight;
         readonly IDynamicDataView2D<Direction> nodesDirection;
-        readonly PriorityQueue<DijkstraNodeWeight, Position2D> openNodes;
+        readonly PriorityQueue<DijkstraNodeWeight, GridPosition2D> openNodes;
         readonly List<Direction> directions;
 
         protected DynamicDijkstraGridBase(IBoundedDataViewPool<float> weightPool, 
                                           IBoundedDataViewPool<Direction> directionPool)
         {
             this.directions = new List<Direction>();
-            this.openNodes = new PriorityQueue<DijkstraNodeWeight, Position2D>(4096);
+            this.openNodes = new PriorityQueue<DijkstraNodeWeight, GridPosition2D>(4096);
             this.nodesWeight = new PooledDynamicDataView2D<float>(weightPool);
             this.nodesDirection = new PooledDynamicDataView2D<Direction>(directionPool);
         }
@@ -39,17 +39,17 @@ namespace RogueEntity.Core.Positioning.Algorithms
             RescanMap(out _);
         }
 
-        public bool TryGetCumulativeCost(in Position2D pos, out float result)
+        public bool TryGetCumulativeCost(in GridPosition2D pos, out float result)
         {
             return nodesWeight.TryGet(pos.X, pos.Y, out result);
         }
 
-        protected abstract void PopulateDirections(Position2D basePosition, List<Direction> buffer);
+        protected abstract void PopulateDirections(GridPosition2D basePosition, List<Direction> buffer);
 
-        protected bool RescanMap(out Position2D lowestNode,
+        protected bool RescanMap(out GridPosition2D lowestNode,
                                  int maxSteps = int.MaxValue)
         {
-            Position2D openNodePosition = default;
+            GridPosition2D openNodePosition = default;
             var nodeCount = 0;
             while (nodeCount < maxSteps && TryDequeueOpenNode(out openNodePosition))
             {
@@ -91,9 +91,9 @@ namespace RogueEntity.Core.Positioning.Algorithms
             return nodeCount > 0;
         }
 
-        protected abstract bool EdgeCostInformation(in Position2D sourceNode, in Direction d, float sourceNodeCost, out float totalPathCost);
+        protected abstract bool EdgeCostInformation(in GridPosition2D sourceNode, in Direction d, float sourceNodeCost, out float totalPathCost);
 
-        protected virtual bool IsTarget(in Position2D openNodePosition)
+        protected virtual bool IsTarget(in GridPosition2D openNodePosition)
         {
             return false;
         }
@@ -103,7 +103,7 @@ namespace RogueEntity.Core.Positioning.Algorithms
         /// </summary>
         /// <param name="c"></param>
         /// <param name="weight">should be a positive value</param>
-        protected void EnqueueStartingNode(in Position2D c, float weight)
+        protected void EnqueueStartingNode(in GridPosition2D c, float weight)
         {
             openNodes.UpdatePriority(c, new DijkstraNodeWeight(-weight, 0));
             
@@ -111,14 +111,14 @@ namespace RogueEntity.Core.Positioning.Algorithms
             nodesDirection.TrySet(c.X, c.Y, Direction.None);
         }
 
-        protected void EnqueueNode(in Position2D pos, float weight, in Position2D prev)
+        protected void EnqueueNode(in GridPosition2D pos, float weight, in GridPosition2D prev)
         {
             openNodes.UpdatePriority(pos, new DijkstraNodeWeight(-weight, (float)DistanceCalculation.Euclid.Calculate2D(pos, prev)));
             nodesWeight.TrySet(pos.X, pos.Y, weight);
             nodesDirection.TrySet(pos.X, pos.Y, Directions.GetDirection(prev, pos));
         }
 
-        protected bool TryDequeueOpenNode(out Position2D c)
+        protected bool TryDequeueOpenNode(out GridPosition2D c)
         {
             if (openNodes.Count == 0)
             {
@@ -130,7 +130,7 @@ namespace RogueEntity.Core.Positioning.Algorithms
             return true;
         }
 
-        protected virtual bool IsExistingResultBetter(in Position2D coord, in float newWeight)
+        protected virtual bool IsExistingResultBetter(in GridPosition2D coord, in float newWeight)
         {
             // All non-starting nodes are initialized with a weight of zero at the start.
             // This allows us to use Array.Clear which uses MemSet to efficiently
@@ -159,7 +159,7 @@ namespace RogueEntity.Core.Positioning.Algorithms
             return existingWeight >= newWeight;
         }
 
-        public bool TryGetPreviousStep(in Position2D pos, out Position2D nextStep)
+        public bool TryGetPreviousStep(in GridPosition2D pos, out GridPosition2D nextStep)
         {
             if (!nodesDirection.TryGet(pos.X, pos.Y, out var prevIdx) ||
                 prevIdx == Direction.None)
@@ -179,11 +179,11 @@ namespace RogueEntity.Core.Positioning.Algorithms
         /// <param name="goalStrength"></param>
         /// <param name="maxLength"></param>
         /// <returns></returns>
-        protected List<Position2D> FindPath(Position2D p,
+        protected List<GridPosition2D> FindPath(GridPosition2D p,
                                             out float goalStrength,
                                             int maxLength = int.MaxValue)
         {
-            var pathAccumulator = new List<Position2D>();
+            var pathAccumulator = new List<GridPosition2D>();
             if (!nodesWeight.TryGet(p.X, p.Y, out goalStrength))
             {
                 return pathAccumulator;

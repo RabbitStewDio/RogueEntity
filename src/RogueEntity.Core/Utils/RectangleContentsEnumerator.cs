@@ -3,9 +3,9 @@ using System.Collections.Generic;
 
 namespace RogueEntity.Core.Utils
 {
-    public struct RectangleContentsEnumerator : IEnumerator<Position2D>
+    public struct RectangleContentsEnumerator : IEnumerator<GridPosition2D>
     {
-        readonly Position2D origin;
+        readonly GridPosition2D origin;
         readonly int width;
         readonly int maxIdx;
         int idx;
@@ -16,7 +16,7 @@ namespace RogueEntity.Core.Utils
 
         public RectangleContentsEnumerator(int x, int y, int width, int height)
         {
-            this.origin = new Position2D(x, y);
+            this.origin = new GridPosition2D(x, y);
             this.width = width;
             maxIdx = (width * height) - 1;
             idx = -1;
@@ -43,11 +43,11 @@ namespace RogueEntity.Core.Utils
             get { return Current; }
         }
 
-        public Position2D Current
+        public GridPosition2D Current
         {
             get
             {
-                return Position2D.FromLinearIndex(idx, width) + origin;
+                return GridPosition2D.FromLinearIndex(idx, width) + origin;
             }
         }
     }

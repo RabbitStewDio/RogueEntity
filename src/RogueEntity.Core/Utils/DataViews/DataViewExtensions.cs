@@ -8,7 +8,7 @@ namespace RogueEntity.Core.Utils.DataViews
 {
     public static class DataViewExtensions
     {
-        public static ShortPosition2D ToInternalPosition<TData>(this IReadOnlyBoundedDataView<TData> view, Position2D pos)
+        public static ShortGridPosition2D ToInternalPosition<TData>(this IReadOnlyBoundedDataView<TData> view, GridPosition2D pos)
         {
             var size = view.Bounds.Size;
             var b = view.Bounds.Position;
@@ -19,7 +19,7 @@ namespace RogueEntity.Core.Utils.DataViews
                 throw new ArgumentException("Invalid region position");
             }
 
-            return new ShortPosition2D(s.X, s.Y);
+            return new ShortGridPosition2D(s.X, s.Y);
         } 
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

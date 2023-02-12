@@ -8,12 +8,12 @@ namespace RogueEntity.Core.MovementPlaning.Pathfinding.Hierarchical.Data;
 
 public readonly struct PathfinderZonePathSegment
 {
-    public readonly Position2D Origin;
-    public readonly Position2D Target;
+    public readonly GridPosition2D Origin;
+    public readonly GridPosition2D Target;
     public readonly float Cost;
     public readonly List<(Direction direction, byte movementType)> TraversalSteps;
 
-    public PathfinderZonePathSegment(Position2D origin, Position2D target, float cost, List<(Direction direction, byte movementType)> traversalSteps)
+    public PathfinderZonePathSegment(GridPosition2D origin, GridPosition2D target, float cost, List<(Direction direction, byte movementType)> traversalSteps)
     {
         this.Origin = origin;
         this.Cost = cost;

@@ -5,31 +5,31 @@ namespace RogueEntity.Core.MovementPlaning.Pathfinding.Hierarchical.Systems
 {
     public class PathfinderRegionPainterSharedDataFactory 
     {
-        readonly ObjectPool<PriorityQueue<float, Position2D>> openNodesPool;
+        readonly ObjectPool<PriorityQueue<float, GridPosition2D>> openNodesPool;
 
         public PathfinderRegionPainterSharedDataFactory()
         {
-            openNodesPool = new DefaultObjectPool<PriorityQueue<float, Position2D>>(new PriorityQueuePolicy());
+            openNodesPool = new DefaultObjectPool<PriorityQueue<float, GridPosition2D>>(new PriorityQueuePolicy());
         }
 
-        public void Return(PriorityQueue<float, Position2D> t)
+        public void Return(PriorityQueue<float, GridPosition2D> t)
         {
             openNodesPool.Return(t);
         }
 
-        public PooledObjectHandle<PriorityQueue<float, Position2D>> Get()
+        public PooledObjectHandle<PriorityQueue<float, GridPosition2D>> Get()
         {
-            return new PooledObjectHandle<PriorityQueue<float, Position2D>>(openNodesPool, openNodesPool.Get());
+            return new PooledObjectHandle<PriorityQueue<float, GridPosition2D>>(openNodesPool, openNodesPool.Get());
         }
 
-        class PriorityQueuePolicy : IPooledObjectPolicy<PriorityQueue<float, Position2D>>
+        class PriorityQueuePolicy : IPooledObjectPolicy<PriorityQueue<float, GridPosition2D>>
         {
-            public PriorityQueue<float, Position2D> Create()
+            public PriorityQueue<float, GridPosition2D> Create()
             {
-                return new PriorityQueue<float, Position2D>(4096);
+                return new PriorityQueue<float, GridPosition2D>(4096);
             }
 
-            public bool Return(PriorityQueue<float, Position2D> obj)
+            public bool Return(PriorityQueue<float, GridPosition2D> obj)
             {
                 obj.Clear();
                 return true;

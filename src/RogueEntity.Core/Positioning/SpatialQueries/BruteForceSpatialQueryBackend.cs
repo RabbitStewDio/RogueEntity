@@ -2,22 +2,24 @@ using EnTTSharp.Entities;
 using RogueEntity.Api.Utils;
 using RogueEntity.Core.Positioning.Algorithms;
 using RogueEntity.Core.Utils;
+using System;
 
 namespace RogueEntity.Core.Positioning.SpatialQueries
 {
-    public class BruteForceSpatialQueryBackend<TItemId> : SpatialQueryBackendBase<TItemId>, ISpatialQuery<TItemId>
+    public class BruteForceSpatialQueryBackend<TItemId, TComponent> : 
+        SpatialQueryBackendBase<TItemId, TComponent>
         where TItemId : struct, IEntityKey
     {
         public BruteForceSpatialQueryBackend(EntityRegistry<TItemId> registry) : base(registry)
         {
         }
 
-        protected override ICachedEntry GetEntryFactory<TPosition, TComponent>(CachedEntryKey arg)
+        protected override ICachedEntry GetEntryFactory<TPosition>(Type arg)
         {
-            return new CachedEntry<TPosition, TComponent>(base.Registry);
+            return new CachedEntry<TPosition>(base.Registry);
         }
 
-        class CachedEntry<TPosition, TComponent> : CachedEntryBase<TPosition, TComponent>
+        class CachedEntry<TPosition> : CachedEntryBase<TPosition>
             where TPosition : struct, IPosition<TPosition>
         {
             public CachedEntry(EntityRegistry<TItemId> registry): base(registry)

@@ -12,7 +12,7 @@ namespace RogueEntity.Core.Utils.SpatialIndex
 {
     public class QuadTree2D<T> : ISpatialIndexAdapter, ISpatialIndex2D<T>
     {
-        readonly ObjectPool<List<FreeListIndex>> freeListPool;
+        readonly ObjectPool<QuadTreeCore<QuadTree2D<T>>> corePool;
         readonly DynamicDataViewConfiguration config;
         readonly int maxElementsPerNode;
         readonly int maxDepth;
@@ -25,14 +25,43 @@ namespace RogueEntity.Core.Utils.SpatialIndex
                           int maxElementsPerNode = 1,
                           int maxDepth = 4)
         {
-            this.freeListPool = freeListPool;
+            if (freeListPool == null)
+            {
+                throw new ArgumentNullException(nameof(freeListPool));
+            }
+
             this.config = config;
             this.maxElementsPerNode = maxElementsPerNode;
             this.maxDepth = maxDepth;
             this.partitions = new List<BoundingBox>();
 
+            corePool = new DefaultObjectPool<QuadTreeCore<QuadTree2D<T>>>(new QuadTreeCorePolicy(this, freeListPool));
             elements = new FreeList<QuadElement>();
             spatialIndex = new Dictionary<TileIndex, QuadTreeCore<QuadTree2D<T>>>();
+        }
+
+        public BoundingBox Bounds
+        {
+            get
+            {
+                if (spatialIndex.Count == 0) return default;
+                var result = new Rectangle();
+                var first = true;
+                foreach (var e in spatialIndex)
+                {
+                    if (first)
+                    {
+                        first = false;
+                        result = e.Value.BoundingBox;
+                    }
+                    else
+                    {
+                        result = result.GetUnion(e.Value.BoundingBox);
+                    }
+                }
+
+                return result;
+            }
         }
 
         public FreeListIndex Insert(T data, in BoundingBox bounds)
@@ -45,7 +74,8 @@ namespace RogueEntity.Core.Utils.SpatialIndex
                 var partitionKey = new TileIndex(p.Left, p.Top);
                 if (!spatialIndex.TryGetValue(partitionKey, out var localIndex))
                 {
-                    localIndex = new QuadTreeCore<QuadTree2D<T>>(this, p, maxElementsPerNode, maxDepth, freeListPool);
+                    localIndex = corePool.Get();
+                    localIndex.Init(p, maxElementsPerNode, maxDepth);
                     spatialIndex[partitionKey] = localIndex;
                 }
 
@@ -61,6 +91,7 @@ namespace RogueEntity.Core.Utils.SpatialIndex
             {
                 pair.Value.Clear();
             }
+
             spatialIndex.Clear();
         }
 
@@ -99,7 +130,7 @@ namespace RogueEntity.Core.Utils.SpatialIndex
                     count += 1;
                 }
             }
-            
+
             foreach (var qte in spatialIndex)
             {
                 qte.Value.RemoveIf(elementSelector, qte.Value.BoundingBox);
@@ -129,10 +160,10 @@ namespace RogueEntity.Core.Utils.SpatialIndex
 
             return result;
         }
-        
-        public BufferList<FreeListIndex> QueryIndex(in BoundingBox bb, 
-                                               BufferList<FreeListIndex>? result = default, 
-                                               FreeListIndex skipElement = default)
+
+        public BufferList<FreeListIndex> QueryIndex(in BoundingBox bb,
+                                                    BufferList<FreeListIndex>? result = default,
+                                                    FreeListIndex skipElement = default)
         {
             var resultDeduplicator = ArrayPool<bool>.Shared.Rent(ElementIndexRange);
             try
@@ -242,6 +273,30 @@ namespace RogueEntity.Core.Utils.SpatialIndex
             {
                 Data = data;
                 Bounds = bounds;
+            }
+        }
+
+        class QuadTreeCorePolicy : IPooledObjectPolicy<QuadTreeCore<QuadTree2D<T>>>
+        {
+            readonly ObjectPool<List<FreeListIndex>> freeListPool;
+            readonly QuadTree2D<T> self;
+
+            public QuadTreeCorePolicy(QuadTree2D<T> self,
+                                      ObjectPool<List<FreeListIndex>> freeListPool)
+            {
+                this.self = self;
+                this.freeListPool = freeListPool;
+            }
+
+            public QuadTreeCore<QuadTree2D<T>> Create()
+            {
+                return new QuadTreeCore<QuadTree2D<T>>(self, freeListPool);
+            }
+
+            public bool Return(QuadTreeCore<QuadTree2D<T>> obj)
+            {
+                obj.Clear();
+                return true;
             }
         }
     }

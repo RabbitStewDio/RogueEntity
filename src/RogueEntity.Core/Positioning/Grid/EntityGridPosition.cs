@@ -62,6 +62,8 @@ namespace RogueEntity.Core.Positioning.Grid
         }
 
         public static EntityGridPosition Of(MapLayer layer, int x, int y, int z = 0)
+            => Of(layer.LayerId, x, y, z);
+        public static EntityGridPosition Of(byte layer, int x, int y, int z = 0)
         {
             if (x < MinXYValue) throw new ArgumentOutOfRangeException(nameof(x), x, $"should be between {MinXYValue} and {MaxXYValue}");
             if (y < MinXYValue) throw new ArgumentOutOfRangeException(nameof(y), y, $"should be between {MinXYValue} and {MaxXYValue}");
@@ -70,7 +72,22 @@ namespace RogueEntity.Core.Positioning.Grid
             if (y > MaxXYValue) throw new ArgumentOutOfRangeException(nameof(y), y, $"should be between {MinXYValue} and {MaxXYValue}");
             if (z > MaxZValue) throw new ArgumentOutOfRangeException(nameof(z), z, $"should be between {MinZValue} and {MaxZValue}");
 
-            return new EntityGridPosition(layer.LayerId, (short)x, (short)y, (short)z);
+            return new EntityGridPosition(layer, (short)x, (short)y, (short)z);
+        }
+
+        public static EntityGridPosition Of(MapLayer layer, double x, double y, double z = 0)
+            => Of(layer.LayerId, x, y, z);
+        
+        public static EntityGridPosition Of(byte layer, double x, double y, double z = 0)
+        {
+            if (x < MinXYValue) throw new ArgumentOutOfRangeException(nameof(x), x, $"should be between {MinXYValue} and {MaxXYValue}");
+            if (y < MinXYValue) throw new ArgumentOutOfRangeException(nameof(y), y, $"should be between {MinXYValue} and {MaxXYValue}");
+            if (z < MinZValue) throw new ArgumentOutOfRangeException(nameof(z), z, $"should be between {MinXYValue} and {MaxXYValue}");
+            if (x > MaxXYValue) throw new ArgumentOutOfRangeException(nameof(x), x, $"should be between {MinXYValue} and {MaxXYValue}");
+            if (y > MaxXYValue) throw new ArgumentOutOfRangeException(nameof(y), y, $"should be between {MinXYValue} and {MaxXYValue}");
+            if (z > MaxZValue) throw new ArgumentOutOfRangeException(nameof(z), z, $"should be between {MinZValue} and {MaxZValue}");
+
+            return new EntityGridPosition(layer, (short)Math.Floor(x), (short)Math.Floor(y), (short)Math.Floor(z));
         }
 
         public static EntityGridPosition OfRaw(byte layer, int x, int y, int z = 0)
@@ -134,7 +151,7 @@ namespace RogueEntity.Core.Positioning.Grid
             return !left.Equals(right);
         }
 
-        public static EntityGridPosition operator +(EntityGridPosition left, Position2D right)
+        public static EntityGridPosition operator +(EntityGridPosition left, GridPosition2D right)
         {
             return OfRaw(left.LayerId,
                          left.GridX + right.X,
@@ -142,7 +159,7 @@ namespace RogueEntity.Core.Positioning.Grid
                          left.GridZ);
         }
 
-        public static EntityGridPosition operator +(EntityGridPosition left, ShortPosition2D right)
+        public static EntityGridPosition operator +(EntityGridPosition left, ShortGridPosition2D right)
         {
             return OfRaw(left.LayerId,
                          left.GridX + right.X,

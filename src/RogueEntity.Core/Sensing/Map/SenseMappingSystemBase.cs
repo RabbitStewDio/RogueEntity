@@ -141,8 +141,8 @@ namespace RogueEntity.Core.Sensing.Map
             public readonly SenseDataMap SenseMap;
             readonly SenseMapBlitterService senseMapBlitterService;
             readonly ISenseMapDataBlitter blitter;
-            readonly List<(Position2D pos, SenseSourceState<TSourceSense> senseState)> collectedSenses;
-            readonly List<(Position2D pos, SenseSourceData senseData)> blittableSenses;
+            readonly List<(GridPosition2D pos, SenseSourceState<TSourceSense> senseState)> collectedSenses;
+            readonly List<(GridPosition2D pos, SenseSourceData senseData)> blittableSenses;
             public int LastRecentlyUsedTime { get; private set; }
 
             public SenseDataLevel(ISenseMapDataBlitter blitter)
@@ -150,13 +150,13 @@ namespace RogueEntity.Core.Sensing.Map
                 this.blitter = blitter;
                 this.senseMapBlitterService = new SenseMapBlitterService();
                 this.SenseMap = new SenseDataMap();
-                this.blittableSenses = new List<(Position2D, SenseSourceData)>();
-                this.collectedSenses = new List<(Position2D, SenseSourceState<TSourceSense>)>();
+                this.blittableSenses = new List<(GridPosition2D, SenseSourceData)>();
+                this.collectedSenses = new List<(GridPosition2D, SenseSourceState<TSourceSense>)>();
             }
 
             public void Add(Position p, SenseSourceState<TSourceSense> sense)
             {
-                collectedSenses.Add((new Position2D(p.GridX, p.GridY), sense));
+                collectedSenses.Add((new GridPosition2D(p.GridX, p.GridY), sense));
             }
 
             public void ClearCollectedSenses()

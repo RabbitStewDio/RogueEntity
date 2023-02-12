@@ -12,7 +12,7 @@ namespace RogueEntity.Core.MovementPlaning.Pathfinding.Hierarchical;
 partial class HierarchicalPathfinderWorker
 {
 
-    static DirectionalityInformation LimitMovementToZone(in ShortPosition2D basePos, in Rectangle zoneBounds)
+    static DirectionalityInformation LimitMovementToZone(in ShortGridPosition2D basePos, in Rectangle zoneBounds)
     {
         var result = DirectionalityInformation.All;
         if (basePos.X == zoneBounds.MinExtentX)
@@ -46,7 +46,7 @@ partial class HierarchicalPathfinderWorker
         return result;
     }
 
-    protected override ReadOnlyListWrapper<Direction> PopulateTraversableDirections(ShortPosition2D basePos)
+    protected override ReadOnlyListWrapper<Direction> PopulateTraversableDirections(ShortGridPosition2D basePos)
     {
         Assert.NotNull(zoneRegion);
         Assert.NotNull(directionData);
@@ -78,7 +78,7 @@ partial class HierarchicalPathfinderWorker
     ///   We have to take into account that movement options may be different in that direction, thus the edge we
     ///   compute is the edge from (source + direction to source). 
     /// </summary>
-    protected override bool EdgeCostInformation(in ShortPosition2D sourceNode,
+    protected override bool EdgeCostInformation(in ShortGridPosition2D sourceNode,
                                                 in Direction d,
                                                 float sourceNodeCost,
                                                 out float totalPathCost,
@@ -141,7 +141,7 @@ partial class HierarchicalPathfinderWorker
         return costInformationAvailable;
     }
 
-    protected override void UpdateNode(in ShortPosition2D pos, IMovementMode nodeInfo)
+    protected override void UpdateNode(in ShortGridPosition2D pos, IMovementMode nodeInfo)
     {
         nodesSources.TrySet(pos.X, pos.Y, nodeInfo);
     }

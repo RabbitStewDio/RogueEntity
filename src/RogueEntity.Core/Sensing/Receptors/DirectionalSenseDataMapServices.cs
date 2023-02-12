@@ -21,15 +21,15 @@ namespace RogueEntity.Core.Sensing.Receptors
 
         readonly struct ProcessData
         {
-            public readonly List<(Position2D pos, SenseSourceData sense)> Senses;
-            public readonly Position2D TargetPos;
+            public readonly List<(GridPosition2D pos, SenseSourceData sense)> Senses;
+            public readonly GridPosition2D TargetPos;
             public readonly ISenseReceptorBlitter ReceptorBlitter;
             public readonly Rectangle Bounds;
             public readonly BoundedDataView<float> ReceptorSenseIntensity;
             public readonly BoundedDataView<byte> ReceptorSenseDirections;
 
-            public ProcessData(List<(Position2D, SenseSourceData)> senses,
-                               Position2D targetPos,
+            public ProcessData(List<(GridPosition2D, SenseSourceData)> senses,
+                               GridPosition2D targetPos,
                                ISenseReceptorBlitter receptorBlitter,
                                Rectangle bounds,
                                BoundedDataView<float> receptorSenseIntensity,
@@ -46,9 +46,9 @@ namespace RogueEntity.Core.Sensing.Receptors
 
         void QuerySenseDataTiles(SenseDataMap receptorSenseMap, 
                                  Rectangle targetBounds,
-                                 Position2D targetPos,
+                                 GridPosition2D targetPos,
                                  ISenseReceptorBlitter receptorBlitter,
-                                 List<(Position2D, SenseSourceData)> senses)
+                                 List<(GridPosition2D, SenseSourceData)> senses)
         {
             var affectedBounds = GetSenseBounds(senses).GetIntersection(targetBounds);
             partitionsBuffer = affectedBounds.PartitionBy(receptorSenseMap.OffsetX, receptorSenseMap.OffsetY, receptorSenseMap.TileSizeX, receptorSenseMap.TileSizeY, partitionsBuffer);
@@ -84,9 +84,9 @@ namespace RogueEntity.Core.Sensing.Receptors
 
         public void ProcessSenseSources(SenseDataMap receptorSenseMap,
                                         Rectangle targetBounds,
-                                        Position2D targetPos,
+                                        GridPosition2D targetPos,
                                         ISenseReceptorBlitter receptorBlitter,
-                                        List<(Position2D pos, SenseSourceData sense)> senses)
+                                        List<(GridPosition2D pos, SenseSourceData sense)> senses)
         {
             if (senses.Count == 0)
             {
@@ -99,7 +99,7 @@ namespace RogueEntity.Core.Sensing.Receptors
             parameterBuffer.Clear();
         }
 
-        public static Rectangle GetSenseBounds(List<(Position2D pos, SenseSourceData sd)> senses)
+        public static Rectangle GetSenseBounds(List<(GridPosition2D pos, SenseSourceData sd)> senses)
         {
             var firstEntry = senses[0];
             var bounds = LightToRectangle(firstEntry.pos, firstEntry.sd);
@@ -114,6 +114,6 @@ namespace RogueEntity.Core.Sensing.Receptors
             return bounds;
         }
 
-        static Rectangle LightToRectangle(Position2D pos, SenseSourceData sd) => new Rectangle(new Position2D(pos.X, pos.Y), sd.Radius, sd.Radius);
+        static Rectangle LightToRectangle(GridPosition2D pos, SenseSourceData sd) => new Rectangle(new GridPosition2D(pos.X, pos.Y), sd.Radius, sd.Radius);
     }
 }

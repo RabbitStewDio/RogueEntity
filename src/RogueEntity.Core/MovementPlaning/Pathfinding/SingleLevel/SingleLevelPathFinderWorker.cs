@@ -16,7 +16,7 @@ namespace RogueEntity.Core.MovementPlaning.Pathfinding.SingleLevel
     {
         readonly List<MovementCostData2D> movementCostsOnLevel;
         readonly PooledDynamicDataView2D<IMovementMode> nodesSources;
-        readonly BufferList<Position2D> pathBuffer;
+        readonly BufferList<GridPosition2D> pathBuffer;
         readonly BufferList<IReadOnlyBoundedDataView<DirectionalityInformation>?> inboundDirectionsTile;
         readonly BufferList<IReadOnlyBoundedDataView<DirectionalityInformation>?> outboundDirectionsTile;
         readonly BufferList<IReadOnlyBoundedDataView<float>?> costsTile;
@@ -29,7 +29,7 @@ namespace RogueEntity.Core.MovementPlaning.Pathfinding.SingleLevel
         public SingleLevelPathFinderWorker(IBoundedDataViewPool<AStarNode> pool,
                                            IBoundedDataViewPool<IMovementMode> movementModePool) : base(pool)
         {
-            pathBuffer = new BufferList<Position2D>();
+            pathBuffer = new BufferList<GridPosition2D>();
             nodesSources = new PooledDynamicDataView2D<IMovementMode>(movementModePool);
             movementCostsOnLevel = new List<MovementCostData2D>();
             inboundDirectionsTile = new BufferList<IReadOnlyBoundedDataView<DirectionalityInformation>?>();
@@ -107,7 +107,7 @@ namespace RogueEntity.Core.MovementPlaning.Pathfinding.SingleLevel
             return (result, totalCost);
         }
 
-        protected override ReadOnlyListWrapper<Direction> PopulateTraversableDirections(in Position2D basePos)
+        protected override ReadOnlyListWrapper<Direction> PopulateTraversableDirections(in GridPosition2D basePos)
         {
             Assert.NotNull(directionData);
 
@@ -126,7 +126,7 @@ namespace RogueEntity.Core.MovementPlaning.Pathfinding.SingleLevel
             return directionData[(int)allowedMovements];
         }
 
-        protected override bool EdgeCostInformation(in Position2D sourceNode,
+        protected override bool EdgeCostInformation(in GridPosition2D sourceNode,
                                                     in Direction d,
                                                     float sourceNodeCost,
                                                     out float totalPathCost,
@@ -180,17 +180,17 @@ namespace RogueEntity.Core.MovementPlaning.Pathfinding.SingleLevel
             return costInformationAvailable;
         }
 
-        protected override bool IsTargetNode(in Position2D pos)
+        protected override bool IsTargetNode(in GridPosition2D pos)
         {
             return targetEvaluator?.IsTargetNode(activeLevel, in pos) ?? false;
         }
 
-        protected override float Heuristic(in Position2D pos)
+        protected override float Heuristic(in GridPosition2D pos)
         {
             return targetEvaluator?.TargetHeuristic(activeLevel, in pos) ?? 0;
         }
 
-        protected override void UpdateNode(in Position2D pos, IMovementMode nodeInfo)
+        protected override void UpdateNode(in GridPosition2D pos, IMovementMode nodeInfo)
         {
             IMovementMode? defaultMovement = null;
             ref var entry = ref nodesSources.TryGetRefForUpdate(ref nodeSourceTile, pos.X, pos.Y, ref defaultMovement, out var success, DataViewCreateMode.CreateMissing);

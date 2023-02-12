@@ -23,19 +23,19 @@ namespace RogueEntity.Core.MovementPlaning.GoalFinding.SingleLevel
     {
         readonly SingleLevelPathPool pathPool;
         readonly List<MovementCostData2D> movementCostsOnLevel;
-        readonly BufferList<ShortPosition2D> pathBuffer;
+        readonly BufferList<ShortGridPosition2D> pathBuffer;
 
         IReadOnlyBoundedDataView<DirectionalityInformation>?[] directionsTile;
         IReadOnlyBoundedDataView<float>?[] costsTile;
         ReadOnlyListWrapper<Direction>[]? directionData;
         int activeLevel;
         readonly BoundedDataView<IMovementMode> nodesSources;
-        Position2D origin;
+        GridPosition2D origin;
 
         public SingleLevelGoalFinderDijkstraWorker(SingleLevelPathPool pathPool) : base(default)
         {
             this.pathPool = pathPool ?? throw new ArgumentNullException(nameof(pathPool));
-            pathBuffer = new BufferList<ShortPosition2D>();
+            pathBuffer = new BufferList<ShortGridPosition2D>();
             nodesSources = new BoundedDataView<IMovementMode>(default);
             movementCostsOnLevel = new List<MovementCostData2D>();
             directionsTile = Array.Empty<IReadOnlyBoundedDataView<DirectionalityInformation>>();
@@ -53,7 +53,7 @@ namespace RogueEntity.Core.MovementPlaning.GoalFinding.SingleLevel
             movementCostsOnLevel.Clear();
 
 
-            var searchBounds = new Rectangle(new Position2D(), searchRadius, searchRadius);
+            var searchBounds = new Rectangle(new GridPosition2D(), searchRadius, searchRadius);
             base.Resize(searchBounds);
             nodesSources.Resize(searchBounds);
             nodesSources.Clear();
@@ -102,7 +102,7 @@ namespace RogueEntity.Core.MovementPlaning.GoalFinding.SingleLevel
             var p = pos.ToGridXY() - origin;
             if (nodesSources.Contains(p.X, p.Y))
             {
-                EnqueueStartingNode(new ShortPosition2D(p.X, p.Y), record.Strength);
+                EnqueueStartingNode(new ShortGridPosition2D(p.X, p.Y), record.Strength);
             }
         }
 
@@ -112,7 +112,7 @@ namespace RogueEntity.Core.MovementPlaning.GoalFinding.SingleLevel
             where TPosition : IPosition<TPosition>
         {
             base.RescanMap(searchLimit);
-            base.FindPath(new ShortPosition2D(), out _, pathBuffer);
+            base.FindPath(new ShortGridPosition2D(), out _, pathBuffer);
 
             if (pathBuffer.Count <= 0)
             {
@@ -137,7 +137,7 @@ namespace RogueEntity.Core.MovementPlaning.GoalFinding.SingleLevel
             return true;
         }
 
-        protected override ReadOnlyListWrapper<Direction> PopulateTraversableDirections(ShortPosition2D basePos)
+        protected override ReadOnlyListWrapper<Direction> PopulateTraversableDirections(ShortGridPosition2D basePos)
         {
             if (directionData == null) throw new InvalidOperationException("Configure not complete");
             
@@ -161,7 +161,7 @@ namespace RogueEntity.Core.MovementPlaning.GoalFinding.SingleLevel
         ///   We have to take into account that movement options may be different in that direction, thus the edge we
         ///   compute is the edge from (source + direction to source). 
         /// </summary>
-        protected override bool EdgeCostInformation(in ShortPosition2D sourceNode, 
+        protected override bool EdgeCostInformation(in ShortGridPosition2D sourceNode, 
                                                     in Direction d, 
                                                     float sourceNodeCost, 
                                                     out float totalPathCost, 
@@ -218,7 +218,7 @@ namespace RogueEntity.Core.MovementPlaning.GoalFinding.SingleLevel
             return costInformationAvailable;
         }
 
-        protected override void UpdateNode(in ShortPosition2D pos, IMovementMode nodeInfo)
+        protected override void UpdateNode(in ShortGridPosition2D pos, IMovementMode nodeInfo)
         {
             Assert.NotNull(nodeInfo);
             nodesSources.TrySet(pos.X, pos.Y, nodeInfo);

@@ -77,21 +77,21 @@ namespace RogueEntity.Core.MovementPlaning.Pathfinding.Hierarchical.Systems
             }
         }
 
-        void MarkVisited(Position2D pos, Direction d)
+        void MarkVisited(GridPosition2D pos, Direction d)
         {
             var defaultValue = DirectionalityInformation.None;
             ref var visitedStateRef = ref visitedNodes.TryGetForUpdate(pos.X, pos.Y, ref defaultValue, out _);
             visitedStateRef = visitedStateRef.With(d);
         }
 
-        bool IsVisited(Position2D pos, Direction d)
+        bool IsVisited(GridPosition2D pos, Direction d)
         {
             var defaultValue = DirectionalityInformation.All;
             ref var visitedStateRef = ref visitedNodes.TryGetForUpdate(pos.X, pos.Y, ref defaultValue, out _);
             return visitedStateRef.IsMovementAllowed(d);
         }
 
-        void ReconnectEdgesAt(Position2D origin)
+        void ReconnectEdgesAt(GridPosition2D origin)
         {
             var start = zoneData[origin];
             if (start.zone == TraversableZoneId.Empty)
@@ -146,11 +146,11 @@ namespace RogueEntity.Core.MovementPlaning.Pathfinding.Hierarchical.Systems
                 var edge = value.edge.WithSourcePosition(center, dir);
                 logger.Debug("  Adding Edge {Edge}", edge);
                 edgeData.AddOutboundEdge(movementKind, edge);
-                BufferListPool<(Position2D, Direction)>.Return(value.positions);
+                BufferListPool<(GridPosition2D, Direction)>.Return(value.positions);
             }
         }
 
-        bool IsValidMovementTarget(Position2D origin, Direction d)
+        bool IsValidMovementTarget(GridPosition2D origin, Direction d)
         {
             var targetCell = origin + d;
             var targetDirection = d.Inverse();
@@ -200,7 +200,7 @@ namespace RogueEntity.Core.MovementPlaning.Pathfinding.Hierarchical.Systems
                         logger.Debug("       --> Closing Edge: No movement allowed for {TestDirection}", testDirection);
                         var (center, dir) = existingEdge.positions[existingEdge.positions.Count / 2];
                         this.edgeData.AddOutboundEdge(movementKind, existingEdge.edge.WithSourcePosition(center, dir));
-                        BufferListPool<(Position2D, Direction)>.Return(existingEdge.positions);
+                        BufferListPool<(GridPosition2D, Direction)>.Return(existingEdge.positions);
                         edge = default;
                         continue;
                     }
@@ -240,7 +240,7 @@ namespace RogueEntity.Core.MovementPlaning.Pathfinding.Hierarchical.Systems
                     {
                         var (center, dir) = e.positions[e.positions.Count / 2];
                         edgeData.AddOutboundEdge(movementKind, e.edge.WithSourcePosition(center, dir));
-                        BufferListPool<(Position2D, Direction)>.Return(e.positions);
+                        BufferListPool<(GridPosition2D, Direction)>.Return(e.positions);
                         edge = default;
                     }
 
@@ -289,7 +289,7 @@ namespace RogueEntity.Core.MovementPlaning.Pathfinding.Hierarchical.Systems
                     // must be a new edge; so close out the currently processed edge.
                     var (center, dir) = currentEdgeData.positions[currentEdgeData.positions.Count / 2];
                     edgeData.AddOutboundEdge(movementKind, currentEdgeData.edge.WithSourcePosition(center, dir));
-                    BufferListPool<(Position2D, Direction)>.Return(currentEdgeData.positions);
+                    BufferListPool<(GridPosition2D, Direction)>.Return(currentEdgeData.positions);
                 }
 
 
@@ -300,7 +300,7 @@ namespace RogueEntity.Core.MovementPlaning.Pathfinding.Hierarchical.Systems
                 }
                 else
                 {
-                    var positionAccumulator = BufferListPool<(Position2D, Direction)>.Get();
+                    var positionAccumulator = BufferListPool<(GridPosition2D, Direction)>.Get();
                     positionAccumulator.Add((cellPos, testDirection));
                     edge = (new PathfinderRegionEdge(cellGlobalZoneId, zoneData.GenerateEdgeId(), testPosition, Direction.None, data), positionAccumulator);
                     if (here)
@@ -321,7 +321,7 @@ namespace RogueEntity.Core.MovementPlaning.Pathfinding.Hierarchical.Systems
         /// </summary>
         /// <param name="self"></param>
         /// <param name="origin"></param>
-        void RecordIsolatedCell(TraversableZoneId self, Position2D origin)
+        void RecordIsolatedCell(TraversableZoneId self, GridPosition2D origin)
         {
             var availableDirections = DirectionalityInformation.None;
             foreach (var (_, m) in movementData)
@@ -385,7 +385,7 @@ namespace RogueEntity.Core.MovementPlaning.Pathfinding.Hierarchical.Systems
             }
         }
 
-        GlobalTraversableZoneId QueryZoneData(Position2D pos)
+        GlobalTraversableZoneId QueryZoneData(GridPosition2D pos)
         {
             var x = zoneData2D.TryGetMapValue(ref zoneTile, pos.X, pos.Y, default);
             if (zoneTile != null)
@@ -486,18 +486,18 @@ namespace RogueEntity.Core.MovementPlaning.Pathfinding.Hierarchical.Systems
 
         readonly struct TraversalStep : IEquatable<TraversalStep>
         {
-            public readonly Position2D Origin;
+            public readonly GridPosition2D Origin;
             public readonly Direction Direction;
-            public readonly Optional<(PathfinderRegionEdge edge, BufferList<(Position2D, Direction)> positions)> CurrentEdge;
+            public readonly Optional<(PathfinderRegionEdge edge, BufferList<(GridPosition2D, Direction)> positions)> CurrentEdge;
 
-            public TraversalStep(Position2D origin, Direction direction)
+            public TraversalStep(GridPosition2D origin, Direction direction)
             {
                 Origin = origin;
                 Direction = direction;
                 CurrentEdge = default;
             }
 
-            public TraversalStep(Position2D origin, Direction direction, Optional<(PathfinderRegionEdge edge, BufferList<(Position2D, Direction)> positions)> currentEdge)
+            public TraversalStep(GridPosition2D origin, Direction direction, Optional<(PathfinderRegionEdge edge, BufferList<(GridPosition2D, Direction)> positions)> currentEdge)
             {
                 Origin = origin;
                 Direction = direction;

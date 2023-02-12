@@ -7,7 +7,7 @@ namespace RogueEntity.Core.Sensing.Map
 {
     public class DefaultSenseMapDataBlitter: ISenseMapDataBlitter
     {
-        public void Blit(Rectangle bounds, Position2D sensePosition, SenseSourceData senseSource, BoundedDataView<float> brightnessTarget, BoundedDataView<byte> directionTarget)
+        public void Blit(Rectangle bounds, GridPosition2D sensePosition, SenseSourceData senseSource, BoundedDataView<float> brightnessTarget, BoundedDataView<byte> directionTarget)
         {
             for (int y = bounds.Y; y < bounds.Y + bounds.Height; y += 1)
             for (int x = bounds.X; x < bounds.X + bounds.Width; x += 1)

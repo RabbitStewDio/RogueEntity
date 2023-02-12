@@ -249,7 +249,7 @@ namespace RogueEntity.Core.Tests.Sensing.Common
         {
             var radius = width / 2;
             var source = new SenseSourceDefinition(dc, ar,  radius + 1);
-            var pos = new Position2D(width / 2, height / 2);
+            var pos = new GridPosition2D(width / 2, height / 2);
 
             var resistanceMap = ParseMap(resistanceMapText, out var roomArea);
             Console.WriteLine("Using room layout \n" + TestHelpers.PrintMap(resistanceMap, roomArea));
@@ -260,8 +260,8 @@ namespace RogueEntity.Core.Tests.Sensing.Common
 
             var algo = new ShadowPropagationAlgorithm(LinearDecaySensePhysics.For(DistanceCalculation.Euclid), new ShadowPropagationResistanceDataSource());
             var calculatedBrightnessMap = algo.Calculate(source, source.Intensity, pos, resistanceMap, directionalityMap);
-            Console.WriteLine(TestHelpers.PrintMap(calculatedBrightnessMap, new Rectangle(new Position2D(0, 0), radius, radius)));
-            Console.WriteLine(TestHelpers.PrintMap(new SenseMapDirectionTestView(calculatedBrightnessMap), new Rectangle(new Position2D(0, 0), radius, radius)));
+            Console.WriteLine(TestHelpers.PrintMap(calculatedBrightnessMap, new Rectangle(new GridPosition2D(0, 0), radius, radius)));
+            Console.WriteLine(TestHelpers.PrintMap(new SenseMapDirectionTestView(calculatedBrightnessMap), new Rectangle(new GridPosition2D(0, 0), radius, radius)));
 
             var expectedResult = ParseMap(brightnessResultText, out _);
             TestHelpers.AssertEquals(calculatedBrightnessMap, expectedResult, new Rectangle(0, 0, width, height), pos);

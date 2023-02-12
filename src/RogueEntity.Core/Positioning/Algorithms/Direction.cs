@@ -24,20 +24,20 @@ namespace RogueEntity.Core.Positioning.Algorithms
     {
         static readonly Direction[] moveDirections;
         static readonly Direction[] inverseDirections;
-        static readonly ShortPosition2D[] deltas;
+        static readonly ShortGridPosition2D[] deltas;
 
         static Directions()
         {
-            deltas = new ShortPosition2D[9];
-            deltas[(int) Direction.None] = new ShortPosition2D(0, 0);
-            deltas[(int) Direction.Up] = new ShortPosition2D(0, -1);
-            deltas[(int) Direction.UpRight] = new ShortPosition2D(1, -1);
-            deltas[(int) Direction.Right] = new ShortPosition2D(1, 0);
-            deltas[(int) Direction.DownRight] = new ShortPosition2D(1, 1);
-            deltas[(int) Direction.Down] = new ShortPosition2D(0, 1);
-            deltas[(int) Direction.DownLeft] = new ShortPosition2D(-1, 1);
-            deltas[(int) Direction.Left] = new ShortPosition2D(-1, 0);
-            deltas[(int) Direction.UpLeft] = new ShortPosition2D(-1, -1);
+            deltas = new ShortGridPosition2D[9];
+            deltas[(int) Direction.None] = new ShortGridPosition2D(0, 0);
+            deltas[(int) Direction.Up] = new ShortGridPosition2D(0, -1);
+            deltas[(int) Direction.UpRight] = new ShortGridPosition2D(1, -1);
+            deltas[(int) Direction.Right] = new ShortGridPosition2D(1, 0);
+            deltas[(int) Direction.DownRight] = new ShortGridPosition2D(1, 1);
+            deltas[(int) Direction.Down] = new ShortGridPosition2D(0, 1);
+            deltas[(int) Direction.DownLeft] = new ShortGridPosition2D(-1, 1);
+            deltas[(int) Direction.Left] = new ShortGridPosition2D(-1, 0);
+            deltas[(int) Direction.UpLeft] = new ShortGridPosition2D(-1, -1);
 
             moveDirections = new []
             {
@@ -69,7 +69,7 @@ namespace RogueEntity.Core.Positioning.Algorithms
             return inverseDirections[(int)d];
         }
         
-        public static ShortPosition2D ToCoordinates(this Direction d)
+        public static ShortGridPosition2D ToCoordinates(this Direction d)
         {
             return deltas[(int)d];
         }
@@ -86,7 +86,7 @@ namespace RogueEntity.Core.Positioning.Algorithms
         /// <returns>
         /// The cardinal direction that most closely matches the heading indicated by the given line.
         /// </returns>
-        public static Direction GetCardinalDirection(Position2D start, Position2D end) => GetCardinalDirection(end.X - start.X, end.Y - start.Y);
+        public static Direction GetCardinalDirection(GridPosition2D start, GridPosition2D end) => GetCardinalDirection(end.X - start.X, end.Y - start.Y);
 
         /// <summary>
         /// Returns the cardinal direction that most closely matches the degree heading of the given
@@ -114,7 +114,7 @@ namespace RogueEntity.Core.Positioning.Algorithms
         /// <returns>
         /// The cardinal direction that most closely matches the degree heading of the given line.
         /// </returns>
-        public static Direction GetCardinalDirection(Position2D deltaChange) => GetCardinalDirection(deltaChange.X, deltaChange.Y);
+        public static Direction GetCardinalDirection(GridPosition2D deltaChange) => GetCardinalDirection(deltaChange.X, deltaChange.Y);
 
         /// <summary>
         /// Returns the cardinal direction that most closely matches the degree heading of a line
@@ -158,7 +158,7 @@ namespace RogueEntity.Core.Positioning.Algorithms
         /// The direction that most closely matches the heading indicated by the given line.
         /// </returns>
         public static Direction GetDirection<TPosition>(in TPosition start, in TPosition end)
-            where TPosition : IPosition2D<TPosition>
+            where TPosition : IGridPosition2D<TPosition>
             => GetDirection(end.X - start.X, end.Y - start.Y);
 
         /// <summary>
@@ -185,7 +185,7 @@ namespace RogueEntity.Core.Positioning.Algorithms
         /// <returns>
         /// The direction that most closely matches the heading indicated by the given input.
         /// </returns>
-        public static Direction GetDirection(in Position2D deltaChange) => GetDirection(deltaChange.X, deltaChange.Y);
+        public static Direction GetDirection(in GridPosition2D deltaChange) => GetDirection(deltaChange.X, deltaChange.Y);
 
         /// <summary>
         /// Returns the direction that most closely matches the degree heading of a line with the

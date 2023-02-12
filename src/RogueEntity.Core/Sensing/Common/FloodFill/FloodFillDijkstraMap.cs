@@ -22,7 +22,7 @@ namespace RogueEntity.Core.Sensing.Common.FloodFill
 
         SenseSourceDefinition Sense { get; set; }
         ISensePhysics? SensePhysics { get; set; }
-        Position2D origin;
+        GridPosition2D origin;
         float radius;
         float intensity;
 
@@ -33,7 +33,7 @@ namespace RogueEntity.Core.Sensing.Common.FloodFill
 
         public static FloodFillDijkstraMap Create(in SenseSourceDefinition sense,
                                                   float intensity,
-                                                  in Position2D origin, 
+                                                  in GridPosition2D origin, 
                                                   ISensePhysics sensePhysics,
                                                   IReadOnlyDynamicDataView2D<float> resistanceMap,
                                                   IReadOnlyDynamicDataView2D<DirectionalityInformation> directionalityView)
@@ -48,7 +48,7 @@ namespace RogueEntity.Core.Sensing.Common.FloodFill
         [SuppressMessage("ReSharper", "ParameterHidesMember")]
         public void Configure(in SenseSourceDefinition sense,
                               float intensity,
-                              in Position2D origin, 
+                              in GridPosition2D origin, 
                               ISensePhysics sensePhysics,
                               IReadOnlyDynamicDataView2D<float> resistanceMap,
                               IReadOnlyDynamicDataView2D<DirectionalityInformation> directionalityView)
@@ -84,13 +84,13 @@ namespace RogueEntity.Core.Sensing.Common.FloodFill
             try
             {
                 base.PrepareScan();
-                base.EnqueueStartingNode(new ShortPosition2D(), Math.Abs(intensity));
+                base.EnqueueStartingNode(new ShortGridPosition2D(), Math.Abs(intensity));
                 base.RescanMap(Bounds.Width * Bounds.Height);
 
                 var sgn = Math.Sign(intensity);
                 foreach (var pos in Bounds.Contents)
                 {
-                    var shortPos = new ShortPosition2D(pos.X, pos.Y);
+                    var shortPos = new ShortGridPosition2D(pos.X, pos.Y);
                     if (!TryGetCumulativeCost(shortPos, out var cost))
                     {
                         continue;
@@ -125,7 +125,7 @@ namespace RogueEntity.Core.Sensing.Common.FloodFill
             }
         }
 
-        protected override ReadOnlyListWrapper<Direction> PopulateTraversableDirections(ShortPosition2D basePos)
+        protected override ReadOnlyListWrapper<Direction> PopulateTraversableDirections(ShortGridPosition2D basePos)
         {
             Assert.NotNull(directionalityView);
             Assert.NotNull(directionData);
@@ -139,11 +139,11 @@ namespace RogueEntity.Core.Sensing.Common.FloodFill
             return directionData[(int)allowedMovements];
         }
 
-        protected override void UpdateNode(in ShortPosition2D nextNodePos, Unit nodeInfo)
+        protected override void UpdateNode(in ShortGridPosition2D nextNodePos, Unit nodeInfo)
         {
         }
 
-        protected override bool EdgeCostInformation(in ShortPosition2D stepOrigin, in Direction d, float stepOriginCost, out float totalPathCost, out Unit nodeInfo)
+        protected override bool EdgeCostInformation(in ShortGridPosition2D stepOrigin, in Direction d, float stepOriginCost, out float totalPathCost, out Unit nodeInfo)
         {
             Assert.NotNull(resistanceMap);
             Assert.NotNull(SensePhysics);

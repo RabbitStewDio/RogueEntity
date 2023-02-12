@@ -32,6 +32,12 @@ namespace RogueEntity.Core.Utils.SpatialIndex
                                     b.CenterX + b.ExtendX, b.CenterY + b.ExtendY);
         }
 
+        public static implicit operator Rectangle(AABB b)
+        {
+            return BoundingBox.From(b.CenterX - b.ExtendX, b.CenterY - b.ExtendY,
+                                    b.CenterX + b.ExtendX, b.CenterY + b.ExtendY);
+        }
+
         public void Deconstruct(out int centerX, out int centerY, out int extendX, out int extendY)
         {
             centerX = CenterX;

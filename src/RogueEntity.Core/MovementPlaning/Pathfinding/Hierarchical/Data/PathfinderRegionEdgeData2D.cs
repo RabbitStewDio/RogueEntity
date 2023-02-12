@@ -13,13 +13,13 @@ namespace RogueEntity.Core.MovementPlaning.Pathfinding.Hierarchical.Data;
 public class PathfinderRegionEdgeData2D
 {
     readonly ObjectPool<PathfinderRegionEdgeData> tilePool;
-    readonly Dictionary<Position2D, PathfinderRegionEdgeData> tiles;
+    readonly Dictionary<GridPosition2D, PathfinderRegionEdgeData> tiles;
     PathfinderRegionEdgeDataState state;
 
     public PathfinderRegionEdgeData2D(ObjectPool<PathfinderRegionEdgeData> tilePool)
     {
         this.tilePool = tilePool ?? throw new ArgumentNullException(nameof(tilePool));
-        this.tiles = new Dictionary<Position2D, PathfinderRegionEdgeData>();
+        this.tiles = new Dictionary<GridPosition2D, PathfinderRegionEdgeData>();
     }
 
     public BufferList<PathfinderRegionEdgeData> GetActiveTiles(BufferList<PathfinderRegionEdgeData>? buffer = null)
@@ -33,7 +33,7 @@ public class PathfinderRegionEdgeData2D
         return buffer;
     }
 
-    public bool TryGetView(Position2D pos, [MaybeNullWhen(false)] out PathfinderRegionEdgeData view, DataViewCreateMode mode = DataViewCreateMode.Nothing)
+    public bool TryGetView(GridPosition2D pos, [MaybeNullWhen(false)] out PathfinderRegionEdgeData view, DataViewCreateMode mode = DataViewCreateMode.Nothing)
     {
         if (tiles.TryGetValue(pos, out view))
         {
@@ -92,7 +92,7 @@ public class PathfinderRegionEdgeData2D
 
     public void RemoveView(int x, int y)
     {
-        this.tiles.Remove(new Position2D(x, y));
+        this.tiles.Remove(new GridPosition2D(x, y));
     }
     
     public void AddInboundEdge(DistanceCalculation style, IMovementMode mode, 

@@ -166,11 +166,11 @@ namespace RogueEntity.Api.Utils
 
         public struct Enumerator : IEnumerator<T>
         {
-            readonly IReadOnlyList<T> contents;
+            readonly IReadOnlyList<T>? contents;
             int index;
             T current;
 
-            internal Enumerator(IReadOnlyList<T> widget) : this()
+            internal Enumerator(IReadOnlyList<T>? widget) : this()
             {
                 this.contents = widget;
                 index = -1;
@@ -182,6 +182,10 @@ namespace RogueEntity.Api.Utils
 
             public bool MoveNext()
             {
+                if (contents == null)
+                {
+                    return false;
+                }
                 if (index + 1 < contents.Count)
                 {
                     index += 1;
@@ -205,7 +209,7 @@ namespace RogueEntity.Api.Utils
             {
                 get
                 {
-                    if (index < 0 || index >= contents.Count)
+                    if (index < 0 || index >= contents!.Count)
                     {
                         throw new InvalidOperationException();
                     }

@@ -82,7 +82,7 @@ namespace RogueEntity.Core.MovementPlaning.Pathfinding.Hierarchical.Systems
         ///   boundary itself. 
         /// </summary>
         /// <param name="pos"></param>
-        void RemoveInnerEdge(Position2D pos)
+        void RemoveInnerEdge(GridPosition2D pos)
         {
             var idx = Region.GetRawIndexUnsafe(pos);
             var rawData = Region.Data;
@@ -125,7 +125,7 @@ namespace RogueEntity.Core.MovementPlaning.Pathfinding.Hierarchical.Systems
             return availableMovementModes;
         }
 
-        void ComputeIsolatedZone(Position2D start, ref CachedTileReferences tileRefs)
+        void ComputeIsolatedZone(GridPosition2D start, ref CachedTileReferences tileRefs)
         {
             var outboundMovements = 0L;
             foreach (var (f, m) in movementCostsOnLevel)
@@ -152,9 +152,9 @@ namespace RogueEntity.Core.MovementPlaning.Pathfinding.Hierarchical.Systems
             }
         }
 
-        void FloodFill(in Position2D start, ref CachedTileReferences tileRefs)
+        void FloodFill(in GridPosition2D start, ref CachedTileReferences tileRefs)
         {
-            if (start == new Position2D(1, 1))
+            if (start == new GridPosition2D(1, 1))
             {
                 Console.WriteLine("HERE!");
             }
@@ -293,7 +293,7 @@ namespace RogueEntity.Core.MovementPlaning.Pathfinding.Hierarchical.Systems
             return retval;
         }
 
-        void ThrowNodeUpdateError(in Position2D pos)
+        void ThrowNodeUpdateError(in GridPosition2D pos)
         {
             throw new InvalidOperationException($"Unable to update existing node at {pos}.");
         }
@@ -308,7 +308,7 @@ namespace RogueEntity.Core.MovementPlaning.Pathfinding.Hierarchical.Systems
         /// <param name="basePos"></param>
         /// <param name="tileRefs"></param>
         /// <returns></returns>
-        ReadOnlyListWrapper<Direction> PopulateTraversableDirections(in Position2D basePos,
+        ReadOnlyListWrapper<Direction> PopulateTraversableDirections(in GridPosition2D basePos,
                                                                      ref CachedTileReferences tileRefs)
         {
             var targetPosX = basePos.X;
@@ -337,7 +337,7 @@ namespace RogueEntity.Core.MovementPlaning.Pathfinding.Hierarchical.Systems
             public IReadOnlyBoundedDataView<DirectionalityInformation>? EdgeInboundTile;
         }
 
-        bool EdgeCostInformation(in Position2D sourceNode,
+        bool EdgeCostInformation(in GridPosition2D sourceNode,
                                  in Direction d,
                                  ref CachedTileReferences tileRefs,
                                  out long movementModes)

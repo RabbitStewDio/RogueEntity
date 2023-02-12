@@ -11,11 +11,11 @@ namespace RogueEntity.Core.Tests.Sensing.Common
         public void TestAddressing()
         {
             var dview = new BoundedDataView<float>(new Rectangle(-1, -1, 11, 11));
-            dview.TryGetRawIndex(new Position2D(4, 4), out var idx).Should().BeTrue();
+            dview.TryGetRawIndex(new GridPosition2D(4, 4), out var idx).Should().BeTrue();
             idx.Should().Be(5 + 5 * 11);
 
             dview.TryGetFromRawIndex(idx, out var pos).Should().BeTrue();
-            pos.Should().Be(new Position2D(4, 4));
+            pos.Should().Be(new GridPosition2D(4, 4));
 
         }
     }
